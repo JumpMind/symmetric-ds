@@ -56,9 +56,7 @@ import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.Statistics;
 
 public class ProtocolDataReader extends AbstractDataReader implements IDataReader {
-
     public static final String CTX_LINE_NUMBER = ProtocolDataReader.class.getSimpleName() + ".lineNumber";
-
     protected IStagedResource stagedResource;
     protected Reader reader;
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
@@ -78,7 +76,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
     protected boolean streamToFile = true;
     protected long baseTime;
     protected Timestamp createTime;
-    
+
     public ProtocolDataReader(BatchType batchType, String targetNodeId, StringBuilder input) {
         this(batchType, targetNodeId, new BufferedReader(new StringReader(input.toString())));
     }
@@ -102,7 +100,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
         this.targetNodeId = targetNodeId;
         this.batchType = batchType;
     }
-    
+
     public ProtocolDataReader(BatchType batchType, String targetNodeId, Reader reader, boolean streamToFile) {
         this.reader = reader;
         this.targetNodeId = targetNodeId;
@@ -153,24 +151,20 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     tokens = csvReader.getValues();
                 }
                 bytesRead += logDebugAndCountBytes(tokens);
-                Statistics stats = null;             
-                
+                Statistics stats = null;
                 if (batch != null) {
                     stats = statistics.get(batch);
                     stats.increment(DataReaderStatistics.READ_BYTE_COUNT, bytesRead);
                     bytesRead = 0;
                 }
-
                 if (table != null && !(tokens[0].equals(CsvConstants.TABLE) || tokens[0].equals(CsvConstants.KEYS)
                         || tokens[0].equals(CsvConstants.COLUMNS))) {
                     return table;
                 }
-
                 if (stats != null && (tokens[0].equals(CsvConstants.INSERT) || tokens[0].equals(CsvConstants.UPDATE)
                         || tokens[0].equals(CsvConstants.DELETE))) {
                     stats.increment(DataReaderStatistics.READ_RECORD_COUNT, 1);
                 }
-
                 if (tokens[0].equals(CsvConstants.INSERT)) {
                     CsvData data = new CsvData();
                     data.setNoBinaryOldData(noBinaryOldData);
@@ -186,7 +180,6 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     return data;
                 } else if (tokens[0].equals(CsvConstants.OLD)) {
                     parsedOldData = CollectionUtils.copyOfRange(tokens, 1, tokens.length);
-
                 } else if (tokens[0].equals(CsvConstants.UPDATE)) {
                     CsvData data = new CsvData();
                     data.setNoBinaryOldData(noBinaryOldData);
@@ -228,16 +221,13 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                 } else if (tokens[0].equals(CsvConstants.TIME)) {
                     createTime = new Timestamp(Long.parseLong(tokens[1]) + baseTime);
                 } else if (tokens[0].equals(CsvConstants.BATCH) || tokens[0].equals(CsvConstants.RETRY)) {
-                    
                     Batch batch = new Batch(batchType, Long.parseLong(tokens[1]), channelId, binaryEncoding, sourceNodeId, targetNodeId,
                             false);
                     stats = stats != null ? stats : new DataReaderStatistics();
                     statistics.put(batch, stats);
-                    
                     if (tokens[0].equals(CsvConstants.RETRY) && !streamToFile) {
                         batch.setInvalidRetry(true);
                     }
-                    
                     tokens = null;
                     createTime = null;
                     return batch;
@@ -245,22 +235,16 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     if (tokens.length > 1) {
                         noBinaryOldData = Boolean.parseBoolean(tokens[1]);
                     }
-
                 } else if (tokens[0].equals(CsvConstants.NODEID)) {
                     this.sourceNodeId = tokens[1];
-
                 } else if (tokens[0].equals(CsvConstants.BINARY)) {
                     this.binaryEncoding = BinaryEncoding.valueOf(tokens[1]);
-
                 } else if (tokens[0].equals(CsvConstants.CHANNEL)) {
                     this.channelId = tokens[1];
-
                 } else if (tokens[0].equals(CsvConstants.SCHEMA)) {
                     schemaName = tokens.length == 1 || StringUtils.isBlank(tokens[1]) ? null : tokens[1];
-
                 } else if (tokens[0].equals(CsvConstants.CATALOG)) {
                     catalogName = tokens.length == 1 || StringUtils.isBlank(tokens[1]) ? null : tokens[1];
-
                 } else if (tokens[0].equals(CsvConstants.TABLE)) {
                     tableName = tokens[1];
                     table = context.getParsedTables().get(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
@@ -270,7 +254,6 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                         table = new Table(catalogName, schemaName, tableName);
                         context.setLastParsedTable(table);
                     }
-
                 } else if (tokens[0].equals(CsvConstants.KEYS)) {
                     if (keys == null) {
                         keys = new HashSet<String>(tokens.length);
@@ -328,15 +311,12 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                 } else {
                     log.info("Unable to handle unknown csv values: " + Arrays.toString(tokens));
                 }
-
                 tokens = null;
             }
         } catch (IOException ex) {
             throw new IoException(ex);
         }
-
         return null;
-
     }
 
     public Batch nextBatch() {
@@ -399,17 +379,15 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
         if (csvReader != null) {
             csvReader.close();
         }
-
         if (stagedResource != null) {
             stagedResource.close();
         }
-
     }
 
     public Map<Batch, Statistics> getStatistics() {
         return statistics;
     }
-    
+
     protected void putStats(Statistics stats, String[] statsColumns, String[] statsValues) {
         if (statsValues != null && statsColumns != null) {
             for (int i = 0; i < statsColumns.length; i++) {
@@ -421,5 +399,4 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
             }
         }
     }
-    
 }

@@ -34,7 +34,6 @@ import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 
 public class DbCompareTables {
-    
     private Table sourceTable;
     private Table targetTable;
     private TransformTableNodeGroupLink transform;
@@ -44,22 +43,21 @@ public class DbCompareTables {
         this.sourceTable = sourceTable;
         this.targetTable = targetTable;
     }
-    
+
     public Map<Column, Column> getColumnMapping() {
         return columnMapping;
     }
-    
+
     public void setColumnMapping(Map<Column, Column> columnMapping) {
         this.columnMapping = columnMapping;
     }
-    
+
     public void addColumnMapping(Column sourceColumn, Column targetColumn) {
-        columnMapping.put(sourceColumn,targetColumn);
+        columnMapping.put(sourceColumn, targetColumn);
     }
-    
+
     public void applyColumnMappings() {
         columnMapping.clear();
-        
         if (transform != null && !CollectionUtils.isEmpty(transform.getTransformColumns())) {
             applyColumnMappingsFromTransform();
         } else {
@@ -68,23 +66,23 @@ public class DbCompareTables {
     }
 
     protected void applyColumnMappingsFromTransform() {
-      for (Column sourceColumn : sourceTable.getColumns()) {
-          List<TransformColumn> sourceTransformColumns = transform.getTransformColumnFor(sourceColumn.getName());
-          if (!sourceTransformColumns.isEmpty()) {
-              TransformColumn transformColumn = sourceTransformColumns.get(0);
-              Column targetColumn = targetTable.getColumnWithName(transformColumn.getTargetColumnName());
-              if (transformColumn.isPk()) {
-                  sourceColumn.setPrimaryKey(true);
-              }
-              columnMapping.put(sourceColumn, targetColumn);
-          } else {
-              if (transform.getColumnPolicy() == ColumnPolicy.SPECIFIED) {                  
-                  sourceTable.removeColumn(sourceColumn);
-              } else {
-                  mapColumnDefault(sourceColumn);
-              }
-          }
-      }
+        for (Column sourceColumn : sourceTable.getColumns()) {
+            List<TransformColumn> sourceTransformColumns = transform.getTransformColumnFor(sourceColumn.getName());
+            if (!sourceTransformColumns.isEmpty()) {
+                TransformColumn transformColumn = sourceTransformColumns.get(0);
+                Column targetColumn = targetTable.getColumnWithName(transformColumn.getTargetColumnName());
+                if (transformColumn.isPk()) {
+                    sourceColumn.setPrimaryKey(true);
+                }
+                columnMapping.put(sourceColumn, targetColumn);
+            } else {
+                if (transform.getColumnPolicy() == ColumnPolicy.SPECIFIED) {
+                    sourceTable.removeColumn(sourceColumn);
+                } else {
+                    mapColumnDefault(sourceColumn);
+                }
+            }
+        }
     }
 
     protected void applyColumnMappingsDefault() {
@@ -92,7 +90,7 @@ public class DbCompareTables {
             mapColumnDefault(sourceColumn);
         }
     }
-    
+
     protected void mapColumnDefault(Column sourceColumn) {
         for (Column targetColumn : targetTable.getColumns()) {
             if (StringUtils.equalsIgnoreCase(sourceColumn.getName(), targetColumn.getName())) {
@@ -132,7 +130,7 @@ public class DbCompareTables {
 
     private void filterExcludedColumns(DbCompareConfig config, Table table) {
         for (Column column : table.getColumnsAsList()) {
-            if (! config.shouldIncludeColumn(table.getName(), column.getName())) {
+            if (!config.shouldIncludeColumn(table.getName(), column.getName())) {
                 if (table.getPrimaryKeyColumnsAsList().contains(column)) {
                     throw new SymmetricException("Invalid config - cannot exclude a primary key column: " + column + " (Table " + table + ")");
                 }

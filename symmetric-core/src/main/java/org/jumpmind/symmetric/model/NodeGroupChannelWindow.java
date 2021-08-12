@@ -31,9 +31,7 @@ import org.jumpmind.util.AppUtils;
  * 
  */
 public class NodeGroupChannelWindow implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     private String nodeGroupId;
     private String channelId;
     private Time startTime;
@@ -69,7 +67,7 @@ public class NodeGroupChannelWindow implements Serializable {
         return endTime;
     }
 
-    public void setEndTime(Time endTime) {        
+    public void setEndTime(Time endTime) {
         this.endTime = Time.valueOf(HHmmss.format(endTime));
     }
 
@@ -99,5 +97,4 @@ public class NodeGroupChannelWindow implements Serializable {
     public boolean inTimeWindow(String timezoneOffset) {
         return inTimeWindow(AppUtils.getLocalDateForOffset(timezoneOffset));
     }
-
 }

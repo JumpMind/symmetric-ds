@@ -30,17 +30,16 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class BinaryLeftColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
-
     public static final String NAME = "bleft";
 
     public String getName() {
         return NAME;
     }
-    
+
     public boolean isExtractColumnTransform() {
         return true;
     }
-    
+
     public boolean isLoadColumnTransform() {
         return true;
     }
@@ -49,7 +48,6 @@ public class BinaryLeftColumnTransform implements ISingleNewAndOldValueColumnTra
             DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
-
         if (StringUtils.isNotBlank(newValue)) {
             String expression = column.getTransformExpression();
             if (StringUtils.isNotBlank(expression)) {
@@ -57,21 +55,20 @@ public class BinaryLeftColumnTransform implements ISingleNewAndOldValueColumnTra
                 newValue = bleft(newValue, Integer.parseInt(expression));
             }
         }
-        
         if (data.getTargetDmlType() == DataEventType.DELETE && data.getOldSourceValues() != null) {
             return new NewAndOldValue(null, newValue);
         } else {
             return new NewAndOldValue(newValue, null);
         }
     }
-    
+
     public String bleft(String value, int maxBytes) {
         StringBuilder ret = new StringBuilder();
-        for (int i = 0;i < value.length(); i++) {
-            if ((maxBytes -= value.substring(i, i+1).getBytes(Charset.defaultCharset()).length) < 0) break;
+        for (int i = 0; i < value.length(); i++) {
+            if ((maxBytes -= value.substring(i, i + 1).getBytes(Charset.defaultCharset()).length) < 0)
+                break;
             ret.append(value.charAt(i));
         }
         return ret.toString();
-     }
-
+    }
 }

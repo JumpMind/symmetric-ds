@@ -27,6 +27,5 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerHistory;
 
 public interface IReloadGenerator extends IExtensionPoint {
-    
     List<TriggerHistory> getActiveTriggerHistories(Node targetNode);
 }

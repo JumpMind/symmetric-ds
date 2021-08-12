@@ -35,10 +35,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class FileTriggerTrackerTest {
-
     File snapshotDirectory = new File("target/snapshots");
     File directory = new File("target/test");
-    File subdirectory = new File (directory, "a");
+    File subdirectory = new File(directory, "a");
     File fileInDirectory1 = new File(directory, "1.txt");
     File fileInDirectory2 = new File(directory, "2.csv");
     File fileInSubDirectory = new File(subdirectory, "3.doc");
@@ -47,7 +46,7 @@ public class FileTriggerTrackerTest {
     public void setupTest() throws Exception {
         recreateDirectorySpecAndFiles();
     }
-    
+
     @Test
     public void testTakeFullSnapshotRecursive() throws Exception {
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), true, null, null);
@@ -56,9 +55,9 @@ public class FileTriggerTrackerTest {
         FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null, null, false, null);
         DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);
         tracker.takeFullSnapshot(snapshot);
-        assertEquals(4, snapshot.size());        
+        assertEquals(4, snapshot.size());
     }
-    
+
     @Test
     public void testTakeFullSnapshotNonRecursive() throws Exception {
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), false, null, null);
@@ -67,36 +66,35 @@ public class FileTriggerTrackerTest {
         FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null, null, false, null);
         DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);
         tracker.takeFullSnapshot(snapshot);
-        assertEquals(2, snapshot.size());        
+        assertEquals(2, snapshot.size());
     }
-    
+
     @Test
     public void testTakeFullSnapshotIncludes() throws Exception {
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), false, "*.txt", null);
         Router router = new Router();
         FileTriggerRouter fileTriggerRouter = new FileTriggerRouter(fileTrigger, router);
         FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null, null, false, null);
-        DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);       
+        DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);
         tracker.takeFullSnapshot(snapshot);
         assertEquals(1, snapshot.size());
         assertEquals(snapshot.get(0).getFileName(), FileSyncUtils.getRelativePath(fileInDirectory1, directory));
-    }   
-    
+    }
+
     @Test
     public void testTakeFullSnapshotExcludes() throws Exception {
-        FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), false, null,  "*.txt");
+        FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), false, null, "*.txt");
         Router router = new Router();
         FileTriggerRouter fileTriggerRouter = new FileTriggerRouter(fileTrigger, router);
         FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null, null, false, null);
         DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);
-        
         tracker.takeFullSnapshot(snapshot);
         assertEquals(1, snapshot.size());
         assertEquals(snapshot.get(0).getFileName(), FileSyncUtils.getRelativePath(fileInDirectory2, directory));
-    }      
-    
+    }
+
     @Test
-    public void testTakeSnapshotRecursiveTestDelete() throws Exception {        
+    public void testTakeSnapshotRecursiveTestDelete() throws Exception {
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), true, null, null);
         Router router = new Router();
         FileTriggerRouter fileTriggerRouter = new FileTriggerRouter(fileTrigger, router);
@@ -108,14 +106,13 @@ public class FileTriggerTrackerTest {
         FileSnapshot change = snapshot.get(0);
         assertEquals(change.getFileName(), FileSyncUtils.getRelativePath(fileInDirectory1, directory));
         assertEquals(change.getLastEventType(), LastEventType.DELETE);
-    }    
-    
+    }
+
     @Test
     public void testTakeSnapshotAfterRestart() throws Exception {
-        
     }
-        
-    protected void recreateDirectorySpecAndFiles() throws Exception {     
+
+    protected void recreateDirectorySpecAndFiles() throws Exception {
         FileUtils.deleteQuietly(snapshotDirectory);
         FileUtils.deleteQuietly(directory);
         directory.mkdirs();
@@ -124,5 +121,4 @@ public class FileTriggerTrackerTest {
         FileUtils.write(fileInDirectory2, "1,2,3", Charset.defaultCharset(), false);
         FileUtils.write(fileInSubDirectory, "abc", Charset.defaultCharset(), false);
     }
-
 }

@@ -56,45 +56,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Responsible for managing gaps in data ids to ensure that all captured data is
- * routed for delivery to other nodes.
+ * Responsible for managing gaps in data ids to ensure that all captured data is routed for delivery to other nodes.
  */
 public class DataGapFastDetector extends DataGapDetector implements ISqlRowMapper<Long> {
-
     private static final Logger log = LoggerFactory.getLogger(DataGapFastDetector.class);
-
     protected IContextService contextService;
-
     protected List<DataGap> gaps;
-    
     protected DataGap lastGap;
-
     protected List<Long> dataIds;
-
     protected boolean isAllDataRead = true;
-    
     protected long maxDataToSelect;
-
     protected boolean isFullGapAnalysis = true;
-
     protected long lastBusyExpireRunTime;
-
     protected Set<DataGap> gapsAll;
-
     protected Set<DataGap> gapsAdded;
-
     protected Set<DataGap> gapsDeleted;
-
     protected boolean detectInvalidGaps;
-
     protected boolean useInMemoryGaps;
-
     protected long routingStartTime;
-
     protected long earliestTransactionTime = 0;
-
     protected boolean supportsTransactionViews;
-
     protected static Map<String, Boolean> firstTime = Collections.synchronizedMap(new HashMap<String, Boolean>());
 
     public DataGapFastDetector(IDataService dataService, IParameterService parameterService, IContextService contextService,
@@ -114,7 +95,6 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             maxDataToSelect = parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
             detectInvalidGaps = parameterService.is(ParameterConstants.ROUTING_DETECT_INVALID_GAPS) || firstTime.get(parameterService.getEngineName()) == null;
             reset();
-
             if (isFullGapAnalysis()) {
                 ProcessInfo processInfo = this.statisticManager.newProcessInfo(new ProcessInfoKey(
                         nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
@@ -147,14 +127,12 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         }
     }
 
-
     protected void reset() {
         isAllDataRead = true;
         dataIds = new ArrayList<Long>();
         gapsAll = new HashSet<DataGap>();
         gapsAdded = new HashSet<DataGap>();
         gapsDeleted = new HashSet<DataGap>();
-
         routingStartTime = System.currentTimeMillis();
         supportsTransactionViews = symmetricDialect.supportsTransactionViews();
         earliestTransactionTime = 0;
@@ -170,25 +148,21 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     }
 
     /**
-     * Always make sure sym_data_gap is up to date to make sure that we don't
-     * dual route data.
+     * Always make sure sym_data_gap is up to date to make sure that we don't dual route data.
      */
     @Override
     public void afterRouting() {
         ProcessInfo processInfo = this.statisticManager.newProcessInfo(new ProcessInfoKey(
                 nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
         processInfo.setStatus(ProcessStatus.PROCESSING);
-
         long printStats = System.currentTimeMillis();
         long gapTimoutInMs = parameterService.getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME);
         final int dataIdIncrementBy = parameterService.getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
-
         boolean isOracleNoOrder = parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false);
         List<Long> oracleNextValues = null;
         if (isOracleNoOrder) {
             oracleNextValues = getOracleNextValues();
         }
-
         Date currentDate = new Date(routingStartTime);
         boolean isBusyExpire = false;
         long lastBusyExpireRunTime = getLastBusyExpireRunTime();
@@ -202,9 +176,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         } else if (lastBusyExpireRunTime != 0) {
             setLastBusyExpireRunTime(0);
         }
-        
         List<DataGap> skippedDataGaps = new ArrayList<>();
- 
         try {
             long ts = System.currentTimeMillis();
             long lastDataId = -1;
@@ -213,25 +185,20 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             int expireChecked = 0;
             gapsAll.addAll(gaps);
             Map<DataGap, List<Long>> dataIdMap = getDataIdMap();
-
             if (System.currentTimeMillis() - ts > 30000) {
                 log.info("It took {}ms to map {} data IDs into {} gaps", new Object[] { System.currentTimeMillis() - ts,
                         dataIds.size(), gaps.size() });
             }
-
             for (final DataGap dataGap : gaps) {
                 final boolean lastGap = dataGap.equals(gaps.get(gaps.size() - 1));
                 lastDataId = -1;
                 List<Long> ids = dataIdMap.get(dataGap);
-
                 dataIdCount += ids.size();
                 rangeChecked += dataGap.getEndId() - dataGap.getStartId();
-
                 // if we found data in the gap
                 if (ids.size() > 0) {
                     gapsDeleted.add(dataGap);
                     gapsAll.remove(dataGap);
-
                     // if we did not find data in the gap and it was not the last gap
                 } else if (!lastGap && (isAllDataRead || isBusyExpire)) {
                     Date createTime = dataGap.getCreateTime();
@@ -244,7 +211,6 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                     } else {
                         isExpired = createTime != null && routingStartTime - createTime.getTime() > gapTimoutInMs;
                     }
-
                     if (isExpired) {
                         boolean isGapEmpty = false;
                         if (!isAllDataRead) {
@@ -258,7 +224,6 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                         }
                     }
                 }
-
                 for (Number number : ids) {
                     long dataId = number.longValue();
                     processInfo.incrementCurrentDataCount();
@@ -271,12 +236,10 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                     }
                     lastDataId = dataId;
                 }
-
                 // if we found data in the gap
                 if (lastDataId != -1 && !lastGap && lastDataId + dataIdIncrementBy <= dataGap.getEndId()) {
                     addDataGap(new DataGap(lastDataId + dataIdIncrementBy, dataGap.getEndId(), currentDate));
                 }
-
                 if (System.currentTimeMillis() - printStats > 30000) {
                     log.info("The data gap detection has been running for {}ms, detected {} rows over a gap range of {}, "
                             + "found {} new gaps, found old {} gaps, and checked data in {} gaps", new Object[] { System.currentTimeMillis() - ts,
@@ -284,24 +247,20 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                     printStats = System.currentTimeMillis();
                 }
             }
-
             if (lastDataId != -1) {
                 DataGap newGap = new DataGap(lastDataId + 1, lastDataId + maxDataToSelect, currentDate);
                 if (addDataGap(newGap)) {
                     log.debug("Inserting new last data gap: {}", newGap);
                 }
             }
-
             saveDataGaps();
             if (gaps.size() > 0) {
                 lastGap = gaps.get(gaps.size() - 1);
             }
-
             setFullGapAnalysis(false);
             if (isBusyExpire) {
                 setLastBusyExpireRunTime(System.currentTimeMillis());
             }
-
             long updateTimeInMs = System.currentTimeMillis() - ts;
             if (updateTimeInMs > 10000) {
                 log.info("Detecting gaps took {} ms", updateTimeInMs);
@@ -329,21 +288,20 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 isOkay = false;
             }
         }
-
         if (isOkay) {
             gapsAdded.add(dataGap);
             gapsAll.add(dataGap);
         } else {
-            printGapState();            
+            printGapState();
         }
         return isOkay;
     }
-    
+
     private void printGapState() {
         StringBuilder buff = new StringBuilder();
         buff.append("\nData IDs: " + dataIds).append("\n");
         buff.append("Data Gaps: " + gaps).append("\n");
-        buff.append("Added Data Gaps: " + gapsAdded) .append("\n");
+        buff.append("Added Data Gaps: " + gapsAdded).append("\n");
         buff.append("Deleted Data Gaps: " + gapsDeleted).append("\n");
         log.info(buff.toString());
     }
@@ -361,16 +319,16 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && (totalGapChanges > maxGapChanges || useInMemoryGaps)) {
                     dataService.deleteAllDataGaps(transaction);
                     if (useInMemoryGaps && totalGapChanges <= maxGapChanges) {
-                        log.info("There are {} data gap changes, which is within the max of {}, so switching to database", 
+                        log.info("There are {} data gap changes, which is within the max of {}, so switching to database",
                                 totalGapChanges, maxGapChanges);
                         useInMemoryGaps = false;
                         dataService.insertDataGaps(transaction, gaps);
                     } else {
                         if (!useInMemoryGaps) {
-                            log.info("There are {} data gap changes, which exceeds the max of {}, so switching to in-memory", 
+                            log.info("There are {} data gap changes, which exceeds the max of {}, so switching to in-memory",
                                     totalGapChanges, maxGapChanges);
                             useInMemoryGaps = true;
-                        }   
+                        }
                         DataGap newGap = new DataGap(gaps.get(0).getStartId(), gaps.get(gaps.size() - 1).getEndId());
                         dataService.insertDataGap(transaction, newGap);
                     }
@@ -400,15 +358,14 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     protected void queryDataIdMap() {
         String sql = routerService.getSql("selectDistinctDataIdFromDataEventUsingGapsSql");
         ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
-
         for (DataGap dataGap : gaps) {
             long queryForIdsTs = System.currentTimeMillis();
             Object[] params = new Object[] { dataGap.getStartId(), dataGap.getEndId() };
             List<Long> ids = sqlTemplate.query(sql, this, params);
             dataIds.addAll(ids);
-            if (System.currentTimeMillis()-queryForIdsTs > Constants.LONG_OPERATION_THRESHOLD) {
-                log.info("It took longer than {}ms to run the following sql for gap from {} to {}.  {}", 
-                        new Object[] {Constants.LONG_OPERATION_THRESHOLD, dataGap.getStartId(), dataGap.getEndId(), sql});
+            if (System.currentTimeMillis() - queryForIdsTs > Constants.LONG_OPERATION_THRESHOLD) {
+                log.info("It took longer than {}ms to run the following sql for gap from {} to {}.  {}",
+                        new Object[] { Constants.LONG_OPERATION_THRESHOLD, dataGap.getStartId(), dataGap.getEndId(), sql });
             }
         }
     }
@@ -416,20 +373,17 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     protected Map<DataGap, List<Long>> getDataIdMap() {
         HashMap<DataGap, List<Long>> map = new HashMap<DataGap, List<Long>>();
         Collections.sort(dataIds);
-
         Iterator<Long> iterator = dataIds.iterator();
         long dataId = -1;
         if (iterator.hasNext()) {
             dataId = iterator.next().longValue();
         }
-
         for (DataGap gap : gaps) {
             List<Long> idList = map.get(gap);
             if (idList == null) {
                 idList = new ArrayList<Long>();
                 map.put(gap, idList);
             }
-
             do {
                 if (dataId >= gap.getStartId() && dataId <= gap.getEndId()) {
                     idList.add(dataId);
@@ -440,7 +394,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         }
         return map;
     }
-    
+
     protected void fixOverlappingGaps(List<DataGap> gapsToCheck, ProcessInfo processInfo) {
         List<DataGap> gapsCopy = new ArrayList<DataGap>(gapsToCheck);
         boolean ok = true;
@@ -462,7 +416,6 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                         if (lastGap == null && curGap.gapSize() >= maxDataToSelect - 1) {
                             lastGap = curGap;
                         }
-
                         if (prevGap != null) {
                             if (prevGap.overlaps(curGap)) {
                                 ok = false;
@@ -473,7 +426,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                                 if (curGap.equals(lastGap)) {
                                     newGap = new DataGap(prevGap.getStartId(), prevGap.getStartId() + maxDataToSelect - 1);
                                 } else {
-                                    newGap = new DataGap(prevGap.getStartId(), 
+                                    newGap = new DataGap(prevGap.getStartId(),
                                             prevGap.getEndId() > curGap.getEndId() ? prevGap.getEndId() : curGap.getEndId());
                                 }
                                 log.warn("Inserting new gap to fix overlap: " + newGap);
@@ -490,7 +443,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 if (!ok) {
                     printGapState();
                     log.info("Fixed gaps: " + gapsCopy);
-                }   
+                }
                 gaps.clear();
                 gaps.addAll(gapsCopy);
             } catch (Error ex) {
@@ -513,31 +466,29 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             throw ex;
         }
     }
-    
+
     protected void logSkippedDataGaps(List<DataGap> skippedDataGaps) {
         if (skippedDataGaps.isEmpty()) {
             return;
         }
-        
-        if (log.isDebugEnabled()) {            
-            for (DataGap dataGap : skippedDataGaps) {                
+        if (log.isDebugEnabled()) {
+            for (DataGap dataGap : skippedDataGaps) {
                 if (dataGap.getStartId() == dataGap.getEndId()) {
                     log.debug("Expired data gap at data_id {} create_time {}.  Skipping it because " +
-                            (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), dataGap.getStartId(), dataGap.getCreateTime());
+                            (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), dataGap.getStartId(), dataGap
+                                    .getCreateTime());
                 } else {
                     log.debug("Expired data gap between data_id {} and {} create_time {}.  Skipping it because " +
-                            (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), 
+                            (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"),
                             dataGap.getStartId(), dataGap.getEndId(), dataGap.getCreateTime());
                 }
             }
             return;
-        }             
-        
+        }
         Date minDate = skippedDataGaps.get(0).getCreateTime();
         Date maxDate = skippedDataGaps.get(0).getCreateTime();
         long minDataId = skippedDataGaps.get(0).getStartId();
         long maxDataId = skippedDataGaps.get(0).getEndId();
-        
         for (DataGap dataGap : skippedDataGaps) {
             if (dataGap.getCreateTime().before(minDate)) {
                 minDate = dataGap.getCreateTime();
@@ -548,10 +499,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             minDataId = Math.min(minDataId, dataGap.getStartId());
             maxDataId = Math.max(maxDataId, dataGap.getEndId());
         }
-        
-        log.info("Expired {} data gap(s) between data_id {} and {} and between create_time {} and {}", 
-                skippedDataGaps.size(), minDataId, maxDataId, minDate, maxDate); 
-        
+        log.info("Expired {} data gap(s) between data_id {} and {} and between create_time {} and {}",
+                skippedDataGaps.size(), minDataId, maxDataId, minDate, maxDate);
     }
 
     private List<Long> getOracleNextValues() {
@@ -565,8 +514,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                     }
                 }, symmetricDialect.getSequenceName(SequenceIdentifier.DATA));
             } catch (SqlException e) {
-                log.error("Before using " + ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER + 
-                        " parameter, you must 'grant select on gv$_sequences to " + 
+                log.error("Before using " + ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER +
+                        " parameter, you must 'grant select on gv$_sequences to " +
                         parameterService.getString(ParameterConstants.DB_USER) +
                         "' or set the " + ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER_NEXTVALUE_DB_URLS +
                         " parameter to a list of db URLs");
@@ -596,7 +545,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     }
 
     /**
-     * This method is called for each channel that is routed.  Once it is set for a routing pass it should remain set until the routing pass is done.
+     * This method is called for each channel that is routed. Once it is set for a routing pass it should remain set until the routing pass is done.
      */
     @Override
     public void setIsAllDataRead(boolean isAllDataRead) {
@@ -618,10 +567,10 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     @Override
     public void setFullGapAnalysis(ISqlTransaction sqlTransaction, boolean isFullGapAnalysis) {
         if (parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
-            contextService.save(sqlTransaction,  ContextConstants.ROUTING_FULL_GAP_ANALYSIS, Boolean.toString(isFullGapAnalysis));
+            contextService.save(sqlTransaction, ContextConstants.ROUTING_FULL_GAP_ANALYSIS, Boolean.toString(isFullGapAnalysis));
         }
-        this.isFullGapAnalysis = isFullGapAnalysis;        
-    }    
+        this.isFullGapAnalysis = isFullGapAnalysis;
+    }
 
     protected long getLastBusyExpireRunTime() {
         if (parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
@@ -636,5 +585,4 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         }
         this.lastBusyExpireRunTime = lastBusyExpireRunTime;
     }
-
 }

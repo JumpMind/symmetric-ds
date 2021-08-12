@@ -42,26 +42,19 @@ import org.springframework.jdbc.UncategorizedSQLException;
  * Database dialect for <a href="http://www.embarcadero.com/products/interbase/">Interbase</a>.
  */
 public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-
     public static final String CONTEXT_TABLE_NAME = "temp_context";
-
     static final String CONTEXT_TABLE_CREATE = "create global temporary table %s (name varchar(30), context_value varchar(30)) on commit preserve rows";
-
     static final String CONTEXT_TABLE_INSERT = "insert into %s (name, context_value) values (?, ?)";
-
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
-
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
-    
-    static final String SQL_FUNCTION_INSTALLED = "select count(*) from rdb$functions where rdb$function_name = upper('$(functionName)')" ;
-
+    static final String SQL_FUNCTION_INSTALLED = "select count(*) from rdb$functions where rdb$function_name = upper('$(functionName)')";
     static final String SQL_DROP_FUNCTION = "DROP EXTERNAL FUNCTION $(functionName)";
 
     public InterbaseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new InterbaseTriggerTemplate(this);
     }
-    
+
     @Override
     public void createRequiredDatabaseObjects() {
         String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
@@ -75,28 +68,27 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
                 log.error("Error while initializing Interbase dialect", ex);
             }
         }
-        
         String escape = this.parameterService.getTablePrefix() + "_" + "escape";
         if (!installed(SQL_FUNCTION_INSTALLED, escape)) {
-            String sql = "declare external function $(functionName) cstring(32660)                                                                                                                                               " + 
+            String sql = "declare external function $(functionName) cstring(32660)                                                                                                                                               "
+                    +
                     "  returns cstring(32660) free_it entry_point 'sym_escape' module_name 'sym_udf'                                                                                          ";
             install(sql, escape);
         }
-        
         String hex = this.parameterService.getTablePrefix() + "_" + "hex";
         if (!installed(SQL_FUNCTION_INSTALLED, hex)) {
-            String sql = "declare external function $(functionName) blob                                                                                                                                                         " + 
+            String sql = "declare external function $(functionName) blob                                                                                                                                                         "
+                    +
                     "  returns cstring(32660) free_it entry_point 'sym_hex' module_name 'sym_udf'                                                                                             ";
             install(sql, hex);
         }
-        
         String rtrim = this.parameterService.getTablePrefix() + "_" + "rtrim";
         if (!installed(SQL_FUNCTION_INSTALLED, rtrim)) {
-            String sql = "declare external function $(functionName) cstring(32767)                                                                                                                                               " + 
+            String sql = "declare external function $(functionName) cstring(32767)                                                                                                                                               "
+                    +
                     "                                returns cstring(32767) free_it entry_point 'IB_UDF_rtrim' module_name 'ib_udf'                                                                                         ";
             install(sql, rtrim);
-        }        
-
+        }
         try {
             platform.getSqlTemplate().queryForObject("select sym_escape('') from rdb$database", String.class);
         } catch (UncategorizedSQLException e) {
@@ -106,24 +98,21 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
             throw new RuntimeException("Function SYM_ESCAPE is not installed", e);
         }
     }
-    
+
     @Override
     public void dropRequiredDatabaseObjects() {
         String escape = this.parameterService.getTablePrefix() + "_" + "escape";
         if (installed(SQL_FUNCTION_INSTALLED, escape)) {
             uninstall(SQL_DROP_FUNCTION, escape);
         }
-        
         String hex = this.parameterService.getTablePrefix() + "_" + "hex";
         if (installed(SQL_FUNCTION_INSTALLED, hex)) {
             uninstall(SQL_DROP_FUNCTION, hex);
         }
-        
         String rtrim = this.parameterService.getTablePrefix() + "_" + "rtrim";
         if (installed(SQL_FUNCTION_INSTALLED, rtrim)) {
             uninstall(SQL_DROP_FUNCTION, rtrim);
-        }        
-
+        }
     }
 
     @Override
@@ -135,10 +124,10 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
         transaction.prepareAndExecute(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
-            SYNC_TRIGGERS_DISABLED_USER_VARIABLE, "1" });
+                SYNC_TRIGGERS_DISABLED_USER_VARIABLE, "1" });
         if (nodeId != null) {
             transaction.prepareAndExecute(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
-                SYNC_TRIGGERS_DISABLED_NODE_VARIABLE, nodeId });
+                    SYNC_TRIGGERS_DISABLED_NODE_VARIABLE, nodeId });
         }
     }
 
@@ -150,7 +139,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     public String getSyncTriggersExpression() {
         return ":" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
     }
-    
+
     @Override
     public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
@@ -191,7 +180,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     public boolean supportsOpenCursorsAcrossCommit() {
         return false;
     }
-    
+
     @Override
     public boolean supportsTransactionId() {
         return false;
@@ -199,7 +188,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
 
     @Override
     public boolean supportsBatchUpdates() {
-        // Interbase and interclient driver do have support for batch updates, 
+        // Interbase and interclient driver do have support for batch updates,
         // but we get primary/unique key violation when enabling its use
         return false;
     }
@@ -208,16 +197,17 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     public void truncateTable(String tableName) {
         platform.getSqlTemplate().update("delete from " + tableName);
     }
-        
+
     @Override
     public void cleanupTriggers() {
-        List<String> names = platform.getSqlTemplate().query("select rdb$trigger_name from rdb$triggers where rdb$trigger_name like '"+parameterService.getTablePrefix().toUpperCase()+"_%'", new StringMapper());
+        List<String> names = platform.getSqlTemplate().query("select rdb$trigger_name from rdb$triggers where rdb$trigger_name like '" + parameterService
+                .getTablePrefix().toUpperCase() + "_%'", new StringMapper());
         for (String name : names) {
             platform.getSqlTemplate().update("drop trigger " + name);
             log.info("Dropped trigger {}", name);
         }
     }
-    
+
     @Override
     public String massageDataExtractionSql(String sql, boolean isContainsBigLob) {
         if (!isContainsBigLob) {
@@ -227,12 +217,12 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
         }
         return sql;
     }
-    
+
     @Override
     public long getCurrentSequenceValue(SequenceIdentifier identifier) {
         return platform.getSqlTemplate().queryForLong("select gen_id(GEN_" + getSequenceName(identifier) + ", 0) from rdb$database");
     }
-    
+
     @Override
     public Database readSymmetricSchemaFromXml() {
         Database db = super.readSymmetricSchemaFromXml();
@@ -241,7 +231,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
         if (StringUtils.isNotBlank(prefix) && !prefix.endsWith("_")) {
             prefix = prefix + "_";
         }
-        Column description = db.findTable(prefix+"trigger").findColumn("description");
+        Column description = db.findTable(prefix + "trigger").findColumn("description");
         description.setJdbcTypeCode(Types.VARCHAR);
         description.setMappedType(TypeMap.VARCHAR);
         description.setSize("1024");

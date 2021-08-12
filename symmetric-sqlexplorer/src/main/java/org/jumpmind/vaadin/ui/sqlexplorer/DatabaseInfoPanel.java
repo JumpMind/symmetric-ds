@@ -47,28 +47,19 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Grid.SelectionMode;
 
 public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
-
     private static final long serialVersionUID = 1L;
-
     Logger log = LoggerFactory.getLogger(DatabaseInfoPanel.class);
-    
     IDb db;
-    
     Settings settings;
-    
     TabSheet tabSheet;
-    
     String selectedCaption;
-    
+
     public DatabaseInfoPanel(IDb db, Settings settings, String selectedTabCaption) {
         this.db = db;
         this.settings = settings;
-        
         setSizeFull();
-        
         tabSheet = CommonUiUtils.createTabSheet();
         tabSheet.addSelectedTabChangeListener(new SelectedTabChangeListener() {
-
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -77,20 +68,17 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             }
         });
         addComponent(tabSheet);
-        
         Connection c = null;
         try {
             c = ((DataSource) db.getPlatform().getDataSource()).getConnection();
             DatabaseMetaData metaData = c.getMetaData();
-            
             tabSheet.addTab(createTabData(createGridWithReflection(DatabaseMetaData.class, metaData)), "Meta Data");
             tabSheet.addTab(createTabData(createGridWithReflection(Connection.class, c)), "Connection");
-            
-            try{
+            try {
                 ResultSet rs = null;
                 try {
                     rs = metaData.getClientInfoProperties();
-                } catch(SQLException e) {
+                } catch (SQLException e) {
                     log.debug("Could not create Client Info Properties tab", e.getMessage());
                 }
                 Grid<List<Object>> clientInfoProperties = CommonUiUtils.putResultsInGrid(rs, Integer.MAX_VALUE, false);
@@ -99,7 +87,6 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Client Info Properties tab", e);
             }
-            
             try {
                 Grid<List<Object>> catalogs = CommonUiUtils.putResultsInGrid(metaData.getCatalogs(), Integer.MAX_VALUE, false);
                 catalogs.setSizeFull();
@@ -107,7 +94,6 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Catalogs tab", e);
             }
-            
             try {
                 Grid<List<Object>> schemas;
                 try {
@@ -120,7 +106,6 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Schemas tab", e);
             }
-            
             try {
                 Grid<List<Object>> tableTypes = CommonUiUtils.putResultsInGrid(metaData.getTableTypes(), Integer.MAX_VALUE, false);
                 tableTypes.setSizeFull();
@@ -128,7 +113,6 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Table Types tab", e);
             }
-            
             try {
                 Grid<List<Object>> dataTypes = CommonUiUtils.putResultsInGrid(metaData.getTypeInfo(), Integer.MAX_VALUE, false);
                 dataTypes.setSizeFull();
@@ -136,42 +120,36 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Data Types tab", e);
             }
-            
             try {
                 tabSheet.addTab(createTabData(createGridFromString(metaData.getNumericFunctions(), "Numeric Functions")), "Numeric Functions");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Numeric Functions tab", e);
             }
-            
             try {
                 tabSheet.addTab(createTabData(createGridFromString(metaData.getStringFunctions(), "String Functions")), "String Functions");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create String Functions tab", e);
             }
-            
             try {
                 tabSheet.addTab(createTabData(createGridFromString(metaData.getSystemFunctions(), "System Functions")), "System Functions");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create System Functions tab", e);
             }
-            
             try {
                 tabSheet.addTab(createTabData(createGridFromString(metaData.getTimeDateFunctions(), "Date/Time Functions")), "Date/Time Functions");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Date/Time Functions tab", e);
             }
-            
             try {
                 tabSheet.addTab(createTabData(createGridFromString(metaData.getSQLKeywords(), "Keywords")), "Keywords");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Keywords tab", e);
             }
         } catch (SQLException e) {
-            log.error("",e);
+            log.error("", e);
         } finally {
             JdbcSqlTemplate.close(c);
         }
-        
         Iterator<Component> i = tabSheet.iterator();
         while (i.hasNext()) {
             Component component = i.next();
@@ -179,10 +157,10 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             if (tab.getCaption().equals(selectedTabCaption)) {
                 tabSheet.setSelectedTab(component);
                 break;
-            }            
+            }
         }
     }
-    
+
     public AbstractLayout createTabData(Grid<?> grid) {
         VerticalLayout layout = new VerticalLayout();
         layout.setMargin(false);
@@ -191,7 +169,7 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
         layout.setExpandRatio(grid, 1);
         return layout;
     }
-    
+
     private Grid<List<Object>> createGridWithReflection(Class<?> reflectionClass, Object instance) {
         Grid<List<Object>> grid = new Grid<List<Object>>();
         grid.setSelectionMode(SelectionMode.MULTI);
@@ -202,10 +180,8 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
                 grid.select(event.getItem());
             }
         });
-        
         grid.addColumn(row -> row.get(0)).setCaption("Property").setWidth(400);
         grid.addColumn(row -> row.get(1)).setCaption("Value");
-        
         List<List<Object>> outerList = new ArrayList<List<Object>>();
         Method[] methods = reflectionClass.getMethods();
         for (Method method : methods) {
@@ -218,33 +194,30 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
                     innerList.add(value);
                     outerList.add(innerList);
                 } catch (Exception e) {
-                    log.debug("Could not invoke method "+method.getName(), e);
+                    log.debug("Could not invoke method " + method.getName(), e);
                 }
             }
         }
         grid.setItems(outerList);
-        
         return grid;
     }
-    
+
     private String cleanMethodName(String methodName) {
         if (methodName.startsWith("get")) {
             methodName = methodName.substring(3);
         } else if (methodName.startsWith("is")) {
             methodName = methodName.substring(2);
         }
-        
         if (!methodName.isEmpty()) {
             methodName = methodName.substring(0, 1).toUpperCase() + methodName.substring(1);
-            for (int i=0; i<methodName.length()-1; i++) {
-                if (Character.isUpperCase(methodName.charAt(i)) && (Character.isLowerCase(methodName.charAt(i+1))
-                        || (i > 0 && Character.isLowerCase(methodName.charAt(i-1))))) {
+            for (int i = 0; i < methodName.length() - 1; i++) {
+                if (Character.isUpperCase(methodName.charAt(i)) && (Character.isLowerCase(methodName.charAt(i + 1))
+                        || (i > 0 && Character.isLowerCase(methodName.charAt(i - 1))))) {
                     methodName = methodName.substring(0, i) + " " + methodName.substring(i);
                     i++;
                 }
             }
         }
-        
         return methodName;
     }
 
@@ -258,26 +231,23 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
                 grid.select(event.getItem());
             }
         });
-        
         grid.addColumn(row -> row).setCaption(columnName);
-        
         List<String> values = new ArrayList<String>();
         int lastComma = 0;
-        for (int i=0; i<data.length(); i++) {
+        for (int i = 0; i < data.length(); i++) {
             if (data.charAt(i) == ',') {
                 values.add(data.substring(lastComma, i).trim());
                 lastComma = i + 1;
             }
         }
         grid.setItems(values);
-        
         return grid;
     }
-    
+
     public String getSelectedTabCaption() {
         return selectedCaption;
     }
-    
+
     @Override
     public void selected() {
     }
@@ -285,5 +255,4 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
     @Override
     public void unselected() {
     }
-    
 }

@@ -21,8 +21,6 @@
 package org.jumpmind.db.sql;
 
 abstract public class JdbcUtils {
-    
     private JdbcUtils() {
-    }    
-    
+    }
 }

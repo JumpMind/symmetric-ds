@@ -42,9 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTest {
-
     protected static final String TEST_TABLE = "test_extract_table";
-
     private static int id = 0;
 
     @Before
@@ -58,10 +56,8 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
                             TestConstants.ROUTER_ID_ROOT_2_TEST, TestConstants.ROOT_2_TEST));
             triggerRouterService.saveTriggerRouter(triggerRouter);
             triggerRouterService.syncTriggers();
-
             getDbDialect().truncateTable(TEST_TABLE);
         }
-
         resetBatches();
     }
 
@@ -105,12 +101,10 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
         assertNumberOfLinesThatStartWith(1, "batch," + batchId, results.getCsv());
         assertNumberOfLinesThatStartWith(1, "commit," + batchId, results.getCsv());
         assertNumberOfLinesThatStartWith(1, "table," + TEST_TABLE, results.getCsv(), true, false);
-
         // same batch should be extracted
         results = extract();
         assertNumberOfLinesThatStartWith(1, "retry," + batchId, results.getCsv());
         assertNumberOfLinesThatStartWith(1, "commit," + batchId, results.getCsv());
-
     }
 
     protected ExtractResults extract() {
@@ -130,7 +124,6 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
         String insertSql = String
                 .format("insert into %s (varchar_value, longvarchar_value, timestamp_value, date_value, bit_value, bigint_value, decimal_value, id) values(?,?,?,?,?,?,?,?)",
                         TEST_TABLE);
-
         if (0 >= getSqlTemplate().update(
                 updateSql,
                 new Object[] { obj.getVarcharValue(), obj.getLongVarcharValue(),
@@ -146,11 +139,9 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
                     new int[] { Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.DATE,
                             Types.BIT, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC });
         }
-
     }
 
     static class ExtractResults {
-
         private List<OutgoingBatch> batches;
         private String csv;
 
@@ -166,11 +157,9 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
         public String getCsv() {
             return csv;
         }
-
     }
 
     static class TestExtract {
-
         private int id;
         private String varcharValue;
         private String longVarcharValue;
@@ -256,7 +245,5 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
         public void setDecimalValue(BigDecimal decimalValue) {
             this.decimalValue = decimalValue;
         }
-
     }
-
 }

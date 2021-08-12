@@ -36,7 +36,6 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.NestedDataWriter;
 
 public class ProcessInfoDataWriter extends NestedDataWriter {
-
     private ProcessInfo processInfo;
 
     public ProcessInfoDataWriter(IDataWriter targetWriter, ProcessInfo processInfo) {
@@ -84,5 +83,4 @@ public class ProcessInfoDataWriter extends NestedDataWriter {
         }
         super.write(data);
     }
-
 }

@@ -99,20 +99,14 @@ import org.slf4j.LoggerFactory;
  * can also simply be created via their constructors.
  */
 public class JdbcDatabasePlatformFactory {
-
     /* The database name -> platform map. */
     private static Map<String, Class<? extends IDatabasePlatform>> platforms = new HashMap<String, Class<? extends IDatabasePlatform>>();
-
     /*
-     * Maps the sub-protocl part of a jdbc connection url to a OJB platform
-     * name.
+     * Maps the sub-protocl part of a jdbc connection url to a OJB platform name.
      */
     private static Map<String, Class<? extends IDatabasePlatform>> jdbcSubProtocolToPlatform = new HashMap<String, Class<? extends IDatabasePlatform>>();
-
     private static final Logger log = LoggerFactory.getLogger(JdbcDatabasePlatformFactory.class);
-
     static {
-
         addPlatform(platforms, "H2", H2DatabasePlatform.class);
         addPlatform(platforms, "H21", H2DatabasePlatform.class);
         addPlatform(platforms, "Informix Dynamic Server11", InformixDatabasePlatform.class);
@@ -151,8 +145,8 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, DatabaseNamesConstants.RAIMA, RaimaDatabasePlatform.class);
         addPlatform(platforms, "phoenix", HbasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.HANA, HanaDatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.INGRES, IngresDatabasePlatform.class);;
-
+        addPlatform(platforms, DatabaseNamesConstants.INGRES, IngresDatabasePlatform.class);
+        ;
         jdbcSubProtocolToPlatform.put(Db2DatabasePlatform.JDBC_SUBPROTOCOL, Db2DatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(DerbyDatabasePlatform.JDBC_SUBPROTOCOL, DerbyDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(FirebirdDatabasePlatform.JDBC_SUBPROTOCOL,
@@ -177,33 +171,31 @@ public class JdbcDatabasePlatformFactory {
         jdbcSubProtocolToPlatform.put(NuoDbDatabasePlatform.JDBC_SUBPROTOCOL, NuoDbDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(TiberoDatabasePlatform.JDBC_SUBPROTOCOL_THIN,
                 TiberoDatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(RaimaDatabasePlatform.JDBC_SUBPROTOCOL, RaimaDatabasePlatform.class);    
+        jdbcSubProtocolToPlatform.put(RaimaDatabasePlatform.JDBC_SUBPROTOCOL, RaimaDatabasePlatform.class);
     }
 
-    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode, boolean caseSensitive)
+    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode,
+            boolean caseSensitive)
             throws DdlException {
-            return createNewPlatformInstance(dataSource, settings, delimitedIdentifierMode, caseSensitive, false, false);
+        return createNewPlatformInstance(dataSource, settings, delimitedIdentifierMode, caseSensitive, false, false);
     }
-    
+
     /*
-     * Creates a new platform for the specified database.  Note that this method installs
-     * the data source in the returned platform instance.
+     * Creates a new platform for the specified database. Note that this method installs the data source in the returned platform instance.
      *
      * @param dataSource The data source for the database
+     * 
      * @param log The logger that the platform should use
      *
-     * @return The platform or <code>null</code> if the database is not
-     * supported
+     * @return The platform or <code>null</code> if the database is not supported
      */
-    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode, boolean caseSensitive, boolean isLoadOnly, boolean isLogBased)
+    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode,
+            boolean caseSensitive, boolean isLoadOnly, boolean isLogBased)
             throws DdlException {
-
         // connects to the database and uses actual metadata info to get db name
         // and version to determine platform
         DatabaseVersion nameVersion = determineDatabaseNameVersionSubprotocol(dataSource, isLoadOnly);
-
-        Class<? extends IDatabasePlatform> clazz =  findPlatformClass(nameVersion);
-
+        Class<? extends IDatabasePlatform> clazz = findPlatformClass(nameVersion);
         try {
             Constructor<? extends IDatabasePlatform> construtor = clazz.getConstructor(DataSource.class, SqlTemplateSettings.class);
             IDatabasePlatform platform = construtor.newInstance(dataSource, settings);
@@ -221,26 +213,22 @@ public class JdbcDatabasePlatformFactory {
     protected static synchronized Class<? extends IDatabasePlatform> findPlatformClass(DatabaseVersion nameVersion) {
         Class<? extends IDatabasePlatform> platformClass = platforms.get(String.format("%s%s",
                 nameVersion.getName(), nameVersion.getVersionAsString()).toLowerCase());
-
         if (platformClass == null) {
             platformClass = platforms.get(nameVersion.getName().toLowerCase());
         }
-
         if (platformClass == null) {
             platformClass = jdbcSubProtocolToPlatform.get(nameVersion.getProtocol());
         }
-
         if (platformClass == null) {
             platformClass = GenericJdbcDatabasePlatform.class;
-        } 
-        
+        }
         return platformClass;
     }
 
     public static DatabaseVersion determineDatabaseNameVersionSubprotocol(DataSource dataSource) {
-    	return determineDatabaseNameVersionSubprotocol(dataSource, false);
+        return determineDatabaseNameVersionSubprotocol(dataSource, false);
     }
-    
+
     public static DatabaseVersion determineDatabaseNameVersionSubprotocol(DataSource dataSource, boolean isLoadOnly) {
         Connection connection = null;
         DatabaseVersion nameVersion = new DatabaseVersion();
@@ -258,10 +246,8 @@ public class JdbcDatabasePlatformFactory {
                 }
             }
             nameVersion.setProtocol(url);
-            
             /*
-             * if the productName is PostgreSQL, it could be either PostgreSQL
-             * or Greenplum
+             * if the productName is PostgreSQL, it could be either PostgreSQL or Greenplum
              */
             /* query the metadata to determine which one it is */
             if (nameVersion.getName().equalsIgnoreCase("PostgreSql")) {
@@ -275,21 +261,17 @@ public class JdbcDatabasePlatformFactory {
                     nameVersion.setName(DatabaseNamesConstants.POSTGRESQL95);
                 }
             }
-
             /*
-             * if the productName is MySQL, it could be either MysSQL or MariaDB
-             * query the metadata to determine which one it is
+             * if the productName is MySQL, it could be either MysSQL or MariaDB query the metadata to determine which one it is
              */
             if (nameVersion.getName().equalsIgnoreCase(DatabaseNamesConstants.MYSQL)) {
                 if (isMariaDBDatabase(connection)) {
                     nameVersion.setName(DatabaseNamesConstants.MARIADB);
                 }
             }
-
             if (nameVersion.getProtocol().equalsIgnoreCase("as400")) {
                 nameVersion.setName(DatabaseNamesConstants.DB2AS400);
             }
-
             if (nameVersion.getName().toLowerCase().indexOf(DatabaseNamesConstants.DB2) != -1 && nameVersion.getProtocol().equalsIgnoreCase("db2")) {
                 String productVersion = getDatabaseProductVersion(dataSource);
                 if (nameVersion.getName().toUpperCase().indexOf("Z") != -1
@@ -302,13 +284,11 @@ public class JdbcDatabasePlatformFactory {
             if (nameVersion.getName().equalsIgnoreCase("AS") && nameVersion.getProtocol().equalsIgnoreCase("db2")) {
                 nameVersion.setName(DatabaseNamesConstants.DB2AS400);
             }
-
             if (nameVersion.getName().toLowerCase().startsWith(DatabaseNamesConstants.FIREBIRD)) {
                 if (isFirebirdDialect1(connection)) {
                     nameVersion.setName(DatabaseNamesConstants.FIREBIRD_DIALECT1);
                 }
             }
-            
             if (nameVersion.getName().equalsIgnoreCase(DatabaseNamesConstants.ORACLE)) {
                 int majorVersion = Integer.valueOf(metaData.getDatabaseMajorVersion());
                 int minorVersion = Integer.valueOf(metaData.getDatabaseMinorVersion());
@@ -318,17 +298,16 @@ public class JdbcDatabasePlatformFactory {
                     }
                 }
             }
-            
-            log.info("Detected database '" + nameVersion.getName() + "', version '" + nameVersion.getVersion() + "', protocol '" + nameVersion.getProtocol() + "'");
-
+            log.info("Detected database '" + nameVersion.getName() + "', version '" + nameVersion.getVersion() + "', protocol '" + nameVersion.getProtocol()
+                    + "'");
             return nameVersion;
         } catch (Throwable ex) {
-                if (!isLoadOnly) {
+            if (!isLoadOnly) {
                 throw new SqlException("Error while reading the database metadata: "
                         + ex.getMessage(), ex);
-                } else {
-                    return nameVersion;
-                }
+            } else {
+                return nameVersion;
+            }
         } finally {
             if (connection != null) {
                 try {
@@ -379,7 +358,6 @@ public class JdbcDatabasePlatformFactory {
                 isRedshift = true;
             }
         }
-        
         return isRedshift;
     }
 
@@ -394,7 +372,8 @@ public class JdbcDatabasePlatformFactory {
             try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("select cast(1 as numeric(10,0)) from rdb$database")) {
                 rs.next();
             } catch (SQLException e) {
-                log.error("The client sql dialect does not match the database, which is not a supported mode.  You must add ?sql_dialect=1 to the end of the JDBC URL.");
+                log.error(
+                        "The client sql dialect does not match the database, which is not a supported mode.  You must add ?sql_dialect=1 to the end of the JDBC URL.");
             }
         }
         return isDialect1;
@@ -457,12 +436,12 @@ public class JdbcDatabasePlatformFactory {
             // a greenplum database
         } finally {
             try {
-            	if (rs != null) {
-            		rs.close();
-            	}
-            	if (stmt != null) {
-            		stmt.close();
-            	}
+                if (rs != null) {
+                    rs.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
             } catch (SQLException ex) {
             }
         }
@@ -477,7 +456,6 @@ public class JdbcDatabasePlatformFactory {
                 s.executeUpdate("begin dbms_output.enable(); end;");
                 s.executeUpdate("declare lver varchar(100); lcomp varchar(100);" +
                         " begin dbms_utility.db_version(lver, lcomp); dbms_output.put_line(lcomp); end;");
-        
                 String sql = "declare num integer := 1; begin dbms_output.get_lines(?, num); end;";
                 try (CallableStatement call = connection.prepareCall(sql)) {
                     call.registerOutParameter(1, Types.ARRAY, "DBMSOUTPUT_LINESARRAY");
@@ -497,7 +475,6 @@ public class JdbcDatabasePlatformFactory {
         } catch (SQLException e) {
             log.warn("Could not check Oracle compatible parameter", e);
         }
-        
         if (compatible != null) {
             String[] valueArr = compatible.split("\\.");
             if (valueArr != null) {
@@ -514,7 +491,6 @@ public class JdbcDatabasePlatformFactory {
 
     public static String getDatabaseProductVersion(DataSource dataSource) {
         Connection connection = null;
-
         try {
             connection = dataSource.getConnection();
             DatabaseMetaData metaData = connection.getMetaData();

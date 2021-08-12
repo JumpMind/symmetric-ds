@@ -30,7 +30,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class TransportUtils {
-
     public static BufferedReader toReader(InputStream is) {
         return new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
     }
@@ -38,18 +37,16 @@ public class TransportUtils {
     public static BufferedWriter toWriter(OutputStream os) {
         return new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
     }
-    
+
     public static String toCSV(Map<?, ?> map) {
         if (map == null || map.isEmpty()) {
             return "";
         }
         StringBuilder buff = new StringBuilder();
-        
         for (Object key : map.keySet()) {
             buff.append(key).append(":").append(map.get(key)).append(",");
         }
-        buff.setLength(buff.length()-1);
-        
+        buff.setLength(buff.length() - 1);
         return buff.toString();
     }
 }

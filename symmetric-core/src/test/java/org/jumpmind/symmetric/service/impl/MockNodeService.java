@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.Collection;
@@ -42,7 +41,6 @@ import org.jumpmind.symmetric.service.FilterCriterion;
 import org.jumpmind.symmetric.service.INodeService;
 
 public class MockNodeService implements INodeService {
-
     public Node getCachedIdentity() {
         return null;
     }
@@ -50,30 +48,29 @@ public class MockNodeService implements INodeService {
     public List<Node> findAllNodes() {
         return null;
     }
-    
+
     @Override
     public List<Node> findNodesWhoPushToMe() {
         return null;
     }
-    
+
     @Override
     public List<Node> findNodesWhoPullFromMe() {
         return null;
     }
-    
+
     public Map<String, Node> findAllNodesAsMap() {
         List<Node> nodes = findAllNodes();
         Map<String, Node> nodeMap = new HashMap<String, Node>();
         if (nodes == null) {
             return nodeMap;
         }
-        
         for (Node node : nodes) {
             nodeMap.put(node.getNodeId(), node);
         }
         return nodeMap;
-    }    
-    
+    }
+
     public void deleteNodeHost(String nodeId) {
     }
 
@@ -87,7 +84,7 @@ public class MockNodeService implements INodeService {
     public NetworkedNode getRootNetworkedNode() {
         return null;
     }
-    
+
     public List<String> findOfflineNodeIds(long minutesOffline) {
         return null;
     }
@@ -151,12 +148,12 @@ public class MockNodeService implements INodeService {
     public Node findNode(String nodeId) {
         return null;
     }
-    
+
     @Override
     public Node findNodeInCacheOnly(String id) {
         return null;
     }
-    
+
     @Override
     public List<Node> findFilteredNodesWithLimit(int offset, int limit, List<FilterCriterion> filter,
             String orderColumn, String orderDirection) {
@@ -193,7 +190,6 @@ public class MockNodeService implements INodeService {
     }
 
     public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String nodeGroupId, String externalId) {
-
     }
 
     public boolean isExternalIdRegistered(String nodeGroupId, String externalId) {
@@ -307,7 +303,7 @@ public class MockNodeService implements INodeService {
     public NodeSecurity findOrCreateNodeSecurity(String nodeId) {
         return null;
     }
-    
+
     public Node findIdentity(boolean useCache, boolean logSqlError) {
         return null;
     }
@@ -319,13 +315,15 @@ public class MockNodeService implements INodeService {
         return null;
     }
 
-    public void clearCache() {       
+    public void clearCache() {
     }
 
     public void flushNodeGroupCache() {
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.jumpmind.symmetric.service.INodeService#getExternalId(java.lang.String)
      */
     @Override

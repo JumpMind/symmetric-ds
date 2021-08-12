@@ -24,11 +24,8 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.service.impl.AbstractSqlMap;
 
 public class OracleNoOrderHeartbeatSqlMap extends AbstractSqlMap {
-
     public OracleNoOrderHeartbeatSqlMap(IDatabasePlatform platform, String tablePrefix) {
         super(platform, tablePrefix);
-        
         putSql("updateNodeHost", "update $(node_host) set heartbeat_time = ? where node_id = ? and host_name = ?");
-
     }
 }

@@ -43,35 +43,23 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
  * TODO Support Oracle's non-standard way of batching
  */
 public class JdbcSqlTransaction implements ISqlTransaction {
-
-	private final static Logger log = LoggerFactory.getLogger(JdbcSqlTransaction.class);
-
+    private final static Logger log = LoggerFactory.getLogger(JdbcSqlTransaction.class);
     protected boolean inBatchMode = false;
-
     protected Connection connection;
-
     protected String psql;
-
     protected PreparedStatement pstmt;
-
     protected JdbcSqlTemplate jdbcSqlTemplate;
-
     protected boolean autoCommit = false;
-    
     protected boolean oldAutoCommitValue;
-
     protected List<Object> markers = new ArrayList<Object>();
-    
     protected LogSqlBuilder logSqlBuilder;
-    
     protected List<ISqlTransactionListener> listeners = new ArrayList<ISqlTransactionListener>();
-    
     protected int batchSize = 100;
-    
+
     public JdbcSqlTransaction(JdbcSqlTemplate jdbcSqlTemplate) {
         this(jdbcSqlTemplate, false);
     }
-    
+
     public JdbcSqlTransaction(JdbcSqlTemplate jdbcSqlTemplate, boolean autoCommit) {
         this.autoCommit = autoCommit;
         this.jdbcSqlTemplate = jdbcSqlTemplate;
@@ -79,7 +67,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         this.batchSize = jdbcSqlTemplate.getSettings().getBatchSize();
         this.init();
     }
-    
+
     @Override
     public void addSqlTransactionListener(ISqlTransactionListener listener) {
         listeners.add(listener);
@@ -117,11 +105,10 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     flush();
                 }
                 if (!autoCommit) {
-                   connection.commit();
-                   
-                   for (ISqlTransactionListener listener : listeners) {
-                       listener.transactionCommitted();
-                   }
+                    connection.commit();
+                    for (ISqlTransactionListener listener : listeners) {
+                        listener.transactionCommitted();
+                    }
                 }
             } catch (SQLException ex) {
                 throw jdbcSqlTemplate.translate(ex);
@@ -142,11 +129,9 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 }
                 if (!autoCommit) {
                     connection.rollback();
-                    
                     for (ISqlTransactionListener listener : listeners) {
                         listener.transactionRolledBack();
                     }
-
                 }
             } catch (SQLException ex) {
                 // do nothing
@@ -186,7 +171,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         }
         return rowsUpdated;
     }
-    
+
     @Override
     public Row queryForRow(String sql, Object... args) {
         List<Row> rows = query(sql, new RowMapper(), args, null);
@@ -212,7 +197,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         }
         return val;
     }
-    
+
     public <T> T queryForObject(final String sql, final Class<T> clazz, final Object... args) {
         return executeCallback(new IConnectionCallback<T>() {
             public T execute(Connection con) throws SQLException {
@@ -225,18 +210,17 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                         stmt = ps;
                         stmt.setQueryTimeout(jdbcSqlTemplate.getSettings().getQueryTimeout());
                         jdbcSqlTemplate.setValues(ps, args);
-                        
                         long startTime = System.currentTimeMillis();
-                        rs = ps.executeQuery();                     
+                        rs = ps.executeQuery();
                         long endTime = System.currentTimeMillis();
-                        logSqlBuilder.logSql(log, sql, args, null, (endTime-startTime));
+                        logSqlBuilder.logSql(log, sql, args, null, (endTime - startTime));
                     } else {
                         stmt = con.createStatement();
                         stmt.setQueryTimeout(jdbcSqlTemplate.getSettings().getQueryTimeout());
                         long startTime = System.currentTimeMillis();
                         rs = stmt.executeQuery(sql);
                         long endTime = System.currentTimeMillis();
-                        logSqlBuilder.logSql(log, sql, args, null, (endTime-startTime));                        
+                        logSqlBuilder.logSql(log, sql, args, null, (endTime - startTime));
                     }
                     if (rs.next()) {
                         result = jdbcSqlTemplate.getObjectFromResultSet(rs, clazz);
@@ -275,12 +259,12 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     long startTime = System.currentTimeMillis();
                     rs = st.executeQuery();
                     long endTime = System.currentTimeMillis();
-                    logSqlBuilder.logSql(log, sql, args, null, (endTime-startTime));
+                    logSqlBuilder.logSql(log, sql, args, null, (endTime - startTime));
                     List<T> list = new ArrayList<T>();
                     ResultSetMetaData rsMetaData = rs.getMetaData();
                     int columnCount = rsMetaData.getColumnCount();
                     while (rs.next()) {
-                        Row row = JdbcSqlReadCursor.getMapForRow(rs, rsMetaData, columnCount, 
+                        Row row = JdbcSqlReadCursor.getMapForRow(rs, rsMetaData, columnCount,
                                 jdbcSqlTemplate.getSettings().isReadStringsAsBytes(), false);
                         T value = mapper.mapRow(row);
                         list.add(value);
@@ -306,7 +290,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     long startTime = System.currentTimeMillis();
                     boolean hasResults = stmt.execute(sql);
                     long endTime = System.currentTimeMillis();
-                    logSqlBuilder.logSql(log, sql, null, null, (endTime-startTime));
+                    logSqlBuilder.logSql(log, sql, null, null, (endTime - startTime));
                     if (hasResults) {
                         rs = stmt.getResultSet();
                         while (rs.next()) {
@@ -319,7 +303,6 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     JdbcSqlTemplate.close(rs);
                     JdbcSqlTemplate.close(stmt);
                 }
-
             }
         });
     }
@@ -339,27 +322,24 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     JdbcSqlTemplate.close(rs);
                     JdbcSqlTemplate.close(stmt);
                 }
-
             }
         });
     }
 
     public int prepareAndExecute(final String sql, final Map<String, Object> args) {
-        
         return executeCallback(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) {
-                
                 Integer rowsUpdated = null;
-                NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(new SingleConnectionDataSource(con,true));
+                NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(new SingleConnectionDataSource(con, true));
                 long startTime = System.currentTimeMillis();
                 rowsUpdated = jdbcTemplate.update(sql, args);
                 long endTime = System.currentTimeMillis();
-                logSqlBuilder.logSql(log, sql, args.values().toArray(), null, (endTime-startTime));
+                logSqlBuilder.logSql(log, sql, args.values().toArray(), null, (endTime - startTime));
                 return rowsUpdated;
             }
         });
     }
-    
+
     public int prepareAndExecute(final String sql, final Object... args) {
         return executeCallback(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) throws SQLException {
@@ -371,9 +351,9 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                         jdbcSqlTemplate.setValues(stmt, args);
                     }
                     long startTime = System.currentTimeMillis();
-                    boolean hasResults = stmt.execute(); 
+                    boolean hasResults = stmt.execute();
                     long endTime = System.currentTimeMillis();
-                    logSqlBuilder.logSql(log, sql, args, null, (endTime-startTime));
+                    logSqlBuilder.logSql(log, sql, args, null, (endTime - startTime));
                     if (hasResults) {
                         rs = stmt.getResultSet();
                         while (rs.next()) {
@@ -386,7 +366,6 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     JdbcSqlTemplate.close(rs);
                     JdbcSqlTemplate.close(stmt);
                 }
-
             }
         });
     }
@@ -400,9 +379,8 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     }
 
     /**
-     * According to the executeUpdate() javadoc -2 means that the result was
-     * successful, but that the number of rows affected is unknown. since we
-     * know that only one row is suppose to be affected, we'll default to 1.
+     * According to the executeUpdate() javadoc -2 means that the result was successful, but that the number of rows affected is unknown. since we know that
+     * only one row is suppose to be affected, we'll default to 1.
      * 
      * @param value
      */
@@ -454,8 +432,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 long start = System.currentTimeMillis();
                 pstmt.addBatch();
                 long end = System.currentTimeMillis();
-                logSqlBuilder.logSql(log, "addBatch()", psql, args, argTypes, (end-start));
-                
+                logSqlBuilder.logSql(log, "addBatch()", psql, args, argTypes, (end - start));
                 if (markers.size() >= this.batchSize) {
                     rowsUpdated = flush();
                 }
@@ -467,15 +444,15 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         }
         return rowsUpdated;
     }
-    
+
     public void setBatchSize(int batchSize) {
         this.batchSize = batchSize;
     }
-    
+
     public int getBatchSize() {
         return this.batchSize;
     }
-    
+
     protected int executePreparedUpdate(PreparedStatement preparedStatement, String sql, Object[] args, int[] argTypes) throws SQLException {
         int rowsUpdated = 0;
         long start = System.currentTimeMillis();
@@ -485,7 +462,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             rowsUpdated = preparedStatement.executeUpdate();
         }
         long end = System.currentTimeMillis();
-        logSqlBuilder.logSql(log, sql, args, argTypes, (end-start));
+        logSqlBuilder.logSql(log, sql, args, argTypes, (end - start));
         return rowsUpdated;
     }
 
@@ -496,13 +473,12 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         if (currentUpdateCount != -1) {
             rowsUpdated = currentUpdateCount;
         }
-
         while (hasResultsFlag || currentUpdateCount != -1) {
             hasResultsFlag = preparedStatement.getMoreResults();
             currentUpdateCount = preparedStatement.getUpdateCount();
             if (currentUpdateCount != -1) {
                 rowsUpdated = currentUpdateCount;
-            }            
+            }
         }
         return rowsUpdated;
     }
@@ -539,7 +515,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     public void setLogSqlBuilder(LogSqlBuilder logSqlBuilder) {
         this.logSqlBuilder = logSqlBuilder;
     }
-    
+
     public void clearBatch() {
         if (this.inBatchMode && pstmt != null) {
             try {

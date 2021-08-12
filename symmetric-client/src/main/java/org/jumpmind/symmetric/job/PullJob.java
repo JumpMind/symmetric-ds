@@ -30,11 +30,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * Background job that pulls data from remote nodes and then loads it.
  */
 public class PullJob extends AbstractJob {
-
     public PullJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(ClusterConstants.PULL, engine, taskScheduler);
     }
-    
+
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
@@ -42,10 +41,9 @@ public class PullJob extends AbstractJob {
                 .schedule(EVERY_30_SECONDS)
                 .description("Pull data from other nodes");
     }
-      
+
     @Override
     public void doJob(boolean force) throws Exception {
         engine.getPullService().pullData(force);
     }
-
 }

@@ -46,7 +46,6 @@ import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 
 public class DataServiceTest {
-
     ISqlTemplate sqlTemplate;
     ISqlTransaction sqlTransaction;
     IDataService dataService;
@@ -56,40 +55,33 @@ public class DataServiceTest {
     @Before
     public void setUp() throws Exception {
         sqlTemplate = mock(ISqlTemplate.class);
-        sqlTransaction = mock(ISqlTransaction.class); 
+        sqlTransaction = mock(ISqlTransaction.class);
         when(sqlTemplate.startSqlTransaction()).thenReturn(sqlTransaction);
         IDatabasePlatform platform = mock(IDatabasePlatform.class);
         when(platform.getDatabaseInfo()).thenReturn(new DatabaseInfo());
         when(platform.getSqlTemplate()).thenReturn(sqlTemplate);
         symmetricDialect = mock(AbstractSymmetricDialect.class);
         when(symmetricDialect.getPlatform()).thenReturn(platform);
-
         parameterService = mock(ParameterService.class);
         when(parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE)).thenReturn(50000000L);
-
         IExtensionService extensionService = mock(ExtensionService.class);
         ISymmetricEngine engine = mock(AbstractSymmetricEngine.class);
         when(engine.getParameterService()).thenReturn(parameterService);
         when(engine.getSymmetricDialect()).thenReturn(symmetricDialect);
-
         dataService = new DataService(engine, extensionService);
     }
-    
+
     @Test
     public void testFindDataGaps2() throws Exception {
         final List<DataGap> gaps1 = new ArrayList<DataGap>();
         gaps1.add(new DataGap(30953884, 80953883));
         gaps1.add(new DataGap(30953883, 80953883));
-        
         when(sqlTemplate.queryForLong(ArgumentMatchers.anyString())).thenReturn(0L);
         String sql = ArgumentMatchers.anyString();
         @SuppressWarnings("unchecked")
         ISqlRowMapper<DataGap> anyMapper = (ISqlRowMapper<DataGap>) ArgumentMatchers.any();
-        when(sqlTemplate.query(sql, anyMapper, (Object[])ArgumentMatchers.any())).thenReturn(gaps1);
-
+        when(sqlTemplate.query(sql, anyMapper, (Object[]) ArgumentMatchers.any())).thenReturn(gaps1);
         dataService.findDataGaps();
-
         verifyNoMoreInteractions(sqlTransaction);
     }
-
 }

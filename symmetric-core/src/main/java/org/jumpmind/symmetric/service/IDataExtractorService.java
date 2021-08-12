@@ -40,48 +40,48 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
  * This service provides an API to extract and stream data from a source database.
  */
 public interface IDataExtractorService {
-
     public void extractConfigurationStandalone(Node node, OutputStream out);
 
     public void extractConfigurationStandalone(Node node, Writer out, String... tablesToIgnore);
 
     public void extractConfigurationOnly(Node node, OutputStream out);
-    
-    public List<OutgoingBatchWithPayload> extractToPayload(ProcessInfo processInfo, Node targetNode, PayloadType payloadType, boolean useJdbcTimestampFormat, boolean useUpsertStatements, boolean useDelimiterIdentifiers);
-    
+
+    public List<OutgoingBatchWithPayload> extractToPayload(ProcessInfo processInfo, Node targetNode, PayloadType payloadType, boolean useJdbcTimestampFormat,
+            boolean useUpsertStatements, boolean useDelimiterIdentifiers);
+
     /**
      * @return a list of batches that were extracted
      */
-    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node node, IOutgoingTransport transport);    
-    
-    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node node, String channelId, IOutgoingTransport transport);    
-    
-    public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId, long endBatchId);
-    
-    public boolean extractBatchRange(Writer writer, String nodeId, Date startBatchTime,
-            Date endBatchTime, String... channelIds);    
-    
-    public boolean extractOnlyOutgoingBatch(String nodeId, long batchId, Writer writer);
-    
-    public RemoteNodeStatuses queueWork(boolean force);
-    
-    public ExtractRequest requestExtractRequest(ISqlTransaction transaction, String nodeId, String channelId, TriggerRouter triggerRouter, long startBatchId, long endBatchId,
-            long loadId, String tableName, long rows, long parentId);
-    
-    public void resetExtractRequest(OutgoingBatch batch);
-    
-    public void removeBatchFromStaging(OutgoingBatch batch);
-    
-    public List<ExtractRequest> getPendingTablesForExtractByLoadId(long loadId);
-    
-    public List<ExtractRequest> getCompletedTablesForExtractByLoadId(long loadId);
-    
-    public void updateExtractRequestLoadTime(ISqlTransaction transaction, Date loadTime, OutgoingBatch batch);
-    
-    public void updateExtractRequestTransferred(OutgoingBatch batch, long transferMillis);
-    
-    public int cancelExtractRequests(long loadId);
-    
-    public void releaseMissedExtractRequests();
+    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node node, IOutgoingTransport transport);
 
+    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node node, String channelId, IOutgoingTransport transport);
+
+    public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId, long endBatchId);
+
+    public boolean extractBatchRange(Writer writer, String nodeId, Date startBatchTime,
+            Date endBatchTime, String... channelIds);
+
+    public boolean extractOnlyOutgoingBatch(String nodeId, long batchId, Writer writer);
+
+    public RemoteNodeStatuses queueWork(boolean force);
+
+    public ExtractRequest requestExtractRequest(ISqlTransaction transaction, String nodeId, String channelId, TriggerRouter triggerRouter, long startBatchId,
+            long endBatchId,
+            long loadId, String tableName, long rows, long parentId);
+
+    public void resetExtractRequest(OutgoingBatch batch);
+
+    public void removeBatchFromStaging(OutgoingBatch batch);
+
+    public List<ExtractRequest> getPendingTablesForExtractByLoadId(long loadId);
+
+    public List<ExtractRequest> getCompletedTablesForExtractByLoadId(long loadId);
+
+    public void updateExtractRequestLoadTime(ISqlTransaction transaction, Date loadTime, OutgoingBatch batch);
+
+    public void updateExtractRequestTransferred(OutgoingBatch batch, long transferMillis);
+
+    public int cancelExtractRequests(long loadId);
+
+    public void releaseMissedExtractRequests();
 }

@@ -25,14 +25,13 @@ import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.DmlStatement;
 
 public class SqliteDmlStatement extends DmlStatement {
-
     public SqliteDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
-            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
+            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues,
             DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
-        super(type, catalogName, null, tableName, keysColumns, columns, 
+        super(type, catalogName, null, tableName, keysColumns, columns,
                 nullKeyValues, databaseInfo, useQuotedIdentifiers, textColumnExpression);
     }
-    
+
     @Override
     protected String buildUpsertSql(String tableName, Column[] keyColumns, Column[] columns) {
         StringBuilder sql = new StringBuilder("insert or replace into " + tableName + " (");
@@ -41,13 +40,10 @@ public class SqliteDmlStatement extends DmlStatement {
         appendColumnParameters(sql, columns);
         sql.append(")");
         return sql.toString();
-
     }
-        
+
     @Override
     public boolean isUpsertSupported() {
         return true;
     }
-
-
 }

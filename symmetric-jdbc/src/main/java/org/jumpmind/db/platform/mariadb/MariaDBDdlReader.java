@@ -47,20 +47,16 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDdlReader;
 
 public class MariaDBDdlReader extends MySqlDdlReader {
-
     public MariaDBDdlReader(IDatabasePlatform platform) {
         super(platform);
     }
-    
+
     @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values) throws SQLException {
-
         Column column = super.readColumn(metaData, values);
-
         if ("NULL".equals(column.getDefaultValue())) {
             column.setDefaultValue(null);
         }
         return column;
     }
-
 }

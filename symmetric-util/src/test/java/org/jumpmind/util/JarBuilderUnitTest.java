@@ -30,16 +30,13 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 public class JarBuilderUnitTest {
-
     @Test
     public void testJarCreation() throws Exception {
         final String TEST_JAR_DIR = "target/test.jar.dir";
         File outputFile = new File("target/test.jar");
         outputFile.delete();
         assertFalse(outputFile.exists());
-        
         FileUtils.deleteDirectory(new File(TEST_JAR_DIR));
-                
         mkdir(TEST_JAR_DIR + "/subdir");
         mkdir(TEST_JAR_DIR + "/META-INF");
         emptyFile(TEST_JAR_DIR + "/META-INF/MANIFEST.MF");
@@ -47,12 +44,9 @@ public class JarBuilderUnitTest {
         emptyFile(TEST_JAR_DIR + "/file2.txt");
         emptyFile("target/file1.txt");
         emptyFile(TEST_JAR_DIR + "/file3.txt");
-        
         JarBuilder jarFile = new JarBuilder(new File(TEST_JAR_DIR), outputFile, new File[] { new File(TEST_JAR_DIR), new File("target/file1.txt") }, "3.0.0");
         jarFile.build();
-        
         assertTrue(outputFile.exists());
-        
         JarFile finalJar = new JarFile(outputFile);
         assertNotNull(finalJar.getEntry("subdir/file2.txt"));
         assertNotNull(finalJar.getEntry("file2.txt"));

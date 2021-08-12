@@ -44,18 +44,16 @@ import org.springframework.jdbc.core.SqlTypeValue;
 import com.sybase.jdbc4.jdbc.SybPreparedStatement;
 
 public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTemplate {
-
-	private static final Logger log = LoggerFactory.getLogger(SybaseJdbcSqlTemplate.class);
-
+    private static final Logger log = LoggerFactory.getLogger(SybaseJdbcSqlTemplate.class);
     int jdbcMajorVersion;
 
     public SybaseJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
-        primaryKeyViolationCodes = new int[] {423,511,515,530,547,2601,2615,2714};
-        uniqueKeyViolationNameRegex = new String[] {"unique index '(.*)'"};
-        foreignKeyViolationCodes = new int[] {546};
-        foreignKeyChildExistsViolationCodes = new int[] {547};
+        primaryKeyViolationCodes = new int[] { 423, 511, 515, 530, 547, 2601, 2615, 2714 };
+        uniqueKeyViolationNameRegex = new String[] { "unique index '(.*)'" };
+        foreignKeyViolationCodes = new int[] { 546 };
+        foreignKeyChildExistsViolationCodes = new int[] { 547 };
         Connection c = null;
         try {
             c = dataSource.getConnection();
@@ -72,7 +70,7 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
         return false;
     }
 
-    protected void setDecimalValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {        
+    protected void setDecimalValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
         if ((argType == Types.DECIMAL || argType == Types.NUMERIC) && arg != null && arg.equals("NaN")) {
             setNanOrNull(ps, i, arg, argType);
         } else {
@@ -88,7 +86,6 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
                 } else if (arg != null) {
                     value = new BigDecimal(arg.toString());
                 }
-
                 int precision = 1;
                 int scale = 0;
                 if (value != null) {
@@ -97,16 +94,13 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
                     if (precision < scale) {
                         precision = scale + 1;
                     }
-
                     if (precision > 127) {
                         precision = 127;
-
                         if (scale > 127) {
                             scale = 126;
                         }
                     }
                 }
-
                 Object[] params = new Object[] { Integer.valueOf(i), value, Integer.valueOf(precision), Integer.valueOf(scale) };
                 try {
                     if (arg instanceof Long) {
@@ -114,20 +108,18 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
                         parameterTypes = new Class[] { int.class, long.class };
                         Method method = clazz.getMethod("setLong", parameterTypes);
                         method.invoke(nativeStatement, params);
-                    }
-                    else if (arg instanceof Integer) {
+                    } else if (arg instanceof Integer) {
                         params = new Object[] { Integer.valueOf(i), Integer.valueOf(arg.toString()) };
                         parameterTypes = new Class[] { int.class, int.class };
                         Method method = clazz.getMethod("setInt", parameterTypes);
                         method.invoke(nativeStatement, params);
                     } else if (arg instanceof Boolean) {
-                        Integer intValue = ((Boolean)arg) ? Integer.valueOf(1) : Integer.valueOf(0);
-                        params = new Object[] {Integer.valueOf(i), intValue };
+                        Integer intValue = ((Boolean) arg) ? Integer.valueOf(1) : Integer.valueOf(0);
+                        params = new Object[] { Integer.valueOf(i), intValue };
                         parameterTypes = new Class[] { int.class, int.class };
                         Method method = clazz.getMethod("setInt", parameterTypes);
-                        method.invoke(nativeStatement, params);                        
-                    }
-                    else {
+                        method.invoke(nativeStatement, params);
+                    } else {
                         Method method = clazz.getMethod("setBigDecimal", parameterTypes);
                         method.invoke(nativeStatement, params);
                     }
@@ -143,18 +135,16 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
             }
         }
     }
- 
+
     @Override
     protected int getUpdateCount(Statement stmt) throws SQLException {
-    	int updateCount;
-	    
-	    do{
-	        updateCount = stmt.getUpdateCount();
-	    }while(stmt.getMoreResults());
-	    return updateCount;
+        int updateCount;
+        do {
+            updateCount = stmt.getUpdateCount();
+        } while (stmt.getMoreResults());
+        return updateCount;
     }
-    
-    
+
     private PreparedStatement getNativeStmt(PreparedStatement ps) {
         PreparedStatement stmt = ps;
         try {
@@ -177,7 +167,7 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
             setValues(ps, args, argTypes, getLobHandler().getDefaultHandler());
         }
     }
-    
+
     public boolean supportsGetGeneratedKeys() {
         return jdbcMajorVersion >= 4;
     }
@@ -185,6 +175,4 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
     protected String getSelectLastInsertIdSql(String sequenceName) {
         return "select @@identity";
     }
-
 }
-

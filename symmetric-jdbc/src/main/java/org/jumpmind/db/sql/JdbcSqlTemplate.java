@@ -66,43 +66,24 @@ import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate {
-
-	private static final Logger log = LoggerFactory.getLogger(JdbcSqlTemplate.class);
-
+    private static final Logger log = LoggerFactory.getLogger(JdbcSqlTemplate.class);
     protected DataSource dataSource;
-
     protected boolean requiresAutoCommitFalseToSetFetchSize = false;
-
     protected SqlTemplateSettings settings;
-
     protected SymmetricLobHandler lobHandler;
-
     protected Boolean supportsGetGeneratedKeys = null;
-
     protected int[] primaryKeyViolationCodes;
-
     protected String[] primaryKeyViolationSqlStates;
-
     protected String[] primaryKeyViolationMessageParts;
-    
     protected String[] uniqueKeyViolationNameRegex;
-
     protected int[] foreignKeyViolationCodes;
-
     protected String[] foreignKeyViolationSqlStates;
-
     protected String[] foreignKeyViolationMessageParts;
-
     protected int[] foreignKeyChildExistsViolationCodes;
-
     protected String[] foreignKeyChildExistsViolationSqlStates;
-
     protected String[] foreignKeyChildExistsViolationMessageParts;
-
     protected int[] deadlockCodes;
-
     protected String[] deadlockSqlStates;
-
     protected int isolationLevel;
 
     public JdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
@@ -157,15 +138,14 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, boolean returnLobObjects) {
         return queryForCursor(sql, mapper, null, null, null, returnLobObjects);
     }
-    
+
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
             IConnectionHandler connectionHandler, Object[] args,
             int[] types, boolean returnLobObjects) {
         long startTime = System.currentTimeMillis();
         ISqlReadCursor<T> cursor = new JdbcSqlReadCursor<T>(this, mapper, sql, args, types, connectionHandler, returnLobObjects);
         long endTime = System.currentTimeMillis();
-        logSqlBuilder.logSql(log, sql, args, types, (endTime-startTime));
-
+        logSqlBuilder.logSql(log, sql, args, types, (endTime - startTime));
         return cursor;
     }
 
@@ -188,12 +168,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     ps = con.prepareStatement(expandedSql);
                     ps.setQueryTimeout(settings.getQueryTimeout());
                     setValues(ps, expandArgs(sql, args));
-
                     long startTime = System.currentTimeMillis();
                     rs = ps.executeQuery();
                     long endTime = System.currentTimeMillis();
-                    logSqlBuilder.logSql(log, expandedSql, args, null, (endTime-startTime));
-
+                    logSqlBuilder.logSql(log, expandedSql, args, null, (endTime - startTime));
                     if (rs.next()) {
                         result = getObjectFromResultSet(rs, clazz);
                     }
@@ -215,7 +193,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     public byte[] queryForBlob(final String sql, final int jdbcTypeCode, final String jdbcTypeName,
             final Object... args) {
-
         return execute(new IConnectionCallback<byte[]>() {
             public byte[] execute(Connection con) throws SQLException {
                 if (lobHandler.needsAutoCommitFalseForBlob(jdbcTypeCode, jdbcTypeName)) {
@@ -231,7 +208,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     long startTime = System.currentTimeMillis();
                     rs = ps.executeQuery();
                     long endTime = System.currentTimeMillis();
-                    logSqlBuilder.logSql(log, sql, args, null, (endTime-startTime));
+                    logSqlBuilder.logSql(log, sql, args, null, (endTime - startTime));
                     if (rs.next()) {
                         result = lobHandler.getBlobAsBytes(rs, 1, jdbcTypeCode, jdbcTypeName);
                     }
@@ -265,12 +242,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     ps = con.prepareStatement(sql);
                     ps.setQueryTimeout(settings.getQueryTimeout());
                     setValues(ps, args);
-
                     long startTime = System.currentTimeMillis();
                     rs = ps.executeQuery();
                     long endTime = System.currentTimeMillis();
-                    logSqlBuilder.logSql(log, sql, args, null, (endTime-startTime));
-
+                    logSqlBuilder.logSql(log, sql, args, null, (endTime - startTime));
                     if (rs.next()) {
                         result = lobHandler.getClobAsString(rs, 1, jdbcTypeCode, jdbcTypeName);
                     }
@@ -297,12 +272,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     if (args != null && args.length > 0) {
                         setValues(ps, args);
                     }
-
                     long startTime = System.currentTimeMillis();
                     rs = ps.executeQuery();
                     long endTime = System.currentTimeMillis();
-                    logSqlBuilder.logSql(log, sql, args, null, (endTime-startTime));
-
+                    logSqlBuilder.logSql(log, sql, args, null, (endTime - startTime));
                     if (rs.next()) {
                         ResultSetMetaData meta = rs.getMetaData();
                         int colCount = meta.getColumnCount();
@@ -332,8 +305,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                                         && superClazz.getName().equals("oracle.sql.Datum")) {
                                     try {
                                         Method method = superClazz.getMethod("toJdbc");
-                                        Object jdbcValue = method.invoke(value); 
-                                        if (jdbcValue != null) { // Oracle TIMESTAMPTZ (for example) will not convert through toJdbc. 
+                                        Object jdbcValue = method.invoke(value);
+                                        if (jdbcValue != null) { // Oracle TIMESTAMPTZ (for example) will not convert through toJdbc.
                                             value = jdbcValue;
                                         }
                                     } catch (Exception e) {
@@ -362,31 +335,28 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public ISqlTransaction startSqlTransaction() {
         return new JdbcSqlTransaction(this);
     }
-    
-    protected int getUpdateCount(Statement stmt) throws SQLException {   
-    	int updateCount;
-	    
-	    do{
-	        updateCount = stmt.getUpdateCount();
-	    }while(stmt.getMoreResults() || stmt.getUpdateCount() != -1);
-	    return updateCount;
+
+    protected int getUpdateCount(Statement stmt) throws SQLException {
+        int updateCount;
+        do {
+            updateCount = stmt.getUpdateCount();
+        } while (stmt.getMoreResults() || stmt.getUpdateCount() != -1);
+        return updateCount;
     }
 
     public int update(final String sql, final Object[] args, final int[] types) {
         return execute(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) throws SQLException {
-                 if (args == null) {
+                if (args == null) {
                     Statement stmt = null;
                     try {
                         stmt = con.createStatement();
                         stmt.setQueryTimeout(settings.getQueryTimeout());
-
                         long startTime = System.currentTimeMillis();
                         stmt.execute(sql);
                         long endTime = System.currentTimeMillis();
-                        logSqlBuilder.logSql(log, sql, args, types, (endTime-startTime));
-                     
-                        return getUpdateCount(stmt); 
+                        logSqlBuilder.logSql(log, sql, args, types, (endTime - startTime));
+                        return getUpdateCount(stmt);
                     } catch (SQLException e) {
                         throw logSqlBuilder.logSqlAfterException(log, sql, args, e);
                     } finally {
@@ -403,12 +373,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         } else {
                             setValues(ps, args);
                         }
-
                         long startTime = System.currentTimeMillis();
                         ps.execute();
                         long endTime = System.currentTimeMillis();
-                        logSqlBuilder.logSql(log, sql, args, types, (endTime-startTime));
-
+                        logSqlBuilder.logSql(log, sql, args, types, (endTime - startTime));
                         return getUpdateCount(ps);
                     } catch (SQLException e) {
                         throw logSqlBuilder.logSqlAfterException(log, sql, args, e);
@@ -449,8 +417,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                                 long startTime = System.currentTimeMillis();
                                 boolean hasResults = stmt.execute(statement);
                                 long endTime = System.currentTimeMillis();
-                                logSqlBuilder.logSql(log, statement, null, null, (endTime-startTime));
-
+                                logSqlBuilder.logSql(log, statement, null, null, (endTime - startTime));
                                 int updateCount = stmt.getUpdateCount();
                                 totalUpdateCount += updateCount;
                                 int rowsRetrieved = 0;
@@ -478,7 +445,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                                 if (resultsListener != null) {
                                     resultsListener.sqlErrored(statement, translate(statement, ex), statementCount, isDrop, isSequenceCreate);
                                 }
-
                                 if ((isDrop && !failOnDrops) || (isSequenceCreate && !failOnSequenceCreate)) {
                                     log.debug("{}.  Failed to execute: {}", ex.getMessage(), statement);
                                 } else {
@@ -490,7 +456,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                             }
                         }
                     }
-
                     if (!autoCommit) {
                         con.commit();
                     }
@@ -531,15 +496,12 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     }
 
     /**
-     * Determine the column name to use. The column name is determined based on
-     * a lookup using ResultSetMetaData.
+     * Determine the column name to use. The column name is determined based on a lookup using ResultSetMetaData.
      * <p>
-     * This method implementation takes into account recent clarifications
-     * expressed in the JDBC 4.0 specification:
+     * This method implementation takes into account recent clarifications expressed in the JDBC 4.0 specification:
      * <p>
-     * <i>columnLabel - the label for the column specified with the SQL AS
-     * clause. If the SQL AS clause was not specified, then the label is the
-     * name of the column</i>.
+     * <i>columnLabel - the label for the column specified with the SQL AS clause. If the SQL AS clause was not specified, then the label is the name of the
+     * column</i>.
      *
      * @return the column name to use
      * @param resultSetMetaData
@@ -557,31 +519,27 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         }
         return name;
     }
-    
+
     @Deprecated
     public static Object getResultSetValue(ResultSet rs, int index, boolean readStringsAsBytes) throws SQLException {
         return getResultSetValue(rs, null, index, readStringsAsBytes, false);
     }
 
     /**
-     * Retrieve a JDBC column value from a ResultSet, using the most appropriate
-     * value type. The returned value should be a detached value object, not
-     * having any ties to the active ResultSet: in particular, it should not be
-     * a Blob or Clob object but rather a byte array respectively String
-     * representation.
+     * Retrieve a JDBC column value from a ResultSet, using the most appropriate value type. The returned value should be a detached value object, not having
+     * any ties to the active ResultSet: in particular, it should not be a Blob or Clob object but rather a byte array respectively String representation.
      * <p>
-     * Uses the <code>getObject(index)</code> method, but includes additional
-     * "hacks" to get around Oracle 10g returning a non-standard object for its
-     * TIMESTAMP datatype and a <code>java.sql.Date</code> for DATE columns
-     * leaving out the time portion: These columns will explicitly be extracted
-     * as standard <code>java.sql.Timestamp</code> object.
+     * Uses the <code>getObject(index)</code> method, but includes additional "hacks" to get around Oracle 10g returning a non-standard object for its TIMESTAMP
+     * datatype and a <code>java.sql.Date</code> for DATE columns leaving out the time portion: These columns will explicitly be extracted as standard
+     * <code>java.sql.Timestamp</code> object.
      *
      * @param rs
      *            is the ResultSet holding the data
-     * @param metaData 
+     * @param metaData
      * @param index
      *            is the column index
-     * @param readStringsAsBytes TODO
+     * @param readStringsAsBytes
+     *            TODO
      * @return the value object
      * @throws SQLException
      *             if thrown by the JDBC API
@@ -589,7 +547,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
      * @see java.sql.Clob
      * @see java.sql.Timestamp
      */
-    public static Object getResultSetValue(ResultSet rs, ResultSetMetaData metaData, int index, boolean readStringsAsBytes, boolean returnLobObjects) throws SQLException {
+    public static Object getResultSetValue(ResultSet rs, ResultSetMetaData metaData, int index, boolean readStringsAsBytes, boolean returnLobObjects)
+            throws SQLException {
         if (metaData == null) {
             metaData = rs.getMetaData();
         }
@@ -610,14 +569,14 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         }
         if (obj instanceof Blob && !returnLobObjects) {
             Blob blob = (Blob) obj;
-            try(InputStream is = blob.getBinaryStream()) {
+            try (InputStream is = blob.getBinaryStream()) {
                 obj = IOUtils.toByteArray(is);
             } catch (IOException e) {
                 throw new SqlException(e);
             }
         } else if (obj instanceof Clob && !returnLobObjects) {
             Clob clob = (Clob) obj;
-            try(Reader reader = clob.getCharacterStream()) {
+            try (Reader reader = clob.getCharacterStream()) {
                 obj = IOUtils.toString(reader);
             } catch (IOException e) {
                 throw new SqlException(e);
@@ -627,7 +586,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         } else if (className != null && "oracle.sql.TIMESTAMPTZ".equals(className)) {
             obj = rs.getString(index);
         } else if (className != null && "oracle.sql.TIMESTAMPLTZ".equals(className)) {
-            obj = rs.getString(index);            
+            obj = rs.getString(index);
         } else if (className != null && className.startsWith("oracle.sql.DATE")) {
             String metaDataClassName = metaData.getColumnClassName(index);
             if ("java.sql.Timestamp".equals(metaDataClassName)
@@ -646,7 +605,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if (typeName != null && typeName.equals("timestamptz")) {
                 obj = rs.getString(index);
             }
-        }  else if (jdbcTypeName != null && "oid".equals(jdbcTypeName)) {
+        } else if (jdbcTypeName != null && "oid".equals(jdbcTypeName)) {
             obj = PostgresLobHandler.getLoColumnAsBytes(rs, index);
         }
         return obj;
@@ -853,7 +812,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             }
             ps.setQueryTimeout(settings.getQueryTimeout());
             setValues(ps, args, types, lobHandler.getDefaultHandler());
-
             ResultSet rs = null;
             if (supportsGetGeneratedKeys) {
                 ps.execute();
@@ -901,14 +859,13 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if (sqlEx != null) {
                 if (primaryKeyViolationCodes != null) {
                     int errorCode = sqlEx.getErrorCode();
-                    for (int primaryKeyViolationCode : primaryKeyViolationCodes) {                        
+                    for (int primaryKeyViolationCode : primaryKeyViolationCodes) {
                         if (primaryKeyViolationCode == errorCode) {
                             primaryKeyViolation = true;
                             break;
                         }
                     }
                 }
-
                 if (primaryKeyViolationSqlStates != null) {
                     String sqlState = sqlEx.getSQLState();
                     if (sqlState != null) {
@@ -921,7 +878,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         }
                     }
                 }
-
                 if (primaryKeyViolationMessageParts != null) {
                     String sqlMessage = sqlEx.getMessage();
                     if (sqlMessage != null) {
@@ -936,7 +892,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 }
             }
         }
-
         return primaryKeyViolation;
     }
 
@@ -954,7 +909,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         }
                     }
                 }
-
                 if (foreignKeyViolationSqlStates != null) {
                     String sqlState = sqlEx.getSQLState();
                     if (sqlState != null) {
@@ -967,7 +921,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         }
                     }
                 }
-
                 if (foreignKeyViolationMessageParts != null) {
                     String sqlMessage = sqlEx.getMessage();
                     if (sqlMessage != null) {
@@ -979,16 +932,16 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                             }
                         }
                     }
-                }                
+                }
             }
         }
-
         return foreignKeyViolation;
     }
 
     public boolean isForeignKeyChildExistsViolation(Throwable ex) {
         boolean foreignKeyChildExistsViolation = false;
-        if (foreignKeyChildExistsViolationCodes != null || foreignKeyChildExistsViolationSqlStates != null || foreignKeyChildExistsViolationMessageParts != null) {
+        if (foreignKeyChildExistsViolationCodes != null || foreignKeyChildExistsViolationSqlStates != null
+                || foreignKeyChildExistsViolationMessageParts != null) {
             SQLException sqlEx = findSQLException(ex);
             if (sqlEx != null) {
                 if (foreignKeyChildExistsViolationCodes != null) {
@@ -1000,7 +953,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         }
                     }
                 }
-
                 if (foreignKeyChildExistsViolationSqlStates != null) {
                     String sqlState = sqlEx.getSQLState();
                     if (sqlState != null) {
@@ -1013,23 +965,23 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         }
                     }
                 }
-
                 if (foreignKeyChildExistsViolationMessageParts != null) {
                     String sqlMessage = sqlEx.getMessage();
                     if (sqlMessage != null) {
                         sqlMessage = sqlMessage.toLowerCase();
                         for (String foreignKeyChildExistsViolationMessagePart : foreignKeyChildExistsViolationMessageParts) {
-                            if (foreignKeyChildExistsViolationMessagePart != null && (sqlMessage.contains(foreignKeyChildExistsViolationMessagePart.toLowerCase())
-                                    || (foreignKeyChildExistsViolationMessagePart.contains("*") && sqlMessage.matches(foreignKeyChildExistsViolationMessagePart)))) {
+                            if (foreignKeyChildExistsViolationMessagePart != null && (sqlMessage.contains(foreignKeyChildExistsViolationMessagePart
+                                    .toLowerCase())
+                                    || (foreignKeyChildExistsViolationMessagePart.contains("*") && sqlMessage.matches(
+                                            foreignKeyChildExistsViolationMessagePart)))) {
                                 foreignKeyChildExistsViolation = true;
                                 break;
                             }
                         }
                     }
-                }                
+                }
             }
         }
-
         return foreignKeyChildExistsViolation;
     }
 
@@ -1040,14 +992,13 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if (sqlEx != null) {
                 if (deadlockCodes != null) {
                     int errorCode = sqlEx.getErrorCode();
-                    for (int deadlockCode : deadlockCodes) {                        
+                    for (int deadlockCode : deadlockCodes) {
                         if (deadlockCode == errorCode) {
                             deadlock = true;
                             break;
                         }
                     }
                 }
-
                 if (deadlockSqlStates != null) {
                     String sqlState = sqlEx.getSQLState();
                     if (sqlState != null) {
@@ -1062,7 +1013,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 }
             }
         }
-
         return deadlock;
     }
 
@@ -1086,15 +1036,15 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         } else if (String.class.isAssignableFrom(clazz)) {
             result = (T) rs.getString(1);
         } else if (Long.class.isAssignableFrom(clazz)) {
-            result = (T)Long.valueOf(rs.getLong(1));
+            result = (T) Long.valueOf(rs.getLong(1));
         } else if (Integer.class.isAssignableFrom(clazz)) {
-            result = (T)Integer.valueOf(rs.getInt(1));
+            result = (T) Integer.valueOf(rs.getInt(1));
         } else if (Float.class.isAssignableFrom(clazz)) {
-            result = (T)Float.valueOf(rs.getFloat(1));
+            result = (T) Float.valueOf(rs.getFloat(1));
         } else if (Double.class.isAssignableFrom(clazz)) {
-            result = (T)Double.valueOf(rs.getDouble(1));
+            result = (T) Double.valueOf(rs.getDouble(1));
         } else if (BigDecimal.class.isAssignableFrom(clazz)) {
-            result = (T)rs.getBigDecimal(1);
+            result = (T) rs.getBigDecimal(1);
         } else {
             result = (T) rs.getObject(1);
         }
@@ -1106,7 +1056,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         for (int i = 1; i <= args.length; i++) {
             Object arg = args[i - 1];
             int argType = argTypes != null && argTypes.length >= i ? argTypes[i - 1] : SqlTypeValue.TYPE_UNKNOWN;
-            try {            
+            try {
                 if (argType == Types.BLOB && lobHandler != null && arg instanceof byte[]) {
                     lobHandler.getLobCreator().setBlobAsBytes(ps, i, (byte[]) arg);
                 } else if (argType == Types.BLOB && lobHandler != null && arg instanceof String) {
@@ -1116,16 +1066,16 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 } else if ((argType == Types.DECIMAL || argType == Types.NUMERIC) && arg != null) {
                     setDecimalValue(ps, i, arg, argType);
                 } else if (argType == Types.TINYINT) {
-                    setTinyIntValue(ps, i, arg, argType);                
+                    setTinyIntValue(ps, i, arg, argType);
                 } else {
                     StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
                 }
             } catch (SQLException ex) {
-                String msg = String.format("Parameter arg '%s' type: %s caused exception: %s", arg, TypeMap.getJdbcTypeName(argType), ex.getMessage()); 
+                String msg = String.format("Parameter arg '%s' type: %s caused exception: %s", arg, TypeMap.getJdbcTypeName(argType), ex.getMessage());
                 throw new SQLException(msg, ex);
             }
         }
-    }    
+    }
 
     protected void setTinyIntValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
         StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
@@ -1138,7 +1088,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
         }
     }
-    
+
     protected void setNanOrNull(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
         StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), null);
     }
@@ -1169,8 +1119,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     }
 
     /**
-     * Set the value for prepared statements specified parameter index using the
-     * passed in value. This method can be overridden by sub-classes if needed.
+     * Set the value for prepared statements specified parameter index using the passed in value. This method can be overridden by sub-classes if needed.
      *
      * @param ps
      *            the PreparedStatement
@@ -1187,7 +1136,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     @Override
     public boolean isDataTruncationViolation(Throwable ex) {
-            return false;
+        return false;
     }
 
     @Override
@@ -1208,5 +1157,4 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         }
         return indexName;
     }
-
 }

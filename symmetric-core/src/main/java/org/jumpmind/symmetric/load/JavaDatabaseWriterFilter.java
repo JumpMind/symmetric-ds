@@ -35,43 +35,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JavaDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
-
     public final static String CODE_START = "import org.jumpmind.symmetric.load.*;\n"
             + "import org.jumpmind.symmetric.io.data.*;\n"
             + "import org.jumpmind.db.model.*;\n"
             + "import java.util.*;\n"
             + "public class JavaDatabaseWriterFilterExt implements JavaDatabaseWriterFilter.JavaLoadFilter { \n"
             + "    public boolean execute(DataContext context, Table table, CsvData data, Exception error) {\n\n";
-
     public final static String CODE_END = "\n\n   }\n}\n";
 
     public interface JavaLoadFilter {
         public boolean execute(DataContext context, Table table, CsvData data, Exception error);
     }
-    
+
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    
+
     public JavaDatabaseWriterFilter(ISymmetricEngine engine,
             Map<String, List<LoadFilter>> loadFilters) {
         super(engine, loadFilters);
     }
 
     @Override
-    protected boolean processLoadFilters(DataContext context, Table table, CsvData data, Exception error, 
+    protected boolean processLoadFilters(DataContext context, Table table, CsvData data, Exception error,
             WriteMethod writeMethod, List<LoadFilter> loadFiltersForTable) {
-
         boolean writeRow = true;
         LoadFilter currentFilter = null;
-
         try {
             for (LoadFilter filter : loadFiltersForTable) {
                 currentFilter = filter;
                 if (filter.isFilterOnDelete()
                         && data.getDataEventType().equals(DataEventType.DELETE)
                         || filter.isFilterOnInsert()
-                        && data.getDataEventType().equals(DataEventType.INSERT)
+                                && data.getDataEventType().equals(DataEventType.INSERT)
                         || filter.isFilterOnUpdate()
-                        && data.getDataEventType().equals(DataEventType.UPDATE)) {
+                                && data.getDataEventType().equals(DataEventType.UPDATE)) {
                     if (writeMethod.equals(WriteMethod.BEFORE_WRITE)
                             && filter.getBeforeWriteScript() != null) {
                         writeRow = getCompiledClass(filter.getBeforeWriteScript()).execute(context, table, data, error);
@@ -94,7 +90,6 @@ public class JavaDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
                 throw new SymmetricException(formattedMessage, ex);
             }
         }
-
         return writeRow;
     }
 
@@ -115,13 +110,13 @@ public class JavaDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
             }
         }
     }
-    
+
     public static int countHeaderLines() {
         return CODE_START.split("\n").length;
     }
 
     public JavaLoadFilter getCompiledClass(String javaExpression) throws Exception {
-        String javaCode = CODE_START + javaExpression + CODE_END;    
+        String javaCode = CODE_START + javaExpression + CODE_END;
         return (JavaLoadFilter) engine.getExtensionService().getCompiledClass(javaCode);
     }
 }

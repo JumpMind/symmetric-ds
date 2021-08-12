@@ -72,47 +72,28 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 public class SymmetricEngineHolder {
-
     private final Logger log = LoggerFactory.getLogger(getClass());
-
     private static Map<String, ServerSymmetricEngine> staticEngines = Collections.synchronizedMap(new HashMap<String, ServerSymmetricEngine>());
-
     private static Set<SymmetricEngineStarter> staticEnginesStarting = Collections.synchronizedSet(new HashSet<SymmetricEngineStarter>());
-    
     private static Set<String> staticEnginesStartingNames = Collections.synchronizedSortedSet(new TreeSet<String>());
-
     private static Map<String, FailedEngineInfo> staticEnginesFailed = Collections.synchronizedMap(new HashMap<String, FailedEngineInfo>());
-
     private Map<String, ServerSymmetricEngine> engines = Collections.synchronizedMap(new HashMap<String, ServerSymmetricEngine>());
-
     private Set<SymmetricEngineStarter> enginesStarting = Collections.synchronizedSet(new HashSet<SymmetricEngineStarter>());
-    
     private Set<String> enginesStartingNames = Collections.synchronizedSortedSet(new TreeSet<String>());
-
     private Map<String, FailedEngineInfo> enginesFailed = Collections.synchronizedMap(new HashMap<String, FailedEngineInfo>());
-
     private ExecutorService restartExecutor;
-
     private boolean staticEnginesMode = false;
-
     private boolean multiServerMode = false;
-
     private boolean autoStart = true;
-
     private boolean autoCreate = true;
-
     private ApplicationContext springContext;
-
     private String singleServerPropertiesFile;
-
     private String deploymentType = Constants.DEPLOYMENT_TYPE_SERVER;
-
     private boolean holderHasBeenStarted = false;
 
     public void start() {
         try {
             SymmetricUtils.logNotices();
-
             if (staticEnginesMode) {
                 log.info("In static engine mode");
                 engines = staticEngines;
@@ -120,7 +101,6 @@ public class SymmetricEngineHolder {
                 enginesStartingNames = staticEnginesStartingNames;
                 enginesFailed = staticEnginesFailed;
             }
-
             if (autoCreate) {
                 log.info("Current directory is {}", System.getProperty("user.dir"));
                 if (isMultiServerMode()) {
@@ -128,29 +108,25 @@ public class SymmetricEngineHolder {
                     log.info("Starting in multi-server mode with engines directory at {}", enginesDirname);
                     File enginesDir = new File(enginesDirname);
                     File[] files = null;
-
                     if (enginesDir != null) {
                         files = enginesDir.listFiles();
                     }
-
                     if (files == null) {
                         String firstAttempt = enginesDir.getAbsolutePath();
                         enginesDir = new File(".");
                         log.warn("Unable to retrieve engine properties files from {}.  Trying current working directory {}",
                                 firstAttempt, enginesDir.getAbsolutePath());
-
                         if (enginesDir != null) {
                             files = enginesDir.listFiles();
                         }
-                    } 
-
+                    }
                     if (files != null) {
-                    	validateEngineFiles(files);
+                        validateEngineFiles(files);
                         boolean found = false;
                         for (int i = 0; i < files.length; i++) {
                             File file = files[i];
                             if (file.getName().endsWith(".properties")) {
-                            	enginesStarting.add(new SymmetricEngineStarter(file.getAbsolutePath(), this));
+                                enginesStarting.add(new SymmetricEngineStarter(file.getAbsolutePath(), this));
                                 found = true;
                             }
                         }
@@ -160,7 +136,6 @@ public class SymmetricEngineHolder {
                     } else {
                         log.error("Unable to retrieve engine properties files from default location or from current working directory.  No engines to start.");
                     }
-
                 } else {
                     log.info("Starting in single-server mode");
                     if (StringUtils.isBlank(singleServerPropertiesFile)) {
@@ -171,14 +146,11 @@ public class SymmetricEngineHolder {
                     }
                     enginesStarting.add(new SymmetricEngineStarter(singleServerPropertiesFile, this));
                 }
-                
                 int poolSize = Integer.parseInt(System.getProperty(SystemConstants.SYSPROP_CONCURRENT_ENGINES_STARTING_COUNT, "5"));
                 ExecutorService executor = Executors.newFixedThreadPool(poolSize, new CustomizableThreadFactory("symmetric-engine-startup"));
-
                 for (SymmetricEngineStarter starter : enginesStarting) {
                     executor.execute(starter);
                 }
-
                 executor.shutdown();
             }
         } finally {
@@ -187,21 +159,21 @@ public class SymmetricEngineHolder {
     }
 
     public synchronized void restart(String engineName) {
-    	FailedEngineInfo info = enginesFailed.get(engineName);
-    	if (info != null) {
-    		enginesFailed.remove(engineName);
-    		if (restartExecutor == null) {
-    			int poolSize = Integer.parseInt(System.getProperty(SystemConstants.SYSPROP_CONCURRENT_ENGINES_STARTING_COUNT, "5"));
-    			restartExecutor = Executors.newFixedThreadPool(poolSize, new CustomizableThreadFactory("symmetric-engine-restart"));
-    		}
+        FailedEngineInfo info = enginesFailed.get(engineName);
+        if (info != null) {
+            enginesFailed.remove(engineName);
+            if (restartExecutor == null) {
+                int poolSize = Integer.parseInt(System.getProperty(SystemConstants.SYSPROP_CONCURRENT_ENGINES_STARTING_COUNT, "5"));
+                restartExecutor = Executors.newFixedThreadPool(poolSize, new CustomizableThreadFactory("symmetric-engine-restart"));
+            }
             SymmetricEngineStarter starter = new SymmetricEngineStarter(info.getPropertyFileName(), this);
             restartExecutor.execute(starter);
-    	}
+        }
     }
 
     public synchronized void stop() {
         for (ServerSymmetricEngine engine : engines.values()) {
-        	engine.destroy();
+            engine.destroy();
         }
         engines.clear();
         enginesFailed.clear();
@@ -210,7 +182,7 @@ public class SymmetricEngineHolder {
     public ISymmetricEngine install(Properties passedInProperties) throws Exception {
         return install(passedInProperties, null);
     }
-    
+
     public ISymmetricEngine install(Properties passedInProperties, IDatabaseInstallStatementListener listener) throws Exception {
         TypedProperties properties = new TypedProperties(passedInProperties);
         String password = properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
@@ -223,9 +195,7 @@ public class SymmetricEngineHolder {
                 log.warn("Could not encrypt password", ex);
             }
         }
-        
         String loadOnlyPassword = properties.getProperty(ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
-        
         if (StringUtils.isNotBlank(loadOnlyPassword) && !loadOnlyPassword.startsWith(SecurityConstants.PREFIX_ENC)) {
             try {
                 ISecurityService service = SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties);
@@ -235,7 +205,6 @@ public class SymmetricEngineHolder {
                 log.warn("Could not encrypt load only password", ex);
             }
         }
-
         String engineName = validateRequiredProperties(properties);
         passedInProperties.setProperty(ParameterConstants.ENGINE_NAME, engineName);
         if (engines.get(engineName) != null) {
@@ -246,7 +215,6 @@ public class SymmetricEngineHolder {
             }
             engines.remove(engineName);
         }
-
         File enginesDir = new File(AbstractCommandLauncher.getEnginesDir());
         File symmetricProperties = new File(enginesDir, engineName + ".properties");
         try (FileOutputStream fileOs = new FileOutputStream(symmetricProperties)) {
@@ -256,7 +224,6 @@ public class SymmetricEngineHolder {
         } catch (IOException ex) {
             throw new RuntimeException("Failed to write symmetric.properties to engine directory", ex);
         }
-
         ISymmetricEngine engine = null;
         try {
             String registrationUrl = properties.getProperty(ParameterConstants.REGISTRATION_URL);
@@ -267,7 +234,6 @@ public class SymmetricEngineHolder {
                         String serverNodeGroupId = currentEngine.getParameterService().getNodeGroupId();
                         String clientNodeGroupId = properties.getProperty(ParameterConstants.NODE_GROUP_ID);
                         String externalId = properties.getProperty(ParameterConstants.EXTERNAL_ID);
-
                         IConfigurationService configurationService = currentEngine.getConfigurationService();
                         ITriggerRouterService triggerRouterService = currentEngine.getTriggerRouterService();
                         List<NodeGroup> groups = configurationService.getNodeGroups();
@@ -277,11 +243,9 @@ public class SymmetricEngineHolder {
                                 foundGroup = true;
                             }
                         }
-
                         if (!foundGroup) {
                             configurationService.saveNodeGroup(new NodeGroup(clientNodeGroupId));
                         }
-
                         boolean foundLink = false;
                         List<NodeGroupLink> links = configurationService.getNodeGroupLinksFor(serverNodeGroupId, false);
                         for (NodeGroupLink nodeGroupLink : links) {
@@ -289,12 +253,10 @@ public class SymmetricEngineHolder {
                                 foundLink = true;
                             }
                         }
-
                         if (!foundLink) {
                             configurationService.saveNodeGroupLink(new NodeGroupLink(serverNodeGroupId, clientNodeGroupId, NodeGroupLinkAction.W));
                             triggerRouterService.syncTriggers();
                         }
-
                         IRegistrationService registrationService = currentEngine.getRegistrationService();
                         if (!registrationService.isAutoRegistration() && !registrationService.isRegistrationOpen(clientNodeGroupId, externalId)) {
                             Node node = new Node(properties);
@@ -303,7 +265,6 @@ public class SymmetricEngineHolder {
                     }
                 }
             }
-
             engine = create(symmetricProperties.getAbsolutePath());
             if (engine != null) {
                 if (listener != null) {
@@ -315,7 +276,6 @@ public class SymmetricEngineHolder {
                 log.warn("The engine could not be created.  It will not be started");
             }
             return engine;
-
         } catch (RuntimeException ex) {
             if (engine != null) {
                 engine.destroy();
@@ -335,29 +295,25 @@ public class SymmetricEngineHolder {
             file.delete();
         }
         getEngines().remove(engineName);
-
         for (ISymmetricEngine existingEngine : this.getEngines().values()) {
             existingEngine.removeAndCleanupNode(node.getNodeId());
-        }        
+        }
     }
-    
+
     public ISymmetricEngine create(String propertiesFile) {
         ServerSymmetricEngine engine = null;
         File file = new File(propertiesFile);
         String engineName = FilenameUtils.removeExtension(file.getName());
         try {
-        	TypedProperties properties = new TypedProperties();
+            TypedProperties properties = new TypedProperties();
             try (InputStream is = new FileInputStream(file.getAbsolutePath())) {
-            	properties.load(is);	
+                properties.load(is);
             }
-
             engineName = getEngineName(properties);
             enginesStartingNames.add(engineName);
             validateRequiredProperties(properties);
-            
             engine = new ServerSymmetricEngine(file, springContext, this);
             engine.setDeploymentType(deploymentType);
-            
             String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
             String logBased = properties.getProperty(ParameterConstants.START_LOG_MINER_JOB, "false");
             String deploymentSubType = null;
@@ -368,14 +324,13 @@ public class SymmetricEngineHolder {
                 deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED;
             }
             engine.setDeploymentSubType(deploymentSubType);
-            
             synchronized (this) {
                 if (!engines.containsKey(engine.getEngineName())) {
                     engines.put(engine.getEngineName(), engine);
                 } else {
                     String message = "An engine with the name of " + engine.getEngineName() +
-                    		" was not started because an engine of the same name has already been started.  " +
-                    		"Please set the engine.name property in the properties file to a unique name.";
+                            " was not started because an engine of the same name has already been started.  " +
+                            "Please set the engine.name property in the properties file to a unique name.";
                     log.error(message);
                     enginesFailed.put(engineName, new FailedEngineInfo(engineName, propertiesFile, message));
                     enginesStartingNames.remove(engineName);
@@ -393,37 +348,35 @@ public class SymmetricEngineHolder {
 
     protected void validateEngineFiles(File[] files) {
         Map<String, String> dbToPropertyFiles = new LinkedHashMap<String, String>();
-         
         for (File file : files) {
             if (file.getName().endsWith(".properties")) {
                 // external.id
                 Properties properties = new Properties();
-                try(InputStream fileInputStream = new FileInputStream(file.getAbsolutePath())) {
-                    properties.load(fileInputStream);                    
-                    final String userUrl = String.format("%s@%s", 
-                            properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_USER, ""), 
-                            properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_URL, ""));                    
-                    final String KEY = String.format("%s@%s", 
-                            BasicDataSourcePropertyConstants.DB_POOL_USER, 
+                try (InputStream fileInputStream = new FileInputStream(file.getAbsolutePath())) {
+                    properties.load(fileInputStream);
+                    final String userUrl = String.format("%s@%s",
+                            properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_USER, ""),
+                            properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_URL, ""));
+                    final String KEY = String.format("%s@%s",
+                            BasicDataSourcePropertyConstants.DB_POOL_USER,
                             BasicDataSourcePropertyConstants.DB_POOL_URL);
-                            
                     checkDuplicate(userUrl, KEY, dbToPropertyFiles, file);
                 } catch (Exception ex) {
                     if (ex instanceof SymmetricException) {
                         log.error("**** FATAL **** error " + ex); // Jetty logs the stack at WARN level.
-                        throw (SymmetricException)ex;
-                    } else {                        
+                        throw (SymmetricException) ex;
+                    } else {
                         log.warn("Failed to validate engine properties file " + file, ex);
                     }
                 }
             }
         }
     }
-    
+
     protected void checkDuplicate(String value, String key, Map<String, String> values, File propertiesFile) {
         if (values.containsKey(value)) {
             throw new SymmetricException(String.format("Invalid configuration detected. 2 properties files reference "
-                    + "the same %s: '%s'. Maybe an engines file was copied and needs to be moved. See: %s and %s.", 
+                    + "the same %s: '%s'. Maybe an engines file was copied and needs to be moved. See: %s and %s.",
                     key, value, values.get(value), propertiesFile.getAbsolutePath()));
         } else {
             values.put(value, propertiesFile.getAbsolutePath());
@@ -457,23 +410,19 @@ public class SymmetricEngineHolder {
         if (StringUtils.isBlank(externalId)) {
             throw new IllegalStateException("Missing property " + ParameterConstants.EXTERNAL_ID);
         }
-
         String groupId = properties.getProperty(ParameterConstants.NODE_GROUP_ID);
         if (StringUtils.isBlank(groupId)) {
             throw new IllegalStateException("Missing property " + ParameterConstants.NODE_GROUP_ID);
         }
-
         String engineName = getEngineName(properties);
         properties.setProperty(ParameterConstants.ENGINE_NAME, engineName);
-
         if (StringUtils.isBlank(properties.getProperty(ParameterConstants.SYNC_URL))) {
             ParameterMetaData parameterMeta = ParameterConstants.getParameterMetaData().get(ParameterConstants.SYNC_URL);
             String defaultValue = "http://$(hostName):31415/sync/$(engineName)";
             if (parameterMeta != null) {
                 defaultValue = parameterMeta.getDefaultValue();
             }
-
-            log.debug("Defaulting node {} sync.url to {}", externalId, defaultValue);            
+            log.debug("Defaulting node {} sync.url to {}", externalId, defaultValue);
             properties.setProperty(ParameterConstants.SYNC_URL, defaultValue);
         }
         if (StringUtils.isBlank(properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_DRIVER))) {
@@ -548,7 +497,7 @@ public class SymmetricEngineHolder {
     }
 
     public ApplicationContext getSpringContext() {
-    	return springContext;
+        return springContext;
     }
 
     public void setDeploymentType(String deploymentType) {
@@ -556,7 +505,7 @@ public class SymmetricEngineHolder {
     }
 
     public String getDeploymentType() {
-    	return deploymentType;
+        return deploymentType;
     }
 
     public void setMultiServerMode(boolean multiServerMode) {
@@ -590,7 +539,7 @@ public class SymmetricEngineHolder {
     public String getSingleServerPropertiesFile() {
         return singleServerPropertiesFile;
     }
-    
+
     public void setAutoStart(boolean autoStart) {
         this.autoStart = autoStart;
     }

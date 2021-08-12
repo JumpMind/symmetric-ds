@@ -84,16 +84,12 @@ import org.jumpmind.db.sql.SqlException;
  * Reads a database model from an Oracle 8 database.
  */
 public class OracleDdlReader extends AbstractJdbcDdlReader {
-
     /* The regular expression pattern for the Oracle conversion of ISO dates. */
     private Pattern oracleIsoDatePattern;
-
     /* The regular expression pattern for the Oracle conversion of ISO times. */
     private Pattern oracleIsoTimePattern;
-
     /*
-     * The regular expression pattern for the Oracle conversion of ISO
-     * timestamps.
+     * The regular expression pattern for the Oracle conversion of ISO timestamps.
      */
     private Pattern oracleIsoTimestampPattern;
 
@@ -102,7 +98,6 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");
-
         oracleIsoDatePattern = Pattern.compile("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD'\\)");
         oracleIsoTimePattern = Pattern.compile("TO_DATE\\('([^']*)'\\, 'HH24:MI:SS'\\)");
         oracleIsoTimestampPattern = Pattern
@@ -113,24 +108,19 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
         /*
-         * Oracle 10 added the recycle bin which contains dropped database
-         * objects not yet purged Since we don't want entries from the recycle
-         * bin, we filter them out
+         * Oracle 10 added the recycle bin which contains dropped database objects not yet purged Since we don't want entries from the recycle bin, we filter
+         * them out
          */
         boolean tableHasBeenDeleted = isTableInRecycleBin(connection, values);
-
         /*
          * System tables are in the system schema
          */
         String schema = (String) values.get(getResultSetSchemaName());
-
         if (!tableHasBeenDeleted && !"SYSTEM".equals(schema)) {
-
             Table table = super.readTable(connection, metaData, values);
             if (table != null) {
                 determineAutoIncrementColumns(connection, table);
             }
-
             return table;
         } else {
             return null;
@@ -139,7 +129,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
 
     protected boolean isTableInRecycleBin(Connection connection, Map<String, Object> values)
             throws SQLException {
-        String tablename = (String)values.get("TABLE_NAME");
+        String tablename = (String) values.get("TABLE_NAME");
         return StringUtils.isNotBlank(tablename) && tablename.toLowerCase().startsWith("bin$");
     }
 
@@ -180,7 +170,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         } else if (typeName != null && typeName.startsWith("INTERVAL")) {
             return Types.VARCHAR;
         } else if (typeName != null && typeName.startsWith("ROWID")) {
-            return Types.VARCHAR;            
+            return Types.VARCHAR;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
@@ -198,14 +188,11 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             if (column.getScale() <= -127 || column.getScale() >= 127) {
                 if (column.getSizeAsInt() == 0) {
                     /*
-                     * Latest oracle jdbc drivers for 11g return (0,-127) for
-                     * types defined as integer resulting in bad mappings.
-                     * NUMBER without scale or precision looks the same as
-                     * INTEGER in the jdbc driver. We must check the Oracle
-                     * meta data to see if type is an INTEGER.
+                     * Latest oracle jdbc drivers for 11g return (0,-127) for types defined as integer resulting in bad mappings. NUMBER without scale or
+                     * precision looks the same as INTEGER in the jdbc driver. We must check the Oracle meta data to see if type is an INTEGER.
                      */
-                    if (isColumnInteger((String)values.get("TABLE_NAME"),
-                            (String)values.get("COLUMN_NAME"))) {
+                    if (isColumnInteger((String) values.get("TABLE_NAME"),
+                            (String) values.get("COLUMN_NAME"))) {
                         column.setMappedTypeCode(Types.BIGINT);
                     }
                 } else if (column.getSizeAsInt() <= 63) {
@@ -235,9 +222,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             // value to timestamp
             if (column.getDefaultValue() != null) {
                 Timestamp timestamp = null;
-
                 Matcher matcher = oracleIsoTimestampPattern.matcher(column.getDefaultValue());
-
                 if (matcher.matches()) {
                     String timestampVal = matcher.group(1);
                     timestamp = Timestamp.valueOf(timestampVal);
@@ -250,7 +235,6 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                         matcher = oracleIsoTimePattern.matcher(column.getDefaultValue());
                         if (matcher.matches()) {
                             String timeVal = matcher.group(1);
-
                             timestamp = new Timestamp(Time.valueOf(timeVal).getTime());
                         }
                     }
@@ -262,29 +246,27 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
             String defaultValue = column.getDefaultValue();
             if (isNotBlank(defaultValue) && defaultValue.startsWith("('") && defaultValue.endsWith("')")) {
-                defaultValue = defaultValue.substring(2, defaultValue.length()-2);
+                defaultValue = defaultValue.substring(2, defaultValue.length() - 2);
             }
             column.setDefaultValue(unescape(defaultValue, "'", "''"));
-        } 
+        }
         return column;
     }
 
     private boolean isColumnInteger(String tableName, String columnName) {
         return (platform.getSqlTemplate().queryForInt(
                 "select case when data_precision is null and data_scale=0 then 1 else 0 end " +
-                "from all_tab_columns where table_name=? and column_name=?", tableName, columnName) == 1);
+                        "from all_tab_columns where table_name=? and column_name=?", tableName, columnName) == 1);
     }
 
     /*
-     * Helper method that determines the auto increment status using Firebird's
-     * system tables.
+     * Helper method that determines the auto increment status using Firebird's system tables.
      *
      * @param table The table
      */
     protected void determineAutoIncrementColumns(Connection connection, Table table)
             throws SQLException {
         Column[] columns = table.getColumns();
-
         for (int idx = 0; idx < columns.length; idx++) {
             columns[idx].setAutoIncrement(isAutoIncrement(connection, table, columns[idx]));
         }
@@ -314,7 +296,6 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 column.getName(), null);
         String seqName = builder.getConstraintName(OracleDdlBuilder.PREFIX_SEQUENCE, table,
                 column.getName(), null);
-
         if (!getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
             triggerName = triggerName.toUpperCase();
             seqName = seqName.toUpperCase();
@@ -323,20 +304,16 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             prepStmt = connection
                     .prepareStatement("SELECT * FROM user_triggers WHERE trigger_name = ?");
             prepStmt.setString(1, triggerName);
-
             ResultSet resultSet = prepStmt.executeQuery();
-
             if (!resultSet.next()) {
                 resultSet.close();
                 return false;
             }
             // we have a trigger, so lets check the sequence
             prepStmt.close();
-
             prepStmt = connection
                     .prepareStatement("SELECT * FROM user_sequences WHERE sequence_name = ?");
             prepStmt.setString(1, seqName);
-
             resultSet = prepStmt.executeQuery();
             boolean resultFound = resultSet.next();
             resultSet.close();
@@ -363,37 +340,31 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         // having GENERATED='Y' in the query result, or by their index names
         // being equal to the
         // name of the primary key of the table
-
         StringBuilder query = new StringBuilder();
-
-        query.append("SELECT a.INDEX_NAME, a.INDEX_TYPE, a.UNIQUENESS, b.COLUMN_NAME, b.COLUMN_POSITION FROM ALL_INDEXES a "); 
+        query.append("SELECT a.INDEX_NAME, a.INDEX_TYPE, a.UNIQUENESS, b.COLUMN_NAME, b.COLUMN_POSITION FROM ALL_INDEXES a ");
         query.append("JOIN ALL_IND_COLUMNS b ON a.table_name = b.table_name AND a.INDEX_NAME=b.INDEX_NAME AND a.TABLE_OWNER = b.TABLE_OWNER ");
         query.append("WHERE ");
-        query.append("a.TABLE_NAME = ? "); 
-        query.append("AND a.GENERATED='N' "); 
-        query.append("AND a.TABLE_TYPE='TABLE' "); 
+        query.append("a.TABLE_NAME = ? ");
+        query.append("AND a.GENERATED='N' ");
+        query.append("AND a.TABLE_TYPE='TABLE' ");
         if (metaData.getSchemaPattern() != null) {
             query.append("AND a.TABLE_OWNER = ?");
         }
-        
         Map<String, IIndex> indices = new LinkedHashMap<String, IIndex>();
         PreparedStatement stmt = null;
-
         try {
             Set<String> pkIndecies = readPkIndecies(connection, metaData.getSchemaPattern(), tableName);
-            
             stmt = connection.prepareStatement(query.toString());
             stmt.setString(
                     1,
-                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName
-                            .toUpperCase());
+                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName
+                            : tableName
+                                    .toUpperCase());
             if (metaData.getSchemaPattern() != null) {
                 stmt.setString(2, metaData.getSchemaPattern().toUpperCase());
             }
-
             ResultSet rs = stmt.executeQuery();
             Map<String, Object> values = new HashMap<String, Object>();
-
             while (rs.next()) {
                 String name = rs.getString(1);
                 if (pkIndecies.contains(name)) { // Filter PK indexes from these results.
@@ -409,13 +380,11 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                                     : Boolean.TRUE);
                     values.put("COLUMN_NAME", rs.getString(4));
                     values.put("ORDINAL_POSITION", Short.valueOf(rs.getShort(5)));
-
                     readIndex(metaData, values, indices);
                 } else if (log.isDebugEnabled()) {
                     log.debug("Skipping index " + name + " of type " + type);
                 }
             }
-
             rs.close();
         } finally {
             if (stmt != null) {
@@ -424,25 +393,20 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         }
         return indices.values();
     }
-    
+
     @Override
     protected String getTableNamePattern(String tableName) {
         /*
-         * When looking up a table definition, Oracle treats underscore (_) in
-         * the table name as a wildcard, so it needs to be escaped, or you'll
-         * get back column names for more than one table. Example:
-         * DatabaseMetaData.metaData.getColumns(null, null, "SYM\\_NODE", null)
+         * When looking up a table definition, Oracle treats underscore (_) in the table name as a wildcard, so it needs to be escaped, or you'll get back
+         * column names for more than one table. Example: DatabaseMetaData.metaData.getColumns(null, null, "SYM\\_NODE", null)
          */
-       return String.format("%s", tableName).replaceAll("\\_", "/_");
+        return String.format("%s", tableName).replaceAll("\\_", "/_");
     }
-    
+
     public List<String> getTableNames(final String catalog, final String schema,
             final String[] tableTypes) {
-        
         List<String> tableNames = new ArrayList<String>();
-        
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-        
         StringBuilder sql = new StringBuilder("select TABLE_NAME from ALL_TABLES");
         Object[] params = null;
         if (isNotBlank(schema)) {
@@ -454,18 +418,14 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 return row.getString("TABLE_NAME");
             }
         }, params);
-        
         return tableNames;
     }
-    
+
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) throws SqlException {
-        
         List<Trigger> triggers = new ArrayList<Trigger>();
-
         log.debug("Reading triggers for: {}", tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-        
         String sql = "SELECT TRIGGER_NAME, OWNER, TABLE_NAME, STATUS, TRIGGERING_EVENT FROM ALL_TRIGGERS WHERE TABLE_NAME=? and OWNER=?";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
             public Trigger mapRow(Row row) {
@@ -485,11 +445,9 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 return trigger;
             }
         }, tableName, schema);
-        
         for (final Trigger trigger : triggers) {
             String name = trigger.getName();
             String sourceSql = "select TEXT from all_source where OWNER=? AND NAME=? order by LINE";
-            
             final StringBuilder buff = new StringBuilder();
             buff.append(trigger.getSource());
             sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
@@ -504,10 +462,9 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             }, schema, name);
             trigger.setSource(buff.toString());
         }
-        
         return triggers;
     }
-    
+
     protected Set<String> readPkIndecies(Connection connection, String schema, String tableName) throws SQLException {
         String QUERY = "SELECT CONSTRAINT_NAME FROM ALL_CONSTRAINTS c WHERE c.TABLE_NAME = ? AND CONSTRAINT_TYPE = 'P'";
         if (schema != null) {
@@ -516,36 +473,32 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         ResultSet rs = null;
         PreparedStatement stmt = null;
         Set<String> values = new LinkedHashSet<String>();
-        try {            
+        try {
             stmt = connection.prepareStatement(QUERY);
             stmt.setString(
                     1,
-                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName
-                            .toUpperCase());
+                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName
+                            : tableName
+                                    .toUpperCase());
             if (schema != null) {
                 stmt.setString(2, schema.toUpperCase());
             }
-            
             rs = stmt.executeQuery();
-            
             while (rs.next()) {
                 String pkIndexName = rs.getString(1);
                 values.add(pkIndexName);
             }
-            
-            
         } finally {
-            if (rs != null) {                
+            if (rs != null) {
                 rs.close();
             }
             if (stmt != null) {
                 stmt.close();
             }
-            
         }
         return values;
-    }    
-    
+    }
+
     // Oracle does not support on update actions
     @Override
     protected void readForeignKeyUpdateRule(Map<String, Object> values, ForeignKey fk) {

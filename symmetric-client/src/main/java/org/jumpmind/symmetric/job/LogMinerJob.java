@@ -27,7 +27,6 @@ import org.jumpmind.symmetric.service.ILogMinerService;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class LogMinerJob extends AbstractJob {
-
     public LogMinerJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super("Log Miner", engine, taskScheduler);
     }
@@ -46,5 +45,4 @@ public class LogMinerJob extends AbstractJob {
             }
         }
     }
-
 }

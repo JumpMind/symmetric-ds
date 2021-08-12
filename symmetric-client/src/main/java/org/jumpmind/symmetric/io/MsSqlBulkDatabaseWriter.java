@@ -48,8 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
-
-	private static final Logger log = LoggerFactory.getLogger(MsSqlBulkDatabaseWriter.class);
+    private static final Logger log = LoggerFactory.getLogger(MsSqlBulkDatabaseWriter.class);
     protected int maxRowsBeforeFlush;
     protected IStagingManager stagingManager;
     protected IStagedResource stagedInputFile;
@@ -66,17 +65,17 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     public MsSqlBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
             IDatabasePlatform tar, String tablePrefix,
             IStagingManager stagingManager,
-            int maxRowsBeforeFlush, boolean fireTriggers, String uncPath, String fieldTerminator, String rowTerminator, 
+            int maxRowsBeforeFlush, boolean fireTriggers, String uncPath, String fieldTerminator, String rowTerminator,
             DatabaseWriterSettings writerSettings) {
         super(symmetricPlatform, tar, tablePrefix, writerSettings);
         this.maxRowsBeforeFlush = maxRowsBeforeFlush;
         this.stagingManager = stagingManager;
         this.fireTriggers = fireTriggers;
         if (fieldTerminator != null && fieldTerminator.length() > 0) {
-           this.fieldTerminator = fieldTerminator;
+            this.fieldTerminator = fieldTerminator;
         }
         if (rowTerminator != null && rowTerminator.length() > 0) {
-           this.rowTerminator = rowTerminator;
+            this.rowTerminator = rowTerminator;
         }
         this.uncPath = uncPath;
         log.debug("Initialized with maxRowsBeforeFlush={}, fireTriggers={}, fieldTerminator={}, rowTerminator={}, uncPath={}",
@@ -86,7 +85,9 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     public boolean start(Table table) {
         this.table = table;
         if (super.start(table)) {
-            if (isFallBackToDefault()) { return true; }
+            if (isFallBackToDefault()) {
+                return true;
+            }
             needsBinaryConversion = false;
             if (batch.getBinaryEncoding() != BinaryEncoding.HEX && targetTable != null) {
                 for (Column column : targetTable.getColumns()) {
@@ -103,7 +104,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 String[] columnNames = databaseTable.getColumnNames();
                 needsColumnsReordered = false;
                 for (int i = 0; i < csvNames.length; i++) {
-                    if (! csvNames[i].equals(columnNames[i])) {
+                    if (!csvNames[i].equals(columnNames[i])) {
                         needsColumnsReordered = true;
                         break;
                     }
@@ -122,8 +123,10 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     @Override
     public void end(Table table) {
-         try {
-            if (isFallBackToDefault()) { return; }
+        try {
+            if (isFallBackToDefault()) {
+                return;
+            }
             flush();
             this.stagedInputFile.close();
             this.stagedInputFile.delete();
@@ -133,9 +136,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
 
     protected void bulkWrite(CsvData data) {
-        
         DataEventType dataEventType = data.getDataEventType();
-
         switch (dataEventType) {
             case INSERT:
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
@@ -151,7 +152,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                             }
                         }
                     }
-                    OutputStream out =  this.stagedInputFile.getOutputStream();
+                    OutputStream out = this.stagedInputFile.getOutputStream();
                     if (needsColumnsReordered) {
                         Map<String, String> mapData = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
                         String[] columnNames = databaseTable.getColumnNames();
@@ -191,16 +192,14 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 writeDefault(data);
                 break;
         }
-
         if (loadedRows >= maxRowsBeforeFlush) {
             flush();
         }
     }
-    
+
     protected void flush() {
         if (loadedRows > 0) {
             this.stagedInputFile.close();
-                
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             String filename;
             if (StringUtils.isEmpty(uncPath)) {
@@ -217,23 +216,20 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 Connection c = jdbcTransaction.getConnection();
                 String rowTerminatorString = "";
                 /*
-                 * There seems to be a bug with the SQL server bulk insert when
-                 * you have one row with binary data at the end using \n as the
-                 * row terminator. It works when you leave the row terminator
-                 * out of the bulk insert statement.
+                 * There seems to be a bug with the SQL server bulk insert when you have one row with binary data at the end using \n as the row terminator. It
+                 * works when you leave the row terminator out of the bulk insert statement.
                  */
                 if (!(rowTerminator.equals("\n") || rowTerminator.equals("\r\n"))) {
                     rowTerminatorString = ", ROWTERMINATOR='" + StringEscapeUtils.escapeJava(rowTerminator) + "'";
                 }
-                final String sql = String.format("BULK INSERT " + 
-                        this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) + 
+                final String sql = String.format("BULK INSERT " +
+                        this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) +
                         " FROM '" + filename) + "'" +
-                        " WITH (DATAFILETYPE='widechar', FIELDTERMINATOR='"+StringEscapeUtils.escapeJava(fieldTerminator)+"', KEEPIDENTITY" + 
-                        (fireTriggers ? ", FIRE_TRIGGERS" : "") + rowTerminatorString +");";
+                        " WITH (DATAFILETYPE='widechar', FIELDTERMINATOR='" + StringEscapeUtils.escapeJava(fieldTerminator) + "', KEEPIDENTITY" +
+                        (fireTriggers ? ", FIRE_TRIGGERS" : "") + rowTerminatorString + ");";
                 Statement stmt = c.createStatement();
                 log.debug("Running {}", sql);
-
-                //TODO:  clean this up, deal with errors, etc.?
+                // TODO: clean this up, deal with errors, etc.?
                 stmt.execute(sql);
                 stmt.close();
                 loadedRows = 0;
@@ -245,7 +241,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             }
         }
     }
-    
+
     protected void createStagingFile() {
         this.stagedInputFile = stagingManager.create(Constants.STAGING_CATEGORY_BULK_LOAD,
                 table.getName() + this.getBatch().getBatchId() + ".csv");

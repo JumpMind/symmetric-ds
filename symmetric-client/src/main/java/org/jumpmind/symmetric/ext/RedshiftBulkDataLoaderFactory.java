@@ -41,11 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RedshiftBulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    
     private ISecurityService securityService;
-    
     private IStagingManager stagingManager;
 
     public RedshiftBulkDataLoaderFactory(ISymmetricEngine engine) {
@@ -59,18 +56,15 @@ public class RedshiftBulkDataLoaderFactory extends AbstractDataLoaderFactory imp
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-                TransformWriter transformWriter,
+            TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-
         return new RedshiftBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                 symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService,
                 securityService, buildParameterDatabaseWritterSettings());
-        
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
         return DatabaseNamesConstants.REDSHIFT.equals(platform.getName());
     }
-
 }

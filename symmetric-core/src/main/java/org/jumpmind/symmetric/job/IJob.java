@@ -25,16 +25,15 @@ import java.util.Date;
 import org.jumpmind.symmetric.model.JobDefinition;
 
 public interface IJob {
-    
     public String getName();
-    
+
     public JobDefinition getJobDefinition();
-    
+
     public boolean isCronSchedule();
-    
+
     public boolean isPeriodicSchedule();
-    
-    public String getSchedule();    
+
+    public String getSchedule();
 
     public void start();
 
@@ -51,7 +50,7 @@ public interface IJob {
     public long getLastExecutionTimeInMs();
 
     public Date getLastFinishTime();
-    
+
     public Date getNextExecutionTime();
 
     public boolean isRunning();
@@ -61,9 +60,8 @@ public interface IJob {
     public long getTotalExecutionTimeInMs();
 
     public long getAverageExecutionTimeInMs();
-    
+
     public boolean invoke(boolean force);
-    
+
     public String getDeprecatedStartParameter();
-    
 }

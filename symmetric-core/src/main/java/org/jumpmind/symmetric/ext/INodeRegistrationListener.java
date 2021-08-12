@@ -25,19 +25,17 @@ import java.util.Map;
 import org.jumpmind.extension.IExtensionPoint;
 
 public interface INodeRegistrationListener extends IExtensionPoint {
-    
     public void registrationUrlUpdated(String url);
-    
-    public void registrationNextAttemptUpdated(int seconds);
-    
-    public void registrationStarting(Thread thread);
-    
-    public void registrationFailed(String message);
-    
-    public void registrationSyncTriggers();
-    
-    public void registrationSuccessful();
-    
-    public Map<String, String> getRequestProperties();
 
+    public void registrationNextAttemptUpdated(int seconds);
+
+    public void registrationStarting(Thread thread);
+
+    public void registrationFailed(String message);
+
+    public void registrationSyncTriggers();
+
+    public void registrationSuccessful();
+
+    public Map<String, String> getRequestProperties();
 }

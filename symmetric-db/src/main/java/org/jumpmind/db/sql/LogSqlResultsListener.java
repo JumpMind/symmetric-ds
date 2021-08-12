@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LogSqlResultsListener implements ISqlResultsListener {
-
     private static final Logger log = LoggerFactory.getLogger(LogSqlResultsListener.class);
 
     public LogSqlResultsListener() {
@@ -42,5 +41,4 @@ public class LogSqlResultsListener implements ISqlResultsListener {
     public void sqlApplied(String sql, int rowsUpdated, int rowsRetrieved, int lineNumber) {
         log.info("DDL applied: {}", sql);
     }
-
 }

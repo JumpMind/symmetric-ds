@@ -42,9 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class TestSetupUtil {
-
     private static final Logger logger = LoggerFactory.getLogger(TestSetupUtil.class);
-
     static private ISymmetricEngine engine;
 
     public static ISymmetricEngine prepareForServiceTests() {
@@ -74,35 +72,23 @@ abstract public class TestSetupUtil {
         dropAndCreateDatabaseTables(properties.getProperty("test.root"), engine);
         return engine;
     }
-    
+
     public static IDatabasePlatform dropDatabaseTables(String databaseType, ISymmetricEngine engine) {
-
         ISymmetricDialect dialect = engine.getSymmetricDialect();
-
         AbstractJdbcDatabasePlatform platform = (AbstractJdbcDatabasePlatform) dialect
                 .getPlatform();
-
-        engine.uninstall();       
-        
-        platform.resetDataSource();        
-        
+        engine.uninstall();
+        platform.resetDataSource();
         IDdlBuilder builder = platform.getDdlBuilder();
-        
         Database db2drop = platform.readDatabase(platform.getDefaultCatalog(),
                 platform.getDefaultSchema(), new String[] { "TABLE" });
-        
         platform.resetDataSource();
-        
-        String sql = builder.dropTables(db2drop);                
+        String sql = builder.dropTables(db2drop);
         SqlScript dropScript = new SqlScript(sql, platform.getSqlTemplate(), false, platform.getSqlScriptReplacementTokens());
         dropScript.execute(true);
-        
         platform.resetDataSource();
-
         dialect.cleanDatabase();
-        
         platform.resetCachedTableModel();
-
         return platform;
     }
 
@@ -138,5 +124,4 @@ abstract public class TestSetupUtil {
     protected static URL getResource(String resource) {
         return TestSetupUtil.class.getResource(resource);
     }
-
 }

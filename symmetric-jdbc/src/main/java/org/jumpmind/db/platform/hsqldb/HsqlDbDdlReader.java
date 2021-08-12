@@ -64,7 +64,6 @@ import org.jumpmind.db.sql.SqlException;
  * Reads a database model from a HsqlDb database.
  */
 public class HsqlDbDdlReader extends AbstractJdbcDdlReader {
-
     public HsqlDbDdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
@@ -75,7 +74,6 @@ public class HsqlDbDdlReader extends AbstractJdbcDdlReader {
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
         Table table = super.readTable(connection, metaData, values);
-
         if (table != null) {
             // For at least version 1.7.2 we have to determine the
             // auto-increment columns from a result set meta data because the
@@ -85,7 +83,6 @@ public class HsqlDbDdlReader extends AbstractJdbcDdlReader {
             determineAutoIncrementFromResultSetMetaData(connection, table,
                     table.getPrimaryKeyColumns());
         }
-
         return table;
     }
 
@@ -93,7 +90,6 @@ public class HsqlDbDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
-
         if (TypeMap.isTextType(column.getMappedTypeCode()) && (column.getDefaultValue() != null)) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }
@@ -104,7 +100,6 @@ public class HsqlDbDdlReader extends AbstractJdbcDdlReader {
     protected boolean isInternalForeignKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index) {
         String name = index.getName();
-
         return (name != null) && name.startsWith("SYS_IDX_");
     }
 
@@ -112,20 +107,16 @@ public class HsqlDbDdlReader extends AbstractJdbcDdlReader {
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
         String name = index.getName();
-
         return (name != null) && (name.startsWith("SYS_PK_") || name.startsWith("SYS_IDX_"));
     }
-    
+
     @Override
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) throws SqlException {
-        
         List<Trigger> triggers = new ArrayList<Trigger>();
-
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
-        
         String sql = "SELECT * FROM INFORMATION_SCHEMA.TRIGGERS "
                 + "WHERE TABLE_NAME=? and TRIGGER_SCHEMA=? and TRIGGER_CATALOG=? ;";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
@@ -148,8 +139,6 @@ public class HsqlDbDdlReader extends AbstractJdbcDdlReader {
                 return trigger;
             }
         }, tableName, schema, catalog);
-
         return triggers;
     }
-
 }

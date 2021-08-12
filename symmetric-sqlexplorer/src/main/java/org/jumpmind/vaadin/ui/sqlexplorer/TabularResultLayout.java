@@ -82,57 +82,31 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.Label;
 
 public class TabularResultLayout extends VerticalLayout {
-
     private static final long serialVersionUID = 1L;
-
     final String ACTION_SELECT = "Select From";
-
     final String ACTION_INSERT = "Insert";
-
     final String ACTION_UPDATE = "Update";
-
     final String ACTION_DELETE = "Delete";
-
     final Logger log = LoggerFactory.getLogger(getClass());
-
     SqlExplorer explorer;
-
     QueryPanel queryPanel;
-
     String tableName;
-
     String catalogName;
-
     String schemaName;
-
     Grid<List<Object>> grid;
-    
     Map<Integer, String> columnNameMap;
-
     org.jumpmind.db.model.Table resultTable;
-
     String sql;
-
     ResultSet rs;
-    
     ResultSetMetaData meta;
-
     IDb db;
-
     ISqlRunnerListener listener;
-
     String user;
-
     Settings settings;
-
     boolean showSql = true;
-
     boolean isInQueryGeneralResults;
-
     MenuBar.MenuItem followToMenu;
-
     MenuBar.MenuItem toggleKeepResultsButton;
-
     Label resultLabel;
 
     public TabularResultLayout(IDb db, String sql, ResultSet rs, ISqlRunnerListener listener, Settings settings, boolean showSql)
@@ -169,11 +143,9 @@ public class TabularResultLayout extends VerticalLayout {
         this.setSpacing(false);
         this.setMargin(false);
         createMenuBar();
-
         try {
             grid = putResultsInGrid(settings.getProperties().getInt(SQL_EXPLORER_MAX_RESULTS));
             grid.setSizeFull();
-            
             columnNameMap = new HashMap<Integer, String>();
             for (int i = 0; i < meta.getColumnCount(); i++) {
                 String realColumnName = meta.getColumnName(i + 1);
@@ -184,10 +156,8 @@ public class TabularResultLayout extends VerticalLayout {
                 }
                 columnNameMap.put(i, columnName);
             }
-
             ContextMenu menu = new ContextMenu(grid, true);
             menu.addItem(ACTION_SELECT, new MenuBar.Command() {
-
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -196,7 +166,6 @@ public class TabularResultLayout extends VerticalLayout {
                 }
             });
             menu.addItem(ACTION_INSERT, new MenuBar.Command() {
-
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -205,7 +174,6 @@ public class TabularResultLayout extends VerticalLayout {
                 }
             });
             menu.addItem(ACTION_UPDATE, new MenuBar.Command() {
-
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -214,7 +182,6 @@ public class TabularResultLayout extends VerticalLayout {
                 }
             });
             menu.addItem(ACTION_DELETE, new MenuBar.Command() {
-
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -222,15 +189,12 @@ public class TabularResultLayout extends VerticalLayout {
                     handleAction(ACTION_DELETE);
                 }
             });
-
             if (resultTable != null && resultTable.getForeignKeyCount() > 0) {
                 followToMenu = menu.addItem("Follow to", null);
                 buildFollowToMenu();
             }
-            
             Editor<List<Object>> editor = grid.getEditor();
             Binder<List<Object>> binder = editor.getBinder();
-            
             int i = 0;
             for (Grid.Column<List<Object>, ?> col : grid.getColumns()) {
                 String colId = col.getId();
@@ -242,13 +206,11 @@ public class TabularResultLayout extends VerticalLayout {
                     i++;
                 }
             }
-            
             if (resultTable != null) {
                 @SuppressWarnings("unchecked")
                 List<Object>[] unchangedValue = (List<Object>[]) new List[1];
                 Object[] pkParams = new Object[resultTable.getPrimaryKeyColumnCount()];
                 int[] pkTypes = new int[pkParams.length];
-                
                 editor.addOpenListener(event -> {
                     unchangedValue[0] = new ArrayList<Object>(event.getBean());
                     int paramCount = 0;
@@ -260,10 +222,8 @@ public class TabularResultLayout extends VerticalLayout {
                         }
                     }
                 });
-                
                 editor.addSaveListener(event -> {
                     grid.setDataProvider(grid.getDataProvider());
-                    
                     List<Object> row = event.getBean();
                     List<String> colNames = new ArrayList<String>();
                     List<Object> params = new ArrayList<Object>();
@@ -321,13 +281,10 @@ public class TabularResultLayout extends VerticalLayout {
                                 e, Type.ERROR_MESSAGE);
                     }
                 });
-                
                 editor.setEnabled(true);
             }
-            
             this.addComponent(grid);
             this.setExpandRatio(grid, 1);
-
             long count = (grid.getDataProvider().fetch(new Query<>()).count());
             int maxResultsSize = settings.getProperties().getInt(SQL_EXPLORER_MAX_RESULTS);
             if (count >= maxResultsSize) {
@@ -339,31 +296,25 @@ public class TabularResultLayout extends VerticalLayout {
             log.error(ex.getMessage(), ex);
             CommonUiUtils.notify(ex);
         }
-
     }
 
     private void createMenuBar() {
         HorizontalLayout resultBar = new HorizontalLayout();
         resultBar.setWidth(100, Unit.PERCENTAGE);
         resultBar.setMargin(new MarginInfo(false, true, false, true));
-
         HorizontalLayout leftBar = new HorizontalLayout();
         leftBar.setSpacing(true);
         resultLabel = new Label("", ContentMode.HTML);
         leftBar.addComponent(resultLabel);
-
         final Label sqlLabel = new Label("", ContentMode.TEXT);
         sqlLabel.setWidth(800, Unit.PIXELS);
         leftBar.addComponent(sqlLabel);
-
         resultBar.addComponent(leftBar);
         resultBar.setComponentAlignment(leftBar, Alignment.MIDDLE_LEFT);
         resultBar.setExpandRatio(leftBar, 1);
-
         MenuBar rightBar = new MenuBar();
         rightBar.addStyleName(ValoTheme.MENUBAR_BORDERLESS);
         rightBar.addStyleName(ValoTheme.MENUBAR_SMALL);
-
         MenuBar.MenuItem refreshButton = rightBar.addItem("", new Command() {
             private static final long serialVersionUID = 1L;
 
@@ -374,10 +325,9 @@ public class TabularResultLayout extends VerticalLayout {
         });
         refreshButton.setIcon(VaadinIcons.REFRESH);
         refreshButton.setDescription("Refresh");
-        
         MenuBar.MenuItem exportButton = rightBar.addItem("", new Command() {
             private static final long serialVersionUID = 1L;
-            
+
             @Override
             public void menuSelected(MenuBar.MenuItem selectedItem) {
                 IDataProvider target = new GridDataProvider(grid);
@@ -388,12 +338,10 @@ public class TabularResultLayout extends VerticalLayout {
                     csvExport.setTitle(sql);
                     csvExport.export();
                 }
-
             }
         });
         exportButton.setIcon(VaadinIcons.UPLOAD);
         exportButton.setDescription("Export Results");
-
         if (isInQueryGeneralResults) {
             MenuBar.MenuItem keepResultsButton = rightBar.addItem("", new Command() {
                 private static final long serialVersionUID = 1L;
@@ -408,14 +356,11 @@ public class TabularResultLayout extends VerticalLayout {
             keepResultsButton.setIcon(VaadinIcons.COPY);
             keepResultsButton.setDescription("Save these results to a new tab");
         }
-
         if (showSql) {
             sqlLabel.setValue(StringUtils.abbreviate(sql, 200));
         }
-
         resultBar.addComponent(rightBar);
         resultBar.setComponentAlignment(rightBar, Alignment.MIDDLE_RIGHT);
-
         this.addComponent(resultBar, 0);
     }
 
@@ -432,14 +377,12 @@ public class TabularResultLayout extends VerticalLayout {
             final String quote = db.getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? dbInfo.getDelimiterToken() : "";
             final String catalogSeparator = dbInfo.getCatalogSeparator();
             final String schemaSeparator = dbInfo.getSchemaSeparator();
-
             String[] columnHeaders = CommonUiUtils.getHeaderCaptions(grid);
             Set<List<Object>> selectedRowsSet = grid.getSelectedItems();
             Iterator<List<Object>> setIterator = selectedRowsSet.iterator();
             while (setIterator.hasNext()) {
                 List<Object> typeValueList = new ArrayList<Object>();
                 List<Object> item = setIterator.next();
-
                 for (int i = 1; i < columnHeaders.length; i++) {
                     Object typeValue = item.get(i - 1);
                     if (typeValue instanceof String) {
@@ -453,10 +396,8 @@ public class TabularResultLayout extends VerticalLayout {
                     }
                     typeValueList.add(typeValue);
                 }
-
                 if (action.equals(ACTION_SELECT)) {
                     StringBuilder sql = new StringBuilder("SELECT ");
-
                     for (int i = 1; i < columnHeaders.length; i++) {
                         if (i == 1) {
                             sql.append(quote).append(columnHeaders[i]).append(quote);
@@ -464,12 +405,9 @@ public class TabularResultLayout extends VerticalLayout {
                             sql.append(", ").append(quote).append(columnHeaders[i]).append(quote);
                         }
                     }
-
                     sql.append(" FROM " + org.jumpmind.db.model.Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, quote,
                             catalogSeparator, schemaSeparator));
-
                     sql.append(" WHERE ");
-
                     int track = 0;
                     for (int i = 0; i < resultTable.getColumnCount(); i++) {
                         Column col = resultTable.getColumn(i);
@@ -489,7 +427,6 @@ public class TabularResultLayout extends VerticalLayout {
                     StringBuilder sql = new StringBuilder();
                     sql.append("INSERT INTO ").append(org.jumpmind.db.model.Table.getFullyQualifiedTableName(catalogName, schemaName,
                             tableName, quote, catalogSeparator, schemaSeparator)).append(" (");
-
                     for (int i = 1; i < columnHeaders.length; i++) {
                         if (i == 1) {
                             sql.append(quote + columnHeaders[i] + quote);
@@ -509,7 +446,6 @@ public class TabularResultLayout extends VerticalLayout {
                     }
                     sql.append(");");
                     listener.writeSql(sql.toString());
-
                 } else if (action.equals(ACTION_UPDATE)) {
                     StringBuilder sql = new StringBuilder("UPDATE ");
                     sql.append(org.jumpmind.db.model.Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, quote,
@@ -520,12 +456,9 @@ public class TabularResultLayout extends VerticalLayout {
                         } else {
                             sql.append(", ").append(quote).append(columnHeaders[i]).append(quote).append("=");
                         }
-
                         sql.append(typeValueList.get(i - 1));
                     }
-
                     sql.append(" WHERE ");
-
                     int track = 0;
                     for (int i = 0; i < resultTable.getColumnCount(); i++) {
                         Column col = resultTable.getColumn(i);
@@ -541,7 +474,6 @@ public class TabularResultLayout extends VerticalLayout {
                     }
                     sql.append(";");
                     listener.writeSql(sql.toString());
-
                 } else if (action.equals(ACTION_DELETE)) {
                     StringBuilder sql = new StringBuilder("DELETE FROM ");
                     sql.append(org.jumpmind.db.model.Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, quote,
@@ -604,10 +536,8 @@ public class TabularResultLayout extends VerticalLayout {
             }
             optionTitle = optionTitle.substring(0, optionTitle.length() - 2) + ")";
             followToMenu.addItem(optionTitle, new MenuBar.Command() {
-
                 private static final long serialVersionUID = 1L;
 
-                
                 @Override
                 public void menuSelected(MenuItem selectedItem) {
                     followTo(foreignKey);
@@ -620,7 +550,6 @@ public class TabularResultLayout extends VerticalLayout {
         Set<List<Object>> selectedRows = grid.getSelectedItems();
         if (selectedRows.size() > 0) {
             log.info("Following foreign key to " + foreignKey.getForeignTableName());
-
             if (queryPanel == null) {
                 if (explorer != null) {
                     queryPanel = explorer.openQueryWindow(db);
@@ -628,21 +557,17 @@ public class TabularResultLayout extends VerticalLayout {
                     log.error("Failed to find current or create new query tab");
                 }
             }
-
             Table foreignTable = foreignKey.getForeignTable();
             if (foreignTable == null) {
                 foreignTable = db.getPlatform().getTableFromCache(foreignKey.getForeignTableName(), false);
             }
-
             Reference[] references = foreignKey.getReferences();
             for (Reference ref : references) {
                 if (ref.getForeignColumn() == null) {
                     ref.setForeignColumn(foreignTable.getColumnWithName(ref.getForeignColumnName()));
                 }
             }
-
             String sql = createFollowSql(foreignTable, references, selectedRows.size());
-
             try {
                 PreparedStatement ps = ((DataSource) db.getPlatform().getDataSource()).getConnection().prepareStatement(sql);
                 int i = 1;
@@ -670,7 +595,6 @@ public class TabularResultLayout extends VerticalLayout {
     protected String createFollowSql(Table foreignTable, Reference[] references, int selectedRowCount) {
         DatabaseInfo dbInfo = db.getPlatform().getDatabaseInfo();
         String quote = db.getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? dbInfo.getDelimiterToken() : "";
-
         StringBuilder sql = new StringBuilder("select ");
         for (Column col : foreignTable.getColumns()) {
             sql.append(quote);
@@ -682,7 +606,6 @@ public class TabularResultLayout extends VerticalLayout {
         sql.append(" from ");
         sql.append(foreignTable.getQualifiedTableName(quote, dbInfo.getCatalogSeparator(), dbInfo.getSchemaSeparator()));
         sql.append(" where ");
-
         StringBuilder whereClause = new StringBuilder("(");
         for (Reference ref : references) {
             whereClause.append(ref.getForeignColumnName());
@@ -690,12 +613,10 @@ public class TabularResultLayout extends VerticalLayout {
         }
         whereClause.delete(whereClause.length() - 5, whereClause.length());
         whereClause.append(") or ");
-
         for (int i = 0; i < selectedRowCount; i++) {
             sql.append(whereClause.toString());
         }
         sql.delete(sql.length() - 4, sql.length());
-
         return sql.toString();
     }
 
@@ -751,7 +672,6 @@ public class TabularResultLayout extends VerticalLayout {
         } else if (!first.equals("")) {
             tableName = parsedSql;
         }
-
         if (isNotBlank(tableName)) {
             if (tableName.contains(" ")) {
                 tableName = tableName.substring(0, tableName.indexOf(" "));
@@ -785,23 +705,20 @@ public class TabularResultLayout extends VerticalLayout {
                     if (isNotBlank(schemaName) && isNotBlank(resultTable.getSchema())) {
                         schemaName = resultTable.getSchema();
                     }
-
                 }
             } catch (Exception e) {
                 log.debug("Failed to lookup table: " + tableName, e);
             }
         }
-
         TypedProperties properties = settings.getProperties();
         return CommonUiUtils.putResultsInGrid(rs, properties.getInt(SQL_EXPLORER_MAX_RESULTS),
                 properties.is(SQL_EXPLORER_SHOW_ROW_NUMBERS), getColumnsToExclude());
-
     }
 
     protected String[] getColumnsToExclude() {
         return new String[0];
     }
-    
+
     protected String buildUpdate(Table table, List<String> columnNames, List<Object> originalValues, String[] pkColumnNames) {
         StringBuilder sql = new StringBuilder("update ");
         IDatabasePlatform platform = db.getPlatform();

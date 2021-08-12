@@ -60,17 +60,15 @@ import org.jumpmind.symmetric.service.IParameterService;
  * implement: http://www.devx.com/getHelpOn/10MiSolution/16544
  */
 public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-
     static final protected String SQL_DROP_FUNCTION = "drop function dbo.$(functionName)";
-    static final protected String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))" ;
-
+    static final protected String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))";
     protected Boolean supportsDisableTriggers = null;
 
     public MsSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new MsSqlTriggerTemplate(this);
     }
-    
+
     @Override
     public Database readSymmetricSchemaFromXml() {
         Database db = super.readSymmetricSchemaFromXml();
@@ -82,21 +80,21 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
             setColumnToNtext(table.getColumnWithName("pk_data"));
         }
         return db;
-    } 
-    
+    }
+
     protected void setColumnToNtext(Column column) {
         column.setMappedType(TypeMap.LONGNVARCHAR);
     }
-    
+
     @Override
     public boolean createOrAlterTablesIfNecessary(String... tableNames) {
         boolean altered = super.createOrAlterTablesIfNecessary(tableNames);
         altered |= alterLockEscalation();
         return altered;
     }
-    
-    protected boolean alterLockEscalation () {
-        ISqlTemplate sqlTemplate = platform.getSqlTemplate();        
+
+    protected boolean alterLockEscalation() {
+        ISqlTemplate sqlTemplate = platform.getSqlTemplate();
         String tablePrefix = getTablePrefix();
         try {
             String lockEscalationClause = "";
@@ -124,7 +122,6 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                             + lockEscalationClause
                             + ")") > 0) {
                 log.info("Updating indexes to prevent lock escalation");
-                
                 String dataTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_data");
                 String dataEventTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_data_event");
                 String outgoingBatchTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_outgoing_batch");
@@ -133,7 +130,6 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 String extractRequestTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_extract_request");
                 String tableReloadRequestTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_table_reload_request");
                 String triggerHistTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_trigger_hist");
-                
                 sqlTemplate.update("ALTER INDEX ALL ON " + dataTable
                         + " SET (ALLOW_ROW_LOCKS = ON)");
                 sqlTemplate.update("ALTER INDEX ALL ON " + dataEventTable
@@ -150,7 +146,6 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                         + " SET (ALLOW_ROW_LOCKS = ON)");
                 sqlTemplate.update("ALTER INDEX ALL ON " + triggerHistTable
                         + " SET (ALLOW_ROW_LOCKS = ON)");
-                
                 if (parameterService.is(ParameterConstants.MSSQL_LOCK_ESCALATION_DISABLED, true)) {
                     sqlTemplate.update("ALTER INDEX ALL ON " + dataTable
                             + " SET (ALLOW_PAGE_LOCKS = OFF)");
@@ -168,7 +163,6 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                             + " SET (ALLOW_PAGE_LOCKS = OFF)");
                     sqlTemplate.update("ALTER INDEX ALL ON " + triggerHistTable
                             + " SET (ALLOW_PAGE_LOCKS = OFF)");
-                  
                     sqlTemplate.update("ALTER TABLE " + dataTable
                             + " SET (LOCK_ESCALATION = DISABLE)");
                     sqlTemplate.update("ALTER TABLE " + dataEventTable
@@ -190,13 +184,13 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
             } else {
                 return false;
             }
-        } catch (Exception e) {            
+        } catch (Exception e) {
             log.warn("Failed to disable lock escalation");
             log.debug("", e);
             return false;
         }
     }
-    
+
     @Override
     public void verifyDatabaseIsCompatible() {
         super.verifyDatabaseIsCompatible();
@@ -205,79 +199,91 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
             throw new SymmetricException("NOCOUNT is currently turned ON.  SymmetricDS will not function with NOCOUNT turned ON.");
         }
     }
-    
+
     @Override
     public void createRequiredDatabaseObjects() {
         createBase64EncodeFunction();
-
         createTriggersDisabledFunction();
-
         createNodeDisabledFunction();
     }
-    
+
     protected void createBase64EncodeFunction() {
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
-            String sql = "create function dbo.$(functionName)(@data varbinary(max)) returns varchar(max)                                                                                                                         " + 
-                    "\n  with schemabinding, returns null on null input                                                                                                                       " + 
-                    "\n  begin                                                                                                                                                                " + 
-                    "\n    return ( select [text()] = @data for xml path('') )                                                                                                                " + 
+            String sql = "create function dbo.$(functionName)(@data varbinary(max)) returns varchar(max)                                                                                                                         "
+                    +
+                    "\n  with schemabinding, returns null on null input                                                                                                                       "
+                    +
+                    "\n  begin                                                                                                                                                                "
+                    +
+                    "\n    return ( select [text()] = @data for xml path('') )                                                                                                                "
+                    +
                     "\n  end                                                                                                                                                                  ";
             install(sql, encode);
         }
     }
-    
+
     protected void createTriggersDisabledFunction() {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-            String sql = "create function dbo.$(functionName)() returns smallint                                                                                                                                                 " + 
-                    "\n  begin                                                                                                                                                                  " + 
-                    "\n    declare @disabled varchar(1);                                                                                                                                        " + 
-                    "\n    set @disabled = coalesce(replace(substring(cast(context_info() as varchar), 1, 1), 0x0, ''), '');                                                                    " + 
-                    "\n    if @disabled is null or @disabled != '1'                                                                                                                             " + 
-                    "\n      return 0;                                                                                                                                                          " + 
-                    "\n    return 1;                                                                                                                                                            " + 
+            String sql = "create function dbo.$(functionName)() returns smallint                                                                                                                                                 "
+                    +
+                    "\n  begin                                                                                                                                                                  "
+                    +
+                    "\n    declare @disabled varchar(1);                                                                                                                                        "
+                    +
+                    "\n    set @disabled = coalesce(replace(substring(cast(context_info() as varchar), 1, 1), 0x0, ''), '');                                                                    "
+                    +
+                    "\n    if @disabled is null or @disabled != '1'                                                                                                                             "
+                    +
+                    "\n      return 0;                                                                                                                                                          "
+                    +
+                    "\n    return 1;                                                                                                                                                            "
+                    +
                     "\n  end                                                                                                                                                                    ";
             install(sql, triggersDisabled);
         }
     }
-    
+
     protected void createNodeDisabledFunction() {
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-            String sql = "create function dbo.$(functionName)() returns varchar(50)                                                                                                                                              " + 
-                    "\n  begin                                                                                                                                                                  " + 
-                    "\n    declare @node varchar(50);                                                                                                                                           " + 
-                    "\n    set @node = coalesce(replace(substring(cast(context_info() as varchar) collate SQL_Latin1_General_CP1_CI_AS, 2, 50), 0x0, ''), '');                                  " + 
-                    "\n    return @node;                                                                                                                                                        " + 
+            String sql = "create function dbo.$(functionName)() returns varchar(50)                                                                                                                                              "
+                    +
+                    "\n  begin                                                                                                                                                                  "
+                    +
+                    "\n    declare @node varchar(50);                                                                                                                                           "
+                    +
+                    "\n    set @node = coalesce(replace(substring(cast(context_info() as varchar) collate SQL_Latin1_General_CP1_CI_AS, 2, 50), 0x0, ''), '');                                  "
+                    +
+                    "\n    return @node;                                                                                                                                                        "
+                    +
                     "\n  end                                                                                                                                                                    ";
             install(sql, nodeDisabled);
         }
     }
-    
+
     @Override
     public void dropRequiredDatabaseObjects() {
         dropBase64EncodeFunction();
-
         dropTriggersDisabledFunction();
-
         dropNodeDisabledFunction();
     }
-    
+
     protected void dropBase64EncodeFunction() {
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
         if (installed(SQL_FUNCTION_INSTALLED, encode)) {
             uninstall(SQL_DROP_FUNCTION, encode);
         }
     }
-    
+
     protected void dropTriggersDisabledFunction() {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
             uninstall(SQL_DROP_FUNCTION, triggersDisabled);
         }
     }
-    
+
     protected void dropNodeDisabledFunction() {
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
@@ -296,16 +302,14 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 supportsDisableTriggers = false;
             }
         }
-
         return supportsDisableTriggers == null ? false : supportsDisableTriggers;
-
     }
-    
+
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, final String catalogName, String schemaName,
             final String triggerName, String tableName, ISqlTransaction transaction) {
-        schemaName = StringUtils.isBlank(schemaName) ? "" :
-            (platform.getDatabaseInfo().getDelimiterToken() + schemaName + platform.getDatabaseInfo().getDelimiterToken() + ".");
+        schemaName = StringUtils.isBlank(schemaName) ? ""
+                : (platform.getDatabaseInfo().getDelimiterToken() + schemaName + platform.getDatabaseInfo().getDelimiterToken() + ".");
         final String sql = "drop trigger " + schemaName + triggerName;
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
@@ -356,7 +360,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                     }
                 }
                 throw new SqlException(e);
-            } 
+            }
         } else {
             return null;
         }
@@ -370,18 +374,16 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
             if (StringUtils.isNotBlank(trigger.getSourceSchemaName())) {
                 schemaName = trigger.getSourceSchemaName() + ".";
             }
-    
             String triggerNameFirst = (String) transaction.queryForObject(
-                    "select tr.name " + 
-                    "from sys.triggers tr inner join sys.trigger_events te on te.object_id = tr.object_id " +
-                    "inner join sys.tables t on t.object_id = tr.parent_id " +
-                    "where t.name = ? and te.type_desc = ? and te.is_first = 1", String.class, table.getName(), dml.name());
+                    "select tr.name " +
+                            "from sys.triggers tr inner join sys.trigger_events te on te.object_id = tr.object_id " +
+                            "inner join sys.tables t on t.object_id = tr.parent_id " +
+                            "where t.name = ? and te.type_desc = ? and te.is_first = 1", String.class, table.getName(), dml.name());
             if (StringUtils.isNotBlank(triggerNameFirst)) {
                 log.warn("Existing first trigger '{}{}' is being set to order of 'None'", schemaName, triggerNameFirst);
                 transaction.execute("exec sys.sp_settriggerorder @triggername = '" + schemaName +
-                        triggerNameFirst + "', @order = 'None', @stmttype = '" + dml.name() + "'");            
+                        triggerNameFirst + "', @order = 'None', @stmttype = '" + dml.name() + "'");
             }
-    
             String triggerName = null;
             if (dml == DataEventType.INSERT) {
                 triggerName = hist.getNameForInsertTrigger();
@@ -442,7 +444,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
             }
         }
     }
-    
+
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         if (supportsDisableTriggers()) {
             if (nodeId == null) {
@@ -462,7 +464,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     public String getSyncTriggersExpression() {
         String catalog = parameterService.is(ParameterConstants.MSSQL_INCLUDE_CATALOG_IN_TRIGGERS, true) ? "$(defaultCatalog)" : "";
         return catalog + "dbo." + parameterService.getTablePrefix()
-            + "_triggers_disabled() = 0";
+                + "_triggers_disabled() = 0";
     }
 
     @Override
@@ -491,7 +493,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     public boolean needsToSelectLobData() {
         return true;
     }
-    
+
     @Override
     protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
         /* gets filled/replaced by trigger template as it will compare by each column */
@@ -505,7 +507,8 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     public PermissionType[] getSymTablePermissions() {
-        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER, PermissionType.CREATE_FUNCTION};
+        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER,
+                PermissionType.CREATE_FUNCTION };
         return permissions;
     }
 }

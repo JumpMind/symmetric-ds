@@ -47,19 +47,19 @@ import org.jumpmind.db.platform.DdlException;
 /**
  * Represents the addition of an index to a table.
  */
-public class AddIndexChange extends TableChangeImplBase
-{
+public class AddIndexChange extends TableChangeImplBase {
     /** The new index. */
     private IIndex _newIndex;
 
     /**
      * Creates a new change object.
      * 
-     * @param table    The table to add the index to
-     * @param newIndex The new index
+     * @param table
+     *            The table to add the index to
+     * @param newIndex
+     *            The new index
      */
-    public AddIndexChange(Table table, IIndex newIndex)
-    {
+    public AddIndexChange(Table table, IIndex newIndex) {
         super(table);
         _newIndex = newIndex;
     }
@@ -69,24 +69,18 @@ public class AddIndexChange extends TableChangeImplBase
      *
      * @return The new index
      */
-    public IIndex getNewIndex()
-    {
+    public IIndex getNewIndex() {
         return _newIndex;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void apply(Database database, boolean caseSensitive)
-    {
+    public void apply(Database database, boolean caseSensitive) {
         IIndex newIndex = null;
-
-        try
-        {
-            newIndex = (IIndex)_newIndex.clone();
-        }
-        catch (CloneNotSupportedException ex)
-        {
+        try {
+            newIndex = (IIndex) _newIndex.clone();
+        } catch (CloneNotSupportedException ex) {
             throw new DdlException(ex);
         }
         database.findTable(getChangedTable().getName(), caseSensitive).addIndex(newIndex);

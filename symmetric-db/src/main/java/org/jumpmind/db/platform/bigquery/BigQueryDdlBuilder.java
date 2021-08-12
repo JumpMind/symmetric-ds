@@ -32,16 +32,13 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import com.google.cloud.bigquery.BigQuery;
 
 public class BigQueryDdlBuilder extends AbstractDdlBuilder {
-
     BigQuery bigQuery;
-    
+
     public BigQueryDdlBuilder(BigQuery bq) {
         super(DatabaseNamesConstants.BIGQUERY);
-        this.delimitedIdentifierModeOn=false;
+        this.delimitedIdentifierModeOn = false;
         this.bigQuery = bq;
-        
         getDatabaseInfo().setDelimitedIdentifiersSupported(false);
-        
         databaseInfo.addNativeTypeMapping(Types.INTEGER, "INT64");
         databaseInfo.addNativeTypeMapping(Types.BIT, "INT64");
         databaseInfo.addNativeTypeMapping(Types.BIGINT, "NUMERIC");
@@ -49,10 +46,8 @@ public class BigQueryDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "FLOAT64");
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "FLOAT64");
         databaseInfo.addNativeTypeMapping(Types.DECIMAL, "NUMERIC");
-        
         databaseInfo.addNativeTypeMapping(Types.BINARY, "BYTES");
         databaseInfo.addNativeTypeMapping(Types.BLOB, "BYTES");
-         
         databaseInfo.addNativeTypeMapping(Types.VARCHAR, "STRING");
         databaseInfo.addNativeTypeMapping(Types.CHAR, "STRING");
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "STRING");
@@ -60,11 +55,9 @@ public class BigQueryDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.VARBINARY, "STRING");
         databaseInfo.addNativeTypeMapping(Types.NVARCHAR, "STRING");
         databaseInfo.addNativeTypeMapping(Types.CLOB, "STRING");
-        
         databaseInfo.setForeignKeysSupported(false);
         databaseInfo.setPrimaryKeyEmbedded(true);
         databaseInfo.setIndicesSupported(false);
-        
         databaseInfo.setHasSize(Integer.valueOf(Types.CHAR), false);
         databaseInfo.setHasSize(Integer.valueOf(Types.VARCHAR), false);
         databaseInfo.setHasSize(Integer.valueOf(Types.BINARY), false);
@@ -73,11 +66,10 @@ public class BigQueryDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setHasSize(Integer.valueOf(Types.NVARCHAR), false);
         databaseInfo.setHasSize(Integer.valueOf(Types.NUMERIC), false);
         databaseInfo.setHasSize(Integer.valueOf(Types.DECIMAL), false);
-        
         databaseInfo.setHasPrecisionAndScale(Types.NUMERIC, false);
         databaseInfo.setHasPrecisionAndScale(Types.DECIMAL, false);
     }
-    
+
     @Override
     protected void mergeOrRemovePlatformTypes(Database currentModel, Database desiredModel) {
         super.mergeOrRemovePlatformTypes(currentModel, desiredModel);
@@ -87,7 +79,6 @@ public class BigQueryDdlBuilder extends AbstractDdlBuilder {
                 col.setAutoIncrement(false);
                 col.setRequired(false);
                 col.setDefaultValue(null);
-                
                 if (col.getMappedTypeCode() == Types.CHAR) {
                     col.setMappedTypeCode(Types.VARCHAR);
                 } else if (col.getMappedTypeCode() == Types.BIT) {
@@ -96,7 +87,7 @@ public class BigQueryDdlBuilder extends AbstractDdlBuilder {
                     col.setMappedTypeCode(Types.VARCHAR);
                 } else if (col.getMappedTypeCode() == Types.BLOB) {
                     col.setMappedTypeCode(Types.BINARY);
-                } else if (col.getMappedTypeCode() == Types.DECIMAL ) {
+                } else if (col.getMappedTypeCode() == Types.DECIMAL) {
                     col.setMappedTypeCode(Types.NUMERIC);
                 }
             }
@@ -110,30 +101,28 @@ public class BigQueryDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void writeEmbeddedPrimaryKeysStmt(Table table, StringBuilder ddl) {
     }
-    
+
     @Override
     protected void writeExternalPrimaryKeysCreateStmt(Table table, Column[] primaryKeyColumns, StringBuilder ddl) {
     }
-    
+
     @Override
     protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
     }
-    
+
     @Override
     protected void writeEmbeddedIndexCreateStmt(Table table, IIndex index, StringBuilder ddl) {
     }
-    
+
     @Override
     protected void writeEmbeddedIndicesStmt(Table table, StringBuilder ddl) {
     }
-    
+
     @Override
     protected void writeColumnUniqueStmt(StringBuilder ddl) {
     }
-    
+
     @Override
     protected void writeColumnDefaultValueStmt(Table table, Column column, StringBuilder ddl) {
     }
-    
-    
 }

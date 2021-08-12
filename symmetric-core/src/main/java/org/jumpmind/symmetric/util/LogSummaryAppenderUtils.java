@@ -37,18 +37,14 @@ import org.slf4j.event.Level;
  * Compiles against slf4j and only instantiates the helper if log4j is present
  */
 public class LogSummaryAppenderUtils {
-
     private static final String LOG_SUMMARY_APPENDER_NAME = "SUMMARY";
-    
     private static final Logger log = LoggerFactory.getLogger(LogSummaryAppenderUtils.class);
-    
     private static final List<LogSummary> EMPTY_LIST = new ArrayList<LogSummary>();
-    
     private static Log4j2Helper helper;
 
     private LogSummaryAppenderUtils() {
     }
-    
+
     static {
         SLF4JBridgeHandler.install();
         try {
@@ -65,19 +61,15 @@ public class LogSummaryAppenderUtils {
             throws MalformedURLException {
         if (helper != null) {
             helper.initialize(isDebug);
-
             if (isVerbose) {
                 helper.registerVerboseConsoleAppender();
             }
-
             if (isNoConsole) {
                 helper.removeAppender("CONSOLE");
             }
-
             if (!isVerbose && !isNoConsole) {
                 helper.registerConsoleAppender();
             }
-
             if (isNoLog) {
                 helper.removeAppender("ROLLING");
             } else {
@@ -99,19 +91,19 @@ public class LogSummaryAppenderUtils {
             }
         }
     }
-    
+
     public static LogSummaryAppender getLogSummaryAppender() {
         LogSummaryAppender appender = null;
         if (helper != null) {
-            try {            
+            try {
                 appender = (LogSummaryAppender) helper.getAppender(LOG_SUMMARY_APPENDER_NAME);
             } catch (Exception e) {
                 // Can get ClassCastException if the app has been recycled in the same container
                 log.debug("Failed to load appender " + LOG_SUMMARY_APPENDER_NAME, e);
-                try {                
+                try {
                     helper.removeAppender(LOG_SUMMARY_APPENDER_NAME);
                 } catch (Exception ex) {
-                    log.debug("Failed to remove appender " + LOG_SUMMARY_APPENDER_NAME, ex);    
+                    log.debug("Failed to remove appender " + LOG_SUMMARY_APPENDER_NAME, ex);
                 }
                 appender = helper.registerLogSummaryAppenderInternal(LOG_SUMMARY_APPENDER_NAME);
             }
@@ -142,12 +134,12 @@ public class LogSummaryAppenderUtils {
             return EMPTY_LIST;
         }
     }
-    
+
     public File getLogDir() {
         if (helper != null) {
             helper.getLogDir();
         }
-        return null;        
+        return null;
     }
 
     public static File getLogFile() {
@@ -163,24 +155,24 @@ public class LogSummaryAppenderUtils {
         }
         return false;
     }
-    
+
     public static void setLevel(String loggerName, Level level) {
         if (helper != null) {
             helper.setLevel(loggerName, level);
-        }        
+        }
     }
-    
+
     public static Level getLevel(String loggerName) {
         if (helper != null) {
             return helper.getLevel(loggerName);
         }
         return Level.INFO;
     }
-    
+
     public static org.slf4j.event.Level getRootLevel() {
         if (helper != null) {
             return helper.getRootLevel();
         }
-        return Level.INFO;        
+        return Level.INFO;
     }
 }

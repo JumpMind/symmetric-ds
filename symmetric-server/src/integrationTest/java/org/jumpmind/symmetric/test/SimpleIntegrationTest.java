@@ -65,49 +65,28 @@ import org.junit.runners.MethodSorters;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SimpleIntegrationTest extends AbstractIntegrationTest {
-
     static final String THIS_IS_A_TEST = "This is a test";
-    
     static {
         System.setProperty("h2.baseDir", "./");
     }
-
     public static boolean testFlag = false;
-
     static final String updateOrderHeaderStatusSql = "update test_order_header set status = ? where order_id = ?";
-
     static final String insertStoreStatusSql = "insert into test_store_status (store_id, register_id, status) values(?,?,?)";
-
     static final String updateStoreStatusSql = "update test_store_status set status = ? where store_id = ? and register_id = ?";
-
     static final String selectStoreStatusSql = "select status from test_store_status where store_id = ? and register_id = ?";
-
     static final String enableKeyWordTriggerSql = "update sym_trigger set sync_on_insert = 1, sync_on_update = 1, sync_on_delete = 1 where source_table_name = 'test_key_word'";
-
     static final String alterKeyWordSql = "alter table test_key_word add \"key word\" char(1)";
-
     static final String alterKeyWordSql2 = "alter table test_key_word add \"case\" char(1)";
-
     static final String insertKeyWordSql = "insert into test_key_word (id, \"key word\", \"case\") values (?, ?, ?)";
-
     static final String updateKeyWordSql = "update test_key_word set \"key word\" = ?, \"case\" = ? where id = ?";
-
     static final String selectKeyWordSql = "select \"key word\", \"case\" from test_key_word where id = ?";
-
     static final String nullSyncColumnLevelSql = "update test_sync_column_level set string_value = null, time_value = null, date_value = null, bigint_value = null, decimal_value = null where id = ?";
-
     static final String deleteSyncColumnLevelSql = "delete from test_sync_column_level where id = ?";
-
     static final String updateSyncColumnLevelSql = "update test_sync_column_level set $(column) = ? where id = ?";
-
     static final String selectSyncColumnLevelSql = "select count(*) from test_sync_column_level where id = ? and $(column) = ?";
-
     static final String isRegistrationClosedSql = "select count(*) from sym_node_security where registration_enabled=0 and node_id=?";
-
     static final String makeHeartbeatOld = "update sym_node_host set heartbeat_time={ts '2000-01-01 01:01:01.000'} where node_id=?";
-
     static final String deleteNode = "delete from sym_node where node_id=?";
-
     static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
 
     @Test(timeout = 3600000)
@@ -117,7 +96,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         assertNotNull(server);
         server.getParameterService().saveParameter(ParameterConstants.FILE_SYNC_ENABLE, false, "unit_test");
         checkForFailedTriggers(true, false);
-
     }
 
     @Test(timeout = 3600000)
@@ -130,14 +108,13 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         assertTrue("The registration for the client should be opened now", rootNodeService
                 .findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isRegistrationEnabled());
         getClient().start();
-        getClient().getParameterService().saveParameter(ParameterConstants.FILE_SYNC_ENABLE, false, "unit_test");        
+        getClient().getParameterService().saveParameter(ParameterConstants.FILE_SYNC_ENABLE, false, "unit_test");
         clientPull();
         assertTrue("The client did not register", getClient().isRegistered());
         assertFalse("The registration for the client should be closed now", rootNodeService
                 .findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isRegistrationEnabled());
         IStatisticManager statMgr = getClient().getStatisticManager();
         statMgr.flush();
-
         checkForFailedTriggers(true, true);
     }
 
@@ -146,67 +123,49 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         logTestRunning();
         boolean sendingLob1 = serverTestService.insertIntoTestUseStreamLob(100, "test_use_stream_lob", THIS_IS_A_TEST);
         boolean sendingLob2 = serverTestService.insertIntoTestUseStreamLob(100, "test_use_capture_lob", THIS_IS_A_TEST);
-
         Customer customer = new Customer(301, "Linus", true, "42 Blanket Street", "Santa Claus",
                 "IN", 90009, new Date(), new Date(), THIS_IS_A_TEST, BINARY_DATA);
         serverTestService.insertCustomer(customer);
-
         serverTestService.insertIntoTestTriggerTable(new Object[] { 1, "wow", "mom" });
-
         serverTestService.insertIntoTestTriggerTable(new Object[] { 2, "mom", "wow" });
-
         INodeService rootNodeService = getServer().getNodeService();
         INodeService clientNodeService = getClient().getNodeService();
         String nodeId = rootNodeService.findNodeByExternalId(TestConstants.TEST_CLIENT_NODE_GROUP,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID).getNodeId();
-
         getServer().reloadNode(nodeId, "test");
-        
         IOutgoingBatchService rootOutgoingBatchService = getServer().getOutgoingBatchService();
         assertFalse(rootOutgoingBatchService.isInitialLoadComplete(nodeId));
-
         assertTrue(rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID)
                 .isInitialLoadEnabled());
         do {
             clientPull();
         } while (!rootOutgoingBatchService.isInitialLoadComplete(nodeId));
-
         assertFalse(rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID)
                 .isInitialLoadEnabled());
-
         NodeSecurity clientNodeSecurity = clientNodeService
                 .findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID);
-
         assertFalse(clientNodeSecurity.isInitialLoadEnabled());
         assertNotNull(clientNodeSecurity.getInitialLoadTime());
-
         IIncomingBatchService clientIncomingBatchService = getClient().getIncomingBatchService();
-
         // Running a query with dirty reads to make sure platform allows it
-        getServer().getDataService().findMaxDataId();        
-        
+        getServer().getDataService().findMaxDataId();
         assertEquals("The initial load errored out." + printRootAndClientDatabases(), 0,
                 clientIncomingBatchService.countIncomingBatchesInError());
         assertEquals(
                 "test_triggers_table on the client did not contain the expected number of rows", 2,
                 clientTestService.countTestTriggersTable());
-
         assertEquals(
                 "test_customer on the client did not contain the expected number of rows", 2,
                 clientTestService.count("test_customer"));
-        
         assertEquals("Initial load was not successful according to the client",
                 NodeStatus.DATA_LOAD_COMPLETED, clientNodeService.getNodeStatus());
-
         assertEquals("Initial load was not successful accordign to the root", false,
                 rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID)
                         .isInitialLoadEnabled());
-
         if (sendingLob1) {
             clientTestService.assertTestBlobIsInDatabase(100, "test_use_capture_lob",
                     THIS_IS_A_TEST);
         }
-        
         if (sendingLob2) {
             clientTestService.assertTestBlobIsInDatabase(100, "test_use_stream_lob",
                     THIS_IS_A_TEST);
@@ -218,7 +177,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         logTestRunning();
         String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
         if (serverTestService.insertIntoTestUseStreamLob(200, "test_use_stream_lob", text)) {
-            //IDatabasePlatform platform = getServer().getDatabasePlatform();
+            // IDatabasePlatform platform = getServer().getDatabasePlatform();
             String rowData = getServer()
                     .getSqlTemplate()
                     .queryForObject(
@@ -244,29 +203,24 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             assertTrue("Did not find the id in the row data", rowData.contains("200"));
             clientPull();
             clientTestService.assertTestBlobIsInDatabase(200, "test_use_capture_lob", text);
-
             String updateText = "The text was updated";
             serverTestService.updateTestUseStreamLob(200, "test_use_capture_lob", updateText);
             clientPull();
             serverTestService.assertTestBlobIsInDatabase(200, "test_use_capture_lob", updateText);
         }
-    }    
+    }
 
     @Test(timeout = 900000)
     public void test06SyncToClient() {
         logTestRunning();
-
         // test pulling no data
         clientPull();
-
         final byte[] BIG_BINARY = new byte[200];
         for (int i = 0; i < BIG_BINARY.length; i++) {
             BIG_BINARY[i] = 0x01;
         }
-
         final String TEST_CLOB = "This is my test's test";
         // now change some data that should be sync'd
-
         Customer customer = new Customer(101, "Charlie Brown", true,
                 "300 Grub Street \\o", "New Yorl", "NY", 90009, new Date(), new Date(), TEST_CLOB,
                 BIG_BINARY);
@@ -274,52 +228,38 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             customer.setAddress("300 Grub Street");
         }
         serverTestService.insertCustomer(customer);
-
         clientPull();
-
         assertTrue("The customer was not sync'd to the client."
                 + printRootAndClientDatabases(), clientTestService.doesCustomerExist(101));
-        
         assertEquals("The customer address was incorrect"
                 + printRootAndClientDatabases(), customer.getAddress(), clientTestService.getCustomer(101).getAddress());
-        
-
         if (getServer().getSymmetricDialect().isClobSyncSupported()) {
             assertEquals("The CLOB notes field on customer was not sync'd to the client",
                     serverTestService.getCustomerNotes(101),
                     clientTestService.getCustomerNotes(101));
         }
-
         if (getServer().getSymmetricDialect().isBlobSyncSupported()) {
             byte[] data = clientTestService.getCustomerIcon(101);
             assertTrue("The BLOB icon field on customer was not sync'd to the client",
                     Objects.deepEquals(data, BIG_BINARY));
         }
-
     }
 
     @Test(timeout = 900000)
     public void test07SyncToClientMultipleUpdates() {
-
         logTestRunning();
         // test pulling no data
         clientPull();
-
         final int NEW_ZIP = 44444;
         final String NEW_NAME = "JoJo Duh Doh";
-
         // now change some data that should be sync'd
         serverTestService.updateCustomer(100, "zip", NEW_ZIP, Types.NUMERIC);
         serverTestService.updateCustomer(100, "name", NEW_NAME, Types.VARCHAR);
-
         boolean didPullData = clientPull();
-
         assertTrue(didPullData);
-
         Customer clientCustomer = clientTestService.getCustomer(100);
         assertEquals(NEW_ZIP, clientCustomer.getZip());
         assertEquals(NEW_NAME, clientCustomer.getName());
-
     }
 
     @Test(timeout = 900000)
@@ -328,9 +268,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         assertEquals(getClient().getSqlTemplate().queryForInt(
                 "select count(*) from sym_node where schema_version='test'"), 0);
         getServer()
-
-        .getDataService().insertSqlEvent(TestConstants.TEST_CLIENT_NODE,
-                "update sym_node set schema_version='test'", false, -1, null);
+                .getDataService().insertSqlEvent(TestConstants.TEST_CLIENT_NODE,
+                        "update sym_node set schema_version='test'", false, -1, null);
         clientPull();
         assertTrue(getClient().getSqlTemplate().queryForInt(
                 "select count(*) from sym_node where schema_version='test'") > 0);
@@ -341,13 +280,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         logTestRunning();
         Customer customer = new Customer(300, "Eric", true, "100 Main Street", "Columbus", "OH",
                 43082, new Date(), new Date(), "", new byte[0]);
-
         serverTestService.insertCustomer(customer);
-
         clientPull();
-        
         assertNotNull("Customer 300 did not sync to the client", clientTestService.getCustomer(300));
-
         if (getServer().getSymmetricDialect().isClobSyncSupported()) {
             if (isClientInterbase()) {
                 // Putting an empty string into a CLOB on Interbase results in a
@@ -358,12 +293,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                         clientTestService.getCustomerNotes(300));
             }
         }
-
         if (getServer().getSymmetricDialect().isBlobSyncSupported()) {
             assertArrayEquals("Expected empty BLOB", serverTestService.getCustomerIcon(300),
                     clientTestService.getCustomerIcon(300));
         }
-
         Table table = getServer().getSymmetricDialect().getPlatform()
                 .getTableFromCache("test_customer", false);
         // Test null large object
@@ -371,13 +304,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 .getMappedTypeCode());
         serverTestService.updateCustomer(300, "icon", null, table.getColumnWithName("icon")
                 .getMappedTypeCode());
-
         clientPull();
-
         if (getServer().getSymmetricDialect().isClobSyncSupported()) {
             assertNull("Expected null CLOB", clientTestService.getCustomerNotes(300));
         }
-
         if (getServer().getSymmetricDialect().isBlobSyncSupported()) {
             assertNull("Expected null BLOB", clientTestService.getCustomerIcon(300));
         }
@@ -401,77 +331,54 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // test suspend / ignore with remote database specifying the suspends
         // and ignores
         logTestRunning();
-
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         Order order = new Order("101", 100, null, date);
         order.getOrderDetails().add(
                 new OrderDetail("101", 1, "STK", "110000065", 3, new BigDecimal("3.33")));
-
         assertNull(serverTestService.getOrder(order.getOrderId()));
-
         clientTestService.insertOrder(order);
-
         boolean pushedData = clientPush();
-
         assertTrue("Client data was not batched and pushed", pushedData);
-
         assertNotNull(serverTestService.getOrder(order.getOrderId()));
-
         IConfigurationService rootConfigurationService = getServer().getConfigurationService();
         IOutgoingBatchService clientOutgoingBatchService = getClient().getOutgoingBatchService();
-
         NodeChannel c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setSuspendEnabled(true);
         rootConfigurationService.saveNodeChannel(c, true);
-
         date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         order = new Order("102", 100, null, date);
         order.getOrderDetails().add(
                 new OrderDetail("102", 1, "STK", "110000065", 3, new BigDecimal("3.33")));
-
         assertNull(serverTestService.getOrder(order.getOrderId()));
-
         clientTestService.insertOrder(order);
-
         clientPush();
-
         OutgoingBatches batches = clientOutgoingBatchService.getOutgoingBatches(
                 TestConstants.TEST_ROOT_NODE.getNodeId(), false);
-
         assertEquals("There should be one outgoing batches.", 1, batches.getBatches().size());
-
         assertNull("The order record was synchronized when it should not have been",
                 serverTestService.getOrder(order.getOrderId()));
-
         c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setIgnoreEnabled(true);
         rootConfigurationService.saveNodeChannel(c, true);
-
         clientPush();
-
         batches = clientOutgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_ROOT_NODE.getNodeId(), false);
-
         assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
-
         assertNull("The order record was synchronized when it should not have been",
                 serverTestService.getOrder(order.getOrderId()));
-
         // Cleanup!
         c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setSuspendEnabled(false);
         c.setIgnoreEnabled(false);
         rootConfigurationService.saveNodeChannel(c, true);
-
         clientPush();
     }
 
     @Test(timeout = 900000)
     public void test12SuspendIgnorePushLocalBatches() throws Exception {
-
         // test suspend / ignore with local database specifying the suspends
         // and ignores
         logTestRunning();
@@ -479,51 +386,35 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Order order = new Order("105", 100, null, date);
         order.getOrderDetails().add(
                 new OrderDetail("105", 1, "STK", "110000065", 3, new BigDecimal("3.33")));
-
         assertNull(serverTestService.getOrder(order.getOrderId()));
-
         clientTestService.insertOrder(order);
-
         clientPush();
-
         assertNotNull(serverTestService.getOrder(order.getOrderId()));
-
         IConfigurationService clientConfigurationService = getClient().getConfigurationService();
         IOutgoingBatchService clientOutgoingBatchService = getClient().getOutgoingBatchService();
-
         NodeChannel c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setSuspendEnabled(true);
         clientConfigurationService.saveNodeChannel(c, true);
-
         order = new Order("106", 100, null, date);
         order.getOrderDetails().add(
                 new OrderDetail("106", 1, "STK", "110000065", 3, new BigDecimal("3.33")));
-
         clientPush();
-
         OutgoingBatches batches = clientOutgoingBatchService.getOutgoingBatches(
                 TestConstants.TEST_ROOT_NODE.getNodeId(), false);
-
         assertEquals("There should be no outgoing batches since suspended locally", 0,
                 batches.getBatches().size());
-
         assertNull(serverTestService.getOrder(order.getOrderId()));
-
         c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setIgnoreEnabled(true);
         clientConfigurationService.saveNodeChannel(c, true);
         clientPush();
-
         batches = clientOutgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_ROOT_NODE.getNodeId(), false);
-
         assertEquals("There should be no outgoing batches since suspended locally", 0,
                 batches.getBatches().size());
-
         assertNull(serverTestService.getOrder(order.getOrderId()));
-
         // Cleanup!
         c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
@@ -535,166 +426,119 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     @Test(timeout = 900000)
     public void test13SuspendIgnorePullRemoteBatches() throws Exception {
-
         // test suspend / ignore with remote database specifying the suspends
         // and ignores
-
         logTestRunning();
-
         // Should not sync when status = null
         Date date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
         Order order = new Order("42", 100, "C", date);
         serverTestService.insertOrder(order);
         clientPull();
-
         IOutgoingBatchService rootOutgoingBatchService = getServer().getOutgoingBatchService();
         OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(
                 TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
-
         assertNotNull(clientTestService.getOrder(order.getOrderId()));
-
         assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
-
         // Suspend the channel...
-
         IConfigurationService rootConfigurationService = getServer().getConfigurationService();
         NodeChannel c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setSuspendEnabled(true);
         rootConfigurationService.saveNodeChannel(c, true);
-
         date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
         order = new Order("43", 100, "C", date);
         serverTestService.insertOrder(order);
-
         clientPull();
-
         batches = rootOutgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
-
         assertEquals("There should be 1 outgoing batch", 1, batches.getBatches().size());
-
         assertNull(clientTestService.getOrder(order.getOrderId()));
-
         c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setIgnoreEnabled(true);
         rootConfigurationService.saveNodeChannel(c, true);
-
         // ignore
         clientPull();
-
         batches = rootOutgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
-
         assertNull(clientTestService.getOrder(order.getOrderId()));
-
         assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
-
         // Cleanup!
         c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setSuspendEnabled(false);
         c.setIgnoreEnabled(false);
         rootConfigurationService.saveNodeChannel(c, true);
-
         clientPull();
-
         batches = rootOutgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
-
         assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
-
         assertNull(clientTestService.getOrder(order.getOrderId()));
-
     }
 
     @Test(timeout = 900000)
     public void test14SuspendIgnorePullRemoteLocalComboBatches() throws Exception {
-
         // test suspend / ignore with remote database specifying the suspends
         // and ignores
-
         logTestRunning();
-
         Date date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
         Order order = new Order("442", 100, "C", date);
         serverTestService.insertOrder(order);
         clientPull();
-
         IOutgoingBatchService rootOutgoingBatchService = getServer().getOutgoingBatchService();
-
         OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(
                 TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
-
         assertNotNull(clientTestService.getOrder(order.getOrderId()));
         assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
-
         IConfigurationService rootConfigurationService = getServer().getConfigurationService();
         IConfigurationService clientConfigurationService = getClient().getConfigurationService();
-
         // suspend on remote
-
         NodeChannel c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setSuspendEnabled(true);
         rootConfigurationService.saveNodeChannel(c, true);
-
         // ignore on local
-
         c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setIgnoreEnabled(true);
         clientConfigurationService.saveNodeChannel(c, true);
-
         order = new Order("443", 100, "C", date);
         serverTestService.insertOrder(order);
         clientPull();
-
         batches = rootOutgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
         assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
         assertNull(clientTestService.getOrder(order.getOrderId()));
-
         // ignore on remote
-
         c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setIgnoreEnabled(true);
         c.setSuspendEnabled(false);
         rootConfigurationService.saveNodeChannel(c, true);
-
         // suspend on local
-
         c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setIgnoreEnabled(false);
         c.setSuspendEnabled(true);
         clientConfigurationService.saveNodeChannel(c, true);
-
         order = new Order("444", 100, "C", date);
         clientPull();
-
         batches = rootOutgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
         assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
         assertNull(clientTestService.getOrder(order.getOrderId()));
-
         // Cleanup!
         c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setSuspendEnabled(false);
         c.setIgnoreEnabled(false);
         rootConfigurationService.saveNodeChannel(c, true);
-
         c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setSuspendEnabled(false);
         c.setIgnoreEnabled(false);
         clientConfigurationService.saveNodeChannel(c, true);
-
         clientPull();
-
     }
 
     @Test(timeout = 900000)
@@ -704,9 +548,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         int rowsUpdated = getServer().getSqlTemplate().update(
                 "update test_sync_column_level set string_value=string_value");
         assertTrue(rowsUpdated > 0);
-
         clientPull();
-
         assertTrue(clientIncomingBatchCount <= getIncomingBatchCountForClient());
         assertEquals(0, getIncomingBatchNotOkCountForClient());
         assertEquals(0, getServer().getOutgoingBatchService().countOutgoingBatchesInError());
@@ -716,72 +558,54 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     @Test(timeout = 900000)
     public void test16SuspendIgnorePullLocalBatches() throws Exception {
-
         // test suspend / ignore with local database specifying suspends and
         // ignores
-
         logTestRunning();
         // Should not sync when status = null
         Date date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
         Order order = new Order("44", 100, "C", date);
         serverTestService.insertOrder(order);
         clientPull();
-
         IOutgoingBatchService rootOutgoingBatchService = getServer().getOutgoingBatchService();
         OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(
                 TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
         assertNotNull(clientTestService.getOrder(order.getOrderId()));
         assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
-
         // Suspend the channel...
-
         IConfigurationService clientConfigurationService = getClient().getConfigurationService();
         NodeChannel c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setSuspendEnabled(true);
         clientConfigurationService.saveNodeChannel(c, true);
-
         order = new Order("45", 100, "C", date);
         serverTestService.insertOrder(order);
-
         clientPull();
-
         batches = rootOutgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
         assertNull(clientTestService.getOrder(order.getOrderId()));
         assertEquals("There should be 1 outgoing batches", 1, batches.getBatches().size());
-
         c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setIgnoreEnabled(true);
         clientConfigurationService.saveNodeChannel(c, true);
-
         // ignore
-
         clientPull();
-
         assertNoPendingBatchesOnServer();
-
         c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setSuspendEnabled(false);
         c.setIgnoreEnabled(false);
         clientConfigurationService.saveNodeChannel(c, true);
-
         clientPull();
-
     }
 
     @Test(timeout = 900000)
     public void test17SyncToRootAutoGeneratedPrimaryKey() {
         logTestRunning();
         final String NEW_VALUE = "unique new value one value";
-
         clientTestService
                 .insertIntoTestTriggerTable(new Object[] { 3, "value one", "value \" two" });
-
         clientPush();
-
         getClient().getSqlTemplate().update("update test_triggers_table set string_one_value=?",
                 NEW_VALUE);
         final String verifySql = "select count(*) from test_triggers_table where string_one_value=?";
@@ -819,21 +643,15 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         logTestRunning();
         // Should not sync when status = null
         Date date = DateUtils.parseDate("2007-01-02", new String[] { "yyyy-MM-dd" });
-
         Order order = new Order("11", 100, null, date);
         serverTestService.insertOrder(order);
-
         clientPull();
-
         assertNoPendingBatchesOnServer();
         assertNull(clientTestService.getOrder(order.getOrderId()));
-
         // Should sync when status = C
         order = new Order("12", 100, "C", date);
         serverTestService.insertOrder(order);
-
         clientPull();
-
         assertNotNull(clientTestService.getOrder(order.getOrderId()));
     }
 
@@ -844,33 +662,24 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         assertEquals(getClient().getSqlTemplate().queryForInt(
                 "select count(*) from one_column_table where my_one_column=1"), 0);
         clientPull();
-
         assertEquals(getClient().getSqlTemplate().queryForInt(
                 "select count(*) from one_column_table where my_one_column=1"), 1);
-
         getServer().getSqlTemplate().update(
                 "update one_column_table set my_one_column=1 where my_one_column=1");
-
         clientPull();
-
         assertNoPendingBatchesOnServer();
     }
 
     @Test(timeout = 900000)
     public void test22SyncUpdateCondition() {
         logTestRunning();
-
         Order order = clientTestService.getOrder("1");
         assertNull(order);
-
         getServer().getSqlTemplate().update(updateOrderHeaderStatusSql, "C", "1");
-
         clientPull();
-
         order = clientTestService.getOrder("1");
         assertNotNull(order);
         assertEquals("C", order.getStatus());
-
     }
 
     @Test(timeout = 900000)
@@ -881,31 +690,22 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootNodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
         rootConfigService.clearCache();
-
         NodeChannel channel = rootConfigService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_EXTERNAL_ID, false);
         assertNotNull(channel);
         assertTrue(channel.isIgnoreEnabled());
         assertFalse(channel.isSuspendEnabled());
-
         Customer customer = new Customer(201, "Charlie Dude", true, "300 Grub Street", "New York",
                 "NY", 90009, new Date(), new Date(), THIS_IS_A_TEST, BINARY_DATA);
         serverTestService.insertCustomer(customer);
         clientPull();
-
         assertNull(clientTestService.getCustomer(customer.getCustomerId()));
-
         rootNodeService.ignoreNodeChannelForExternalId(false, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
-
         rootConfigService.clearCache();
-
         clientPull();
-
         assertNull(clientTestService.getCustomer(customer.getCustomerId()));
-
         getClient().getConfigurationService().clearCache();
-
     }
 
     @Test(timeout = 900000)
@@ -916,25 +716,20 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                     .isEmptyStringNulled()) {
                 return;
             }
-
             getClient().getSqlTemplate().update(insertStoreStatusSql,
                     new Object[] { "00001", "", 1 });
             clientPush();
-
             getClient().getSqlTemplate().update(updateStoreStatusSql,
                     new Object[] { 2, "00001", "" });
             clientPush();
-
-            int status =-1;
-            
+            int status = -1;
             if (getServer().getSymmetricDialect().getPlatform().getDatabaseInfo().isBlankCharColumnSpacePadded()) {
                 status = getServer().getSqlTemplate().queryForInt(selectStoreStatusSql,
-                    new Object[] { "00001", "   " });
+                        new Object[] { "00001", "   " });
             } else {
                 status = getServer().getSqlTemplate().queryForInt(selectStoreStatusSql,
                         new Object[] { "00001", "" });
             }
-
             assertEquals("Wrong store status", 2, status);
         } finally {
             logTestComplete();
@@ -944,21 +739,16 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 900000)
     public void test25TestPurge() throws Exception {
         logTestRunning();
-
         // do an extra push & pull to make sure we have events cleared out
         clientPull();
         clientPush();
-
         Thread.sleep(2000);
-
         IParameterService parameterService = getServer().getParameterService();
         int purgeRetentionMinues = parameterService
                 .getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
-
         // set purge in the future just in case the database time is different
         // than the current time
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24, "test");
-
         int beforePurge = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data");
         getServer().purge();
         int afterPurge = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data");
@@ -972,16 +762,13 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 + " and the min create_time in sym_data was " + minCreateTime
                 + " and the current time of the server is " + new Date(),
                 (beforePurge - afterPurge) > 0);
-
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES,
                 purgeRetentionMinues, "test");
-
         parameterService = getClient().getParameterService();
         purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
         // set purge in the future just in case the database time is different
         // than the current time
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24, "test");
-
         beforePurge = getClient().getSqlTemplate().queryForInt("select count(*) from sym_data");
         getClient().purge();
         afterPurge = getClient().getSqlTemplate().queryForInt("select count(*) from sym_data");
@@ -995,7 +782,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 + " and the min create_time in sym_data was " + minCreateTime
                 + " and the current time of the server is " + new Date(),
                 (beforePurge - afterPurge) > 0);
-
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES,
                 purgeRetentionMinues, "test");
     }
@@ -1003,28 +789,20 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 900000)
     public void test25TestPurge2() throws Exception {
         logTestRunning();
-
         int totalCount = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event");
         int batchId = getServer().getSqlTemplate().queryForInt("select min(batch_id) from sym_outgoing_batch");
         int purgeCount = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event where batch_id = ?", batchId);
-
         getServer().getSqlTemplate().update("delete from sym_outgoing_batch where batch_id = ?", batchId);
-
         IParameterService parameterService = getServer().getParameterService();
         int purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
         // Put retention into future to force it to purge
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24, "test");
-
         getServer().purge();
-
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, purgeRetentionMinues, "test");
-
         int count = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event where batch_id = ?", batchId);
         assertEquals(count, 0);
-        
         int newTotalCount = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event");
         assertEquals(newTotalCount, totalCount - purgeCount);
-        
     }
 
     @Test(timeout = 900000)
@@ -1036,36 +814,26 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                     + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";
             Date clientHeartbeatTimeBefore = getClient().getSqlTemplate().queryForObject(
                     checkHeartbeatSql, Timestamp.class);
-
             Thread.sleep(1000);
-
             getClient().heartbeat(true);
-
             Date clientHeartbeatTimeAfter = getClient().getSqlTemplate().queryForObject(
                     checkHeartbeatSql, Timestamp.class);
-
             assertNotSame("The heartbeat time was not updated at the client",
                     clientHeartbeatTimeAfter, clientHeartbeatTimeBefore);
-
             Date rootHeartbeatTimeBefore = getServer().getSqlTemplate().queryForObject(
                     checkHeartbeatSql, Timestamp.class);
-
             assertNotSame(
                     "The root heartbeat time should not be the same as the updated client heartbeat time",
                     clientHeartbeatTimeAfter, rootHeartbeatTimeBefore);
-
             while (clientPush()) {
                 // continue to push while there data to push
                 Thread.sleep(1000);
             }
-
             Date rootHeartbeatTimeAfter = getServer().getSqlTemplate().queryForObject(
                     checkHeartbeatSql, Timestamp.class);
-
             assertNotSame(
                     "The root heartbeat time before should have been different than the root heartbeat time after",
                     rootHeartbeatTimeBefore, rootHeartbeatTimeAfter);
-
             assertEquals(
                     "The root heartbeat time should have been equal to or after the client heartbeat time.",
                     rootHeartbeatTimeAfter.getTime() >= clientHeartbeatTimeAfter.getTime(), true);
@@ -1128,8 +896,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         logTestRunning();
         IDataService rootDataService = getServer().getDataService();
         IOutgoingBatchService rootOutgoingBatchService = getServer().getOutgoingBatchService();
-        synchronized(SimpleIntegrationTest.class) {
-        	testFlag = false;
+        synchronized (SimpleIntegrationTest.class) {
+            testFlag = false;
         }
         String scriptData = "org.jumpmind.symmetric.test.SimpleIntegrationTest.testFlag=true;";
         rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID, scriptData, false);
@@ -1139,21 +907,21 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         assertEquals(0, batches.countBatches(true));
         assertTrue("Expected the testFlag static variable to have been set to true", testFlag);
     }
-    
+
     @Test(timeout = 900000)
     public void test30AutoConfigureTablesAfterAlreadyCreated() {
         logTestRunning();
         testAutoConfigureTablesAfterAlreadyCreated(getServer());
         testAutoConfigureTablesAfterAlreadyCreated(getClient());
     }
-    
+
     public static void main(String[] args) {
         SimpleIntegrationTest sit = new SimpleIntegrationTest();
         sit.test01CreateServer();
         sit.test02RegisterClientWithRoot();
         sit.test31ReloadMissingForeignKeys();
     }
-    
+
     @Test(timeout = 900000)
     public void test31ReloadMissingForeignKeys() {
         if (getClient().getSymmetricDialect().getName().equalsIgnoreCase(DatabaseNamesConstants.VOLTDB) ||
@@ -1181,16 +949,14 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     protected void testAutoConfigureTablesAfterAlreadyCreated(ISymmetricEngine engine) {
         ISymmetricDialect dialect = engine.getSymmetricDialect();
         assertEquals("Tables were altered when they should not have been", false, dialect.createOrAlterTablesIfNecessary());
-    }   
-    
+    }
+
     @Test(timeout = 900000)
     public void test99Shutdown() throws Exception {
         logTestRunning();
         getClient().destroy();
         getWebServer().stop();
     }
-    
-
     // @Test(timeout = 900000)
     // public void testSyncShellCommandError() throws Exception {
     // logTestRunning();
@@ -1583,5 +1349,4 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     // }
     // }
     //
-
 }

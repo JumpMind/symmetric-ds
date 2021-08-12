@@ -33,10 +33,9 @@ import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.junit.Test;
 
 public class ProtocolDataReaderTest {
-
     @Test
     public void testSimpleRead() {
-        String nodeId= "055";
+        String nodeId = "055";
         long batchId = 123;
         String channelId = "nbc";
         StringBuilder builder = beginCsv(nodeId);
@@ -44,15 +43,12 @@ public class ProtocolDataReaderTest {
         putTableN(builder, 1, true);
         putInsert(builder, 4);
         endCsv(builder);
-        
         ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, "test", builder);
         DataContext ctx = new DataContext(reader);
         reader.open(ctx);
-        
         Batch batch = reader.nextBatch();
         assertNotNull(batch);
         assertEquals(batchId, batch.getBatchId());
-        
         Table table = reader.nextTable();
         assertNotNull(table);
         assertEquals("test1", table.getName());
@@ -60,46 +56,38 @@ public class ProtocolDataReaderTest {
         assertEquals(1, table.getPrimaryKeyColumns().length);
         assertEquals("id", table.getColumn(0).getName());
         assertEquals("text", table.getColumn(1).getName());
-        
         CsvData data = reader.nextData();
         assertNotNull(data);
         assertEquals(DataEventType.INSERT, data.getDataEventType());
         assertEquals("0", data.getParsedData(CsvData.ROW_DATA)[0]);
         assertEquals("test", data.getParsedData(CsvData.ROW_DATA)[1]);
-        
         data = reader.nextData();
         assertNotNull(data);
         assertEquals(DataEventType.INSERT, data.getDataEventType());
         assertEquals("1", data.getParsedData(CsvData.ROW_DATA)[0]);
         assertEquals("test", data.getParsedData(CsvData.ROW_DATA)[1]);
-        
         data = reader.nextData();
         assertNotNull(data);
         assertEquals(DataEventType.INSERT, data.getDataEventType());
         assertEquals("2", data.getParsedData(CsvData.ROW_DATA)[0]);
         assertEquals("test", data.getParsedData(CsvData.ROW_DATA)[1]);
-        
         data = reader.nextData();
         assertNotNull(data);
         assertEquals(DataEventType.INSERT, data.getDataEventType());
         assertEquals("3", data.getParsedData(CsvData.ROW_DATA)[0]);
         assertEquals("test", data.getParsedData(CsvData.ROW_DATA)[1]);
-        
         data = reader.nextData();
         assertNull(data);
-        
         table = reader.nextTable();
         assertNull(table);
-        
         batch = reader.nextBatch();
         assertNull(batch);
-        
         reader.close();
     }
-    
+
     @Test
     public void testTableContextSwitch() {
-        String nodeId= "1";
+        String nodeId = "1";
         long batchId = 1;
         String channelId = "test";
         StringBuilder builder = beginCsv(nodeId);
@@ -107,73 +95,57 @@ public class ProtocolDataReaderTest {
         putTableN(builder, 1, true);
         putInsert(builder, 4);
         putTableN(builder, 2, true);
-        putInsert(builder, 4);        
+        putInsert(builder, 4);
         putTableN(builder, 1, false);
         putInsert(builder, 2);
         putTableN(builder, 2, false);
         putInsert(builder, 2);
         endCsv(builder);
-        
         ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, "test", builder);
         DataContext ctx = new DataContext(reader);
         reader.open(ctx);
-        
         Batch batch = reader.nextBatch();
         assertNotNull(batch);
-        
         Table table = reader.nextTable();
         assertNotNull(table);
         assertEquals(2, table.getColumnCount());
         assertEquals(1, table.getPrimaryKeyColumnCount());
         assertEquals("test1", table.getName());
-        
         int dataCount = 0;
         while (reader.nextData() != null) {
             dataCount++;
         }
-        
         assertEquals(4, dataCount);
-        
         table = reader.nextTable();
         assertNotNull(table);
         assertEquals(2, table.getColumnCount());
         assertEquals(1, table.getPrimaryKeyColumnCount());
         assertEquals("test2", table.getName());
-        
         dataCount = 0;
         while (reader.nextData() != null) {
             dataCount++;
         }
-        
         assertEquals(4, dataCount);
-        
         table = reader.nextTable();
         assertNotNull(table);
         assertEquals(2, table.getColumnCount());
         assertEquals(1, table.getPrimaryKeyColumnCount());
         assertEquals("test1", table.getName());
-        
         dataCount = 0;
         while (reader.nextData() != null) {
             dataCount++;
         }
-        
         assertEquals(2, dataCount);
-        
         table = reader.nextTable();
         assertNotNull(table);
         assertEquals(2, table.getColumnCount());
         assertEquals(1, table.getPrimaryKeyColumnCount());
         assertEquals("test2", table.getName());
-        
         dataCount = 0;
         while (reader.nextData() != null) {
             dataCount++;
         }
-        
         assertEquals(2, dataCount);
-        
-
     }
 
     protected StringBuilder beginCsv(String nodeId) {
@@ -211,5 +183,4 @@ public class ProtocolDataReaderTest {
         builder.append(String.format("%s\n", CsvConstants.COMMIT));
         return builder;
     }
-
 }

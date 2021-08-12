@@ -57,35 +57,21 @@ import okhttp3.ResponseBody;
 import okio.BufferedSink;
 
 public class Http2Connection extends HttpConnection {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected static X509TrustManager trustManager;
-    
     protected static SSLSocketFactory sslSocketFactory;
-    
     protected static HostnameVerifier hostnameVerifier;
-
     protected ExecutorService executor;
-
     protected OkHttpClient.Builder clientBuilder;
-    
     protected Request.Builder requestBuilder;
-    
     protected Response response;
-    
     protected String requestMethod;
-    
     protected MediaType mediaType;
-    
     protected boolean dooutput;
-        
     protected OutputStream internalOut;
-    
     protected OutputStream externalOut;
-    
     protected IOException exception;
-    
+
     public Http2Connection(URL url) throws IOException {
         super(url);
         reset();
@@ -142,14 +128,11 @@ public class Http2Connection extends HttpConnection {
             if (dooutput) {
                 requestBody = new BlockingRequestBody(this);
             }
-
             Request request = requestBuilder.method(requestMethod, requestBody).build();
             OkHttpClient client = clientBuilder.build();
-
             if (log.isDebugEnabled()) {
                 logHeaders("Request", request.headers());
             }
-
             try {
                 response = client.newCall(request).execute();
                 if (log.isDebugEnabled()) {
@@ -198,10 +181,10 @@ public class Http2Connection extends HttpConnection {
         InputStream stream = null;
         Response resp = getResponse();
         if (resp != null) {
-        	ResponseBody respBody = response.body();
-        	if (respBody != null) {
-        		stream = respBody.byteStream();
-        	}
+            ResponseBody respBody = response.body();
+            if (respBody != null) {
+                stream = respBody.byteStream();
+            }
         }
         return stream;
     }
@@ -210,10 +193,10 @@ public class Http2Connection extends HttpConnection {
         waitForResponse();
         String body = null;
         if (response != null) {
-        	ResponseBody responseBody = response.body();
-        	if (responseBody != null) {
-        		body = responseBody.string();
-        	}
+            ResponseBody responseBody = response.body();
+            if (responseBody != null) {
+                body = responseBody.string();
+            }
         }
         return body;
     }
@@ -254,7 +237,6 @@ public class Http2Connection extends HttpConnection {
                 executor.shutdownNow();
                 throw new IOException(e);
             }
-
             if (future != null && internalOut == null) {
                 try {
                     future.get();
@@ -370,12 +352,11 @@ public class Http2Connection extends HttpConnection {
 
     public static void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
         Http2Connection.hostnameVerifier = hostnameVerifier;
-    }    
+    }
 
     protected class CallableResponse implements Callable<Response> {
-
         protected Http2Connection connection;
-        
+
         protected CallableResponse(Http2Connection connection) {
             this.connection = connection;
         }
@@ -398,13 +379,12 @@ public class Http2Connection extends HttpConnection {
     }
 
     protected class BlockingRequestBody extends RequestBody {
-        
         protected Http2Connection connection;
-        
+
         protected BlockingRequestBody(Http2Connection connection) {
             this.connection = connection;
         }
-        
+
         @Override
         public MediaType contentType() {
             if (mediaType != null) {
@@ -437,11 +417,9 @@ public class Http2Connection extends HttpConnection {
     }
 
     protected class BlockingOutputStream extends OutputStream {
-        
         protected Http2Connection connection;
-        
         protected boolean closed;
-        
+
         protected BlockingOutputStream(Http2Connection connection) {
             this.connection = connection;
         }
@@ -468,5 +446,4 @@ public class Http2Connection extends HttpConnection {
             }
         }
     }
-
 }

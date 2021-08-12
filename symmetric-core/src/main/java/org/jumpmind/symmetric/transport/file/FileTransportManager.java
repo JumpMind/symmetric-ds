@@ -42,9 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FileTransportManager extends HttpTransportManager implements ITransportManager {
-
     protected IParameterService parameterService;
-    
+
     public FileTransportManager(ISymmetricEngine engine) {
         super(engine);
         this.parameterService = engine.getParameterService();
@@ -76,22 +75,22 @@ public class FileTransportManager extends HttpTransportManager implements ITrans
     @Override
     public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken, Map<String, String> requestProperties,
             String registrationUrl) throws IOException {
-        return new FileIncomingTransport(remote, local, 
-                getDirName(ParameterConstants.NODE_OFFLINE_INCOMING_DIR, local), 
+        return new FileIncomingTransport(remote, local,
+                getDirName(ParameterConstants.NODE_OFFLINE_INCOMING_DIR, local),
                 getDirName(ParameterConstants.NODE_OFFLINE_ARCHIVE_DIR, local),
                 getDirName(ParameterConstants.NODE_OFFLINE_ERROR_DIR, local));
     }
 
     @Override
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, String registrationUrl)
-            throws IOException {   
+            throws IOException {
         return new FileOutgoingTransport(remote, local, getDirName(ParameterConstants.NODE_OFFLINE_OUTGOING_DIR, local));
     }
-    
+
     protected String getDirName(String paramName, Node localNode) {
         String dirName = parameterService.getString(paramName);
         dirName = FormatUtils.replace("nodeGroupId", localNode.getNodeGroupId(), dirName);
-        dirName = FormatUtils.replace("nodeId", localNode.getNodeId(), dirName);        
+        dirName = FormatUtils.replace("nodeId", localNode.getNodeId(), dirName);
         if (StringUtils.isNotBlank(dirName)) {
             File dir = new File(dirName);
             if (!dir.exists()) {
@@ -100,5 +99,4 @@ public class FileTransportManager extends HttpTransportManager implements ITrans
         }
         return dirName;
     }
-
 }

@@ -62,79 +62,56 @@ import org.jumpmind.util.FormatUtils;
  * Represents a column in the database model.
  */
 public class Column implements Cloneable, Serializable {
-    
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = 1L;
-
     /** The name of the column. */
     private String name;
-
     /**
-     * The java name of the column (optional and unused by DdlUtils, for Torque
-     * compatibility).
+     * The java name of the column (optional and unused by DdlUtils, for Torque compatibility).
      */
     private String javaName;
-
     /** The column's description. */
     private String description;
-
     /** Whether the column is a primary key column. */
     private boolean primaryKey;
-
     /**
      * Whether the column is required, ie. it must not contain <code>NULL</code>
      */
     private boolean required;
-
     /** Whether the column's value is incremented automatically. */
     private boolean autoIncrement;
-
     /** Whether the column's value is unique using the unique constraint keyword (e.g. SQLite). */
     private boolean unique;
-    
     /**
      * The mapped JDBC type code
      */
     private int mappedTypeCode;
-
     /**
      * The mapped JDBC type
      */
     private String mappedType;
-
     /** The size of the column for JDBC types that require/support this. */
     private String size;
-
     /** The size of the column for JDBC types that require/support this. */
     private Integer sizeAsInt;
-
     private int charOctetLength;
-
     /** The scale of the column for JDBC types that require/support this. */
     private int scale;
-
     /** The default value. */
     private String defaultValue;
-
     /**
      * The actual JDBC type code.
      */
     private int jdbcTypeCode = Integer.MIN_VALUE;
-
     /**
      * The actual JDBC type name.
      */
     private String jdbcTypeName;
-
     private boolean distributionKey;
-    
     private int precisionRadix;
-    
     private Map<String, PlatformColumn> platformColumns;
-    
     private int primaryKeySequence;
-    
-//    private String[] enumValues;
+    // private String[] enumValues;
 
     public Column() {
     }
@@ -176,8 +153,7 @@ public class Column implements Cloneable, Serializable {
     }
 
     /**
-     * Returns the java name of the column. This property is unused by DdlUtils
-     * and only for Torque compatibility.
+     * Returns the java name of the column. This property is unused by DdlUtils and only for Torque compatibility.
      * 
      * @return The java name
      */
@@ -186,8 +162,7 @@ public class Column implements Cloneable, Serializable {
     }
 
     /**
-     * Sets the java name of the column. This property is unused by DdlUtils and
-     * only for Torque compatibility.
+     * Sets the java name of the column. This property is unused by DdlUtils and only for Torque compatibility.
      * 
      * @param javaName
      *            The java name
@@ -235,8 +210,7 @@ public class Column implements Cloneable, Serializable {
     }
 
     /**
-     * Determines whether this column is a required column, ie. that it is not
-     * allowed to contain <code>NULL</code> values.
+     * Determines whether this column is a required column, ie. that it is not allowed to contain <code>NULL</code> values.
      * 
      * @return <code>true</code> if this column is a required column
      */
@@ -245,8 +219,7 @@ public class Column implements Cloneable, Serializable {
     }
 
     /**
-     * Specifies whether this column is a required column, ie. that it is not
-     * allowed to contain <code>NULL</code> values.
+     * Specifies whether this column is a required column, ie. that it is not allowed to contain <code>NULL</code> values.
      * 
      * @param required
      *            <code>true</code> if this column is a required column
@@ -273,7 +246,7 @@ public class Column implements Cloneable, Serializable {
     public void setAutoIncrement(boolean autoIncrement) {
         this.autoIncrement = autoIncrement;
     }
-    
+
     /**
      * Determines whether this column is an unique column.
      * 
@@ -294,8 +267,7 @@ public class Column implements Cloneable, Serializable {
     }
 
     /**
-     * Returns the code (one of the constants in {@link java.sql.Types}) of the
-     * JDBC type of the column.
+     * Returns the code (one of the constants in {@link java.sql.Types}) of the JDBC type of the column.
      * 
      * @return The type code
      */
@@ -304,8 +276,7 @@ public class Column implements Cloneable, Serializable {
     }
 
     /**
-     * Sets the code (one of the constants in {@link java.sql.Types}) of the
-     * JDBC type of the column.
+     * Sets the code (one of the constants in {@link java.sql.Types}) of the JDBC type of the column.
      * 
      * @param typeCode
      *            The type code
@@ -335,7 +306,6 @@ public class Column implements Cloneable, Serializable {
      */
     public void setMappedType(String type) {
         Integer typeCode = TypeMap.getJdbcTypeCode(type);
-
         if (typeCode == null) {
             throw new ModelException("Unknown JDBC type " + type + " for : " + toString());
         } else {
@@ -401,8 +371,7 @@ public class Column implements Cloneable, Serializable {
     }
 
     /**
-     * Sets the size of the column. This is either a simple integer value or a
-     * comma-separated pair of integer values specifying the size and scale.
+     * Sets the size of the column. This is either a simple integer value or a comma-separated pair of integer values specifying the size and scale.
      * 
      * @param size
      *            The size
@@ -410,7 +379,6 @@ public class Column implements Cloneable, Serializable {
     public void setSize(String size) {
         if (size != null) {
             int pos = size.indexOf(",");
-
             this.size = size;
             if (pos < 0) {
                 scale = 0;
@@ -491,9 +459,8 @@ public class Column implements Cloneable, Serializable {
     }
 
     /**
-     * Tries to parse the default value of the column and returns it as an
-     * object of the corresponding java type. If the value could not be parsed,
-     * then the original definition is returned.
+     * Tries to parse the default value of the column and returns it as an object of the corresponding java type. If the value could not be parsed, then the
+     * original definition is returned.
      * 
      * @return The parsed default value
      */
@@ -542,29 +509,29 @@ public class Column implements Cloneable, Serializable {
             }
         }
         return defaultValue;
-    }    
+    }
 
     private String getCleanDefaultValue() {
         return defaultValue.replace("'", "");
     }
-    
+
     public void removePlatformColumn(String databaseName) {
         if (platformColumns != null) {
             platformColumns.remove(databaseName);
         }
     }
-    
+
     public void addPlatformColumn(PlatformColumn platformColumn) {
         if (platformColumns == null) {
             platformColumns = new HashMap<String, PlatformColumn>();
         }
         platformColumns.put(platformColumn.getName(), platformColumn);
     }
-    
+
     public Map<String, PlatformColumn> getPlatformColumns() {
         return platformColumns;
     }
-    
+
     public PlatformColumn findPlatformColumn(String name) {
         PlatformColumn platformColumn = null;
         if (platformColumns != null) {
@@ -574,9 +541,8 @@ public class Column implements Cloneable, Serializable {
     }
 
     /**
-     * Sets the default value of the column. Note that this expression will be
-     * used within quotation marks when generating the column, and thus is
-     * subject to the conversion rules of the target database.
+     * Sets the default value of the column. Note that this expression will be used within quotation marks when generating the column, and thus is subject to
+     * the conversion rules of the target database.
      * 
      * @param defaultValue
      *            The default value
@@ -596,7 +562,6 @@ public class Column implements Cloneable, Serializable {
      */
     public Object clone() throws CloneNotSupportedException {
         Column result = (Column) super.clone();
-
         result.name = name;
         result.javaName = javaName;
         result.primaryKey = primaryKey;
@@ -609,15 +574,12 @@ public class Column implements Cloneable, Serializable {
         result.scale = scale;
         result.size = size;
         result.sizeAsInt = sizeAsInt;
-        
         if (platformColumns != null) {
             result.platformColumns = new HashMap<String, PlatformColumn>(platformColumns.size());
-            
             for (Map.Entry<String, PlatformColumn> entry : platformColumns.entrySet()) {
-                result.platformColumns.put(entry.getKey(), (PlatformColumn)entry.getValue().clone());
+                result.platformColumns.put(entry.getKey(), (PlatformColumn) entry.getValue().clone());
             }
         }
-
         return result;
     }
 
@@ -628,7 +590,6 @@ public class Column implements Cloneable, Serializable {
         if (obj instanceof Column) {
             Column other = (Column) obj;
             EqualsBuilder comparator = new EqualsBuilder();
-
             // Note that this compares case sensitive
             comparator.append(name, other.name);
             comparator.append(primaryKey, other.primaryKey);
@@ -636,7 +597,6 @@ public class Column implements Cloneable, Serializable {
             comparator.append(autoIncrement, other.autoIncrement);
             comparator.append(mappedTypeCode, other.mappedTypeCode);
             comparator.append(getParsedDefaultValue(), other.getParsedDefaultValue());
-
             // comparing the size makes only sense for types where it is
             // relevant
             if ((mappedTypeCode == Types.NUMERIC) || (mappedTypeCode == Types.DECIMAL)) {
@@ -646,7 +606,6 @@ public class Column implements Cloneable, Serializable {
                     || (mappedTypeCode == Types.BINARY) || (mappedTypeCode == Types.VARBINARY)) {
                 comparator.append(size, other.size);
             }
-
             return comparator.isEquals();
         } else {
             return false;
@@ -662,7 +621,6 @@ public class Column implements Cloneable, Serializable {
      */
     public int hashCode() {
         HashCodeBuilder builder = new HashCodeBuilder(17, 37);
-
         builder.append(name);
         builder.append(primaryKey);
         builder.append(required);
@@ -674,7 +632,6 @@ public class Column implements Cloneable, Serializable {
         if (!TypeMap.isNumericType(mappedTypeCode)) {
             builder.append(size);
         }
-
         return builder.toHashCode();
     }
 
@@ -682,8 +639,7 @@ public class Column implements Cloneable, Serializable {
      * {@inheritDoc}
      */
     public String toString() {
-    	StringBuilder result = new StringBuilder();
-
+        StringBuilder result = new StringBuilder();
         result.append("Column [name=");
         result.append(getName());
         result.append("; jdbcType=");
@@ -691,7 +647,6 @@ public class Column implements Cloneable, Serializable {
         result.append("; mappedType=");
         result.append(getMappedType());
         result.append("]");
-
         return result.toString();
     }
 
@@ -701,8 +656,7 @@ public class Column implements Cloneable, Serializable {
      * @return The string representation
      */
     public String toVerboseString() {
-    	StringBuilder result = new StringBuilder();
-
+        StringBuilder result = new StringBuilder();
         result.append("Column [name=");
         result.append(getName());
         result.append("; javaName=");
@@ -726,7 +680,6 @@ public class Column implements Cloneable, Serializable {
         result.append("; scale=");
         result.append(getScale());
         result.append("]");
-
         return result.toString();
     }
 
@@ -745,7 +698,7 @@ public class Column implements Cloneable, Serializable {
     public void setDistributionKey(boolean distributionKey) {
         this.distributionKey = distributionKey;
     }
-    
+
     public final void setTypeCode(int typeCode) {
         this.setMappedTypeCode(typeCode);
         this.setJdbcTypeCode(typeCode);
@@ -753,33 +706,33 @@ public class Column implements Cloneable, Serializable {
 
     public final void setJdbcTypeCode(int jdbcTypeCode) {
         this.jdbcTypeCode = jdbcTypeCode;
-    }        
+    }
 
     public int getJdbcTypeCode() {
         return jdbcTypeCode;
     }
-    
+
     public boolean isTimestampWithTimezone() {
         return mappedTypeCode == ORACLE_TIMESTAMPLTZ || mappedTypeCode == ORACLE_TIMESTAMPTZ ||
-                jdbcTypeCode == ORACLE_TIMESTAMPLTZ || jdbcTypeCode == ORACLE_TIMESTAMPTZ || 
+                jdbcTypeCode == ORACLE_TIMESTAMPLTZ || jdbcTypeCode == ORACLE_TIMESTAMPTZ ||
                 (jdbcTypeName != null && jdbcTypeName.equals("timestamptz"));
     }
-    
+
     public boolean containsJdbcTypes() {
         return jdbcTypeCode != Integer.MIN_VALUE && jdbcTypeName != null;
     }
-//    
-//    public void setEnumValues(String[] enumValues) {
-//        this.enumValues = enumValues;
-//    }
-//    
-//    public String[] getEnumValues() {
-//        return enumValues;
-//    }
-//    
-//    public boolean isEnum() {
-//        return enumValues != null && enumValues.length > 0;
-//    }
+    //
+    // public void setEnumValues(String[] enumValues) {
+    // this.enumValues = enumValues;
+    // }
+    //
+    // public String[] getEnumValues() {
+    // return enumValues;
+    // }
+    //
+    // public boolean isEnum() {
+    // return enumValues != null && enumValues.length > 0;
+    // }
 
     public int getCharOctetLength() {
         return charOctetLength;
@@ -796,7 +749,4 @@ public class Column implements Cloneable, Serializable {
     public void setPrimaryKeySequence(int primaryKeySequence) {
         this.primaryKeySequence = primaryKeySequence;
     }
-    
-    
-
 }

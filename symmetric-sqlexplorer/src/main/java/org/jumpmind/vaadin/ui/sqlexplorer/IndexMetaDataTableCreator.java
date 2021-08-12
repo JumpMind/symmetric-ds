@@ -28,7 +28,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 
 public class IndexMetaDataTableCreator extends AbstractMetaDataGridCreator {
-
     public IndexMetaDataTableCreator(JdbcSqlTemplate sqlTemplate, Table table, Settings settings) {
         super(sqlTemplate, table, settings);
     }

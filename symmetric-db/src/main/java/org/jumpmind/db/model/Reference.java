@@ -49,13 +49,11 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * 
  * @version $Revision: 463305 $
  */
-public class Reference implements Cloneable, Serializable
-{
+public class Reference implements Cloneable, Serializable {
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = 1L;
-
     /** The sequence value within the key. */
-    private int    _sequenceValue;
+    private int _sequenceValue;
     /** The local column. */
     private Column _localColumn;
     /** The foreign column. */
@@ -68,17 +66,18 @@ public class Reference implements Cloneable, Serializable
     /**
      * Creates a new, empty reference.
      */
-    public Reference()
-    {}
+    public Reference() {
+    }
 
     /**
      * Creates a new reference between the two given columns.
      * 
-     * @param localColumn   The local column
-     * @param foreignColumn The remote column
+     * @param localColumn
+     *            The local column
+     * @param foreignColumn
+     *            The remote column
      */
-    public Reference(Column localColumn, Column foreignColumn)
-    {
+    public Reference(Column localColumn, Column foreignColumn) {
         setLocalColumn(localColumn);
         setForeignColumn(foreignColumn);
     }
@@ -88,20 +87,17 @@ public class Reference implements Cloneable, Serializable
      *
      * @return The sequence value
      */
-    public int getSequenceValue()
-    {
+    public int getSequenceValue() {
         return _sequenceValue;
     }
 
     /**
-     * Sets the sequence value within the owning key. Please note
-     * that you should not change the value once the reference has
-     * been added to a key.
+     * Sets the sequence value within the owning key. Please note that you should not change the value once the reference has been added to a key.
      *
-     * @param sequenceValue The sequence value
+     * @param sequenceValue
+     *            The sequence value
      */
-    public void setSequenceValue(int sequenceValue)
-    {
+    public void setSequenceValue(int sequenceValue) {
         _sequenceValue = sequenceValue;
     }
 
@@ -110,19 +106,18 @@ public class Reference implements Cloneable, Serializable
      *
      * @return The local column
      */
-    public Column getLocalColumn()
-    {
+    public Column getLocalColumn() {
         return _localColumn;
     }
 
     /**
      * Sets the local column.
      *
-     * @param localColumn The local column
+     * @param localColumn
+     *            The local column
      */
-    public final void setLocalColumn(Column localColumn)
-    {
-        _localColumn     = localColumn;
+    public final void setLocalColumn(Column localColumn) {
+        _localColumn = localColumn;
         _localColumnName = (localColumn == null ? null : localColumn.getName());
     }
 
@@ -131,19 +126,18 @@ public class Reference implements Cloneable, Serializable
      *
      * @return The foreign column
      */
-    public Column getForeignColumn()
-    {
+    public Column getForeignColumn() {
         return _foreignColumn;
     }
 
     /**
      * Sets the foreign column.
      *
-     * @param foreignColumn The foreign column
+     * @param foreignColumn
+     *            The foreign column
      */
-    public final void setForeignColumn(Column foreignColumn)
-    {
-        _foreignColumn     = foreignColumn;
+    public final void setForeignColumn(Column foreignColumn) {
+        _foreignColumn = foreignColumn;
         _foreignColumnName = (foreignColumn == null ? null : foreignColumn.getName());
     }
 
@@ -152,46 +146,42 @@ public class Reference implements Cloneable, Serializable
      * 
      * @return The column name
      */
-    public String getLocalColumnName()
-    {
+    public String getLocalColumnName() {
         return _localColumnName;
     }
 
     /**
-     * Sets the name of the local column. Note that you should not use this method when
-     * manipulating the model manually. Rather use the {@link #setLocalColumn(Column)} method.
+     * Sets the name of the local column. Note that you should not use this method when manipulating the model manually. Rather use the
+     * {@link #setLocalColumn(Column)} method.
      * 
-     * @param localColumnName The column name
+     * @param localColumnName
+     *            The column name
      */
-    public void setLocalColumnName(String localColumnName)
-    {
-        if ((_localColumn != null) && !_localColumn.getName().equals(localColumnName))
-        {
+    public void setLocalColumnName(String localColumnName) {
+        if ((_localColumn != null) && !_localColumn.getName().equals(localColumnName)) {
             _localColumn = null;
         }
         _localColumnName = localColumnName;
     }
-    
+
     /**
      * Returns the name of the foreign column.
      * 
      * @return The column name
      */
-    public String getForeignColumnName()
-    {
+    public String getForeignColumnName() {
         return _foreignColumnName;
     }
-    
+
     /**
-     * Sets the name of the remote column. Note that you should not use this method when
-     * manipulating the model manually. Rather use the {@link #setForeignColumn(Column)} method.
+     * Sets the name of the remote column. Note that you should not use this method when manipulating the model manually. Rather use the
+     * {@link #setForeignColumn(Column)} method.
      * 
-     * @param foreignColumnName The column name
+     * @param foreignColumnName
+     *            The column name
      */
-    public void setForeignColumnName(String foreignColumnName)
-    {
-        if ((_foreignColumn != null) && !_foreignColumn.getName().equals(foreignColumnName))
-        {
+    public void setForeignColumnName(String foreignColumnName) {
+        if ((_foreignColumn != null) && !_foreignColumn.getName().equals(foreignColumnName)) {
             _foreignColumn = null;
         }
         _foreignColumnName = foreignColumnName;
@@ -200,31 +190,23 @@ public class Reference implements Cloneable, Serializable
     /**
      * {@inheritDoc}
      */
-    public Object clone() throws CloneNotSupportedException
-    {
-        Reference result = (Reference)super.clone();
-
-        result._localColumnName   = _localColumnName;
+    public Object clone() throws CloneNotSupportedException {
+        Reference result = (Reference) super.clone();
+        result._localColumnName = _localColumnName;
         result._foreignColumnName = _foreignColumnName;
-
         return result;
     }
 
     /**
      * {@inheritDoc}
      */
-    public boolean equals(Object obj)
-    {
-        if (obj instanceof Reference)
-        {
-            Reference other = (Reference)obj;
-
-            return new EqualsBuilder().append(_localColumnName,   other._localColumnName)
-                                      .append(_foreignColumnName, other._foreignColumnName)
-                                      .isEquals();
-        }
-        else
-        {
+    public boolean equals(Object obj) {
+        if (obj instanceof Reference) {
+            Reference other = (Reference) obj;
+            return new EqualsBuilder().append(_localColumnName, other._localColumnName)
+                    .append(_foreignColumnName, other._foreignColumnName)
+                    .isEquals();
+        } else {
             return false;
         }
     }
@@ -232,37 +214,33 @@ public class Reference implements Cloneable, Serializable
     /**
      * Compares this reference to the given one while ignoring the case of identifiers.
      * 
-     * @param otherRef The other reference
+     * @param otherRef
+     *            The other reference
      * @return <code>true</code> if this reference is equal (ignoring case) to the given one
      */
-    public boolean equalsIgnoreCase(Reference otherRef)
-    {
+    public boolean equalsIgnoreCase(Reference otherRef) {
         return (otherRef != null) &&
-               _localColumnName.equalsIgnoreCase(otherRef._localColumnName) &&
-               _foreignColumnName.equalsIgnoreCase(otherRef._foreignColumnName);
+                _localColumnName.equalsIgnoreCase(otherRef._localColumnName) &&
+                _foreignColumnName.equalsIgnoreCase(otherRef._foreignColumnName);
     }
 
     /**
      * {@inheritDoc}
      */
-    public int hashCode()
-    {
+    public int hashCode() {
         return new HashCodeBuilder(17, 37).append(_localColumnName)
-                                          .append(_foreignColumnName)
-                                          .toHashCode();
+                .append(_foreignColumnName)
+                .toHashCode();
     }
 
     /**
      * {@inheritDoc}
      */
-    public String toString()
-    {
-    	StringBuilder result = new StringBuilder();
-
+    public String toString() {
+        StringBuilder result = new StringBuilder();
         result.append(getLocalColumnName());
         result.append(" -> ");
         result.append(getForeignColumnName());
-
         return result.toString();
     }
 }

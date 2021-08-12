@@ -25,11 +25,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StatementDelayInterceptor extends StatementInterceptor {
-    
     private final static Logger log = LoggerFactory.getLogger(StatementDelayInterceptor.class);
-    
     private long delay = 10;
-    
+
     /**
      * @param wrapped
      */
@@ -41,7 +39,7 @@ public class StatementDelayInterceptor extends StatementInterceptor {
             delay = Long.parseLong(delayValue.trim());
         }
     }
-    
+
     @Override
     public void preparedStatementExecute(String methodName, long elapsed, String sql) {
         if (sql.toLowerCase().startsWith("insert") || sql.toLowerCase().startsWith("update")) {
@@ -50,13 +48,11 @@ public class StatementDelayInterceptor extends StatementInterceptor {
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
-            
-            log.info("PreparedStatement." + methodName + " DELAYED (" + (elapsed+delay) + "ms.) " + sql) ;
+            log.info("PreparedStatement." + methodName + " DELAYED (" + (elapsed + delay) + "ms.) " + sql);
         }
     }
-    
-    public void statementExecute(String methodName, long elapsed, Object... parameters) {
-        super.statementExecute(methodName, elapsed, parameters);          
-    }
 
+    public void statementExecute(String methodName, long elapsed, Object... parameters) {
+        super.statementExecute(methodName, elapsed, parameters);
+    }
 }

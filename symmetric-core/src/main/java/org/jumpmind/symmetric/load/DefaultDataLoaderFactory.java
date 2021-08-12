@@ -64,11 +64,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory, IBuiltInExtensionPoint, ISymmetricEngineAware {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected ISymmetricEngine engine;
-
     protected Set<String> conflictLosingParentRows = new HashSet<String>();
 
     public DefaultDataLoaderFactory() {
@@ -87,14 +84,12 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
             TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers, List<? extends Conflict> conflictSettings,
             List<ResolvedData> resolvedData) {
-
         if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("CassandraPlatform")) {
             try {
                 // TODO: Evaluate if ConflictResolver will work for Cassandra and if so remove duplicate code.
                 return new CassandraDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                         symmetricDialect.getTablePrefix(), new DefaultTransformWriterConflictResolver(transformWriter),
                         buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
-
             } catch (Exception e) {
                 log.warn(
                         "Failed to create the cassandra database writer.  Check to see if all of the required jars have been added",
@@ -106,14 +101,12 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                 }
             }
         }
-
         if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("BigQueryPlatform")) {
             try {
                 return new BigQueryDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                         symmetricDialect.getTablePrefix(), new DefaultTransformWriterConflictResolver(transformWriter),
-                        buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData), 
+                        buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData),
                         parameterService.getInt(ParameterConstants.GOOGLE_BIG_QUERY_MAX_ROWS_PER_RPC, 100));
-
             } catch (Exception e) {
                 log.warn(
                         "Failed to create the big query database writer.",
@@ -125,18 +118,15 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                 }
             }
         }
-        
         if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("KafkaPlatform")) {
             try {
                 if (filters == null) {
                     filters = new ArrayList<IDatabaseWriterFilter>();
                 }
                 filters.add(new KafkaWriterFilter(this.parameterService));
-
                 return new KafkaWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                         symmetricDialect.getTablePrefix(), new DefaultTransformWriterConflictResolver(transformWriter),
                         buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
-
             } catch (Exception e) {
                 log.warn("Failed to create the kafka writer.", e);
                 if (e instanceof RuntimeException) {
@@ -146,7 +136,6 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                 }
             }
         }
-
         DynamicDefaultDatabaseWriter writer = new DynamicDefaultDatabaseWriter(symmetricDialect.getPlatform(),
                 symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
                 new DefaultTransformWriterConflictResolver(transformWriter) {
@@ -184,14 +173,14 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                                 if (transaction != null) {
                                     handleWinnerForNewerCaptureWins(transaction, csvData);
                                 }
-                            }        
+                            }
                         }
                     }
-                    
+
                     /**
-                     * When using new captured row wins, the winning row is saved to sym_data so other conflicts can see it.
-                     * When two nodes are in conflict, they race to update the third node, but the first node will get no conflict,
-                     * so we send a script back to all but winning node to ask if they have a newer row. 
+                     * When using new captured row wins, the winning row is saved to sym_data so other conflicts can see it. When two nodes are in conflict,
+                     * they race to update the third node, but the first node will get no conflict, so we send a script back to all but winning node to ask if
+                     * they have a newer row.
                      */
                     protected void handleWinnerForNewerCaptureWins(ISqlTransaction transaction, CsvData csvData) {
                         String tableName = csvData.getAttribute(CsvData.ATTRIBUTE_TABLE_NAME);
@@ -200,14 +189,13 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                         if (hists != null && hists.size() > 0 && loadingTs != null) {
                             TriggerHistory hist = hists.get(0);
                             Data data = new Data(tableName, csvData.getDataEventType(),
-                                    csvData.getCsvData(CsvData.ROW_DATA), csvData.getCsvData(CsvData.PK_DATA), hist, 
+                                    csvData.getCsvData(CsvData.ROW_DATA), csvData.getCsvData(CsvData.PK_DATA), hist,
                                     csvData.getAttribute(CsvData.ATTRIBUTE_CHANNEL_ID), null, csvData.getAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID));
                             data.setTableName(tableName);
                             data.setOldData(csvData.getCsvData(CsvData.OLD_DATA));
                             data.setPreRouted(true);
                             data.setCreateTime(csvData.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME));
                             engine.getDataService().insertData(transaction, data);
-    
                             String channelId = csvData.getAttribute(CsvData.ATTRIBUTE_CHANNEL_ID);
                             if (channelId != null && !channelId.equals(Constants.CHANNEL_RELOAD)) {
                                 String pkCsvData = CsvUtils.escapeCsvData(getPkCsvData(csvData, hist));
@@ -215,9 +203,9 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                                     String sourceNodeId = csvData.getAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID);
                                     long createTime = data.getCreateTime() != null ? data.getCreateTime().getTime() : 0;
                                     String script = "if (context != void && context != null) { " +
-                                        "engine.getDataService().sendNewerDataToNode(context.findTransaction(), SOURCE_NODE_ID, \"" +
-                                        tableName + "\", " + pkCsvData + ", new Date(" +
-                                        createTime +"L), \"" + sourceNodeId + "\"); }";
+                                            "engine.getDataService().sendNewerDataToNode(context.findTransaction(), SOURCE_NODE_ID, \"" +
+                                            tableName + "\", " + pkCsvData + ", new Date(" +
+                                            createTime + "L), \"" + sourceNodeId + "\"); }";
                                     Data scriptData = new Data(tableName, DataEventType.BSH,
                                             CsvUtils.escapeCsvData(script), null, hist, Constants.CHANNEL_RELOAD, null, null);
                                     scriptData.setSourceNodeId(sourceNodeId);
@@ -226,7 +214,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                             }
                         }
                     }
-                    
+
                     protected String getPkCsvData(CsvData csvData, TriggerHistory hist) {
                         String pkCsvData = csvData.getCsvData(CsvData.PK_DATA);
                         if (pkCsvData == null) {
@@ -245,7 +233,6 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                         return pkCsvData;
                     }
                 }, buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
-
         return writer;
     }
 
@@ -260,8 +247,6 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
         settings.setLoadOnlyNode(engine.getParameterService().is(ParameterConstants.NODE_LOAD_ONLY));
         settings.setDatabaseWriterFilters(filters);
         settings.setDatabaseWriterErrorHandlers(errorHandlers);
-        
-        
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();
         boolean multipleDefaultSettingsFound = false;
@@ -280,7 +265,6 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                 }
             }
         }
-
         if (multipleDefaultSettingsFound) {
             log.warn("There were multiple default conflict settings found.  Using '{}' as the default",
                     settings.getDefaultConflictSetting().getConflictId());
@@ -289,13 +273,11 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
         settings.setConflictSettingsByTable(byTable);
         settings.setResolvedData(resolvedDatas);
         settings.setConflictLosingParentRows(conflictLosingParentRows);
-        
         List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = engine.getExtensionService()
                 .getExtensionPointList(IAlterDatabaseInterceptor.class);
         IAlterDatabaseInterceptor[] interceptors = alterDatabaseInterceptors
                 .toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]);
         settings.setAlterDatabaseInterceptors(interceptors);
-        
         return settings;
     }
 
@@ -304,5 +286,4 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
         this.engine = engine;
         this.parameterService = engine.getParameterService();
     }
-    
 }

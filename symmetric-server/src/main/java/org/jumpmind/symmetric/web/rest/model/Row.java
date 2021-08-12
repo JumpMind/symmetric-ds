@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Row {
-
     private int rowNum;
     private List<Column> columnData;
 
@@ -47,5 +46,4 @@ public class Row {
     public void setColumData(List<Column> columData) {
         this.columnData = columData;
     }
-
 }

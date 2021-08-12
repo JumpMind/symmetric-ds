@@ -31,7 +31,6 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class AbstractBatch implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     public enum Status {
@@ -48,7 +47,7 @@ public class AbstractBatch implements Serializable {
         public String toString() {
             return description;
         }
-        
+
         public static String getNameFromDescription(String description) {
             for (Status status : Status.values()) {
                 if (status.toString().equals(description)) {
@@ -60,126 +59,73 @@ public class AbstractBatch implements Serializable {
     }
 
     private long batchId = -1;
-
     private String nodeId;
-
     private String channelId;
-
     private boolean errorFlag;
-
     private long routerMillis;
-
     private long networkMillis;
-
     private long filterMillis;
-
     private long loadMillis;
-
     private long extractMillis;
-    
     private long transformExtractMillis;
-    
     private long transformLoadMillis;
-
     private long byteCount;
-
     private long ignoreCount;
-
     private String sqlState;
-
     private int sqlCode;
-
     private String sqlMessage;
-
     private String lastUpdatedHostName;
-
     private Date lastUpdatedTime;
-
     private Date createTime;
-
     private String createBy;
-
     private String summary;
-
     private Status status;
-
     private boolean loadFlag;
-
     private long extractCount;
-
     private long sentCount;
-
     private long loadCount;
-
     private long reloadRowCount;
-
     private long otherRowCount;
-
     private long dataRowCount;
-
     private long dataInsertRowCount;
-
     private long dataUpdateRowCount;
-
     private long dataDeleteRowCount;
-
     private long oldDataRowCount = 0;
     private long oldByteCount = 0;
     private long oldFilterMillis = 0;
     private long oldExtractMillis = 0;
     private long oldLoadMillis = 0;
     private long oldNetworkMillis = 0;
-
     private long loadId = -1;
-
     private boolean commonFlag;
-
     private long fallbackInsertCount;
-
     private long fallbackUpdateCount;
-
     private long ignoreRowCount;
-
     private long missingDeleteCount;
-
     private long skipCount;
-    
     private long loadRowCount;
-
     private long loadInsertRowCount;
-
     private long loadUpdateRowCount;
-
     private long loadDeleteRowCount;
-    
     private long extractRowCount;
-
     private long extractInsertRowCount;
-
     private long extractUpdateRowCount;
-
     private long extractDeleteRowCount;
-    
     private long failedDataId;
-    
     private long failedLineNumber;
-
     private transient Map<String, Integer> tableCounts = new LinkedHashMap<String, Integer>();
-    
     private transient long processedRowCount;
 
     public void resetStats() {
         // save off old stats in case there
         // is an error and we want to be able to
         // restore the previous stats
-
         this.oldExtractMillis = this.extractMillis;
         this.oldDataRowCount = this.dataRowCount;
         this.oldByteCount = getByteCount();
         this.oldNetworkMillis = getNetworkMillis();
         this.oldFilterMillis = getFilterMillis();
         this.oldLoadMillis = getLoadMillis();
-
         this.extractMillis = 0;
         this.dataRowCount = 0;
         setByteCount(0);
@@ -197,7 +143,7 @@ public class AbstractBatch implements Serializable {
         reloadRowCount = 0;
         tableCounts.clear();
     }
-    
+
     public void revertStatsOnError() {
         if (this.oldDataRowCount > 0) {
             this.extractMillis = this.oldExtractMillis;
@@ -391,7 +337,7 @@ public class AbstractBatch implements Serializable {
     public String getCreateBy() {
         return createBy;
     }
-    
+
     public Map<String, Integer> getTableCounts() {
         return new LinkedHashMap<String, Integer>(tableCounts);
     }
@@ -410,15 +356,12 @@ public class AbstractBatch implements Serializable {
     protected String buildBatchSummary() {
         final int SIZE = 254;
         StringBuilder buff = new StringBuilder(SIZE);
-
         for (Entry<String, Integer> tableCount : tableCounts.entrySet()) {
             buff.append(tableCount.getKey()).append(", ");
         }
-
         if (buff.length() > 2) {
             buff.setLength(buff.length() - 2);
         }
-
         return StringUtils.abbreviate(buff.toString(), SIZE);
     }
 
@@ -530,7 +473,7 @@ public class AbstractBatch implements Serializable {
                 break;
         }
     }
-    
+
     public void incrementExtractRowCount(DataEventType type) {
         switch (type) {
             case INSERT:
@@ -546,7 +489,7 @@ public class AbstractBatch implements Serializable {
                 break;
         }
     }
-    
+
     public void incrementExtractRowCount() {
         this.extractRowCount++;
     }
@@ -638,7 +581,7 @@ public class AbstractBatch implements Serializable {
     public void setIgnoreRowCount(long ignoreRowCount) {
         this.ignoreRowCount = ignoreRowCount;
     }
-    
+
     public long getLoadRowCount() {
         return loadRowCount;
     }
@@ -702,7 +645,7 @@ public class AbstractBatch implements Serializable {
     public void setExtractDeleteRowCount(long extractDeleteRowCount) {
         this.extractDeleteRowCount = extractDeleteRowCount;
     }
-    
+
     public long getFailedDataId() {
         return failedDataId;
     }
@@ -740,5 +683,4 @@ public class AbstractBatch implements Serializable {
     public int hashCode() {
         return (String.valueOf(getBatchId()) + "-" + getNodeId()).hashCode();
     }
-
 }

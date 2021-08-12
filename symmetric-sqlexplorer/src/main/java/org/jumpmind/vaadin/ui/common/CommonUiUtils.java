@@ -62,13 +62,9 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.themes.ValoTheme;
 
 public final class CommonUiUtils {
-
-	private final static Logger log = LoggerFactory.getLogger(CommonUiUtils.class);
-
+    private final static Logger log = LoggerFactory.getLogger(CommonUiUtils.class);
     static final FastDateFormat DATETIMEFORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
-
     static final FastDateFormat TIMEFORMAT = FastDateFormat.getInstance("HH:mm:ss.SSS");
-
     static final String NULL_TEXT = "<null>";
 
     private CommonUiUtils() {
@@ -141,7 +137,6 @@ public final class CommonUiUtils {
                     Type.HUMANIZED_MESSAGE);
             notification.setPosition(Position.MIDDLE_CENTER);
             notification.setDelayMsec(-1);
-
             String style = ValoTheme.NOTIFICATION_SUCCESS;
             if (type == Type.ERROR_MESSAGE) {
                 style = ValoTheme.NOTIFICATION_FAILURE;
@@ -174,7 +169,6 @@ public final class CommonUiUtils {
         if (obj instanceof byte[]) {
             obj = new String(Hex.encodeHex((byte[]) obj));
         }
-
         if (obj instanceof String) {
             obj = abbreviate((String) obj, 1024 * 4);
         }
@@ -188,7 +182,7 @@ public final class CommonUiUtils {
         }
         return headers.toArray(new String[headers.size()]);
     }
-    
+
     public static Grid<List<Object>> putResultsInGrid(final ResultSet rs, int maxResultSize, final boolean showRowNumbers,
             String... excludeValues) throws SQLException {
         final Grid<List<Object>> grid = new Grid<List<Object>>();
@@ -200,7 +194,6 @@ public final class CommonUiUtils {
                 grid.select(event.getItem());
             }
         });
-        
         List<List<Object>> outerList = new ArrayList<List<Object>>();
         if (rs != null) {
             grid.addColumn(row -> {
@@ -211,13 +204,12 @@ public final class CommonUiUtils {
                 }
                 return null;
             });
-            
             final ResultSetMetaData meta = rs.getMetaData();
             int totalColumns = meta.getColumnCount();
             Set<Integer> skipColumnIndexes = new HashSet<Integer>();
             Set<String> columnNames = new HashSet<String>();
             int[] types = new int[totalColumns];
-            final int[] columnCounter = {1};
+            final int[] columnCounter = { 1 };
             while (columnCounter[0] <= totalColumns) {
                 String realColumnName = meta.getColumnName(columnCounter[0]);
                 String columnName = realColumnName;
@@ -227,26 +219,22 @@ public final class CommonUiUtils {
                         columnName = realColumnName + "_" + index++;
                     }
                     columnNames.add(columnName);
-                    
                     int colNum = columnCounter[0] - 1 - skipColumnIndexes.size();
                     grid.addColumn(row -> row.get(colNum)).setId(columnName).setCaption(columnName).setHidable(true)
                             .setStyleGenerator(row -> {
-                        if (row.get(colNum) == null) {
-                            return "italics";
-                        }
-                        return null;
-                    });
-                    
+                                if (row.get(colNum) == null) {
+                                    return "italics";
+                                }
+                                return null;
+                            });
                     types[columnCounter[0] - 1] = meta.getColumnType(columnCounter[0]);
                 } else {
                     skipColumnIndexes.add(columnCounter[0] - 1);
                 }
                 columnCounter[0]++;
             }
-            
             for (int rowNumber = 1; rs.next() && rowNumber <= maxResultSize; rowNumber++) {
                 List<Object> innerList = new ArrayList<Object>();
-                
                 for (int i = 0; i < totalColumns; i++) {
                     if (!skipColumnIndexes.contains(i)) {
                         Object o = getObject(rs, i + 1);
@@ -272,13 +260,10 @@ public final class CommonUiUtils {
                             default:
                                 break;
                         }
-                        
                         innerList.add(o == null ? NULL_TEXT : o);
                     }
                 }
-                
                 outerList.add(innerList);
-                
                 if (rowNumber < 100) {
                     grid.getColumn("#").setWidth(75);
                 } else if (rowNumber < 1000) {
@@ -286,7 +271,6 @@ public final class CommonUiUtils {
                 } else {
                     grid.getColumn("#").setWidth(115);
                 }
-
                 if (showRowNumbers) {
                     grid.setFrozenColumnCount(1);
                 }

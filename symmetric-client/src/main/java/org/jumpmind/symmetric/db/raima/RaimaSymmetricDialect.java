@@ -34,11 +34,10 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-
     public RaimaSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new RaimaTriggerTemplate(this);
-        this.parameterService = parameterService;                     
+        this.parameterService = parameterService;
     }
 
     @Override
@@ -48,17 +47,16 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
             transaction.prepareAndExecute("declare sync_node_disabled varchar(50);");
             transaction.prepareAndExecute("declare sync_triggers_disabled smallint;");
             transaction.commit();
-        } catch(SqlException e) {
-            if(transaction != null) {
+        } catch (SqlException e) {
+            if (transaction != null) {
                 transaction.rollback();
             }
             log.info("Raima dialect global variables already declared, no need to declare again.");
         } finally {
-            if(transaction != null) {
+            if (transaction != null) {
                 transaction.close();
             }
         }
-    
     }
 
     @Override
@@ -73,8 +71,9 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
             String triggerName) {
-            schema = schema == null ? (platform.getDefaultSchema() == null ? null : platform
-                .getDefaultSchema()) : schema;
+        schema = schema == null ? (platform.getDefaultSchema() == null ? null
+                : platform
+                        .getDefaultSchema()) : schema;
         String checkSchemaSql = (schema != null && schema.length() > 0) ? " and schemaname='"
                 + schema + "'"
                 : "";
@@ -88,8 +87,8 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
             String triggerName, String tableName, ISqlTransaction transaction) {
-            final String sql = "drop trigger " + triggerName;
-        logSql(sql, sqlBuffer);         
+        final String sql = "drop trigger " + triggerName;
+        logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
                 log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
@@ -98,7 +97,6 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
                 log.warn("Trigger does not exist");
             }
         }
-        
     }
 
     @Override
@@ -126,7 +124,7 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
     public int getSqlTypeForIds() {
         return Types.BIGINT;
     }
-    
+
     @Override
     public boolean isClobSyncSupported() {
         return false;
@@ -141,12 +139,10 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.NONE;
     }
-    
+
     @Override
     public PermissionType[] getSymTablePermissions() {
-        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER};
+        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER };
         return permissions;
     }
-
 }
-

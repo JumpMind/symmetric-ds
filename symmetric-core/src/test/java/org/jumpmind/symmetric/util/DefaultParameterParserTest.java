@@ -30,24 +30,19 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.junit.Test;
 
 public class DefaultParameterParserTest {
-
     @Test
     public void testParse() {
         DefaultParameterParser parser = new DefaultParameterParser("/symmetric-default.properties");
         Map<String, ParameterMetaData> metaData = parser.parse();
-        
         assertNotNull(metaData);
         assertTrue(metaData.size() > 0);
         ParameterMetaData meta = metaData.get(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
         assertNotNull(meta);
         assertTrue(meta.getDescription().length() > 0);
         assertTrue(meta.isDatabaseOverridable());
-
         meta = metaData.get(ParameterConstants.NODE_GROUP_ID);
         assertNotNull(meta);
         assertTrue(meta.getDescription().length() > 0);
         assertFalse(meta.isDatabaseOverridable());
-
-    
     }
 }

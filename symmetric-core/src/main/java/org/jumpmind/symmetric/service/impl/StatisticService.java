@@ -43,7 +43,6 @@ import org.jumpmind.symmetric.statistic.NodeStatsByPeriodMap;
  * @see IStatisticService
  */
 public class StatisticService extends AbstractService implements IStatisticService {
-        
     public StatisticService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);
         setSqlMap(new StatisticServiceSqlMap(symmetricDialect.getPlatform(),
@@ -60,37 +59,37 @@ public class StatisticService extends AbstractService implements IStatisticServi
                         stats.getDataExtractedErrors(), stats.getDataSent(),
                         stats.getDataBytesSent(), stats.getDataSentErrors(), stats.getDataLoaded(),
                         stats.getDataBytesLoaded(), stats.getDataLoadedErrors(),
-                        stats.getDataLoadedOutgoing(), stats.getDataBytesLoadedOutgoing(), 
-                        stats.getDataLoadedOutgoingErrors()}, new int[] {
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-                        Types.TIMESTAMP, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
-                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
-                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT });
+                        stats.getDataLoadedOutgoing(), stats.getDataBytesLoadedOutgoing(),
+                        stats.getDataLoadedOutgoingErrors() }, new int[] {
+                                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
+                                Types.TIMESTAMP, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
+                                Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
+                                Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT });
     }
-    
+
     public void save(JobStats stats) {
         sqlTemplate.update(
                 getSql("insertJobStatsSql"),
                 new Object[] { stats.getNodeId(), stats.getHostName(), stats.getJobName(),
-                        stats.getStartTime(), stats.getEndTime(), stats.getProcessedCount(), 
+                        stats.getStartTime(), stats.getEndTime(), stats.getProcessedCount(),
                         stats.getTargetNodeId(), stats.getTargetNodeCount() }, new int[] {
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-                        Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.INTEGER }); 
+                                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
+                                Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.INTEGER });
     }
-    
+
     public List<JobStats> getJobStatsForPeriod(Date start, Date end,
             String nodeId) {
         return sqlTemplate.query(getSql("selectChannelStatsSql"),
-                new JobStatsMapper(), start, end, nodeId);        
-    }  
+                new JobStatsMapper(), start, end, nodeId);
+    }
 
     public TreeMap<Date, Map<String, ChannelStats>> getChannelStatsForPeriod(Date start, Date end,
             String nodeId, int periodSizeInMinutes) {
         List<ChannelStats> list = sqlTemplateDirty.query(getSql("selectChannelStatsSql"),
-                new ChannelStatsMapper(), start, end, nodeId);        
+                new ChannelStatsMapper(), start, end, nodeId);
         return new ChannelStatsByPeriodMap(start, end, list, periodSizeInMinutes);
-    }    
-    
+    }
+
     public void deleteChannelStatsForPeriod(Date start, Date end, String nodeId) {
         sqlTemplate.update(getSql("deleteChannelStatsSql"), start, end, nodeId);
     }
@@ -98,10 +97,10 @@ public class StatisticService extends AbstractService implements IStatisticServi
     public TreeMap<Date, Map<String, ChannelStats>> getNodeStatsForPeriod(Date start, Date end,
             String nodeId, int periodSizeInMinutes) {
         List<ChannelStats> list = sqlTemplateDirty.query(getSql("selectNodeStatsSql"),
-                new ChannelStatsMapper(), start, end, nodeId);        
+                new ChannelStatsMapper(), start, end, nodeId);
         return new NodeStatsByPeriodMap(start, end, list, periodSizeInMinutes);
-    }    
-    
+    }
+
     public Date getMinNodeStats(String nodeId) {
         return sqlTemplateDirty.queryForObject(getSql("minNodeStatsTimeSql"), Date.class, nodeId);
     }
@@ -117,30 +116,29 @@ public class StatisticService extends AbstractService implements IStatisticServi
                         stats.getPurgedDataEventRows(), stats.getPurgedBatchOutgoingRows(),
                         stats.getPurgedBatchIncomingRows(), stats.getTriggersCreatedCount(),
                         stats.getTriggersRebuiltCount(), stats.getTriggersRemovedCount(),
-                        stats.getTotalNodesPullTime(), stats.getTotalNodesPushTime()},
+                        stats.getTotalNodesPullTime(), stats.getTotalNodesPushTime() },
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.TIMESTAMP,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
-                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, 
+                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT });
     }
-    
 
     public TreeMap<Date, HostStats> getHostStatsForPeriod(Date start, Date end, String nodeId,
             int periodSizeInMinutes) {
         List<HostStats> list = sqlTemplate.query(getSql("selectHostStatsSql"),
                 new HostStatsMapper(), start, end, nodeId);
         return new HostStatsByPeriodMap(start, end, list, periodSizeInMinutes);
-    }    
-    
+    }
+
     public Date truncateToMinutes(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.set(Calendar.MILLISECOND, 0);
         cal.set(Calendar.SECOND, 0);
-        return cal.getTime();        
+        return cal.getTime();
     }
-    
+
     class JobStatsMapper implements ISqlRowMapper<JobStats> {
         public JobStats mapRow(Row rs) {
             JobStats stats = new JobStats();
@@ -189,7 +187,7 @@ public class StatisticService extends AbstractService implements IStatisticServi
         public HostStats mapRow(Row rs) {
             HostStats stats = new HostStats();
             stats.setNodeId(rs.getString("node_id"));
-            stats.setHostName(rs.getString("host_name"));            
+            stats.setHostName(rs.getString("host_name"));
             stats.setStartTime(truncateToMinutes(rs.getDateTime("start_time")));
             stats.setEndTime(truncateToMinutes(rs.getDateTime("end_time")));
             stats.setRestarted(rs.getLong("restarted"));

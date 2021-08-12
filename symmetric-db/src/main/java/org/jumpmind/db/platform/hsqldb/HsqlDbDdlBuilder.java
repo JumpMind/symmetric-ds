@@ -58,15 +58,11 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
  * The SQL Builder for the HsqlDb database.
  */
 public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
-
     public HsqlDbDdlBuilder() {
-        
         super(DatabaseNamesConstants.HSQLDB);
-
         databaseInfo.setNonPKIdentityColumnsSupported(false);
         databaseInfo.setIdentityOverrideAllowed(false);
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
-
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "LONGVARBINARY", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.BLOB, "LONGVARBINARY", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.CLOB, "LONGVARCHAR", Types.LONGVARCHAR);
@@ -79,21 +75,16 @@ public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
         // JDBC's TINYINT requires a value range of -255 to 255, but HsqlDb's is
         // only -128 to 127
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
-
         databaseInfo.addNativeTypeMapping("BIT", "BOOLEAN", "BOOLEAN");
         databaseInfo.addNativeTypeMapping("DATALINK", "LONGVARBINARY", "LONGVARBINARY");
-
         databaseInfo.setDefaultSize(Types.CHAR, Integer.MAX_VALUE);
         databaseInfo.setDefaultSize(Types.VARCHAR, Integer.MAX_VALUE);
         databaseInfo.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
         databaseInfo.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
-
-        
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
-
     }
 
     @Override
@@ -115,47 +106,38 @@ public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
         // HsqlDb can only drop columns that are not part of a primary key
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if ((change instanceof RemoveColumnChange)
                     && ((RemoveColumnChange) change).getColumn().isPrimaryKey()) {
                 return;
             }
         }
-
         // in order to utilize the ALTER TABLE ADD COLUMN BEFORE statement
         // we have to apply the add column changes in the correct order
         // thus we first gather all add column changes and then execute them
         // Since we get them in target table column order, we can simply
         // iterate backwards
         ArrayList<AddColumnChange> addColumnChanges = new ArrayList<AddColumnChange>();
-
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof AddColumnChange) {
                 addColumnChanges.add((AddColumnChange) change);
                 changeIt.remove();
             }
         }
-
         for (ListIterator<AddColumnChange> changeIt = addColumnChanges
                 .listIterator(addColumnChanges.size()); changeIt.hasPrevious();) {
             AddColumnChange addColumnChange = (AddColumnChange) changeIt.previous();
-
             processChange(currentModel, desiredModel, addColumnChange, ddl);
             changeIt.remove();
         }
-
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof RemoveColumnChange) {
                 RemoveColumnChange removeColumnChange = (RemoveColumnChange) change;
-
                 processChange(currentModel, desiredModel, removeColumnChange, ddl);
                 changeIt.remove();
             } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
+                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange) change;
                 processChange(currentModel, desiredModel, copyColumnChange, ddl);
                 changeIt.remove();
             }
@@ -193,5 +175,4 @@ public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
-
 }

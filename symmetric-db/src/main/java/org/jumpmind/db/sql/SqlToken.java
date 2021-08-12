@@ -21,7 +21,6 @@
 package org.jumpmind.db.sql;
 
 public class SqlToken {
-
     String replacementToken;
     Object value;
 
@@ -37,5 +36,4 @@ public class SqlToken {
     public Object getValue() {
         return value;
     }
-
 }

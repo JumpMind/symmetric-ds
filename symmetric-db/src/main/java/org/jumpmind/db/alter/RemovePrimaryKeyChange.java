@@ -48,19 +48,19 @@ import org.jumpmind.db.model.Table;
  * 
  * @version $Revision: $
  */
-public class RemovePrimaryKeyChange extends TableChangeImplBase
-{
+public class RemovePrimaryKeyChange extends TableChangeImplBase {
     /** The columns making up the primary key. */
     private Column[] _primaryKeyColumns;
 
     /**
      * Creates a new change object.
      * 
-     * @param table             The table to remove the primary key from
-     * @param primaryKeyColumns The columns making up the primary key
+     * @param table
+     *            The table to remove the primary key from
+     * @param primaryKeyColumns
+     *            The columns making up the primary key
      */
-    public RemovePrimaryKeyChange(Table table, Column[] primaryKeyColumns)
-    {
+    public RemovePrimaryKeyChange(Table table, Column[] primaryKeyColumns) {
         super(table);
         _primaryKeyColumns = primaryKeyColumns;
     }
@@ -70,22 +70,17 @@ public class RemovePrimaryKeyChange extends TableChangeImplBase
      *
      * @return The primary key columns
      */
-    public Column[] getPrimaryKeyColumns()
-    {
+    public Column[] getPrimaryKeyColumns() {
         return _primaryKeyColumns;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void apply(Database database, boolean caseSensitive)
-    {
+    public void apply(Database database, boolean caseSensitive) {
         Table table = database.findTable(getChangedTable().getName(), caseSensitive);
-
-        for (int idx = 0; idx < _primaryKeyColumns.length; idx++)
-        {
+        for (int idx = 0; idx < _primaryKeyColumns.length; idx++) {
             Column column = table.findColumn(_primaryKeyColumns[idx].getName(), caseSensitive);
-
             column.setPrimaryKey(false);
         }
     }

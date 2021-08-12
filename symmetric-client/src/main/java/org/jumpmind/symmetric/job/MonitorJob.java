@@ -27,23 +27,21 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class MonitorJob extends AbstractJob {
-
     public MonitorJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(ClusterConstants.MONITOR, engine, taskScheduler);
     }
-    
+
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
                 .schedule(EVERY_10_SECONDS)
                 .description("Run monitors and generate notifications");
-    }     
-        
+    }
+
     @Override
     public void doJob(boolean force) throws Exception {
         if (engine != null) {
             engine.getMonitorService().update();
         }
     }
-
 }

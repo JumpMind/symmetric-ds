@@ -21,17 +21,15 @@
 package org.jumpmind.symmetric.model;
 
 /**
- * Identifies the action to take when the event watcher sees events in the event
- * table.
+ * Identifies the action to take when the event watcher sees events in the event table.
  */
 public enum NodeGroupLinkAction {
-    
     P("pushes to", "push"), W("waits for pull from", "pull"), R("only routes to", "routes");
-    
+
     private String description;
     private String shortName;
-    
-    NodeGroupLinkAction (String desc, String shortName) {
+
+    NodeGroupLinkAction(String desc, String shortName) {
         this.description = desc;
         this.shortName = shortName;
     }
@@ -48,7 +46,7 @@ public enum NodeGroupLinkAction {
         }
         return null;
     }
-    
+
     public static NodeGroupLinkAction fromShortName(String shortName) {
         if (shortName != null && shortName.length() > 0) {
             if (P.getShortName().equals(shortName)) {
@@ -61,14 +59,13 @@ public enum NodeGroupLinkAction {
         }
         return null;
     }
-    
+
     public String getShortName() {
         return shortName;
     }
-    
+
     @Override
-    public String toString() {     
+    public String toString() {
         return description;
     }
-
 }

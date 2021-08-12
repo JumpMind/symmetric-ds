@@ -31,13 +31,9 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 public class JarBuilder {
-
     private File baseDir;
-
     private File[] sourceFiles;
-
     private File outputFile;
-    
     private String version;
 
     public JarBuilder(File baseDir, File outputFile, File[] sourceFiles, String version) {
@@ -70,9 +66,7 @@ public class JarBuilder {
                 name = "";
             }
         }
-
-        name = name.replace("\\","/");
-        
+        name = name.replace("\\", "/");
         if (name.equals("META-INF/MANIFEST.MF")) {
             name = "";
         }
@@ -101,7 +95,7 @@ public class JarBuilder {
             JarEntry entry = new JarEntry(massageJarEntryName(source));
             entry.setTime(source.lastModified());
             target.putNextEntry(entry);
-            try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(source))) {    
+            try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(source))) {
                 byte[] buffer = new byte[1024];
                 while (true) {
                     int count = in.read(buffer);
@@ -114,5 +108,4 @@ public class JarBuilder {
             }
         }
     }
-
 }

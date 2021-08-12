@@ -39,21 +39,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An intercepter that controls access to this node for pushes and pulls. It is
- * configured within symmetric-web.xml
+ * An intercepter that controls access to this node for pushes and pulls. It is configured within symmetric-web.xml
  */
 public class NodeConcurrencyInterceptor implements IInterceptor {
-    
     private static Logger log = LoggerFactory.getLogger(NodeConcurrencyInterceptor.class);
-
     private IConcurrentConnectionManager concurrentConnectionManager;
-
     private IConfigurationService configurationService;
-    
     private INodeService nodeService;
-
     private IStatisticManager statisticManager;
-    
+
     public NodeConcurrencyInterceptor(IConcurrentConnectionManager concurrentConnectionManager,
             IConfigurationService configurationService, INodeService nodeService, IStatisticManager statisticManager) {
         this.concurrentConnectionManager = concurrentConnectionManager;
@@ -69,7 +63,6 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         String method = req.getMethod();
         String threadChannel = req.getHeader(WebConstants.CHANNEL_QUEUE);
         boolean isPush = ServletUtils.normalizeRequestUri(req).contains("push");
-        
         if (method.equals(WebConstants.METHOD_HEAD) && isPush) {
             // I read here:
             // http://java.sun.com/j2se/1.5.0/docs/guide/net/http-keepalive.html
@@ -88,29 +81,26 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                     ServletUtils.sendError(resp, WebConstants.SC_SERVICE_ERROR);
                 }
             }
-
             if (configurationService.isMasterToMaster() && nodeService.isDataLoadStarted()) {
                 NodeSecurity identity = nodeService.findNodeSecurity(nodeService.findIdentityNodeId(), true);
-                if (identity != null && nodeId != null && "registration".equals(identity.getInitialLoadCreateBy()) && 
+                if (identity != null && nodeId != null && "registration".equals(identity.getInitialLoadCreateBy()) &&
                         !nodeId.equals(identity.getCreatedAtNodeId())) {
                     log.debug("Not allowing push from node {} until initial load from {} is complete", nodeId, identity.getCreatedAtNodeId());
                     ServletUtils.sendError(resp, WebConstants.INITIAL_LOAD_PENDING);
                 }
             }
-
-            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);            
+            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);
             if (nodeSecurity != null) {
                 String createdAtNodeId = nodeSecurity.getCreatedAtNodeId();
                 if (nodeSecurity.isRegistrationEnabled() && (createdAtNodeId == null || createdAtNodeId.equals(nodeService.findIdentityNodeId()))) {
                     if (nodeSecurity.getRegistrationTime() != null) {
-                        ServletUtils.sendError(resp, WebConstants.REGISTRATION_PENDING);                        
+                        ServletUtils.sendError(resp, WebConstants.REGISTRATION_PENDING);
                     }
                     ServletUtils.sendError(resp, WebConstants.REGISTRATION_REQUIRED);
                 }
             }
-
             return false;
-        // Support for channel threading
+            // Support for channel threading
         } else if (threadChannel != null) {
             if (concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.HARD)) {
                 try {
@@ -140,23 +130,22 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                 ServletUtils.sendError(resp, WebConstants.SC_SERVICE_ERROR);
                 return false;
             }
-
         } else {
             statisticManager.incrementNodesRejected(1);
             ServletUtils.sendError(resp, isPush ? WebConstants.SC_NO_RESERVATION : WebConstants.SC_SERVICE_BUSY);
             return false;
         }
     }
-    
+
     protected String getNodeId(HttpServletRequest req) {
         String nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.NODE_ID));
         if (StringUtils.isBlank(nodeId)) {
-            // if this is a registration request, we won't have a node id to use. 
+            // if this is a registration request, we won't have a node id to use.
             nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.EXTERNAL_ID));
         }
         return nodeId;
     }
-    
+
     public void after(HttpServletRequest req, HttpServletResponse resp) throws IOException,
             ServletException {
         String poolId = req.getRequestURI();
@@ -174,5 +163,4 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         httpResponse.setHeader(WebConstants.IGNORED_CHANNELS,
                 suspendIgnoreChannels.getIgnoreChannelsAsString());
     }
-
 }

@@ -31,30 +31,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class IsNullTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     public static final String NAME = "isNull";
 
     public String getName() {
         return NAME;
     }
-    
+
     @Override
     public NewAndOldValue transform(IDatabasePlatform platform,
             DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
-
         String value = data.getSourceDmlType() == DataEventType.DELETE ? oldValue : newValue;
-        
         if (value == null) {
             String expression = column.getTransformExpression();
             if (StringUtils.isNotEmpty(expression)) {
                 value = expression;
             }
         }
-
         if (data.getTargetDmlType() == DataEventType.DELETE && data.getOldSourceValues() != null) {
             return new NewAndOldValue(null, value);
         } else {
@@ -71,5 +66,4 @@ public class IsNullTransform implements ISingleNewAndOldValueColumnTransform, IB
     public boolean isLoadColumnTransform() {
         return true;
     }
-
 }

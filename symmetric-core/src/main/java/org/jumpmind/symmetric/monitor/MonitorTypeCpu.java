@@ -32,16 +32,14 @@ import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
 
 public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExtensionPoint {
-
     protected OperatingSystemMXBean osBean;
-
     protected RuntimeMXBean runtimeBean;
 
     public MonitorTypeCpu() {
         osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
         runtimeBean = ManagementFactory.getRuntimeMXBean();
     }
-    
+
     @Override
     public String getName() {
         return "cpu";
@@ -53,26 +51,21 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
         int availableProcessors = osBean.getAvailableProcessors();
         long prevUpTime = runtimeBean.getUptime();
         long prevProcessCpuTime = getProcessCpuTime();
-
         try {
             Thread.sleep(500);
         } catch (Exception ignore) {
         }
-
         long upTime = runtimeBean.getUptime();
         long processCpuTime = getProcessCpuTime();
         long elapsedCpu = processCpuTime - prevProcessCpuTime;
         long elapsedTime = upTime - prevUpTime;
-        
         long value = (long) (elapsedCpu / (elapsedTime * 1000f * availableProcessors));
         if (value >= 100) {
             event.setValue(100);
         } else {
             event.setValue(value);
         }
-        
         event.setDetails(getNotificationMessage(value, 0l, 0l));
-        
         return event;
     }
 
@@ -99,16 +92,15 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
                 }
             }
         }
-
         StringBuilder text = new StringBuilder("CPU usage is at ");
         text.append(value).append(System.lineSeparator()).append(System.lineSeparator());
         for (int i = 0; i < infos.length; i++) {
             if (infos[i] != null) {
                 text.append("Top #").append((i + 1)).append(" CPU thread ").append(infos[i].getThreadName())
-                    .append(" (ID ").append(infos[i].getThreadId()).append(") is using ").append((cpuUsages[i] / 1000000000f))
-                    .append("s").append(System.lineSeparator());
+                        .append(" (ID ").append(infos[i].getThreadId()).append(") is using ").append((cpuUsages[i] / 1000000000f))
+                        .append("s").append(System.lineSeparator());
                 text.append(logStackTrace(threadBean.getThreadInfo(infos[i].getThreadId(), MAX_STACK_DEPTH)))
-                    .append(System.lineSeparator()).append(System.lineSeparator());
+                        .append(System.lineSeparator()).append(System.lineSeparator());
             }
         }
         return text.toString();
@@ -118,5 +110,4 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
     public boolean requiresClusterLock() {
         return false;
     }
-
 }

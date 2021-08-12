@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class ExtractRequest implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     public enum ExtractStatus {
@@ -54,7 +53,7 @@ public class ExtractRequest implements Serializable {
     private long transferredMillis;
     private long loadedMillis;
     private long parentRequestId;
-    
+
     public long getRequestId() {
         return requestId;
     }
@@ -238,6 +237,4 @@ public class ExtractRequest implements Serializable {
     public void setExtractedMillis(long extractedMillis) {
         this.extractedMillis = extractedMillis;
     }
-
-    
 }

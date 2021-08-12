@@ -23,7 +23,5 @@ package org.jumpmind.symmetric.service;
 import org.jumpmind.extension.IExtensionPoint;
 
 public interface ILogMinerService extends IExtensionPoint {
-
     public long mineData(boolean force);
-
 }

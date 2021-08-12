@@ -24,8 +24,7 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 
 public class LongMapper implements ISqlRowMapper<Long> {
-
-    public Long mapRow(Row row) {     
+    public Long mapRow(Row row) {
         return row.longValue();
     }
 }

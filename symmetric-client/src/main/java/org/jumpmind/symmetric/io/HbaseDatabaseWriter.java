@@ -42,24 +42,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HbaseDatabaseWriter extends AbstractDatabaseWriter {
-
-	private static final Logger log = LoggerFactory.getLogger(HbaseDatabaseWriter.class);
+    private static final Logger log = LoggerFactory.getLogger(HbaseDatabaseWriter.class);
     private Configuration config;
     private Connection connection;
-    private Table table; 
+    private Table table;
     private String hbaseSiteXmlPath;
-    
+
     public HbaseDatabaseWriter(String hbaseSiteXmlPath) {
         this.hbaseSiteXmlPath = hbaseSiteXmlPath;
     }
-    
+
     protected void setup() {
         try {
             if (config == null) {
                 config = HBaseConfiguration.create();
                 config.addResource(new Path(this.hbaseSiteXmlPath));
             }
-            
             if (connection == null) {
                 log.debug("Establishing connection to HBase");
                 connection = ConnectionFactory.createConnection(config);
@@ -72,30 +70,25 @@ public class HbaseDatabaseWriter extends AbstractDatabaseWriter {
             log.error("Unable to connect to HBase ", e);
         }
     }
-    
+
     protected LoadStatus put(CsvData data) {
         try {
             setup();
             Put put = new Put(data.getPkData(this.targetTable)[0].getBytes(Charset.defaultCharset()));
-            
             String[] values = data.getParsedData(CsvData.ROW_DATA);
             Column[] columns = sourceTable.getColumns();
-            
             List<Put> putList = new ArrayList<Put>();
-            
             for (int i = 0; i < columns.length; i++) {
                 if (columns[i].getName().contains(":")) {
                     log.debug("Preparing put statement into Hbase.");
                     String[] split = columns[i].getName().split(":");
                     byte[] columnFamily = split[0].getBytes(Charset.defaultCharset());
                     byte[] columnName = split[1].getBytes(Charset.defaultCharset());
-                    
                     byte[] value = StringUtils.isEmpty(values[i]) ? new byte[0] : values[i].getBytes(Charset.defaultCharset());
                     put.addColumn(columnFamily, columnName, value);
                     putList.add(put);
                 }
             }
-            
             log.debug("Put list for HBase complete with a size of " + putList.size());
             table.put(putList);
             log.debug("Put rows into HBase now closing connection");
@@ -104,10 +97,9 @@ public class HbaseDatabaseWriter extends AbstractDatabaseWriter {
             log.error("Unable to load data into HBase ", e);
             throw new RuntimeException(e);
         }
-
         return LoadStatus.SUCCESS;
     }
-    
+
     @Override
     protected LoadStatus insert(CsvData data) {
         return put(data);
@@ -116,20 +108,18 @@ public class HbaseDatabaseWriter extends AbstractDatabaseWriter {
     @Override
     protected LoadStatus delete(CsvData data, boolean useConflictDetection) {
         setup();
-        
         String[] pkData = data.getParsedData(CsvData.PK_DATA);
         if (pkData != null && pkData.length == 1) {
             Delete delete = new Delete(pkData[0].getBytes(Charset.defaultCharset()));
             try {
                 table.delete(delete);
             } catch (IOException e) {
-                log.error("Unable to delete data for table " + this.targetTable.getName() + 
+                log.error("Unable to delete data for table " + this.targetTable.getName() +
                         ", for primary key " + pkData[0]);
                 throw new RuntimeException(e);
             }
         }
         return LoadStatus.SUCCESS;
-            
     }
 
     @Override
@@ -150,6 +140,4 @@ public class HbaseDatabaseWriter extends AbstractDatabaseWriter {
     @Override
     protected void logFailureDetails(Throwable e, CsvData data, boolean logLastDmlDetails) {
     }
-
-    
 }

@@ -24,11 +24,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class SqlList extends ArrayList<Object> {
-
     private static final long serialVersionUID = 1L;
-
     protected String replacementToken;
-    
+
     public SqlList(String replacementToken, Collection<?> originalList) {
         super(originalList);
         this.replacementToken = replacementToken;
@@ -42,5 +40,4 @@ public class SqlList extends ArrayList<Object> {
     public String getReplacementToken() {
         return replacementToken;
     }
-
 }

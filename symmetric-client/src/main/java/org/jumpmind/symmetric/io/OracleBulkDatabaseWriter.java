@@ -49,43 +49,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
-    
     private IDatabasePlatform targetPlatform;
-
     protected Logger logger;
-
     protected IStagingManager stagingManager;
-
     protected IStagedResource dataResource;
-
     protected IStagedResource controlResource;
-
     protected Table table = null;
-
     protected boolean hasBinaryType;
-
     protected String sqlLoaderCommand;
-
     protected ArrayList<String> sqlLoaderOptions;
-
     protected String dbUser;
-
     protected String dbPassword;
-
     protected String dbUrl;
-
     protected String ezConnectString;
-    
     protected String sqlLoaderInfileCharset;
-    
     protected String fieldTerminator;
-    
     protected String lineTerminator;
-
     protected int rows = 0;
-    
     protected Map<String, Integer> columnLengthsMap = new HashMap<String, Integer>();
-    
     protected boolean delimitTokens = true;
 
     public OracleBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
@@ -106,14 +87,12 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         this.fieldTerminator = fieldTerminator;
         this.lineTerminator = lineTerminator;
         this.delimitTokens = delimitTokens;
-
         this.sqlLoaderOptions = new ArrayList<String>();
         if (StringUtils.isNotBlank(sqlLoaderOptions)) {
             for (String option : sqlLoaderOptions.split(" ")) {
                 this.sqlLoaderOptions.add(option);
             }
         }
-
         if (StringUtils.isBlank(this.sqlLoaderCommand)) {
             String oracleHome = System.getenv("ORACLE_HOME");
             if (StringUtils.isNotBlank(oracleHome)) {
@@ -152,19 +131,16 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         try {
             OutputStream out = controlResource.getOutputStream();
             out.write(("LOAD DATA\n").getBytes(Charset.defaultCharset()));
-            if(StringUtils.isNotEmpty(sqlLoaderInfileCharset)) {
+            if (StringUtils.isNotEmpty(sqlLoaderInfileCharset)) {
                 out.write(("CHARACTERSET " + sqlLoaderInfileCharset + "\n").getBytes(Charset.defaultCharset()));
             }
             out.write(getInfileControl().getBytes(Charset.defaultCharset()));
             out.write(("APPEND INTO TABLE " + targetTable.getQualifiedTableName("\"", ".", ".") + "\n").getBytes(Charset.defaultCharset()));
-
             out.write(("FIELDS TERMINATED BY '" + fieldTerminator + "'\n").getBytes(Charset.defaultCharset()));
             out.write(getLineTerminatedByControl().getBytes(Charset.defaultCharset()));
-            
             out.write("TRAILING NULLCOLS\n".getBytes(Charset.defaultCharset()));
-
             String quote = "";
-            if(delimitTokens) {
+            if (delimitTokens) {
                 quote = targetPlatform.getDdlBuilder().getDatabaseInfo().getDelimiterToken();
             }
             StringBuilder columns = new StringBuilder("(");
@@ -175,7 +151,6 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 }
                 columns.append(quote).append(column.getName()).append(quote);
                 int type = column.getMappedTypeCode();
-                
                 if (targetPlatform.isLob(type)) {
                     columns.append(" CHAR(" + columnLengthsMap.get(column.getName()) + ")");
                 } else if (column.isOfTextType() && column.getSizeAsInt() > 0) {
@@ -216,59 +191,56 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected void bulkWrite(CsvData data) {
         DataEventType dataEventType = data.getDataEventType();
-
         switch (dataEventType) {
-        case INSERT:
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
-            try {
-                OutputStream out = dataResource.getOutputStream();
-                String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
-                Column[] columns = targetTable.getColumns();
-
-                for (int i = 0; i < parsedData.length; i++) {
-                    if (parsedData[i] != null) {
-                        byte[] bytesToWrite = null;
-                        if (hasBinaryType && columns[i].isOfBinaryType()) {
-                            if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
-                                bytesToWrite = Base64.decodeBase64(parsedData[i].getBytes(Charset.defaultCharset()));
-                            } else if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
-                                bytesToWrite = Hex.decodeHex(parsedData[i].toCharArray());
+            case INSERT:
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
+                try {
+                    OutputStream out = dataResource.getOutputStream();
+                    String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
+                    Column[] columns = targetTable.getColumns();
+                    for (int i = 0; i < parsedData.length; i++) {
+                        if (parsedData[i] != null) {
+                            byte[] bytesToWrite = null;
+                            if (hasBinaryType && columns[i].isOfBinaryType()) {
+                                if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
+                                    bytesToWrite = Base64.decodeBase64(parsedData[i].getBytes(Charset.defaultCharset()));
+                                } else if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
+                                    bytesToWrite = Hex.decodeHex(parsedData[i].toCharArray());
+                                }
+                            } else {
+                                bytesToWrite = parsedData[i].getBytes(Charset.defaultCharset());
                             }
-                        } else {
-                            bytesToWrite = parsedData[i].getBytes(Charset.defaultCharset());
+                            if (bytesToWrite != null) {
+                                out.write(bytesToWrite);
+                                int newLength = bytesToWrite.length;
+                                Integer o = columnLengthsMap.get(columns[i].getName());
+                                int oldLength = (o == null ? 0 : o.intValue());
+                                if (newLength > oldLength) {
+                                    this.columnLengthsMap.put(columns[i].getName(), newLength);
+                                }
+                            }
                         }
-                        if(bytesToWrite != null) {
-                            out.write(bytesToWrite);
-                            int newLength = bytesToWrite.length;
-                            Integer o = columnLengthsMap.get(columns[i].getName());
-                            int oldLength = (o == null ? 0 : o.intValue());
-                            if(newLength > oldLength) {
-                                this.columnLengthsMap.put(columns[i].getName(), newLength);
-                            }
+                        if (i + 1 < parsedData.length) {
+                            out.write(fieldTerminator.getBytes(Charset.defaultCharset()));
                         }
                     }
-                    if (i + 1 < parsedData.length) {
-                        out.write(fieldTerminator.getBytes(Charset.defaultCharset()));
-                    }
+                    out.write(lineTerminator.getBytes(Charset.defaultCharset()));
+                    rows++;
+                } catch (Exception ex) {
+                    throw getPlatform().getSqlTemplate().translate(ex);
+                } finally {
+                    statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
+                    statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
+                    statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
+                    statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
                 }
-
-                out.write(lineTerminator.getBytes(Charset.defaultCharset()));
-                rows++;
-            } catch (Exception ex) {
-                throw getPlatform().getSqlTemplate().translate(ex);
-            } finally {
-                statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
-                statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
-                statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
-                statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
-            }
-            break;
-        case UPDATE:
-        case DELETE:
-        default:
-            flush();
-            writeDefault(data);
-            break;
+                break;
+            case UPDATE:
+            case DELETE:
+            default:
+                flush();
+                writeDefault(data);
+                break;
         }
     }
 
@@ -300,7 +272,6 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                         logger.info("{}: {}", getLoaderName(), line);
                     }
                 }
-
                 int rc = process.waitFor();
                 if (rc == 2) {
                     throw new RuntimeException("All or some rows were rejected.");
@@ -360,7 +331,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         }
         return ezConnect;
     }
-    
+
     protected static String parseDbUrl(String dbUrl) {
         // jdbc:oracle:thin:@10.10.10.10:1521/SERVICE_NAME_PROD
         // jdbc:oracle:thin:@10.10.10.10:1521:DBNAME
@@ -373,13 +344,13 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             StringBuilder sb = new StringBuilder(array[0]).append(":");
             int indexOfColon = array[1].indexOf(":");
             int indexOfSlash = array[1].indexOf("/");
-            if(indexOfSlash > -1  && indexOfColon > -1 && indexOfSlash < indexOfColon) {
+            if (indexOfSlash > -1 && indexOfColon > -1 && indexOfSlash < indexOfColon) {
                 // Found a / before a colon, use the / and the rest of the string as is
                 sb.append(array[1]);
-            } else if(indexOfSlash > -1) {
+            } else if (indexOfSlash > -1) {
                 // Found a / and no colon, use the / and the rest of the string as is
                 sb.append(array[1]);
-            } else if(indexOfColon > -1) {
+            } else if (indexOfColon > -1) {
                 // Found a : and no /, use up top the :, then append a /, then the rest of the string as is
                 sb.append(array[1].substring(0, indexOfColon)).append("/").append(array[1].substring(indexOfColon + 1));
             }
@@ -388,7 +359,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         }
         return ret;
     }
-    
+
     protected String getTnsVariable(String dbUrl, String name) {
         String value = "";
         int startIndex = dbUrl.toUpperCase().indexOf(name + "=");
@@ -398,9 +369,8 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         }
         return value;
     }
-    
+
     protected String getLoaderName() {
         return "SQL*Loader";
     }
-
 }

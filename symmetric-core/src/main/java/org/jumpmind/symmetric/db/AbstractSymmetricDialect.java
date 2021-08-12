@@ -71,55 +71,32 @@ import org.slf4j.LoggerFactory;
  * The abstract class for database dialects.
  */
 abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
-
     protected IDatabasePlatform platform;
-
     protected ISymmetricDialect targetDialect = this;
-
     protected AbstractTriggerTemplate triggerTemplate;
-
     protected IParameterService parameterService;
-
     protected IExtensionService extensionService;
-
     protected Boolean supportsGetGeneratedKeys;
-
     protected String databaseName;
-
     protected String driverVersion;
-
     protected String driverName;
-
     protected int databaseMajorVersion;
-
     protected int databaseMinorVersion;
-
     protected String databaseProductVersion;
-
     protected Set<String> sqlKeywords;
-
     protected boolean supportsTransactionViews = false;
-
     protected boolean supportsSubselectsInDelete = true;
-
     protected boolean supportsSubselectsInUpdate = true;
-
     protected Map<String, String> sqlReplacementTokens = new HashMap<String, String>();
-    
     protected String tablePrefixLowerCase;
 
     public AbstractSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         this.parameterService = parameterService;
         this.platform = platform;
-
         log.info("The DbDialect being used is {}", this.getClass().getName());
-
         buildSqlReplacementTokens();
-
         ISqlTemplate sqlTemplate = this.platform.getSqlTemplate();
         this.databaseMajorVersion = sqlTemplate.getDatabaseMajorVersion();
         this.databaseMinorVersion = sqlTemplate.getDatabaseMinorVersion();
@@ -144,8 +121,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     /*
-     * Provide a default implementation of this method using DDLUtils,
-     * getMaxColumnNameLength()
+     * Provide a default implementation of this method using DDLUtils, getMaxColumnNameLength()
      */
     public int getMaxTriggerNameLength() {
         int max = getPlatform().getDatabaseInfo().getMaxColumnNameLength();
@@ -259,7 +235,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             } else {
                 tableNames.add(triggerRouter.qualifiedTargetTableName(triggerHistory));
             }
-
             for (String tableName : tableNames) {
                 if (deleteSql == null) {
                     if (tableName.startsWith(parameterService.getTablePrefix())) {
@@ -312,7 +287,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         } finally {
             close(transaction);
         }
-
     }
 
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName, String tableName,
@@ -354,24 +328,19 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     /*
-     * Create the configured trigger. The catalog will be changed to the source
-     * schema if the source schema is configured.
+     * Create the configured trigger. The catalog will be changed to the source schema if the source schema is configured.
      */
     public void createTrigger(final StringBuilder sqlBuffer, final DataEventType dml, final Trigger trigger, final TriggerHistory hist,
             final Channel channel, final String tablePrefix, final Table table, ISqlTransaction transaction) {
         log.info("Creating {} trigger for {}", hist.getTriggerNameForDmlType(dml), table.getFullyQualifiedTableName());
-
         String previousCatalog = null;
         String sourceCatalogName = table.getCatalog();
         String defaultCatalog = platform.getDefaultCatalog();
         String defaultSchema = platform.getDefaultSchema();
-
         String triggerSql = triggerTemplate.createTriggerDDL(dml, trigger, hist, channel, tablePrefix, table, defaultCatalog, defaultSchema);
-
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
                 previousCatalog = switchCatalogForTriggerInstall(sourceCatalogName, transaction);
-
                 try {
                     log.debug("Running: {}", triggerSql);
                     logSql(triggerSql, sqlBuffer);
@@ -380,7 +349,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     log.info("Failed to create trigger: {}", triggerSql);
                     throw ex;
                 }
-
                 postCreateTrigger(transaction, sqlBuffer, dml, trigger, hist, channel, tablePrefix, table);
             } finally {
                 if (sourceCatalogName != null && !sourceCatalogName.equalsIgnoreCase(previousCatalog)) {
@@ -423,12 +391,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             String triggerSql = triggerTemplate.createDdlTrigger(tablePrefix, platform.getDefaultCatalog(), platform.getDefaultSchema(),
                     triggerName);
             log.info("Creating DDL trigger " + triggerName);
-
             if (triggerSql != null) {
                 ISqlTransaction transaction = null;
                 try {
                     transaction = this.platform.getSqlTemplate().startSqlTransaction(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
-
                     try {
                         log.debug("Running: {}", triggerSql);
                         logSql(triggerSql, sqlBuffer);
@@ -437,7 +403,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                         log.info("Failed to create DDL trigger: {}", triggerSql);
                         throw ex;
                     }
-
                     transaction.commit();
                 } catch (SqlException ex) {
                     if (transaction != null) {
@@ -479,43 +444,33 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public boolean createOrAlterTablesIfNecessary(String... tableNames) {
         try {
             log.info("Checking if SymmetricDS tables need created or altered");
-
             Database modelFromXml = readSymmetricSchemaFromXml();
             Database modelFromDatabase = readSymmetricSchemaFromDatabase();
-
             if (tableNames != null && tableNames.length > 0) {
                 tableNames = platform.alterCaseToMatchDatabaseDefaultCase(tableNames);
                 modelFromXml.removeAllTablesExcept(tableNames);
                 modelFromDatabase.removeAllTablesExcept(tableNames);
             }
-
             IDdlBuilder builder = platform.getDdlBuilder();
-
             List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = extensionService
                     .getExtensionPointList(IAlterDatabaseInterceptor.class);
             IAlterDatabaseInterceptor[] interceptors = alterDatabaseInterceptors
                     .toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]);
             if (builder.isAlterDatabase(modelFromDatabase, modelFromXml, interceptors)) {
                 String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
-
                 ISqlResultsListener resultsListener = new LogSqlResultsListener();
                 List<IDatabaseUpgradeListener> databaseUpgradeListeners = extensionService
                         .getExtensionPointList(IDatabaseUpgradeListener.class);
-
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
                     String sql = listener.beforeUpgrade(this, this.parameterService.getTablePrefix(), modelFromDatabase, modelFromXml);
                     SqlScript script = new SqlScript(sql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
                     script.setListener(resultsListener);
                     script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                 }
-
                 String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml, interceptors);
-
                 if (isNotBlank(alterSql)) {
                     log.info("There are SymmetricDS tables that needed altered");
-
                     log.debug("Alter SQL generated: {}", alterSql);
-
                     ISqlResultsListener resultsInstallListener = resultsListener;
                     List<IDatabaseInstallStatementListener> installListeners = extensionService.getExtensionPointList(IDatabaseInstallStatementListener.class);
                     if (installListeners != null && installListeners.size() > 0) {
@@ -526,14 +481,12 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
                     script.setListener(resultsInstallListener);
                     script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
-
                     for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
                         String sql = listener.afterUpgrade(this, this.parameterService.getTablePrefix(), modelFromXml);
                         script = new SqlScript(sql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
                         script.setListener(resultsListener);
                         script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                     }
-
                     log.info("Done with auto update of SymmetricDS tables");
                     return true;
                 } else {
@@ -553,7 +506,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         try {
             Database database = merge(readDatabaseFromXml("/symmetric-schema.xml"), readDatabaseFromXml("/console-schema.xml"));
             prefixConfigDatabase(database);
-
             String extraTablesXml = parameterService.getString(ParameterConstants.AUTO_CONFIGURE_EXTRA_TABLES);
             if (StringUtils.isNotBlank(extraTablesXml)) {
                 try {
@@ -562,7 +514,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     log.error("", ex);
                 }
             }
-
             return database;
         } catch (RuntimeException ex) {
             throw ex;
@@ -861,14 +812,12 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             orderBySql = " " + sql.substring(index);
             sql = sql.substring(0, index);
         }
-
         if (columns.size() > 0) {
             if (!sql.equals("")) {
                 sql += " and ";
             }
             sql += "(";
         }
-
         for (Column column : table.getLobColumns(this.platform)) {
             String columnSql = getInitialLoadTwoPassLobLengthSql(column, isFirstPass);
             if (columnSql != null && !columnSql.trim().equals("")) {
@@ -884,7 +833,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 sql += columnSql;
             }
         }
-
         if (columns.size() > 0) {
             sql += ")";
         }

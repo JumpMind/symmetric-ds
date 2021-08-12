@@ -62,17 +62,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class AbstractTest {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     private Map<String, SymmetricWebServer> webServers = new HashMap<String, SymmetricWebServer>();
-
     private static final String DEFAULT_PORT = "9995";
-
     private int registrationPort;
-
     private int port;
-
     static {
         System.setProperty("h2.baseDir", "./");
     }
@@ -143,11 +137,11 @@ abstract public class AbstractTest {
             }
         }
     }
-    
+
     protected ISqlTemplate template(SymmetricWebServer webServer) {
         return webServer.getEngine().getDatabasePlatform().getSqlTemplate();
     }
-    
+
     protected ISqlTemplate template(ISymmetricEngine engine) {
         return engine.getDatabasePlatform().getSqlTemplate();
     }
@@ -155,7 +149,6 @@ abstract public class AbstractTest {
     protected SymmetricWebServer getWebServer(String name) {
         try {
             if (!webServers.containsKey(name)) {
-
                 EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(
                         new URL[] { getResource(DbTestUtils.DB_TEST_PROPERTIES) }, "test." + name,
                         new String[] { name });
@@ -163,25 +156,20 @@ abstract public class AbstractTest {
                 File rootDir = new File("target/" + name);
                 FileUtils.deleteDirectory(rootDir);
                 rootDir.mkdirs();
-
                 File engineDir = new File(rootDir, "engines");
                 engineDir.mkdirs();
-
                 File rootPropertiesFile = new File(engineDir, "root.properties");
                 FileOutputStream fos = new FileOutputStream(rootPropertiesFile);
                 properties.store(fos, "unit tests");
                 fos.close();
-
                 System.setProperty(SystemConstants.SYSPROP_WAIT_FOR_DATABASE, "false");
                 System.setProperty(SystemConstants.SYSPROP_ENGINES_DIR, engineDir.getAbsolutePath());
                 System.setProperty(SystemConstants.SYSPROP_WEB_DIR, "src/main/deploy/web");
-
                 ISymmetricEngine engine = null;
-
                 int tries = 2;
                 do {
-                    /** 
-                     * Firebird is flaky.  Trying to work around it.
+                    /**
+                     * Firebird is flaky. Trying to work around it.
                      */
                     try {
                         engine = new ClientSymmetricEngine(properties);
@@ -191,36 +179,29 @@ abstract public class AbstractTest {
                         AppUtils.sleep(30000);
                     }
                 } while (tries > 0 && engine == null);
-                
                 IDatabasePlatform platform = engine.getDatabasePlatform();
                 engine.getStagingManager().clean(0);
                 engine.uninstall();
-
                 Database database = platform.getDdlReader().readTables(
                         platform.getDefaultCatalog(), platform.getDefaultSchema(),
                         new String[] { "TABLE" });
                 platform.dropDatabase(database, true);
-
                 Table[] tables = getTables(name);
                 if (tables != null) {
                     platform.alterCaseToMatchDatabaseDefaultCase(tables);
                     platform.createTables(false, true, tables);
                 }
                 engine.destroy();
-
                 SymmetricWebServer server = new SymmetricWebServer();
                 server.setHttpPort(port);
                 log.info("Starting " + name + " on port " + port);
                 server.setJoin(false);
                 server.start();
-
                 server.waitForEnginesToComeOnline(240000);
-
                 webServers.put(name, server);
                 port += 200;
             }
             return webServers.get(name);
-
         } catch (IOException e) {
             throw new IoException(e);
         } catch (RuntimeException e) {
@@ -235,8 +216,7 @@ abstract public class AbstractTest {
     }
 
     /**
-     * Loads configuration in the format of classname.csv at the registration
-     * server
+     * Loads configuration in the format of classname.csv at the registration server
      */
     protected void loadConfigAtRegistrationServer() throws Exception {
         ISymmetricEngine regEngine = getRegServer().getEngine();
@@ -252,9 +232,7 @@ abstract public class AbstractTest {
                 inError = true;
             }
         }
-
         assertFalse("Failed to load configuration", inError);
-
     }
 
     protected boolean pull(String name) {
@@ -347,13 +325,12 @@ abstract public class AbstractTest {
         getWebServer(serverGroup).getEngine().openRegistration(clientGroup, clientGroup);
         pull(clientGroup);
     }
-    
+
     protected void logStartOfTest(String testName) {
         log.info("Start of test " + testName);
     }
-    
+
     protected void logEndOfTest(String testName) {
         log.info("End of test " + testName);
     }
-
 }

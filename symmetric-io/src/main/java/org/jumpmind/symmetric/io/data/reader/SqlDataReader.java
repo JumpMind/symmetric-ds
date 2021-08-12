@@ -30,11 +30,9 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 /**
- * Reads a SQL script and passes each SQL statement through the reader as a
- * {@link CsvData} event.
+ * Reads a SQL script and passes each SQL statement through the reader as a {@link CsvData} event.
  */
 public class SqlDataReader extends AbstractTableDataReader {
-
     protected SqlScriptReader sqlScriptReader;
 
     public SqlDataReader(InputStream is) {
@@ -48,8 +46,7 @@ public class SqlDataReader extends AbstractTableDataReader {
     @Override
     protected void init() {
         /*
-         * Tables are really relevant as we aren't going to parse each SQL
-         * statement.
+         * Tables are really relevant as we aren't going to parse each SQL statement.
          */
         this.readDataBeforeTable = true;
         this.sqlScriptReader = new SqlScriptReader(reader);
@@ -69,7 +66,7 @@ public class SqlDataReader extends AbstractTableDataReader {
     protected void finish() {
         try {
             this.sqlScriptReader.close();
-        } catch(IOException e) { }
+        } catch (IOException e) {
+        }
     }
-
 }

@@ -30,7 +30,6 @@ import org.jumpmind.symmetric.model.TriggerRouter;
  * Utility class to pair down a list of triggers.
  */
 public class TriggerRouterSelector {
-
     private String channelId;
     private String targetNodeGroupId;
     private Collection<TriggerRouter> triggers;

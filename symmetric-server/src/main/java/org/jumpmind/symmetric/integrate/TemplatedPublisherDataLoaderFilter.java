@@ -30,20 +30,18 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 
 /**
- * A convenience class that allows the end user to template a message using
- * SymmetricDS filter data. </p> You may use %COLUMN% formatted tokens in your
- * template data which will be replaced by data coming in through the filter.
- * The following tokens are also supported:
+ * A convenience class that allows the end user to template a message using SymmetricDS filter data.
+ * </p>
+ * You may use %COLUMN% formatted tokens in your template data which will be replaced by data coming in through the filter. The following tokens are also
+ * supported:
  * <ol>
  * <li>%DMLTYPE% - evaluates to INSERT, UPDATE or DELETE</li>
- * <li>%TIMESTAMP% - evaluates to ms value returned by
- * System.currentTimeInMillis()</li>
+ * <li>%TIMESTAMP% - evaluates to ms value returned by System.currentTimeInMillis()</li>
  * </ol>
- * </p> If you have special formatting needs, implement the {@link IFormat}
- * interface and map your formatter to the column you want to 'massage.'
+ * </p>
+ * If you have special formatting needs, implement the {@link IFormat} interface and map your formatter to the column you want to 'massage.'
  */
 public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDataLoaderFilter {
-
     private String headerTableTemplate;
     private String footerTableTemplate;
     private String contentTableTemplate;
@@ -51,7 +49,6 @@ public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDat
     private boolean processDelete = true;
     private boolean processInsert = true;
     private boolean processUpdate = true;
-
     private IDatabaseWriterFilter dataFilter;
 
     @Override
@@ -98,15 +95,12 @@ public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDat
             colNames = table.getColumnNames();
             colValues = data.getParsedData(CsvData.ROW_DATA);
         }
-
         for (int i = 0; i < colValues.length; i++) {
             String col = colNames[i];
             template = replace(template, col, format(col, colValues[i]));
         }
-
         template = template.replace("DMLTYPE", eventType.name());
         template = template.replace("TIMESTAMP", Long.toString(System.currentTimeMillis()));
-
         return template;
     }
 
@@ -128,11 +122,9 @@ public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDat
         if (value == null) {
             value = "";
         }
-
         if (template != null) {
             template = template.replace("%" + token + "%", value);
         }
-
         return template;
     }
 
@@ -171,5 +163,4 @@ public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDat
     public void setDataFilter(IDatabaseWriterFilter dataFilter) {
         this.dataFilter = dataFilter;
     }
-
 }

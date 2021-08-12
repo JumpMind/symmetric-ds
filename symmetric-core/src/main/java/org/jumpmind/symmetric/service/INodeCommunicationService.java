@@ -29,11 +29,10 @@ import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 
 public interface INodeCommunicationService {
-
     public List<NodeCommunication> list(CommunicationType communicationType);
 
     public List<NodeCommunication> listAll(CommunicationType communicationType);
-    
+
     public NodeCommunication find(String nodeId, String channelId, CommunicationType communicationType);
 
     public boolean execute(NodeCommunication nodeCommunication, RemoteNodeStatuses statuses, INodeCommunicationExecutor executor);
@@ -43,13 +42,12 @@ public interface INodeCommunicationService {
     public void stop();
 
     public void updateBatchToSendCounts(String nodeId, Map<String, Integer> batchesCountToQueues);
-    
+
     public Map<String, Integer> parseQueueToBatchCounts(String channelToBatchCountsString);
-    
+
     public void persistToTableForSnapshot();
 
     public interface INodeCommunicationExecutor {
         public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status);
     }
-    
 }

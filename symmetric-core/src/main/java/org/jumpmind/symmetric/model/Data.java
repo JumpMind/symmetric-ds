@@ -30,15 +30,11 @@ import org.jumpmind.symmetric.io.data.DataEventType;
  * This is the data that changed due to a data sync trigger firing.
  */
 public class Data extends CsvData implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     /**
-     * This is a reference to the triggerHistory row the trigger referred to
-     * when the data event fired.
+     * This is a reference to the triggerHistory row the trigger referred to when the data event fired.
      */
     private TriggerHistory triggerHistory;
-
     private boolean isPreRouted;
 
     public Data(long dataId, String pkData, String rowData, DataEventType eventType,
@@ -99,7 +95,7 @@ public class Data extends CsvData implements Serializable {
     public void setTableName(String tableName) {
         putAttribute(ATTRIBUTE_TABLE_NAME, tableName);
     }
-    
+
     public String getRowData() {
         return getCsvData(ROW_DATA);
     }
@@ -163,11 +159,11 @@ public class Data extends CsvData implements Serializable {
     public void setExternalData(String externalData) {
         putAttribute(ATTRIBUTE_EXTERNAL_DATA, externalData);
     }
-    
+
     public void setNodeList(String nodeList) {
         putAttribute(ATTRIBUTE_NODE_LIST, nodeList);
     }
-    
+
     public String getNodeList() {
         return getAttribute(ATTRIBUTE_NODE_LIST);
     }
@@ -200,5 +196,4 @@ public class Data extends CsvData implements Serializable {
         }
         return null;
     }
-
 }

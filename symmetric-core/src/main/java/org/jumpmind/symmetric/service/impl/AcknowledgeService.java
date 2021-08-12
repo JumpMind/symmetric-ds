@@ -46,7 +46,6 @@ import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
  * @see IAcknowledgeService
  */
 public class AcknowledgeService extends AbstractService implements IAcknowledgeService {
-
     private ISymmetricEngine engine;
 
     public AcknowledgeService(ISymmetricEngine engine) {
@@ -56,15 +55,12 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
     }
 
     public BatchAckResult ack(final BatchAck batch) {
-
         IRegistrationService registrationService = engine.getRegistrationService();
         IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
         BatchAckResult result = new BatchAckResult(batch);
-        
         for (IAcknowledgeEventListener listener : engine.getExtensionService().getExtensionPointList(IAcknowledgeEventListener.class)) {
             listener.onAcknowledgeEvent(batch);
         }
-
         if (batch.getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
             if (batch.isOk()) {
                 registrationService.markNodeAsRegistered(batch.getNodeId());
@@ -72,9 +68,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         } else {
             OutgoingBatch outgoingBatch = outgoingBatchService.findOutgoingBatch(batch.getBatchId(), batch.getNodeId());
             Status status = batch.isResend() ? Status.RS : batch.isOk() ? Status.OK : Status.ER;
-
             if (outgoingBatch != null && outgoingBatch.getStatus() != Status.RQ) {
-
                 // Allow an outside system/user to indicate that a batch is OK
                 if (outgoingBatch.getStatus() == Status.IG && status == Status.OK) {
                     log.info("Ignoring batch {}", outgoingBatch.getNodeBatchId());
@@ -82,7 +76,6 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     log.info("Setting status to ignore for batch {} because status was set to OK by user", outgoingBatch.getNodeBatchId());
                     status = Status.IG;
                 }
-
                 boolean isFirstTimeAsOkStatus = outgoingBatch.getStatus() != Status.OK && status == Status.OK;
                 outgoingBatch.setStatus(status);
                 outgoingBatch.setErrorFlag(status == Status.ER);
@@ -110,19 +103,17 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     outgoingBatch.setFailedDataId(0);
                     outgoingBatch.setFailedLineNumber(0);
                 }
-
                 boolean isNewError = false;
                 if (status == Status.ER && batch.getErrorLine() != 0) {
                     if (outgoingBatch.isLoadFlag()) {
                         isNewError = outgoingBatch.getSentCount() == 1;
-                    } else if (batch.getErrorLine() != outgoingBatch.getFailedLineNumber()){
+                    } else if (batch.getErrorLine() != outgoingBatch.getFailedLineNumber()) {
                         String sql = getSql("selectDataIdSql");
                         if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false)) {
                             sql = getSql("selectDataIdByCreateTimeSql");
                         } else if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
                             sql += getSql("orderByDataId");
                         }
-    
                         List<Number> ids = sqlTemplateDirty.query(sql, new NumberMapper(), outgoingBatch.getBatchId());
                         if (ids.size() >= batch.getErrorLine()) {
                             long failedDataId = ids.get((int) batch.getErrorLine() - 1).longValue();
@@ -132,16 +123,15 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                         outgoingBatch.setFailedLineNumber(batch.getErrorLine());
                     }
                 }
-
                 if (status == Status.ER) {
                     boolean suppressError = false;
                     if (isNewError) {
                         engine.getStatisticManager().incrementDataLoadedOutgoingErrors(outgoingBatch.getChannelId(), 1);
                     }
                     if (isNewError && outgoingBatch.getSqlCode() == ErrorConstants.FK_VIOLATION_CODE) {
-                        if (!outgoingBatch.isLoadFlag() && outgoingBatch.getReloadRowCount() == 0 && 
+                        if (!outgoingBatch.isLoadFlag() && outgoingBatch.getReloadRowCount() == 0 &&
                                 parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION)) {
-                            engine.getDataService().reloadMissingForeignKeyRows(outgoingBatch.getBatchId(), outgoingBatch.getNodeId(), 
+                            engine.getDataService().reloadMissingForeignKeyRows(outgoingBatch.getBatchId(), outgoingBatch.getNodeId(),
                                     outgoingBatch.getFailedDataId(), outgoingBatch.getFailedLineNumber());
                             suppressError = true;
                         }
@@ -152,7 +142,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     if (outgoingBatch.getSqlCode() == ErrorConstants.PROTOCOL_VIOLATION_CODE
                             && ErrorConstants.PROTOCOL_VIOLATION_STATE.equals(outgoingBatch.getSqlState())) {
                         if (outgoingBatch.isLoadFlag()) {
-                            log.info("The batch {} may be corrupt in staging. Not removing the batch because it was a load batch, but you may need to clear the batch from staging manually.",
+                            log.info(
+                                    "The batch {} may be corrupt in staging. Not removing the batch because it was a load batch, but you may need to clear the batch from staging manually.",
                                     outgoingBatch.getNodeBatchId());
                         } else {
                             IStagedResource resource = engine.getStagingManager().find(Constants.STAGING_CATEGORY_OUTGOING,
@@ -168,7 +159,6 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                             outgoingBatch.getSqlCode() == ErrorConstants.CONFLICT_CODE)) {
                         suppressError = true;
                     }
-                    
                     if (suppressError) {
                         outgoingBatch.setErrorFlag(false);
                     } else {
@@ -182,7 +172,6 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 } else if (status == Status.RS) {
                     log.info("The outgoing batch {} received resend request", outgoingBatch.getNodeBatchId());
                 }
-                
                 ISqlTransaction transaction = null;
                 try {
                     transaction = sqlTemplate.startSqlTransaction();
@@ -200,7 +189,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                             purgeBatchesFromStaging(outgoingBatch);
                         }
                         Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
-                        if (channel != null && channel.isFileSyncFlag()){
+                        if (channel != null && channel.isFileSyncFlag()) {
                             /* Acknowledge the file_sync in case the file needs deleted. */
                             engine.getFileSyncService().acknowledgeFiles(outgoingBatch);
                         }
@@ -220,8 +209,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     close(transaction);
                 }
             } else if (outgoingBatch == null) {
-                log.error("Could not find batch {}-{} to acknowledge as {}", new Object[] {batch.getNodeId(), batch.getBatchId(),
-                        status.name()});
+                log.error("Could not find batch {}-{} to acknowledge as {}", new Object[] { batch.getNodeId(), batch.getBatchId(),
+                        status.name() });
                 result.setOk(false);
             }
         }
@@ -239,7 +228,6 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 }
             }
         }
-        
         long streamToFileThreshold = parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
         if (streamToFileThreshold > 0 && !outgoingBatch.isCommonFlag() && outgoingBatch.getByteCount() <= streamToFileThreshold) {
             IStagedResource resource = engine.getStagingManager().find(Constants.STAGING_CATEGORY_OUTGOING,
@@ -251,9 +239,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
     }
 
     public List<BatchAckResult> ack(List<BatchAck> batches) {
-        
         List<BatchAckResult> results = new ArrayList<BatchAckResult>();
-        for (BatchAck batch:batches) {
+        for (BatchAck batch : batches) {
             results.add(ack(batch));
         }
         return results;

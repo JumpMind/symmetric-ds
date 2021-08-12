@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.service;
 
 import java.util.List;
@@ -31,9 +30,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
  * This service provides an API to access acknowledge {@link OutgoingBatch}s.
  */
 public interface IAcknowledgeService {
-    
     public BatchAckResult ack(BatchAck batch);
-    
-    public List<BatchAckResult> ack(List<BatchAck> batches);
 
+    public List<BatchAckResult> ack(List<BatchAck> batches);
 }

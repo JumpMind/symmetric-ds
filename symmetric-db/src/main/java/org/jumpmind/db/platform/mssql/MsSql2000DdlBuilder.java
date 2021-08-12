@@ -81,10 +81,8 @@ import org.jumpmind.db.platform.PlatformUtils;
  * The SQL Builder for the Microsoft SQL Server.
  */
 public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
-
     /* We use a generic date format. */
     private DateFormat _genericDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
     /* We use a generic date format. */
     private DateFormat _genericTimeFormat = new SimpleDateFormat("HH:mm:ss");
 
@@ -93,7 +91,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setMaxIdentifierLength(128);
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "IMAGE", Types.LONGVARBINARY);
         // BIGINT will be mapped back to BIGINT by the model reader
-        //databaseInfo.addNativeTypeMapping(Types.BIGINT, "DECIMAL(19,0)");
+        // databaseInfo.addNativeTypeMapping(Types.BIGINT, "DECIMAL(19,0)");
         databaseInfo.addNativeTypeMapping(Types.BIGINT, "BIGINT", Types.BIGINT);
         databaseInfo.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.CLOB, "TEXT", Types.LONGVARCHAR);
@@ -114,12 +112,10 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
         databaseInfo.addNativeTypeMapping("BOOLEAN", "BIT", "BIT");
         databaseInfo.addNativeTypeMapping("DATALINK", "IMAGE", "LONGVARBINARY");
-
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
-
         databaseInfo.setDateOverridesToTimestamp(true);
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
@@ -141,7 +137,6 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         String tableName = getTableName(table.getName());
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
-
         writeQuotationOnStatement(ddl);
         ddl.append("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'U' AND name = ");
         printAlwaysSingleQuotedIdentifier(tableName, ddl);
@@ -193,9 +188,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         if (value == null) {
             return "NULL";
         }
-
         StringBuilder result = new StringBuilder();
-
         switch (column.getMappedTypeCode()) {
             case Types.REAL:
             case Types.NUMERIC:
@@ -212,16 +205,18 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
             case Types.DATE:
                 result.append("CAST(");
                 result.append(databaseInfo.getValueQuoteToken());
-                result.append(value instanceof String ? (String) value : getValueDateFormat()
-                        .format(value));
+                result.append(value instanceof String ? (String) value
+                        : getValueDateFormat()
+                                .format(value));
                 result.append(databaseInfo.getValueQuoteToken());
                 result.append(" AS datetime)");
                 break;
             case Types.TIME:
                 result.append("CAST(");
                 result.append(databaseInfo.getValueQuoteToken());
-                result.append(value instanceof String ? (String) value : getValueTimeFormat()
-                        .format(value));
+                result.append(value instanceof String ? (String) value
+                        : getValueTimeFormat()
+                                .format(value));
                 result.append(databaseInfo.getValueQuoteToken());
                 result.append(" AS datetime)");
                 break;
@@ -242,7 +237,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         if ((column.getMappedTypeCode() == Types.BIT)
                 || (PlatformUtils.supportsJava14JdbcTypes() && (column
                         .getMappedTypeCode() == PlatformUtils
-                        .determineBooleanTypeCode()))) {
+                                .determineBooleanTypeCode()))) {
             return getDefaultValueHelper().convert(column.getDefaultValue(),
                     column.getMappedTypeCode(), Types.SMALLINT);
         }
@@ -264,7 +259,6 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey,
             StringBuilder ddl) {
         String constraintName = getForeignKeyName(table, foreignKey);
-
         ddl.append("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'F' AND name = ");
         printAlwaysSingleQuotedIdentifier(constraintName, ddl);
         println(")", ddl);
@@ -277,8 +271,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     }
 
     /*
-     * Returns the statement that turns on the ability to write delimited
-     * identifiers.
+     * Returns the statement that turns on the ability to write delimited identifiers.
      * 
      * @return The quotation-on statement
      */
@@ -291,8 +284,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     }
 
     /*
-     * Writes the statement that turns on the ability to write delimited
-     * identifiers.
+     * Writes the statement that turns on the ability to write delimited identifiers.
      */
     private void writeQuotationOnStatement(StringBuilder ddl) {
         ddl.append(getQuotationOnStatement());
@@ -321,8 +313,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     }
 
     /*
-     * Prints the given identifier with enforced single quotes around it
-     * regardless of whether delimited identifiers are turned on or not.
+     * Prints the given identifier with enforced single quotes around it regardless of whether delimited identifiers are turned on or not.
      * 
      * @param identifier The identifier
      */
@@ -338,7 +329,6 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         // into
         // identity columns. However, we can change this behavior
         boolean hasIdentityColumns = targetTable.getAutoIncrementColumns().length > 0;
-
         if (hasIdentityColumns) {
             ddl.append("SET IDENTITY_INSERT ");
             ddl.append(getFullyQualifiedTableNameShorten(targetTable));
@@ -363,19 +353,15 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
             writeQuotationOnStatement(ddl);
         }
         /*
-         * For column data type and size changes, we need to drop and then
-         * re-create indexes and foreign keys using the column, as well as any
-         * primary keys containg these columns However, if the index/foreign
-         * key/primary key is already slated for removal or change, then we
-         * don't want to generate change duplication
+         * For column data type and size changes, we need to drop and then re-create indexes and foreign keys using the column, as well as any primary keys
+         * containg these columns However, if the index/foreign key/primary key is already slated for removal or change, then we don't want to generate change
+         * duplication
          */
         HashSet<IIndex> removedIndexes = new HashSet<IIndex>();
         HashSet<ForeignKey> removedForeignKeys = new HashSet<ForeignKey>();
         HashSet<Table> removedPKs = new HashSet<Table>();
-
         for (Iterator<IModelChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             IModelChange change = changeIt.next();
-
             if (change instanceof RemoveIndexChange) {
                 removedIndexes.add(((RemoveIndexChange) change).getIndex());
             } else if (change instanceof RemoveForeignKeyChange) {
@@ -384,26 +370,20 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                 removedPKs.add(((RemovePrimaryKeyChange) change).getChangedTable());
             }
         }
-
         ArrayList<TableChange> additionalChanges = new ArrayList<TableChange>();
-
         for (Iterator<IModelChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             IModelChange change = changeIt.next();
-
             if ((change instanceof ColumnDataTypeChange) || (change instanceof ColumnSizeChange)) {
                 Column column = ((ColumnChange) change).getChangedColumn();
                 Table table = ((ColumnChange) change).getChangedTable();
-
                 if (column.isPrimaryKey() && !removedPKs.contains(table)) {
                     Column[] pk = table.getPrimaryKeyColumnsInIndexOrder();
-
                     additionalChanges.add(new RemovePrimaryKeyChange(table, pk));
                     additionalChanges.add(new AddPrimaryKeyChange(table, pk));
                     removedPKs.add(table);
                 }
                 for (int idx = 0; idx < table.getIndexCount(); idx++) {
                     IIndex index = table.getIndex(idx);
-
                     if (index.hasColumn(column) && !removedIndexes.contains(index)) {
                         additionalChanges.add(new RemoveIndexChange(table, index));
                         additionalChanges.add(new AddIndexChange(table, index));
@@ -412,10 +392,8 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                 }
                 for (int tableIdx = 0; tableIdx < currentModel.getTableCount(); tableIdx++) {
                     Table curTable = currentModel.getTable(tableIdx);
-
                     for (int fkIdx = 0; fkIdx < curTable.getForeignKeyCount(); fkIdx++) {
                         ForeignKey curFk = curTable.getForeignKey(fkIdx);
-
                         if ((curFk.hasLocalColumn(column) || curFk.hasForeignColumn(column))
                                 && !removedForeignKeys.contains(curFk)) {
                             additionalChanges.add(new RemoveForeignKeyChange(curTable, curFk));
@@ -433,24 +411,19 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
-        
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
             if (change instanceof ColumnAutoIncrementChange) {
-            /*
-             * Sql Server has no way of adding or removing an IDENTITY
-             * constraint thus we have to rebuild the table anyway and can
-             * ignore all the other column changes
-             */
+                /*
+                 * Sql Server has no way of adding or removing an IDENTITY constraint thus we have to rebuild the table anyway and can ignore all the other
+                 * column changes
+                 */
                 return;
             }
-            
         }
-        
         // First we drop primary keys as necessary
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof RemovePrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
                 changeIt.remove();
@@ -458,17 +431,13 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                 PrimaryKeyChange pkChange = (PrimaryKeyChange) change;
                 RemovePrimaryKeyChange removePkChange = new RemovePrimaryKeyChange(
                         pkChange.getChangedTable(), pkChange.getOldPrimaryKeyColumns());
-
                 processChange(currentModel, desiredModel, removePkChange, ddl);
             }
         }
-        
         ArrayList<ColumnChange> columnChanges = new ArrayList<ColumnChange>();
-
         // Next we add/remove columns
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof AddColumnChange) {
                 AddColumnChange addColumnChange = (AddColumnChange) change;
                 processChange(currentModel, desiredModel, addColumnChange, ddl);
@@ -477,27 +446,24 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                 processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
+                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange) change;
                 processChange(currentModel, desiredModel, copyColumnChange, ddl);
-                changeIt.remove();                
+                changeIt.remove();
             } else if ((change instanceof ColumnChange) && (columnChanges != null)) {
                 /*
-                 * We gather all changed columns because we can use the ALTER
-                 * TABLE ALTER COLUMN statement for them
+                 * We gather all changed columns because we can use the ALTER TABLE ALTER COLUMN statement for them
                  */
                 columnChanges.add((ColumnChange) change);
             }
         }
         if (columnChanges != null) {
             HashSet<Column> processedColumns = new HashSet<Column>();
-
             for (Iterator<ColumnChange> changeIt = columnChanges.iterator(); changeIt.hasNext();) {
                 ColumnChange change = changeIt.next();
                 Column sourceColumn = change.getChangedColumn();
                 if (!sourceColumn.isPrimaryKey()) {
                     Column targetColumn = targetTable.findColumn(sourceColumn.getName(),
                             delimitedIdentifierModeOn);
-
                     if (!processedColumns.contains(targetColumn)) {
                         processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn,
                                 (change instanceof ColumnDataTypeChange)
@@ -514,7 +480,6 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         // Finally we add primary keys
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof AddPrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
                 changeIt.remove();
@@ -522,7 +487,6 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                 PrimaryKeyChange pkChange = (PrimaryKeyChange) change;
                 AddPrimaryKeyChange addPkChange = new AddPrimaryKeyChange(
                         pkChange.getChangedTable(), pkChange.getNewPrimaryKeyColumns());
-
                 processChange(currentModel, desiredModel, addPkChange, ddl);
                 changeIt.remove();
             }
@@ -552,7 +516,6 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         if (hasDefault) {
             dropDefaultConstraint(change.getChangedTable().getName(), change.getColumn().getName(), ddl);
         }
-        
         ddl.append("ALTER TABLE ");
         ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
         printIndent(ddl);
@@ -572,7 +535,6 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         String tableName = getTableName(change.getChangedTable().getName());
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
-
         println("BEGIN", ddl);
         println("  DECLARE @" + tableNameVar + " nvarchar(256), @" + constraintNameVar
                 + " nvarchar(256)", ddl);
@@ -597,23 +559,23 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
-    
-    protected void dropDefaultConstraint(String tableName, String columnName, StringBuilder ddl) {         
-        println(              "BEGIN                                                                                        ", ddl);
-        println(              "DECLARE @sql NVARCHAR(2000)                                                                  ", ddl);        
+
+    protected void dropDefaultConstraint(String tableName, String columnName, StringBuilder ddl) {
+        println("BEGIN                                                                                        ", ddl);
+        println("DECLARE @sql NVARCHAR(2000)                                                                  ", ddl);
         println(String.format("SELECT TOP 1 @sql = N'alter table \"%s\" drop constraint ['+objs.NAME+N']'                     ", tableName), ddl);
-        println(              "FROM dbo.sysconstraints dc                                                              ", ddl);
-        println(              "JOIN dbo.sysobjects objs                                                                          ", ddl);
-        println(              "    ON objs.id = dc.constid                                                     ", ddl);
-        println(              "JOIN sys.columns c                                                                           ", ddl);
-        println(              "    ON c.default_object_id = dc.colid                                                    ", ddl);
-        println(              "WHERE                                                                                        ", ddl);
+        println("FROM dbo.sysconstraints dc                                                              ", ddl);
+        println("JOIN dbo.sysobjects objs                                                                          ", ddl);
+        println("    ON objs.id = dc.constid                                                     ", ddl);
+        println("JOIN sys.columns c                                                                           ", ddl);
+        println("    ON c.default_object_id = dc.colid                                                    ", ddl);
+        println("WHERE                                                                                        ", ddl);
         println(String.format("    dc.id = OBJECT_ID('%s')                                                    ", tableName), ddl);
         println(String.format("AND c.name = N'%s'                                                                           ", columnName), ddl);
-        println(              "IF @@ROWCOUNT > 0                                                                            ", ddl);
-        println(              "  EXEC (@sql)                                                                                ", ddl);
-        println(              "END                                                                                          ", ddl);
-        printEndOfStatement(ddl);        
+        println("IF @@ROWCOUNT > 0                                                                            ", ddl);
+        println("  EXEC (@sql)                                                                                ", ddl);
+        println("END                                                                                          ", ddl);
+        printEndOfStatement(ddl);
     }
 
     /*
@@ -624,11 +586,8 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         boolean hasDefault = sourceColumn.getParsedDefaultValue() != null;
         boolean shallHaveDefault = targetColumn.getParsedDefaultValue() != null;
         String newDefault = targetColumn.getDefaultValue();
-
         /*
-         * Sql Server does not like it if there is a default spec in the ALTER
-         * TABLE ALTER COLUMN statement; thus we have to change the default
-         * manually
+         * Sql Server does not like it if there is a default spec in the ALTER TABLE ALTER COLUMN statement; thus we have to change the default manually
          */
         if (newDefault != null) {
             targetColumn.setDefaultValue(null);
@@ -636,9 +595,8 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         if (hasDefault) {
             dropColumnChangeDefaults(sourceTable, sourceColumn, ddl);
         }
-        
         /*
-         * Cannot alter text to ntext or ntext to text directly.  Have to alter to varchar(max) first.
+         * Cannot alter text to ntext or ntext to text directly. Have to alter to varchar(max) first.
          */
         if ((targetColumn.getMappedType().equalsIgnoreCase(TypeMap.LONGNVARCHAR) && sourceColumn.getJdbcTypeName().equalsIgnoreCase("text")) ||
                 (targetColumn.getMappedType().equalsIgnoreCase(TypeMap.LONGVARCHAR) && sourceColumn.getJdbcTypeName().equalsIgnoreCase("ntext"))) {
@@ -648,22 +606,18 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
             ddl.append("ALTER COLUMN ");
             printIdentifier(getColumnName(targetColumn), ddl);
             ddl.append(" varchar(max)");
-            printEndOfStatement(ddl);            
+            printEndOfStatement(ddl);
         }
-
         ddl.append("ALTER TABLE ");
         ddl.append(getFullyQualifiedTableNameShorten(sourceTable));
         printIndent(ddl);
         ddl.append("ALTER COLUMN ");
         writeColumnTypeDefaultRequired(sourceTable, targetColumn, ddl);
         printEndOfStatement(ddl);
-
         if (shallHaveDefault) {
             targetColumn.setDefaultValue(newDefault);
-
             /*
-             * if the column shall have a default, then we have to add it as a
-             * constraint
+             * if the column shall have a default, then we have to add it as a constraint
              */
             ddl.append("ALTER TABLE ");
             ddl.append(getFullyQualifiedTableNameShorten(sourceTable));
@@ -683,7 +637,6 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         String columnName = getColumnName(sourceColumn);
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
-
         println("BEGIN", ddl);
         println("  DECLARE @" + tableNameVar + " nvarchar(256), @" + constraintNameVar
                 + " nvarchar(256)", ddl);
@@ -712,19 +665,17 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         ddl.append("END");
         printEndOfStatement(ddl);
     }
-    
+
     /**
-     * Creates a reasonably unique identifier only consisting of hexadecimal
-     * characters and underscores. It looks like
-     * <code>d578271282b42fce__2955b56e_107df3fbc96__8000</code> and is 48
-     * characters long.
+     * Creates a reasonably unique identifier only consisting of hexadecimal characters and underscores. It looks like
+     * <code>d578271282b42fce__2955b56e_107df3fbc96__8000</code> and is 48 characters long.
      * 
      * @return The identifier
      */
     protected String createUniqueIdentifier() {
         return new UID().toString().replace(':', '_').replace('-', '_');
     }
-    
+
     @Override
     protected void filterColumnSqlType(StringBuilder sqlType) {
         int identityIndex = sqlType.indexOf("identity");
@@ -749,10 +700,10 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
             sqlType.append("nvarchar(max)");
         } else if (sqlType.toString().equalsIgnoreCase("nvarbinary")) {
             sqlType.setLength(0);
-            sqlType.append("nvarbinary(max)");            
+            sqlType.append("nvarbinary(max)");
         }
     }
-    
+
     @Override
     protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
         // MSSQL does not support ON UPDATE RESTRICT, but RESTRICT is just like NOACTION
@@ -763,7 +714,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         super.writeCascadeAttributesForForeignKeyUpdate(key, ddl);
         key.setOnUpdateAction(original);
     }
-    
+
     @Override
     protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
         // MSSQL does not support ON DELETE RESTRICT, but RESTRICT is just like NOACTION

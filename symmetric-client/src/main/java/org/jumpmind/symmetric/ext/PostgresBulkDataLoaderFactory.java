@@ -36,7 +36,6 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 
 public class PostgresBulkDataLoaderFactory extends DefaultDataLoaderFactory {
-
     public PostgresBulkDataLoaderFactory(ISymmetricEngine engine) {
         super(engine);
     }
@@ -46,22 +45,19 @@ public class PostgresBulkDataLoaderFactory extends DefaultDataLoaderFactory {
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-                TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
+            TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-
         int maxRowsBeforeFlush = parameterService.getInt("postgres.bulk.load.max.rows.before.flush", 10000);
-        
-        return new PostgresBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), 
-                    symmetricDialect.getTablePrefix(),
+        return new PostgresBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
+                symmetricDialect.getTablePrefix(),
                 buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData),
                 maxRowsBeforeFlush);
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
-        return DatabaseNamesConstants.POSTGRESQL.equals(platform.getName()) || 
+        return DatabaseNamesConstants.POSTGRESQL.equals(platform.getName()) ||
                 DatabaseNamesConstants.POSTGRESQL95.equals(platform.getName()) ||
                 DatabaseNamesConstants.GREENPLUM.equals(platform.getName());
     }
-
 }

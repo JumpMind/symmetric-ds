@@ -140,123 +140,70 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
-
     private static Map<String, ISymmetricEngine> registeredEnginesByUrl = new ConcurrentHashMap<String, ISymmetricEngine>();
-
     private static Map<String, ISymmetricEngine> registeredEnginesByName = new ConcurrentHashMap<String, ISymmetricEngine>();
-
     private static final Logger log = LoggerFactory.getLogger(AbstractSymmetricEngine.class);
-
     private boolean started = false;
-
     private boolean starting = false;
-
     private boolean setup = false;
-
     private boolean isInitialized = false;
-    
     private Throwable lastException = null;
-    
     protected String deploymentType;
-
     protected String deploymentSubType;
-
     protected ITypedPropertiesFactory propertiesFactory;
-
     protected IDatabasePlatform platform;
-
     protected ISecurityService securityService;
-
     protected ParameterService parameterService;
-
     protected ISymmetricDialect symmetricDialect;
-
     protected INodeService nodeService;
-
     protected IConfigurationService configurationService;
-
     protected IBandwidthService bandwidthService;
-
     protected IStatisticService statisticService;
-
     protected IStatisticManager statisticManager;
-
     protected IConcurrentConnectionManager concurrentConnectionManager;
-
     protected ITransportManager transportManager;
-    
     protected ITransportManager offlineTransportManager;
-
     protected IClusterService clusterService;
-
     protected IPurgeService purgeService;
-
     protected ITransformService transformService;
-
     protected IInitialLoadService initialLoadService;
-    
     protected ILoadFilterService loadFilterService;
-
     protected ITriggerRouterService triggerRouterService;
-
     protected IOutgoingBatchService outgoingBatchService;
-
     protected IDataService dataService;
-
     protected IRouterService routerService;
-
     protected IDataExtractorService dataExtractorService;
-    
     protected IDataExtractorService fileSyncExtractorService;
-
     protected IRegistrationService registrationService;
-
     protected IDataLoaderService dataLoaderService;
-
     protected IIncomingBatchService incomingBatchService;
-
     protected IAcknowledgeService acknowledgeService;
-
     protected IPushService pushService;
-
     protected IPullService pullService;
-
     protected IOfflinePushService offlinePushService;
-
     protected IOfflinePullService offlinePullService;
-    
     protected IJobManager jobManager;
-
     protected ISequenceService sequenceService;
-
     protected IExtensionService extensionService;
-    
     protected IGroupletService groupletService;
-
     protected IStagingManager stagingManager;
-
     protected INodeCommunicationService nodeCommunicationService;
-    
     protected IFileSyncService fileSyncService;
-    
     protected IMailService mailService;
-    
     protected IContextService contextService;
-    
     protected IUpdateService updateService;
-
     protected Date lastRestartTime = null;
 
     abstract protected ITypedPropertiesFactory createTypedPropertiesFactory();
 
     abstract protected IDatabasePlatform createDatabasePlatform(TypedProperties properties);
-    
+
     protected boolean registerEngine = true;
 
     protected AbstractSymmetricEngine(boolean registerEngine) {
         this.registerEngine = registerEngine;
     }
-    
+
     public static List<ISymmetricEngine> findEngines() {
         List<ISymmetricEngine> engines = new ArrayList<ISymmetricEngine>();
         engines.addAll(registeredEnginesByName.values());
@@ -288,68 +235,54 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public void setDeploymentType(String deploymentType) {
         this.deploymentType = deploymentType;
     }
-    
+
     public void setDeploymentSubType(String deploymentSubType) {
         this.deploymentSubType = deploymentSubType;
     }
-    
+
     protected abstract SecurityServiceType getSecurityServiceType();
 
     protected void init() {
         if (propertiesFactory == null) {
             this.propertiesFactory = createTypedPropertiesFactory();
         }
-
         if (securityService == null) {
             this.securityService = SecurityServiceFactory.create(getSecurityServiceType(),
                     propertiesFactory.reload());
         }
-        
         TypedProperties properties = this.propertiesFactory.reload();
-        
         registerSymDSDriver(properties);
-        
         String engineName = properties.get(ParameterConstants.ENGINE_NAME);
         if (!StringUtils.contains(engineName, '`') && !StringUtils.contains(engineName, '(')) {
-                MDC.put("engineName", engineName);
+            MDC.put("engineName", engineName);
         }
         this.platform = createDatabasePlatform(properties);
-
         this.parameterService = new ParameterService(platform, propertiesFactory,
                 properties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));
-
-        boolean parameterTableExists = this.platform.readTableFromDatabase(null, null, 
+        boolean parameterTableExists = this.platform.readTableFromDatabase(null, null,
                 TableConstants.getTableName(properties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX), TableConstants.SYM_PARAMETER)) != null;
         if (parameterTableExists) {
             this.parameterService.setDatabaseHasBeenInitialized(true);
             this.parameterService.rereadParameters();
         }
-        
         // So that the key properties are initialized in a predictable order
-
         parameterService.getNodeGroupId();
         parameterService.getExternalId();
         parameterService.getEngineName();
         parameterService.getSyncUrl();
         parameterService.getRegistrationUrl();
-        
         MDC.put("engineName", parameterService.getEngineName());
-        
         this.platform.setMetadataIgnoreCase(this.parameterService
                 .is(ParameterConstants.DB_METADATA_IGNORE_CASE));
         this.platform.setClearCacheModelTimeoutInMs(parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_TABLES_IN_MS));
-
-        
         this.symmetricDialect = createSymmetricDialect();
         this.symmetricDialect.setTargetDialect(createTargetDialect());
-        
         this.extensionService = createExtensionService();
         this.extensionService.refresh();
         this.symmetricDialect.setExtensionService(extensionService);
         this.parameterService.setExtensionService(extensionService);
         this.contextService = new ContextService(parameterService, symmetricDialect);
-
         this.bandwidthService = new BandwidthService(this);
         this.sequenceService = new SequenceService(parameterService, symmetricDialect);
         this.stagingManager = createStagingManager();
@@ -385,19 +318,18 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.pushService = new PushService(parameterService, symmetricDialect,
                 dataExtractorService, acknowledgeService, transportManager, nodeService,
                 clusterService, nodeCommunicationService, statisticManager, configurationService, extensionService);
-        this.pullService = new PullService(parameterService, symmetricDialect, 
-                nodeService, dataLoaderService, registrationService, clusterService, nodeCommunicationService, 
+        this.pullService = new PullService(parameterService, symmetricDialect,
+                nodeService, dataLoaderService, registrationService, clusterService, nodeCommunicationService,
                 configurationService, extensionService, statisticManager);
         this.offlinePushService = new OfflinePushService(parameterService, symmetricDialect,
                 dataExtractorService, acknowledgeService, offlineTransportManager, nodeService,
                 clusterService, nodeCommunicationService, statisticManager, configurationService, extensionService);
-        this.offlinePullService = new OfflinePullService(parameterService, symmetricDialect, 
-                nodeService, dataLoaderService, clusterService, nodeCommunicationService, 
+        this.offlinePullService = new OfflinePullService(parameterService, symmetricDialect,
+                nodeService, dataLoaderService, clusterService, nodeCommunicationService,
                 configurationService, extensionService, offlineTransportManager);
         this.fileSyncService = buildFileSyncService();
         this.fileSyncExtractorService = new FileSyncExtractorService(this);
         this.mailService = new MailService(parameterService, securityService, symmetricDialect);
-
         String updateServiceClassName = properties.get(ParameterConstants.UPDATE_SERVICE_CLASS);
         if (updateServiceClassName == null) {
             this.updateService = new UpdateService(this);
@@ -409,24 +341,19 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 throw new RuntimeException(e);
             }
         }
-        
         this.jobManager = createJobManager();
-
         extensionService.addExtensionPoint(new DefaultOfflineServerListener(
                 statisticManager, nodeService, outgoingBatchService));
-
         IOfflineClientListener defaultlistener = new DefaultOfflineClientListener(parameterService,
                 nodeService);
         extensionService.addExtensionPoint(defaultlistener);
-
         if (registerEngine) {
             registerHandleToEngine();
         }
-
     }
 
     protected void registerSymDSDriver(TypedProperties engineProperties) {
-        try {            
+        try {
             Class<?> driverClass = Thread.currentThread().getContextClassLoader().loadClass("org.jumpmind.driver.Driver");
             if (driverClass != null) {
                 Method method = driverClass.getMethod("register", TypedProperties.class);
@@ -444,12 +371,13 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IRouterService buildRouterService() {
         return new RouterService(this);
     }
-    
+
     protected IFileSyncService buildFileSyncService() {
         return new FileSyncService(this);
-    }    
+    }
 
-    protected INodeCommunicationService buildNodeCommunicationService(IClusterService clusterService, INodeService nodeService, IParameterService parameterService, 
+    protected INodeCommunicationService buildNodeCommunicationService(IClusterService clusterService, INodeService nodeService,
+            IParameterService parameterService,
             IConfigurationService configurationService, ISymmetricDialect symmetricDialect) {
         return new NodeCommunicationService(clusterService, nodeService, parameterService, configurationService, symmetricDialect);
     }
@@ -486,23 +414,17 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         if (!setup) {
             setupDatabase(false);
             parameterService.setDatabaseHasBeenInitialized(true);
-            
-            String databaseVersion = this.getNodeService().findIdentity() != null ? 
-                    this.getNodeService().findIdentity().getSymmetricVersion() : null;
+            String databaseVersion = this.getNodeService().findIdentity() != null ? this.getNodeService().findIdentity().getSymmetricVersion() : null;
             String softwareVersion = Version.version();
-            
             log.info("SymmetricDS database version : " + databaseVersion);
             log.info("SymmetricDS software version : " + softwareVersion);
-            
             if (databaseVersion != null && !softwareVersion.equals(databaseVersion)) {
                 log.info("SymmetricDS database version does not match the current software version, running software upgrade listeners.");
-                List<ISoftwareUpgradeListener> softwareUpgradeListeners = 
-                        extensionService.getExtensionPointList(ISoftwareUpgradeListener.class);
+                List<ISoftwareUpgradeListener> softwareUpgradeListeners = extensionService.getExtensionPointList(ISoftwareUpgradeListener.class);
                 for (ISoftwareUpgradeListener listener : softwareUpgradeListeners) {
                     listener.upgrade(databaseVersion, softwareVersion);
                 }
             }
-            
             setup = true;
         }
     }
@@ -511,22 +433,21 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         log.info("Initializing SymmetricDS database");
         boolean isAutoConfigDatabase = parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE);
         boolean isAutoConfigDatabaseFast = parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE_FAST);
-
         if (force || isAutoConfigDatabase) {
-        	if (isAutoConfigDatabaseFast && !hasSoftwareVersionChanged()) {
-        		log.info("Version matches for tables and objects");
-        	} else {
-	        	log.info("Checking tables and objects");
-	    		symmetricDialect.initTablesAndDatabaseObjects();
-        	}
+            if (isAutoConfigDatabaseFast && !hasSoftwareVersionChanged()) {
+                log.info("Version matches for tables and objects");
+            } else {
+                log.info("Checking tables and objects");
+                symmetricDialect.initTablesAndDatabaseObjects();
+            }
         } else {
-        	if (hasSoftwareVersionChanged()) {
-        		throw new SymmetricException("Upgrade of SymmetricDS runtime tables to version " + Version.version() +
-        				" is required.  Enable " + ParameterConstants.AUTO_CONFIGURE_DATABASE 
-        				+ " parameter for automatic upgrade of tables or perform manual upgrade with symadmin.");
-        	} else {
-        		log.info("SymmetricDS is not configured to auto-create the database");
-        	}
+            if (hasSoftwareVersionChanged()) {
+                throw new SymmetricException("Upgrade of SymmetricDS runtime tables to version " + Version.version() +
+                        " is required.  Enable " + ParameterConstants.AUTO_CONFIGURE_DATABASE
+                        + " parameter for automatic upgrade of tables or perform manual upgrade with symadmin.");
+            } else {
+                log.info("SymmetricDS is not configured to auto-create the database");
+            }
         }
         try {
             configurationService.initDefaultChannels();
@@ -546,16 +467,15 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     protected boolean hasSoftwareVersionChanged() {
-    	Node identity = nodeService.findIdentity();
-    	if (identity != null) {
-	        return !Version.version().equals(identity.getSymmetricVersion());
-    	}
-    	return true;
+        Node identity = nodeService.findIdentity();
+        if (identity != null) {
+            return !Version.version().equals(identity.getSymmetricVersion());
+        }
+        return true;
     }
 
     protected void autoConfigRegistrationServer() {
         Node node = nodeService.findIdentity();
-
         if (node == null) {
             buildTablesFromDdlUtilXmlIfProvided();
             loadFromScriptIfProvided();
@@ -563,9 +483,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             parameterService.rereadParameters();
             extensionService.refresh();
         }
-
         node = nodeService.findIdentity();
-
         if (node == null && parameterService.isRegistrationServer()
                 && parameterService.is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND, false)) {
             log.info("Inserting rows for node, security, identity and group for registration server");
@@ -602,7 +520,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             } else {
                 fileUrl = getClass().getResource(xml);
             }
-
             if (fileUrl != null) {
                 try {
                     log.info("Building database schema from: {}", xml);
@@ -620,8 +537,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     /**
-     * Give the end user the option to provide a script that will load a
-     * registration server with an initial SymmetricDS setup.
+     * Give the end user the option to provide a script that will load a registration server with an initial SymmetricDS setup.
      * 
      * Look first on the file system, then in the classpath for the SQL file.
      * 
@@ -651,7 +567,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                                     .getResource(sqlScript);
                         }
                     }
-
                     if (fileUrl != null) {
                         log.info("Executing {} '{}' ({})", ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT, sqlScript, fileUrl);
                         new SqlScript(fileUrl, symmetricDialect.getPlatform().getSqlTemplate(),
@@ -659,7 +574,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                                         .getSqlScriptReplacementTokens()).execute();
                         loaded = true;
                     } else {
-                        log.warn("Could not find the {}: '{}' to execute.  We would have run it if we had found it", ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT, sqlScript);
+                        log.warn("Could not find the {}: '{}' to execute.  We would have run it if we had found it",
+                                ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT, sqlScript);
                     }
                 }
             }
@@ -685,14 +601,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     Node node = nodeService.findIdentity();
                     checkSystemIntegrity(node);
                     isInitialized = true;
-                                        
-                     if (node != null) {
-                        
+                    if (node != null) {
                         log.info(
                                 "Starting registered node [group={}, id={}, nodeId={}]",
                                 new Object[] { node.getNodeGroupId(), node.getNodeId(),
                                         node.getExternalId() });
-
                         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS_AT_STARTUP,
                                 true)) {
                             triggerRouterService.syncTriggers();
@@ -700,7 +613,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                             log.info(ParameterConstants.AUTO_SYNC_TRIGGERS_AT_STARTUP
                                     + " is turned off");
                         }
-
                         if (parameterService
                                 .is(ParameterConstants.HEARTBEAT_SYNC_ON_STARTUP, false)
                                 || isBlank(node.getDatabaseType())
@@ -708,42 +620,34 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                                         parameterService.getSyncUrl())) {
                             heartbeat(false);
                         }
-
                         if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIG_AT_STARTUP, true)) {
                             pullService.pullConfigData(false);
                         }
-
                     } else {
                         log.info("Starting unregistered node [group={}, externalId={}]",
                                 parameterService.getNodeGroupId(), parameterService.getExternalId());
                     }
-
                     if (jobManager != null) {
                         jobManager.init();
                     }
-                    
                     if (startJobs && jobManager != null) {
                         jobManager.startJobs();
                     }
-                    
                     if (parameterService.isRegistrationServer()) {
                         this.updateService.init();
                     }
-
                     if (isFirstStart) {
                         isFirstStart = false;
                     } else {
                         this.clearCaches();
                     }
-                    
                     lastRestartTime = new Date();
                     statisticManager.incrementRestart();
                     started = true;
-
                 } else {
                     log.error("Did not start SymmetricDS.  It has not been configured properly");
                 }
-            } catch (Throwable ex) {                
+            } catch (Throwable ex) {
                 log.error("An error occurred while starting SymmetricDS", ex);
                 lastException = ex;
                 /* Don't leave SymmetricDS in a half started state */
@@ -752,16 +656,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 starting = false;
             }
         }
-
         if (started) {
             log.info(getEngineDescription("STARTED:"));
         } else {
             log.info(getEngineDescription("NOT STARTED:"));
         }
-
         return started;
     }
-    
+
     protected void checkSystemIntegrity(Node node) {
         if (node != null && (!node.getExternalId().equals(getParameterService().getExternalId())
                 || !node.getNodeGroupId().equals(getParameterService().getNodeGroupId()))) {
@@ -775,8 +677,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                                 node.getNodeGroupId(),
                                 getParameterService().getNodeGroupId() });
             }
-       }
-        
+        }
         boolean useExtractJob = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, true);
         boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, true);
         if (useExtractJob && !streamToFile) {
@@ -793,91 +694,68 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             return "";
         }
         String formattedUptime = FormatUtils.formatDurationReadable(System.currentTimeMillis() - lastRestartTime.getTime());
-        
-        return String.format( "SymmetricDS Node %s\n\t nodeId=%s\n\t groupId=%s\n\t type=%s\n\t subType=%s\n\t name=%s\n\t softwareVersion=%s\n\t databaseName=%s\n\t databaseVersion=%s\n\t driverName=%s\n\t driverVersion=%s\n\t uptime=%s",
-                 msg, getParameterService().getExternalId(), getParameterService().getNodeGroupId(), 
+        return String.format(
+                "SymmetricDS Node %s\n\t nodeId=%s\n\t groupId=%s\n\t type=%s\n\t subType=%s\n\t name=%s\n\t softwareVersion=%s\n\t databaseName=%s\n\t databaseVersion=%s\n\t driverName=%s\n\t driverVersion=%s\n\t uptime=%s",
+                msg, getParameterService().getExternalId(), getParameterService().getNodeGroupId(),
                 getDeploymentType(), getDeploymentSubType(), getEngineName(), Version.version(), symmetricDialect.getName(),
                 symmetricDialect.getVersion(), symmetricDialect.getDriverName(),
-                symmetricDialect.getDriverVersion(), formattedUptime );        
+                symmetricDialect.getDriverVersion(), formattedUptime);
     }
-    
-    
-    
+
     public synchronized void uninstall() {
-        
         log.info("Attempting an uninstall of all SymmetricDS database objects from the database");
-        
         stop();
-        
         log.info("Just cleaned {} files in the staging area during the uninstall.", getStagingManager().clean(0));
-        
         try {
             String prefix = parameterService.getTablePrefix();
-            
             if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_GROUPLET)) != null) {
-                groupletService.deleteAllGrouplets();                
+                groupletService.deleteAllGrouplets();
             }
-
             if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_TRIGGER_ROUTER)) != null) {
                 triggerRouterService.deleteAllTriggerRouters();
             }
-
             if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_FILE_TRIGGER_ROUTER)) != null) {
-                fileSyncService.deleteAllFileTriggerRouters();                
+                fileSyncService.deleteAllFileTriggerRouters();
             }
-
             if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_ROUTER)) != null) {
                 triggerRouterService.deleteAllRouters();
             }
-
             if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_CONFLICT)) != null) {
                 dataLoaderService.deleteAllConflicts();
             }
-
             if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_TRANSFORM_TABLE)) != null) {
                 transformService.deleteAllTransformTables();
             }
-            
             if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_ROUTER)) != null) {
                 triggerRouterService.deleteAllRouters();
             }
-            
             if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_CONFLICT)) != null) {
                 dataLoaderService.deleteAllConflicts();
             }
-            
             if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_NODE_GROUP_LINK)) != null) {
                 configurationService.deleteAllNodeGroupLinks();
             }
-
             if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_LOCK)) != null) {
-               // this should remove all triggers because we have removed all the trigger configuration
-               triggerRouterService.syncTriggers(true);
+                // this should remove all triggers because we have removed all the trigger configuration
+                triggerRouterService.syncTriggers(true);
             }
         } catch (SqlException ex) {
             log.warn("Error while trying to remove triggers on tables", ex);
         }
-        
         // remove any additional triggers that may remain because they were not in trigger history
-        symmetricDialect.cleanupTriggers();                
-        
+        symmetricDialect.cleanupTriggers();
         log.info("Removing SymmetricDS database objects");
         symmetricDialect.dropTablesAndDatabaseObjects();
-        
         // force cache to be cleared
         nodeService.deleteIdentity();
-        
         parameterService.setDatabaseHasBeenInitialized(false);
-        
         log.info("Finished uninstalling SymmetricDS database objects from the database");
-        
-    }    
+    }
 
     public synchronized void stop() {
-        
         log.info("Stopping SymmetricDS externalId={} version={} database={}",
                 new Object[] { parameterService == null ? "?" : parameterService.getExternalId(), Version.version(),
-                        symmetricDialect == null? "?":symmetricDialect.getName() });
+                        symmetricDialect == null ? "?" : symmetricDialect.getName() });
         if (jobManager != null) {
             jobManager.stopJobs();
         }
@@ -890,7 +768,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         if (updateService != null) {
             updateService.stop();
         }
-        
         if (statisticManager != null) {
             List<ProcessInfo> infos = statisticManager.getProcessInfos();
             List<Thread> threadsToWaitOn = new ArrayList<Thread>();
@@ -906,27 +783,24 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     }
                 }
             }
-            
             for (Thread thread : threadsToWaitOn) {
                 try {
                     log.info("Waiting for thread {} to stop", thread.getName());
                     thread.join(5000);
                     log.info("Thread {} stopped", thread.getName());
-                } catch(Exception e) {
+                } catch (Exception e) {
                     log.info("Caught exception while waiting for thread {} to stop", thread.getName(), e);
                 }
             }
-
             Thread.interrupted();
         }
-        
         started = false;
         starting = false;
         isInitialized = false;
     }
 
     public synchronized void destroy() {
-        removeMeFromMap(registeredEnginesByName);        
+        removeMeFromMap(registeredEnginesByName);
         removeMeFromMap(registeredEnginesByUrl);
         if (parameterService != null) {
             parameterService.setDatabaseHasBeenInitialized(false);
@@ -970,11 +844,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public NodeStatus getNodeStatus() {
         return nodeService.getNodeStatus();
     }
-    
+
     public void removeAndCleanupNode(String nodeId) {
         log.info("Removing node {}", nodeId);
         nodeService.deleteNode(nodeId, false);
-        log.info("Done removing node ID {}", nodeId);        
+        log.info("Done removing node ID {}", nodeId);
     }
 
     public RemoteNodeStatuses pull() {
@@ -991,31 +865,24 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         MDC.put("engineName", getEngineName());
         purgeService.purgeOutgoing(true);
         purgeService.purgeIncoming(true);
-    }    
+    }
 
     public boolean isConfigured() {
         boolean configurationValid = false;
-
         boolean isRegistrationServer = getNodeService().isRegistrationServer();
-
         boolean isSelfConfigurable = isRegistrationServer
                 && (getParameterService().is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND,
                         false) || StringUtils.isNotBlank(getParameterService().getString(
-                        ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT)));
-
+                                ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT)));
         Table symNodeTable = symmetricDialect.getPlatform().readTableFromDatabase(null, null,
                 TableConstants.getTableName(parameterService.getTablePrefix(),
                         TableConstants.SYM_NODE));
-
         Node node = symNodeTable != null ? getNodeService().findIdentity() : null;
-
         long offlineNodeDetectionPeriodSeconds = getParameterService().getLong(
                 ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES) * 60;
         long heartbeatSeconds = getParameterService().getLong(
                 ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
-
         String registrationUrl = getParameterService().getRegistrationUrl();
-
         if (!isSelfConfigurable && node == null && isRegistrationServer) {
             log.warn(
                     "This node is configured as a registration server, but it is missing its node_identity.  It probably needs configured.",
@@ -1030,7 +897,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getNodeGroupId())) {
             log.warn("Please set the group.id for the node");
         } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getExternalId())) {
-            log.warn("Please set the external.id for the node");            
+            log.warn("Please set the external.id for the node");
         } else if (offlineNodeDetectionPeriodSeconds > 0
                 && offlineNodeDetectionPeriodSeconds <= heartbeatSeconds) {
             // Offline node detection is not disabled (-1) and the value is too
@@ -1040,16 +907,16 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES,
                     ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
         } else if (node != null && Version.isOlderMinorVersion(Version.version(), node.getSymmetricVersion())) {
-            log.warn("SymmetricDS does not support automatic downgrading.  The current version running version of {} is older than the last running version of {}", 
+            log.warn(
+                    "SymmetricDS does not support automatic downgrading.  The current version running version of {} is older than the last running version of {}",
                     Version.version(), node.getSymmetricVersion());
         } else {
             if (node != null && Version.isOlderMinorVersion(node.getSymmetricVersion(), Version.version())) {
-                log.debug("The current version of {} is newer than the last running version of {}", 
+                log.debug("The current version of {} is newer than the last running version of {}",
                         Version.version(), node.getSymmetricVersion());
             }
             configurationValid = true;
         }
-
         return configurationValid;
     }
 
@@ -1062,7 +929,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         MDC.put("engineName", getEngineName());
         registrationService.openRegistration(nodeGroupId, externalId);
     }
-    
+
     public void clearCaches() {
         getExtensionService().refresh();
         getTriggerRouterService().clearCache();
@@ -1147,11 +1014,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public IDataExtractorService getDataExtractorService() {
         return this.dataExtractorService;
     }
-    
+
     public IDataExtractorService getFileSyncExtractorService() {
         return this.fileSyncExtractorService;
     }
-   
+
     public IDataLoaderService getDataLoaderService() {
         return this.dataLoaderService;
     }
@@ -1201,9 +1068,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public String getDeploymentSubType() {
-            return deploymentSubType;
+        return deploymentSubType;
     }
-    
+
     public ITransformService getTransformService() {
         return this.transformService;
     }
@@ -1235,7 +1102,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public IExtensionService getExtensionService() {
         return extensionService;
     }
-    
+
     public IMailService getMailService() {
         return mailService;
     }
@@ -1255,11 +1122,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public INodeCommunicationService getNodeCommunicationService() {
         return nodeCommunicationService;
     }
-    
+
     public IGroupletService getGroupletService() {
         return groupletService;
     }
-    
+
     public Throwable getLastException() {
         return lastException;
     }
@@ -1278,8 +1145,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     /**
-     * Register this instance of the engine so it can be found by other
-     * processes in the JVM.
+     * Register this instance of the engine so it can be found by other processes in the JVM.
      * 
      * @see #findEngineByUrl(String)
      */
@@ -1295,9 +1161,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             }
         } else {
             log.warn("Could not register engine.  There was already an engine registered under the url: {}",
-                            getSyncUrl());
+                    getSyncUrl());
         }
-
         if (getEngineName() != null) {
             alreadyRegister = registeredEnginesByName.get(getEngineName());
         }
@@ -1308,7 +1173,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     "Could not register engine.  There was already an engine registered under the name: "
                             + getEngineName());
         }
-
     }
 
     public Date getLastRestartTime() {
@@ -1327,15 +1191,15 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public <T> T getDataSource() {
         return (T) getSymmetricDialect().getPlatform().getDataSource();
     }
-    
+
     public IDatabasePlatform getDatabasePlatform() {
         return getSymmetricDialect().getPlatform();
     }
-    
+
     public IFileSyncService getFileSyncService() {
         return fileSyncService;
     }
-    
+
     public IUpdateService getUpdateService() {
         return updateService;
     }
@@ -1355,9 +1219,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return symmetricDialect.getTargetDialect();
     }
 
-    @Override 
+    @Override
     public String toString() {
         return "Engine " + getNodeId() + " " + super.toString();
     }
-
 }

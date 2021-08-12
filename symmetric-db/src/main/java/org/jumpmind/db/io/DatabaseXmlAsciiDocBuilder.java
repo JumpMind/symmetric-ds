@@ -33,16 +33,13 @@ import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 
 public class DatabaseXmlAsciiDocBuilder {
-
     public static void main(String[] args) throws Exception {
         if (args.length == 0) {
             System.err.println("Usage: <input_xml_file> <output_asciidoc_file>");
             System.exit(-1);
         }
-
         Database db = DatabaseXmlUtil.read(new File(args[0]));
         PrintWriter out = new PrintWriter(new FileWriter(args[1]));
-
         Table[] tables = db.getTables();
         for (Table table : tables) {
             out.println("=== " + table.getName().toUpperCase());
@@ -91,7 +88,6 @@ public class DatabaseXmlAsciiDocBuilder {
             out.println("|===");
         }
         out.close();
-
     }
 
     public static String toTitle(String tableName) {

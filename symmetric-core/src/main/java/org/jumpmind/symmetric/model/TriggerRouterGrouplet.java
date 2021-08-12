@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.model;
 import java.util.Date;
 
 public class TriggerRouterGrouplet implements Cloneable {
-
     public enum AppliesWhen {
         B, S, T
     };
@@ -38,15 +37,15 @@ public class TriggerRouterGrouplet implements Cloneable {
     public String getRouterId() {
         return routerId;
     }
-    
+
     public void setRouterId(String routerId) {
         this.routerId = routerId;
     }
-    
+
     public String getTriggerId() {
         return triggerId;
     }
-    
+
     public void setTriggerId(String triggerId) {
         this.triggerId = triggerId;
     }
@@ -116,13 +115,12 @@ public class TriggerRouterGrouplet implements Cloneable {
             return false;
         return true;
     }
-    
+
     public TriggerRouterGrouplet copy() {
         try {
-            return (TriggerRouterGrouplet)super.clone();
+            return (TriggerRouterGrouplet) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }
     }
-
 }

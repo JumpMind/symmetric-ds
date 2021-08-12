@@ -28,7 +28,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 
 public class ExportedKeysMetaDataTableCreator extends AbstractMetaDataGridCreator {
-
     public ExportedKeysMetaDataTableCreator(JdbcSqlTemplate sqlTemplate, Table table,
             Settings settings) {
         super(sqlTemplate, table, settings);
@@ -39,5 +38,4 @@ public class ExportedKeysMetaDataTableCreator extends AbstractMetaDataGridCreato
         return metadata.getExportedKeys(table.getCatalog(), table.getSchema(),
                 table.getName());
     }
-
 }

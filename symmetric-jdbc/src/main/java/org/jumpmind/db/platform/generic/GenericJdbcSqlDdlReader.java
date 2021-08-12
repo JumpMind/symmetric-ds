@@ -32,11 +32,10 @@ import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class GenericJdbcSqlDdlReader extends AbstractJdbcDdlReader {
-
     public GenericJdbcSqlDdlReader(IDatabasePlatform platform) {
         super(platform);
     }
-    
+
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
@@ -48,28 +47,25 @@ public class GenericJdbcSqlDdlReader extends AbstractJdbcDdlReader {
             throws SQLException {
         try {
             return super.readTable(connection, metaData, values);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }
-    
+
     @Override
     public Table readTable(String catalog, String schema, String table) {
         try {
             return super.readTable(catalog, schema, table);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }
-    
+
     @Override
     public Database readTables(String catalog, String schema, String[] tableTypes) {
         try {
             return super.readTables(catalog, schema, tableTypes);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }

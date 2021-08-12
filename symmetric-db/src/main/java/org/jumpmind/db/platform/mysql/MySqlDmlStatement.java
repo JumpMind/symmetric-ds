@@ -27,11 +27,10 @@ import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.DmlStatement;
 
 public class MySqlDmlStatement extends DmlStatement {
-
     public MySqlDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
-            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
+            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues,
             DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
-        super(type, catalogName, schemaName, tableName, keysColumns, columns, 
+        super(type, catalogName, schemaName, tableName, keysColumns, columns,
                 nullKeyValues, databaseInfo, useQuotedIdentifiers, textColumnExpression);
     }
 
@@ -44,7 +43,7 @@ public class MySqlDmlStatement extends DmlStatement {
             super.appendColumnParameter(sql, column);
         }
     }
-    
+
     @Override
     protected void appendColumnEquals(StringBuilder sql, Column column) {
         if (StringUtils.equalsIgnoreCase(column.getJdbcTypeName(), TypeMap.GEOMETRY) ||
@@ -54,7 +53,7 @@ public class MySqlDmlStatement extends DmlStatement {
             super.appendColumnEquals(sql, column);
         }
     }
-    
+
     @Override
     protected String escapeText(String value) {
         value = super.escapeText(value);

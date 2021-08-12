@@ -36,10 +36,8 @@ import org.apache.commons.text.StringEscapeUtils;
  * Utility methods for working with {@link Servlet}s
  */
 public class ServletUtils {
-    
     /**
-     * Because you can't send an error when the response is already committed,
-     * this helps to avoid unnecessary errors in the logs.
+     * Because you can't send an error when the response is already committed, this helps to avoid unnecessary errors in the logs.
      * 
      * @param resp
      * @param statusCode
@@ -49,30 +47,29 @@ public class ServletUtils {
     public static boolean sendError(final HttpServletResponse resp, final int statusCode) throws IOException {
         return sendError(resp, statusCode, null);
     }
-    
+
     public static String whereAreYou(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");  
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
-            ip = request.getHeader("Proxy-Client-IP");  
-        }  
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
-            ip = request.getHeader("WL-Proxy-Client-IP");  
-        }  
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
-            ip = request.getHeader("HTTP_CLIENT_IP");  
-        }  
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
-            ip = request.getHeader("HTTP_X_FORWARDED_FOR");  
-        }  
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
-            ip = request.getRemoteAddr();  
-        }  
-        return ip;  
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_CLIENT_IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        return ip;
     }
 
     /**
-     * Because you can't send an error when the response is already committed,
-     * this helps to avoid unnecessary errors in the logs.
+     * Because you can't send an error when the response is already committed, this helps to avoid unnecessary errors in the logs.
      * 
      * @param resp
      * @param statusCode
@@ -92,8 +89,7 @@ public class ServletUtils {
     }
 
     /**
-     * Because you can't send an error when the response is already committed,
-     * this helps to avoid unnecessary errors in the logs.
+     * Because you can't send an error when the response is already committed, this helps to avoid unnecessary errors in the logs.
      * 
      * @param resp
      * @param statusCode
@@ -105,8 +101,7 @@ public class ServletUtils {
     }
 
     /**
-     * Because you can't send an error when the response is already committed,
-     * this helps to avoid unnecessary errors in the logs.
+     * Because you can't send an error when the response is already committed, this helps to avoid unnecessary errors in the logs.
      * 
      * @param resp
      * @param statusCode
@@ -123,12 +118,10 @@ public class ServletUtils {
         }
         return retVal;
     }
-    
+
     /**
-     * Returns the part of the path we are interested in when doing pattern
-     * matching. This should work whether or not the servlet or filter is
-     * explicitly mapped inside of the web.xml since it always strips off the
-     * contextPath.
+     * Returns the part of the path we are interested in when doing pattern matching. This should work whether or not the servlet or filter is explicitly mapped
+     * inside of the web.xml since it always strips off the contextPath.
      * 
      * @param httpRequest
      * @return
@@ -145,7 +138,7 @@ public class ServletUtils {
         }
         return retVal;
     }
-    
+
     /**
      * Returns the parameter with that name, trimmed to null
      * 
@@ -158,8 +151,7 @@ public class ServletUtils {
     }
 
     /**
-     * Returns the parameter with that name, trimmed to null. If the trimmed
-     * string is null, defaults to the defaultValue.
+     * Returns the parameter with that name, trimmed to null. If the trimmed string is null, defaults to the defaultValue.
      * 
      * @param request
      * @param name
@@ -172,7 +164,7 @@ public class ServletUtils {
     public static long getParameterAsNumber(HttpServletRequest request, String name) {
         return NumberUtils.toLong(StringUtils.trimToNull(request.getParameter(name)));
     }
-    
+
     public static SymmetricEngineHolder getSymmetricEngineHolder(ServletContext ctx) {
         return (SymmetricEngineHolder) ctx.getAttribute(
                 WebConstants.ATTR_ENGINE_HOLDER);

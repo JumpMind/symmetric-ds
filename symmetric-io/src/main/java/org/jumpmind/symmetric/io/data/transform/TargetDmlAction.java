@@ -21,7 +21,5 @@
 package org.jumpmind.symmetric.io.data.transform;
 
 public enum TargetDmlAction {
-
     NONE, UPDATE_COL, INS_ROW, UPD_ROW, DEL_ROW, OTHER;
-    
 }

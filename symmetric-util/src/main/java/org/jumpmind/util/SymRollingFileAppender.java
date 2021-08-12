@@ -56,19 +56,12 @@ import org.apache.logging.log4j.status.StatusLogger;
 
 @Plugin(name = "SymRollingFile", category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE, printObject = true)
 public class SymRollingFileAppender extends AbstractOutputStreamAppender<RollingFileManager> {
-
     private String fileName;
-
     private String filePattern;
-
     private Object advertisement;
-
     private final Advertiser advertiser;
-
     private int historySize = 2048;
-
     private Map<String, String> loggedEventKeys;
-    
     private long lastFileTime;
 
     private SymRollingFileAppender(final String name, final Layout<? extends Serializable> layout, final Filter filter,
@@ -99,16 +92,15 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
     public synchronized void append(LogEvent event) {
         if (!isLoggerAtDebug(event)) {
             String key = toKey(event);
-            if (key != null) {            
+            if (key != null) {
                 if (loggedEventKeys.containsKey(key)) {
                     event = supressStackTrace(event, key);
                 } else {
                     event = appendKey(event, key);
-                    loggedEventKeys.put(key, null);                    
+                    loggedEventKeys.put(key, null);
                 }
             }
         }
-
         getManager().checkRollover(event);
         if (getManager().getFileTime() != lastFileTime) {
             loggedEventKeys.clear();
@@ -128,13 +120,12 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
         if (event.getThrown() == null || event.getThrown().getStackTrace() == null) {
             return null;
         }
-
         try {
             StringBuilder buff = new StringBuilder(128);
             Throwable throwable = event.getThrown();
             buff.append(throwable.getClass().getSimpleName());
             if (throwable.getStackTrace().length == 0) {
-                buff.append("-jvm-optimized");    
+                buff.append("-jvm-optimized");
             }
             buff.append(":");
             buff.append(getThrowableHash(event.getThrown().getStackTrace(), event.getThrown().getMessage()));
@@ -144,7 +135,7 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
             return null;
         }
     }
-    
+
     protected long getThrowableHash(StackTraceElement[] elements, String message) throws UnsupportedEncodingException {
         CRC32 crc = new CRC32();
         if (message != null) {
@@ -160,7 +151,7 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
         String message = getMessageWithKey(event, key, ".init");
         LogEvent eventClone = new Log4jLogEvent.Builder(event).setMessage(new SimpleMessage(message)).build();
         return eventClone;
-    }    
+    }
 
     protected LogEvent supressStackTrace(LogEvent event, String key) {
         String message = getMessageWithKey(event, key);
@@ -209,7 +200,7 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
     public void setHistorySize(int historySize) {
         this.historySize = historySize;
     }
-    
+
     public String getFileName() {
         return fileName;
     }
@@ -226,45 +217,33 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
     public static <B extends Builder<B>> B newBuilder() {
         return new Builder<B>().asBuilder();
     }
-    
+
     public static class Builder<B extends Builder<B>> extends AbstractOutputStreamAppender.Builder<B>
             implements org.apache.logging.log4j.core.util.Builder<SymRollingFileAppender> {
-
         @PluginBuilderAttribute
         private String fileName;
-
         @PluginBuilderAttribute
         @Required
         private String filePattern;
-
         @PluginBuilderAttribute
         private boolean append = true;
-
         @PluginBuilderAttribute
         private boolean locking;
-
         @PluginElement("Policy")
         @Required
         private TriggeringPolicy policy;
-
         @PluginElement("Strategy")
         private RolloverStrategy strategy;
-
         @PluginBuilderAttribute
         private boolean advertise;
-
         @PluginBuilderAttribute
         private String advertiseUri;
-
         @PluginBuilderAttribute
         private boolean createOnDemand;
-
         @PluginBuilderAttribute
         private String filePermissions;
-
         @PluginBuilderAttribute
         private String fileOwner;
-
         @PluginBuilderAttribute
         private String fileGroup;
 
@@ -276,22 +255,18 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
                 LOGGER.error("RollingFileAppender '{}': No name provided.", getName());
                 return null;
             }
-
             if (!isBufferedIo && bufferSize > 0) {
                 LOGGER.warn("RollingFileAppender '{}': The bufferSize is set to {} but bufferedIO is not true",
                         getName(), bufferSize);
             }
-
             if (filePattern == null) {
                 LOGGER.error("RollingFileAppender '{}': No file name pattern provided.", getName());
                 return null;
             }
-
             if (policy == null) {
                 LOGGER.error("RollingFileAppender '{}': No TriggeringPolicy provided.", getName());
                 return null;
             }
-
             if (strategy == null) {
                 if (fileName != null) {
                     strategy = DefaultRolloverStrategy.newBuilder()
@@ -307,18 +282,14 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
                         getName());
                 return null;
             }
-
             final Layout<? extends Serializable> layout = getOrCreateLayout();
             final RollingFileManager manager = RollingFileManager.getFileManager(fileName, filePattern, append,
                     isBufferedIo, policy, strategy, advertiseUri, layout, bufferSize, isImmediateFlush(),
                     createOnDemand, filePermissions, fileOwner, fileGroup, getConfiguration());
-
             if (manager == null) {
                 return null;
             }
-
             manager.initialize();
-
             return new SymRollingFileAppender(getName(), layout, getFilter(), manager, fileName, filePattern,
                     isIgnoreExceptions(), isImmediateFlush(), advertise ? getConfiguration().getAdvertiser() : null,
                     getPropertyArray());
@@ -432,5 +403,4 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
             return asBuilder();
         }
     }
-
 }

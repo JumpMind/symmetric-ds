@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class PermissionResult {
-
     public enum Status {
         PASS, FAIL, UNIMPLEMENTED, UNSUPPORTED, NOT_APPLICABLE
     }
@@ -34,19 +33,12 @@ public class PermissionResult {
     }
 
     private PermissionType permissionType;
-
     private Status status = Status.FAIL;
-
     private Exception exception;
-
     private String solution;
-
     private PermissionCategory category;
-
     private String testDetails; // e.g. description or statment(s) used on the test
-
     private static Map<PermissionType, PermissionCategory> categories = new TreeMap<PermissionType, PermissionCategory>();
-
     static {
         categories.put(PermissionType.CREATE_TABLE, PermissionCategory.TABLE_MODIFICATION);
         categories.put(PermissionType.DROP_TABLE, PermissionCategory.TABLE_MODIFICATION);
@@ -60,7 +52,7 @@ public class PermissionResult {
     }
 
     public PermissionResult(PermissionType permissionType, String testDetails) {
-    	this.permissionType = permissionType;
+        this.permissionType = permissionType;
         this.category = categories.get(permissionType);
         this.testDetails = testDetails;
     }

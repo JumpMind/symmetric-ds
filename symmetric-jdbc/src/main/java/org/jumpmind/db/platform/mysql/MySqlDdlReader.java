@@ -70,7 +70,6 @@ import org.jumpmind.db.sql.Row;
  * Reads a database model from a MySql database.
  */
 public class MySqlDdlReader extends AbstractJdbcDdlReader {
-
     private Boolean mariaDbDriver = null;
 
     public MySqlDdlReader(IDatabasePlatform platform) {
@@ -98,9 +97,7 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
         // depending on the platform (really cute).
         // See http://dev.mysql.com/doc/refman/4.1/en/name-case-sensitivity.html
         // for more info.
-
         Table table = super.readTable(connection, metaData, values);
-
         if (table != null) {
             determineAutoIncrementFromResultSetMetaData(connection, table,
                     table.getPrimaryKeyColumns());
@@ -122,12 +119,10 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
             String collation = platform.getSqlTemplate().queryForString("select collation_name from information_schema.columns " +
                     "where table_schema = ? and table_name = ? and column_name = ?",
                     catalog, tableName, columnName);
-            
             String convertTextToLobParm = System.getProperty("mysqlddlreader.converttexttolob",
                     "true");
-            boolean convertTextToLob = collation != null && collation.endsWith("_bin") && 
+            boolean convertTextToLob = collation != null && collation.endsWith("_bin") &&
                     convertTextToLobParm.equalsIgnoreCase("true");
-
             if ("LONGTEXT".equals(typeName)) {
                 return convertTextToLob ? Types.BLOB : Types.CLOB;
             } else if ("MEDIUMTEXT".equals(typeName)) {
@@ -149,7 +144,6 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
-
         // MySQL converts illegal date/time/timestamp values to
         // "0000-00-00 00:00:00", but this
         // is an illegal ISO value, so we replace it with NULL
@@ -161,40 +155,37 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
         if ("".equals(column.getDefaultValue())) {
             column.setDefaultValue(null);
         }
-
         if (column.getJdbcTypeName().equalsIgnoreCase(TypeMap.POINT) ||
                 column.getJdbcTypeName().equalsIgnoreCase(TypeMap.LINESTRING) ||
-                column.getJdbcTypeName().equalsIgnoreCase(TypeMap.POLYGON) ) {
+                column.getJdbcTypeName().equalsIgnoreCase(TypeMap.POLYGON)) {
             column.setJdbcTypeName(TypeMap.GEOMETRY);
         }
-        
         if (column.getJdbcTypeName().equalsIgnoreCase("enum")) {
             ISqlTemplate template = platform.getSqlTemplate();
             // Version 8 populates TABLE_CAT, all others populate TABLE_SCHEMA
             // But historically, the metaData.getCatalog() was used to provide the value for the query
-            
             // Query for version 5.5, 5.6, and 5.7
             String unParsedEnums = template.queryForString("SELECT SUBSTRING(COLUMN_TYPE,5) FROM information_schema.COLUMNS"
                     + " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?",
-                    //metaData.getCatalog(),
-                    //(String) values.get("TABLE_CAT"),
+                    // metaData.getCatalog(),
+                    // (String) values.get("TABLE_CAT"),
                     (String) values.get("TABLE_SCHEMA"),
                     (String) values.get("TABLE_NAME"), column.getName());
-            if(unParsedEnums == null) {
+            if (unParsedEnums == null) {
                 // Query for version 8.0
                 unParsedEnums = template.queryForString("SELECT SUBSTRING(COLUMN_TYPE,5) FROM information_schema.COLUMNS"
                         + " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?",
-                        //metaData.getCatalog(),
+                        // metaData.getCatalog(),
                         (String) values.get("TABLE_CAT"),
-                        //(String) values.get("TABLE_SCHEMA"),
+                        // (String) values.get("TABLE_SCHEMA"),
                         (String) values.get("TABLE_NAME"), column.getName());
-                if(unParsedEnums == null) {
+                if (unParsedEnums == null) {
                     // Query originally used
                     unParsedEnums = template.queryForString("SELECT SUBSTRING(COLUMN_TYPE,5) FROM information_schema.COLUMNS"
                             + " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?",
                             metaData.getCatalog(),
-                            //(String) values.get("TABLE_CAT"),
-                            //(String) values.get("TABLE_SCHEMA"),
+                            // (String) values.get("TABLE_CAT"),
+                            // (String) values.get("TABLE_SCHEMA"),
                             (String) values.get("TABLE_NAME"), column.getName());
                 }
             }
@@ -203,10 +194,9 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
                 if (unParsedEnums.startsWith("(")) {
                     unParsedEnums = unParsedEnums.substring(1);
                     if (unParsedEnums.endsWith(")")) {
-                        unParsedEnums = unParsedEnums.substring(0, unParsedEnums.length()-1);
+                        unParsedEnums = unParsedEnums.substring(0, unParsedEnums.length() - 1);
                     }
-                }                
-                
+                }
                 String[] parsedEnums = unParsedEnums.split(",");
                 for (int i = 0; i < parsedEnums.length; i++) {
                     String parsedEnum = parsedEnums[i];
@@ -216,11 +206,9 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
                             parsedEnum = parsedEnum.substring(0, parsedEnum.length() - 1);
                         }
                     }
-                        
                     parsedEnums[i] = parsedEnum;
                 }
-                
-//                column.setEnumValues(parsedEnums);
+                // column.setEnumValues(parsedEnums);
                 column.getPlatformColumns().get(platform.getName()).setEnumValues(parsedEnums);
             }
         }
@@ -266,15 +254,12 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
                     }
                     String fkName = (String) values.get("CONSTRAINT_NAME");
                     ForeignKey fk = (ForeignKey) fks.get(fkName);
-
                     if (fk == null) {
                         fk = new ForeignKey(fkName);
                         fk.setForeignTableName((String) values.get("REFERENCED_TABLE_NAME"));
                         fks.put(fkName, fk);
                     }
-
                     Reference ref = new Reference();
-
                     ref.setForeignColumnName((String) values.get("REFERENCED_COLUMN_NAME"));
                     ref.setLocalColumnName((String) values.get("COLUMN_NAME"));
                     Object pos = values.get("POSITION_IN_UNIQUE_CONSTRAINT");
@@ -289,27 +274,24 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
             return fks.values();
         }
     }
-    
+
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) {
-        
         List<Trigger> triggers = new ArrayList<Trigger>();
-        
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
-        
         String sql = "SELECT "
-                        + "TRIGGER_NAME, "
-                        + "TRIGGER_SCHEMA, "
-                        + "TRIGGER_CATALOG, "
-                        + "EVENT_MANIPULATION AS TRIGGER_TYPE, "
-                        + "EVENT_OBJECT_TABLE AS TABLE_NAME, "
-                        + "EVENT_OBJECT_SCHEMA AS TABLE_SCHEMA, "
-                        + "EVENT_OBJECT_CATALOG AS TABLE_CATALOG, "
-                        + "TRIG.* "
-                    + "FROM INFORMATION_SCHEMA.TRIGGERS AS TRIG "
-                    + "WHERE EVENT_OBJECT_TABLE=? and EVENT_OBJECT_SCHEMA=? ;";
+                + "TRIGGER_NAME, "
+                + "TRIGGER_SCHEMA, "
+                + "TRIGGER_CATALOG, "
+                + "EVENT_MANIPULATION AS TRIGGER_TYPE, "
+                + "EVENT_OBJECT_TABLE AS TABLE_NAME, "
+                + "EVENT_OBJECT_SCHEMA AS TABLE_SCHEMA, "
+                + "EVENT_OBJECT_CATALOG AS TABLE_CATALOG, "
+                + "TRIG.* "
+                + "FROM INFORMATION_SCHEMA.TRIGGERS AS TRIG "
+                + "WHERE EVENT_OBJECT_TABLE=? and EVENT_OBJECT_SCHEMA=? ;";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
             public Trigger mapRow(Row row) {
                 Trigger trigger = new Trigger();
@@ -328,10 +310,9 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
                 return trigger;
             }
         }, tableName, catalog);
-        
         for (final Trigger trigger : triggers) {
             String name = trigger.getName();
-            String sourceSql = "SHOW CREATE TRIGGER "+ catalog + "." + name;
+            String sourceSql = "SHOW CREATE TRIGGER " + catalog + "." + name;
             sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
                 public Trigger mapRow(Row row) {
                     trigger.setSource(row.getString("SQL Original Statement"));
@@ -339,8 +320,6 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
                 }
             });
         }
-        
         return triggers;
     }
-
 }

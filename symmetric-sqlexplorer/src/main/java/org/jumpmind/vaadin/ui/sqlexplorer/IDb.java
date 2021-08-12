@@ -24,10 +24,8 @@ import java.io.Serializable;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 
-public interface IDb extends Serializable  {
-
+public interface IDb extends Serializable {
     public String getName();
-    
-    public IDatabasePlatform getPlatform();
 
+    public IDatabasePlatform getPlatform();
 }

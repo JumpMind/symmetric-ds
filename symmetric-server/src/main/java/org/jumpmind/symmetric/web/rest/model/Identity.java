@@ -24,7 +24,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class Identity {
-
     private String id;
 
     public String getId() {
@@ -34,6 +33,4 @@ public class Identity {
     public void setId(String id) {
         this.id = id;
     }
-    
-    
 }

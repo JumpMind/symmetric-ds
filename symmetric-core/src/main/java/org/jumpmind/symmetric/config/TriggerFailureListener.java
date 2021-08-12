@@ -33,7 +33,6 @@ import org.jumpmind.symmetric.model.TriggerHistory;
  * 
  */
 public class TriggerFailureListener extends TriggerCreationAdapter implements IBuiltInExtensionPoint {
-
     private Map<Trigger, Exception> failures;
 
     public TriggerFailureListener() {
@@ -58,5 +57,4 @@ public class TriggerFailureListener extends TriggerCreationAdapter implements IB
     public Map<Trigger, Exception> getFailures() {
         return failures;
     }
-
 }

@@ -42,7 +42,6 @@ import bsh.TargetError;
 import bsh.Variable;
 
 public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
-
     private static final String OLD_ = "OLD_";
     private static final String CONTEXT = "context";
     private static final String TABLE = "table";
@@ -51,7 +50,6 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
     private static final String ENGINE = "engine";
     private static final String LOG = "log";
     private final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     public BshDatabaseWriterFilter(ISymmetricEngine engine,
@@ -62,10 +60,8 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
     @Override
     protected boolean processLoadFilters(DataContext context, Table table, CsvData data,
             Exception error, WriteMethod writeMethod, List<LoadFilter> loadFiltersForTable) {
-
         boolean writeRow = true;
         LoadFilter currentFilter = null;
-
         try {
             Interpreter interpreter = getInterpreter(context);
             bind(interpreter, context, table, data, error);
@@ -74,9 +70,9 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
                 if (filter.isFilterOnDelete()
                         && data.getDataEventType().equals(DataEventType.DELETE)
                         || filter.isFilterOnInsert()
-                        && data.getDataEventType().equals(DataEventType.INSERT)
+                                && data.getDataEventType().equals(DataEventType.INSERT)
                         || filter.isFilterOnUpdate()
-                        && data.getDataEventType().equals(DataEventType.UPDATE)) {
+                                && data.getDataEventType().equals(DataEventType.UPDATE)) {
                     Object result = null;
                     if (writeMethod.equals(WriteMethod.BEFORE_WRITE)
                             && filter.getBeforeWriteScript() != null) {
@@ -88,7 +84,6 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
                             && filter.getHandleErrorScript() != null) {
                         result = interpreter.eval(filter.getHandleErrorScript());
                     }
-
                     if (result != null && result.equals(Boolean.FALSE)) {
                         writeRow = false;
                     }
@@ -97,7 +92,6 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
         } catch (EvalError ex) {
             processError(currentFilter, table, ex);
         }
-
         return writeRow;
     }
 
@@ -108,10 +102,10 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
         try {
             bind(interpreter, context, null, null, null);
             if (scripts != null) {
-                    for (String script : scripts) {
-                        currentScript = script;
-                        interpreter.eval(script);
-                    }
+                for (String script : scripts) {
+                    currentScript = script;
+                    interpreter.eval(script);
+                }
             }
         } catch (EvalError e) {
             if (e instanceof ParseException) {
@@ -122,14 +116,12 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
                 if (isFailOnError) {
                     throw new SymmetricException(errorMsg);
                 }
-
             } else if (e instanceof TargetError) {
                 Throwable target = ((TargetError) e).getTarget();
                 String errorMsg = String
                         .format("Evaluation error occured in the following beanshell script:\n\n%s\n\nThe error was on line %d",
                                 currentScript, e.getErrorLineNumber());
                 log.error(errorMsg, target);
-
                 if (isFailOnError) {
                     if (target instanceof RuntimeException) {
                         throw (RuntimeException) target;
@@ -154,16 +146,13 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
 
     protected void bind(Interpreter interpreter, DataContext context, Table table, CsvData data, Exception error)
             throws EvalError {
-        
         resetInterpreter(interpreter);
-
         interpreter.set(LOG, log);
         interpreter.set(ENGINE, this.engine);
         interpreter.set(CONTEXT, context);
         interpreter.set(TABLE, table);
         interpreter.set(DATA, data);
-        interpreter.set(ERROR, error);        
-
+        interpreter.set(ERROR, error);
         if (data != null) {
             Map<String, String> sourceValues = data.toColumnNameValuePairs(table.getColumnNames(),
                     CsvData.ROW_DATA);
@@ -180,7 +169,6 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
                     interpreter.set(columnName.toUpperCase(), pkValues.get(columnName));
                 }
             }
-
             Map<String, String> oldValues = data.toColumnNameValuePairs(table.getColumnNames(),
                     CsvData.OLD_DATA);
             for (String columnName : oldValues.keySet()) {
@@ -188,7 +176,6 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
                 interpreter.set(OLD_ + columnName.toUpperCase(), oldValues.get(columnName));
             }
         }
-
     }
 
     protected void resetInterpreter(Interpreter interpreter) throws EvalError {

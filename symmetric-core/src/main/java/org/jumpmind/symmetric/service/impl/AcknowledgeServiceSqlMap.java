@@ -25,18 +25,13 @@ import java.util.Map;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class AcknowledgeServiceSqlMap extends AbstractSqlMap {
-
     public AcknowledgeServiceSqlMap(IDatabasePlatform platform,
             Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
         putSql("selectDataIdSql", "select data_id from $(data_event) b where batch_id = ?");
- 
-        putSql("selectDataIdByCreateTimeSql", 
+        putSql("selectDataIdByCreateTimeSql",
                 "select d.data_id from $(data) d " +
-                "inner join $(data_event) e on d.data_id = e.data_id where e.batch_id = ? order by d.create_time asc, d.data_id asc");
-
+                        "inner join $(data_event) e on d.data_id = e.data_id where e.batch_id = ? order by d.create_time asc, d.data_id asc");
         putSql("orderByDataId", " order by data_id asc");
-
     }
-
 }

@@ -33,31 +33,28 @@ import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.service.IExtensionService;
 
 public class BeanShellFileSyncZipScript extends FileSyncZipScript {
-    
     protected IExtensionService extensionService;
-    
+
     public BeanShellFileSyncZipScript(IExtensionService extensionService) {
         this.extensionService = extensionService;
     }
-    
+
     @Override
     public String getScriptFileName(Batch batch) {
         return "sync.bsh";
     }
-    
+
     @Override
     public void buildScriptStart(Batch batch) {
         getScript().append("fileList = new HashMap();\n");
     }
-    
-    @Override    
-    public void buildScriptFileSnapshot(Batch batch, FileSnapshot snapshot, FileTriggerRouter triggerRouter, 
+
+    @Override
+    public void buildScriptFileSnapshot(Batch batch, FileSnapshot snapshot, FileTriggerRouter triggerRouter,
             FileTrigger fileTrigger, File file, String targetBaseDir, String targetFile) {
-        
         LastEventType eventType = snapshot.getLastEventType();
         StringBuilder command = new StringBuilder();
         command.append("targetBaseDir = \"").append(targetBaseDir).append("\";\n");
-        
         command.append("if (targetBaseDir.startsWith(\"${androidBaseDir}\")) {                      \n");
         command.append("    targetBaseDir = targetBaseDir.replace(\"${androidBaseDir}\", \"\");     \n");
         command.append("    targetBaseDir = androidBaseDir + targetBaseDir;                         \n");
@@ -65,11 +62,10 @@ public class BeanShellFileSyncZipScript extends FileSyncZipScript {
         command.append("    targetBaseDir = targetBaseDir.replace(\"${androidAppFilesDir}\", \"\"); \n");
         command.append("    targetBaseDir = androidAppFilesDir + targetBaseDir;                     \n");
         command.append("}                                                                           \n");
-        
         command.append("processFile = true;\n");
         command.append("sourceFileName = \"").append(snapshot.getFileName())
                 .append("\";\n");
-        command.append("targetRelativeDir = \""); 
+        command.append("targetRelativeDir = \"");
         if (!snapshot.getRelativeDir().equals(".")) {
             command.append(StringEscapeUtils.escapeJava(snapshot
                     .getRelativeDir()));
@@ -77,16 +73,13 @@ public class BeanShellFileSyncZipScript extends FileSyncZipScript {
         } else {
             command.append("\";\n");
         }
-        command.append("targetFileName = sourceFileName;\n");                        
+        command.append("targetFileName = sourceFileName;\n");
         command.append("sourceFilePath = \"");
         command.append(StringEscapeUtils.escapeJava(snapshot.getRelativeDir())).append("\";\n");
-        
         if (StringUtils.isNotBlank(fileTrigger.getBeforeCopyScript())) {
             command.append(fileTrigger.getBeforeCopyScript()).append("\n");
         }
-                                                        
         command.append("if (processFile) {\n");
-        
         switch (eventType) {
             case CREATE:
             case MODIFY:
@@ -95,22 +88,19 @@ public class BeanShellFileSyncZipScript extends FileSyncZipScript {
                     command.append("  if (!targetBaseDirFile.exists()) {\n");
                     command.append("    targetBaseDirFile.mkdirs();\n");
                     command.append("  }\n");
-                    command.append("  java.io.File sourceFile = new java.io.File(batchDir + \"/\""); 
+                    command.append("  java.io.File sourceFile = new java.io.File(batchDir + \"/\"");
                     if (!snapshot.getRelativeDir().equals(".")) {
                         command.append(" + sourceFilePath + \"/\"");
                     }
                     command.append(" + sourceFileName");
                     command.append(");\n");
-                    
                     command.append("  java.io.File targetFile = new java.io.File(");
                     command.append(targetFile);
                     command.append(");\n");
-                    
                     // no need to copy directory if it already exists
                     command.append("  if (targetFile.exists() && targetFile.isDirectory()) {\n");
                     command.append("      processFile = false;\n");
                     command.append("  }\n");
-                    
                     // conflict resolution
                     FileConflictStrategy conflictStrategy = triggerRouter.getConflictStrategy();
                     if (conflictStrategy == FileConflictStrategy.TARGET_WINS ||
@@ -134,12 +124,11 @@ public class BeanShellFileSyncZipScript extends FileSyncZipScript {
                             }
                         }
                     }
-                    
                     command.append("  if (processFile) {\n");
                     command.append("    if (sourceFile.isDirectory()) {\n");
-                    command.append("      org.apache.commons.io.FileUtils.copyDirectory(sourceFile, targetFile, true);\n");                                    
+                    command.append("      org.apache.commons.io.FileUtils.copyDirectory(sourceFile, targetFile, true);\n");
                     command.append("    } else {\n");
-                    command.append("      org.apache.commons.io.FileUtils.copyFile(sourceFile, targetFile, true);\n");                                    
+                    command.append("      org.apache.commons.io.FileUtils.copyFile(sourceFile, targetFile, true);\n");
                     command.append("    }\n");
                     command.append("  }\n");
                     command.append("  fileList.put(").append(targetFile)
@@ -159,16 +148,13 @@ public class BeanShellFileSyncZipScript extends FileSyncZipScript {
             default:
                 break;
         }
-
         if (StringUtils.isNotBlank(fileTrigger.getAfterCopyScript())) {
             command.append(fileTrigger.getAfterCopyScript()).append("\n");
         }
-        
         command.append("}\n\n");
-
         getScript().append(command);
     }
-    
+
     @Override
     public void buildScriptEnd(Batch batch) {
         getScript().append("return fileList;\n");

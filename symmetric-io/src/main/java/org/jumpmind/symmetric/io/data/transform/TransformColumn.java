@@ -25,9 +25,9 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 
 public class TransformColumn implements Comparable<TransformColumn>, Cloneable {
-
     public enum IncludeOnType {
         INSERT, UPDATE, DELETE, ALL;
+
         public static IncludeOnType decode(String v) {
             if (v.equals("I")) {
                 return INSERT;
@@ -51,7 +51,6 @@ public class TransformColumn implements Comparable<TransformColumn>, Cloneable {
                 return "*";
             }
         }
-
     }
 
     protected String transformId;
@@ -65,7 +64,6 @@ public class TransformColumn implements Comparable<TransformColumn>, Cloneable {
     protected Date createTime;
     protected Date lastUpdateTime;
     protected String lastUpdateBy;
-
     protected String sourceColumnNameLowerCase;
     protected String targetColumnNameLowerCase;
 
@@ -188,36 +186,36 @@ public class TransformColumn implements Comparable<TransformColumn>, Cloneable {
     }
 
     @Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((includeOn == null) ? 0 : includeOn.hashCode());
-		result = prime * result + ((lastUpdateBy == null) ? 0 : lastUpdateBy.hashCode());
-		result = prime * result + (pk ? 1231 : 1237);
-		result = prime * result + ((sourceColumnName == null) ? 0 : sourceColumnName.hashCode());
-		result = prime * result + ((targetColumnName == null) ? 0 : targetColumnName.hashCode());
-		result = prime * result + ((transformExpression == null) ? 0 : transformExpression.hashCode());
-		result = prime * result + transformOrder;
-		result = prime * result + ((transformType == null) ? 0 : transformType.hashCode());
-		return result;
-	}
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((includeOn == null) ? 0 : includeOn.hashCode());
+        result = prime * result + ((lastUpdateBy == null) ? 0 : lastUpdateBy.hashCode());
+        result = prime * result + (pk ? 1231 : 1237);
+        result = prime * result + ((sourceColumnName == null) ? 0 : sourceColumnName.hashCode());
+        result = prime * result + ((targetColumnName == null) ? 0 : targetColumnName.hashCode());
+        result = prime * result + ((transformExpression == null) ? 0 : transformExpression.hashCode());
+        result = prime * result + transformOrder;
+        result = prime * result + ((transformType == null) ? 0 : transformType.hashCode());
+        return result;
+    }
 
     @Override
     public boolean equals(Object obj) {
-    	if (obj instanceof TransformColumn) {
-	        TransformColumn tc = (TransformColumn) obj;
-	        if (tc != null &&
-	                StringUtils.equals(sourceColumnName, tc.sourceColumnName) &&
-	                StringUtils.equals(targetColumnName, tc.targetColumnName) &&
-	                pk == tc.pk &&
-	                transformType.equals(tc.transformType) &&
-	                StringUtils.equals(transformExpression, tc.transformExpression) &&
-	                includeOn == tc.includeOn &&
-	                StringUtils.equals(lastUpdateBy, tc.lastUpdateBy) && transformOrder == tc.transformOrder) {
-	            return true;
-	        }
-    	}
-    	return false;
+        if (obj instanceof TransformColumn) {
+            TransformColumn tc = (TransformColumn) obj;
+            if (tc != null &&
+                    StringUtils.equals(sourceColumnName, tc.sourceColumnName) &&
+                    StringUtils.equals(targetColumnName, tc.targetColumnName) &&
+                    pk == tc.pk &&
+                    transformType.equals(tc.transformType) &&
+                    StringUtils.equals(transformExpression, tc.transformExpression) &&
+                    includeOn == tc.includeOn &&
+                    StringUtils.equals(lastUpdateBy, tc.lastUpdateBy) && transformOrder == tc.transformOrder) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -236,9 +234,8 @@ public class TransformColumn implements Comparable<TransformColumn>, Cloneable {
         clone.setLastUpdateBy(lastUpdateBy);
         return clone;
     }
-    
+
     public int compareTo(TransformColumn o) {
         return Integer.valueOf(transformOrder).compareTo(Integer.valueOf(o.transformOrder));
     }
-
 }

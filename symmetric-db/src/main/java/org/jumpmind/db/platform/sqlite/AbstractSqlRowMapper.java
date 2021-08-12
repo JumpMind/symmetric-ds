@@ -23,7 +23,6 @@ package org.jumpmind.db.platform.sqlite;
 import org.jumpmind.db.sql.ISqlRowMapper;
 
 abstract public class AbstractSqlRowMapper<T> implements ISqlRowMapper<T> {
-
     protected boolean booleanValue(Object v) {
         return intValue(v) > 0;
     }
@@ -33,10 +32,8 @@ abstract public class AbstractSqlRowMapper<T> implements ISqlRowMapper<T> {
             try {
                 return Integer.parseInt(v.toString());
             } catch (NumberFormatException e) {
-
             }
         }
         return 0;
     }
-
 }

@@ -68,11 +68,8 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
  * The SQL Builder for MySQL.
  */
 public class MySqlDdlBuilder extends AbstractDdlBuilder {
-
     public MySqlDdlBuilder() {
-        
         super(DatabaseNamesConstants.MYSQL);
-
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         databaseInfo.setMaxIdentifierLength(64);
         databaseInfo.setNullAsDefaultValueRequired(true);
@@ -87,7 +84,6 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         // server SQL mode includes ANSI_QUOTES
         databaseInfo.setDelimiterToken("`");
         databaseInfo.setZeroDateAllowed(true);
-
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "LONGBLOB", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.BIT, "BIT");
         databaseInfo.addNativeTypeMapping(Types.BLOB, "LONGBLOB", Types.LONGVARBINARY);
@@ -116,23 +112,19 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(ColumnTypes.NVARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(ColumnTypes.LONGNVARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(ColumnTypes.NCHAR, "CHAR", Types.CHAR);
-
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
-
         databaseInfo.setNonBlankCharColumnSpacePadded(false);
         databaseInfo.setBlankCharColumnSpacePadded(false);
         databaseInfo.setCharColumnSpaceTrimmed(true);
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setBinaryQuoteStart("0x");
         databaseInfo.setBinaryQuoteEnd("");
-
         // MySql 5.0 returns an empty string for default values for pk columns
         // which is different from the MySql 4 behaviour
         databaseInfo.setSyntheticDefaultValueForRequiredReturned(false);
-
         // we need to handle the backslash first otherwise the other
         // already escaped sequences would be affected
         addEscapedCharSequence("\\", "\\\\");
@@ -146,7 +138,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {        
+    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         ddl.append("DROP TABLE IF EXISTS ");
         ddl.append(getFullyQualifiedTableNameShorten(table));
         printEndOfStatement(ddl);
@@ -166,9 +158,8 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     /*
-     * Normally mysql will return the LAST_INSERT_ID as the column name for the
-     * inserted id. Since ddlutils expects the real column name of the field
-     * that is autoincrementing, the column has an alias of that column name.
+     * Normally mysql will return the LAST_INSERT_ID as the column name for the inserted id. Since ddlutils expects the real column name of the field that is
+     * autoincrementing, the column has an alias of that column name.
      */
     @Override
     public String getSelectLastIdentityValues(Table table) {
@@ -186,7 +177,6 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP FOREIGN KEY ");
         printIdentifier(getForeignKeyName(table, foreignKey), ddl);
         printEndOfStatement(ddl);
-
         if (foreignKey.isAutoIndexPresent()) {
             writeTableAlterStmt(table, ddl);
             ddl.append("DROP INDEX ");
@@ -207,11 +197,10 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         }
         return false;
     }
-    
+
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
-
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
             if (change instanceof AddColumnChange) {
@@ -219,10 +208,8 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
                 changeIt.remove();
             } else if (change instanceof ColumnAutoIncrementChange) {
                 /**
-                 * This has to happen before any primary key changes because if
-                 * a column is bring dropped as auto increment and being dropped
-                 * from the primary key, an auto increment column can't be a non
-                 * primary key column on mysql.
+                 * This has to happen before any primary key changes because if a column is bring dropped as auto increment and being dropped from the primary
+                 * key, an auto increment column can't be a non primary key column on mysql.
                  */
                 try {
                     Column sourceColumn = ((ColumnAutoIncrementChange) change).getColumn();
@@ -235,22 +222,19 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
                 }
             }
         }
-
         List<Column> changedColumns = new ArrayList<Column>();
-
         // we don't have to care about the order because the comparator will
         // have ensured that a add primary key change comes after all necessary
         // columns are present
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof RemoveColumnChange) {
                 processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
+                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange) change;
                 processChange(currentModel, desiredModel, copyColumnChange, ddl);
-                changeIt.remove();                           
+                changeIt.remove();
             } else if (change instanceof AddPrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
                 changeIt.remove();
@@ -259,11 +243,10 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
                 changeIt.remove();
             } else if (change instanceof RemovePrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
-                changeIt.remove();               
+                changeIt.remove();
             } else if (change instanceof ColumnChange) {
                 /*
-                 * we gather all changed columns because we can use the ALTER
-                 * TABLE MODIFY COLUMN statement for them
+                 * we gather all changed columns because we can use the ALTER TABLE MODIFY COLUMN statement for them
                  */
                 Column column = ((ColumnChange) change).getChangedColumn();
                 if (!changedColumns.contains(column)) {
@@ -276,10 +259,9 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
             Column sourceColumn = columnIt.next();
             Column targetColumn = targetTable.findColumn(sourceColumn.getName(),
                     false);
-
             processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
         }
-    } 
+    }
 
     /*
      * Processes the addition of a column to a table.
@@ -349,11 +331,10 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         writeColumn(targetTable, targetColumn, ddl);
         printEndOfStatement(ddl);
     }
-    
+
     @Override
     protected String getSqlType(Column column) {
         String sqlType = super.getSqlType(column);
-
         if (column.isAutoIncrement()
                 && (column.getMappedTypeCode() == Types.DECIMAL || column.getMappedTypeCode() == Types.NUMERIC)) {
             sqlType = "BIGINT";
@@ -361,7 +342,6 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         if (column.getMappedTypeCode() == Types.TIMESTAMP && column.getScale() > 0) {
             sqlType = "DATETIME(" + column.getScale() + ")";
         }
-        
         PlatformColumn pc = column.getPlatformColumns() == null ? null : column.getPlatformColumns().get(DatabaseNamesConstants.MYSQL);
         if (pc != null && ("ENUM".equalsIgnoreCase(column.getJdbcTypeName()) || "ENUM".equalsIgnoreCase(pc.getType()))) {
             String[] enumValues = pc.getEnumValues();
@@ -372,8 +352,8 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
                 tmpSqlType.append("ENUM");
                 tmpSqlType.append("(");
                 boolean appendComma = false;
-                for(String s : enumValues) {
-                    if(appendComma) {
+                for (String s : enumValues) {
+                    if (appendComma) {
                         tmpSqlType.append(",");
                     }
                     tmpSqlType.append("'").append(s).append("'");
@@ -389,5 +369,4 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         }
         return sqlType;
     }
-    
 }

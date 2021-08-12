@@ -29,33 +29,31 @@ import org.jumpmind.util.SimpleClassCompiler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class JavaJob extends AbstractJob {
-    
     private JavaJob configuredJob;
     protected ISqlTemplate sqlTemplate;
-    
+
     public JavaJob() {
         super();
     }
-    
+
     public JavaJob(String jobName, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(jobName, engine, taskScheduler);
     }
-    
+
     public JobType getJobType() {
         return JobType.JAVA;
     }
-    
+
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults();
-    }     
+    }
 
     @Override
     public void doJob(boolean force) throws Exception {
         if (configuredJob == null) {
             configuredJob = compileJob();
         }
-        
         if (configuredJob != null) {
             configuredJob.doJob(force);
         }
@@ -67,10 +65,9 @@ public class JavaJob extends AbstractJob {
             return null;
         }
         final String code = CODE_START + jobExression + CODE_END;
-        
         SimpleClassCompiler compiler = new SimpleClassCompiler();
         try {
-            JavaJob job = (JavaJob)compiler.getCompiledClass(code);
+            JavaJob job = (JavaJob) compiler.getCompiledClass(code);
             job.setEngine(engine);
             job.setSqlTemplate(engine.getSqlTemplate());
             job.setJobName(getJobName());
@@ -79,23 +76,21 @@ public class JavaJob extends AbstractJob {
             job.setTaskScheduler(getTaskScheduler());
             return job;
         } catch (Exception ex) {
-            throw new SymmetricException("Failed to compile Java code for job " + 
+            throw new SymmetricException("Failed to compile Java code for job " +
                     getJobDefinition().getJobName() + " code: \n" + code, ex);
         }
     }
-    
-    final static String CODE_START = 
-            "import org.jumpmind.symmetric.job.JavaJob;\n" + 
-            "import org.apache.commons.lang3.StringUtils;\n" + 
-            "import org.jumpmind.symmetric.ISymmetricEngine;\n" + 
-            "import org.jumpmind.symmetric.model.JobDefinition.JobType;\n" + 
-            "import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;\n" + 
-            "\n" + 
-            "public class CustomJavaJob extends JavaJob {\n" + 
+
+    final static String CODE_START = "import org.jumpmind.symmetric.job.JavaJob;\n" +
+            "import org.apache.commons.lang3.StringUtils;\n" +
+            "import org.jumpmind.symmetric.ISymmetricEngine;\n" +
+            "import org.jumpmind.symmetric.model.JobDefinition.JobType;\n" +
+            "import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;\n" +
+            "\n" +
+            "public class CustomJavaJob extends JavaJob {\n" +
             "\n    " +
             " public void doJob(boolean force) throws Exception {\n";
-    final static String CODE_END = 
-            "\n}\n}";
+    final static String CODE_END = "\n}\n}";
 
     public ISqlTemplate getSqlTemplate() {
         return sqlTemplate;
@@ -104,5 +99,4 @@ public class JavaJob extends AbstractJob {
     public void setSqlTemplate(ISqlTemplate sqlTemplate) {
         this.sqlTemplate = sqlTemplate;
     }
-
 }

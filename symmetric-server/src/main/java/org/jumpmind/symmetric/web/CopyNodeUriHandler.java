@@ -40,9 +40,8 @@ import org.jumpmind.symmetric.service.IRegistrationService;
  * Handler that delegates to the {@link IRegistrationService}
  */
 public class CopyNodeUriHandler extends AbstractUriHandler {
-    
-    private ISymmetricEngine engine;        
-    
+    private ISymmetricEngine engine;
+
     public CopyNodeUriHandler(ISymmetricEngine engine, IInterceptor... interceptors) {
         super("/copy/*", engine.getParameterService(), interceptors);
         this.engine = engine;
@@ -50,22 +49,17 @@ public class CopyNodeUriHandler extends AbstractUriHandler {
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {
-        
         IRegistrationService registrationService = engine.getRegistrationService();
         IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
         INodeService nodeService = engine.getNodeService();
         IConfigurationService configurationService = engine.getConfigurationService();
-        
         String identityNodeId = nodeService.findIdentityNodeId();
-        
         String copyFromNodeId = req.getParameter(WebConstants.NODE_ID);
         String newExternalId = req.getParameter(WebConstants.EXTERNAL_ID);
         String newGroupId = req.getParameter(WebConstants.NODE_GROUP_ID);
-
         String newNodeId = registrationService.openRegistration(newGroupId, newExternalId);
-
-        log.info("Received a copy request.  New external_id={}, new node_group_id={}, old node_id={}, new node_id={}", new Object[] {newExternalId, newGroupId, copyFromNodeId, newNodeId});        
-        
+        log.info("Received a copy request.  New external_id={}, new node_group_id={}, old node_id={}, new node_id={}", new Object[] { newExternalId, newGroupId,
+                copyFromNodeId, newNodeId });
         Set<String> channelIds = configurationService.getChannels(false).keySet();
         for (String channelId : channelIds) {
             String batchId = req.getParameter(channelId + "-" + identityNodeId);
@@ -73,8 +67,5 @@ public class CopyNodeUriHandler extends AbstractUriHandler {
                 outgoingBatchService.copyOutgoingBatches(channelId, NumberUtils.toLong(batchId.trim()), copyFromNodeId, newNodeId);
             }
         }
-        
     }
-
-    
 }

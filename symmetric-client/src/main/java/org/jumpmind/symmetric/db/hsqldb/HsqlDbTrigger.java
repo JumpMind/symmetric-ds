@@ -34,7 +34,6 @@ import org.hsqldb.Trigger;
 import org.jumpmind.symmetric.db.AbstractEmbeddedTrigger;
 
 public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements Trigger {
-
     protected String triggerName;
 
     public void fire(int type, String triggerName, String tableName, Object[] oldRow,
@@ -104,8 +103,6 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements Trigger {
         } else {
             return super.appendVirtualTableStringValue(value, out);
         }
-
         return value;
     }
-
 }

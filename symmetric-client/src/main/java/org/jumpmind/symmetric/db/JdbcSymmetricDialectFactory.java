@@ -88,15 +88,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Factory class that is responsible for creating the appropriate
- * {@link ISymmetricDialect} for the configured database.
+ * Factory class that is responsible for creating the appropriate {@link ISymmetricDialect} for the configured database.
  */
 public class JdbcSymmetricDialectFactory {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     private IParameterService parameterService;
-    
     private IDatabasePlatform platform;
 
     public JdbcSymmetricDialectFactory(IParameterService parameterService, IDatabasePlatform platform) {
@@ -105,13 +101,11 @@ public class JdbcSymmetricDialectFactory {
     }
 
     public ISymmetricDialect create() {
-
         AbstractSymmetricDialect dialect = null;
-
         if (platform instanceof MariaDBDatabasePlatform) {
             dialect = new MariaDBSymmetricDialect(parameterService, platform);
         } else if (platform instanceof MySqlDatabasePlatform) {
-                dialect = new MySqlSymmetricDialect(parameterService, platform);
+            dialect = new MySqlSymmetricDialect(parameterService, platform);
         } else if (platform instanceof OracleDatabasePlatform) {
             dialect = new OracleSymmetricDialect(parameterService, platform);
         } else if (platform instanceof MsSql2016DatabasePlatform) {
@@ -172,18 +166,17 @@ public class JdbcSymmetricDialectFactory {
             dialect = new VoltDbSymmetricDialect(parameterService, platform);
         } else if (platform instanceof TiberoDatabasePlatform) {
             dialect = new TiberoSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof NuoDbDatabasePlatform){
+        } else if (platform instanceof NuoDbDatabasePlatform) {
             dialect = new NuoDbSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof RaimaDatabasePlatform){
+        } else if (platform instanceof RaimaDatabasePlatform) {
             dialect = new RaimaSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof HanaDatabasePlatform){
+        } else if (platform instanceof HanaDatabasePlatform) {
             dialect = new HanaSymmetricDialect(parameterService, platform);
         } else if (platform instanceof IngresDatabasePlatform) {
             dialect = new IngresSymmetricDialect(parameterService, platform);
-        }else{
+        } else {
             dialect = new GenericSymmetricDialect(parameterService, platform);
         }
         return dialect;
     }
-
 }

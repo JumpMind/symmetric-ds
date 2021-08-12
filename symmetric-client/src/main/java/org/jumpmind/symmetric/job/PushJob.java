@@ -30,23 +30,21 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * Background job that is responsible for pushing data to linked nodes.
  */
 public class PushJob extends AbstractJob {
-
     public PushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(ClusterConstants.PUSH, engine, taskScheduler);
     }
-    
+
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
                 .schedule(EVERY_30_SECONDS)
                 .description("Push batches to other nodes");
-    }     
-    
+    }
+
     @Override
     public void doJob(boolean force) throws Exception {
         if (engine != null) {
             engine.getPushService().pushData(force).getDataProcessedCount();
         }
     }
-
 }

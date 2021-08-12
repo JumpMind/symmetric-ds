@@ -33,10 +33,9 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.util.StringUtils;
 
 public class PushStatusUriHandler extends AbstractUriHandler {
-
     private INodeCommunicationService nodeCommunicationService;
-    
-    public PushStatusUriHandler(IParameterService parameterService, 
+
+    public PushStatusUriHandler(IParameterService parameterService,
             INodeCommunicationService nodeCommunicationService, IInterceptor... interceptors) {
         super("/pushstatus/*", parameterService, interceptors);
         this.nodeCommunicationService = nodeCommunicationService;
@@ -45,17 +44,13 @@ public class PushStatusUriHandler extends AbstractUriHandler {
     @Override
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException, FileUploadException {
         // http://localhost:31415/sync/corp-000/pushstats?nodeId=001&securityToken=5d1c92bbacbe2edb9e1ca5dbb0e481&hostName=mac-mmichalek.local&ipAddress=fe80%3A0%3A0%3A0%3A0%3A0%3A0%3A1%251
-
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
         String batchToSendCountParam = ServletUtils.getParameter(req, WebConstants.BATCH_TO_SEND_COUNT);
-        
         log.debug("Push stats for nodeId: {} batchToSendCountParam: '{}'", nodeId, batchToSendCountParam);
-        
         // queueName:4,anotherQueueName:6
         if (!StringUtils.isEmpty(batchToSendCountParam)) {
-            try {   
-                Map<String, Integer> queuesToBatchCounts = 
-                        nodeCommunicationService.parseQueueToBatchCounts(batchToSendCountParam);
+            try {
+                Map<String, Integer> queuesToBatchCounts = nodeCommunicationService.parseQueueToBatchCounts(batchToSendCountParam);
                 log.debug("Push stats for nodeId: {} queuesToBatchCounts: '{}'", nodeId, queuesToBatchCounts);
                 nodeCommunicationService.updateBatchToSendCounts(nodeId, queuesToBatchCounts);
             } catch (Exception ex) {

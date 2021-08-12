@@ -27,31 +27,28 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-
 /*
  * This job calls {@link IRouterService#routeData()} 
  */
 public class RouterJob extends AbstractJob {
-    
     public RouterJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(ClusterConstants.ROUTE, engine, taskScheduler);
     }
-    
+
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
                 .schedule(EVERY_10_SECONDS)
                 .description("Create outgoing batches");
-    }    
-    
+    }
+
     @Override
     public void doJob(boolean force) throws Exception {
         setProcessedCount(engine.getRouterService().routeData(force));
     }
-    
+
     @Override
     public String getDeprecatedStartParameter() {
         return ParameterConstants.START_ROUTE_JOB_38;
     }
-
 }

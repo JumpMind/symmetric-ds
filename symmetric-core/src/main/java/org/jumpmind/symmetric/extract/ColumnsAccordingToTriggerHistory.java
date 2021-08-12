@@ -37,23 +37,22 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.util.FormatUtils;
 
 class ColumnsAccordingToTriggerHistory {
-
     private Map<CacheKey, Table> cache = new HashMap<CacheKey, Table>();
     private Node sourceNode;
     private Node targetNode;
-	private ITriggerRouterService triggerRouterService;
-	private ISymmetricDialect symmetricDialect;
-	private String tablePrefix;
-    
+    private ITriggerRouterService triggerRouterService;
+    private ISymmetricDialect symmetricDialect;
+    private String tablePrefix;
+
     public ColumnsAccordingToTriggerHistory(ISymmetricEngine engine, Node sourceNode, Node targetNode) {
-    	triggerRouterService = engine.getTriggerRouterService();
-    	symmetricDialect = engine.getSymmetricDialect();
-    	tablePrefix = engine.getTablePrefix().toLowerCase();
+        triggerRouterService = engine.getTriggerRouterService();
+        symmetricDialect = engine.getSymmetricDialect();
+        tablePrefix = engine.getTablePrefix().toLowerCase();
         this.sourceNode = sourceNode;
         this.targetNode = targetNode;
     }
-    
-    public Table lookup(String routerId, TriggerHistory triggerHistory, boolean setTargetTableName, boolean useDatabaseDefinition) {            
+
+    public Table lookup(String routerId, TriggerHistory triggerHistory, boolean setTargetTableName, boolean useDatabaseDefinition) {
         CacheKey key = new CacheKey(routerId, triggerHistory.getTriggerHistoryId(), setTargetTableName, useDatabaseDefinition);
         Table table = cache.get(key);
         if (table == null) {
@@ -62,7 +61,7 @@ class ColumnsAccordingToTriggerHistory {
         }
         return table;
     }
-    
+
     protected Table lookupAndOrderColumnsAccordingToTriggerHistory(String routerId,
             TriggerHistory triggerHistory, boolean setTargetTableName, boolean useDatabaseDefinition) {
         String catalogName = triggerHistory.getSourceCatalogName();
@@ -72,29 +71,25 @@ class ColumnsAccordingToTriggerHistory {
         Table table = null;
         if (useDatabaseDefinition) {
             table = getTargetPlatform(tableNameLowerCase).getTableFromCache(catalogName, schemaName, tableName, false);
-            
             if (table != null && table.getColumnCount() < triggerHistory.getParsedColumnNames().length) {
                 /*
-                 * If the column count is less than what trigger history reports, then
-                 * chances are the table cache is out of date.
+                 * If the column count is less than what trigger history reports, then chances are the table cache is out of date.
                  */
                 table = getTargetPlatform(tableNameLowerCase).getTableFromCache(catalogName, schemaName, tableName, true);
             }
-
             if (table != null) {
                 table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(), triggerHistory.getParsedPkColumnNames(), true);
             } else {
                 throw new SymmetricException("Could not find the following table.  It might have been dropped: %s",
-                		Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
+                        Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             }
         } else {
             table = new Table(tableName);
             table.addColumns(triggerHistory.getParsedColumnNames());
             table.setPrimaryKeys(triggerHistory.getParsedPkColumnNames());
         }
-
-        Router router = triggerRouterService.getRouterById(routerId, false);        
-        if (router != null && setTargetTableName) {            
+        Router router = triggerRouterService.getRouterById(routerId, false);
+        if (router != null && setTargetTableName) {
             if (router.isUseSourceCatalogSchema()) {
                 table.setCatalog(catalogName);
                 table.setSchema(schemaName);
@@ -102,19 +97,16 @@ class ColumnsAccordingToTriggerHistory {
                 table.setCatalog(null);
                 table.setSchema(null);
             }
-            
             if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetCatalogName())) {
                 table.setCatalog(null);
             } else if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
                 table.setCatalog(replaceVariables(sourceNode, targetNode, router.getTargetCatalogName()));
             }
-
             if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetSchemaName())) {
                 table.setSchema(null);
             } else if (StringUtils.isNotBlank(router.getTargetSchemaName())) {
                 table.setSchema(replaceVariables(sourceNode, targetNode, router.getTargetSchemaName()));
             }
-
             if (StringUtils.isNotBlank(router.getTargetTableName())) {
                 table.setName(router.getTargetTableName());
             }
@@ -137,17 +129,16 @@ class ColumnsAccordingToTriggerHistory {
     }
 
     static class CacheKey {
-
         private String routerId;
         private int triggerHistoryId;
         private boolean setTargetTableName;
         private boolean useDatabaseDefinition;
-        
+
         public CacheKey(String routerId, int triggerHistoryId, boolean setTargetTableName, boolean useDatabaseDefinition) {
-             this.routerId = routerId;
-             this.triggerHistoryId = triggerHistoryId;
-             this.setTargetTableName = setTargetTableName;
-             this.useDatabaseDefinition = useDatabaseDefinition;
+            this.routerId = routerId;
+            this.triggerHistoryId = triggerHistoryId;
+            this.setTargetTableName = setTargetTableName;
+            this.useDatabaseDefinition = useDatabaseDefinition;
         }
 
         @Override
@@ -172,7 +163,6 @@ class ColumnsAccordingToTriggerHistory {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-
             CacheKey other = (CacheKey) obj;
             if (routerId == null) {
                 if (other.routerId != null) {
@@ -193,5 +183,4 @@ class ColumnsAccordingToTriggerHistory {
             return true;
         }
     }
-
 }

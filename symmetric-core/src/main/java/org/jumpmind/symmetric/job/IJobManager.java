@@ -29,27 +29,25 @@ import org.jumpmind.symmetric.model.JobDefinition;
  * life cycle control
  */
 public interface IJobManager {
-    
     public void init();
 
     public void startJobs();
-    
+
     public void stopJobs();
-    
+
     public void destroy();
-    
+
     public List<IJob> getJobs();
-    
+
     public IJob getJob(String name);
 
     public void saveJob(JobDefinition jobDefinition);
-    
+
     public void removeJob(String name);
-    
+
     public boolean isStarted();
-    
+
     public boolean isJobApplicableToNodeGroup(IJob job);
-    
+
     public void restartJobs();
-    
 }

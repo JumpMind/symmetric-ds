@@ -23,9 +23,7 @@ package org.jumpmind.vaadin.ui.sqlexplorer;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class Db implements IDb {
-
     private static final long serialVersionUID = 1L;
-    
     String name;
     IDatabasePlatform platform;
 
@@ -43,5 +41,4 @@ public class Db implements IDb {
     public IDatabasePlatform getPlatform() {
         return platform;
     }
-
 }

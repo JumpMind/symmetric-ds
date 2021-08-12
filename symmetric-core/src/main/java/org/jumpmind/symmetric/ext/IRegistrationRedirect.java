@@ -23,16 +23,10 @@ package org.jumpmind.symmetric.ext;
 import org.jumpmind.extension.IExtensionPoint;
 
 /**
- * An {@link IExtensionPoint} to examine an incoming registration request
- * and redirect it to another node.  For example, all nodes contact the
- * root server for registration, but they are redirected to a regional
- * server that is closest to them.
- * If this extension is unused, the default behavior is to check
- * the registration_redirect table for a matching externalId
- * and redirect to the configured registration node.
+ * An {@link IExtensionPoint} to examine an incoming registration request and redirect it to another node. For example, all nodes contact the root server for
+ * registration, but they are redirected to a regional server that is closest to them. If this extension is unused, the default behavior is to check the
+ * registration_redirect table for a matching externalId and redirect to the configured registration node.
  */
 public interface IRegistrationRedirect extends IExtensionPoint {
-
     public String getRedirectionUrlFor(String externalId, String nodeGroupId);
-
 }

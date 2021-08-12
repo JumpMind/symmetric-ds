@@ -41,44 +41,34 @@ import com.vaadin.ui.MenuBar.MenuItem;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
-public class TriggerTableLayout extends VerticalLayout{
-
+public class TriggerTableLayout extends VerticalLayout {
     private static final long serialVersionUID = 1L;
-    
     private Trigger trigger;
-    
     private Grid<String> grid;
-    
     private Refresher refresher;
-    
+
     public TriggerTableLayout(Trigger trigger, Settings settings, Refresher refresher) {
         this.trigger = trigger;
         this.refresher = refresher;
-        
         createTabularLayout();
     }
-    
+
     public void createTabularLayout() {
         this.setSizeFull();
         this.setSpacing(false);
-        
         HorizontalLayout bar = new HorizontalLayout();
         bar.setWidth(100, Unit.PERCENTAGE);
         bar.setMargin(new MarginInfo(false, true, false, true));
-
         HorizontalLayout leftBar = new HorizontalLayout();
         leftBar.setSpacing(true);
         final Label label = new Label(trigger.getFullyQualifiedName(), ContentMode.HTML);
         leftBar.addComponent(label);
-        
         bar.addComponent(leftBar);
         bar.setComponentAlignment(leftBar, Alignment.MIDDLE_LEFT);
         bar.setExpandRatio(leftBar, 1);
-        
         MenuBar rightBar = new MenuBar();
         rightBar.addStyleName(ValoTheme.MENUBAR_BORDERLESS);
         rightBar.addStyleName(ValoTheme.MENUBAR_SMALL);
-
         MenuItem refreshButton = rightBar.addItem("", new Command() {
             private static final long serialVersionUID = 1L;
 
@@ -88,15 +78,11 @@ public class TriggerTableLayout extends VerticalLayout{
             }
         });
         refreshButton.setIcon(VaadinIcons.REFRESH);
-
         bar.addComponent(rightBar);
         bar.setComponentAlignment(rightBar, Alignment.MIDDLE_RIGHT);
-        
         this.addComponent(bar);
-        
         grid = fillGrid();
         grid.setSizeFull();
-        
         grid.addItemClickListener(event -> {
             MouseButton button = event.getMouseEventDetails().getButton();
             if (button == MouseButton.LEFT && event.getColumn() != null) {
@@ -113,23 +99,18 @@ public class TriggerTableLayout extends VerticalLayout{
                 }
             }
         });
-
         this.addComponent(grid);
         this.setExpandRatio(grid, 1);
     }
-    
+
     private Grid<String> fillGrid() {
         Grid<String> grid = new Grid<String>();
         grid.setSelectionMode(SelectionMode.MULTI);
         grid.setColumnReorderingAllowed(false);
-        
         Map<String, Object> metaData = trigger.getMetaData();
         grid.addColumn(property -> property).setId("property").setCaption("Property").setWidth(250);
         grid.addColumn(property -> String.valueOf(metaData.get(property))).setId("value").setCaption("Value");
-        
         grid.setItems(metaData.keySet());
-        
         return grid;
-    }    
-    
+    }
 }

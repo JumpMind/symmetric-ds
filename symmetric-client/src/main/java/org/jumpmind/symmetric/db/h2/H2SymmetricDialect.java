@@ -39,9 +39,8 @@ import org.jumpmind.symmetric.service.IParameterService;
  * Synchronization support for the H2 database platform.
  */
 public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect implements ISymmetricDialect {
-
     static final String SQL_DROP_FUNCTION = "DROP ALIAS $(functionName)";
-    static final String SQL_FUNCTION_INSTALLED = "select count(*) from INFORMATION_SCHEMA.FUNCTION_ALIASES where ALIAS_NAME='$(functionName)'" ;
+    static final String SQL_FUNCTION_INSTALLED = "select count(*) from INFORMATION_SCHEMA.FUNCTION_ALIASES where ALIAS_NAME='$(functionName)'";
 
     public H2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
@@ -52,11 +51,12 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,
             String triggerName) {
         boolean exists = (platform.getSqlTemplate()
-                .queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ? and (TRIGGER_CATALOG=? or ? is null) and (TRIGGER_SCHEMA=? or ? is null)",
+                .queryForInt(
+                        "select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ? and (TRIGGER_CATALOG=? or ? is null) and (TRIGGER_SCHEMA=? or ? is null)",
                         new Object[] { triggerName, catalogName, catalogName, schemaName, schemaName }) > 0)
-                && (platform.getSqlTemplate().queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ? and (TABLE_CATALOG=? or ? is null) and (TABLE_SCHEMA=? or ? is null)",
+                && (platform.getSqlTemplate().queryForInt(
+                        "select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ? and (TABLE_CATALOG=? or ? is null) and (TABLE_SCHEMA=? or ? is null)",
                         new Object[] { String.format("%s_CONFIG", triggerName), catalogName, catalogName, schemaName, schemaName }) > 0);
-
         if (!exists && !StringUtils.isBlank(triggerName)) {
             removeTrigger(new StringBuilder(), catalogName, schemaName, triggerName, tableName);
         }
@@ -71,10 +71,8 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
                 dbInfo.getCatalogSeparator(), dbInfo.getSchemaSeparator());
         final String dropSql = String.format("DROP TRIGGER IF EXISTS %s%s", prefix, triggerName);
         logSql(dropSql, sqlBuffer);
-
         final String dropTable = String.format("DROP TABLE IF EXISTS %s%s_CONFIG", prefix, triggerName);
         logSql(dropTable, sqlBuffer);
-
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             log.info("Dropping trigger {} for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             transaction.execute(dropSql);
@@ -89,7 +87,6 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
             String sql = "CREATE ALIAS IF NOT EXISTS $(functionName) for \"org.jumpmind.symmetric.db.EmbeddedDbFunctions.encodeBase64\"; ";
             install(sql, encode);
         }
-
     }
 
     @Override
@@ -144,11 +141,12 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
 
     @Override
     public void cleanupTriggers() {
-        List<String> names = platform.getSqlTemplate().query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = SCHEMA() AND TABLE_NAME LIKE '"+parameterService.getTablePrefix().toUpperCase()+"_%_CONFIG'", new StringMapper());
+        List<String> names = platform.getSqlTemplate().query(
+                "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = SCHEMA() AND TABLE_NAME LIKE '" + parameterService.getTablePrefix()
+                        .toUpperCase() + "_%_CONFIG'", new StringMapper());
         for (String name : names) {
             platform.getSqlTemplate().update("drop table " + name);
             log.info("Dropped table {}", name);
         }
     }
-
 }

@@ -34,11 +34,8 @@ import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class InformixDdlBuilder extends AbstractDdlBuilder {
-
     public InformixDdlBuilder() {
-        
         super(DatabaseNamesConstants.INFORMIX);
-        
         databaseInfo.addNativeTypeMapping(Types.VARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "LVARCHAR", Types.LONGVARCHAR);
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.BLOB);
@@ -46,24 +43,19 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.TIME, "DATETIME YEAR TO FRACTION", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.BINARY, "BYTE", Types.BINARY);
         databaseInfo.addNativeTypeMapping(Types.VARBINARY, "BYTE", Types.BINARY);
-
         databaseInfo.addNativeTypeMapping(Types.BIT, "BOOLEAN", Types.BOOLEAN);
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "FLOAT", Types.DOUBLE);
-
         databaseInfo.setDefaultSize(Types.VARCHAR, 255);
         databaseInfo.setDefaultSize(Types.CHAR, 255);
-
         databaseInfo.setAlterTableForDropUsed(true);
         databaseInfo.setSystemIndicesReturned(true);
-
         databaseInfo.setCatalogSeparator(":");
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setAutoIncrementUpdateAllowed(false);
-        
         Map<String, String> env = System.getenv();
         String clientIdentifierMode = env.get("DELIMIDENT");
         if (clientIdentifierMode != null && clientIdentifierMode.equalsIgnoreCase("y")) {
@@ -74,7 +66,6 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
             databaseInfo.setDelimitedIdentifiersSupported(false);
             delimitedIdentifierModeOn = false;
         }
-        
     }
 
     @Override
@@ -130,13 +121,13 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
             printEndOfStatement(ddl);
         }
     }
-    
+
     @Override
     protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
         // Informix does not support ON UPDATE
         return;
     }
-    
+
     @Override
     protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
         // Informix only supports ON DELETE CASCADE

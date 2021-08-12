@@ -60,29 +60,17 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.AppUtils;
 
 public class MonitorService extends AbstractService implements IMonitorService {
-    
     protected String hostName;
-    
     protected INodeService nodeService;
-    
     protected IExtensionService extensionService;
-    
     protected IClusterService clusterService;
-    
     protected IContextService contextService;
-
     protected Map<String, Long> checkTimesByType = new HashMap<String, Long>();
-    
     protected Map<String, List<Long>> averagesByType = new HashMap<String, List<Long>>();
-    
     protected List<Monitor> activeMonitorCache;
-    
     protected long activeMonitorCacheTime;
-    
     protected List<Notification> activeNotificationCache;
-    
     protected long activeNotificationCacheTime;
-
     protected String typeColumnName;
 
     public MonitorService(IParameterService parameterService, ISymmetricDialect symmetricDialect, INodeService nodeService,
@@ -91,26 +79,23 @@ public class MonitorService extends AbstractService implements IMonitorService {
         MonitorServiceSqlMap sqlMap = new MonitorServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens());
         typeColumnName = sqlMap.getTypeColumnName();
         setSqlMap(sqlMap);
-
         this.nodeService = nodeService;
         this.extensionService = extensionService;
         this.clusterService = clusterService;
         this.contextService = contextService;
         hostName = StringUtils.left(AppUtils.getHostName(), 60);
-        
         IMonitorType monitorExtensions[] = { new MonitorTypeBatchError(), new MonitorTypeBatchUnsent(), new MonitorTypeCpu(),
                 new MonitorTypeDataGap(), new MonitorTypeDisk(), new MonitorTypeMemory(), new MonitorTypeUnrouted(),
                 new MonitorTypeLog(), new MonitorTypeOfflineNodes(), new MonitorTypeBlock() };
         for (IMonitorType ext : monitorExtensions) {
-            extensionService.addExtensionPoint(ext.getName(), ext);    
+            extensionService.addExtensionPoint(ext.getName(), ext);
         }
-        
         INotificationType notificationExtensions[] = { new NotificationTypeLog(), new NotificationTypeEmail() };
         for (INotificationType ext : notificationExtensions) {
-            extensionService.addExtensionPoint(ext.getName(), ext);    
+            extensionService.addExtensionPoint(ext.getName(), ext);
         }
     }
-    
+
     @Override
     public synchronized void update() {
         Map<String, IMonitorType> monitorTypes = extensionService.getExtensionPointMap(IMonitorType.class);
@@ -118,7 +103,6 @@ public class MonitorService extends AbstractService implements IMonitorService {
         if (identity != null) {
             List<Monitor> activeMonitors = getActiveMonitorsForNode(identity.getNodeGroupId(), identity.getExternalId());
             Map<String, MonitorEvent> unresolved = getMonitorEventsNotResolvedForNode(identity.getNodeId());
-    
             for (Monitor monitor : activeMonitors) {
                 IMonitorType monitorType = monitorTypes.get(monitor.getType());
                 if (monitorType != null) {
@@ -134,20 +118,17 @@ public class MonitorService extends AbstractService implements IMonitorService {
                     log.warn("Could not find monitor of type '" + monitor.getType() + "'");
                 }
             }
-            
             if (clusterService.lock(ClusterConstants.MONITOR)) {
                 Lock lock = clusterService.findLocks().get(ClusterConstants.MONITOR);
                 long clusterLastCheckTime = lock.getLastLockTime() != null ? lock.getLastLockTime().getTime() : 0;
-                
                 try {
                     for (Monitor monitor : activeMonitors) {
                         IMonitorType monitorType = monitorTypes.get(monitor.getType());
-                        if (monitorType != null && monitorType.requiresClusterLock() && 
+                        if (monitorType != null && monitorType.requiresClusterLock() &&
                                 (System.currentTimeMillis() - clusterLastCheckTime) / 1000 >= monitor.getRunPeriod()) {
                             updateMonitor(monitor, monitorType, identity, unresolved);
                         }
                     }
-                    
                     int minSeverityLevel = Integer.MAX_VALUE;
                     List<Notification> notifications = getActiveNotificationsForNode(identity.getNodeGroupId(), identity.getExternalId());
                     if (notifications.size() > 0) {
@@ -156,7 +137,6 @@ public class MonitorService extends AbstractService implements IMonitorService {
                                 minSeverityLevel = notification.getSeverityLevel();
                             }
                         }
-        
                         Map<String, INotificationType> notificationTypes = extensionService.getExtensionPointMap(INotificationType.class);
                         List<MonitorEvent> allMonitorEvents = getMonitorEventsForNotification(minSeverityLevel);
                         for (Notification notification : notifications) {
@@ -175,7 +155,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
                                     log.warn("Could not find notification of type '" + notification.getType() + "'");
                                 }
                             }
-                        }                
+                        }
                     }
                 } finally {
                     clusterService.unlock(ClusterConstants.MONITOR);
@@ -187,7 +167,6 @@ public class MonitorService extends AbstractService implements IMonitorService {
     protected void updateMonitor(Monitor monitor, IMonitorType monitorType, Node identity, Map<String, MonitorEvent> unresolved) {
         MonitorEvent eventValue = monitorType.check(monitor);
         boolean readyToCompare = true;
-        
         if (!monitorType.requiresClusterLock() && monitor.getRunCount() > 0) {
             List<Long> averages = averagesByType.get(monitor.getType());
             if (averages == null) {
@@ -198,7 +177,6 @@ public class MonitorService extends AbstractService implements IMonitorService {
             while (averages.size() > monitor.getRunCount()) {
                 averages.remove(0);
             }
-            
             if (averages.size() == monitor.getRunCount()) {
                 long accumValue = 0;
                 for (Long oneValue : averages) {
@@ -209,14 +187,13 @@ public class MonitorService extends AbstractService implements IMonitorService {
                 readyToCompare = false;
             }
         }
-
         if (readyToCompare) {
             MonitorEvent event = unresolved.get(monitor.getMonitorId());
             Date now = new Date((System.currentTimeMillis() / 1000) * 1000);
             if (event != null && eventValue.getValue() < monitor.getThreshold()) {
                 event.setLastUpdateTime(now);
                 updateMonitorEventAsResolved(event);
-            } else if (eventValue.getValue()  >= monitor.getThreshold()) {
+            } else if (eventValue.getValue() >= monitor.getThreshold()) {
                 if (event == null) {
                     event = new MonitorEvent();
                     event.setMonitorId(monitor.getMonitorId());
@@ -238,7 +215,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
                 } else {
                     event.setHostName(hostName);
                     event.setType(monitor.getType());
-                    event.setValue(eventValue.getValue() );
+                    event.setValue(eventValue.getValue());
                     if (eventValue.getCount() == 0) {
                         event.setCount(event.getCount() + 1);
                     } else {
@@ -268,7 +245,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
         }
         return activeMonitorCache;
     }
-    
+
     @Override
     public List<Monitor> getActiveMonitorsUnresolvedForNode(String nodeGroupId, String externalId) {
         long cacheTimeout = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_MONITOR_IN_MS);
@@ -287,13 +264,13 @@ public class MonitorService extends AbstractService implements IMonitorService {
     @Override
     public void saveMonitor(Monitor monitor) {
         int count = sqlTemplate.update(getSql("updateMonitorSql"), monitor.getExternalId(), monitor.getNodeGroupId(),
-                monitor.getType(), monitor.getExpression(), monitor.isEnabled() ? 1 : 0, monitor.getThreshold(), monitor.getRunPeriod(), 
-                monitor.getRunCount(), monitor.getSeverityLevel(), monitor.getLastUpdateBy(), 
+                monitor.getType(), monitor.getExpression(), monitor.isEnabled() ? 1 : 0, monitor.getThreshold(), monitor.getRunPeriod(),
+                monitor.getRunCount(), monitor.getSeverityLevel(), monitor.getLastUpdateBy(),
                 monitor.getLastUpdateTime(), monitor.getMonitorId());
         if (count == 0) {
-            sqlTemplate.update(getSql("insertMonitorSql"), monitor.getMonitorId(), monitor.getExternalId(), 
-                    monitor.getNodeGroupId(), monitor.getType(), monitor.getExpression(), monitor.isEnabled() ? 1 : 0, monitor.getThreshold(), 
-                    monitor.getRunPeriod(), monitor.getRunCount(), monitor.getSeverityLevel(), 
+            sqlTemplate.update(getSql("insertMonitorSql"), monitor.getMonitorId(), monitor.getExternalId(),
+                    monitor.getNodeGroupId(), monitor.getType(), monitor.getExpression(), monitor.isEnabled() ? 1 : 0, monitor.getThreshold(),
+                    monitor.getRunPeriod(), monitor.getRunCount(), monitor.getSeverityLevel(),
                     monitor.getCreateTime(), monitor.getLastUpdateBy(), monitor.getLastUpdateTime());
         }
     }
@@ -304,7 +281,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
     }
 
     protected Map<String, MonitorEvent> getMonitorEventsNotResolvedForNode(String nodeId) {
-        List<MonitorEvent> list = sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventNotResolvedSql"), 
+        List<MonitorEvent> list = sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventNotResolvedSql"),
                 new MonitorEventRowMapper(), nodeId);
         Map<String, MonitorEvent> map = new HashMap<String, MonitorEvent>();
         for (MonitorEvent monitorEvent : list) {
@@ -332,13 +309,13 @@ public class MonitorService extends AbstractService implements IMonitorService {
         }
         sql += " order by event_time desc";
         return sqlTemplate.query(sql, limit, new MonitorEventRowMapper(), args.toArray());
-    }    
+    }
 
     protected List<MonitorEvent> getMonitorEventsForNotification(int severityLevel) {
         return sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventForNotificationBySeveritySql"),
                 new MonitorEventRowMapper(), severityLevel);
     }
-    
+
     @Override
     public void saveMonitorEvent(MonitorEvent event) {
         if (!updateMonitorEvent(event)) {
@@ -348,12 +325,12 @@ public class MonitorService extends AbstractService implements IMonitorService {
 
     protected void insertMonitorEvent(MonitorEvent event) {
         sqlTemplate.update(getSql("insertMonitorEventSql"), event.getMonitorId(), event.getNodeId(),
-                event.getEventTime(), event.getHostName(), event.getType(), event.getValue(), event.getCount(), event.getThreshold(), 
+                event.getEventTime(), event.getHostName(), event.getType(), event.getValue(), event.getCount(), event.getThreshold(),
                 event.getSeverityLevel(), event.isResolved() ? 1 : 0, event.isNotified() ? 1 : 0, event.getDetails(), event.getLastUpdateTime());
     }
 
     protected boolean updateMonitorEvent(MonitorEvent event) {
-        int count = sqlTemplate.update(getSql("updateMonitorEventSql"), event.getHostName(), event.getType(), event.getValue(), 
+        int count = sqlTemplate.update(getSql("updateMonitorEventSql"), event.getHostName(), event.getType(), event.getValue(),
                 event.getCount(), event.getThreshold(), event.getSeverityLevel(), event.getLastUpdateTime(),
                 event.getDetails(), event.getMonitorId(), event.getNodeId(), event.getEventTime());
         return count != 0;
@@ -376,7 +353,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
 
     @Override
     public void updateMonitorEventAsResolved(MonitorEvent event) {
-        sqlTemplate.update(getSql("updateMonitorEventResolvedSql"), event.getLastUpdateTime(), event.getMonitorId(), 
+        sqlTemplate.update(getSql("updateMonitorEventResolvedSql"), event.getLastUpdateTime(), event.getMonitorId(),
                 event.getNodeId(), event.getEventTime());
     }
 
@@ -384,12 +361,12 @@ public class MonitorService extends AbstractService implements IMonitorService {
     public List<Notification> getNotifications() {
         return sqlTemplate.query(getSql("selectNotificationSql"), new NotificationRowMapper());
     }
-    
+
     @Override
     public List<Notification> getActiveNotificationsForNode(String nodeGroupId, String externalId) {
         long cacheTimeout = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NOTIFICATION_IN_MS);
         if (activeNotificationCache == null || System.currentTimeMillis() - activeNotificationCacheTime > cacheTimeout) {
-            activeNotificationCache = sqlTemplate.query(getSql("selectNotificationSql", "whereNotificationByNodeSql"), 
+            activeNotificationCache = sqlTemplate.query(getSql("selectNotificationSql", "whereNotificationByNodeSql"),
                     new NotificationRowMapper(), nodeGroupId, externalId);
         }
         return activeNotificationCache;
@@ -397,16 +374,16 @@ public class MonitorService extends AbstractService implements IMonitorService {
 
     @Override
     public void saveNotification(Notification notification) {
-        int count = sqlTemplate.update(getSql("updateNotificationSql"), 
-                notification.getNodeGroupId(), notification.getExternalId(), 
-                notification.getSeverityLevel(), notification.getType(), notification.getExpression(), notification.isEnabled() ? 1 : 0, 
-                notification.getCreateTime(), notification.getLastUpdateBy(), 
+        int count = sqlTemplate.update(getSql("updateNotificationSql"),
+                notification.getNodeGroupId(), notification.getExternalId(),
+                notification.getSeverityLevel(), notification.getType(), notification.getExpression(), notification.isEnabled() ? 1 : 0,
+                notification.getCreateTime(), notification.getLastUpdateBy(),
                 notification.getLastUpdateTime(), notification.getNotificationId());
         if (count == 0) {
             sqlTemplate.update(getSql("insertNotificationSql"), notification.getNotificationId(),
-                    notification.getNodeGroupId(), notification.getExternalId(), 
-                    notification.getSeverityLevel(), notification.getType(), notification.getExpression(), notification.isEnabled() ? 1 : 0, 
-                    notification.getCreateTime(), notification.getLastUpdateBy(), 
+                    notification.getNodeGroupId(), notification.getExternalId(),
+                    notification.getSeverityLevel(), notification.getType(), notification.getExpression(), notification.isEnabled() ? 1 : 0,
+                    notification.getCreateTime(), notification.getLastUpdateBy(),
                     notification.getLastUpdateTime());
         }
     }
@@ -420,7 +397,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
     public void flushMonitorCache() {
         activeMonitorCache = null;
     }
-    
+
     @Override
     public void flushNotificationCache() {
         activeNotificationCache = null;
@@ -445,7 +422,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
             return m;
         }
     }
-    
+
     static class MonitorEventRowMapper implements ISqlRowMapper<MonitorEvent> {
         public MonitorEvent mapRow(Row row) {
             MonitorEvent m = new MonitorEvent();
@@ -465,7 +442,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
             return m;
         }
     }
-    
+
     static class NotificationRowMapper implements ISqlRowMapper<Notification> {
         public Notification mapRow(Row row) {
             Notification n = new Notification();

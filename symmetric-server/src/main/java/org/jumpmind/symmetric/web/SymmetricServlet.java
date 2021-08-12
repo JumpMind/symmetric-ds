@@ -61,13 +61,9 @@ import org.slf4j.MDC;
  * @since 1.4.0
  */
 public class SymmetricServlet extends HttpServlet {
-
     private static final long serialVersionUID = 1L;
-
     private static final int MAX_NETWORK_ERROR_FOR_LOGGING = 5;
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected Map<String, Integer> rejectionStatusByEngine = new HashMap<String, Integer>();
 
     @Override
@@ -93,7 +89,6 @@ public class SymmetricServlet extends HttpServlet {
                                 req.getRemoteAddr(), req.getQueryString() });
             }
             ServletUtils.sendError(res, WebConstants.SC_SERVICE_UNAVAILABLE);
-
         } else if (engine.isStarted()) {
             IUriHandler handler = findMatchingHandler(engine, req);
             if (handler != null) {
@@ -158,9 +153,8 @@ public class SymmetricServlet extends HttpServlet {
                     "The client node request is being rejected because the server node is not started. The request {} from the host {} with an ip address of {} will not be processed.  The query string was: {}",
                     new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                             req.getRemoteAddr(), req.getQueryString() });
-            ServletUtils.sendError(res, WebConstants.SC_SERVICE_UNAVAILABLE);            
+            ServletUtils.sendError(res, WebConstants.SC_SERVICE_UNAVAILABLE);
         }
-
     }
 
     protected ServerSymmetricEngine findEngine(HttpServletRequest req) {
@@ -171,8 +165,7 @@ public class SymmetricServlet extends HttpServlet {
             if (engineName != null) {
                 engine = holder.getEngines().get(engineName);
             }
-
-            if (holder.getEngineCount() == 1 && engine == null && holder.getNumerOfEnginesStarting() <= 1 && 
+            if (holder.getEngineCount() == 1 && engine == null && holder.getNumerOfEnginesStarting() <= 1 &&
                     holder.getEngines().size() == 1) {
                 engine = holder.getEngines().values().iterator().next();
             }
@@ -237,7 +230,7 @@ public class SymmetricServlet extends HttpServlet {
         if (engine != null) {
             String removeString = "/" + engine.getEngineName();
             if (uri.startsWith(removeString)) {
-                uri = uri.substring(removeString.length()); 
+                uri = uri.substring(removeString.length());
             }
         }
         return uri;
@@ -251,15 +244,11 @@ public class SymmetricServlet extends HttpServlet {
         String method = req instanceof HttpServletRequest ? ((HttpServletRequest) req).getMethod()
                 : "";
         Throwable root = ExceptionUtils.getRootCause(ex);
-        
         int errorCount = engine.getErrorCountFor(nodeId);
-        
         String msg = String.format("Error while processing %s request for node: %s", method, nodeId);
-        
-        if (!StringUtils.isEmpty(externalId) && !StringUtils.equals(nodeId, externalId)) {            
+        if (!StringUtils.isEmpty(externalId) && !StringUtils.equals(nodeId, externalId)) {
             msg += String.format(" externalId: %s", externalId);
         }
-       
         if (!StringUtils.isEmpty(hostName) && !StringUtils.isEmpty(address)) {
             if (StringUtils.equals(hostName, address)) {
                 msg += String.format(" at %s", hostName);
@@ -271,15 +260,13 @@ public class SymmetricServlet extends HttpServlet {
         } else if (!StringUtils.isEmpty(address)) {
             msg += String.format(" at %s", address);
         }
-        
         msg += String.format(" with path: %s", ServletUtils.normalizeRequestUri(req));
-        
         if (!(ex instanceof IOException || root instanceof IOException) || errorCount >= MAX_NETWORK_ERROR_FOR_LOGGING) {
             log.error(msg, ex);
         } else {
             if (log.isDebugEnabled()) {
-                log.info(msg, ex);                
-            } else {                
+                log.info(msg, ex);
+            } else {
                 log.info(msg + " The message is: " + ex.getMessage());
             }
         }
@@ -294,5 +281,4 @@ public class SymmetricServlet extends HttpServlet {
         }
         return false;
     }
-    
 }

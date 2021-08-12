@@ -32,19 +32,19 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.util.Statistics;
 
 public class Batch {
-    
     public static final long UNKNOWN_BATCH_ID = -9999;
-    
     public static final String DEFAULT_CHANNEL_ID = "default";
 
-    public enum BatchType { EXTRACT, LOAD };
-    
+    public enum BatchType {
+        EXTRACT, LOAD
+    };
+
     protected long batchId = UNKNOWN_BATCH_ID;
     protected String sourceNodeId;
     protected String targetNodeId;
-    protected boolean initialLoad;    
+    protected boolean initialLoad;
     protected String channelId = DEFAULT_CHANNEL_ID;
-    protected BinaryEncoding binaryEncoding;   
+    protected BinaryEncoding binaryEncoding;
     protected Date startTime;
     protected long lineCount;
     protected long dataReadMillis;
@@ -55,9 +55,8 @@ public class Batch {
     protected BatchType batchType;
     protected Statistics statistics;
     protected boolean invalidRetry = false;
-    
     protected Map<String, Long> timers = new HashMap<String, Long>();
-        
+
     public Batch(BatchType batchType, long batchId, String channelId, BinaryEncoding binaryEncoding, String sourceNodeId, String targetNodeId, boolean common) {
         this.batchType = batchType;
         this.batchId = batchId;
@@ -70,11 +69,11 @@ public class Batch {
         this.common = common;
         this.startTime = new Date();
     }
-    
+
     public Batch() {
         this.startTime = new Date();
     }
-    
+
     public void setBatchId(long batchId) {
         this.batchId = batchId;
     }
@@ -82,7 +81,7 @@ public class Batch {
     public long incrementLineCount() {
         return ++lineCount;
     }
-        
+
     public void incrementDataReadMillis(long millis) {
         dataReadMillis += millis;
     }
@@ -90,13 +89,13 @@ public class Batch {
     public void incrementDataWriteMillis(long millis) {
         dataWriteMillis += millis;
     }
-    
+
     public void startTimer(String name) {
         timers.put(name, System.currentTimeMillis());
     }
 
     public long endTimer(String name) {
-        Long startTime = (Long)timers.remove(name);
+        Long startTime = (Long) timers.remove(name);
         if (startTime != null) {
             return System.currentTimeMillis() - startTime;
         } else {
@@ -107,11 +106,11 @@ public class Batch {
     public long getDataReadMillis() {
         return dataReadMillis;
     }
-    
+
     public long getDataWriteMillis() {
         return dataWriteMillis;
     }
-    
+
     public long getLineCount() {
         return lineCount;
     }
@@ -131,16 +130,16 @@ public class Batch {
     public String getSourceNodeId() {
         return sourceNodeId;
     }
-    
+
     public String getTargetNodeId() {
         return targetNodeId;
     }
-    
+
     public String getNodeBatchId() {
         String nodeId = batchType == BatchType.EXTRACT ? targetNodeId : sourceNodeId;
         return String.format("%s-%d", nodeId, batchId);
     }
-    
+
     public long getBatchId() {
         return batchId;
     }
@@ -152,63 +151,63 @@ public class Batch {
     public boolean isInitialLoad() {
         return initialLoad;
     }
-    
+
     public BinaryEncoding getBinaryEncoding() {
         return binaryEncoding;
     }
-    
+
     public void setIgnored(boolean ignored) {
         this.ignored = ignored;
     }
-    
+
     public boolean isIgnored() {
         return ignored;
     }
-    
+
     public void setCommon(boolean commonFlag) {
         this.common = commonFlag;
     }
-    
+
     public boolean isCommon() {
         return common;
     }
-    
+
     public BatchType getBatchType() {
         return batchType;
     }
-    
+
     public String getStagedLocation() {
         if (batchType == BatchType.EXTRACT) {
-            return getStagedLocation(common, targetNodeId, batchId);            
+            return getStagedLocation(common, targetNodeId, batchId);
         } else {
-            return getStagedLocation(common, sourceNodeId, batchId);    
-        }        
+            return getStagedLocation(common, sourceNodeId, batchId);
+        }
     }
-    
+
     public static String getStagedLocation(boolean common, String nodeId, long batchId) {
         return common ? "common/" + String.format("%03d", batchId % 1000) : nodeId;
     }
-    
+
     public void setComplete(boolean complete) {
         this.complete = complete;
     }
-    
+
     public boolean isComplete() {
         return complete;
     }
-    
+
     public void setBinaryEncoding(BinaryEncoding binaryEncoding) {
         this.binaryEncoding = binaryEncoding;
     }
-    
+
     public void setSourceNodeId(String sourceNodeId) {
         this.sourceNodeId = sourceNodeId;
     }
-    
+
     public void setStatistics(Statistics statistics) {
         this.statistics = statistics;
     }
-    
+
     public Statistics getStatistics() {
         return statistics;
     }
@@ -216,11 +215,11 @@ public class Batch {
     public void setInvalidRetry(boolean invalidRetry) {
         this.invalidRetry = invalidRetry;
     }
-    
+
     public boolean isInvalidRetry() {
         return invalidRetry;
     }
-    
+
     public String encodeBinary(String value) {
         if (value != null) {
             if (binaryEncoding == BinaryEncoding.HEX) {
@@ -247,6 +246,5 @@ public class Batch {
             }
         }
         return null;
-    }  
-    
+    }
 }

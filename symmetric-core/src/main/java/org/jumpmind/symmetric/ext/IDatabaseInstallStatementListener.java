@@ -23,7 +23,5 @@ package org.jumpmind.symmetric.ext;
 import org.jumpmind.extension.IExtensionPoint;
 
 public interface IDatabaseInstallStatementListener extends IExtensionPoint {
-    
     public void sqlApplied(String engineName, String sql, int statementNumber, int totalStatements);
-    
 }

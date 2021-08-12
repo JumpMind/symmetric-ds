@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.config;
 import org.jumpmind.extension.IExtensionPoint;
 
 public interface IParameterFilter extends IExtensionPoint {
-
     /**
      * @param key
      * @param value

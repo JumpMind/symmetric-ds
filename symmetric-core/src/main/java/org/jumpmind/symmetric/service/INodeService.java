@@ -37,21 +37,19 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 
 /**
- * This service provides an API to access {@link Node}s and Node related
- * information.
+ * This service provides an API to access {@link Node}s and Node related information.
  */
 public interface INodeService {
-    
     public enum AuthenticationStatus {
         SYNC_DISABLED, REGISTRATION_REQUIRED, FORBIDDEN, ACCEPTED, LOCKED;
     };
 
     public Node findNode(String nodeId);
-    
+
     public Node findNode(String id, boolean useCache);
-    
+
     public Node findNodeInCacheOnly(String id);
-    
+
     public String getExternalId(String nodeId);
 
     public List<NodeHost> findNodeHosts(String nodeId);
@@ -61,9 +59,7 @@ public interface INodeService {
     public Node findNodeByExternalId(String nodeGroupId, String externalId);
 
     /**
-     * Find a list of {@link Node}s that were create at the passed in node or
-     * were created at a node that was created by the passed in node
-     * (recursively).
+     * Find a list of {@link Node}s that were create at the passed in node or were created at a node that was created by the passed in node (recursively).
      */
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId);
 
@@ -94,7 +90,7 @@ public interface INodeService {
     public String findSymmetricVersion();
 
     public String findIdentityNodeId();
-    
+
     public void ignoreNodeChannelForExternalId(boolean ignore, String channelId,
             String nodeGroupId, String externalId);
 
@@ -103,7 +99,7 @@ public interface INodeService {
     public void flushNodeCache();
 
     public void flushNodeAuthorizedCache();
-    
+
     public void flushNodeGroupCache();
 
     public boolean isRegistrationEnabled(String nodeId);
@@ -119,20 +115,20 @@ public interface INodeService {
     public boolean deleteIdentity();
 
     public List<Node> findAllNodes();
-    
+
     public Map<String, Node> findAllNodesAsMap();
-    
+
     public List<Node> findFilteredNodesWithLimit(int offset, int limit, List<FilterCriterion> filter,
             String orderColumn, String orderDirection);
-    
+
     public int countFilteredNodes(List<FilterCriterion> filter);
 
     public List<Node> findNodesToPull();
 
     public List<Node> findNodesToPushTo();
-    
+
     public List<Node> findNodesWhoPushToMe();
-    
+
     public List<Node> findNodesWhoPullFromMe();
 
     public List<Node> findSourceNodesFor(NodeGroupLinkAction eventAction);
@@ -157,11 +153,13 @@ public interface INodeService {
 
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
 
-    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
-    
+    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId,
+            String createBy);
+
     public boolean setInitialLoadEnded(ISqlTransaction transaction, String nodeId);
 
-    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
+    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId,
+            String createBy);
 
     public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
 
@@ -169,14 +167,14 @@ public interface INodeService {
      * @return true if a data load has occurred and has been completed.
      */
     public boolean isDataLoadCompleted();
-    
+
     public boolean isDataLoadCompleted(String nodeId);
 
     /**
      * @return true if a data load has started but not yet completed.
      */
     public boolean isDataLoadStarted();
-    
+
     public boolean isDataLoadStarted(String nodeId);
 
     /**
@@ -189,14 +187,12 @@ public interface INodeService {
     public NodeStatus getNodeStatus(String nodeId);
 
     /**
-     * Check to see if any nodes are offline and process any nodes found using
-     * the configured IOfflineNodeHandler.
+     * Check to see if any nodes are offline and process any nodes found using the configured IOfflineNodeHandler.
      */
     public void checkForOfflineNodes();
 
     /**
-     * Find nodes that have been offline for the configured timeframe before {@link IOfflineClientListener}
-     * and {@link IOfflineServerListener} will be called
+     * Find nodes that have been offline for the configured timeframe before {@link IOfflineClientListener} and {@link IOfflineServerListener} will be called
      *
      * @return list of offline nodes
      */
@@ -207,8 +203,7 @@ public interface INodeService {
      *
      * @return list of offline nodes
      * @param minutesOffline
-     *            the number of minutes that have passed that a node has not
-     *            checked in for until it is considered offline
+     *            the number of minutes that have passed that a node has not checked in for until it is considered offline
      */
     public List<Node> findOfflineNodes(long minutesOffline);
 
@@ -217,13 +212,12 @@ public interface INodeService {
     public List<String> findOfflineNodeIds(long minutesOffline);
 
     public NetworkedNode getRootNetworkedNode();
-    
+
     public Node findRootNode();
 
     public AuthenticationStatus getAuthenticationStatus(String nodeId, String securityToken);
-    
+
     public void resetNodeFailedLogins(String nodeId);
-    
+
     public void incrementNodeFailedLogins(String nodeId);
-    
 }

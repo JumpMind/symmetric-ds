@@ -68,9 +68,7 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 public class ReadOnlyTextAreaDialog extends ResizableWindow {
-
     private static final long serialVersionUID = 1L;
-
     final Logger log = LoggerFactory.getLogger(getClass());
     VerticalLayout wrapper;
     protected HorizontalLayout buttonLayout;
@@ -85,7 +83,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
     public ReadOnlyTextAreaDialog(final String title, final String value, boolean isEncodedInHex) {
         this(title, value, null, null, null, isEncodedInHex, false);
     }
-    
+
     public ReadOnlyTextAreaDialog(final String title, final String value, Table table, Object[] primaryKeys,
             IDatabasePlatform platform, boolean isEncodedInHex, boolean isLob) {
         super(title);
@@ -93,7 +91,6 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         this.primaryKeys = primaryKeys;
         this.platform = platform;
         this.column = table == null ? null : table.getColumnWithName(title);
-
         wrapper = new VerticalLayout();
         wrapper.setMargin(true);
         wrapper.setSizeFull();
@@ -102,13 +99,11 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         textField.setWordWrap(false);
         wrapper.addComponent(textField);
         addComponent(wrapper, 1);
-
         buttonLayout = new HorizontalLayout();
         buttonLayout.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
         buttonLayout.setWidth(100, Unit.PERCENTAGE);
         addComponent(buttonLayout);
-
         if (value != null && isEncodedInHex) {
             List<String> displayList = new ArrayList<String>();
             displayList.add("Hex");
@@ -120,20 +115,16 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
             displayBox.addValueChangeListener(event -> updateTextField((String) displayBox.getValue(), value));
             buttonLayout.addComponent(displayBox);
         }
-        
         if (table != null && isLob) {
             buildUploadButton(title, value);
             buildDownloadButton(title);
         }
-
         Label spacer = new Label();
         buttonLayout.addComponent(spacer);
         buttonLayout.setExpandRatio(spacer, 1);
-
         Button closeButton = buildCloseButton();
         buttonLayout.addComponent(closeButton);
         buttonLayout.setComponentAlignment(closeButton, Alignment.BOTTOM_RIGHT);
-
         textField.setValue(value);
         textField.addValueChangeListener(event -> {
             if (displayBox != null) {
@@ -143,26 +134,24 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
             }
         });
     }
-    
+
     @Override
-    protected void grabFocus() {        
+    protected void grabFocus() {
     }
-    
+
     @Override
     public void show() {
         super.show();
         selectAll();
     }
-    
+
     private void buildUploadButton(String title, final String value) {
         final Button uploadButton = new Button("Upload");
         final Button viewTextButton = new Button("View Text");
-        
         LobUploader lobUploader = new LobUploader();
         final Upload upload = new Upload("Upload new " + table.getColumnWithName(title)
                 .getMappedType(), lobUploader);
         upload.addSucceededListener(lobUploader);
-
         uploadButton.addClickListener(new ClickListener() {
             private static final long serialVersionUID = 1L;
 
@@ -173,7 +162,6 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
                 buttonLayout.replaceComponent(uploadButton, viewTextButton);
             }
         });
-        
         viewTextButton.addClickListener(new ClickListener() {
             private static final long serialVersionUID = 1L;
 
@@ -184,7 +172,6 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
                 buttonLayout.replaceComponent(viewTextButton, uploadButton);
             }
         });
-        
         if (value != null) {
             buttonLayout.addComponent(uploadButton);
             buttonLayout.setComponentAlignment(uploadButton, Alignment.BOTTOM_CENTER);
@@ -193,25 +180,22 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
             wrapper.setComponentAlignment(upload, Alignment.MIDDLE_CENTER);
         }
     }
-    
+
     private void buildDownloadButton(String title) {
         downloadButton = new Button("Download");
         final byte[] lobData = getLobData(title);
         if (lobData != null) {
             Resource resource = new StreamResource(new StreamSource() {
-    
                 private static final long serialVersionUID = 1L;
-    
+
                 public InputStream getStream() {
                     return new ByteArrayInputStream(lobData);
                 }
-                
             }, title);
             FileDownloader fileDownloader = new FileDownloader(resource);
             fileDownloader.extend(downloadButton);
             buttonLayout.addComponent(downloadButton);
             buttonLayout.setComponentAlignment(downloadButton, Alignment.BOTTOM_CENTER);
-            
             long fileSize = lobData.length;
             String sizeText = fileSize + " Bytes";
             if (fileSize / 1024 > 0) {
@@ -231,7 +215,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
             buttonLayout.setComponentAlignment(sizeLabel, Alignment.BOTTOM_CENTER);
         }
     }
-    
+
     protected byte[] getLobData(String title) {
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
         String sql = buildLobSelect(table.getPrimaryKeyColumns());
@@ -248,7 +232,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         }
         return array;
     }
-    
+
     protected String buildLobSelect(Column[] pkColumns) {
         StringBuilder sql = new StringBuilder("select ");
         DatabaseInfo dbInfo = platform.getDatabaseInfo();
@@ -257,7 +241,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         sql.append(column.getName());
         sql.append(quote);
         sql.append(" from ");
-        sql.append(table.getQualifiedTableName(quote, dbInfo.getCatalogSeparator(), 
+        sql.append(table.getQualifiedTableName(quote, dbInfo.getCatalogSeparator(),
                 dbInfo.getSchemaSeparator()));
         sql.append(" where ");
         for (Column col : pkColumns) {
@@ -269,12 +253,12 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         sql.delete(sql.length() - 5, sql.length());
         return sql.toString();
     }
-    
+
     protected String buildLobUpdate(Column[] pkColumns) {
         StringBuilder sql = new StringBuilder("update ");
         DatabaseInfo dbInfo = platform.getDatabaseInfo();
         String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? dbInfo.getDelimiterToken() : "";
-        sql.append(table.getQualifiedTableName(quote, dbInfo.getCatalogSeparator(), 
+        sql.append(table.getQualifiedTableName(quote, dbInfo.getCatalogSeparator(),
                 dbInfo.getSchemaSeparator()));
         sql.append(" set ");
         sql.append(quote);
@@ -290,10 +274,10 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         sql.delete(sql.length() - 5, sql.length());
         return sql.toString();
     }
-    
+
     public void selectAll() {
         textField.focus();
-        textField.selectAll();      
+        textField.selectAll();
     }
 
     protected void updateTextField(String display, String value) {
@@ -323,11 +307,9 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
             }
         }
     }
-    
+
     private class LobUploader implements Receiver, SucceededListener {
-        
         private static final long serialVersionUID = 1L;
-        
         File file;
 
         @Override
@@ -344,7 +326,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
             }
             return out;
         }
-        
+
         public void uploadSucceeded(SucceededEvent event) {
             log.info("File received successfully. Updating database");
             String sql = buildLobUpdate(table.getPrimaryKeyColumns());
@@ -357,13 +339,13 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
                 ps = con.prepareStatement(sql);
                 InputStream stream = new FileInputStream(file);
                 ps.setBinaryStream(1, (InputStream) stream, (int) file.length());
-                for (int i=0; i<primaryKeys.length; i++) {
-                    ps.setObject(i+2, primaryKeys[i], table.getPrimaryKeyColumns()[i].getMappedTypeCode());
+                for (int i = 0; i < primaryKeys.length; i++) {
+                    ps.setObject(i + 2, primaryKeys[i], table.getPrimaryKeyColumns()[i].getMappedTypeCode());
                 }
                 ps.executeUpdate();
                 con.commit();
-                long executionTime = System.nanoTime()-startTime;
-                log.info("Upload succeeded in "+executionTime+" ms");
+                long executionTime = System.nanoTime() - startTime;
+                log.info("Upload succeeded in " + executionTime + " ms");
                 ReadOnlyTextAreaDialog.this.close();
             } catch (SQLException e1) {
                 NotifyDialog.show("Upload Error", "<b>The file could not be uploaded.</b><br>" +
@@ -394,7 +376,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         ReadOnlyTextAreaDialog dialog = new ReadOnlyTextAreaDialog(title, value, isEncodedInHex);
         dialog.showAtSize(.4);
     }
-    
+
     public static void show(String title, String value, Table table, Object[] primaryKeys, IDatabasePlatform platform,
             boolean isEncodedInHex, boolean isLob) {
         ReadOnlyTextAreaDialog dialog = new ReadOnlyTextAreaDialog(title, value, table, primaryKeys, platform,

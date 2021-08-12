@@ -71,21 +71,16 @@ import org.jumpmind.db.platform.PlatformUtils;
  * The SQL Builder for Sybase.
  */
 public class AseDdlBuilder extends AbstractDdlBuilder {
-
     public AseDdlBuilder() {
         super(DatabaseNamesConstants.ASE);
-        
         databaseInfo.setMaxIdentifierLength(128);
         databaseInfo.setNullAsDefaultValueRequired(true);
         databaseInfo.setCommentPrefix("/*");
         databaseInfo.setCommentSuffix("*/");
-
         // ASE will not accept delimter tokens surrounding the catalog name.
         // This is a temporary fix. ADB
-//        databaseInfo.setDelimiterToken("\"");
+        // databaseInfo.setDelimiterToken("\"");
         databaseInfo.setDelimiterToken("");
-
-
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "IMAGE");
         // BIGINT is mapped back in the model reader
         databaseInfo.addNativeTypeMapping(Types.BIGINT, "NUMERIC(18,0)");
@@ -99,7 +94,6 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE PRECISION", Types.DOUBLE);
         databaseInfo.addNativeTypeMapping(Types.INTEGER, "NUMERIC(12,0)");
-
         databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "IMAGE");
         databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "TEXT");
@@ -112,12 +106,10 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
         databaseInfo.addNativeTypeMapping("BOOLEAN", "SMALLINT", "SMALLINT");
         databaseInfo.addNativeTypeMapping("DATALINK", "IMAGE", "LONGVARBINARY");
-
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
-
         databaseInfo.setDateOverridesToTimestamp(true);
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
@@ -125,7 +117,6 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setAutoIncrementUpdateAllowed(false);
         databaseInfo.setRequiresAutoCommitForDdl(true);
-
     }
 
     @Override
@@ -140,11 +131,9 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         ddl.append(" ");
         ddl.append(getSqlType(column));
         writeColumnDefaultValueStmt(table, column, ddl);
-        
         if (column.isUnique() && databaseInfo.isUniqueEmbedded()) {
             writeColumnUniqueStmt(ddl);
         }
-        
         // Sybase does not like NULL/NOT NULL and IDENTITY together
         if (column.isAutoIncrement()) {
             ddl.append(" ");
@@ -190,12 +179,11 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey,
             StringBuilder ddl) {
         String constraintName = getForeignKeyName(table, foreignKey);
-
         ddl.append("IF EXISTS (SELECT 1 FROM dbo.sysobjects WHERE type = 'RI' AND name = ");
         printAlwaysSingleQuotedIdentifier(constraintName, ddl);
         println(")", ddl);
         printIndent(ddl);
-        ddl.append("ALTER TABLE ");        
+        ddl.append("ALTER TABLE ");
         ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append(" DROP CONSTRAINT ");
         printIdentifier(constraintName, ddl);
@@ -253,8 +241,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     }
 
     /*
-     * Returns the statement that turns on the ability to write delimited
-     * identifiers.
+     * Returns the statement that turns on the ability to write delimited identifiers.
      *
      * @return The quotation-on statement
      */
@@ -267,8 +254,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     }
 
     /*
-     * Writes the statement that turns on the ability to write delimited
-     * identifiers.
+     * Writes the statement that turns on the ability to write delimited identifiers.
      */
     private void writeQuotationOnStatement(StringBuilder ddl) {
         ddl.append(getQuotationOnStatement());
@@ -276,8 +262,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     }
 
     /*
-     * Prints the given identifier with enforced single quotes around it
-     * regardless of whether delimited identifiers are turned on or not.
+     * Prints the given identifier with enforced single quotes around it regardless of whether delimited identifiers are turned on or not.
      *
      * @param identifier The identifier
      */
@@ -290,7 +275,6 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     @Override
     public void writeCopyDataStatement(Table sourceTable, Table targetTable, StringBuilder ddl) {
         boolean hasIdentity = targetTable.getAutoIncrementColumns().length > 0;
-
         if (hasIdentity) {
             ddl.append("SET IDENTITY_INSERT ");
             ddl.append(getFullyQualifiedTableNameShorten(targetTable));
@@ -310,7 +294,6 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     protected void writeCastExpression(Column sourceColumn, Column targetColumn, StringBuilder ddl) {
         String sourceNativeType = getBareNativeType(sourceColumn);
         String targetNativeType = getBareNativeType(targetColumn);
-
         if (sourceNativeType.equals(targetNativeType)) {
             printIdentifier(getColumnName(sourceColumn), ddl);
         } else {
@@ -337,7 +320,6 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         // First we drop primary keys as necessary
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof RemovePrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
                 changeIt.remove();
@@ -345,29 +327,24 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
                 PrimaryKeyChange pkChange = (PrimaryKeyChange) change;
                 RemovePrimaryKeyChange removePkChange = new RemovePrimaryKeyChange(
                         pkChange.getChangedTable(), pkChange.getOldPrimaryKeyColumns());
-
                 processChange(currentModel, desiredModel, removePkChange, ddl);
             }
         }
-
         HashMap<Column, ArrayList<ColumnChange>> columnChanges = new HashMap<Column, ArrayList<ColumnChange>>();
-
         // Next we add/remove columns
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof AddColumnChange) {
                 AddColumnChange addColumnChange = (AddColumnChange) change;
-
                 // Sybase can only add not insert columns
                 if (addColumnChange.isAtEnd()) {
                     processChange(currentModel, desiredModel, addColumnChange, ddl);
                     changeIt.remove();
                 }
             } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
+                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange) change;
                 processChange(currentModel, desiredModel, copyColumnChange, ddl);
-                changeIt.remove();                
+                changeIt.remove();
             } else if (change instanceof RemoveColumnChange) {
                 processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
@@ -384,7 +361,6 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
                 // statement for them
                 ColumnChange columnChange = (ColumnChange) change;
                 ArrayList<ColumnChange> changesPerColumn = columnChanges.get(columnChange.getChangedColumn());
-
                 if (changesPerColumn == null) {
                     changesPerColumn = new ArrayList<ColumnChange>();
                     columnChanges.put(columnChange.getChangedColumn(), changesPerColumn);
@@ -398,7 +374,6 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
                 Map.Entry<Column, ArrayList<ColumnChange>> entry = changesPerColumnIt.next();
                 Column sourceColumn = (Column) entry.getKey();
                 ArrayList<ColumnChange> changesPerColumn = entry.getValue();
-
                 // Sybase does not like us to use the ALTER TABLE ALTER
                 // statement if we don't actually
                 // change the datatype or the required constraint but only the
@@ -412,7 +387,6 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
                 } else {
                     Column targetColumn = targetTable.findColumn(sourceColumn.getName(),
                             delimitedIdentifierModeOn);
-
                     processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
                 }
                 for (Iterator<ColumnChange> changeIt = changesPerColumn.iterator(); changeIt.hasNext();) {
@@ -424,7 +398,6 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         // Finally we add primary keys
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof AddPrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
                 changeIt.remove();
@@ -432,7 +405,6 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
                 PrimaryKeyChange pkChange = (PrimaryKeyChange) change;
                 AddPrimaryKeyChange addPkChange = new AddPrimaryKeyChange(
                         pkChange.getChangedTable(), pkChange.getNewPrimaryKeyColumns());
-
                 processChange(currentModel, desiredModel, addPkChange, ddl);
                 changeIt.remove();
             }
@@ -483,7 +455,6 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         String tableName = getTableName(change.getChangedTable().getName());
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
-
         println("BEGIN", ddl);
         println("  DECLARE @" + tableNameVar + " nvarchar(60), @" + constraintNameVar
                 + " nvarchar(60)", ddl);
@@ -508,8 +479,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     }
 
     /*
-     * Processes the change of the default value of a column. Note that this
-     * method is only used if it is the only change to that column.
+     * Processes the change of the default value of a column. Note that this method is only used if it is the only change to that column.
      */
     protected void processChange(Database currentModel, Database desiredModel,
             ColumnDefaultValueChange change, StringBuilder ddl) {
@@ -518,12 +488,10 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         printIndent(ddl);
         ddl.append("REPLACE ");
         printIdentifier(getColumnName(change.getChangedColumn()), ddl);
-
         Table curTable = currentModel.findTable(change.getChangedTable().getName(),
                 delimitedIdentifierModeOn);
         Column curColumn = curTable.findColumn(change.getChangedColumn().getName(),
                 delimitedIdentifierModeOn);
-
         ddl.append(" DEFAULT ");
         if (isValidDefaultValue(change.getNewDefaultValue(), curColumn.getMappedTypeCode())) {
             printDefaultValue(change.getNewDefaultValue(), curColumn.getMappedTypeCode(), ddl);
@@ -544,7 +512,6 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         String newDefault = targetColumn.getDefaultValue();
         boolean defaultChanges = ((oldParsedDefault == null) && (newParsedDefault != null))
                 || ((oldParsedDefault != null) && !oldParsedDefault.equals(newParsedDefault));
-
         // Sybase does not like it if there is a default spec in the ALTER TABLE
         // ALTER
         // statement; thus we have to change the default afterwards
@@ -586,17 +553,15 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     }
 
     /**
-     * Creates a reasonably unique identifier only consisting of hexadecimal
-     * characters and underscores. It looks like
-     * <code>d578271282b42fce__2955b56e_107df3fbc96__8000</code> and is 48
-     * characters long.
+     * Creates a reasonably unique identifier only consisting of hexadecimal characters and underscores. It looks like
+     * <code>d578271282b42fce__2955b56e_107df3fbc96__8000</code> and is 48 characters long.
      *
      * @return The identifier
      */
     protected String createUniqueIdentifier() {
         return new UID().toString().replace(':', '_').replace('-', '_');
     }
-    
+
     @Override
     protected void writeCascadeAttributesForForeignKey(ForeignKey key, StringBuilder ddl) {
         // Sybase does not support cascade actions

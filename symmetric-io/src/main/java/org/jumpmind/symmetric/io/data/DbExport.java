@@ -59,7 +59,6 @@ import org.jumpmind.symmetric.io.IoVersion;
  * Export the structure and data from database tables to file.
  */
 public class DbExport {
-
     public enum Format {
         SQL, CSV, XML, SYM_XML, CSV_DQUOTE
     };
@@ -69,41 +68,23 @@ public class DbExport {
     };
 
     private Format format = Format.SQL;
-
     private Compatible compatible;
-
     private boolean addDropTable;
-
     private boolean noCreateInfo;
-
     private boolean noIndices;
-
     private boolean noForeignKeys;
-
     private boolean noData;
-
     private boolean ignoreMissingTables;
-
     private boolean useVariableDates;
-
     private boolean comments;
-
     private String whereClause;
-    
     private String[] excludeColumns;
-
     private String catalog;
-
     private String schema;
-
     private String dir;
-    
     private int maxRows = Integer.MAX_VALUE;
-
     private boolean useQuotedIdentifiers = true;
-
     private boolean useJdbcTimestampFormat = true;
-
     private IDatabasePlatform platform;
 
     public DbExport(IDatabasePlatform platform) {
@@ -140,7 +121,6 @@ public class DbExport {
 
     public void exportTables(OutputStream output, String[] tableNames) throws IOException {
         ArrayList<Table> tableList = new ArrayList<Table>();
-
         for (String tableName : tableNames) {
             Table table = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
                     tableName);
@@ -165,7 +145,6 @@ public class DbExport {
     }
 
     public void exportTables(OutputStream output, Table[] tables, String sql) throws IOException {
-
         for (int i = 0; i < tables.length; i++) {
             // if the table definition did not come from the database, then read
             // the table from the database
@@ -173,18 +152,13 @@ public class DbExport {
                 tables[i] = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
                         tables[i].getName());
             }
-            
             /* make a copy so if we zero out catalog and schema we don't effect the original */
             tables[i] = tables[i].copy();
         }
-
         WriterWrapper writerWrapper = null;
-
         try {
             writerWrapper = new WriterWrapper(output);
-
             tables = Database.sortByForeignKeys(tables);
-
             for (Table table : tables) {
                 writeTable(writerWrapper, table, sql);
             }
@@ -210,7 +184,7 @@ public class DbExport {
             return catalog;
         }
     }
-    
+
     private void removeExcludedColumns(Table table) {
         if (excludeColumns != null) {
             for (String columnName : excludeColumns) {
@@ -221,59 +195,56 @@ public class DbExport {
             }
         }
     }
-    
+
     protected void writeTable(final WriterWrapper writerWrapper, Table table, String sql)
             throws IOException {
         removeExcludedColumns(table);
         writerWrapper.startTable(table);
-
         if (!noData) {
             if (sql == null) {
                 if (excludeColumns == null || excludeColumns.length == 0) {
                     sql = platform.createDmlStatement(DmlType.SELECT_ALL, table, null).getSql();
                 } else {
                     Column[] columnsToExport = getColumnsToExport(table);
-                    sql = platform.createDmlStatement(DmlType.SELECT_ALL, table.getCatalog(), table.getSchema(), table.getName(), 
-                            table.getPrimaryKeyColumns(), columnsToExport, null,null).getSql();
+                    sql = platform.createDmlStatement(DmlType.SELECT_ALL, table.getCatalog(), table.getSchema(), table.getName(),
+                            table.getPrimaryKeyColumns(), columnsToExport, null, null).getSql();
                 }
             }
             if (table.getColumnCount() > 0) {
                 if (StringUtils.isNotBlank(whereClause)) {
                     sql = String.format("%s %s", sql, whereClause);
                 }
-    
                 platform.getSqlTemplate().query(sql, new ISqlRowMapper<Object>() {
                     int rows = maxRows;
+
                     public Object mapRow(Row row) {
                         if (rows > 0) {
-                           writerWrapper.writeRow(row);
-                           rows--;
+                            writerWrapper.writeRow(row);
+                            rows--;
                         }
                         return Boolean.TRUE;
                     }
                 });
             }
         }
-
         writerWrapper.finishTable(table);
-
     }
 
     protected Column[] getColumnsToExport(Table table) {
         Column[] tableColumns = table.getColumns();
         List<Column> columnsToExport = new ArrayList<Column>();
-        for (int i=0;i<tableColumns.length;i++) {
+        for (int i = 0; i < tableColumns.length; i++) {
             boolean excluded = false;
-            for (int j=0;j<excludeColumns.length;j++) {
+            for (int j = 0; j < excludeColumns.length; j++) {
                 if (tableColumns[i].getName().equalsIgnoreCase(excludeColumns[j])) {
                     excluded = true;
                 }
             }
             if (!excluded) {
                 try {
-                    columnsToExport.add((Column) tableColumns[i].clone()); 
+                    columnsToExport.add((Column) tableColumns[i].clone());
                 } catch (CloneNotSupportedException e) {
-                    //clone will always supported on the Column object
+                    // clone will always supported on the Column object
                 }
             }
         }
@@ -281,7 +252,7 @@ public class DbExport {
         columnArray = columnsToExport.toArray(columnArray);
         return columnArray;
     }
-    
+
     protected Database getDatabase(Table table) {
         return getDatabase(new Table[] { table });
     }
@@ -300,8 +271,7 @@ public class DbExport {
                     }
                     db.addTable(newTable);
                 }
-            }
-            else if (addDropTable) {
+            } else if (addDropTable) {
                 for (Table table : tables) {
                     Table newTable = (Table) table.clone();
                     db.addTable(newTable);
@@ -448,18 +418,17 @@ public class DbExport {
     public boolean isUseJdbcTimestampFormat() {
         return useJdbcTimestampFormat;
     }
-    
+
     public void setMaxRows(int maxRows) {
         this.maxRows = maxRows;
     }
-    
+
     public int getMaxRows() {
         return maxRows;
     }
 
     protected String getDatabaseName() {
         Compatible mappedCompatible = compatible;
-        
         if (mappedCompatible == Compatible.MSSQL) {
             mappedCompatible = Compatible.MSSQL2000;
         }
@@ -468,7 +437,6 @@ public class DbExport {
 
     class WriterWrapper {
         final private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
         private CsvWriter csvWriter;
         private Writer writer;
         private Table table;
@@ -494,7 +462,6 @@ public class DbExport {
                     if (!directory.exists()) {
                         directory.mkdirs();
                     }
-
                     File file = new File(dir, String.format("%s.%s", table.getName(), format
                             .toString().replace('_', '.').toLowerCase()));
                     FileUtils.deleteQuietly(file);
@@ -504,7 +471,6 @@ public class DbExport {
                         throw new IoException(e);
                     }
                 }
-
                 if (!startedWriting) {
                     if (format == Format.SYM_XML) {
                         write("<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n");
@@ -520,9 +486,7 @@ public class DbExport {
                     }
                     startedWriting = true;
                 }
-                
                 String databaseName = getDatabaseName();
-
                 if (format == Format.CSV && csvWriter == null) {
                     csvWriter = new CsvWriter(writer, ',');
                     csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
@@ -546,16 +510,15 @@ public class DbExport {
                     }
                     Table targetTable = table.copy();
                     if (excludeColumns == null || excludeColumns.length == 0) {
-                        insertSql = DmlStatementFactory.createDmlStatement(databaseName, 
+                        insertSql = DmlStatementFactory.createDmlStatement(databaseName,
                                 DmlType.INSERT, targetTable, useQuotedIdentifiers);
                     } else {
                         Column[] columnsToExport = getColumnsToExport(table);
-                        insertSql = DmlStatementFactory.createDmlStatement(databaseName, 
-                                DmlType.INSERT, table.getCatalog(), table.getSchema(), table.getName(), 
+                        insertSql = DmlStatementFactory.createDmlStatement(databaseName,
+                                DmlType.INSERT, table.getCatalog(), table.getSchema(), table.getName(),
                                 table.getPrimaryKeyColumns(), columnsToExport, null, startedWriting);
                     }
                 }
-
                 if (!noCreateInfo) {
                     if (format == Format.SQL) {
                         IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(databaseName);
@@ -570,14 +533,12 @@ public class DbExport {
                         }
                         DatabaseXmlUtil.write(table, writer);
                     }
-                }
-                else if (addDropTable) {
+                } else if (addDropTable) {
                     if (format == Format.SQL) {
                         IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(databaseName);
                         write(target.dropTables(getDatabase(table)));
                     }
                 }
-
                 writeComment("DbExport: "
                         + StringUtils.defaultString(IoVersion.getVersion().version()));
                 writeComment("Catalog: " + StringUtils.defaultString(getCatalogToUse()));
@@ -585,7 +546,6 @@ public class DbExport {
                 writeComment("Table: " + table.getName());
                 writeComment("Table Columns: " + java.util.Arrays.deepToString(table.getColumnNames()));
                 writeComment("Started on " + df.format(new Date()));
-
                 if (format == Format.CSV || format == Format.CSV_DQUOTE) {
                     csvWriter.writeRecord(table.getColumnNames());
                 } else if (!noData && format == Format.XML) {
@@ -594,16 +554,13 @@ public class DbExport {
             } catch (IOException e) {
                 throw new IoException(e);
             }
-
         }
 
         protected String cleanupSQL(String createTables) {
             // Avoid the unfortunate situation where we have a trigger definition ending in ;;
-            // -- which works when put through the SqlScriptReader (which will trim off the second ;), 
+            // -- which works when put through the SqlScriptReader (which will trim off the second ;),
             // but doesn't work when exported as a script.
-            
             String cleanedSQL = createTables.replaceAll("[;;\\s]+$", ";\n");
-            
             return cleanedSQL;
         }
 
@@ -636,7 +593,6 @@ public class DbExport {
                 } else if (format == Format.SQL) {
                     write(insertSql.buildDynamicSql(BinaryEncoding.HEX, row, useVariableDates,
                             useJdbcTimestampFormat), "\n");
-
                 } else if (format == Format.XML) {
                     write("\t<row>\n");
                     for (int i = 0; i < columns.length; i++) {
@@ -649,7 +605,6 @@ public class DbExport {
                         }
                     }
                     write("\t</row>\n");
-
                 } else if (format == Format.SYM_XML) {
                     write("\t<row entity=\"", table.getName(), "\" dml=\"I\">\n");
                     for (int i = 0; i < columns.length; i++) {
@@ -663,11 +618,9 @@ public class DbExport {
                     }
                     write("\t</row>\n");
                 }
-
             } catch (IOException e) {
                 throw new IoException(e);
             }
-
         }
 
         protected void write(String... data) {
@@ -684,38 +637,31 @@ public class DbExport {
             if (!noData && format == Format.XML) {
                 write("</table_data>\n");
             }
-
             if (StringUtils.isNotBlank(dir)) {
                 close();
             }
         }
 
         public void close() {
-
             writeComment("Completed on " + df.format(new Date()));
-
             if (format == Format.SYM_XML) {
                 write("</batch>\n");
             } else if (format == Format.XML) {
                 write("</database>\n");
             }
-
             startedWriting = false;
-
             if (csvWriter != null) {
                 csvWriter.flush();
                 csvWriter.close();
                 csvWriter = null;
             }
-
             try {
-                if(writer != null) {
+                if (writer != null) {
                     writer.close();
                 }
-            } catch(IOException e) { }
+            } catch (IOException e) {
+            }
             writer = null;
         }
-
     }
-
 }

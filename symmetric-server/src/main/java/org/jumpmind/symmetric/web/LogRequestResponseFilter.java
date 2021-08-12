@@ -36,9 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LogRequestResponseFilter implements Filter {
-    
     private boolean enabled = false;
-    
     private static Logger LOG = LoggerFactory.getLogger(LogRequestResponseFilter.class);
 
     @Override
@@ -54,56 +52,44 @@ public class LogRequestResponseFilter implements Filter {
             chain.doFilter(argRequest, argResponse);
             return;
         }
-        
         HttpServletRequest request = (HttpServletRequest) argRequest;
         HttpServletResponse response = (HttpServletResponse) argResponse;
-        
         StringBuilder buff = new StringBuilder(256);
         buildRequest(request, buff);
-        
         long start = System.currentTimeMillis();
-        
         chain.doFilter(request, response);
-        
-        long elapsed = System.currentTimeMillis()-start;
-        
+        long elapsed = System.currentTimeMillis() - start;
         buildResponse(response, elapsed, buff);
-        
-        buff.setLength(buff.length()-2); // remove last CR/LF
-        
+        buff.setLength(buff.length() - 2); // remove last CR/LF
         LOG.info(buff.toString());
     }
 
     private void buildRequest(HttpServletRequest request, StringBuilder buff) {
-        
         buff.append(request.getMethod()).append(" REQUEST: ").append(getUrl(request)).append(" from ").append(request.getRemoteHost()).append("\r\n");
-        
         for (String headerName : Collections.list(request.getHeaderNames())) {
             buff.append("\t").append(headerName).append("=").append(request.getHeader(headerName)).append("\r\n");
         }
     }
-    
+
     private void buildResponse(HttpServletResponse response, long elapsed, StringBuilder buff) {
         buff.append("  RESPONSE took ").append(elapsed).append("ms.");
-        
         if (response.getContentType() != null) {
             buff.append(" Content Type: ").append(response.getContentType());
         }
-        
         buff.append(" HTTP status ").append(response.getStatus()).append("\r\n");
-        
         for (String headerName : response.getHeaderNames()) {
             buff.append("\t").append(headerName).append("=").append(response.getHeader(headerName)).append("\r\n");
-        }        
+        }
     }
-    
 
     private String getUrl(HttpServletRequest request) {
         String uri = request.getScheme() + "://" +
-                request.getServerName() + 
-                ("http".equals(request.getScheme()) && request.getServerPort() == 80 || "https".equals(request.getScheme()) && request.getServerPort() == 443 ? "" : ":" + request.getServerPort() ) +
+                request.getServerName() +
+                ("http".equals(request.getScheme()) && request.getServerPort() == 80 || "https".equals(request.getScheme()) && request.getServerPort() == 443
+                        ? ""
+                        : ":" + request.getServerPort()) +
                 request.getRequestURI() +
-               (request.getQueryString() != null ? "?" + request.getQueryString() : "");
+                (request.getQueryString() != null ? "?" + request.getQueryString() : "");
         return uri;
     }
 
@@ -111,5 +97,4 @@ public class LogRequestResponseFilter implements Filter {
     public void destroy() {
         // no-op.
     }
-
 }

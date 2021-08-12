@@ -31,7 +31,6 @@ import org.jumpmind.symmetric.model.TriggerRouter;
  * Utility class to pair down a list of triggers from a list of TriggerRouters
  */
 public class TriggerSelector {
-
     private Collection<TriggerRouter> triggers;
 
     public TriggerSelector(Collection<TriggerRouter> triggers) {

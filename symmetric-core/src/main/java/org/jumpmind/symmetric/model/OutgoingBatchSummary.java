@@ -26,7 +26,5 @@ import java.io.Serializable;
  * Holder class for summary information about outgoing batches
  */
 public class OutgoingBatchSummary extends BatchSummary implements Serializable {
-
-	private static final long serialVersionUID = 1L;
-    
+    private static final long serialVersionUID = 1L;
 }

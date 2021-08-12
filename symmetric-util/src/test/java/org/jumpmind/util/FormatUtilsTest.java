@@ -27,7 +27,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class FormatUtilsTest {
-
     @Test
     public void testReplaceTokens() {
         assertEquals("test", FormatUtils.replaceTokens("test", null, true));
@@ -37,15 +36,14 @@ public class FormatUtilsTest {
         assertEquals("test1", FormatUtils.replaceTokens("test$(test)", params, true));
         assertEquals("test0001", FormatUtils.replaceTokens("test$(test|%04d)", params, true));
     }
-    
+
     @Test
     public void testReplaceCurrentTimestamp() {
         String beforeSql = "insert into sym_node values ('00000', 'test-root-group', '00000', 1, null, null, '2.0', null, null, current_timestamp, null, 0, 0, '00000', 'engine')";
         String afterSql = "insert into sym_node values ('00000', 'test-root-group', '00000', 1, null, null, '2.0', null, null, XXXX, null, 0, 0, '00000', 'engine')";
-        Map<String,String> replacementTokens = new HashMap<String, String>();
+        Map<String, String> replacementTokens = new HashMap<String, String>();
         replacementTokens.put("current_timestamp", "XXXX");
         assertEquals(afterSql, FormatUtils.replaceTokens(beforeSql, replacementTokens, false));
-        
     }
 
     @Test
@@ -54,7 +52,7 @@ public class FormatUtilsTest {
         assertEquals(FormatUtils.replace("nodeId", "001", "nodeId = $(nodeId:0)"), "nodeId = 001");
         assertEquals(FormatUtils.replace("nodeId", "001", "nodeId = $(nodeId:0:10)"), "nodeId = 001");
         assertEquals(FormatUtils.replace("nodeId", "1234567890ABC", "nodeId = $(nodeId:10)"), "nodeId = ABC");
-        assertEquals(FormatUtils.replace("nodeId", "1234567890ABC", "nodeId = $(nodeId:10:11)"), "nodeId = A");        
+        assertEquals(FormatUtils.replace("nodeId", "1234567890ABC", "nodeId = $(nodeId:10:11)"), "nodeId = A");
         assertEquals(FormatUtils.replace("nodeId", "001-002", "nodeId = $(nodeId:4)"), "nodeId = 002");
     }
 
@@ -68,7 +66,7 @@ public class FormatUtilsTest {
         assertTrue(FormatUtils.isWildCardMatch("NOT_A_MATCH_TEST_1", "*TEST*"));
         assertFalse(FormatUtils.isWildCardMatch("TEST_12", "TEST_1"));
         assertFalse(FormatUtils.isWildCardMatch("B_A", "*A*B"));
-        assertTrue(FormatUtils.isWildCardMatch("A_B", "*A*B"));        
+        assertTrue(FormatUtils.isWildCardMatch("A_B", "*A*B"));
         assertFalse(FormatUtils.isWildCardMatch("TEST_NO_MATCH", "TEST_*,!TEST_NO_MATCH"));
         assertTrue(FormatUtils.isWildCardMatch("A_B", "A*B"));
     }

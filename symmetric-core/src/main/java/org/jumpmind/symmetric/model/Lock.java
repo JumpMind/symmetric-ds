@@ -24,11 +24,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class Lock implements Serializable {
-
     public static final String STOPPED = "STOPPED";
-    
     private static final long serialVersionUID = 1L;
-
     private String lockAction;
     private String lockType;
     private String lockingServerId;
@@ -41,13 +38,13 @@ public class Lock implements Serializable {
     public String getLockAction() {
         return lockAction;
     }
-    
+
     public boolean isStopped() {
-       return STOPPED.equals(lockingServerId) && lockTime != null;
+        return STOPPED.equals(lockingServerId) && lockTime != null;
     }
-    
+
     public boolean isLockedByOther(String serverId) {
-        return lockTime != null  && lockingServerId != null && !lockingServerId.equals(serverId);
+        return lockTime != null && lockingServerId != null && !lockingServerId.equals(serverId);
     }
 
     public void setLockAction(String lockAction) {
@@ -109,5 +106,4 @@ public class Lock implements Serializable {
     public void setSharedEnable(boolean sharedEnable) {
         this.sharedEnable = sharedEnable;
     }
-
 }

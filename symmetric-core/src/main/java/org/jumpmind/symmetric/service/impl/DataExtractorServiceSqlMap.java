@@ -25,11 +25,9 @@ import java.util.Map;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class DataExtractorServiceSqlMap extends AbstractSqlMap {
-
     public DataExtractorServiceSqlMap(IDatabasePlatform platform,
             Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
-        
         // @formatter:off
         putSql("selectNodeIdsForExtractSql", "select node_id, queue from $(extract_request) where status=? and parent_request_id=0 group by node_id, queue");
         

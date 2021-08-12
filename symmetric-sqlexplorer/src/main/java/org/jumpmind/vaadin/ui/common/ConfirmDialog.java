@@ -37,7 +37,6 @@ import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
 public class ConfirmDialog extends Window {
-
     private static final long serialVersionUID = 1L;
 
     public ConfirmDialog(String caption, String text, final IConfirmListener confirmListener) {
@@ -47,13 +46,11 @@ public class ConfirmDialog extends Window {
         setWidth(400, Unit.PIXELS);
         setHeight(300, Unit.PIXELS);
         setClosable(false);
-
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
         layout.setSpacing(true);
         layout.setMargin(true);
         setContent(layout);
-
         if (isNotBlank(text)) {
             TextArea textLabel = new TextArea();
             textLabel.setSizeFull();
@@ -63,16 +60,13 @@ public class ConfirmDialog extends Window {
             layout.addComponent(textLabel);
             layout.setExpandRatio(textLabel, 1);
         }
-
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
         buttonLayout.setWidth(100, Unit.PERCENTAGE);
-
         Label spacer = new Label(" ");
         buttonLayout.addComponent(spacer);
         buttonLayout.setExpandRatio(spacer, 1);
-
         Button cancelButton = new Button("Cancel");
         cancelButton.setClickShortcut(KeyCode.ESCAPE);
         cancelButton.addClickListener(new ClickListener() {
@@ -84,7 +78,6 @@ public class ConfirmDialog extends Window {
             }
         });
         buttonLayout.addComponent(cancelButton);
-
         Button okButton = new Button("Ok");
         okButton.setStyleName(ValoTheme.BUTTON_PRIMARY);
         okButton.setClickShortcut(KeyCode.ENTER);
@@ -99,11 +92,8 @@ public class ConfirmDialog extends Window {
             }
         });
         buttonLayout.addComponent(okButton);
-
         layout.addComponent(buttonLayout);
-        
         okButton.focus();
-
     }
 
     public static void show(String caption, String text, IConfirmListener listener) {
@@ -114,5 +104,4 @@ public class ConfirmDialog extends Window {
     public static interface IConfirmListener extends Serializable {
         public boolean onOk();
     }
-
 }

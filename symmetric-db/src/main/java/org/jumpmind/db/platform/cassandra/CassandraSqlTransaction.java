@@ -30,11 +30,9 @@ import org.jumpmind.db.sql.ISqlTransactionListener;
 import org.jumpmind.db.sql.Row;
 
 public class CassandraSqlTransaction implements ISqlTransaction {
-
     @Override
     public void addSqlTransactionListener(ISqlTransactionListener listener) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -46,7 +44,6 @@ public class CassandraSqlTransaction implements ISqlTransaction {
     @Override
     public void setInBatchMode(boolean batchMode) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -112,25 +109,21 @@ public class CassandraSqlTransaction implements ISqlTransaction {
     @Override
     public void commit() {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void rollback() {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void close() {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void prepare(String sql) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -155,7 +148,6 @@ public class CassandraSqlTransaction implements ISqlTransaction {
     public void allowInsertIntoAutoIncrementColumns(boolean value, Table table, String quote, String catalogSeparator,
             String schemaSeparator) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -173,7 +165,5 @@ public class CassandraSqlTransaction implements ISqlTransaction {
     @Override
     public void clearBatch() {
         // TODO Auto-generated method stub
-        
     }
-
 }

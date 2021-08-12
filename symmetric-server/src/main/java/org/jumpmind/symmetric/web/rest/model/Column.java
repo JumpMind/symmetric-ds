@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.web.rest.model;
 
 public class Column {
-
     private int ordinal;
     private String name;
     private String value;
@@ -49,5 +48,4 @@ public class Column {
     public void setOrdinal(int ordinal) {
         this.ordinal = ordinal;
     }
-
 }

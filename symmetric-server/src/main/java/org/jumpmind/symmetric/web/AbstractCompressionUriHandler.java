@@ -32,7 +32,6 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.web.compression.CompressionServletResponseWrapper;
 
 abstract public class AbstractCompressionUriHandler extends AbstractUriHandler {
-
     public AbstractCompressionUriHandler(String uriPattern,
             IParameterService parameterService, IInterceptor... interceptors) {
         super(uriPattern, parameterService, interceptors);
@@ -48,10 +47,8 @@ abstract public class AbstractCompressionUriHandler extends AbstractUriHandler {
             int compressionStrategy = parameterService
                     .getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY);
             log.debug("@doFilter");
-
             boolean supportCompression = false;
             log.debug("requestURI= {}", req.getRequestURI());
-
             // Are we allowed to compress ?
             String s = (String) req.getParameter("gzip");
             if ("false".equals(s)) {
@@ -59,7 +56,6 @@ abstract public class AbstractCompressionUriHandler extends AbstractUriHandler {
                 handleWithCompression(req, res);
                 return;
             }
-
             @SuppressWarnings("rawtypes")
             Enumeration e = req.getHeaders("Accept-Encoding");
             while (e.hasMoreElements()) {
@@ -71,7 +67,6 @@ abstract public class AbstractCompressionUriHandler extends AbstractUriHandler {
                     log.debug("Does not support compression.");
                 }
             }
-
             if (!supportCompression) {
                 log.debug("doFilter gets called without compression");
                 handleWithCompression(req, res);
@@ -90,10 +85,8 @@ abstract public class AbstractCompressionUriHandler extends AbstractUriHandler {
         } else {
             handleWithCompression(req, res);
         }
-
     }
 
     abstract protected void handleWithCompression(HttpServletRequest req, HttpServletResponse res)
             throws IOException, ServletException;
-
 }

@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class AbstractJavaDriverSqlTemplate extends AbstractSqlTemplate {
-
     public abstract String getDatabaseProductName();
 
     @Override

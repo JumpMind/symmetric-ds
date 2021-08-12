@@ -23,17 +23,15 @@ package org.jumpmind.symmetric.io.stage;
 import java.util.Set;
 
 public interface IStagingManager {
-
     public IStagedResource find(Object... path);
-    
+
     public IStagedResource find(String path);
 
     public IStagedResource create(Object... path);
-    
+
     public long clean(long timeToLiveInMs);
-    
+
     public Set<String> getResourceReferences();
 
     public StagingFileLock acquireFileLock(String serverInfo, Object... path);
-
 }

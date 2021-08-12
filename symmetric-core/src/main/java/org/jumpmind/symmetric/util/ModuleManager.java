@@ -49,29 +49,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ModuleManager {
-
     private final static Logger log = LoggerFactory.getLogger(ModuleManager.class);
-
     private static final String EXT_PROPERTIES = ".properties";
-
     private static final String EXT_JAR = "jar";
-
     private static final String PROP_REPOSITORIES = "repos";
-
     private static final String PROP_VERSION = "sym.version";
-    
     private static final String PROP_DRIVER = "driver.";
-
     private static ModuleManager instance;
-    
     private Properties properties = new Properties();
-
     private Map<String, List<MavenArtifact>> modules = new TreeMap<String, List<MavenArtifact>>();
-    
     private Map<String, String> driverToModule = new HashMap<String, String>();
-
     private List<String> repos = new ArrayList<String>();
-    
     private String modulesDir;
 
     private ModuleManager() throws ModuleException {
@@ -87,10 +75,8 @@ public class ModuleManager {
         if (!dir.exists()) {
             dir.mkdirs();
         }
-
         try (InputStream in = getClass().getResourceAsStream("/symmetric-modules.properties")) {
             properties.load(in);
-
             for (Entry<Object, Object> entry : properties.entrySet()) {
                 String key = entry.getKey().toString();
                 if (key.equals(PROP_REPOSITORIES)) {
@@ -126,7 +112,6 @@ public class ModuleManager {
         checkModuleInstalled(moduleId, false);
         List<MavenArtifact> artifacts = resolveArtifacts(moduleId);
         log.info("Installing module {} with {} artifacts", moduleId, artifacts.size());
-
         for (MavenArtifact artifact : artifacts) {
             String fileName = buildFileName(modulesDir, artifact, EXT_JAR);
             if (new File(fileName).exists()) {
@@ -136,7 +121,6 @@ public class ModuleManager {
                 String errorMessage = null;
                 for (String repo : repos) {
                     String urlString = buildUrl(repo, artifact, EXT_JAR);
-
                     try {
                         URL url = new URL(urlString);
                         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -144,10 +128,8 @@ public class ModuleManager {
                         conn.setInstanceFollowRedirects(true);
                         conn.setConnectTimeout(10000);
                         conn.setReadTimeout(30000);
-
                         if (conn.getResponseCode() == 200) {
                             log.info("Downloading {}", urlString);
-
                             try (InputStream in = conn.getInputStream();
                                     FileOutputStream out = new FileOutputStream(fileName)) {
                                 IOUtils.copy(in, out);
@@ -169,13 +151,11 @@ public class ModuleManager {
                         log.error(errorMessage);
                     }
                 }
-
                 if (!installedOkay) {
                     logAndThrow("Failed to install module " + moduleId + ".  " + errorMessage);
                 }
             }
         }
-
         try {
             FileWriter writer = new FileWriter(joinDirName(modulesDir, moduleId + EXT_PROPERTIES));
             Properties prop = new Properties();
@@ -191,7 +171,6 @@ public class ModuleManager {
     public void upgrade(String moduleId) throws ModuleException {
         checkModuleInstalled(moduleId, true);
         log.info("Checking if module {} needs upgraded", moduleId);
-
         File file = new File(joinDirName(modulesDir, moduleId + EXT_PROPERTIES));
         try {
             FileReader reader = new FileReader(file);
@@ -208,7 +187,7 @@ public class ModuleManager {
             logAndThrow("Unable to list files for module " + moduleId + " because: " + e.getMessage(), e);
         }
     }
-    
+
     public void upgradeAll() throws ModuleException {
         for (String moduleId : list()) {
             upgrade(moduleId);
@@ -220,7 +199,7 @@ public class ModuleManager {
         String dirName = System.getProperty(SystemConstants.SYSPROP_ENGINES_DIR, AppUtils.getSymHome() + "/engines");
         File dir = new File(dirName);
         File[] files = dir.listFiles();
-        if (files != null ) {
+        if (files != null) {
             List<String> currentModules = list();
             log.info("Checking {} files in engines directory for possible module conversion", files.length);
             for (File file : files) {
@@ -241,7 +220,6 @@ public class ModuleManager {
             log.error("Failed module conversion for engine " + engineFile.getPath(), e);
             return;
         }
-
         String driver = prop.getProperty("db.driver");
         String moduleId = driverToModule.get(driver);
         if (moduleId != null && currentModules.contains(moduleId)) {
@@ -283,7 +261,6 @@ public class ModuleManager {
                 filesToRemove.removeAll(listFiles(installedModuleId));
             }
         }
-
         boolean success = true;
         for (String fileName : filesToRemove) {
             boolean delSuccess = new File(joinDirName(modulesDir, fileName)).delete();
@@ -293,7 +270,6 @@ public class ModuleManager {
         boolean delSuccess = new File(joinDirName(modulesDir, moduleId + EXT_PROPERTIES)).delete();
         log.info("Removing {} ({})", moduleId + EXT_PROPERTIES, (delSuccess ? "OK" : "FAIL"));
         success &= delSuccess;
-
         if (!success) {
             logAndThrow("Unable to remove all files associated with module " + moduleId);
         }
@@ -340,11 +316,10 @@ public class ModuleManager {
         return fileNames;
     }
 
-    public List<String> listDependencies(String moduleId) throws ModuleException {        
+    public List<String> listDependencies(String moduleId) throws ModuleException {
         checkModuleValid(moduleId);
         List<MavenArtifact> artifacts = resolveArtifacts(moduleId);
         List<String> fileNames = new ArrayList<String>();
-
         for (MavenArtifact artifact : artifacts) {
             fileNames.add(artifact.toFileName(EXT_JAR));
         }
@@ -366,7 +341,7 @@ public class ModuleManager {
             throw new ModuleException("Module is already installed", false);
         } else if (!isInstalled && shouldBeInstalled) {
             throw new ModuleException("Module is not installed", false);
-        }   
+        }
     }
 
     private void checkModuleValid(String moduleId) throws ModuleException {
@@ -391,5 +366,4 @@ public class ModuleManager {
         log.error(message);
         throw new ModuleException(message, e);
     }
-
 }

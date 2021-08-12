@@ -11,6 +11,7 @@ buildscript {
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
         classpath 'io.spring.gradle:docbook-reference-plugin:0.3.1'
         classpath 'gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.15.0'
+		classpath 'com.diffplug.spotless:spotless-plugin-gradle:5.14.2'
     }
 }
 
@@ -19,6 +20,12 @@ apply plugin: 'idea'
 apply plugin: 'eclipse'
 
 allprojects {
+	apply plugin: 'com.diffplug.spotless'
+	spotless {
+	  java {
+		eclipse().configFile(project.rootDir.toString() + '/formatter.eclipse.xml')
+	  }
+	}
     apply plugin: 'license'
     license {
         header rootProject.file("HEADER")

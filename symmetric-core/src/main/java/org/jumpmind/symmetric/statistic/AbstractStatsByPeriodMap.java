@@ -30,8 +30,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.lang3.time.DateUtils;
 
-abstract public class AbstractStatsByPeriodMap<T,M extends AbstractNodeHostStats> extends TreeMap<Date, T> {
-
+abstract public class AbstractStatsByPeriodMap<T, M extends AbstractNodeHostStats> extends TreeMap<Date, T> {
     private static final long serialVersionUID = 1L;
 
     public AbstractStatsByPeriodMap(Date start, Date end, List<M> list, int periodSizeInMinutes) {
@@ -65,11 +64,11 @@ abstract public class AbstractStatsByPeriodMap<T,M extends AbstractNodeHostStats
             }
         }
     }
-    
+
     abstract protected void addBlank(Date periodStart);
-    
+
     abstract protected void add(Date periodStart, M stat);
-    
+
     protected int round(int value) {
         return 5 * new BigDecimal((double) value / 5d).setScale(2, RoundingMode.HALF_DOWN)
                 .intValue();

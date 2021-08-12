@@ -40,22 +40,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Db2zOsDmlStatement extends DmlStatement {
-    
-   private static final FastDateFormat DATE_FORMATTER = FastDateFormat
+    private static final FastDateFormat DATE_FORMATTER = FastDateFormat
             .getInstance("yyyy-MM-dd");
-   
-   private static final Logger log = LoggerFactory.getLogger(Db2zOsDmlStatement.class);
+    private static final Logger log = LoggerFactory.getLogger(Db2zOsDmlStatement.class);
 
     public Db2zOsDmlStatement(DmlType type, String catalogName, String schemaName, String tableName, Column[] keysColumns, Column[] columns,
             boolean[] nullKeyValues, DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
         super(type, catalogName, schemaName, tableName, keysColumns, columns, nullKeyValues, databaseInfo, useQuotedIdentifiers,
                 textColumnExpression);
     }
-    
+
     @Override
     public String buildDynamicSql(BinaryEncoding encoding, Row row,
             boolean useVariableDates, boolean useJdbcTimestampFormat, Column[] columns) {
-        
         if (useJdbcTimestampFormat) {
             log.debug("zOS doesn't support useJdbcTimestampFormat.  Changing to false.");
             useJdbcTimestampFormat = false;
@@ -66,15 +63,12 @@ public class Db2zOsDmlStatement extends DmlStatement {
         String binaryQuoteStart = databaseInfo.getBinaryQuoteStart();
         String binaryQuoteEnd = databaseInfo.getBinaryQuoteEnd();
         String regex = "\\?";
-        
         List<Column> columnsToProcess = new ArrayList<Column>();
         columnsToProcess.addAll(Arrays.asList(columns));
-        
         for (int i = 0; i < columnsToProcess.size(); i++) {
             Column column = columnsToProcess.get(i);
             String name = column.getName();
             int type = column.getMappedTypeCode();
-
             if (row.get(name) != null) {
                 if (column.isOfTextType()) {
                     try {
@@ -127,25 +121,22 @@ public class Db2zOsDmlStatement extends DmlStatement {
                 newSql = newSql.replaceFirst(regex, "null");
             }
         }
-        
         newSql = newSql.replace(QUESTION_MARK, "?");
-        return newSql + databaseInfo.getSqlCommandDelimiter();  
-    }  
-    
+        return newSql + databaseInfo.getSqlCommandDelimiter();
+    }
+
     @Override
     protected void appendColumnNameForSql(StringBuilder sql, Column column, boolean select) {
-        String columnName = column.getName();        
-        
+        String columnName = column.getName();
         if (select && column.isPrimaryKey() && column.isOfTextType()) {
             // CAST to ASCII to support standard ORDER BY ordering.
-            String quotedColumn = quote+columnName+quote;
+            String quotedColumn = quote + columnName + quote;
             String typeName = column.getJdbcTypeName();
             String size = column.getSize();
-            sql.append("CAST(").append(quotedColumn).append(" AS ").append(typeName) 
+            sql.append("CAST(").append(quotedColumn).append(" AS ").append(typeName)
                     .append("(").append(size).append(")CCSID ASCII) AS ").append(quotedColumn);
-        } else {            
+        } else {
             sql.append(quote).append(columnName).append(quote);
         }
     }
-
 }

@@ -23,7 +23,5 @@ package org.jumpmind.symmetric.io.stage;
 import java.util.List;
 
 public interface StagingPerfListener {
-
     public void update(List<StagingPerfResult> results, float percentComplete);
-
 }

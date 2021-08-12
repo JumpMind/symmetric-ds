@@ -32,21 +32,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.properties.TypedProperties;
 
 /**
- * Follow the Apache versioning scheme documented <a
- * href="http://apr.apache.org/versioning.html">here</a>.
+ * Follow the Apache versioning scheme documented <a href="http://apr.apache.org/versioning.html">here</a>.
  */
 abstract public class AbstractVersion {
-
     public static final int MAJOR_INDEX = 0;
-
     public static final int MINOR_INDEX = 1;
-
     public static final int PATCH_INDEX = 2;
-
     private String version = null;
-    
     private long buildTime = -1;
-    
     private String buildYear;
 
     abstract protected String getArtifactName();
@@ -56,7 +49,7 @@ abstract public class AbstractVersion {
             Enumeration<URL> resources = getClass().getClassLoader().getResources(
                     "META-INF/MANIFEST.MF");
             while (resources.hasMoreElements()) {
-                try(InputStream is = resources.nextElement().openStream()) {
+                try (InputStream is = resources.nextElement().openStream()) {
                     Manifest manifest = new Manifest(is);
                     Attributes attributes = manifest.getMainAttributes();
                     if (getArtifactName().equals(attributes.getValue("Project-Artifact"))) {
@@ -76,16 +69,16 @@ abstract public class AbstractVersion {
             if (attributes != null) {
                 version = attributes.getValue("Build-Version");
             } else {
-            	for (String fileName : new String[] { "../symmetric-assemble/gradle.properties",
-            			"../../symmetric-ds/symmetric-assemble/gradle.properties" } ) {
+                for (String fileName : new String[] { "../symmetric-assemble/gradle.properties",
+                        "../../symmetric-ds/symmetric-assemble/gradle.properties" }) {
                     File gradleProperties = new File(fileName);
                     if (gradleProperties.exists()) {
                         TypedProperties props = new TypedProperties(gradleProperties);
                         version = props.get("version");
                         break;
                     }
-            	}
-            	if (version == null) {
+                }
+                if (version == null) {
                     version = "development";
                 }
             }
@@ -95,7 +88,7 @@ abstract public class AbstractVersion {
 
     public long getBuildTime() {
         if (buildTime == -1) {
-            Attributes attributes = findManifestAttributes();            
+            Attributes attributes = findManifestAttributes();
             try {
                 buildTime = Long.parseLong(attributes.getValue("Build-Time").split("-")[0]);
             } catch (Exception e) {
@@ -107,7 +100,7 @@ abstract public class AbstractVersion {
 
     public String getBuildYear() {
         if (buildYear == null) {
-            Attributes attributes = findManifestAttributes();            
+            Attributes attributes = findManifestAttributes();
             try {
                 buildYear = attributes.getValue("Build-Time").substring(0, 4);
             } catch (Exception e) {
@@ -165,22 +158,18 @@ abstract public class AbstractVersion {
     }
 
     public boolean isOlderThanVersion(String checkVersion, String targetVersion) {
-
         if (noVersion(targetVersion) || noVersion(checkVersion)) {
             return false;
         }
-        
         int[] checkVersions = parseVersion(checkVersion);
         int[] targetVersions = parseVersion(targetVersion);
-
         return isOlderThanVersion(checkVersions, targetVersions);
     }
-    
+
     public boolean isOlderThanVersion(int[] checkVersion, int[] targetVersion) {
         if (checkVersion == null || targetVersion == null) {
             return false;
         }
-        
         if (checkVersion[MAJOR_INDEX] < targetVersion[MAJOR_INDEX]) {
             return true;
         } else if (checkVersion[MAJOR_INDEX] == targetVersion[MAJOR_INDEX]
@@ -203,14 +192,11 @@ abstract public class AbstractVersion {
     }
 
     public boolean isOlderMinorVersion(String checkVersion, String targetVersion) {
-
         if (noVersion(targetVersion) || noVersion(checkVersion)) {
             return false;
         }
-
         int[] checkVersions = parseVersion(checkVersion);
         int[] targetVersions = parseVersion(targetVersion);
-
         return isOlderMinorVersion(checkVersions, targetVersions);
     }
 
@@ -221,7 +207,6 @@ abstract public class AbstractVersion {
                 && checkVersion[MINOR_INDEX] < targetVersion[MINOR_INDEX]) {
             return true;
         }
-        return false;        
+        return false;
     }
-
 }

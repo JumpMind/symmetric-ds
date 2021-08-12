@@ -21,9 +21,7 @@ package org.jumpmind.db.platform.postgresql;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class PostgreSqlDdlBuilder95 extends PostgreSqlDdlBuilder {
-
     public PostgreSqlDdlBuilder95() {
         this.databaseName = DatabaseNamesConstants.POSTGRESQL95;
     }
-
 }

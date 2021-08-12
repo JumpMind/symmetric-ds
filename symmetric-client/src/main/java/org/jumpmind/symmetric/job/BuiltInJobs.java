@@ -29,20 +29,16 @@ import org.jumpmind.symmetric.model.JobDefinition.JobType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class BuiltInJobs {
-    
     public List<JobDefinition> syncBuiltInJobs(List<JobDefinition> existingJobs, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         List<IJob> builtInJobs = getBuiltInJobs(engine, taskScheduler);
-        
         for (IJob job : builtInJobs) {
             existingJobs.add(job.getJobDefinition());
         }
-        
         return existingJobs;
     }
 
     public List<IJob> getBuiltInJobs(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         List<IJob> builtInJobs = new ArrayList<IJob>(20);
-        
         builtInJobs.add(new RouterJob(engine, taskScheduler));
         builtInJobs.add(new PushJob(engine, taskScheduler));
         builtInJobs.add(new PullJob(engine, taskScheduler));
@@ -56,25 +52,22 @@ public class BuiltInJobs {
         builtInJobs.add(new WatchdogJob(engine, taskScheduler));
         builtInJobs.add(new StageManagementJob(engine, taskScheduler));
         builtInJobs.add(new RefreshCacheJob(engine, taskScheduler));
-        builtInJobs.add(new FileSyncTrackerJob(engine,taskScheduler));
-        builtInJobs.add(new FileSyncPullJob(engine,taskScheduler));
-        builtInJobs.add(new FileSyncPushJob(engine,taskScheduler));
-        builtInJobs.add(new InitialLoadExtractorJob(engine,taskScheduler));
+        builtInJobs.add(new FileSyncTrackerJob(engine, taskScheduler));
+        builtInJobs.add(new FileSyncPullJob(engine, taskScheduler));
+        builtInJobs.add(new FileSyncPushJob(engine, taskScheduler));
+        builtInJobs.add(new InitialLoadExtractorJob(engine, taskScheduler));
         builtInJobs.add(new MonitorJob(engine, taskScheduler));
         builtInJobs.add(new ReportStatusJob(engine, taskScheduler));
         builtInJobs.add(new LogMinerJob(engine, taskScheduler));
         builtInJobs.add(new InitialLoadJob(engine, taskScheduler));
-
         for (IJob builtInJob : builtInJobs) {
             setBuiltInDefaults(builtInJob);
         }
-
         return builtInJobs;
     }
-    
 
     protected void setBuiltInDefaults(IJob argBuiltInJob) {
-        AbstractJob builtInJob = (AbstractJob)argBuiltInJob;
+        AbstractJob builtInJob = (AbstractJob) argBuiltInJob;
         JobDefinition jobDefinition = new JobDefinition();
         jobDefinition.setJobName(builtInJob.getName());
         jobDefinition.setDescription(builtInJob.getDefaults().getDescription());
@@ -85,5 +78,5 @@ public class BuiltInJobs {
         jobDefinition.setCreateBy("SymmetricDS");
         jobDefinition.setDefaultAutomaticStartup(builtInJob.getDefaults().isEnabled());
         builtInJob.setJobDefinition(jobDefinition);
-    }    
+    }
 }

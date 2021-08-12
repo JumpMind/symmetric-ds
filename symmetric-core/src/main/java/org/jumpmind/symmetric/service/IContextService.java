@@ -23,17 +23,16 @@ package org.jumpmind.symmetric.service;
 import org.jumpmind.db.sql.ISqlTransaction;
 
 public interface IContextService {
-
     public boolean is(String key);
 
     public int getInt(String key);
-    
+
     public int getInt(String name, int defaultVal);
-    
+
     public long getLong(String key);
 
     public long getLong(String name, long defaultVal);
-    
+
     public String getString(String key);
 
     public int insert(ISqlTransaction transaction, String name, String value);
@@ -43,9 +42,8 @@ public interface IContextService {
     public int delete(ISqlTransaction transaction, String name);
 
     public int delete(String name);
-    
-    public void save(String name, String value);
-    
-    public void save(ISqlTransaction transaction, String name, String value);
 
+    public void save(String name, String value);
+
+    public void save(ISqlTransaction transaction, String name, String value);
 }

@@ -21,13 +21,12 @@
 package org.jumpmind.symmetric.map;
 
 public class TableColumnValueFilter {
-
     private String catalogName;
     private String schemaName;
     private String tableName;
     private String columnName;
     private IValueFilter filter;
-    private boolean enabled = true;    
+    private boolean enabled = true;
 
     public String getCatalogName() {
         return catalogName;
@@ -72,7 +71,7 @@ public class TableColumnValueFilter {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
-    
+
     public boolean isEnabled() {
         return enabled;
     }

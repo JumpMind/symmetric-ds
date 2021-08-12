@@ -31,25 +31,16 @@ import android.os.IBinder;
 import android.util.Log;
 
 /**
- * This is an Android Service that can be used to start SymmetricDS embedded in
- * an Android application.
+ * This is an Android Service that can be used to start SymmetricDS embedded in an Android application.
  */
 public class SymmetricService extends Service {
-
     public static final String INTENTKEY_SQLITEOPENHELPER_REGISTRY_KEY = "sqliteHelpRegistryKey";
-
     public static final String INTENTKEY_REGISTRATION_URL = "registrationUrl";
-
     public static final String INTENTKEY_EXTERNAL_ID = "externalId";
-
     public static final String INTENTKEY_NODE_GROUP_ID = "nodeGroupId";
-
     public static final String INTENTKEY_PROPERTIES = "properties";
-
     public static final String INTENTKEY_START_IN_BACKGROUND = "startInBackground";
-
     private static final String TAG = "SymmetricService";
-
     private AndroidSymmetricEngine symmetricEngine;
 
     @Override
@@ -97,7 +88,6 @@ public class SymmetricService extends Service {
                 Log.e(TAG, ex.getMessage(), ex);
             }
         }
-
         if (symmetricEngine != null) {
             if (!symmetricEngine.isStarted() && !symmetricEngine.isStarting()) {
                 try {
@@ -112,7 +102,6 @@ public class SymmetricService extends Service {
                             }
                         }
                     };
-
                     boolean startInBackground = intent.getBooleanExtra(
                             INTENTKEY_START_IN_BACKGROUND, false);
                     if (startInBackground) {
@@ -120,14 +109,11 @@ public class SymmetricService extends Service {
                     } else {
                         runnable.run();
                     }
-
                 } catch (Exception ex) {
                     Log.e(TAG, ex.getMessage(), ex);
                 }
-
             }
         }
-
         return START_REDELIVER_INTENT;
     }
 
@@ -143,5 +129,4 @@ public class SymmetricService extends Service {
             }
         }
     }
-
 }

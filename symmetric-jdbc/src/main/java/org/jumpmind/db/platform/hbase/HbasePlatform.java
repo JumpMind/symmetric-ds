@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
- package org.jumpmind.db.platform.hbase;
+package org.jumpmind.db.platform.hbase;
 
 import javax.sql.DataSource;
 
@@ -28,7 +28,6 @@ import org.jumpmind.db.platform.generic.GenericJdbcDatabasePlatform;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class HbasePlatform extends GenericJdbcDatabasePlatform {
-
     public HbasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
     }
@@ -37,15 +36,14 @@ public class HbasePlatform extends GenericJdbcDatabasePlatform {
     public String getName() {
         return DatabaseNamesConstants.HBASE;
     }
-    
+
     @Override
     protected IDdlBuilder createDdlBuilder() {
         return new HbaseDdlBuilder();
     }
-    
+
     @Override
     public IDdlBuilder getDdlBuilder() {
         return new HbaseDdlBuilder();
     }
-
 }

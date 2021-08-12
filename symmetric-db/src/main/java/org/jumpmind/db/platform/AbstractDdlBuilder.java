@@ -90,60 +90,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is a collection of Strategy methods for creating the DDL required
- * to create and drop databases and tables.
+ * This class is a collection of Strategy methods for creating the DDL required to create and drop databases and tables.
  *
- * It is hoped that just a single implementation of this class, for each
- * database should make creating DDL for each physical database fairly
- * straightforward.
+ * It is hoped that just a single implementation of this class, for each database should make creating DDL for each physical database fairly straightforward.
  *
- * An implementation of this class can always delegate down to some templating
- * technology such as Velocity if it requires. Though often that can be quite
- * complex when attempting to reuse code across many databases. Hopefully only a
- * small amount code needs to be changed on a per database basis.
+ * An implementation of this class can always delegate down to some templating technology such as Velocity if it requires. Though often that can be quite
+ * complex when attempting to reuse code across many databases. Hopefully only a small amount code needs to be changed on a per database basis.
  */
 public abstract class AbstractDdlBuilder implements IDdlBuilder {
-
     /** The line separator for in between sql commands. */
     private static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
-
     /** The placeholder for the size value in the native type spec. */
     protected static final String SIZE_PLACEHOLDER = "{0}";
-
     /** The Log to which logging calls will be made. */
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     /** The indentation used to indent commands. */
     private String indent = "    ";
-
     /** An optional locale specification for number and date formatting. */
     private String valueLocale;
-
     /** The date formatter. */
     private DateFormat valueDateFormat;
-
     /** The date time formatter. */
     private DateFormat valueTimeFormat;
-
     /** The number formatter. */
     private NumberFormat valueNumberFormat;
-
     /** Helper object for dealing with default values. */
     private DefaultValueHelper defaultValueHelper = new DefaultValueHelper();
-
     /** The character sequences that need escaping. */
     private Map<String, String> charSequencesToEscape = new LinkedHashMap<String, String>();
-
     protected DatabaseInfo databaseInfo = new DatabaseInfo();
-
     protected boolean delimitedIdentifierModeOn = true;
-
     protected boolean caseSensitive = true;
-
     protected boolean sqlCommentsOn = false;
-
     protected boolean scriptModeOn = false;
-
     protected String databaseName;
 
     /**
@@ -183,8 +162,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Returns the locale that is used for number and date formatting (when printing
-     * default values and in generates insert/update/delete statements).
+     * Returns the locale that is used for number and date formatting (when printing default values and in generates insert/update/delete statements).
      *
      * @return The locale or <code>null</code> if default formatting is used
      */
@@ -193,12 +171,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Sets the locale that is used for number and date formatting (when printing
-     * default values and in generates insert/update/delete statements).
+     * Sets the locale that is used for number and date formatting (when printing default values and in generates insert/update/delete statements).
      *
      * @param localeStr
-     *            The new locale or <code>null</code> if default formatting should
-     *            be used; Format is "language[_country[_variant]]"
+     *            The new locale or <code>null</code> if default formatting should be used; Format is "language[_country[_variant]]"
      */
     public void setValueLocale(String localeStr) {
         if (localeStr != null) {
@@ -206,7 +182,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             String language = null;
             String country = null;
             String variant = null;
-
             if (sepPos > 0) {
                 language = localeStr.substring(0, sepPos);
                 country = localeStr.substring(sepPos + 1);
@@ -220,7 +195,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             }
             if (language != null) {
                 Locale locale = null;
-
                 if (variant != null) {
                     locale = new Locale(language, country, variant);
                 } else if (country != null) {
@@ -228,7 +202,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 } else {
                     locale = new Locale(language);
                 }
-
                 valueLocale = localeStr;
                 setValueDateFormat(DateFormat.getDateInstance(DateFormat.SHORT, locale));
                 setValueTimeFormat(DateFormat.getTimeInstance(DateFormat.SHORT, locale));
@@ -290,8 +263,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Returns a new date format object for formatting numbers in the specified
-     * locale. Platforms can override this if necessary.
+     * Returns a new date format object for formatting numbers in the specified locale. Platforms can override this if necessary.
      *
      * @param format
      *            The number format object
@@ -319,21 +291,17 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Outputs the DDL required to drop (if requested) and (re)create all tables in
-     * the database model.
+     * Outputs the DDL required to drop (if requested) and (re)create all tables in the database model.
      */
     public void createTables(Database database, boolean dropTables, StringBuilder ddl) {
         if (dropTables) {
             dropTables(database, ddl);
         }
-
         for (int idx = 0; idx < database.getTableCount(); idx++) {
             Table table = database.getTable(idx);
-
             writeTableComment(table, ddl);
             createTable(table, ddl, false, false);
         }
-
         // we're writing the external foreignkeys last to ensure that all
         // referenced tables are already defined
         createExternalForeignKeys(database, ddl);
@@ -350,28 +318,21 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             IAlterDatabaseInterceptor... alterDatabaseInterceptors) {
         Database currentModel = new Database();
         currentModel.addTable(currentTable);
-
         Database desiredModel = new Database();
         desiredModel.addTable(desiredTable);
-
         return alterDatabase(currentModel, desiredModel, alterDatabaseInterceptors);
     }
 
     /**
-     * When the platform columns were added alters were not taken into
-     * consideration. Therefore, we copy the desiredPlatformColumn to the current
-     * platform column because the alter code ends up using the current column to
-     * come up with the alter statements. This is a hack that depends on the fact
-     * that none of the alter decision are based upon the current column's platform
-     * column.
+     * When the platform columns were added alters were not taken into consideration. Therefore, we copy the desiredPlatformColumn to the current platform
+     * column because the alter code ends up using the current column to come up with the alter statements. This is a hack that depends on the fact that none of
+     * the alter decision are based upon the current column's platform column.
      */
     protected void mergeOrRemovePlatformTypes(Database currentModel, Database desiredModel) {
         Table[] currentTables = currentModel.getTables();
-
         for (Table currentTable : currentTables) {
             /*
-             * Warning - we don't currently support altering tables across different
-             * catalogs and schemas, so we only need to look up by name
+             * Warning - we don't currently support altering tables across different catalogs and schemas, so we only need to look up by name
              */
             Table desiredTable = findTable(desiredModel, currentTable.getName());
             if (desiredTable != null) {
@@ -384,7 +345,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                         if (desiredPlatformColumn != null) {
                             currentColumn.addPlatformColumn(desiredPlatformColumn);
                         }
-
                     }
                 }
             }
@@ -392,17 +352,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Generates the DDL to modify an existing database so the schema matches the
-     * specified database schema by using drops, modifications and additions.
-     * Database-specific implementations can change aspect of this algorithm by
-     * redefining the individual methods that compromise it.
+     * Generates the DDL to modify an existing database so the schema matches the specified database schema by using drops, modifications and additions.
+     * Database-specific implementations can change aspect of this algorithm by redefining the individual methods that compromise it.
      */
     public void alterDatabase(Database currentModel, Database desiredModel, StringBuilder ddl,
             IAlterDatabaseInterceptor... alterDatabaseInterceptors) {
-
         currentModel = currentModel.copy();
         mergeOrRemovePlatformTypes(currentModel, desiredModel);
-
         List<IModelChange> detectedChanges = getDetectedChanges(currentModel, desiredModel, alterDatabaseInterceptors);
         processChanges(currentModel, desiredModel, detectedChanges, ddl);
     }
@@ -412,7 +368,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         List<IModelChange> detectedChanges = getDetectedChanges(currentModel, desiredModel, alterDatabaseInterceptors);
         return detectedChanges.size() > 0;
     }
-    
+
     public List<IModelChange> getDetectedChanges(Database currentModel, Database desiredModel, IAlterDatabaseInterceptor... alterDatabaseInterceptors) {
         ModelComparator comparator = new ModelComparator(this, databaseInfo, caseSensitive);
         List<IModelChange> detectedChanges = comparator.compare(currentModel, desiredModel);
@@ -427,11 +383,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /**
      * Processes the changes. The default argument performs several passes:
      * <ol>
-     * <li>{@link org.jumpmind.db.alter.RemoveForeignKeyChange} and
-     * {@link org.jumpmind.db.alter.RemoveIndexChange} come first to allow for e.g.
-     * subsequent primary key changes or column removal.</li>
-     * <li>{@link org.jumpmind.db.alter.RemoveTableChange} comes after the removal
-     * of foreign keys and indices.</li>
+     * <li>{@link org.jumpmind.db.alter.RemoveForeignKeyChange} and {@link org.jumpmind.db.alter.RemoveIndexChange} come first to allow for e.g. subsequent
+     * primary key changes or column removal.</li>
+     * <li>{@link org.jumpmind.db.alter.RemoveTableChange} comes after the removal of foreign keys and indices.</li>
      * <li>These are all handled together:<br/>
      * {@link org.jumpmind.db.alter.RemovePrimaryKeyChange}<br/>
      * {@link org.jumpmind.db.alter.AddPrimaryKeyChange}<br/>
@@ -443,89 +397,80 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * {@link org.jumpmind.db.alter.ColumnRequiredChange}<br/>
      * {@link org.jumpmind.db.alter.ColumnDataTypeChange}<br/>
      * {@link org.jumpmind.db.alter.ColumnSizeChange}<br/>
-     * The reason for this is that the default algorithm rebuilds the table for
-     * these changes and thus their order is irrelevant.</li>
+     * The reason for this is that the default algorithm rebuilds the table for these changes and thus their order is irrelevant.</li>
      * <li>{@link org.jumpmind.db.alter.AddTableChange}<br/>
-     * needs to come after the table removal (so that tables of the same name are
-     * removed) and before the addition of foreign keys etc.</li>
-     * <li>{@link org.jumpmind.db.alter.AddForeignKeyChange} and
-     * {@link org.jumpmind.db.alter.AddIndexChange} come last after
-     * table/column/primary key additions or changes.</li>
+     * needs to come after the table removal (so that tables of the same name are removed) and before the addition of foreign keys etc.</li>
+     * <li>{@link org.jumpmind.db.alter.AddForeignKeyChange} and {@link org.jumpmind.db.alter.AddIndexChange} come last after table/column/primary key additions
+     * or changes.</li>
      * </ol>
      */
     protected void processChanges(Database currentModel, Database desiredModel, List<IModelChange> changes,
             StringBuilder ddl) {
         // 1st pass: removing external constraints and indices
         processChanges(currentModel, desiredModel, changes, ddl, new Class<?>[] { RemoveForeignKeyChange.class, RemoveIndexChange.class });
-
         // 2nd pass: removing tables
         processChanges(currentModel, desiredModel, changes, ddl, new Class<?>[] { RemoveTableChange.class });
-
         // 3rd pass: changing the structure of tables
         Predicate<IModelChange> predicate = new MultiInstanceofPredicate(new Class<?>[] { RemovePrimaryKeyChange.class,
                 AddPrimaryKeyChange.class, PrimaryKeyChange.class, RemoveColumnChange.class, AddColumnChange.class,
                 ColumnAutoIncrementChange.class, ColumnDefaultValueChange.class, ColumnRequiredChange.class,
                 ColumnDataTypeChange.class, ColumnSizeChange.class, CopyColumnValueChange.class });
-
         processTableStructureChanges(currentModel, desiredModel, CollectionUtils.select(changes, predicate), ddl);
-
         // 4th pass: adding tables
         processChanges(currentModel, desiredModel, changes, ddl, new Class<?>[] { AddTableChange.class });
-        
         // 5th pass: adding external constraints and indices
         processChanges(currentModel, desiredModel, changes, ddl, new Class<?>[] { AddForeignKeyChange.class, AddIndexChange.class });
     }
 
     protected void processChanges(Database currentModel, Database desiredModel, List<IModelChange> changes,
             StringBuilder ddl, Class<?>[] changeTypes) {
-    	for (IModelChange change : changes) {
-    		for (Class<?> changeType : changeTypes) {
-    			if (change.getClass().equals(changeType)) {
-    				if (change.getClass().equals(AddTableChange.class)) {
-    					processChange(currentModel, desiredModel, (AddTableChange) change, ddl);
-    				} else if (change.getClass().equals(RemoveTableChange.class)) {
-    					processChange(currentModel, desiredModel, (RemoveTableChange) change, ddl);
-    				} else if (change.getClass().equals(AddIndexChange.class)) {
-    					processChange(currentModel, desiredModel, (AddIndexChange) change, ddl);
-    				} else if (change.getClass().equals(RemoveIndexChange.class)) {
-    					processChange(currentModel, desiredModel, (RemoveIndexChange) change, ddl);
-    				} else if (change.getClass().equals(AddForeignKeyChange.class)) {
-    					processChange(currentModel, desiredModel, (AddForeignKeyChange) change, ddl);
-    				} else if (change.getClass().equals(RemoveForeignKeyChange.class)) {
-    					processChange(currentModel, desiredModel, (RemoveForeignKeyChange) change, ddl);
-    				} else if (change.getClass().equals(AddPrimaryKeyChange.class)) {
-    					processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
-    				} else if (change.getClass().equals(PrimaryKeyChange.class)) {
-    					processChange(currentModel, desiredModel, (PrimaryKeyChange) change, ddl);
-    				} else if (change.getClass().equals(RemovePrimaryKeyChange.class)) {
-    					processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
-    				} else if (change.getClass().equals(AddColumnChange.class)) {
-    					processChange(currentModel, desiredModel, (AddColumnChange) change, ddl);
-    				} else if (change.getClass().equals(RemoveColumnChange.class)) {
-    					processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
-    				} else if (change.getClass().equals(ColumnAutoIncrementChange.class)) {
-    					processChange(currentModel, desiredModel, (ColumnAutoIncrementChange) change, ddl);
-    				} else if (change.getClass().equals(ColumnDefaultValueChange.class)) {
-    					processChange(currentModel, desiredModel, (ColumnDefaultValueChange) change, ddl);
-    				} else if (change.getClass().equals(ColumnRequiredChange.class)) {
-    					processChange(currentModel, desiredModel, (ColumnRequiredChange) change, ddl);
-    				} else if (change.getClass().equals(ColumnDataTypeChange.class)) {
-    					processChange(currentModel, desiredModel, (ColumnDataTypeChange) change, ddl);
-    				} else if (change.getClass().equals(ColumnSizeChange.class)) {
-    					processChange(currentModel, desiredModel, (ColumnSizeChange) change, ddl);
-    				} else if (change.getClass().equals(CopyColumnValueChange.class)) {
-    					processChange(currentModel, desiredModel, (CopyColumnValueChange) change, ddl);
-    				} else {
-    					processChange(currentModel, desiredModel, change, ddl);
-    				}
-    			}
-    		}
-    	}
+        for (IModelChange change : changes) {
+            for (Class<?> changeType : changeTypes) {
+                if (change.getClass().equals(changeType)) {
+                    if (change.getClass().equals(AddTableChange.class)) {
+                        processChange(currentModel, desiredModel, (AddTableChange) change, ddl);
+                    } else if (change.getClass().equals(RemoveTableChange.class)) {
+                        processChange(currentModel, desiredModel, (RemoveTableChange) change, ddl);
+                    } else if (change.getClass().equals(AddIndexChange.class)) {
+                        processChange(currentModel, desiredModel, (AddIndexChange) change, ddl);
+                    } else if (change.getClass().equals(RemoveIndexChange.class)) {
+                        processChange(currentModel, desiredModel, (RemoveIndexChange) change, ddl);
+                    } else if (change.getClass().equals(AddForeignKeyChange.class)) {
+                        processChange(currentModel, desiredModel, (AddForeignKeyChange) change, ddl);
+                    } else if (change.getClass().equals(RemoveForeignKeyChange.class)) {
+                        processChange(currentModel, desiredModel, (RemoveForeignKeyChange) change, ddl);
+                    } else if (change.getClass().equals(AddPrimaryKeyChange.class)) {
+                        processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
+                    } else if (change.getClass().equals(PrimaryKeyChange.class)) {
+                        processChange(currentModel, desiredModel, (PrimaryKeyChange) change, ddl);
+                    } else if (change.getClass().equals(RemovePrimaryKeyChange.class)) {
+                        processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
+                    } else if (change.getClass().equals(AddColumnChange.class)) {
+                        processChange(currentModel, desiredModel, (AddColumnChange) change, ddl);
+                    } else if (change.getClass().equals(RemoveColumnChange.class)) {
+                        processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
+                    } else if (change.getClass().equals(ColumnAutoIncrementChange.class)) {
+                        processChange(currentModel, desiredModel, (ColumnAutoIncrementChange) change, ddl);
+                    } else if (change.getClass().equals(ColumnDefaultValueChange.class)) {
+                        processChange(currentModel, desiredModel, (ColumnDefaultValueChange) change, ddl);
+                    } else if (change.getClass().equals(ColumnRequiredChange.class)) {
+                        processChange(currentModel, desiredModel, (ColumnRequiredChange) change, ddl);
+                    } else if (change.getClass().equals(ColumnDataTypeChange.class)) {
+                        processChange(currentModel, desiredModel, (ColumnDataTypeChange) change, ddl);
+                    } else if (change.getClass().equals(ColumnSizeChange.class)) {
+                        processChange(currentModel, desiredModel, (ColumnSizeChange) change, ddl);
+                    } else if (change.getClass().equals(CopyColumnValueChange.class)) {
+                        processChange(currentModel, desiredModel, (CopyColumnValueChange) change, ddl);
+                    } else {
+                        processChange(currentModel, desiredModel, change, ddl);
+                    }
+                }
+            }
+        }
     }
-    
+
     /**
-     * This is a fall-through callback which generates a warning because a specific
-     * change type wasn't handled.
+     * This is a fall-through callback which generates a warning because a specific change type wasn't handled.
      */
     protected void processChange(Database currentModel, Database desiredModel, IModelChange change, StringBuilder ddl) {
         log.warn("Change of type " + change.getClass() + " was not handled");
@@ -621,7 +566,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     protected void filterChanges(Collection<IModelChange> changes) {
-
     }
 
     /**
@@ -636,26 +580,20 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             Collection<IModelChange> changes, StringBuilder ddl) {
-
         filterChanges(changes);
-
         LinkedHashMap<String, List<TableChange>> changesPerTable = new LinkedHashMap<String, List<TableChange>>();
         LinkedHashMap<String, List<ForeignKey>> unchangedFKs = new LinkedHashMap<String, List<ForeignKey>>();
         boolean caseSensitive = delimitedIdentifierModeOn;
-
         // we first sort the changes for the tables
         // however since the changes might contain source or target tables
         // we use the names rather than the table objects
         for (Iterator<IModelChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = (TableChange) changeIt.next();
             String name = change.getChangedTable().getName();
-
             if (!caseSensitive) {
                 name = name.toUpperCase();
             }
-
             List<TableChange> changesForTable = (List<TableChange>) changesPerTable.get(name);
-
             if (changesForTable == null) {
                 changesForTable = new ArrayList<TableChange>();
                 changesPerTable.put(name, changesForTable);
@@ -666,22 +604,18 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         // we also need to drop the foreign keys of the unchanged tables
         // referencing the changed tables
         addRelevantFKsFromUnchangedTables(currentModel, desiredModel, changesPerTable.keySet(), unchangedFKs);
-
         // we're dropping the unchanged foreign keys
         for (Iterator<Map.Entry<String, List<ForeignKey>>> tableFKIt = unchangedFKs.entrySet().iterator(); tableFKIt
                 .hasNext();) {
             Map.Entry<String, List<ForeignKey>> entry = tableFKIt.next();
             Table targetTable = findTable(desiredModel, (String) entry.getKey());
-
             for (Iterator<ForeignKey> fkIt = entry.getValue().iterator(); fkIt.hasNext();) {
                 writeExternalForeignKeyDropStmt(targetTable, fkIt.next(), ddl);
             }
         }
-
         // We're using a copy of the current model so that the table structure
         // changes can modify it
         Database copyOfCurrentModel = copy(currentModel);
-
         for (Iterator<Map.Entry<String, List<TableChange>>> tableChangeIt = changesPerTable.entrySet()
                 .iterator(); tableChangeIt.hasNext();) {
             Map.Entry<String, List<TableChange>> entry = tableChangeIt.next();
@@ -692,7 +626,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 .hasNext();) {
             Map.Entry<String, List<ForeignKey>> entry = tableFKIt.next();
             Table targetTable = findTable(desiredModel, (String) entry.getKey());
-
             for (Iterator<ForeignKey> fkIt = entry.getValue().iterator(); fkIt.hasNext();) {
                 writeExternalForeignKeyCreateStmt(desiredModel, targetTable, fkIt.next(), ddl);
             }
@@ -730,11 +663,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         ArrayList<ForeignKey> unchangedFKs = new ArrayList<ForeignKey>();
         Table sourceTable = findTable(currentModel, tableName);
         Table targetTable = findTable(desiredModel, tableName);
-
         for (int idx = 0; idx < targetTable.getForeignKeyCount(); idx++) {
             ForeignKey targetFK = targetTable.getForeignKey(idx);
             ForeignKey sourceFK = findForeignKey(sourceTable, targetFK);
-
             if (sourceFK != null) {
                 unchangedFKs.add(targetFK);
             }
@@ -743,8 +674,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Adds the foreign keys of the unchanged tables that reference changed tables
-     * to the given map.
+     * Adds the foreign keys of the unchanged tables that reference changed tables to the given map.
      *
      * @param currentModel
      *            The current model
@@ -753,8 +683,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @param namesOfKnownChangedTables
      *            The known names of changed tables
      * @param fksPerTable
-     *            The map table name -> foreign keys to which found foreign keys
-     *            will be added to
+     *            The map table name -> foreign keys to which found foreign keys will be added to
      */
     private void addRelevantFKsFromUnchangedTables(Database currentModel, Database desiredModel,
             Set<String> namesOfKnownChangedTables, Map<String, List<ForeignKey>> fksPerTable) {
@@ -763,7 +692,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             String name = targetTable.getName();
             Table sourceTable = findTable(currentModel, name);
             List<ForeignKey> relevantFks = null;
-
             if (!caseSensitive) {
                 name = name.toUpperCase();
             }
@@ -772,7 +700,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                     ForeignKey targetFk = targetTable.getForeignKey(fkIdx);
                     ForeignKey sourceFk = sourceTable.findForeignKey(targetFk, caseSensitive);
                     String refName = targetFk.getForeignTableName();
-
                     if (!caseSensitive) {
                         refName = refName.toUpperCase();
                     }
@@ -789,31 +716,22 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Processes the changes to the structure of a single table. Database-specific
-     * implementations might redefine this method, but it is usually sufficient to
-     * redefine the
-     * {@link #processTableStructureChanges(Database, Database, Table, Table, Map, List)}
-     * method instead.
+     * Processes the changes to the structure of a single table. Database-specific implementations might redefine this method, but it is usually sufficient to
+     * redefine the {@link #processTableStructureChanges(Database, Database, Table, Table, Map, List)} method instead.
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel, String tableName,
             List<TableChange> changes, StringBuilder ddl) {
-
         StringBuilder tableDdl = new StringBuilder();
-
         Database originalModel = copy(currentModel);
         Table sourceTable = findTable(originalModel, tableName);
         Table targetTable = findTable(desiredModel, tableName);
-
         // we're enforcing a full rebuild in case of the addition of a required
         // column without a default value that is not autoincrement
         boolean requiresFullRebuild = false;
-
         for (Iterator<TableChange> changeIt = changes.iterator(); !requiresFullRebuild && changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof AddColumnChange) {
                 AddColumnChange addColumnChange = (AddColumnChange) change;
-
                 if (addColumnChange.getNewColumn().isRequired()
                         && (addColumnChange.getNewColumn().getDefaultValue() == null)
                         && !addColumnChange.getNewColumn().isAutoIncrement()) {
@@ -824,19 +742,15 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         if (!requiresFullRebuild) {
             processTableStructureChanges(currentModel, desiredModel, sourceTable, targetTable, changes, tableDdl);
         }
-
         if (!changes.isEmpty()) {
             // we can only copy the data if no required columns without default
             // value and non-autoincrement have been added
             boolean canMigrateData = true;
             Table tempTable = getTemporaryTableFor(sourceTable);
-
             for (Iterator<TableChange> it = changes.iterator(); canMigrateData && it.hasNext();) {
                 TableChange change = it.next();
-
                 if (change instanceof AddColumnChange) {
                     AddColumnChange addColumnChange = (AddColumnChange) change;
-
                     if (addColumnChange.getNewColumn().isRequired() && !addColumnChange.getNewColumn().isAutoIncrement()
                             && (addColumnChange.getNewColumn().getDefaultValue() == null)) {
                         log.warn("Data cannot be retained in table " + change.getChangedTable().getName()
@@ -847,11 +761,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                     }
                 }
             }
-
             Table realTargetTable = getRealTargetTableFor(desiredModel, sourceTable, targetTable);
-
             renameTable(sourceTable, tempTable, ddl);
-
             createTable(realTargetTable, ddl, false, true);
             if (canMigrateData) {
                 writeCopyDataStatement(tempTable, targetTable, ddl);
@@ -862,15 +773,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             ddl.append(tableDdl);
         }
     }
-    
+
     protected void renameTable(Table sourceTable, Table tempTable, StringBuilder ddl) {
         dropTemporaryTable(tempTable, ddl);
         createTemporaryTable(tempTable, ddl);
         writeCopyDataStatement(sourceTable, tempTable, ddl);
         /*
-         * Note that we don't drop the indices here because the DROP
-         * TABLE will take care of that Likewise, foreign keys have
-         * already been dropped as necessary
+         * Note that we don't drop the indices here because the DROP TABLE will take care of that Likewise, foreign keys have already been dropped as necessary
          */
         dropTable(sourceTable, ddl, false, true);
     }
@@ -884,12 +793,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Allows database-specific implementations to handle changes in a database
-     * specific manner. Any handled change should be applied to the given current
-     * model (which is a copy of the real original model) and be removed from the
-     * list of changes.<br/>
-     * In the default implementation, all {@link AddPrimaryKeyChange} changes are
-     * applied via an <code>ALTER TABLE ADD CONSTRAINT</code> statement.
+     * Allows database-specific implementations to handle changes in a database specific manner. Any handled change should be applied to the given current model
+     * (which is a copy of the real original model) and be removed from the list of changes.<br/>
+     * In the default implementation, all {@link AddPrimaryKeyChange} changes are applied via an <code>ALTER TABLE ADD CONSTRAINT</code> statement.
      *
      * @param currentModel
      *            The current database schema
@@ -906,13 +812,11 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         if (changes.size() == 1) {
             TableChange change = changes.get(0);
-
             if (change instanceof AddPrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
                 changes.clear();
             }
         }
-
         Iterator<TableChange> it = changes.iterator();
         while (it.hasNext()) {
             TableChange change = (TableChange) it.next();
@@ -938,7 +842,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         printIdentifier(getColumnName(change.getSourceColumn()), ddl);
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
-
     }
 
     protected boolean writeAlterColumnDataTypeToBigInt(ColumnDataTypeChange change, StringBuilder ddl) {
@@ -961,11 +864,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Creates a temporary table object that corresponds to the given table.
-     * Database-specific implementations may redefine this method if e.g. the
-     * database directly supports temporary tables. The default implementation
-     * simply appends an underscore to the table name and uses that as the table
-     * name.
+     * Creates a temporary table object that corresponds to the given table. Database-specific implementations may redefine this method if e.g. the database
+     * directly supports temporary tables. The default implementation simply appends an underscore to the table name and uses that as the table name.
      * 
      * @param targetTable
      *            The target table
@@ -998,7 +898,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     protected Table getTemporaryTableFor(Table targetTable, String suffix) {
         Table table = new Table();
-
         table.setCatalog(targetTable.getCatalog());
         table.setSchema(targetTable.getSchema());
         table.setName(targetTable.getName() + suffix);
@@ -1010,13 +909,11 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 throw new DdlException(ex);
             }
         }
-
         return table;
     }
 
     /**
-     * Outputs the DDL to create the given temporary table. Per default this is
-     * simply a call to {@link #createTable(Table, Map)}.
+     * Outputs the DDL to create the given temporary table. Per default this is simply a call to {@link #createTable(Table, Map)}.
      * 
      * @param table
      *            The table
@@ -1026,8 +923,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Outputs the DDL to drop the given temporary table. Per default this is simply
-     * a call to {@link #dropTable(Table)}.
+     * Outputs the DDL to drop the given temporary table. Per default this is simply a call to {@link #dropTable(Table)}.
      * 
      * @param table
      *            The table
@@ -1037,9 +933,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Creates the target table object that differs from the given target table only
-     * in the indices. More specifically, only those indices are used that have not
-     * changed.
+     * Creates the target table object that differs from the given target table only in the indices. More specifically, only those indices are used that have
+     * not changed.
      *
      * @param targetModel
      *            The target database
@@ -1051,7 +946,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected Table getRealTargetTableFor(Database targetModel, Table sourceTable, Table targetTable) {
         Table table = new Table();
-
         table.setCatalog(targetTable.getCatalog());
         table.setSchema(targetTable.getSchema());
         table.setName(targetTable.getName());
@@ -1063,13 +957,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 throw new DdlException(ex);
             }
         }
-
         boolean caseSensitive = delimitedIdentifierModeOn;
-
         for (int idx = 0; idx < targetTable.getIndexCount(); idx++) {
             IIndex targetIndex = targetTable.getIndex(idx);
             IIndex sourceIndex = sourceTable.findIndex(targetIndex.getName(), caseSensitive);
-
             if (sourceIndex != null) {
                 if ((caseSensitive && sourceIndex.equals(targetIndex))
                         || (!caseSensitive && sourceIndex.equalsIgnoreCase(targetIndex))) {
@@ -1077,16 +968,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 }
             }
         }
-
         return table;
     }
 
     /**
-     * Writes a statement that copies the data from the source to the target table.
-     * Note that this copies only those columns that are in both tables.
-     * Database-specific implementations might redefine this method though they
-     * usually it suffices to redefine the
-     * {@link #writeCastExpression(Column, Column)} method.
+     * Writes a statement that copies the data from the source to the target table. Note that this copies only those columns that are in both tables.
+     * Database-specific implementations might redefine this method though they usually it suffices to redefine the {@link #writeCastExpression(Column, Column)}
+     * method.
      *
      * @param sourceTable
      *            The source table
@@ -1112,7 +1000,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         ddl.append(") SELECT ");
         for (Iterator<Map.Entry<Column, Column>> columnsIt = columnMap.entrySet().iterator(); columnsIt.hasNext();) {
             Map.Entry<Column, Column> entry = columnsIt.next();
-
             writeCastExpression((Column) entry.getKey(), (Column) entry.getValue(), ddl);
             if (columnsIt.hasNext()) {
                 ddl.append(",");
@@ -1125,11 +1012,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     public LinkedHashMap<Column, Column> getCopyDataColumnMapping(Table sourceTable, Table targetTable) {
         LinkedHashMap<Column, Column> columns = new LinkedHashMap<Column, Column>();
-
         for (int idx = 0; idx < sourceTable.getColumnCount(); idx++) {
             Column sourceColumn = sourceTable.getColumn(idx);
             Column targetColumn = targetTable.findColumn(sourceColumn.getName(), delimitedIdentifierModeOn);
-
             if (targetColumn != null) {
                 columns.put(sourceColumn, targetColumn);
             }
@@ -1146,8 +1031,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Writes a cast expression that converts the value of the source column to the
-     * data type of the target column. Per default, simply the name of the source
+     * Writes a cast expression that converts the value of the source column to the data type of the target column. Per default, simply the name of the source
      * column is written thereby assuming that any casts happen implicitly.
      */
     protected void writeCastExpression(Column sourceColumn, Column targetColumn, StringBuilder ddl) {
@@ -1164,11 +1048,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Searches in the given table for a corresponding foreign key. If the given key
-     * has no name, then a foreign key to the same table with the same columns in
-     * the same order is searched. If the given key has a name, then the a
-     * corresponding key also needs to have the same name, or no name at all, but
-     * not a different one.
+     * Searches in the given table for a corresponding foreign key. If the given key has no name, then a foreign key to the same table with the same columns in
+     * the same order is searched. If the given key has a name, then the a corresponding key also needs to have the same name, or no name at all, but not a
+     * different one.
      *
      * @param table
      *            The table to search in
@@ -1181,24 +1063,19 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         boolean checkFkName = (fk.getName() != null) && (fk.getName().length() > 0);
         Reference[] refs = fk.getReferences();
         ArrayList<Reference> curRefs = new ArrayList<Reference>();
-
         for (int fkIdx = 0; fkIdx < table.getForeignKeyCount(); fkIdx++) {
             ForeignKey curFk = table.getForeignKey(fkIdx);
             boolean checkCurFkName = checkFkName && (curFk.getName() != null) && (curFk.getName().length() > 0);
-
             if ((!checkCurFkName || areEqual(fk.getName(), curFk.getName(), caseMatters))
                     && areEqual(fk.getForeignTableName(), curFk.getForeignTableName(), caseMatters)) {
                 curRefs.clear();
                 CollectionUtils.addAll(curRefs, curFk.getReferences());
-
                 // the order is not fixed, so we have to take this long way
                 if (curRefs.size() == refs.length) {
                     for (int refIdx = 0; refIdx < refs.length; refIdx++) {
                         boolean found = false;
-
                         for (int curRefIdx = 0; !found && (curRefIdx < curRefs.size()); curRefIdx++) {
                             Reference curRef = curRefs.get(curRefIdx);
-
                             if ((caseMatters && refs[refIdx].equals(curRef))
                                     || (!caseMatters && refs[refIdx].equalsIgnoreCase(curRef))) {
                                 curRefs.remove(curRefIdx);
@@ -1231,8 +1108,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Outputs the DDL to create the table along with any non-external constraints
-     * as well as with external primary keys and indices (but not foreign keys).
+     * Outputs the DDL to create the table along with any non-external constraints as well as with external primary keys and indices (but not foreign keys).
      */
     public String createTable(Table table) {
         StringBuilder ddl = new StringBuilder();
@@ -1241,8 +1117,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Outputs the DDL to create the table along with any non-external constraints
-     * as well as with external primary keys and indices (but not foreign keys).
+     * Outputs the DDL to create the table along with any non-external constraints as well as with external primary keys and indices (but not foreign keys).
      * 
      * @param recreate
      *            TODO
@@ -1250,19 +1125,16 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         writeTableCreationStmt(table, ddl);
         writeTableCreationStmtEnding(table, ddl);
-
         if (!databaseInfo.isIndicesEmbedded()) {
             writeExternalIndicesCreateStmt(table, ddl);
         }
-
         if (!databaseInfo.isPrimaryKeyEmbedded()) {
             writeExternalPrimaryKeysCreateStmt(table, table.getPrimaryKeyColumnsInIndexOrder(), ddl);
         }
     }
 
     /**
-     * Creates the external foreignkey creation statements for all tables in the
-     * database.
+     * Creates the external foreignkey creation statements for all tables in the database.
      *
      * @param database
      *            The database
@@ -1297,12 +1169,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         // we're dropping the external foreign keys first
         for (int idx = database.getTableCount() - 1; idx >= 0; idx--) {
             Table table = database.getTable(idx);
-
             if ((table.getName() != null) && (table.getName().length() > 0)) {
                 dropExternalForeignKeys(table, ddl);
             }
         }
-
         // Next we drop the tables in reverse order to avoid referencial
         // problems
         // TODO: It might be more useful to either (or both)
@@ -1311,7 +1181,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         // * alter the tables first to drop the internal foreignkeys
         for (int idx = database.getTableCount() - 1; idx >= 0; idx--) {
             Table table = database.getTable(idx);
-
             if ((table.getName() != null) && (table.getName().length() > 0)) {
                 writeTableComment(table, ddl);
                 dropTable(table, ddl, false, false);
@@ -1320,15 +1189,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Outputs the DDL required to drop the given table. This method also drops
-     * foreign keys to the table.
+     * Outputs the DDL required to drop the given table. This method also drops foreign keys to the table.
      */
     public void dropTable(Database database, Table table, StringBuilder ddl) {
         // we're dropping the foreignkeys to the table first
         for (int idx = database.getTableCount() - 1; idx >= 0; idx--) {
             Table otherTable = database.getTable(idx);
             ForeignKey[] fks = otherTable.getForeignKeys();
-
             for (int fkIdx = 0; (fks != null) && (fkIdx < fks.length); fkIdx++) {
                 if (fks[fkIdx].getForeignTable().equals(table)) {
                     writeExternalForeignKeyDropStmt(otherTable, fks[fkIdx], ddl);
@@ -1337,15 +1204,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         }
         // and the foreign keys from the table
         dropExternalForeignKeys(table, ddl);
-
         writeTableComment(table, ddl);
         dropTable(table, ddl, false, false);
     }
 
     /**
-     * Outputs the DDL to drop the table. Note that this method does not drop
-     * foreign keys to this table. Use {@link #dropTable(Database, Table)} if you
-     * want that.
+     * Outputs the DDL to drop the table. Note that this method does not drop foreign keys to this table. Use {@link #dropTable(Database, Table)} if you want
+     * that.
      * 
      * @param recreate
      *            TODO
@@ -1371,8 +1236,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Creates the SQL for inserting an object into the specified table. If values
-     * are given then a concrete insert statement is created, otherwise an insert
+     * Creates the SQL for inserting an object into the specified table. If values are given then a concrete insert statement is created, otherwise an insert
      * statement usable in a prepared statement is build.
      *
      * @param table
@@ -1384,15 +1248,12 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The insertion sql
      */
     public String getInsertSql(Table table, Map<String, Object> columnValues, boolean genPlaceholders) {
-    	StringBuilder buffer = new StringBuilder("INSERT INTO ");
+        StringBuilder buffer = new StringBuilder("INSERT INTO ");
         boolean addComma = false;
-
         buffer.append(getFullyQualifiedTableNameShorten(table));
         buffer.append(" (");
-
         for (int idx = 0; idx < table.getColumnCount(); idx++) {
             Column column = table.getColumn(idx);
-
             if (columnValues.containsKey(column.getName())) {
                 if (addComma) {
                     buffer.append(", ");
@@ -1415,7 +1276,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             addComma = false;
             for (int idx = 0; idx < table.getColumnCount(); idx++) {
                 Column column = table.getColumn(idx);
-
                 if (columnValues.containsKey(column.getName())) {
                     if (addComma) {
                         buffer.append(", ");
@@ -1430,31 +1290,25 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Creates the SQL for updating an object in the specified table. If values are
-     * given then a concrete update statement is created, otherwise an update
+     * Creates the SQL for updating an object in the specified table. If values are given then a concrete update statement is created, otherwise an update
      * statement usable in a prepared statement is build.
      *
      * @param table
      *            The table
      * @param columnValues
-     *            Contains the values for the columns to update, and should also
-     *            contain the primary key values to identify the object to update in
-     *            case <code>genPlaceholders</code> is <code>false</code>
+     *            Contains the values for the columns to update, and should also contain the primary key values to identify the object to update in case
+     *            <code>genPlaceholders</code> is <code>false</code>
      * @param genPlaceholders
-     *            Whether to generate value placeholders for a prepared statement
-     *            (both for the pk values and the object values)
+     *            Whether to generate value placeholders for a prepared statement (both for the pk values and the object values)
      * @return The update sql
      */
     public String getUpdateSql(Table table, Map<String, Object> columnValues, boolean genPlaceholders) {
-    	StringBuilder buffer = new StringBuilder("UPDATE ");
+        StringBuilder buffer = new StringBuilder("UPDATE ");
         boolean addSep = false;
-
         buffer.append(getFullyQualifiedTableNameShorten(table));
         buffer.append(" SET ");
-
         for (int idx = 0; idx < table.getColumnCount(); idx++) {
             Column column = table.getColumn(idx);
-
             if (!column.isPrimaryKey() && columnValues.containsKey(column.getName())) {
                 if (addSep) {
                     buffer.append(", ");
@@ -1473,7 +1327,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         addSep = false;
         for (int idx = 0; idx < table.getColumnCount(); idx++) {
             Column column = table.getColumn(idx);
-
             if (column.isPrimaryKey() && columnValues.containsKey(column.getName())) {
                 if (addSep) {
                     buffer.append(" AND ");
@@ -1492,8 +1345,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Creates the SQL for deleting an object from the specified table. If values
-     * are given then a concrete delete statement is created, otherwise an delete
+     * Creates the SQL for deleting an object from the specified table. If values are given then a concrete delete statement is created, otherwise an delete
      * statement usable in a prepared statement is build.
      *
      * @param table
@@ -1505,16 +1357,14 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The delete sql
      */
     public String getDeleteSql(Table table, Map<String, Object> pkValues, boolean genPlaceholders) {
-    	StringBuilder buffer = new StringBuilder("DELETE FROM ");
+        StringBuilder buffer = new StringBuilder("DELETE FROM ");
         boolean addSep = false;
-
         buffer.append(getFullyQualifiedTableNameShorten(table));
         if ((pkValues != null) && !pkValues.isEmpty()) {
             buffer.append(" WHERE ");
             for (Iterator<Map.Entry<String, Object>> it = pkValues.entrySet().iterator(); it.hasNext();) {
                 Map.Entry<String, Object> entry = it.next();
                 Column column = table.findColumn((String) entry.getKey());
-
                 if (addSep) {
                     buffer.append(" AND ");
                 }
@@ -1544,68 +1394,64 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         if (value == null) {
             return "NULL";
         }
-
         StringBuilder result = new StringBuilder();
-
         // TODO: Handle binary types (BINARY, VARBINARY, LONGVARBINARY, BLOB)
         switch (column.getMappedTypeCode()) {
-        case Types.DATE:
-            result.append(databaseInfo.getValueQuoteToken());
-            if (!(value instanceof String) && (getValueDateFormat() != null)) {
-                // TODO: Can the format method handle java.sql.Date properly
-                // ?
-                result.append(getValueDateFormat().format(value));
-            } else {
+            case Types.DATE:
+                result.append(databaseInfo.getValueQuoteToken());
+                if (!(value instanceof String) && (getValueDateFormat() != null)) {
+                    // TODO: Can the format method handle java.sql.Date properly
+                    // ?
+                    result.append(getValueDateFormat().format(value));
+                } else {
+                    result.append(value);
+                }
+                result.append(databaseInfo.getValueQuoteToken());
+                break;
+            case Types.TIME:
+                result.append(databaseInfo.getValueQuoteToken());
+                if (!(value instanceof String) && (getValueTimeFormat() != null)) {
+                    // TODO: Can the format method handle java.sql.Date properly
+                    // ?
+                    result.append(getValueTimeFormat().format(value));
+                } else {
+                    result.append(value);
+                }
+                result.append(databaseInfo.getValueQuoteToken());
+                break;
+            case Types.TIMESTAMP:
+                result.append(databaseInfo.getValueQuoteToken());
+                // TODO: SimpleDateFormat does not support nano seconds so we
+                // would
+                // need a custom date formatter for timestamps
                 result.append(value);
-            }
-            result.append(databaseInfo.getValueQuoteToken());
-            break;
-        case Types.TIME:
-            result.append(databaseInfo.getValueQuoteToken());
-            if (!(value instanceof String) && (getValueTimeFormat() != null)) {
-                // TODO: Can the format method handle java.sql.Date properly
-                // ?
-                result.append(getValueTimeFormat().format(value));
-            } else {
-                result.append(value);
-            }
-            result.append(databaseInfo.getValueQuoteToken());
-            break;
-        case Types.TIMESTAMP:
-            result.append(databaseInfo.getValueQuoteToken());
-            // TODO: SimpleDateFormat does not support nano seconds so we
-            // would
-            // need a custom date formatter for timestamps
-            result.append(value);
-            result.append(databaseInfo.getValueQuoteToken());
-            break;
-        case Types.REAL:
-        case Types.NUMERIC:
-        case Types.FLOAT:
-        case Types.DOUBLE:
-        case Types.DECIMAL:
-            result.append(databaseInfo.getValueQuoteToken());
-            if (!(value instanceof String) && (getValueNumberFormat() != null)) {
-                result.append(getValueNumberFormat().format(value));
-            } else {
-                result.append(value);
-            }
-            result.append(databaseInfo.getValueQuoteToken());
-            break;
-        default:
-            result.append(databaseInfo.getValueQuoteToken());
-            result.append(escapeStringValue(value.toString()));
-            result.append(databaseInfo.getValueQuoteToken());
-            break;
+                result.append(databaseInfo.getValueQuoteToken());
+                break;
+            case Types.REAL:
+            case Types.NUMERIC:
+            case Types.FLOAT:
+            case Types.DOUBLE:
+            case Types.DECIMAL:
+                result.append(databaseInfo.getValueQuoteToken());
+                if (!(value instanceof String) && (getValueNumberFormat() != null)) {
+                    result.append(getValueNumberFormat().format(value));
+                } else {
+                    result.append(value);
+                }
+                result.append(databaseInfo.getValueQuoteToken());
+                break;
+            default:
+                result.append(databaseInfo.getValueQuoteToken());
+                result.append(escapeStringValue(value.toString()));
+                result.append(databaseInfo.getValueQuoteToken());
+                break;
         }
         return result.toString();
     }
 
     /**
-     * Generates the SQL for querying the id that was created in the last insertion
-     * operation. This is obviously only useful for pk fields that are
-     * auto-incrementing. A database that does not support this, will return
-     * <code>null</code>.
+     * Generates the SQL for querying the id that was created in the last insertion operation. This is obviously only useful for pk fields that are
+     * auto-incrementing. A database that does not support this, will return <code>null</code>.
      *
      * @param table
      *            The table
@@ -1648,16 +1494,12 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     public String shortenName(String name, int desiredLength) {
         // TODO: Find an algorithm that generates unique names
         int originalLength = name.length();
-
         if ((desiredLength <= 0) || (originalLength <= desiredLength)) {
             return name;
         }
-
         int delta = originalLength - desiredLength;
         int startCut = desiredLength / 2;
-
         StringBuilder result = new StringBuilder();
-
         result.append(name.substring(0, startCut));
         if (((startCut == 0) || (name.charAt(startCut - 1) != '_'))
                 && ((startCut + delta + 1 == originalLength) || (name.charAt(startCut + delta + 1) != '_'))) {
@@ -1672,8 +1514,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Returns the table name. This method takes care of length limitations imposed
-     * by some databases.
+     * Returns the table name. This method takes care of length limitations imposed by some databases.
      *
      * @param table
      *            The table
@@ -1697,8 +1538,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Generates the first part of the ALTER TABLE statement including the table
-     * name.
+     * Generates the first part of the ALTER TABLE statement including the table name.
      *
      * @param table
      *            The table being altered
@@ -1718,9 +1558,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         // TODO Check side effect with shortened name table
         ddl.append(getFullyQualifiedTableNameShorten(table));
         println("(", ddl);
-
         writeColumns(table, ddl);
-
         if (databaseInfo.isPrimaryKeyEmbedded()) {
             writeEmbeddedPrimaryKeysStmt(table, ddl);
         }
@@ -1732,7 +1570,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         }
         println(ddl);
         ddl.append(")");
-
         if (isSpecifyIdentityGapLimit()) {
             writeIdentityGapLimit(ddl);
         }
@@ -1761,8 +1598,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Writes the end of the table creation statement. Per default, only the end of
-     * the statement is written, but this can be changed in subclasses.
+     * Writes the end of the table creation statement. Per default, only the end of the statement is written, but this can be changed in subclasses.
      *
      * @param table
      *            The table
@@ -1785,8 +1621,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Returns the column name. This method takes care of length limitations imposed
-     * by some databases.
+     * Returns the column name. This method takes care of length limitations imposed by some databases.
      *
      * @param column
      *            The column
@@ -1830,11 +1665,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         if (column.isPrimaryKey() && databaseInfo.isPrimaryKeyEmbedded()) {
             writeColumnEmbeddedPrimaryKey(table, column, ddl);
         }
-
         if (column.isUnique() && databaseInfo.isUniqueEmbedded()) {
             writeColumnUniqueStmt(ddl);
         }
-
         if (column.isAutoIncrement() && !databaseInfo.isDefaultValueUsedForIdentitySpec()) {
             if (!databaseInfo.isNonPKIdentityColumnsSupported() && !column.isPrimaryKey()) {
                 throw new ModelException("Column " + column.getName() + " in table " + table.getName()
@@ -1846,12 +1679,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     protected void writeColumnEmbeddedPrimaryKey(Table table, Column column, StringBuilder ddl) {
-
     }
 
     /**
-     * Returns the full SQL type specification (including size and precision/scale)
-     * for the given column.
+     * Returns the full SQL type specification (including size and precision/scale) for the given column.
      *
      * @param column
      *            The column
@@ -1863,26 +1694,20 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         if (platformColumn != null) {
             nativeType = platformColumn.getType();
         }
-
         int sizePos = nativeType.indexOf(SIZE_PLACEHOLDER);
         StringBuilder sqlType = new StringBuilder();
-
         sqlType.append(sizePos >= 0 ? nativeType.substring(0, sizePos) : nativeType);
-
         Integer size = column.getSizeAsInt();
         if (platformColumn != null) {
             size = platformColumn.getSize();
         }
-
         if ((size == null || size == 0) && platformColumn == null) {
             size = databaseInfo.getDefaultSize(column.getMappedTypeCode());
         }
-
         int scale = column.getScale();
         if (platformColumn != null) {
             scale = platformColumn.getDecimalDigits();
         }
-
         if (size != null && size >= 0) {
             if (databaseInfo.hasSize(column.getMappedTypeCode())) {
                 if (size > 0) {
@@ -1905,7 +1730,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             }
         }
         sqlType.append(sizePos >= 0 ? nativeType.substring(sizePos + SIZE_PLACEHOLDER.length()) : "");
-
         filterColumnSqlType(sqlType);
         return sqlType.toString();
     }
@@ -1927,8 +1751,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Returns the bare database-native type for the given column without any size
-     * specifies.
+     * Returns the bare database-native type for the given column without any size specifies.
      *
      * @param column
      *            The column
@@ -1937,7 +1760,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected String getBareNativeType(Column column) {
         String nativeType = getNativeType(column);
         int sizePos = nativeType.indexOf(SIZE_PLACEHOLDER);
-
         return sizePos >= 0 ? nativeType.substring(0, sizePos) : nativeType;
     }
 
@@ -1966,20 +1788,16 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected String escapeStringValue(String value) {
         String result = value;
-
         for (Iterator<Map.Entry<String, String>> it = charSequencesToEscape.entrySet().iterator(); it.hasNext();) {
             Map.Entry<String, String> entry = (Map.Entry<String, String>) it.next();
-
             result = StringUtils.replace(result, entry.getKey(), entry.getValue());
         }
         return result;
     }
 
     /**
-     * Determines whether the given default spec is a non-empty spec that shall be
-     * used in a DEFAULT expression. E.g. if the spec is an empty string and the
-     * type is a numeric type, then it is no valid default value whereas if it is a
-     * string type, then it is valid.
+     * Determines whether the given default spec is a non-empty spec that shall be used in a DEFAULT expression. E.g. if the spec is an empty string and the
+     * type is a numeric type, then it is no valid default value whereas if it is a string type, then it is valid.
      *
      * @param defaultSpec
      *            The default value spec
@@ -1997,7 +1815,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void writeColumnDefaultValueStmt(Table table, Column column, StringBuilder ddl) {
         Object parsedDefault = column.getParsedDefaultValue();
-
         if (parsedDefault != null) {
             if (!databaseInfo.isDefaultValuesForLongTypesSupported()
                     && ((column.getMappedTypeCode() == Types.LONGVARBINARY)
@@ -2056,7 +1873,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                         || defaultValueStr.toUpperCase().startsWith("TIMESTAMP '")
                         || defaultValueStr.toUpperCase().startsWith("INTERVAL '")))
                 && !(defaultValueStr.toUpperCase().startsWith("N'") && defaultValueStr.endsWith("'"));
-
         if (shouldUseQuotes) {
             // characters are only escaped when within a string literal
             ddl.append(databaseInfo.getValueQuoteToken());
@@ -2102,7 +1918,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     public boolean areColumnSizesTheSame(Column sourceColumn, Column targetColumn) {
         boolean sizeMatters = databaseInfo.hasSize(targetColumn.getMappedTypeCode());
         boolean scaleMatters = databaseInfo.hasPrecisionAndScale(targetColumn.getMappedTypeCode());
-
         String targetSize = targetColumn.getSize();
         if (targetSize == null) {
             Integer defaultSize = databaseInfo
@@ -2126,10 +1941,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Returns the name to be used for the given foreign key. If the foreign key has
-     * no specified name, this method determines a unique name for it. The name will
-     * also be shortened to honor the maximum identifier length imposed by the
-     * platform.
+     * Returns the name to be used for the given foreign key. If the foreign key has no specified name, this method determines a unique name for it. The name
+     * will also be shortened to honor the maximum identifier length imposed by the platform.
      *
      * @param table
      *            The table for whith the foreign key is defined
@@ -2140,10 +1953,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     public String getForeignKeyName(Table table, ForeignKey fk) {
         String fkName = fk.getName();
         boolean needsName = (fkName == null) || (fkName.length() == 0);
-
         if (needsName) {
-        	StringBuilder name = new StringBuilder();
-
+            StringBuilder name = new StringBuilder();
             for (int idx = 0; idx < fk.getReferenceCount(); idx++) {
                 name.append(fk.getReference(idx).getLocalColumnName());
                 name.append("_");
@@ -2152,18 +1963,15 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             fkName = getConstraintName(null, table, "FK", name.toString());
         }
         fkName = shortenName(fkName, databaseInfo.getMaxForeignKeyNameLength());
-
         if (needsName) {
             log.warn("Encountered a foreign key in table " + table.getName() + " that has no name. "
                     + "DdlUtils will use the auto-generated and shortened name " + fkName + " instead.");
         }
-
         return fkName;
     }
 
     /**
-     * Returns the constraint name. This method takes care of length limitations
-     * imposed by some databases.
+     * Returns the constraint name. This method takes care of length limitations imposed by some databases.
      *
      * @param prefix
      *            The constraint prefix, can be <code>null</code>
@@ -2176,8 +1984,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The constraint name
      */
     public String getConstraintName(String prefix, Table table, String secondPart, String suffix) {
-    	StringBuilder result = new StringBuilder();
-
+        StringBuilder result = new StringBuilder();
         if (prefix != null) {
             result.append(prefix);
             result.append("_");
@@ -2200,7 +2007,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void writeEmbeddedPrimaryKeysStmt(Table table, StringBuilder ddl) {
         Column[] primaryKeyColumns = table.getPrimaryKeyColumnsInIndexOrder();
-
         if ((primaryKeyColumns.length > 0) && shouldGeneratePrimaryKeys(primaryKeyColumns)) {
             printStartOfEmbeddedStatement(ddl);
             writePrimaryKeyStmt(table, primaryKeyColumns, ddl);
@@ -2230,13 +2036,11 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Determines whether we should generate a primary key constraint for the given
-     * primary key columns.
+     * Determines whether we should generate a primary key constraint for the given primary key columns.
      *
      * @param primaryKeyColumns
      *            The pk columns
-     * @return <code>true</code> if a pk statement should be generated for the
-     *         columns
+     * @return <code>true</code> if a pk statement should be generated for the columns
      */
     protected boolean shouldGeneratePrimaryKeys(Column[] primaryKeyColumns) {
         return true;
@@ -2262,8 +2066,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Returns the index name. This method takes care of length limitations imposed
-     * by some databases.
+     * Returns the index name. This method takes care of length limitations imposed by some databases.
      *
      * @param index
      *            The index
@@ -2282,7 +2085,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected void writeExternalIndicesCreateStmt(Table table, StringBuilder ddl) {
         for (int idx = 0; idx < table.getIndexCount(); idx++) {
             IIndex index = table.getIndex(idx);
-
             if (!index.isUnique() && !databaseInfo.isIndicesSupported()) {
                 return;
             }
@@ -2315,7 +2117,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             }
         }
     }
-    
+
     protected void writeExternalIndexCreate(Table table, IIndex index, StringBuilder ddl) {
         ddl.append("CREATE");
         if (index.isUnique()) {
@@ -2329,7 +2131,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         ddl.append(" ON ");
         ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append(" (");
-
         for (int idx = 0; idx < index.getColumnCount(); idx++) {
             IndexColumn idxColumn = index.getColumn(idx);
             if (idx > 0) {
@@ -2344,7 +2145,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 printIdentifier(name, ddl);
             }
         }
-
         ddl.append(")");
     }
 
@@ -2370,11 +2170,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             ddl.append(" INDEX ");
         }
         ddl.append(" (");
-
         for (int idx = 0; idx < index.getColumnCount(); idx++) {
             IndexColumn idxColumn = index.getColumn(idx);
             Column col = table.findColumn(idxColumn.getName());
-
             if (col == null) {
                 // would get null pointer on next line anyway, so throw
                 // exception
@@ -2386,7 +2184,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             }
             printIdentifier(getColumnName(col), ddl);
         }
-
         ddl.append(")");
     }
 
@@ -2412,7 +2209,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected void writeEmbeddedForeignKeysStmt(Table table, StringBuilder ddl) {
         for (int idx = 0; idx < table.getForeignKeyCount(); idx++) {
             ForeignKey key = table.getForeignKey(idx);
-
             if (key.getForeignTableName() == null) {
                 log.warn("Foreign key table is null for key " + key);
             } else {
@@ -2461,28 +2257,25 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             ddl.append(" FOREIGN KEY (");
             writeLocalReferences(key, ddl);
             ddl.append(") REFERENCES ");
-            
             if (StringUtils.isNotBlank(key.getForeignTableCatalog()) || StringUtils.isNotBlank(key.getForeignTableSchema())) {
-                    if (StringUtils.isNotBlank(key.getForeignTableCatalog())) {
-                        printIdentifier(key.getForeignTableCatalog(), ddl);
-                        ddl.append(".");
-                    }
-                     if (StringUtils.isNotBlank(key.getForeignTableSchema())) {
-                         printIdentifier(key.getForeignTableSchema(), ddl);
-                         ddl.append(".");
-                 }
-            }
-            else {
-                    if (StringUtils.isNotBlank(table.getCatalog())) {
-                        printIdentifier(table.getCatalog(), ddl);
-                        ddl.append(".");
+                if (StringUtils.isNotBlank(key.getForeignTableCatalog())) {
+                    printIdentifier(key.getForeignTableCatalog(), ddl);
+                    ddl.append(".");
                 }
-                    if (StringUtils.isNotBlank(table.getSchema())) {
+                if (StringUtils.isNotBlank(key.getForeignTableSchema())) {
+                    printIdentifier(key.getForeignTableSchema(), ddl);
+                    ddl.append(".");
+                }
+            } else {
+                if (StringUtils.isNotBlank(table.getCatalog())) {
+                    printIdentifier(table.getCatalog(), ddl);
+                    ddl.append(".");
+                }
+                if (StringUtils.isNotBlank(table.getSchema())) {
                     printIdentifier(table.getSchema(), ddl);
                     ddl.append(".");
                 }
             }
-            
             printIdentifier(getTableName(key.getForeignTableName()), ddl);
             ddl.append(" (");
             writeForeignReferences(key, ddl);
@@ -2491,19 +2284,19 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             printEndOfStatement(ddl);
         }
     }
-    
+
     protected void writeCascadeAttributesForForeignKey(ForeignKey key, StringBuilder ddl) {
         writeCascadeAttributesForForeignKeyDelete(key, ddl);
         writeCascadeAttributesForForeignKeyUpdate(key, ddl);
     }
-    
+
     protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
         // No need to output action for RESTRICT and NO ACTION since that is the default in every database that supports foreign keys
         if (key.getOnDeleteAction() != ForeignKeyAction.RESTRICT && key.getOnDeleteAction() != ForeignKeyAction.NOACTION) {
             ddl.append(" ON DELETE " + key.getOnDeleteAction().getForeignKeyActionName());
         }
     }
-    
+
     protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
         // No need to output action for RESTRICT and NO ACTION since that is the default in every database that supports foreign keys
         if (key.getOnUpdateAction() != ForeignKeyAction.RESTRICT && key.getOnUpdateAction() != ForeignKeyAction.NOACTION) {
@@ -2542,8 +2335,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Generates the statement to drop a foreignkey constraint from the database
-     * using an alter table statement.
+     * Generates the statement to drop a foreignkey constraint from the database using an alter table statement.
      *
      * @param table
      *            The table
@@ -2584,8 +2376,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Prints the end of statement text, which is typically a semi colon followed by
-     * a carriage return.
+     * Prints the end of statement text, which is typically a semi colon followed by a carriage return.
      */
     protected void printEndOfStatement(StringBuilder ddl) {
         println(databaseInfo.getSqlCommandDelimiter(), ddl);
@@ -2603,9 +2394,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      *
      * @param identifier
      *            The identifier
-     * @return The delimited version of the identifier unless the platform is
-     *         configured to use undelimited identifiers; in that case, the
-     *         identifier is returned unchanged
+     * @return The delimited version of the identifier unless the platform is configured to use undelimited identifiers; in that case, the identifier is
+     *         returned unchanged
      */
     protected String getDelimitedIdentifier(String identifier) {
         if (delimitedIdentifierModeOn) {
@@ -2616,8 +2406,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Prints the given identifier. For most databases, this will be a delimited
-     * identifier.
+     * Prints the given identifier. For most databases, this will be a delimited identifier.
      *
      * @param identifier
      *            The identifier
@@ -2627,8 +2416,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Prints the given identifier followed by a newline. For most databases, this
-     * will be a delimited identifier.
+     * Prints the given identifier followed by a newline. For most databases, this will be a delimited identifier.
      *
      * @param identifier
      *            The identifier
@@ -2656,8 +2444,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /*
-     * Determines whether script mode is on. This means that the generated SQL is
-     * not intended to be sent directly to the database but rather to be saved in a
+     * Determines whether script mode is on. This means that the generated SQL is not intended to be sent directly to the database but rather to be saved in a
      * SQL script file. Per default, script mode is off.
      *
      * @return <code>true</code> if script mode is on
@@ -2667,9 +2454,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /*
-     * Specifies whether script mode is on. This means that the generated SQL is not
-     * intended to be sent directly to the database but rather to be saved in a SQL
-     * script file.
+     * Specifies whether script mode is on. This means that the generated SQL is not intended to be sent directly to the database but rather to be saved in a
+     * SQL script file.
      *
      * @param scriptModeOn <code>true</code> if script mode is on
      */
@@ -2699,8 +2485,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /*
-     * Determines whether delimited identifiers are used or normal SQL92 identifiers
-     * (which may only contain alphanumerical characters and the underscore, must
+     * Determines whether delimited identifiers are used or normal SQL92 identifiers (which may only contain alphanumerical characters and the underscore, must
      * start with a letter and cannot be a reserved keyword).
      *
      * @return <code>true</code> if delimited identifiers are used
@@ -2712,8 +2497,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     /*
      * Specifies whether delimited identifiers are used or normal SQL92 identifiers.
      *
-     * @param delimitedIdentifierModeOn <code>true</code> if delimited identifiers
-     * shall be used
+     * @param delimitedIdentifierModeOn <code>true</code> if delimited identifiers shall be used
      */
     public void setDelimitedIdentifierModeOn(boolean delimitedIdentifierModeOn) {
         if (!databaseInfo.isDelimitedIdentifiersSupported() && delimitedIdentifierModeOn) {
@@ -2721,7 +2505,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         } else {
             this.delimitedIdentifierModeOn = delimitedIdentifierModeOn;
         }
-
     }
 
     public DatabaseInfo getDatabaseInfo() {

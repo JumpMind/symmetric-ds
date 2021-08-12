@@ -35,53 +35,39 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
  * Import data from file to database tables.
  */
 public class DbImportCommand extends AbstractCommandLauncher {
-
     private static final String OPTION_FORMAT = "format";
-    
     private static final String OPTION_CATALOG = "catalog";
-    
     private static final String OPTION_SCHEMA = "schema";
-    
     private static final String OPTION_TABLE = "table";
-    
     private static final String OPTION_USE_VARIABLE_DATES = "use-variable-dates";
-    
     private static final String OPTION_COMMIT = "commit";
-    
     private static final String OPTION_INTERVAL = "interval";
-    
     private static final String OPTION_IGNORE = "ignore";
-    
     private static final String OPTION_REPLACE = "replace";
-    
     private static final String OPTION_FORCE = "force";
-
     private static final String OPTION_ALTER = "alter";
-    
     private static final String OPTION_FILTER_CLASSES = "filter-classes";
-    
     private static final String OPTION_DROP_IF_EXISTS = "drop-if-exists";
-    
     private static final String OPTION_ALTER_CASE = "alter-case";
 
     public DbImportCommand() {
         super("dbimport", "[file...]", "DbImport.Option.");
     }
-    
+
     public static void main(String[] args) {
         new DbImportCommand().execute(args);
     }
-    
+
     @Override
     protected boolean printHelpIfNoOptionsAreProvided() {
         return false;
     }
-    
+
     @Override
     protected boolean requiresPropertiesFile(CommandLine line) {
         return true;
     }
-    
+
     @Override
     protected void printHelp(CommandLine cmd, Options options) {
         System.out.println(app + " version " + Version.version());
@@ -107,47 +93,37 @@ public class DbImportCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_DROP_IF_EXISTS, false);
         addOption(options, null, OPTION_ALTER_CASE, false);
     }
-    
+
     @Override
     protected boolean executeWithOptions(CommandLine line) throws Exception {
         DbImport dbImport = new DbImport(getDatabasePlatform(true));
-
         if (line.hasOption(OPTION_FORMAT)) {
             dbImport.setFormat(Format.valueOf(line.getOptionValue(OPTION_FORMAT).toUpperCase()));
         }
-        
         if (line.hasOption(OPTION_CATALOG)) {
             dbImport.setCatalog(line.getOptionValue(OPTION_CATALOG));
         }
-        
         if (line.hasOption(OPTION_SCHEMA)) {
             dbImport.setSchema(line.getOptionValue(OPTION_SCHEMA));
         }
-        
         if (line.hasOption(OPTION_USE_VARIABLE_DATES)) {
             dbImport.setUseVariableForDates(true);
         }
-        
         if (line.hasOption(OPTION_COMMIT)) {
             dbImport.setCommitRate(Long.parseLong(line.getOptionValue(OPTION_COMMIT)));
         }
-        
         if (line.hasOption(OPTION_INTERVAL)) {
             dbImport.setInterval((Integer.parseInt(line.getOptionValue(OPTION_INTERVAL))));
         }
-        
         if (line.hasOption(OPTION_ALTER_CASE)) {
             dbImport.setAlterCaseToMatchDatabaseDefaultCase(true);
         }
-        
         if (line.hasOption(OPTION_DROP_IF_EXISTS)) {
             dbImport.setDropIfExists(true);
         }
-
         if (line.hasOption(OPTION_ALTER)) {
             dbImport.setAlterTables(true);
         }
-        
         if (line.hasOption(OPTION_FILTER_CLASSES)) {
             String filters = line.getOptionValue(OPTION_FILTER_CLASSES);
             if (StringUtils.isNotBlank(filters)) {
@@ -161,25 +137,21 @@ public class DbImportCommand extends AbstractCommandLauncher {
                 }
             }
         }
-
         if (line.hasOption(OPTION_FORCE)) {
             dbImport.setForceImport(true);
         }
-
         if (line.hasOption(OPTION_REPLACE)) {
             dbImport.setReplaceRows(true);
         }
-
         if (line.hasOption(OPTION_IGNORE)) {
             dbImport.setIgnoreCollisions(true);
         }
-
         String[] args = line.getArgs();
         if (args.length == 0) {
             dbImport.importTables(System.in, line.getOptionValue(OPTION_TABLE));
         } else {
             for (String fileName : args) {
-                if (! new File(fileName).exists()) {
+                if (!new File(fileName).exists()) {
                     throw new RuntimeException("Cannot find file " + fileName);
                 }
             }
@@ -189,7 +161,6 @@ public class DbImportCommand extends AbstractCommandLauncher {
                 in.close();
             }
         }
-
         return true;
     }
 }

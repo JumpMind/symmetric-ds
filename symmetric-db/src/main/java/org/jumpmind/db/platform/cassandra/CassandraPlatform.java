@@ -41,19 +41,14 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 
 public class CassandraPlatform extends AbstractDatabasePlatform {
-    
     Map<String, Map<String, Table>> metaData = new HashMap<String, Map<String, Table>>();
-
     protected Session session;
-
     protected Cluster cluster;
-    
+
     public CassandraPlatform(SqlTemplateSettings settings, String contactPoint) {
         super(settings);
-        
         cluster = Cluster.builder().addContactPoint(contactPoint).build();
         this.session = cluster.connect();
-        
         buildMetaData();
     }
 
@@ -91,7 +86,7 @@ public class CassandraPlatform extends AbstractDatabasePlatform {
     public IDdlReader getDdlReader() {
         return new CassandraDdlReader(this);
     }
-    
+
     @Override
     public ISqlTemplate getSqlTemplate() {
         return new CassandraSqlTemplate();
@@ -101,7 +96,7 @@ public class CassandraPlatform extends AbstractDatabasePlatform {
     public ISqlTemplate getSqlTemplateDirty() {
         return new CassandraSqlTemplate();
     }
-    
+
     public Session getSession() {
         return session;
     }
@@ -110,7 +105,6 @@ public class CassandraPlatform extends AbstractDatabasePlatform {
         this.session = session;
     }
 
-    
     public Map<String, Map<String, Table>> getMetaData() {
         return metaData;
     }
@@ -127,15 +121,14 @@ public class CassandraPlatform extends AbstractDatabasePlatform {
                 table.setName(tableMeta.getName());
                 table.setSchema(keystoreMeta.getName());
                 List<ColumnMetadata> pkColumns = tableMeta.getPrimaryKey();
-
                 for (ColumnMetadata columnMeta : tableMeta.getColumns()) {
                     Column column = new Column();
                     column.setName(columnMeta.getName());
                     column.setMappedTypeCode(getMappedTypeCode(columnMeta.getType().getName().name()));
                     if (columnMeta.getType().getTypeArguments() != null) {
-                    	StringBuilder types = new StringBuilder();
+                        StringBuilder types = new StringBuilder();
                         for (DataType dt : columnMeta.getType().getTypeArguments()) {
-                            if (types.length() > 0) { 
+                            if (types.length() > 0) {
                                 types.append(",");
                             }
                             types.append(dt.getName().name());
@@ -153,14 +146,12 @@ public class CassandraPlatform extends AbstractDatabasePlatform {
             }
         }
     }
-    
+
     protected int getMappedTypeCode(String dataType) {
         /*
-         * Unsupported Types ================= ASCII(1), BLOB(3), COUNTER(5), INET(16),
-         * VARINT(14), TIMEUUID(15), CUSTOM(0), UDT(48,
-         * ProtocolVersion.V3), TUPLE(49, ProtocolVersion.V3),
+         * Unsupported Types ================= ASCII(1), BLOB(3), COUNTER(5), INET(16), VARINT(14), TIMEUUID(15), CUSTOM(0), UDT(48, ProtocolVersion.V3),
+         * TUPLE(49, ProtocolVersion.V3),
          */
-        
         if (dataType.equals(DataType.Name.INT.name())) {
             return Types.INTEGER;
         } else if (dataType.equals(DataType.Name.BIGINT.name())) {
@@ -196,5 +187,4 @@ public class CassandraPlatform extends AbstractDatabasePlatform {
         }
         return Types.VARCHAR;
     }
-
 }

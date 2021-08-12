@@ -28,20 +28,18 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class FileSyncTrackerJob extends AbstractJob {
-
     public FileSyncTrackerJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(ClusterConstants.FILE_SYNC_TRACKER, engine, taskScheduler);
     }
 
     @Override
     public JobDefaults getDefaults() {
-        boolean fileSyncEnabeld = engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE); 
-
+        boolean fileSyncEnabeld = engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE);
         return new JobDefaults()
                 .schedule(EVERY_5_MINUTES)
                 .enabled(fileSyncEnabeld)
                 .description("Check for changes in sync'd files");
-    }    
+    }
 
     @Override
     public void doJob(boolean force) throws Exception {

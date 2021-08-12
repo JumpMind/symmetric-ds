@@ -27,7 +27,6 @@ import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.DmlStatement;
 
 public class SqlAnywhereDmlStatement extends DmlStatement {
-
     public SqlAnywhereDmlStatement(DmlType type, String catalogName,
             String schemaName, String tableName, Column[] keysColumns,
             Column[] columns, boolean[] nullKeyValues,
@@ -44,5 +43,4 @@ public class SqlAnywhereDmlStatement extends DmlStatement {
         }
         return type;
     }
-
 }

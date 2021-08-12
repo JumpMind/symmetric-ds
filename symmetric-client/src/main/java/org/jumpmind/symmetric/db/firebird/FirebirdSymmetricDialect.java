@@ -39,52 +39,48 @@ import org.springframework.jdbc.UncategorizedSQLException;
  * Database dialect for <a href="http://www.firebirdsql.org/">Firebird</a>.
  */
 public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-
     static final String SQL_DROP_FUNCTION = "DROP EXTERNAL FUNCTION $(functionName)";
-    static final String SQL_FUNCTION_INSTALLED = "select count(*) from rdb$functions where rdb$function_name = upper('$(functionName)')" ;
-
+    static final String SQL_FUNCTION_INSTALLED = "select count(*) from rdb$functions where rdb$function_name = upper('$(functionName)')";
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
-
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
     public FirebirdSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new FirebirdTriggerTemplate(this);
     }
-    
+
     @Override
     public void createRequiredDatabaseObjects() {
         String escape = this.parameterService.getTablePrefix() + "_" + "escape";
         if (!installed(SQL_FUNCTION_INSTALLED, escape)) {
-            String sql = "declare external function $(functionName) cstring(32660)                                                                                                                                               " + 
+            String sql = "declare external function $(functionName) cstring(32660)                                                                                                                                               "
+                    +
                     "  returns cstring(32660) free_it entry_point 'sym_escape' module_name 'sym_udf'                                                                                          ";
             install(sql, escape);
         }
-        
         String hex = this.parameterService.getTablePrefix() + "_" + "hex";
         if (!installed(SQL_FUNCTION_INSTALLED, hex)) {
-            String sql = "declare external function $(functionName) blob                                                                                                                                                         " + 
+            String sql = "declare external function $(functionName) blob                                                                                                                                                         "
+                    +
                     "  returns cstring(32660) free_it entry_point 'sym_hex' module_name 'sym_udf'                                                                                             ";
             install(sql, hex);
-        }        
-        
+        }
         try {
-            platform.getSqlTemplate().queryForInt("select char_length("+escape+"('')) from rdb$database");
+            platform.getSqlTemplate().queryForInt("select char_length(" + escape + "('')) from rdb$database");
         } catch (UncategorizedSQLException e) {
             if (e.getSQLException().getErrorCode() == -804) {
                 log.error("Please install the sym_udf.so/dll to your {firebird_home}/UDF folder");
             }
-            throw new RuntimeException("Function "+escape+" is not installed", e);
+            throw new RuntimeException("Function " + escape + " is not installed", e);
         }
     }
-    
+
     @Override
     public void dropRequiredDatabaseObjects() {
         String escape = this.parameterService.getTablePrefix() + "_" + "escape";
         if (installed(SQL_FUNCTION_INSTALLED, escape)) {
             uninstall(SQL_DROP_FUNCTION, escape);
         }
-        
         String hex = this.parameterService.getTablePrefix() + "_" + "hex";
         if (installed(SQL_FUNCTION_INSTALLED, hex)) {
             uninstall(SQL_DROP_FUNCTION, hex);
@@ -127,14 +123,14 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
 
     @Override
     public String getName() {
-       return StringUtils.left(super.getName(), 50);
+        return StringUtils.left(super.getName(), 50);
     }
 
     @Override
     public boolean supportsOpenCursorsAcrossCommit() {
         return false;
     }
-    
+
     @Override
     public boolean supportsTransactionId() {
         return true;
@@ -146,8 +142,9 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     }
 
     @Override
-    public void cleanupTriggers() {        
-        List<String> names = platform.getSqlTemplate().query("select rdb$trigger_name from rdb$triggers where rdb$trigger_name like '"+parameterService.getTablePrefix().toUpperCase()+"_%'", new StringMapper());
+    public void cleanupTriggers() {
+        List<String> names = platform.getSqlTemplate().query("select rdb$trigger_name from rdb$triggers where rdb$trigger_name like '" + parameterService
+                .getTablePrefix().toUpperCase() + "_%'", new StringMapper());
         int count = 0;
         for (String name : names) {
             count += platform.getSqlTemplate().update("drop trigger " + name);
@@ -156,7 +153,7 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
             log.info("Remove {} triggers", count);
         }
     }
-    
+
     @Override
     public String massageDataExtractionSql(String sql, boolean isContainsBigLob) {
         if (!isContainsBigLob) {
@@ -167,7 +164,7 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
         }
         return sql;
     }
-    
+
     @Override
     public long getCurrentSequenceValue(SequenceIdentifier identifier) {
         return platform.getSqlTemplate().queryForLong("select gen_id(GEN_" + getSequenceName(identifier) + ", 0) from rdb$database");

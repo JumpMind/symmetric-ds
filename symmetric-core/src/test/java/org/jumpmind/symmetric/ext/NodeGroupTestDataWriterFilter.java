@@ -28,9 +28,7 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 
 public class NodeGroupTestDataWriterFilter extends DatabaseWriterFilterAdapter implements
         IDatabaseWriterFilter, INodeGroupExtensionPoint {
-
     protected int numberOfTimesCalled = 0;
-
     String[] nodeGroups;
 
     public String[] getNodeGroupIdsToApplyTo() {
@@ -51,5 +49,4 @@ public class NodeGroupTestDataWriterFilter extends DatabaseWriterFilterAdapter i
     public int getNumberOfTimesCalled() {
         return numberOfTimesCalled;
     }
-
 }

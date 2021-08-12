@@ -41,18 +41,13 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 public class XmlPublisherDataRouterTest {
-
     private static final String TABLE_NAME = "TEST_XML_PUBLISHER";
-    private static final String INSERT_XML =
-            "<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" id=\"1\" binary=\"BASE64\" time=\"test\">" +
-                    "<row entity=\"" + TABLE_NAME + "\" dml=\"I\"><data key=\"ID\">1</data><data key=\"DATA\">new inserted data</data></row></batch>";
-    private static final String UPDATE_XML =
-            "<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" id=\"2\" binary=\"BASE64\" time=\"test\">" +
-                    "<row entity=\"" + TABLE_NAME + "\" dml=\"U\"><data key=\"ID\">2</data><data key=\"DATA\">updated data</data></row></batch>";
-    private static final String DELETE_XML =
-            "<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" id=\"3\" binary=\"BASE64\" time=\"test\">" +
-                    "<row entity=\"" + TABLE_NAME + "\" dml=\"D\"><data key=\"ID\">3</data><data key=\"DATA\">old deleted data</data></row></batch>";
-
+    private static final String INSERT_XML = "<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" id=\"1\" binary=\"BASE64\" time=\"test\">" +
+            "<row entity=\"" + TABLE_NAME + "\" dml=\"I\"><data key=\"ID\">1</data><data key=\"DATA\">new inserted data</data></row></batch>";
+    private static final String UPDATE_XML = "<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" id=\"2\" binary=\"BASE64\" time=\"test\">" +
+            "<row entity=\"" + TABLE_NAME + "\" dml=\"U\"><data key=\"ID\">2</data><data key=\"DATA\">updated data</data></row></batch>";
+    private static final String DELETE_XML = "<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" id=\"3\" binary=\"BASE64\" time=\"test\">" +
+            "<row entity=\"" + TABLE_NAME + "\" dml=\"D\"><data key=\"ID\">3</data><data key=\"DATA\">old deleted data</data></row></batch>";
     private XmlPublisherDataRouter router;
     private SimpleRouterContext context;
     private Table table;
@@ -66,10 +61,8 @@ public class XmlPublisherDataRouterTest {
         ISymmetricEngine engine = mock(ISymmetricEngine.class);
         when(engine.getSymmetricDialect()).thenReturn(mock(AbstractSymmetricDialect.class));
         when(engine.getSymmetricDialect().getBinaryEncoding()).thenReturn(BinaryEncoding.BASE64);
-
-        table = Table.buildTable(TABLE_NAME, new String[]{"ID"}, new String[]{"ID", "DATA"});
+        table = Table.buildTable(TABLE_NAME, new String[] { "ID" }, new String[] { "ID", "DATA" });
         context = new SimpleRouterContext();
-
         router = new XmlPublisherDataRouter();
         router.setSymmetricEngine(engine);
         router.setTimeStringGenerator(new XmlPublisherDatabaseWriterFilter.ITimeGenerator() {
@@ -77,11 +70,9 @@ public class XmlPublisherDataRouterTest {
                 return "test";
             }
         });
-
         List<String> groupByColumnNames = new ArrayList<String>();
         groupByColumnNames.add("ID");
         router.setGroupByColumnNames(groupByColumnNames);
-
         output = new Output();
         router.setPublisher(output);
     }
@@ -93,10 +84,8 @@ public class XmlPublisherDataRouterTest {
         data.setRowData("1,new inserted data");
         data.setTriggerHistory(new TriggerHistory(TABLE_NAME, "ID", "ID,DATA"));
         data.setTableName(TABLE_NAME);
-
         router.routeToNodes(context, new DataMetaData(data, table, null, null), null, false, false, null);
         router.contextCommitted(context);
-
         assertEquals(INSERT_XML, output.toString().trim());
     }
 
@@ -107,10 +96,8 @@ public class XmlPublisherDataRouterTest {
         data.setRowData("2,updated data");
         data.setTriggerHistory(new TriggerHistory(TABLE_NAME, "ID", "ID,DATA"));
         data.setTableName(TABLE_NAME);
-
         router.routeToNodes(context, new DataMetaData(data, table, null, null), null, false, false, null);
         router.contextCommitted(context);
-
         assertEquals(UPDATE_XML, output.toString().trim());
     }
 
@@ -121,10 +108,8 @@ public class XmlPublisherDataRouterTest {
         data.setOldData("3,old deleted data");
         data.setTriggerHistory(new TriggerHistory(TABLE_NAME, "ID", "ID,DATA"));
         data.setTableName(TABLE_NAME);
-
         router.routeToNodes(context, new DataMetaData(data, table, null, null), null, false, false, null);
         router.contextCommitted(context);
-
         assertEquals(DELETE_XML, output.toString().trim());
     }
 

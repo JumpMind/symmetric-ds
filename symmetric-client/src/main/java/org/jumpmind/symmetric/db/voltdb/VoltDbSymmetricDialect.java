@@ -27,7 +27,6 @@ import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class VoltDbSymmetricDialect extends AbstractSymmetricDialect {
-
     public VoltDbSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new VoltDbTriggerTemplate(this);
@@ -51,28 +50,29 @@ public class VoltDbSymmetricDialect extends AbstractSymmetricDialect {
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }
-    
+
     @Override
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         // VoltDB doesn't support triggers currently.
     }
-    
+
     @Override
     public void enableSyncTriggers(ISqlTransaction transaction) {
         // VoltDB doesn't support triggers currently.
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.jumpmind.symmetric.db.ISymmetricDialect#getSyncTriggersExpression()
      */
     @Override
     public String getSyncTriggersExpression() {
         return null;
     }
-    
+
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return false;
     }
-
 }

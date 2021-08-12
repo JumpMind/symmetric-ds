@@ -48,7 +48,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * Represents an index definition for a table.
  */
 public class NonUniqueIndex extends IndexImpBase {
-
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = 1L;
 
@@ -66,12 +65,9 @@ public class NonUniqueIndex extends IndexImpBase {
     @SuppressWarnings("unchecked")
     public Object clone() throws CloneNotSupportedException {
         NonUniqueIndex result = new NonUniqueIndex();
-
         result.name = name;
         result.columns = (ArrayList<IndexColumn>) columns.clone();
-        
         clonePlatformIndexes(result);
-
         return result;
     }
 
@@ -79,7 +75,6 @@ public class NonUniqueIndex extends IndexImpBase {
     public boolean equals(Object obj) {
         if (obj instanceof NonUniqueIndex) {
             NonUniqueIndex other = (NonUniqueIndex) obj;
-
             return new EqualsBuilder().append(name, other.name).append(columns, other.columns)
                     .append(platformIndexes, other.platformIndexes)
                     .isEquals();
@@ -91,10 +86,8 @@ public class NonUniqueIndex extends IndexImpBase {
     public boolean equalsIgnoreCase(IIndex other) {
         if (other instanceof NonUniqueIndex) {
             NonUniqueIndex otherIndex = (NonUniqueIndex) other;
-
             boolean checkName = (name != null) && (name.length() > 0) && (otherIndex.name != null)
                     && (otherIndex.name.length() > 0);
-
             if ((!checkName || name.equalsIgnoreCase(otherIndex.name))
                     && (getColumnCount() == otherIndex.getColumnCount())) {
                 for (int idx = 0; idx < getColumnCount(); idx++) {
@@ -113,20 +106,17 @@ public class NonUniqueIndex extends IndexImpBase {
     }
 
     public String toString() {
-    	StringBuilder result = new StringBuilder();
-
+        StringBuilder result = new StringBuilder();
         result.append("Index [name=");
         result.append(getName());
         result.append("; ");
         result.append(getColumnCount());
         result.append(" columns]");
-
         return result.toString();
     }
 
     public String toVerboseString() {
-    	StringBuilder result = new StringBuilder();
-
+        StringBuilder result = new StringBuilder();
         result.append("Index [");
         result.append(getName());
         result.append("] columns:");
@@ -134,7 +124,6 @@ public class NonUniqueIndex extends IndexImpBase {
             result.append(" ");
             result.append(getColumn(idx));
         }
-
         return result.toString();
     }
 }

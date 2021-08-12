@@ -29,29 +29,25 @@ import org.jumpmind.symmetric.statistic.ChannelStats;
 import org.jumpmind.symmetric.statistic.HostStats;
 import org.jumpmind.symmetric.statistic.JobStats;
 
-
 /**
  * This service provides an API to access captured statistics
  */
 public interface IStatisticService {
-
     public void save(ChannelStats stats);
-    
+
     public void save(HostStats stats);
-    
+
     public void save(JobStats stats);
-    
+
     public Date getMinNodeStats(String nodeId);
-    
+
     public TreeMap<Date, Map<String, ChannelStats>> getChannelStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes);
-    
+
     public void deleteChannelStatsForPeriod(Date start, Date end, String nodeId);
-    
+
     public TreeMap<Date, Map<String, ChannelStats>> getNodeStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes);
-    
+
     public TreeMap<Date, HostStats> getHostStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes);
 
     public List<JobStats> getJobStatsForPeriod(Date start, Date end, String nodeId);
-    
-
 }

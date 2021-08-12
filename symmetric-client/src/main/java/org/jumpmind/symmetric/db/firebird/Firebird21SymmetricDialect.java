@@ -27,7 +27,6 @@ import org.jumpmind.symmetric.service.IParameterService;
  * Database dialect for Firebird version 2.1.
  */
 public class Firebird21SymmetricDialect extends Firebird20SymmetricDialect {
-
     public Firebird21SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new Firebird21TriggerTemplate(this);
@@ -37,12 +36,13 @@ public class Firebird21SymmetricDialect extends Firebird20SymmetricDialect {
     public void createRequiredDatabaseObjects() {
         String hex = this.parameterService.getTablePrefix() + "_" + "hex";
         if (!installed(SQL_FUNCTION_INSTALLED, hex)) {
-            String sql = "declare external function $(functionName) blob                                                                                                                                                         " + 
+            String sql = "declare external function $(functionName) blob                                                                                                                                                         "
+                    +
                     "  returns cstring(32660) free_it entry_point 'sym_hex' module_name 'sym_udf'                                                                                             ";
             install(sql, hex);
-        }        
+        }
     }
-    
+
     @Override
     public void dropRequiredDatabaseObjects() {
         String hex = this.parameterService.getTablePrefix() + "_" + "hex";
@@ -50,5 +50,4 @@ public class Firebird21SymmetricDialect extends Firebird20SymmetricDialect {
             uninstall(SQL_DROP_FUNCTION, hex);
         }
     }
-
 }

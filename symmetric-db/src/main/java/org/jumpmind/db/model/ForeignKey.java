@@ -55,51 +55,36 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * Represents a database foreign key.
  */
 public class ForeignKey implements Cloneable, Serializable {
-    
     public enum ForeignKeyAction {
-        CASCADE("CASCADE"),
-        NOACTION("NO ACTION"),
-        SETNULL("SET NULL"),
-        SETDEFAULT("SET DEFAULT"),
-        RESTRICT("RESTRICT");
-        
+        CASCADE("CASCADE"), NOACTION("NO ACTION"), SETNULL("SET NULL"), SETDEFAULT("SET DEFAULT"), RESTRICT("RESTRICT");
+
         private String foreignKeyActionName;
-        
+
         private ForeignKeyAction(String foreignKeyActionName) {
             this.foreignKeyActionName = foreignKeyActionName;
         }
-        
+
         public String getForeignKeyActionName() {
             return foreignKeyActionName;
         }
     }
 
-
     private static final long serialVersionUID = 1L;
-
     /** The name of the foreign key, may be <code>null</code>. */
     private String name;
-
     /** The target table. */
     private Table foreignTable;
-
     /** The name of the foreign table. */
     private String foreignTableName;
-
     /** The references between local and remote columns. */
     private ListOrderedSet<Reference> references = new ListOrderedSet<Reference>();
-
     /** Whether this foreign key has an associated auto-generated index. */
     private boolean autoIndexPresent;
-
     private String foreignTableCatalog;
-    
     private String foreignTableSchema;
-    
     private ForeignKeyAction onDeleteAction = ForeignKeyAction.NOACTION;
-    
     private ForeignKeyAction onUpdateAction = ForeignKeyAction.NOACTION;
-    
+
     /**
      * Creates a new foreign key object that has no name.
      */
@@ -181,9 +166,8 @@ public class ForeignKey implements Cloneable, Serializable {
     }
 
     /**
-     * Sets the name of the foreign table. Please note that you should not use
-     * this method when manually constructing or manipulating the database
-     * model. Rather utilize the {@link #setForeignTable(Table)} method.
+     * Sets the name of the foreign table. Please note that you should not use this method when manually constructing or manipulating the database model. Rather
+     * utilize the {@link #setForeignTable(Table)} method.
      * 
      * @param foreignTableName
      *            The table name
@@ -234,8 +218,7 @@ public class ForeignKey implements Cloneable, Serializable {
     }
 
     /**
-     * Adds a reference, ie. a mapping between a local column (in the table that
-     * owns this foreign key) and a remote column.
+     * Adds a reference, ie. a mapping between a local column (in the table that owns this foreign key) and a remote column.
      * 
      * @param reference
      *            The reference to add
@@ -244,7 +227,6 @@ public class ForeignKey implements Cloneable, Serializable {
         if (reference != null) {
             for (int idx = 0; idx < references.size(); idx++) {
                 Reference curRef = getReference(idx);
-
                 if (curRef.getSequenceValue() > reference.getSequenceValue()) {
                     references.add(idx, reference);
                     return;
@@ -277,13 +259,11 @@ public class ForeignKey implements Cloneable, Serializable {
     }
 
     /**
-     * Determines whether this foreign key uses the given column as a local
-     * column in a reference.
+     * Determines whether this foreign key uses the given column as a local column in a reference.
      * 
      * @param column
      *            The column to check
-     * @return <code>true</code> if a reference uses the column as a local
-     *         column
+     * @return <code>true</code> if a reference uses the column as a local column
      */
     public boolean hasLocalColumn(Column column) {
         for (int idx = 0; idx < getReferenceCount(); idx++) {
@@ -295,13 +275,11 @@ public class ForeignKey implements Cloneable, Serializable {
     }
 
     /**
-     * Determines whether this foreign key uses the given column as a foreign
-     * column in a reference.
+     * Determines whether this foreign key uses the given column as a foreign column in a reference.
      * 
      * @param column
      *            The column to check
-     * @return <code>true</code> if a reference uses the column as a foreign
-     *         column
+     * @return <code>true</code> if a reference uses the column as a foreign column
      */
     public boolean hasForeignColumn(Column column) {
         for (int idx = 0; idx < getReferenceCount(); idx++) {
@@ -313,8 +291,7 @@ public class ForeignKey implements Cloneable, Serializable {
     }
 
     /**
-     * Determines whether this foreign key has an auto-generated associated
-     * index.
+     * Determines whether this foreign key has an auto-generated associated index.
      * 
      * @return <code>true</code> if an auto-generated index exists
      */
@@ -323,8 +300,7 @@ public class ForeignKey implements Cloneable, Serializable {
     }
 
     /**
-     * Specifies whether this foreign key has an auto-generated associated
-     * index.
+     * Specifies whether this foreign key has an auto-generated associated index.
      * 
      * @param autoIndexPresent
      *            <code>true</code> if an auto-generated index exists
@@ -338,7 +314,6 @@ public class ForeignKey implements Cloneable, Serializable {
      */
     public Object clone() throws CloneNotSupportedException {
         ForeignKey result = (ForeignKey) super.clone();
-
         result.name = name;
         result.foreignTableName = foreignTableName;
         result.references = new ListOrderedSet<Reference>();
@@ -346,11 +321,9 @@ public class ForeignKey implements Cloneable, Serializable {
         result.foreignTableSchema = foreignTableSchema;
         result.onDeleteAction = getOnDeleteAction();
         result.onUpdateAction = getOnUpdateAction();
-        
         for (Iterator<Reference> it = references.iterator(); it.hasNext();) {
             result.references.add((Reference) it.next().clone());
         }
-
         return result;
     }
 
@@ -360,18 +333,15 @@ public class ForeignKey implements Cloneable, Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof ForeignKey) {
             ForeignKey otherFk = (ForeignKey) obj;
-
             // Note that this compares case sensitive
             // Note also that we can simply compare the references regardless of
             // their order
             // (which is irrelevant for fks) because they are contained in a set
             EqualsBuilder builder = new EqualsBuilder();
-
             if (isCheckName(otherFk)) {
                 builder.append(name, otherFk.name);
             }
             builder.append(foreignTableName, otherFk.foreignTableName);
-            
             // RESTRICT and NOACTION mean the same functionally, so change RESTRICT to NOACTION
             ForeignKeyAction otherForeignKeyDeleteAction = otherFk.getOnDeleteAction();
             if (otherForeignKeyDeleteAction == ForeignKeyAction.RESTRICT) {
@@ -381,7 +351,6 @@ public class ForeignKey implements Cloneable, Serializable {
             if (myForeignKeyDeleteAction == ForeignKeyAction.RESTRICT) {
                 myForeignKeyDeleteAction = ForeignKeyAction.NOACTION;
             }
-            
             ForeignKeyAction otherForeignKeyUpdateAction = otherFk.getOnUpdateAction();
             if (otherForeignKeyUpdateAction == ForeignKeyAction.RESTRICT) {
                 otherForeignKeyUpdateAction = ForeignKeyAction.NOACTION;
@@ -390,34 +359,27 @@ public class ForeignKey implements Cloneable, Serializable {
             if (myForeignKeyUpdateAction == ForeignKeyAction.RESTRICT) {
                 myForeignKeyUpdateAction = ForeignKeyAction.NOACTION;
             }
-            
             builder.append(myForeignKeyDeleteAction, otherForeignKeyDeleteAction);
             builder.append(myForeignKeyUpdateAction, otherForeignKeyUpdateAction);
-            
             builder.append(references.size(), otherFk.references.size());
             for (int i = 0; i < references.size() && i < otherFk.references.size(); i++) {
                 builder.append(references.get(i), otherFk.references.get(i));
             }
-            
             return builder.isEquals();
-                
         } else {
             return false;
         }
     }
 
     /**
-     * Compares this foreign key to the given one while ignoring the case of
-     * identifiers.
+     * Compares this foreign key to the given one while ignoring the case of identifiers.
      * 
      * @param otherFk
      *            The other foreign key
-     * @return <code>true</code> if this foreign key is equal (ignoring case) to
-     *         the given one
+     * @return <code>true</code> if this foreign key is equal (ignoring case) to the given one
      */
     public boolean equalsIgnoreCase(ForeignKey otherFk) {
         boolean checkName = isCheckName(otherFk);
-
         if ((!checkName || name.equalsIgnoreCase(otherFk.name))
                 && foreignTableName.equalsIgnoreCase(otherFk.foreignTableName)) {
             // RESTRICT and NOACTION mean the same functionally, so change RESTRICT to NOACTION
@@ -444,15 +406,12 @@ public class ForeignKey implements Cloneable, Serializable {
                 return false;
             }
             HashSet<Reference> otherRefs = new HashSet<Reference>();
-
             otherRefs.addAll(otherFk.references);
             for (Iterator<?> it = references.iterator(); it.hasNext();) {
                 Reference curLocalRef = (Reference) it.next();
                 boolean found = false;
-
                 for (Iterator<?> otherIt = otherRefs.iterator(); otherIt.hasNext();) {
                     Reference curOtherRef = (Reference) otherIt.next();
-
                     if (curLocalRef.equalsIgnoreCase(curOtherRef)) {
                         otherIt.remove();
                         found = true;
@@ -468,7 +427,7 @@ public class ForeignKey implements Cloneable, Serializable {
             return false;
         }
     }
-    
+
     private boolean isCheckName(ForeignKey otherFk) {
         return name != null && name.length() > 0 && otherFk.name != null
                 && otherFk.name.length() > 0;
@@ -483,12 +442,11 @@ public class ForeignKey implements Cloneable, Serializable {
         if (isNotBlank(name)) {
             builder.append(name);
         }
-     // RESTRICT and NOACTION mean the same functionally, so change RESTRICT to NOACTION
+        // RESTRICT and NOACTION mean the same functionally, so change RESTRICT to NOACTION
         ForeignKeyAction myForeignKeyDeleteAction = getOnDeleteAction();
         if (myForeignKeyDeleteAction == ForeignKeyAction.RESTRICT) {
             myForeignKeyDeleteAction = ForeignKeyAction.NOACTION;
         }
-        
         ForeignKeyAction myForeignKeyUpdateAction = getOnUpdateAction();
         if (myForeignKeyUpdateAction == ForeignKeyAction.RESTRICT) {
             myForeignKeyUpdateAction = ForeignKeyAction.NOACTION;
@@ -502,8 +460,7 @@ public class ForeignKey implements Cloneable, Serializable {
      * {@inheritDoc}
      */
     public String toString() {
-    	StringBuilder result = new StringBuilder();
-
+        StringBuilder result = new StringBuilder();
         result.append("Foreign key [");
         if ((getName() != null) && (getName().length() > 0)) {
             result.append("name=");
@@ -521,7 +478,6 @@ public class ForeignKey implements Cloneable, Serializable {
         }
         result.append(getReferenceCount());
         result.append(" references]");
-
         return result.toString();
     }
 
@@ -531,8 +487,7 @@ public class ForeignKey implements Cloneable, Serializable {
      * @return The string representation
      */
     public String toVerboseString() {
-    	StringBuilder result = new StringBuilder();
-
+        StringBuilder result = new StringBuilder();
         result.append("Foreign key [");
         if ((getName() != null) && (getName().length() > 0)) {
             result.append("name=");
@@ -553,7 +508,6 @@ public class ForeignKey implements Cloneable, Serializable {
             result.append(" ");
             result.append(getReference(idx));
         }
-
         return result.toString();
     }
 
@@ -572,7 +526,7 @@ public class ForeignKey implements Cloneable, Serializable {
     public void setForeignTableSchema(String foreignTableSchema) {
         this.foreignTableSchema = foreignTableSchema;
     }
-    
+
     public ForeignKeyAction getOnDeleteAction() {
         return onDeleteAction;
     }
@@ -588,31 +542,30 @@ public class ForeignKey implements Cloneable, Serializable {
     public void setOnUpdateAction(ForeignKeyAction onUpdateAction) {
         this.onUpdateAction = onUpdateAction;
     }
-    
+
     public static ForeignKeyAction getForeignKeyAction(short importedKeyAction) {
-        switch(importedKeyAction) {
-        case DatabaseMetaData.importedKeyCascade:
-            return ForeignKeyAction.CASCADE;
-        case DatabaseMetaData.importedKeyNoAction:
-            return ForeignKeyAction.NOACTION;
-        case DatabaseMetaData.importedKeyRestrict:
-            return ForeignKeyAction.RESTRICT;
-        case DatabaseMetaData.importedKeySetDefault:
-            return ForeignKeyAction.SETDEFAULT;
-        case DatabaseMetaData.importedKeySetNull:
-            return ForeignKeyAction.SETNULL;
-        default:
-            return ForeignKeyAction.NOACTION;
+        switch (importedKeyAction) {
+            case DatabaseMetaData.importedKeyCascade:
+                return ForeignKeyAction.CASCADE;
+            case DatabaseMetaData.importedKeyNoAction:
+                return ForeignKeyAction.NOACTION;
+            case DatabaseMetaData.importedKeyRestrict:
+                return ForeignKeyAction.RESTRICT;
+            case DatabaseMetaData.importedKeySetDefault:
+                return ForeignKeyAction.SETDEFAULT;
+            case DatabaseMetaData.importedKeySetNull:
+                return ForeignKeyAction.SETNULL;
+            default:
+                return ForeignKeyAction.NOACTION;
         }
     }
-    
+
     public static ForeignKeyAction getForeignKeyActionByForeignKeyActionName(String foreignKeyActionName) throws IllegalArgumentException {
-        for(ForeignKeyAction action : ForeignKeyAction.values()) {
-            if(StringUtils.equals(foreignKeyActionName, action.getForeignKeyActionName())) {
+        for (ForeignKeyAction action : ForeignKeyAction.values()) {
+            if (StringUtils.equals(foreignKeyActionName, action.getForeignKeyActionName())) {
                 return action;
             }
         }
         throw new IllegalArgumentException("Unknown ForeignKeyAction: " + foreignKeyActionName);
     }
-
 }

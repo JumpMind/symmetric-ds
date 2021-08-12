@@ -31,7 +31,6 @@ import bsh.EvalError;
 import bsh.Interpreter;
 
 public class AndroidFileSyncService extends FileSyncService {
-    
     private AndroidSymmetricEngine androidEngine;
 
     public AndroidFileSyncService(ISymmetricEngine engine) {
@@ -41,22 +40,21 @@ public class AndroidFileSyncService extends FileSyncService {
         }
         androidEngine = (AndroidSymmetricEngine) engine;
     }
-    
+
     @Override
     protected void setInterpreterVariables(ISymmetricEngine engine, String sourceNodeId, File batchDir, Interpreter interpreter) throws EvalError {
         super.setInterpreterVariables(engine, sourceNodeId, batchDir, interpreter);
         interpreter.set("androidBaseDir", Environment.getExternalStorageDirectory().getPath());
         interpreter.set("androidAppFilesDir", androidEngine.androidContext.getFilesDir().getPath());
     }
- 
+
     @Override
     protected String getEffectiveBaseDir(String baseDir) {
         String effectiveBaseDir = super.getEffectiveBaseDir(baseDir);
         if (effectiveBaseDir != null && effectiveBaseDir.startsWith("$")) {
             effectiveBaseDir = effectiveBaseDir.replace("${androidBaseDir}", Environment.getExternalStorageDirectory().getPath());
             effectiveBaseDir = effectiveBaseDir.replace("${androidAppFilesDir}", androidEngine.androidContext.getFilesDir().getPath());
-            
         }
         return effectiveBaseDir;
-    } 
+    }
 }

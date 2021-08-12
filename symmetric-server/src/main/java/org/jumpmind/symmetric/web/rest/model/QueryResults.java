@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class QueryResults {
-
     int nbrResults;
     List<Row> results;
 
@@ -48,5 +47,4 @@ public class QueryResults {
     public void setResults(List<Row> results) {
         this.results = results;
     }
-
 }

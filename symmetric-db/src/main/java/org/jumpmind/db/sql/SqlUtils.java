@@ -30,17 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class SqlUtils {
-    
     private static Logger log = LoggerFactory.getLogger(SqlUtils.class);
-
     private static boolean captureOwner = false;
-
     private static List<ISqlTransaction> sqlTransactions = Collections.synchronizedList(new ArrayList<ISqlTransaction>());
-
     private static List<ISqlReadCursor<?>> sqlReadCursors = Collections.synchronizedList(new ArrayList<ISqlReadCursor<?>>());
-
     private static Map<ISqlTransaction, Exception> sqlTransactionsOwnerMap = new ConcurrentHashMap<ISqlTransaction, Exception>();
-
     private static Map<ISqlReadCursor<?>, Exception> sqlReadCursorsOwnerMap = new ConcurrentHashMap<ISqlReadCursor<?>, Exception>();
 
     protected static void addSqlTransaction(ISqlTransaction transaction) {
@@ -79,7 +73,6 @@ abstract public class SqlUtils {
         return new ArrayList<ISqlReadCursor<?>>(sqlReadCursors);
     }
 
-    
     public static void logOpenResources() {
         List<ISqlReadCursor<?>> cursors = SqlUtils.getOpenSqlReadCursors();
         for (ISqlReadCursor<?> cursor : cursors) {
@@ -88,7 +81,6 @@ abstract public class SqlUtils {
                 log.error("The following stack contains the owner of an open read cursor", ex);
             }
         }
-        
         List<ISqlTransaction> transactions = SqlUtils.getOpenTransactions();
         for (ISqlTransaction transaction : transactions) {
             Exception ex = sqlTransactionsOwnerMap.get(transaction);
@@ -97,10 +89,8 @@ abstract public class SqlUtils {
             }
         }
     }
-    
 
     public static void setCaptureOwner(boolean captureOwner) {
         SqlUtils.captureOwner = captureOwner;
     }
-
 }

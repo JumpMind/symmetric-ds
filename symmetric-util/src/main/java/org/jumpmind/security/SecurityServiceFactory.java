@@ -23,13 +23,14 @@ package org.jumpmind.security;
 import org.jumpmind.properties.TypedProperties;
 
 public class SecurityServiceFactory {
-            
-    public enum SecurityServiceType { CLIENT, SERVER }
-    
+    public enum SecurityServiceType {
+        CLIENT, SERVER
+    }
+
     public static ISecurityService create() {
         return create(SecurityServiceType.CLIENT, null);
     }
-    
+
     public static ISecurityService create(SecurityServiceType serviceType, TypedProperties properties) {
         try {
             if (properties == null) {
@@ -37,8 +38,7 @@ public class SecurityServiceFactory {
             }
             String className = properties.get(SecurityConstants.CLASS_NAME_SECURITY_SERVICE);
             if (className == null || className.trim().equals("")) {
-                className = serviceType == SecurityServiceType.SERVER ? "org.jumpmind.security.BouncyCastleSecurityService" :
-                    SecurityService.class.getName();
+                className = serviceType == SecurityServiceType.SERVER ? "org.jumpmind.security.BouncyCastleSecurityService" : SecurityService.class.getName();
             }
             ISecurityService securityService = (ISecurityService) Class.forName(className).getDeclaredConstructor().newInstance();
             securityService.init();
@@ -49,5 +49,4 @@ public class SecurityServiceFactory {
             throw new RuntimeException(e);
         }
     }
-
 }

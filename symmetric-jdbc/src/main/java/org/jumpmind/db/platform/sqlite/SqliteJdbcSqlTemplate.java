@@ -43,7 +43,6 @@ import org.springframework.jdbc.core.StatementCreatorUtils;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
-
     public SqliteJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings, SymmetricLobHandler lobHandler,
             DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
@@ -52,12 +51,11 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
     @Override
     public boolean isUniqueKeyViolation(Throwable ex) {
         SQLException sqlEx = findSQLException(ex);
-        return (sqlEx != null && sqlEx.getMessage() != null && (
-                sqlEx.getMessage().contains("[SQLITE_CONSTRAINT]") || 
+        return (sqlEx != null && sqlEx.getMessage() != null && (sqlEx.getMessage().contains("[SQLITE_CONSTRAINT]") ||
                 sqlEx.getMessage().contains("[SQLITE_CONSTRAINT_PRIMARYKEY]") ||
                 sqlEx.getMessage().contains("[SQLITE_CONSTRAINT_UNIQUE]")));
     }
-    
+
     @Override
     public boolean supportsGetGeneratedKeys() {
         return false;
@@ -70,16 +68,13 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getObjectFromResultSet(ResultSet rs, Class<T> clazz) throws SQLException {        
+    public <T> T getObjectFromResultSet(ResultSet rs, Class<T> clazz) throws SQLException {
         if (Date.class.isAssignableFrom(clazz) || Timestamp.class.isAssignableFrom(clazz)) {
-
             String s = rs.getString(1);
             Date d = null;
-            
             if (s != null) {
                 d = FormatUtils.parseDate(s, FormatUtils.TIMESTAMP_PATTERNS);
             }
-              
             if (d != null && Timestamp.class.isAssignableFrom(clazz)) {
                 return (T) new Timestamp(d.getTime());
             } else {
@@ -88,36 +83,33 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
         } else {
             return super.getObjectFromResultSet(rs, clazz);
         }
-
     }
-    
+
     @Override
     public void setValues(PreparedStatement ps, Object[] args, int[] argTypes,
             LobHandler lobHandler) throws SQLException {
         for (int i = 1; i <= args.length; i++) {
-            Object arg  = args[i - 1];
+            Object arg = args[i - 1];
             int argType = argTypes != null && argTypes.length >= i ? argTypes[i - 1] : SqlTypeValue.TYPE_UNKNOWN;
-            
-            
             if (argType == Types.BLOB && lobHandler != null && arg instanceof byte[]) {
                 lobHandler.getLobCreator().setBlobAsBytes(ps, i, (byte[]) arg);
             } else if (argType == Types.BLOB && lobHandler != null && arg instanceof String) {
                 lobHandler.getLobCreator().setBlobAsBytes(ps, i, arg.toString().getBytes(Charset.defaultCharset()));
             } else if (argType == Types.CLOB && lobHandler != null) {
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
-            } else if (arg!=null && argType == Types.DATE && arg instanceof Date) {
+            } else if (arg != null && argType == Types.DATE && arg instanceof Date) {
                 Date clone = (Date) (((Date) arg).clone());
-                arg = FormatUtils.TIMESTAMP_FORMATTER.format(DateUtils.truncate(clone,Calendar.DATE));
-                args[i-1] = arg;
+                arg = FormatUtils.TIMESTAMP_FORMATTER.format(DateUtils.truncate(clone, Calendar.DATE));
+                args[i - 1] = arg;
                 StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
-            } else if (arg!=null && (arg instanceof Date || arg instanceof Timestamp)) {                
-                arg =  FormatUtils.TIMESTAMP_FORMATTER.format(arg);
-                args[i-1] = arg;
+            } else if (arg != null && (arg instanceof Date || arg instanceof Timestamp)) {
+                arg = FormatUtils.TIMESTAMP_FORMATTER.format(arg);
+                args[i - 1] = arg;
                 StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
             } else {
                 if (arg instanceof BigDecimal) {
-                    arg =  ((BigDecimal) arg).doubleValue();
-                    args[i-1] = arg;
+                    arg = ((BigDecimal) arg).doubleValue();
+                    args[i - 1] = arg;
                 }
                 StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
             }
@@ -129,11 +121,10 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
         if (args != null) {
             for (int i = 0; i < args.length; i++) {
                 Object arg = args[i];
-                if (arg!=null && (arg instanceof Date || arg instanceof Timestamp)) {
-                    arg =  FormatUtils.TIMESTAMP_FORMATTER.format(arg);
-                    args[i]=arg;
+                if (arg != null && (arg instanceof Date || arg instanceof Timestamp)) {
+                    arg = FormatUtils.TIMESTAMP_FORMATTER.format(arg);
+                    args[i] = arg;
                 }
-
                 doSetValue(ps, i + 1, arg);
             }
         }

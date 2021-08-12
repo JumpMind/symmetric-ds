@@ -33,10 +33,9 @@ import com.amazonaws.regions.Regions;
  * Avoid static methods so we don't load AWS classes unless that addon is installed
  */
 public class AWSHelper {
-
     public AWSHelper() {
     }
-    
+
     public List<String> getRegions() {
         List<String> list = new ArrayList<String>();
         List<Region> regions = RegionUtils.getRegions();
@@ -47,9 +46,8 @@ public class AWSHelper {
         }
         return list;
     }
-    
+
     public Regions fromName(String regionName) {
         return Regions.fromName(regionName);
     }
-
 }

@@ -39,9 +39,8 @@ import org.jumpmind.symmetric.load.AbstractDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 
 public class MySqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory {
+    private IStagingManager stagingManager;
 
-    private IStagingManager stagingManager; 
-    
     public MySqlBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.stagingManager = engine.getStagingManager();
         this.parameterService = engine.getParameterService();
@@ -51,17 +50,15 @@ public class MySqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
         return "mysql_bulk";
     }
 
-    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect, 
-                TransformWriter transformWriter,
+    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
+            TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-        
         int maxRowsBeforeFlush = parameterService.getInt(ParameterConstants.MYSQL_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH, 100000);
         long maxBytesBeforeFlush = parameterService.getLong(ParameterConstants.MYSQL_BULK_LOAD_MAX_BYTES_BEFORE_FLUSH, 1000000000);
         boolean isLocal = Boolean.parseBoolean(parameterService.getString(ParameterConstants.MYSQL_BULK_LOAD_LOCAL, "true"));
         boolean isReplace = Boolean.parseBoolean(parameterService.getString(ParameterConstants.MYSQL_BULK_LOAD_REPLACE, "false"));
-        
-        return new MySqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
+        return new MySqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
                 stagingManager,
                 maxRowsBeforeFlush,
                 maxBytesBeforeFlush, isLocal, isReplace, buildParameterDatabaseWritterSettings());
@@ -70,5 +67,4 @@ public class MySqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
     public boolean isPlatformSupported(IDatabasePlatform platform) {
         return DatabaseNamesConstants.MYSQL.equals(platform.getName());
     }
-
 }

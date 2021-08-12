@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "nodelist")
 public class NodeList {
-
     List<Node> nodes;
 
     public NodeList(Node... nodes) {
@@ -48,7 +47,7 @@ public class NodeList {
     public Node[] getNodes() {
         return nodes.toArray(new Node[nodes.size()]);
     }
-    
+
     public void addNode(Node node) {
         this.nodes.add(node);
     }

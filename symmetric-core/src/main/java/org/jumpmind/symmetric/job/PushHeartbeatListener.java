@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.job;
 
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,9 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtensionPoint {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     private ISymmetricEngine engine;
 
     public PushHeartbeatListener(ISymmetricEngine engine) {
@@ -89,10 +86,8 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                         me.setSyncUrl(parameterService.getSyncUrl());
                     }
                 }
-
                 engine.getNodeService().save(me);
             }
-
             log.debug("Updating my node info");
             Set<Node> targetNodes = new HashSet<Node>();
             targetNodes.addAll(engine.getNodeService().findNodesWhoPullFromMe());
@@ -101,7 +96,6 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                 engine.getNodeService().updateNodeHostForCurrentNode();
             }
             log.debug("Done updating my node info");
-
             if (!engine.getNodeService().isRegistrationServer()) {
                 if (!symmetricDialect.getPlatform().getDatabaseInfo().isTriggersSupported()) {
                     engine.getDataService().insertHeartbeatEvent(me, false);
@@ -118,5 +112,4 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
         return engine.getParameterService().getLong(
                 ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
     }
-    
 }

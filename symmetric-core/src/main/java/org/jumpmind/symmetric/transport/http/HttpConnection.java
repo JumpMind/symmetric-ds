@@ -31,13 +31,9 @@ import java.util.List;
 import java.util.Map;
 
 public class HttpConnection implements Closeable {
-
     public static final int HTTP_OK = HttpURLConnection.HTTP_OK;
-    
     public static final int HTTP_NOT_MODIFIED = HttpURLConnection.HTTP_NOT_MODIFIED;
-    
     protected URL url;
-
     protected HttpURLConnection conn;
 
     public HttpConnection(URL url) throws IOException {
@@ -108,8 +104,8 @@ public class HttpConnection implements Closeable {
     public String getHeaderField(String name) {
         return conn.getHeaderField(name);
     }
-    
-    public Map<String,List<String>> getHeaderFields() {
+
+    public Map<String, List<String>> getHeaderFields() {
         return conn.getHeaderFields();
     }
 
@@ -124,5 +120,4 @@ public class HttpConnection implements Closeable {
     public int getResponseCode() throws IOException {
         return conn.getResponseCode();
     }
-
 }

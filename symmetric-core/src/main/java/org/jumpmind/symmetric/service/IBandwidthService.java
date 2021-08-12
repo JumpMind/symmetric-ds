@@ -28,17 +28,17 @@ import org.jumpmind.symmetric.service.impl.BandwidthService;
 
 /**
  * A client service that determines bandwidth availability.
+ * 
  * @see BandwidthSamplerServlet
  *
  * 
  */
 public interface IBandwidthService {
-
     public double getDownloadKbpsFor(String url, long sampleSize, long maxTestDuration);
-    
+
     public double getUploadKbpsFor(Node remoteNode, Node localNode, long sampleSize, long maxTestDuration) throws IOException;
-    
+
     public List<BandwidthService.BandwidthResults> diagnoseDownloadBandwidth(Node localNode, Node remoteNode);
-    
+
     public List<BandwidthService.BandwidthResults> diagnoseUploadBandwidth(Node localNode, Node remoteNode);
 }

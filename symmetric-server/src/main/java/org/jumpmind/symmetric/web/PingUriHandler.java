@@ -31,11 +31,9 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
- * Simple handler that returns a 200 to indicate that SymmetricDS is deployed
- * and running.
+ * Simple handler that returns a 200 to indicate that SymmetricDS is deployed and running.
  */
 public class PingUriHandler extends AbstractUriHandler {
-
     public PingUriHandler(IParameterService parameterService, IInterceptor[] interceptors) {
         super("/ping/*", parameterService, interceptors);
     }
@@ -54,5 +52,4 @@ public class PingUriHandler extends AbstractUriHandler {
             res.getWriter().write(StringEscapeUtils.escapeHtml4(RandomStringUtils.randomAlphabetic(600)));
         }
     }
-
 }

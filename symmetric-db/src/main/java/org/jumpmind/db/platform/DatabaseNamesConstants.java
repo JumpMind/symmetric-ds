@@ -21,7 +21,6 @@
 package org.jumpmind.db.platform;
 
 final public class DatabaseNamesConstants {
-
     private DatabaseNamesConstants() {
     }
 
@@ -65,5 +64,4 @@ final public class DatabaseNamesConstants {
     public final static String BIGQUERY = "bigquery";
     public final static String HANA = "hdb";
     public final static String INGRES = "ingres";
-
 }

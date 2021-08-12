@@ -25,19 +25,18 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class KafkaPlatform extends AbstractDatabasePlatform {
-
     public KafkaPlatform(SqlTemplateSettings settings) {
         super(settings);
         super.ddlBuilder = new KafkaDdlBuilder();
         super.ddlReader = new KafkaDdlReader(this);
         supportsTruncate = false;
     }
-    
+
     @Override
     public String getName() {
         return "kafka";
     }
-    
+
     @Override
     public String getDefaultSchema() {
         return null;

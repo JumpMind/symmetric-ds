@@ -21,10 +21,9 @@
 package org.jumpmind.symmetric.service;
 
 /**
- * Names for jobs as locked by the {@link IClusterService} 
+ * Names for jobs as locked by the {@link IClusterService}
  */
 public class ClusterConstants {
-    
     public static final String STAGE_MANAGEMENT = "Stage Management";
     public static final String ROUTE = "Routing";
     public static final String PUSH = "Push";
@@ -49,11 +48,8 @@ public class ClusterConstants {
     public static final String FILE_SYNC_PUSH = "File Sync Push";
     public static final String MONITOR = "Monitor";
     public static final String LOG_MINER = "Log Miner";
-    
-    public static final String FILE_SYNC_SHARED = "FILE_SYNC_SHARED";    
-
+    public static final String FILE_SYNC_SHARED = "FILE_SYNC_SHARED";
     public static final String TYPE_CLUSTER = "CLUSTER";
     public static final String TYPE_EXCLUSIVE = "EXCLUSIVE";
     public static final String TYPE_SHARED = "SHARED";
-
 }

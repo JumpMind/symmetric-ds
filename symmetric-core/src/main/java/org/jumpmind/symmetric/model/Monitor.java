@@ -27,56 +27,34 @@ import java.util.Map;
 import org.jumpmind.symmetric.common.ParameterConstants;
 
 public class Monitor {
-    
     public static final int INFO = 100;
-    
     public static final int WARNING = 200;
-    
     public static final int SEVERE = 300;
-
     public static final String INFO_NAME = "INFO";
-    
     public static final String WARNING_NAME = "WARNING";
-    
     public static final String SEVERE_NAME = "SEVERE";
-    
     public static Map<Integer, String> severityLevelNames;
-
     protected String monitorId;
-    
     protected String nodeGroupId;
-
     protected String externalId;
-        
     protected String type;
-    
     protected String expression;
-
     protected long threshold;
-    
     protected int runPeriod;
-    
     protected int runCount;
-    
     protected int severityLevel;
-    
     protected boolean enabled;
-
     protected Date createTime;
-    
     protected String lastUpdateBy;
-    
     protected Date lastUpdateTime;
-    
     protected transient String targetNode;
-
     static {
         severityLevelNames = new HashMap<Integer, String>();
         severityLevelNames.put(INFO, "INFO");
         severityLevelNames.put(WARNING, "WARNING");
         severityLevelNames.put(SEVERE, "SEVERE");
     }
-    
+
     public Monitor() {
     }
 
@@ -151,7 +129,7 @@ public class Monitor {
     public void setSeverityLevel(int severityLevel) {
         this.severityLevel = severityLevel;
     }
-    
+
     public Date getCreateTime() {
         return createTime;
     }
@@ -175,7 +153,7 @@ public class Monitor {
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
-    
+
     public String getExpression() {
         return expression;
     }
@@ -206,9 +184,8 @@ public class Monitor {
         }
         return targetNode;
     }
-    
+
     public void setTargetNode(String targetNode) {
         this.targetNode = targetNode;
     }
-
 }

@@ -40,9 +40,8 @@ import org.jumpmind.symmetric.load.AbstractDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 
 public class MsSqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory {
-
     private IStagingManager stagingManager;
-    
+
     public MsSqlBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.stagingManager = engine.getStagingManager();
         this.parameterService = engine.getParameterService();
@@ -53,10 +52,9 @@ public class MsSqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-                TransformWriter transformWriter,
+            TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-
         int maxRowsBeforeFlush = parameterService.getInt(ParameterConstants.MSSQL_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH, 100000);
         boolean fireTriggers = parameterService.is(ParameterConstants.MSSQL_BULK_LOAD_FIRE_TRIGGERS, false);
         String uncPath = parameterService.getString(ParameterConstants.MSSQL_BULK_LOAD_UNC_PATH);
@@ -64,8 +62,7 @@ public class MsSqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
                 "\\r\\n"));
         String fieldTerminator = StringEscapeUtils.unescapeJava(parameterService.getString(ParameterConstants.MSSQL_BULK_LOAD_FIELD_TERMINATOR,
                 "||"));
-
-        return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
+        return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
                 stagingManager,
                 maxRowsBeforeFlush,
                 fireTriggers, uncPath, fieldTerminator, rowTerminator, buildParameterDatabaseWritterSettings());
@@ -74,10 +71,7 @@ public class MsSqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
     public boolean isPlatformSupported(IDatabasePlatform platform) {
         return (DatabaseNamesConstants.MSSQL2000.equals(platform.getName())
                 || DatabaseNamesConstants.MSSQL2005.equals(platform.getName()) || DatabaseNamesConstants.MSSQL2008
-                    .equals(platform.getName())
-                    || DatabaseNamesConstants.MSSQL2016.equals(platform.getName()));
+                        .equals(platform.getName())
+                || DatabaseNamesConstants.MSSQL2016.equals(platform.getName()));
     }
-    
-    
-
 }

@@ -41,7 +41,6 @@ import org.jumpmind.db.sql.SymmetricLobHandler;
 import org.jumpmind.db.util.BinaryEncoding;
 
 public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
-    
     public VoltDbDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         getDatabaseInfo().setRequiresAutoCommitForDdl(true);
@@ -54,14 +53,13 @@ public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     public static final String JDBC_DRIVER = "org.voltdb.jdbc.Driver";
-    
-    public static final String JDBC_SUBPROTOCOL = "voltdb";   
-        
+    public static final String JDBC_SUBPROTOCOL = "voltdb";
+
     @Override
     public String getName() {
         return DatabaseNamesConstants.VOLTDB;
     }
-    
+
     @Override
     public Database readDatabaseFromXml(InputStream is, boolean alterCaseToMatchDatabaseDefaultCase) {
         Database database = super.readDatabaseFromXml(is, alterCaseToMatchDatabaseDefaultCase);
@@ -70,17 +68,16 @@ public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
                 column.setAutoIncrement(false);
         }
         return database;
-
     }
-    
+
     @Override
     protected Object getObjectValue(String value, Column column, BinaryEncoding encoding,
             boolean useVariableDates, boolean fitToColumn) throws DecoderException {
         Object objectValue = super.getObjectValue(value, column, encoding, useVariableDates, fitToColumn);
         if (objectValue instanceof byte[]
                 && (column.getJdbcTypeCode() == Types.VARBINARY
-                    || column.getJdbcTypeCode() == Types.CLOB)) {
-            objectValue = new String(Hex.encodeHex((byte[])objectValue));
+                        || column.getJdbcTypeCode() == Types.CLOB)) {
+            objectValue = new String(Hex.encodeHex((byte[]) objectValue));
         }
         return objectValue;
     }
@@ -105,7 +102,7 @@ public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public ISqlTemplate getSqlTemplate() {
         return sqlTemplate;
     }
-    
+
     @Override
     protected VoltDbDdlBuilder createDdlBuilder() {
         return new VoltDbDdlBuilder();
@@ -114,51 +111,51 @@ public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     protected VoltDbDdlReader createDdlReader() {
         return new VoltDbDdlReader(this);
-    }    
-    
-    @Override   
+    }
+
+    @Override
     protected VoltDbJdbcSqlTemplate createSqlTemplate() {
         return new VoltDbJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), getDatabaseInfo());
-    }    
-    
+    }
+
     @Override
-    public PermissionResult getCreateSymTablePermission(Database database) {     
+    public PermissionResult getCreateSymTablePermission(Database database) {
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, "UNIMPLEMENTED");
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
-    
+
     @Override
-    public PermissionResult getDropSymTablePermission() {     
+    public PermissionResult getDropSymTablePermission() {
         PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, "UNIMPLEMENTED");
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
-    
+
     @Override
-    public PermissionResult getAlterSymTablePermission(Database database) {     
+    public PermissionResult getAlterSymTablePermission(Database database) {
         PermissionResult result = new PermissionResult(PermissionType.ALTER_TABLE, "UNIMPLEMENTED");
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
-    
+
     @Override
-    public PermissionResult getDropSymTriggerPermission() {     
+    public PermissionResult getDropSymTriggerPermission() {
         PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, "UNIMPLEMENTED");
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
-    
+
     @Override
     protected ISqlTemplate createSqlTemplateDirty() {
         return sqlTemplate;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return true;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         if (sql.endsWith(";")) {

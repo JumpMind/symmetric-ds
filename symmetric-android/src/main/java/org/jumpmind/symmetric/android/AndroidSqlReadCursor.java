@@ -28,15 +28,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 public class AndroidSqlReadCursor<T> implements ISqlReadCursor<T> {
-
     protected AndroidSqlTemplate sqlTemplate;
-
     protected Cursor cursor;
-
     protected ISqlRowMapper<T> mapper;
-
     protected int rowNumber = 0;
-    
     protected SQLiteDatabase database;
 
     public AndroidSqlReadCursor(String sql, String[] selectionArgs, ISqlRowMapper<T> mapper,

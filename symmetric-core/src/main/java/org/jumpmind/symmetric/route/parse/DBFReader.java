@@ -27,23 +27,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DBFReader {
-
     private static final Logger log = LoggerFactory.getLogger(DBFReader.class);
-    
     private DataInputStream stream;
     private DBFField fields[];
     private byte nextRecord[];
     private int nFieldCount;
     private boolean validate;
     private int lineNumber;
-    
+
     public DBFReader(String s, boolean validate) throws DBFException {
         stream = null;
         fields = null;
         nextRecord = null;
         nFieldCount = 0;
         this.validate = validate;
-        
         try {
             init(new FileInputStream(s));
         } catch (FileNotFoundException filenotfoundexception) {
@@ -73,7 +70,6 @@ public class DBFReader {
                     j += fields[k].getLength();
                 }
             }
-
             nextRecord = new byte[j];
             try {
                 stream.readFully(nextRecord);
@@ -93,7 +89,6 @@ public class DBFReader {
             if (pos > 0) {
                 byte[] others = new byte[pos];
                 stream.readFully(others);
-
                 for (int p = 0; p < j - pos; p++) {
                     nextRecord[p] = nextRecord[p + pos];
                 }
@@ -101,7 +96,6 @@ public class DBFReader {
                     nextRecord[j - p - 1] = others[pos - p - 1];
                 }
             }
-
         } catch (IOException ioexception) {
             throw new DBFException(ioexception);
         }
@@ -127,7 +121,6 @@ public class DBFReader {
             stream.readFully(abyte0);
             return null;
         }
-
         StringBuilder stringbuffer = new StringBuilder(10);
         int i = 0;
         for (i = 0; i < 10; i++) {
@@ -135,10 +128,8 @@ public class DBFReader {
                 break;
         }
         stringbuffer.append(new String(abyte0, 0, i));
-
         char c = (char) abyte0[11];
         stream.readFully(abyte0);
-
         int j = abyte0[0];
         int k = abyte0[1];
         if (j < 0)
@@ -149,7 +140,7 @@ public class DBFReader {
     }
 
     public int getFieldCount() {
-        return nFieldCount; 
+        return nFieldCount;
     }
 
     public DBFField getField(int i) {
@@ -173,12 +164,11 @@ public class DBFReader {
             try {
                 aobj[j] = fields[j].parse(stringbuffer.toString());
             } catch (DBFException e) {
-                log.error("Failed to parse field " + (j+1) + " on line " + lineNumber + " with that had a value of " + stringbuffer);
+                log.error("Failed to parse field " + (j + 1) + " on line " + lineNumber + " with that had a value of " + stringbuffer);
                 throw e;
             }
             i += fields[j].getLength();
         }
-
         try {
             stream.readFully(nextRecord);
         } catch (EOFException eofexception) {
@@ -201,7 +191,6 @@ public class DBFReader {
             aobj[j] = fields[j].parse(stringbuffer.toString());
             i += fields[j].getLength();
         }
-
         try {
             stream.readFully(nextRecord);
         } catch (EOFException eofexception) {
@@ -228,5 +217,4 @@ public class DBFReader {
     public void setValidate(boolean validate) {
         this.validate = validate;
     }
-
 }

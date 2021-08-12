@@ -74,26 +74,16 @@ import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 
 public class KafkaWriterFilter implements IDatabaseWriterFilter {
     protected final String KAFKA_TEXT_CACHE = "KAFKA_TEXT_CACHE" + this.hashCode();
-
     protected Map<String, List<ProducerRecord<String, Object>>> kafkaDataMap = new HashMap<String, List<ProducerRecord<String, Object>>>();
     protected String kafkaDataKey;
-
     private final Logger log = LoggerFactory.getLogger(getClass());
-
     private String url;
-
     private String producer;
-
     private String outputFormat;
-
     private String topicBy;
-
     private String messageBy;
-
     private String confluentUrl;
-
     private String schemaPackage;
-
     private String[] parseDatePatterns = new String[] {
             "yyyy/MM/dd HH:mm:ss.SSSSSS",
             "yyyy-MM-dd HH:mm:ss",
@@ -106,34 +96,26 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
             "yyyy-MM-dd'T'HH:mm:ssZZZZ",
             "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZ"
     };
-    
     private List<String> schemaPackageClassNames = new ArrayList<String>();
-
     public final static String KAFKA_FORMAT_XML = "XML";
     public final static String KAFKA_FORMAT_JSON = "JSON";
     public final static String KAFKA_FORMAT_AVRO = "AVRO";
     public final static String KAFKA_FORMAT_CSV = "CSV";
-
     public final static String KAFKA_MESSAGE_BY_BATCH = "BATCH";
     public final static String KAFKA_MESSAGE_BY_ROW = "ROW";
-
     public final static String KAFKA_TOPIC_BY_TABLE = "TABLE";
     public final static String KAFKA_TOPIC_BY_CHANNEL = "CHANNEL";
-
     public final static String AVRO_CDC_SCHEMA = "{" + "\"type\":\"record\"," + "\"name\":\"cdc\"," + "\"fields\":["
             + "  { \"name\":\"table\", \"type\":\"string\" }," + "  { \"name\":\"eventType\", \"type\":\"string\" },"
             + "  { \"name\":\"data\", \"type\":{" + "     \"type\":\"array\", \"items\":{" + "         \"name\":\"column\","
             + "         \"type\":\"record\"," + "         \"fields\":[" + "            {\"name\":\"name\", \"type\":\"string\"},"
             + "            {\"name\":\"value\", \"type\":[\"null\", \"string\"]} ] }}}]}";
-
     Schema.Parser parser = new Schema.Parser();
     Schema schema = null;
     Map<String, Object> configs = new HashMap<String, Object>();
-
     Map<String, Class<?>> tableClassCache = new HashMap<String, Class<?>>();
     Map<String, String> tableNameCache = new HashMap<String, String>();
     Map<String, Map<String, String>> tableColumnCache = new HashMap<String, Map<String, String>>();
-
     public static KafkaProducer<String, Object> kafkaProducer;
 
     public KafkaWriterFilter(IParameterService parameterService) {
@@ -144,40 +126,34 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                     "Kakfa not configured properly, verify you have set the endpoint to kafka with the following property : "
                             + ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + "db.url");
         }
-
         this.producer = parameterService.getString(ParameterConstants.KAFKA_PRODUCER, "SymmetricDS");
         this.outputFormat = parameterService.getString(ParameterConstants.KAFKA_FORMAT, KAFKA_FORMAT_JSON);
         this.topicBy = parameterService.getString(ParameterConstants.KAFKA_TOPIC_BY, KAFKA_TOPIC_BY_CHANNEL);
         this.messageBy = parameterService.getString(ParameterConstants.KAFKA_MESSAGE_BY, KAFKA_MESSAGE_BY_BATCH);
         this.confluentUrl = parameterService.getString(ParameterConstants.KAFKA_CONFLUENT_REGISTRY_URL);
         this.schemaPackage = parameterService.getString(ParameterConstants.KAFKA_AVRO_JAVA_PACKAGE);
-
         if (kafkaProducer == null) {
-	        configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.url);
-	        configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-	        configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-	        configs.put(ProducerConfig.CLIENT_ID_CONFIG, this.producer);
-	
-	        if (confluentUrl != null) {
-	            configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
-	            configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-	
-	            configs.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, confluentUrl);
-	        }
-	        
-	        TypedProperties props = parameterService.getAllParameters();
-	        for (Object key : props.keySet()) {
-	            if (key.toString().startsWith("kafkaclient.")) {
-	                configs.put(key.toString().substring(12), props.get(key));
-	            }
-	        }
-	        kafkaProducer = new KafkaProducer<String, Object>(configs); 
-	        this.log.debug("Kafka client config: {}", configs);
-        } 
+            configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.url);
+            configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            configs.put(ProducerConfig.CLIENT_ID_CONFIG, this.producer);
+            if (confluentUrl != null) {
+                configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
+                configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+                configs.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, confluentUrl);
+            }
+            TypedProperties props = parameterService.getAllParameters();
+            for (Object key : props.keySet()) {
+                if (key.toString().startsWith("kafkaclient.")) {
+                    configs.put(key.toString().substring(12), props.get(key));
+                }
+            }
+            kafkaProducer = new KafkaProducer<String, Object>(configs);
+            this.log.debug("Kafka client config: {}", configs);
+        }
     }
 
     public boolean beforeWrite(DataContext context, Table table, CsvData data) {
-        
         if (table.getNameLowerCase().startsWith("sym_")) {
             return true;
         } else {
@@ -185,12 +161,10 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
             if (data.getDataEventType() == DataEventType.DELETE) {
                 rowData = data.getParsedData(CsvData.OLD_DATA);
             }
-
             StringBuilder kafkaText = new StringBuilder();
             String kafkaKey = null;
-
             if (messageBy.equals(KAFKA_MESSAGE_BY_ROW)) {
-            	StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new StringBuilder();
                 sb.append(table.getName()).append(":");
                 for (int i = 0; i < table.getPrimaryKeyColumnNames().length; i++) {
                     sb.append(":").append(rowData[i]);
@@ -200,20 +174,16 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                 String s = context.getBatch().getSourceNodeId() + "-" + context.getBatch().getBatchId();
                 kafkaKey = String.valueOf(s.hashCode());
             }
-
             if (topicBy.equals(KAFKA_TOPIC_BY_CHANNEL)) {
                 kafkaDataKey = context.getBatch().getChannelId();
             } else {
                 kafkaDataKey = table.getNameLowerCase();
             }
-
             log.debug("Processing table {} for Kafka on topic {}", table, kafkaDataKey);
-
             if (kafkaDataMap.get(kafkaDataKey) == null) {
                 kafkaDataMap.put(kafkaDataKey, new ArrayList<ProducerRecord<String, Object>>());
             }
             List<ProducerRecord<String, Object>> kafkaDataList = kafkaDataMap.get(kafkaDataKey);
-
             if (outputFormat.equals(KAFKA_FORMAT_JSON)) {
                 kafkaText.append("{\"").append(table.getName()).append("\": {").append("\"eventType\": \"" + data.getDataEventType() + "\",")
                         .append("\"data\": { ");
@@ -221,7 +191,6 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                 Gson gson = new Gson();
                 for (int i = 0; i < table.getColumnNames().length; i++) {
                     kafkaText.append("\"").append(table.getColumnNames()[i]).append("\": ");
-
                     kafkaText.append(gson.toJson(rowData[i]));
                     if (i + 1 < table.getColumnNames().length) {
                         kafkaText.append(",");
@@ -231,25 +200,26 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
             } else if (outputFormat.equals(KAFKA_FORMAT_CSV)) {
                 // Quote every non-null field, escape quote character by doubling the quote character
                 kafkaText.append("\n\"TABLE\"").append(",\"").append(table.getName()).append("\",\"").append("EVENT")
-                    .append("\",\"").append(data.getDataEventType()).append("\",");
-
+                        .append("\",\"").append(data.getDataEventType()).append("\",");
                 for (int i = 0; i < table.getColumnNames().length; i++) {
                     kafkaText.append("\"")
-                        .append(StringUtils.replace(table.getColumnNames()[i],"\"","\"\""))
-                        .append("\",");
+                            .append(StringUtils.replace(table.getColumnNames()[i], "\"", "\"\""))
+                            .append("\",");
                     if (rowData[i] != null) {
-                        kafkaText.append("\"").append(StringUtils.replace(rowData[i],"\"","\"\""))
-                            .append("\"");
+                        kafkaText.append("\"").append(StringUtils.replace(rowData[i], "\"", "\"\""))
+                                .append("\"");
                     }
                     if (i + 1 < table.getColumnNames().length) {
                         kafkaText.append(",");
                     }
                 }
             } else if (outputFormat.equals(KAFKA_FORMAT_XML)) {
-                kafkaText.append("<row entity=\"").append(StringEscapeUtils.escapeXml11(table.getName())).append("\"").append(" dml=\"").append(data.getDataEventType())
+                kafkaText.append("<row entity=\"").append(StringEscapeUtils.escapeXml11(table.getName())).append("\"").append(" dml=\"").append(data
+                        .getDataEventType())
                         .append("\">");
                 for (int i = 0; i < table.getColumnNames().length; i++) {
-                    kafkaText.append("<data key=\"").append(StringEscapeUtils.escapeXml11(table.getColumnNames()[i])).append("\">").append(StringEscapeUtils.escapeXml11(rowData[i])).append("</data>");
+                    kafkaText.append("<data key=\"").append(StringEscapeUtils.escapeXml11(table.getColumnNames()[i])).append("\">").append(StringEscapeUtils
+                            .escapeXml11(rowData[i])).append("</data>");
                 }
                 kafkaText.append("</row>");
             } else if (outputFormat.equals(KAFKA_FORMAT_AVRO)) {
@@ -258,28 +228,23 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                     try {
                         Class<?> curClass = getClassByTableName(tableName);
                         if (curClass != null) {
-
                             Constructor<?> defaultConstructor = curClass.getConstructor();
                             Object pojo = defaultConstructor.newInstance();
-
                             for (int i = 0; i < table.getColumnNames().length; i++) {
                                 String colName = getColumnName(table.getName(), table.getColumnNames()[i], pojo);
                                 if (colName != null) {
                                     Class<?> propertyTypeClass = PropertyUtils.getPropertyType(pojo, colName);
                                     if (CharSequence.class.equals(propertyTypeClass)) {
                                         PropertyUtils.setSimpleProperty(pojo, colName, rowData[i]);
-                                    }
-                                    else if (Long.class.equals(propertyTypeClass)) {
+                                    } else if (Long.class.equals(propertyTypeClass)) {
                                         Date date = null;
                                         try {
                                             date = DateUtils.parseDate(rowData[i], parseDatePatterns);
-                                        }
-                                        catch (Exception e) {
+                                        } catch (Exception e) {
                                             log.debug(rowData[i] + " was not a recognized date format so treating it as a long.");
                                         }
                                         BeanUtils.setProperty(pojo, colName, date != null ? date.getTime() : rowData[i]);
-                                    }
-                                    else {
+                                    } else {
                                         BeanUtils.setProperty(pojo, colName, rowData[i]);
                                     }
                                 }
@@ -300,27 +265,22 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                     } catch (InstantiationException e) {
                         log.info("Unable to instantiate a constructor on POJO based on table " + tableName, e);
                         throw new RuntimeException(e);
-                    } 
+                    }
                 } else {
                     GenericData.Record avroRecord = new GenericData.Record(schema);
                     avroRecord.put("table", table.getName());
                     avroRecord.put("eventType", data.getDataEventType().toString());
-
                     Collection<GenericRecord> dataCollection = new ArrayList<GenericRecord>();
-
                     for (int i = 0; i < table.getColumnNames().length; i++) {
-
                         GenericRecord columnRecord = new GenericData.Record(schema.getField("data").schema().getElementType());
-
                         columnRecord.put("name", table.getColumnNames()[i]);
                         columnRecord.put("value", rowData[i]);
-
                         dataCollection.add(columnRecord);
                     }
                     avroRecord.put("data", dataCollection);
                     try {
                         kafkaDataList.add(new ProducerRecord<String, Object>(kafkaDataKey, kafkaKey,
-                        		datumToByteArray(schema, avroRecord)));
+                                datumToByteArray(schema, avroRecord)));
                         return false;
                     } catch (IOException ioe) {
                         throw new RuntimeException("Unable to convert row data to an Avro record", ioe);
@@ -331,9 +291,9 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
         }
         return false;
     }
-    
+
     public String getTableName(String dbTableName) {
-    	String name = tableNameCache.get(dbTableName);
+        String name = tableNameCache.get(dbTableName);
         if (name == null) {
             String[] split = dbTableName.split("_");
             StringBuilder tableName = new StringBuilder();
@@ -354,7 +314,6 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
             if (!tableColumnCache.containsKey(dbColumnName)) {
                 tableColumnCache.put(dbTableName, new HashMap<String, String>());
             }
-
             String dbColumnNameSimple = dbColumnName.toLowerCase().replaceAll("[^a-z0-9]", "");
             for (PropertyDescriptor pd : PropertyUtils.getPropertyDescriptors(bean)) {
                 if (pd.getName().toLowerCase().equals(dbColumnNameSimple)) {
@@ -362,7 +321,6 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                     break;
                 }
             }
-
             if (columnName != null) {
                 tableColumnCache.get(dbTableName).put(dbColumnName, columnName);
                 return columnName;
@@ -374,7 +332,6 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
 
     public Class<?> getClassByTableName(String tableName) {
         Class<?> classMatch = tableClassCache.get(tableName);
-
         if (classMatch == null) {
             try {
                 log.debug("Looking for an exact match for a POJO based on tableName " + tableName);
@@ -420,7 +377,6 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
         try {
             ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
             MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resourcePatternResolver);
-
             String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + resolveBasePackage(schemaPackage) + "/"
                     + "**/*.class";
             Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);
@@ -449,13 +405,11 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     public void batchComplete(DataContext context) {
         if (!context.getBatch().getChannelId().equals("heartbeat") && !context.getBatch().getChannelId().equals("config")) {
             String batchFileName = "batch-" + context.getBatch().getSourceNodeId() + "-" + context.getBatch().getBatchId();
-            
             log.debug("Kafka client config: {}", configs);
             try {
                 if (confluentUrl == null && kafkaDataMap.size() > 0) {
                     StringBuffer kafkaText = new StringBuffer();
                     String kafkaKey = null;
-                    
                     for (Map.Entry<String, List<ProducerRecord<String, Object>>> entry : kafkaDataMap.entrySet()) {
                         for (ProducerRecord<String, Object> record : entry.getValue()) {
                             if (messageBy.equals(KAFKA_MESSAGE_BY_ROW)) {
@@ -470,7 +424,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                         }
                     }
                     kafkaDataMap = new HashMap<String, List<ProducerRecord<String, Object>>>();
-                } 
+                }
             } catch (Exception e) {
                 log.warn("Unable to write batch to Kafka " + batchFileName, e);
                 e.printStackTrace();

@@ -30,7 +30,6 @@ import org.jumpmind.symmetric.ITypedPropertiesFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
 
 public class AndroidTypedPropertiesFactory implements ITypedPropertiesFactory {
-
     private TypedProperties properties;
 
     public AndroidTypedPropertiesFactory(String syncUrl, String externalId, String nodeGroupId,
@@ -54,7 +53,7 @@ public class AndroidTypedPropertiesFactory implements ITypedPropertiesFactory {
             properties.put("job.pull.period.time.ms", "10000");
             properties.put("job.routing.period.time.ms", "50000");
             properties.put("job.push.period.time.ms", "10000");
-            properties.put("job.heartbeat.period.time.ms", "300000");            
+            properties.put("job.heartbeat.period.time.ms", "300000");
             properties.put(ParameterConstants.TRANSPORT_HTTP_TIMEOUT, "20000");
             properties.put(ParameterConstants.PURGE_RETENTION_MINUTES, "60");
             properties.put(ParameterConstants.STATISTIC_RECORD_ENABLE, "false");
@@ -67,14 +66,11 @@ public class AndroidTypedPropertiesFactory implements ITypedPropertiesFactory {
         }
     }
 
-
     public TypedProperties reload() {
         return properties;
     }
 
-
     @Override
     public void init(File propertiesFile, Properties properties) {
     }
-
 }

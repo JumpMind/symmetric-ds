@@ -26,13 +26,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StatementBypassInterceptor extends StatementInterceptor {
-    
     private final static Logger log = LoggerFactory.getLogger(StatementBypassInterceptor.class);
 
     public StatementBypassInterceptor(Object wrapped, TypedProperties systemPlusEngineProperties) {
         super(wrapped, systemPlusEngineProperties);
     }
-    
+
     @Override
     protected InterceptResult preparedStatementPreExecute(PreparedStatementWrapper ps, String methodName, Object[] parameters) {
         if (methodName.equals("getUpdateCount")) {
@@ -43,29 +42,24 @@ public class StatementBypassInterceptor extends StatementInterceptor {
         }
         if (methodName.startsWith("execute")) {
             String statementLower = ps.getStatement().toLowerCase();
-            
             if ((statementLower.startsWith("insert") || statementLower.startsWith("update")) && !statementLower.contains("sym_")) {
                 InterceptResult result = new InterceptResult();
                 result.setIntercepted(true);
-                if (methodName.equals("execute")) {                    
+                if (methodName.equals("execute")) {
                     result.setInterceptResult(Boolean.FALSE);
                 } else if (methodName.equals("executeUpdate")) {
                     result.setInterceptResult(Integer.valueOf(1));
                 }
                 String sql = sqlBuilder.buildDynamicSqlForLog(ps.getStatement(), psArgs.toArray(), null);
                 log.info("PreparedStatement." + methodName + " *BYPASSED* " + StringUtils.abbreviate(sql, 128));
-                
                 return result;
             }
-            
-        } 
+        }
         return super.preparedStatementPreExecute(ps, methodName, parameters);
     }
-    
+
     @Override
     public void preparedStatementExecute(String methodName, long elapsed, String sql) {
         // no op.
     }
-
-
 }

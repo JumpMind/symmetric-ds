@@ -37,18 +37,16 @@ import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.slf4j.LoggerFactory;
 
 public class BasicDataSourceFactory {
-    
-    protected static Map<String, String> requiredConnectionProperties = new HashMap<String, String>(); 
+    protected static Map<String, String> requiredConnectionProperties = new HashMap<String, String>();
 
     public static void prepareDriver(String clazzName) throws Exception {
-        Driver driver = (Driver)Class.forName(clazzName).getDeclaredConstructor().newInstance();
+        Driver driver = (Driver) Class.forName(clazzName).getDeclaredConstructor().newInstance();
         synchronized (DriverManager.class) {
             Enumeration<Driver> drivers = DriverManager.getDrivers();
             while (drivers.hasMoreElements()) {
-                Driver driver2 = (Driver) drivers.nextElement();                    
-                /* 
-                 * MySQL and Maria DB drivers cannot co-exist because
-                 * they use the same JDBC URL.
+                Driver driver2 = (Driver) drivers.nextElement();
+                /*
+                 * MySQL and Maria DB drivers cannot co-exist because they use the same JDBC URL.
                  */
                 if ((driver.getClass().getName().equals("com.mysql.jdbc.Driver") &&
                         driver2.getClass().getName().equals("org.mariadb.jdbc.Driver")) ||
@@ -58,12 +56,11 @@ public class BasicDataSourceFactory {
                 }
             }
         }
-        
         if (clazzName.equals("org.firebirdsql.jdbc.FBDriver")) {
             requiredConnectionProperties.put("columnLabelForName", "true");
         }
     }
-    
+
     public static ResettableBasicDataSource create(TypedProperties properties) {
         return create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
     }
@@ -79,7 +76,8 @@ public class BasicDataSourceFactory {
             prepareDriver(dataSource.getDriverClassName());
         } catch (Exception e) {
             if (e instanceof ClassNotFoundException) {
-                throw new IllegalStateException("Missing JDBC driver for '" + dataSource.getDriverClassName() + "'.  Either provide the JAR or use 'symadmin module convert' command to find and install missing driver.", e);
+                throw new IllegalStateException("Missing JDBC driver for '" + dataSource.getDriverClassName()
+                        + "'.  Either provide the JAR or use 'symadmin module convert' command to find and install missing driver.", e);
             }
             throw new IllegalStateException("Had trouble registering the JDBC driver: " + dataSource.getDriverClassName(), e);
         }
@@ -89,14 +87,14 @@ public class BasicDataSourceFactory {
             user = securityService.decrypt(user.substring(SecurityConstants.PREFIX_ENC.length()));
         }
         dataSource.setUsername(user);
-
         String password = properties.get(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD, "");
         if (password != null && password.startsWith(SecurityConstants.PREFIX_ENC)) {
             try {
                 password = securityService.decrypt(password.substring(SecurityConstants.PREFIX_ENC
-                    .length()));
+                        .length()));
             } catch (Exception ex) {
-                throw new IllegalStateException("Failed to decrypt the database password from your engine properties file stored under the " + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD + " property.   Please re-encrypt your password", ex);
+                throw new IllegalStateException("Failed to decrypt the database password from your engine properties file stored under the "
+                        + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD + " property.   Please re-encrypt your password", ex);
             }
         }
         dataSource.setPassword(password);
@@ -109,7 +107,7 @@ public class BasicDataSourceFactory {
         dataSource.setMaxIdle(properties.getInt(BasicDataSourcePropertyConstants.DB_POOL_MAX_IDLE,
                 8));
         dataSource.setMinIdle(properties.getInt(BasicDataSourcePropertyConstants.DB_POOL_MIN_IDLE,
-                0));                
+                0));
         dataSource.setMinEvictableIdleTimeMillis(properties.getInt(
                 BasicDataSourcePropertyConstants.DB_POOL_MIN_EVICTABLE_IDLE_TIME_MILLIS, 60000));
         dataSource.setTimeBetweenEvictionRunsMillis(120000);
@@ -122,7 +120,6 @@ public class BasicDataSourceFactory {
                 BasicDataSourcePropertyConstants.DB_POOL_TEST_ON_RETURN, false));
         dataSource.setTestWhileIdle(properties.is(
                 BasicDataSourcePropertyConstants.DB_POOL_TEST_WHILE_IDLE, false));
-
         String connectionProperties = properties.get(
                 BasicDataSourcePropertyConstants.DB_POOL_CONNECTION_PROPERTIES, null);
         if (StringUtils.isNotBlank(connectionProperties)) {
@@ -138,12 +135,11 @@ public class BasicDataSourceFactory {
             }
         }
         for (String key : requiredConnectionProperties.keySet()) {
-            String value = requiredConnectionProperties.get(key); 
+            String value = requiredConnectionProperties.get(key);
             LoggerFactory.getLogger(BasicDataSourceFactory.class).info(
                     "Setting required database connection property {}={}", key, value);
             dataSource.addConnectionProperty(key, value);
         }
-        
         String initSql = properties.get(BasicDataSourcePropertyConstants.DB_POOL_INIT_SQL, null);
         if (StringUtils.isNotBlank(initSql)) {
             List<String> initSqlList = new ArrayList<String>(1);
@@ -151,7 +147,5 @@ public class BasicDataSourceFactory {
             dataSource.setConnectionInitSqls(initSqlList);
         }
         return dataSource;
-
     }
-
 }

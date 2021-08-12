@@ -25,10 +25,8 @@ import java.util.Map;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class PurgeServiceSqlMap extends AbstractSqlMap {
-
-    public PurgeServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) { 
+    public PurgeServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
-        
         // @formatter:off
         
         putSql("minDataGapStartId", "select min(start_id) from $(data_gap)");

@@ -28,7 +28,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 
 public class ColumnMetaDataTableCreator extends AbstractMetaDataGridCreator {
-
     public ColumnMetaDataTableCreator(JdbcSqlTemplate sqlTemplate, Table table, Settings settings) {
         super(sqlTemplate, table, settings);
     }
@@ -43,5 +42,4 @@ public class ColumnMetaDataTableCreator extends AbstractMetaDataGridCreator {
     protected String[] getColumnsToExclude() {
         return TABLE_NAME_METADATA_COLUMNS;
     }
-
 }

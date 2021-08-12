@@ -34,17 +34,11 @@ import org.jumpmind.db.sql.mapper.RowMapper;
 import android.database.sqlite.SQLiteDatabase;
 
 public class AndroidSqlTransaction implements ISqlTransaction {
-
     protected AndroidSqlTemplate sqlTemplate;
-
     protected SQLiteDatabase database;
-    
     protected boolean autoCommit = false;
-
     protected String sql;
-    
     protected boolean needsRolledback = false;
-    
     protected List<ISqlTransactionListener> listeners = new ArrayList<ISqlTransactionListener>();
 
     public AndroidSqlTransaction(AndroidSqlTemplate sqlTemplate, boolean autoCommit) {
@@ -53,7 +47,7 @@ public class AndroidSqlTransaction implements ISqlTransaction {
         this.database = sqlTemplate.getDatabaseHelper().getWritableDatabase();
         this.database.beginTransaction();
     }
-    
+
     @Override
     public void addSqlTransactionListener(ISqlTransactionListener listener) {
         listeners.add(listener);
@@ -65,7 +59,7 @@ public class AndroidSqlTransaction implements ISqlTransaction {
     public boolean isInBatchMode() {
         return false;
     }
-    
+
     @Override
     public Row queryForRow(String sql, Object... args) {
         List<Row> rows = query(sql, new RowMapper(), args, null);
@@ -75,11 +69,11 @@ public class AndroidSqlTransaction implements ISqlTransaction {
             return null;
         }
     }
-    
+
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Map<String, Object> namedParams) {
         return sqlTemplate.query(sql, mapper, namedParams);
     }
-    
+
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object[] args, int[] types) {
         return sqlTemplate.query(sql, mapper, args, types);
     }
@@ -91,7 +85,6 @@ public class AndroidSqlTransaction implements ISqlTransaction {
     public void commit() {
         try {
             this.database.setTransactionSuccessful();
-            
             for (ISqlTransactionListener listener : listeners) {
                 listener.transactionCommitted();
             }
@@ -105,7 +98,6 @@ public class AndroidSqlTransaction implements ISqlTransaction {
 
     public void rollback() {
         needsRolledback = true;
-        
         for (ISqlTransactionListener listener : listeners) {
             listener.transactionRolledBack();
         }
@@ -138,7 +130,7 @@ public class AndroidSqlTransaction implements ISqlTransaction {
     public long queryForLong(String sql, Object... args) {
         return sqlTemplate.queryForObject(database, sql, Long.class, args);
     }
-    
+
     public int execute(String sql) {
         return sqlTemplate.update(database, sql, null, null);
     }
@@ -150,7 +142,7 @@ public class AndroidSqlTransaction implements ISqlTransaction {
     public int prepareAndExecute(String sql, Object... args) {
         return sqlTemplate.update(database, sql, args, null);
     }
-    
+
     public int prepareAndExecute(String sql, Map<String, Object> args) {
         throw new UnsupportedOperationException("Method not yet implemented for Android");
     }
@@ -159,7 +151,7 @@ public class AndroidSqlTransaction implements ISqlTransaction {
         return new ArrayList<Object>(0);
     }
 
-    public void allowInsertIntoAutoIncrementColumns(boolean value, Table table, String quote, 
+    public void allowInsertIntoAutoIncrementColumns(boolean value, Table table, String quote,
             String catalogSeparator, String schemaSeparator) {
     }
 
@@ -177,7 +169,5 @@ public class AndroidSqlTransaction implements ISqlTransaction {
     @Override
     public void clearBatch() {
         // TODO Auto-generated method stub
-        
     }
-
 }

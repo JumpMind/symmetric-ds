@@ -24,14 +24,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-@XmlRootElement(name="error")
+@XmlRootElement(name = "error")
 public class RestError {
-
     protected String message;
     protected String details;
     protected int statusCode;
-    
-    public RestError() {     
+
+    public RestError() {
     }
 
     public RestError(Exception ex, int statusCode) {
@@ -55,13 +54,12 @@ public class RestError {
     public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
     }
-    
+
     public void setDetails(String details) {
         this.details = details;
     }
-    
+
     public String getDetails() {
         return details;
     }
-
 }

@@ -44,9 +44,8 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableId;
 
 public class BigQueryDdlReader implements IDdlReader {
-
     BigQuery bigQuery;
-    
+
     public BigQueryDdlReader(BigQuery bq) {
         this.bigQuery = bq;
     }
@@ -61,10 +60,8 @@ public class BigQueryDdlReader implements IDdlReader {
         com.google.cloud.bigquery.Table bqTable = this.bigQuery.getTable(TableId.of(schema, tableName));
         Table table = null;
         if (bqTable != null && bqTable.getDefinition() instanceof StandardTableDefinition) {
-            
             StandardTableDefinition defn = (StandardTableDefinition) bqTable.getDefinition();
             table = new Table(catalog, schema, tableName);
-            
             for (com.google.cloud.bigquery.Field bqField : defn.getSchema().getFields()) {
                 Column column = new Column(bqField.getName(), false, getTypeCode(bqField.getType()), 0, 0);
                 table.addColumn(column);
@@ -75,7 +72,6 @@ public class BigQueryDdlReader implements IDdlReader {
 
     protected int getTypeCode(LegacySQLTypeName legacyType) {
         int typeCode = Types.OTHER;
-        
         if (legacyType.equals(LegacySQLTypeName.INTEGER)) {
             typeCode = Types.INTEGER;
         } else if (legacyType.equals(LegacySQLTypeName.BOOLEAN)) {
@@ -95,10 +91,9 @@ public class BigQueryDdlReader implements IDdlReader {
         } else if (legacyType.equals(LegacySQLTypeName.TIMESTAMP)) {
             typeCode = Types.TIMESTAMP;
         }
-           
         return typeCode;
     }
-    
+
     @Override
     public List<String> getTableTypes() {
         return null;
@@ -113,7 +108,6 @@ public class BigQueryDdlReader implements IDdlReader {
     public List<String> getSchemaNames(String catalog) {
         Page<Dataset> datasets = this.bigQuery.listDatasets();
         List<String> schemas = new ArrayList<String>();
-        
         while (datasets.hasNextPage()) {
             for (Dataset ds : datasets.getNextPage().getValues()) {
                 schemas.add(ds.toString());

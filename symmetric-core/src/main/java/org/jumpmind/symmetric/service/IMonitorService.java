@@ -27,39 +27,37 @@ import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.model.Notification;
 
 public interface IMonitorService {
-
     public void update();
 
     public List<Monitor> getMonitors();
 
-    public List<Monitor> getActiveMonitorsForNode(String nodeGroupId, String externalId); 
-    
+    public List<Monitor> getActiveMonitorsForNode(String nodeGroupId, String externalId);
+
     public void deleteMonitor(String notificationId);
 
     public void saveMonitor(Monitor monitor);
-    
+
     public List<MonitorEvent> getMonitorEvents();
-    
+
     public List<MonitorEvent> getMonitorEventsFiltered(int limit, String type, int severityLevel, String nodeId, Boolean isResolved);
 
     public void saveMonitorEvent(MonitorEvent notificationEvent);
 
     public void deleteMonitorEvent(MonitorEvent event);
-    
+
     public void updateMonitorEventAsResolved(MonitorEvent event);
 
     public List<Notification> getNotifications();
-    
+
     public List<Notification> getActiveNotificationsForNode(String nodeGroupId, String externalId);
-    
+
     public void saveNotification(Notification notification);
-    
+
     public void deleteNotification(String notificationId);
-    
+
     public void flushMonitorCache();
-    
+
     public void flushNotificationCache();
 
     public List<Monitor> getActiveMonitorsUnresolvedForNode(String string, String string2);
-    
 }

@@ -66,17 +66,13 @@ import org.jumpmind.db.platform.PlatformUtils;
  * The SQL Builder for the FireBird database.
  */
 public class FirebirdDdlBuilder extends AbstractDdlBuilder {
-
     public FirebirdDdlBuilder() {
-        
         super(DatabaseNamesConstants.FIREBIRD);
-        
         databaseInfo.setMaxIdentifierLength(31);
         databaseInfo.setRequiresAutoCommitForDdl(true);
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         databaseInfo.setCommentPrefix("/*");
         databaseInfo.setCommentSuffix("*/");
-
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.BINARY, "BLOB", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.BIT, "SMALLINT", Types.SMALLINT);
@@ -101,30 +97,23 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(ColumnTypes.NVARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(ColumnTypes.LONGNVARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(ColumnTypes.NCHAR, "CHAR", Types.CHAR);
-
-
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
         databaseInfo.setDefaultSize(Types.CHAR, 254);
-
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setBinaryQuoteStart("X'");
         databaseInfo.setBinaryQuoteEnd("'");
-
         databaseInfo.setMinIsolationLevelToPreventPhantomReads(Connection.TRANSACTION_REPEATABLE_READ);
-        
     }
 
     @Override
     protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         super.createTable(table, ddl, temporary, recreate);
-
         if (!temporary) {
             // creating generator and trigger for auto-increment
             Column[] columns = table.getAutoIncrementColumns();
-
             for (int idx = 0; idx < columns.length; idx++) {
                 writeAutoIncrementCreateStmts(table, columns[idx], ddl, recreate);
             }
@@ -135,7 +124,6 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         // dropping generators for auto-increment
         Column[] columns = table.getAutoIncrementColumns();
-
         if (!temporary && !recreate) {
             for (int idx = 0; idx < columns.length; idx++) {
                 writeAutoIncrementDropStmts(table, columns[idx], ddl);
@@ -145,8 +133,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
     }
 
     /*
-     * Writes the creation statements to make the given column an auto-increment
-     * column.
+     * Writes the creation statements to make the given column an auto-increment column.
      */
     private void writeAutoIncrementCreateStmts(Table table, Column column, StringBuilder ddl, boolean recreate) {
         if (!recreate) {
@@ -154,7 +141,6 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
             printIdentifier(getGeneratorName(table, column), ddl);
             printEndOfStatement(ddl);
         }
-
         ddl.append("CREATE TRIGGER ");
         printIdentifier(getTriggerName(table, column), ddl);
         ddl.append(" FOR ");
@@ -171,8 +157,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
     }
 
     /*
-     * Writes the statements to drop the auto-increment status for the given
-     * column.
+     * Writes the statements to drop the auto-increment status for the given column.
      * 
      * @param table The table
      * 
@@ -182,7 +167,6 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP TRIGGER ");
         printIdentifier(getTriggerName(table, column), ddl);
         printEndOfStatement(ddl);
-
         ddl.append("DROP GENERATOR ");
         printIdentifier(getGeneratorName(table, column), ddl);
         printEndOfStatement(ddl);
@@ -232,12 +216,10 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
     @Override
     public String getSelectLastIdentityValues(Table table) {
         Column[] columns = table.getAutoIncrementColumns();
-
         if (columns.length == 0) {
             return null;
         } else {
-        	StringBuilder result = new StringBuilder();
-
+            StringBuilder result = new StringBuilder();
             result.append("SELECT ");
             for (int idx = 0; idx < columns.length; idx++) {
                 result.append("GEN_ID(");
@@ -286,13 +268,10 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         // (We could used a stored procedure if Firebird would allow them to use
         // DDL) This will be easier once named primary keys are supported
         boolean pkColumnAdded = false;
-
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof AddColumnChange) {
                 AddColumnChange addColumnChange = (AddColumnChange) change;
-
                 // TODO: we cannot add columns to the primary key this way
                 // because we would have to drop the pk first and then
                 // add a new one afterwards which is not supported yet
@@ -304,7 +283,6 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
                 }
             } else if (change instanceof RemoveColumnChange) {
                 RemoveColumnChange removeColumnChange = (RemoveColumnChange) change;
-
                 // TODO: we cannot drop primary key columns this way
                 // because we would have to drop the pk first and then
                 // add a new one afterwards which is not supported yet
@@ -313,7 +291,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
                     changeIt.remove();
                 }
             } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
+                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange) change;
                 processChange(currentModel, desiredModel, copyColumnChange, ddl);
                 changeIt.remove();
             } else if (change instanceof ColumnRequiredChange) {
@@ -323,7 +301,6 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         }
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             // we can only add a primary key if all columns are present in the
             // table
             // i.e. none was added during this alteration
@@ -332,11 +309,10 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
                 changeIt.remove();
             }
         }
-        
         super.processTableStructureChanges(currentModel, desiredModel,
                 sourceTable, targetTable, changes, ddl);
     }
-    
+
     @Override
     protected boolean writeAlterColumnDataTypeToBigInt(ColumnDataTypeChange change, StringBuilder ddl) {
         Table table = change.getChangedTable();
@@ -347,25 +323,22 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
             ddl.append(table.getPrimaryKeyConstraintName());
             printEndOfStatement(ddl);
         }
-        
         writeTableAlterStmt(change.getChangedTable(), ddl);
-        ddl.append(" ALTER COLUMN ");  
+        ddl.append(" ALTER COLUMN ");
         column.setTypeCode(change.getNewTypeCode());
         printIdentifier(getColumnName(column), ddl);
         ddl.append(" TYPE ");
         ddl.append(getSqlType(column));
         printEndOfStatement(ddl);
-        
         if (column.isPrimaryKey()) {
             writeTableAlterStmt(change.getChangedTable(), ddl);
             ddl.append(" ADD ");
             writePrimaryKeyStmt(table, table.getPrimaryKeyColumnsInIndexOrder(), ddl);
             printEndOfStatement(ddl);
         }
-        
         return true;
-    }    
-    
+    }
+
     protected void processChange(Database currentModel, Database desiredModel,
             ColumnRequiredChange change, StringBuilder ddl) {
         boolean required = !change.getChangedColumn().isRequired();
@@ -387,13 +360,10 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         ddl.append("ADD ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
         printEndOfStatement(ddl);
-
         Table curTable = currentModel.findTable(change.getChangedTable().getName(),
                 delimitedIdentifierModeOn);
-
         if (!change.isAtEnd()) {
             Column prevColumn = change.getPreviousColumn();
-
             if (prevColumn != null) {
                 // we need the corresponding column object from the current
                 // table
@@ -408,8 +378,9 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
             printIdentifier(getColumnName(change.getNewColumn()), ddl);
             ddl.append(" POSITION ");
             // column positions start at 1 in Firebird
-            ddl.append(prevColumn == null ? "1" : String.valueOf(curTable
-                    .getColumnIndex(prevColumn) + 2));
+            ddl.append(prevColumn == null ? "1"
+                    : String.valueOf(curTable
+                            .getColumnIndex(prevColumn) + 2));
             printEndOfStatement(ddl);
         }
         if (change.getNewColumn().isAutoIncrement()) {
@@ -434,7 +405,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
-    
+
     @Override
     protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
         // Firebird does not support ON UPDATE RESTRICT, but RESTRICT is just like NOACTION
@@ -445,7 +416,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         super.writeCascadeAttributesForForeignKeyUpdate(key, ddl);
         key.setOnUpdateAction(original);
     }
-    
+
     @Override
     protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
         // Firebird does not support ON DELETE RESTRICT, but RESTRICT is just like NOACTION

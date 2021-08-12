@@ -58,7 +58,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class DatabaseWriterTest extends AbstractWriterTest {
-
     @BeforeClass
     public static void setup() throws Exception {
         platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
@@ -82,15 +81,12 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         setting.setResolveChangesOnly(true);
         setting.setResolveType(ResolveConflict.NEWER_WINS);
         writerSettings.setDefaultConflictSetting(setting);
-
         String id = getNextId();
         String[] originalValues = massageExpectectedResultsForDialect(new String[] { id, "string2",
                 "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.000",
                 "2012-03-12 07:00:00.000", "0", "47", "67.89", "-0.0747663" });
-
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
-
         String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
                 originalValues.length);
         updateShouldNotBeApplied[2] = "updated string";
@@ -98,7 +94,6 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         data = new CsvData(DataEventType.UPDATE,
                 massageExpectectedResultsForDialect(updateShouldNotBeApplied));
         writeData(data, originalValues);
-
         String[] updateShouldBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
                 originalValues.length);
         updateShouldBeApplied[2] = "string3";
@@ -106,7 +101,6 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         data = new CsvData(DataEventType.UPDATE,
                 massageExpectectedResultsForDialect(updateShouldBeApplied));
         writeData(data, updateShouldBeApplied);
-
     }
 
     @Test
@@ -119,15 +113,12 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         setting.setResolveChangesOnly(false);
         setting.setResolveType(ResolveConflict.NEWER_WINS);
         writerSettings.setDefaultConflictSetting(setting);
-
         String id = getNextId();
         String[] originalValues = massageExpectectedResultsForDialect(new String[] { id, "string2",
                 "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.000",
                 "2012-03-12 07:00:00.000", "0", "47", "67.89", "-0.0747663" });
-
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
-
         String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
                 originalValues.length);
         updateShouldNotBeApplied[2] = "updated string";
@@ -135,7 +126,6 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         data = new CsvData(DataEventType.INSERT,
                 massageExpectectedResultsForDialect(updateShouldNotBeApplied));
         writeData(data, originalValues);
-
         String[] updateShouldBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
                 originalValues.length);
         updateShouldBeApplied[2] = "string3";
@@ -155,15 +145,12 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         setting.setResolveChangesOnly(false);
         setting.setResolveType(ResolveConflict.NEWER_WINS);
         writerSettings.setDefaultConflictSetting(setting);
-
         String id = getNextId();
         String[] originalValues = massageExpectectedResultsForDialect(new String[] { id, "string2",
                 "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.000",
                 "2012-03-12 07:00:00.000", "0", "47", "67.89", "-0.0747663" });
-
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
-
         String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
                 originalValues.length);
         updateShouldNotBeApplied[2] = "updated string";
@@ -171,7 +158,6 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         data = new CsvData(DataEventType.UPDATE,
                 massageExpectectedResultsForDialect(updateShouldNotBeApplied));
         writeData(data, originalValues);
-
         String[] updateShouldBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
                 originalValues.length);
         updateShouldBeApplied[2] = "string3";
@@ -191,17 +177,13 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         setting.setResolveChangesOnly(false);
         setting.setResolveType(ResolveConflict.NEWER_WINS);
         writerSettings.setDefaultConflictSetting(setting);
-
         String id = getNextId();
         String[] originalValues = massageExpectectedResultsForDialect(new String[] { id, "string2",
                 "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.000",
                 "2012-03-12 07:00:00.000", "0", "2", "67.89", "-0.0747663" });
-
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
-
         long before = countRows(TEST_TABLE);
-
         String[] updateShouldNotBeApplied = CollectionUtils.copyOfRange(originalValues, 0,
                 originalValues.length);
         updateShouldNotBeApplied[2] = "updated string";
@@ -213,21 +195,16 @@ public class DatabaseWriterTest extends AbstractWriterTest {
                 massageExpectectedResultsForDialect(new String[] { newId, "string2",
                         "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.0",
                         "2012-03-12 07:00:00.0", "0", "2", "67.89", "-0.0747663" }));
-
         writeData(update, newInsert);
-
         Assert.assertEquals(before, countRows(TEST_TABLE));
-
     }
 
     @Test
     public void testUpdateDetectOldDataIgnoreRow() {
-
     }
 
     @Test
     public void testUpdateDetectOldDataIgnoreBatch() {
-
     }
 
     @Test
@@ -239,27 +216,21 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         setting.setResolveChangesOnly(false);
         setting.setResolveType(ResolveConflict.MANUAL);
         writerSettings.setDefaultConflictSetting(setting);
-
         String origId = getNextId();
         String[] originalValues = massageExpectectedResultsForDialect(new String[] { origId,
                 "string2", "changed value", "char2", "char not null2", "2007-01-02 03:20:10.000",
                 "2012-03-12 07:00:00.000", "0", "2", "67.89", "-0.0747663" });
-
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
-
         String[] oldData = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
         oldData[2] = "original value";
         oldData = massageExpectectedResultsForDialect(oldData);
-
         String[] newData = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
         newData[2] = "new value";
         newData = massageExpectectedResultsForDialect(newData);
-
         CsvData update = new CsvData(DataEventType.UPDATE);
         update.putParsedData(CsvData.ROW_DATA, newData);
         update.putParsedData(CsvData.OLD_DATA, oldData);
-
         try {
             writeData(update);
             Assert.fail("Should have received a conflict exception");
@@ -274,9 +245,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
             Assert.assertNotNull(row);
             Assert.assertEquals(newData[2], row.get("string_required_value"));
         }
-
     }
-    
+
     @Test
     public void testUpdateDetectOldDataWithNullManual() {
         Conflict setting = new Conflict();
@@ -286,27 +256,21 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         setting.setResolveChangesOnly(false);
         setting.setResolveType(ResolveConflict.MANUAL);
         writerSettings.setDefaultConflictSetting(setting);
-
         String origId = getNextId();
         String[] originalValues = massageExpectectedResultsForDialect(new String[] { origId,
                 null, "changed value", "char2", "char not null2", "2007-01-02 03:20:10.000",
                 "2012-03-12 07:00:00.000", "0", "2", "67.89", "-0.0747663" });
-
         CsvData data = new CsvData(DataEventType.INSERT, originalValues);
         writeData(data, originalValues);
-
         String[] oldData = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
         oldData[2] = "original value";
         oldData = massageExpectectedResultsForDialect(oldData);
-
         String[] newData = CollectionUtils.copyOfRange(originalValues, 0, originalValues.length);
         newData[2] = "new value";
         newData = massageExpectectedResultsForDialect(newData);
-
         CsvData update = new CsvData(DataEventType.UPDATE);
         update.putParsedData(CsvData.ROW_DATA, newData);
         update.putParsedData(CsvData.OLD_DATA, oldData);
-
         try {
             writeData(update);
             Assert.fail("Should have received a conflict exception");
@@ -321,48 +285,38 @@ public class DatabaseWriterTest extends AbstractWriterTest {
             Assert.assertNotNull(row);
             Assert.assertEquals(newData[2], row.get("string_required_value"));
         }
-
     }
-    
 
     @Test
     public void testUpdateDetectChangedDataIgnoreRow() {
-
     }
 
     @Test
     public void testUpdateDetectChangedDataIgnoreBatch() {
-
     }
 
     @Test
     public void testUpdateDetectChangedDataFallbackAll() {
-
     }
 
     @Test
     public void testDeleteDetectTimestampIgnoreRow() {
-
     }
 
     @Test
     public void testDeleteDetectTimestampIgnoreBatch() {
-
     }
 
     @Test
     public void testDeleteDetectTimestampNewerWins() {
-
     }
 
     @Test
     public void testInsertDetectTimestampManual() {
-
     }
 
     @Test
     public void testUpdateDetectChangedDataManual() {
-
     }
 
     @Test
@@ -372,7 +326,6 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         massageExpectectedResultsForDialect(values);
         CsvData data = new CsvData(DataEventType.INSERT, values);
         writeData(data, values);
-
         values[1] = "insert fallback to update";
         massageExpectectedResultsForDialect(values);
         writeData(data, values);
@@ -385,11 +338,9 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         values[10] = "-0.0747663551401869";
         String[] expectedValues = (String[]) ArrayUtils.clone(values);
         massageExpectectedResultsForDialect(expectedValues);
-        
         if (platform.getDatabaseInfo().isRequiredCharColumnEmptyStringSameAsNull()) {
             expectedValues[4] = AbstractDatabasePlatform.REQUIRED_FIELD_NULL_SUBSTITUTE;
         }
-        
         writeData(new CsvData(DataEventType.INSERT, values), expectedValues);
     }
 
@@ -508,7 +459,6 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         List<String> testColumns = new ArrayList<String>(Arrays.asList(TEST_COLUMNS));
         testColumns.add(4, "Unknown_Column");
         String[] columns = testColumns.toArray(new String[testColumns.size()]);
-
         String[] values = { getNextId(), "testColumnNotExisting", "string not null", "char",
                 "i do not exist!", "char not null", "2007-01-02 00:00:00.000",
                 "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747" };
@@ -524,12 +474,10 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         String[] values = { getNextId(), "testTableNotExisting", "This row should load", "char",
                 "char not null", "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "0",
                 "12.10", "-0.0747" };
-
         Table badTable = buildSourceTable("UnknownTable", TEST_KEYS, TEST_COLUMNS);
         writeData(new TableCsvData(badTable, new CsvData(DataEventType.INSERT, values)),
                 new TableCsvData(buildSourceTable(TEST_TABLE, TEST_KEYS, TEST_COLUMNS),
                         new CsvData(DataEventType.INSERT, values)));
-
         massageExpectectedResultsForDialect(values);
         assertTestTableEquals(values[0], values);
     }
@@ -542,15 +490,12 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         String[] updateValues = new String[2];
         updateValues[0] = insertValues[0];
         updateValues[1] = "new value";
-
         writeData(new CsvData(DataEventType.INSERT, insertValues), insertValues);
-
         // update a single column
         String[] columns = { "id", "string_value" };
         insertValues[1] = updateValues[1];
         writeData(new CsvData(DataEventType.UPDATE, new String[] { getId() }, updateValues),
                 insertValues, columns);
-
         // update a single column
         columns = new String[] { "id", "char_value" };
         insertValues[3] = updateValues[1];
@@ -564,21 +509,17 @@ public class DatabaseWriterTest extends AbstractWriterTest {
             platform.getSqlTemplate().update("drop table if exists test_postgres_binary_types");
             platform.getSqlTemplate().update(
                     "create table test_postgres_binary_types (binary_data oid)");
-
             String tableName = "test_postgres_binary_types";
             String[] keys = { "binary_data" };
             String[] columns = { "binary_data" };
             String[] values = { "dGVzdCAxIDIgMw==" };
-
             Table table = buildSourceTable(tableName, keys, columns);
             writeData(new TableCsvData(table, new CsvData(DataEventType.INSERT, values)));
-
             String result = (String) platform
                     .getSqlTemplate()
                     .queryForObject(
                             "select encode(data,'escape') from pg_largeobject where loid in (select binary_data from test_postgres_binary_types)",
                             String.class);
-
             // clean up the object from pg_largeobject, otherwise it becomes
             // abandoned on subsequent runs
             platform.getSqlTemplate().query(
@@ -601,25 +542,19 @@ public class DatabaseWriterTest extends AbstractWriterTest {
                     UUID.randomUUID().toString(), "2007-01-02 03:20:10.0", "2007-02-03 04:05:06.0",
                     "0", "47", "67.89", "-0.0747663" };
             datas.add(new CsvData(DataEventType.INSERT, values));
-
         }
-
         for (int i = startId; i < 1600 + startId; i++) {
             String[] values = { Integer.toString(i) };
             datas.add(new CsvData(DataEventType.DELETE, values, null));
         }
-
         long startTime = System.currentTimeMillis();
         long statementCount = writeData(new TableCsvData(table, datas));
         double totalSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
-
         double targetTime = 15.0;
         if (platform instanceof InformixDatabasePlatform) {
             targetTime = 20.0;
         }
-
         Assert.assertEquals(3200, statementCount);
-
         // TODO: this used to run in 1 second; can we do some optimization?
         Assert.assertTrue("DataLoader running in " + totalSeconds + " is too slow",
                 totalSeconds <= targetTime);
@@ -627,23 +562,21 @@ public class DatabaseWriterTest extends AbstractWriterTest {
 
     private String[] massageExpectectedResultsForDialect(String[] values) {
         RoundingMode mode = RoundingMode.DOWN;
-        
-        if(values[5] != null && (platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform)) {
+        if (values[5] != null && (platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform)) {
             // No time portion for a date field
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.000", "");
         } else if (values[5] != null
                 && (!(platform instanceof OracleDatabasePlatform
                         || platform instanceof TiberoDatabasePlatform
                         ||
-                            // Only SqlServer 2000 and 2005 should not be mangled. 2008 now uses Date and Time data types.
-                            (
-                                    (platform instanceof MsSql2000DatabasePlatform || platform instanceof MsSql2005DatabasePlatform
-                            ) && ! (platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform)
-                            )
+                        // Only SqlServer 2000 and 2005 should not be mangled. 2008 now uses Date and Time data types.
+                        ((platform instanceof MsSql2000DatabasePlatform || platform instanceof MsSql2005DatabasePlatform)
+                                && !(platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform))
                         || platform instanceof AseDatabasePlatform
                         || platform instanceof SqlAnywhereDatabasePlatform))) {
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d.*", "");
-        } else if (values[5] != null && values[5].length() == 23 && (platform instanceof OracleDatabasePlatform || platform instanceof TiberoDatabasePlatform)) {
+        } else if (values[5] != null && values[5].length() == 23 && (platform instanceof OracleDatabasePlatform
+                || platform instanceof TiberoDatabasePlatform)) {
             values[5] = values[5] + "0000";
         }
         if (values[6] != null && values[6].length() == 23) {
@@ -652,21 +585,18 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         if (values[10] != null) {
             values[10] = values[10].replace(',', '.');
         }
-        if (values[10] != null && !(platform instanceof OracleDatabasePlatform) 
+        if (values[10] != null && !(platform instanceof OracleDatabasePlatform)
                 && !(platform instanceof TiberoDatabasePlatform)) {
             int scale = 17;
             if (platform instanceof MySqlDatabasePlatform) {
                 scale = 16;
             }
-            
             DecimalFormat df = new DecimalFormat("0.00####################################");
-            values[10] = df.format(new BigDecimal(values[10]).setScale(scale,mode));
+            values[10] = df.format(new BigDecimal(values[10]).setScale(scale, mode));
         }
-        
         // Adjust character fields that may have been adjusted from null to a default space with appropriate padding
         values[3] = translateExpectedCharString(values[3], 50, false);
         values[4] = translateExpectedCharString(values[4], 50, true);
-        
         return values;
     }
 
@@ -675,15 +605,14 @@ public class DatabaseWriterTest extends AbstractWriterTest {
                 && (!(platform instanceof OracleDatabasePlatform
                         || platform instanceof TiberoDatabasePlatform
                         ||
-                            // Only SqlServer 2000 and 2005 should not be mangled. 2008 now uses Date and Time data types.
-                            (
-                                    (platform instanceof MsSql2000DatabasePlatform || platform instanceof MsSql2005DatabasePlatform
-                            ) && ! (platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform)
-                            )
+                        // Only SqlServer 2000 and 2005 should not be mangled. 2008 now uses Date and Time data types.
+                        ((platform instanceof MsSql2000DatabasePlatform || platform instanceof MsSql2005DatabasePlatform)
+                                && !(platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform))
                         || platform instanceof AseDatabasePlatform
                         || platform instanceof SqlAnywhereDatabasePlatform))) {
             values[6] = values[6].replaceFirst(" \\d\\d:\\d\\d:\\d\\d.*", "");
-        } else if (values[6] != null && values[6].length() == 23 && (platform instanceof OracleDatabasePlatform || platform instanceof TiberoDatabasePlatform)) {
+        } else if (values[6] != null && values[6].length() == 23 && (platform instanceof OracleDatabasePlatform
+                || platform instanceof TiberoDatabasePlatform)) {
             values[6] = values[6] + "0000";
         }
         if (values[7] != null && values[7].length() == 23) {

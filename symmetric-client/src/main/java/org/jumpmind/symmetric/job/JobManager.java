@@ -38,51 +38,42 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * @see IJobManager
  */
 public class JobManager extends AbstractService implements IJobManager {
-
     private static final Logger log = LoggerFactory.getLogger(JobManager.class);
-
     private List<IJob> jobs;
     private ThreadPoolTaskScheduler taskScheduler;
     private ISymmetricEngine engine;
     private JobCreator jobCreator = new JobCreator();
-    
     private boolean started = false;
-    
+
     public JobManager(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
-        
         this.engine = engine;
-
         this.taskScheduler = new ThreadPoolTaskScheduler();
-        setSqlMap(new JobManagerSqlMap(engine.getSymmetricDialect().getPlatform(), createSqlReplacementTokens()));        
-                
+        setSqlMap(new JobManagerSqlMap(engine.getSymmetricDialect().getPlatform(), createSqlReplacementTokens()));
         this.taskScheduler.setThreadNamePrefix(String.format("%s-job-", engine.getParameterService().getEngineName()));
         this.taskScheduler.setPoolSize(20);
-        this.taskScheduler.initialize();    
+        this.taskScheduler.initialize();
     }
-    
+
     @Override
     public void init() {
         this.stopJobs();
         List<JobDefinition> jobDefitions = loadJobs(engine);
-        
         BuiltInJobs builtInJobs = new BuiltInJobs();
         jobDefitions = builtInJobs.syncBuiltInJobs(jobDefitions, engine, taskScheduler); // TODO save built in jobs
-        
         this.jobs = new ArrayList<IJob>();
-        
         for (JobDefinition jobDefinition : jobDefitions) {
             IJob job = jobCreator.createJob(jobDefinition, engine, taskScheduler);
-            if (job != null) {                
+            if (job != null) {
                 jobs.add(job);
             }
         }
     }
 
     protected List<JobDefinition> loadJobs(ISymmetricEngine engine) {
-       return sqlTemplate.query(getSql("loadCustomJobs"), new JobMapper());
+        return sqlTemplate.query(getSql("loadCustomJobs"), new JobMapper());
     }
-    
+
     @Override
     public boolean isStarted() {
         return started;
@@ -97,7 +88,7 @@ public class JobManager extends AbstractService implements IJobManager {
         }
         return null;
     }
-    
+
     /*
      * Start the jobs if they are configured to be started
      */
@@ -112,34 +103,29 @@ public class JobManager extends AbstractService implements IJobManager {
         }
         started = true;
     }
-    
+
     @Override
     public boolean isJobApplicableToNodeGroup(IJob job) {
         String nodeGroupId = job.getJobDefinition().getNodeGroupId();
         if (StringUtils.isEmpty(nodeGroupId) || nodeGroupId.equals("ALL")) {
             return true;
         }
-
         return engine.getParameterService().getNodeGroupId().equals(nodeGroupId);
     }
 
-
     protected boolean isAutoStartConfigured(IJob job) {
         String autoStartValue = null;
-        
-        if (job.getDeprecatedStartParameter() != null) {            
+        if (job.getDeprecatedStartParameter() != null) {
             autoStartValue = engine.getParameterService().getString(job.getDeprecatedStartParameter());
         }
-        
         if (StringUtils.isEmpty(autoStartValue)) {
             autoStartValue = engine.getParameterService().getString(job.getJobDefinition().getStartParameter());
             if (StringUtils.isEmpty(autoStartValue)) {
                 autoStartValue = String.valueOf(job.getJobDefinition().isDefaultAutomaticStartup());
             }
         }
-        
         return "1".equals(autoStartValue) || Boolean.parseBoolean(autoStartValue);
-     }
+    }
 
     @Override
     public synchronized void stopJobs() {
@@ -151,7 +137,7 @@ public class JobManager extends AbstractService implements IJobManager {
             started = false;
         }
     }
-    
+
     @Override
     public synchronized void destroy() {
         stopJobs();
@@ -165,7 +151,7 @@ public class JobManager extends AbstractService implements IJobManager {
         List<IJob> sortedJobs = sortJobs(jobs);
         return sortedJobs;
     }
-    
+
     protected List<IJob> sortJobs(List<IJob> jobs) {
         List<IJob> jobsSorted = new ArrayList<>();
         if (jobs != null) {
@@ -185,7 +171,7 @@ public class JobManager extends AbstractService implements IJobManager {
         }
         return jobsSorted;
     }
-    
+
     @Override
     public void restartJobs() {
         this.init();
@@ -194,25 +180,22 @@ public class JobManager extends AbstractService implements IJobManager {
 
     @Override
     public void saveJob(JobDefinition job) {
-        Object[] args = { job.getDescription(), job.getJobType().toString(),  
-                job.getJobExpression(), job.isDefaultAutomaticStartup() ? 1 : 0, job.getDefaultSchedule(), 
+        Object[] args = { job.getDescription(), job.getJobType().toString(),
+                job.getJobExpression(), job.isDefaultAutomaticStartup() ? 1 : 0, job.getDefaultSchedule(),
                 job.getNodeGroupId(), job.getCreateBy(), job.getLastUpdateBy(), job.getJobName() };
-
         if (sqlTemplate.update(getSql("updateJobSql"), args) <= 0) {
             sqlTemplate.update(getSql("insertJobSql"), args);
-        } 
+        }
         restartJobs();
     }
-    
+
     @Override
     public void removeJob(String name) {
         Object[] args = { name };
-
         if (sqlTemplate.update(getSql("deleteJobSql"), args) == 1) {
-            
-        }  else {            
+        } else {
             throw new SymmetricException("Failed to remove job " + name + ".  Note that BUILT_IN jobs cannot be removed.");
         }
-        restartJobs();        
+        restartJobs();
     }
 }

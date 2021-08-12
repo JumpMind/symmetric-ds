@@ -24,45 +24,41 @@ import java.util.Map;
 
 import org.jumpmind.symmetric.model.Lock;
 
-
 /**
- * Service API that is responsible for acquiring distributed locks for 
- * clustered SymmetricDS nodes.
+ * Service API that is responsible for acquiring distributed locks for clustered SymmetricDS nodes.
  */
 public interface IClusterService {
-
     public void init();
-    
-    public void refreshLockEntries();    
-    
+
+    public void refreshLockEntries();
+
     public boolean lock(String action);
-    
+
     public boolean refreshLock(String action);
-    
+
     public boolean lock(String action, String lockType);
 
     public boolean lock(String action, String lockType, long waitMillis);
 
     public void unlock(String action);
-    
-    public void unlock(String action, String lockType);
-    
-    public void clearAllLocks();
-    
-    public String getServerId();
-    
-    public boolean isClusteringEnabled();
-    
-    public Map<String,Lock> findLocks();
-    
-    public void aquireInfiniteLock(String action);
-    
-    public void clearInfiniteLock(String action);
-    
-    public boolean isInfiniteLocked(String action);
-    
-    public void persistToTableForSnapshot();
-    
-    public String getInstanceId();
 
+    public void unlock(String action, String lockType);
+
+    public void clearAllLocks();
+
+    public String getServerId();
+
+    public boolean isClusteringEnabled();
+
+    public Map<String, Lock> findLocks();
+
+    public void aquireInfiniteLock(String action);
+
+    public void clearInfiniteLock(String action);
+
+    public boolean isInfiniteLocked(String action);
+
+    public void persistToTableForSnapshot();
+
+    public String getInstanceId();
 }

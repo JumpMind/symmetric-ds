@@ -26,13 +26,12 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 
 class ClusterLockRefreshListener implements IDataProcessorListener {
-    
     protected IClusterService clusterService;
-    
+
     public ClusterLockRefreshListener(IClusterService clusterService) {
         this.clusterService = clusterService;
     }
-    
+
     @Override
     public boolean beforeBatchStarted(DataContext context) {
         return true;
@@ -58,5 +57,4 @@ class ClusterLockRefreshListener implements IDataProcessorListener {
     public void batchProgressUpdate(DataContext context) {
         clusterService.refreshLock(ClusterConstants.INITIAL_LOAD_EXTRACT);
     }
-    
 }

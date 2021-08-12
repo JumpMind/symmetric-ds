@@ -31,67 +31,41 @@ import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 /**
- * Maps to the table sync audit table which tracks the history of sync trigger
- * creation.
+ * Maps to the table sync audit table which tracks the history of sync trigger creation.
  * <p/>
- * This table also tracks the columns and the primary keys as of the create date
- * so that if the table definition changes while we still have events to process
- * (as may be the case when distributing events to remote locations), then we
- * still have the history of what the columns and primary keys were at the time.
+ * This table also tracks the columns and the primary keys as of the create date so that if the table definition changes while we still have events to process
+ * (as may be the case when distributing events to remote locations), then we still have the history of what the columns and primary keys were at the time.
  */
 public class TriggerHistory implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     private int triggerHistoryId;
-
     private String triggerId;
-
     private String sourceTableName;
-    
     private String sourceTableNameLowerCase;
-
     private String sourceSchemaName;
-
     private String sourceCatalogName;
-
     private Date createTime;
-
     private String columnNames;
-
     private String[] parsedColumnNames;
-
     private String pkColumnNames;
-
     private String[] parsedPkColumnNames;
-
     private String nameForInsertTrigger;
-
     private String nameForUpdateTrigger;
-
     private String nameForDeleteTrigger;
-
     private String errorMessage;
-
     private Date inactiveTime;
-
     /**
-     * This is a hash based on the tablename, column names, and column data
-     * types. It is used to effectively version a table so we know when it
-     * changes.
+     * This is a hash based on the tablename, column names, and column data types. It is used to effectively version a table so we know when it changes.
      */
     private int tableHash;
-
     /**
      * This is a hash based on the values in the trigger configuration table.
      */
     private long triggerRowHash;
-
     /**
      * This is a hash of the trigger templates used for generating the trigger text.
      */
     private long triggerTemplateHash;
-
     private TriggerReBuildReason lastTriggerBuildReason;
 
     public TriggerHistory() {
@@ -116,19 +90,15 @@ public class TriggerHistory implements Serializable {
 
     public TriggerHistory(Table table, Trigger trigger, AbstractTriggerTemplate triggerTemplate, TriggerReBuildReason reason) {
         this();
-        
         if (triggerTemplate == null) {
             throw new SymmetricException("triggerTemplate cannot be null. Does the current dialect have a TriggerTemplate?");
         }
-        
         this.lastTriggerBuildReason = reason;
-        this.sourceTableName = (trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded()) ? table.getName() : 
-            trigger.getSourceTableNameUnescaped();
+        this.sourceTableName = (trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded()) ? table.getName()
+                : trigger.getSourceTableNameUnescaped();
         this.columnNames = Table.getCommaDeliminatedColumns(trigger.orderColumnsForTable(table));
-        this.sourceSchemaName = trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : 
-            trigger.getSourceSchemaNameUnescaped();
-        this.sourceCatalogName = trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : 
-            trigger.getSourceCatalogNameUnescaped();
+        this.sourceSchemaName = trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaNameUnescaped();
+        this.sourceCatalogName = trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogNameUnescaped();
         this.triggerId = trigger.getTriggerId();
         this.pkColumnNames = Table.getCommaDeliminatedColumns(trigger.filterExcludedAndIncludedColumns(trigger
                 .getSyncKeysColumnsForTable(table)));
@@ -146,14 +116,14 @@ public class TriggerHistory implements Serializable {
 
     public String getTriggerNameForDmlType(DataEventType type) {
         switch (type) {
-        case INSERT:
-            return getNameForInsertTrigger();
-        case UPDATE:
-            return getNameForUpdateTrigger();
-        case DELETE:
-            return getNameForDeleteTrigger();
-        default:
-            break;
+            case INSERT:
+                return getNameForInsertTrigger();
+            case UPDATE:
+                return getNameForUpdateTrigger();
+            case DELETE:
+                return getNameForDeleteTrigger();
+            default:
+                break;
         }
         throw new IllegalStateException();
     }
@@ -208,9 +178,9 @@ public class TriggerHistory implements Serializable {
     }
 
     public String getSourceTableNameLowerCase() {
-    	if (sourceTableNameLowerCase == null) {
-    		sourceTableNameLowerCase = sourceTableName.toLowerCase();
-    	}
+        if (sourceTableNameLowerCase == null) {
+            sourceTableNameLowerCase = sourceTableName.toLowerCase();
+        }
         return sourceTableNameLowerCase;
     }
 
@@ -343,22 +313,20 @@ public class TriggerHistory implements Serializable {
     public void setTriggerTemplateHash(long triggerTemplateHash) {
         this.triggerTemplateHash = triggerTemplateHash;
     }
-    
+
     protected String[] parseColumnNames(String argColumnNames) {
         if (argColumnNames.indexOf('"') == -1) {
             return argColumnNames.split(",");
         }
-        
-        try {            
+        try {
             CsvReader reader = new CsvReader(new StringReader(argColumnNames), ',');
             if (reader.readRecord()) {
-                return reader.getValues();                
+                return reader.getValues();
             } else {
                 throw new SymmetricException("Failed to read a record from CsvReader.");
             }
         } catch (Exception ex) {
             throw new SymmetricException("Failed to parse columns [" + argColumnNames + "]", ex);
         }
-    }    
-
+    }
 }

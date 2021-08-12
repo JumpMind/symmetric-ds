@@ -49,32 +49,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Compile Java code in memory, load it, and return a new instance.  The class name is changed to make it unique
- * and the caller should cast to a parent class or interface.  On subsequent calls, if the same Java code
- * is passed again, the cached object is returned.  Otherwise, a new class is compiled, loaded, and an instance returned.
+ * Compile Java code in memory, load it, and return a new instance. The class name is changed to make it unique and the caller should cast to a parent class or
+ * interface. On subsequent calls, if the same Java code is passed again, the cached object is returned. Otherwise, a new class is compiled, loaded, and an
+ * instance returned.
  *
  */
 @IgnoreJRERequirement
 @SuppressWarnings({ "rawtypes" })
 public class SimpleClassCompiler {
-
     protected final static String REGEX_CLASS = "public\\s*class\\s*(\\w*)";
-    
     protected Map<Integer, Object> objectMap = new HashMap<Integer, Object>();
-    
     protected int classSuffix;
-    
     private Logger log = LoggerFactory.getLogger(SimpleClassCompiler.class);
 
     public SimpleClassCompiler() {
     }
-    
-    public Object getCompiledClass(String javaCode) throws Exception {
 
+    public Object getCompiledClass(String javaCode) throws Exception {
         Integer id = javaCode.hashCode();
         Object javaObject = objectMap.get(id);
-        
-        if (javaObject == null ) {
+        if (javaObject == null) {
             String className = getNextClassName();
             String origClassName = null;
             Pattern pattern = Pattern.compile(REGEX_CLASS);
@@ -83,12 +77,10 @@ public class SimpleClassCompiler {
                 origClassName = matcher.group(1);
             }
             javaCode = javaCode.replaceAll(REGEX_CLASS, "public class " + className);
-
             log.info("Compiling class '" + origClassName + "'");
             if (log.isDebugEnabled()) {
                 log.debug("Compiling code: \n" + javaCode);
             }
-            
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
             if (compiler == null) {
                 throw new SimpleClassCompilerException("Missing Java compiler: the JDK (rather than just JRE) is required for compiling classes.");
@@ -98,28 +90,25 @@ public class SimpleClassCompiler {
             List<JavaFileObject> javaFiles = new ArrayList<JavaFileObject>();
             javaFiles.add(new JavaObjectFromString(className, javaCode));
             Boolean success = compiler.getTask(null, fileManager, diag, null, null, javaFiles).call();
-            
             if (success) {
                 log.debug("Compilation has succeeded");
-                Class<?> clazz =  fileManager.getClassLoader(null).loadClass(className);
+                Class<?> clazz = fileManager.getClassLoader(null).loadClass(className);
                 if (clazz != null) {
                     javaObject = clazz.getDeclaredConstructor().newInstance();
                     objectMap.put(id, javaObject);
                 } else {
-                    throw new SimpleClassCompilerException("The '"+className+"' class could not be located");
+                    throw new SimpleClassCompilerException("The '" + className + "' class could not be located");
                 }
             } else {
                 StringBuilder msg = new StringBuilder(256);
                 msg.append("Compilation of '").append(origClassName).append("' failed.\n");
-
                 for (Diagnostic diagnostic : diag.getDiagnostics()) {
-                    msg.append(origClassName + " at line " + diagnostic.getLineNumber() + ", column " + diagnostic.getColumnNumber() + ": " + 
+                    msg.append(origClassName + " at line " + diagnostic.getLineNumber() + ", column " + diagnostic.getColumnNumber() + ": " +
                             diagnostic.getMessage(null)).append("\n");
                 }
                 throw new SimpleClassCompilerException(msg.toString(), diag.getDiagnostics());
             }
         }
-
         return javaObject;
     }
 
@@ -158,7 +147,7 @@ public class SimpleClassCompiler {
             return bos;
         }
     }
-    
+
     @IgnoreJRERequirement
     static public class ClassFileManager extends ForwardingJavaFileManager {
         private HashMap<String, JavaClassObject> jclassObjects = new HashMap<String, JavaClassObject>();
@@ -185,7 +174,7 @@ public class SimpleClassCompiler {
         }
 
         @Override
-        public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind, FileObject sibling) 
+        public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind, FileObject sibling)
                 throws IOException {
             JavaClassObject jclassObject = new JavaClassObject(className, kind);
             jclassObjects.put(className, jclassObject);

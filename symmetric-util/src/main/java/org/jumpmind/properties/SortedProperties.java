@@ -26,7 +26,6 @@ import java.util.Properties;
 import java.util.Vector;
 
 public class SortedProperties extends Properties {
-
     private static final long serialVersionUID = 1L;
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -39,5 +38,4 @@ public class SortedProperties extends Properties {
         Collections.sort(keyList);
         return keyList.elements();
     }
-
 }

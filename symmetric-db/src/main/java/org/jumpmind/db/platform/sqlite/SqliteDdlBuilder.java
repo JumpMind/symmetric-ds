@@ -33,10 +33,8 @@ import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class SqliteDdlBuilder extends AbstractDdlBuilder {
-    
-    public SqliteDdlBuilder() {        
+    public SqliteDdlBuilder() {
         super(DatabaseNamesConstants.SQLITE);
-    
         databaseInfo.setMinIsolationLevelToPreventPhantomReads(Connection.TRANSACTION_SERIALIZABLE);
         databaseInfo.setPrimaryKeyEmbedded(true);
         databaseInfo.setNonPKIdentityColumnsSupported(false);
@@ -44,7 +42,6 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         databaseInfo.setNullAsDefaultValueRequired(false);
         databaseInfo.setRequiresAutoCommitForDdl(true);
-
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "BINARY", Types.BINARY);
         databaseInfo.addNativeTypeMapping(Types.CHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(Types.BIGINT, "INTEGER", Types.INTEGER);
@@ -53,11 +50,9 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.REF, "BINARY", Types.BINARY);
         databaseInfo.addNativeTypeMapping(Types.STRUCT, "BINARY", Types.BINARY);
         databaseInfo.addNativeTypeMapping(Types.DATALINK, "BINARY", Types.BINARY);
-        
-        databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP",Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.TIME, "TIME", Types.TIME);
         databaseInfo.addNativeTypeMapping(Types.DATE, "DATETIME", Types.DATE);
-
         databaseInfo.addNativeTypeMapping(Types.BIT, "INTEGER", Types.INTEGER);
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "INTEGER", Types.INTEGER);
         databaseInfo.addNativeTypeMapping(Types.SMALLINT, "INTEGER", Types.INTEGER);
@@ -67,20 +62,16 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "FLOAT", Types.FLOAT);
         databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "OTHER");
-
         databaseInfo.setDefaultSize(Types.CHAR, Integer.MAX_VALUE);
         databaseInfo.setDefaultSize(Types.VARCHAR, Integer.MAX_VALUE);
         databaseInfo.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
         databaseInfo.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
-
         databaseInfo.setHasSize(Types.CHAR, false);
         databaseInfo.setHasSize(Types.VARCHAR, false);
         databaseInfo.setHasSize(Types.BINARY, false);
         databaseInfo.setHasSize(Types.VARBINARY, false);
-
         databaseInfo.setHasPrecisionAndScale(Types.DECIMAL, false);
         databaseInfo.setHasPrecisionAndScale(Types.NUMERIC, false);
-
         databaseInfo.setDateOverridesToTimestamp(false);
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setBlankCharColumnSpacePadded(false);
@@ -89,58 +80,58 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setForeignKeysEmbedded(true);
         databaseInfo.setEmbeddedForeignKeysNamed(false);
     }
-    
+
     @Override
     protected void writeExternalForeignKeyCreateStmt(Database database, Table table,
             ForeignKey key, StringBuilder ddl) {
     }
-    
+
     @Override
     protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey,
             StringBuilder ddl) {
     }
-    
+
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
         ddl.append("DROP INDEX ");
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);
     }
-    
+
     /**
      * Prints that the column is an auto increment column.
      */
     @Override
     protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
         ddl.append("AUTOINCREMENT");
-    }    
-    
+    }
+
     @Override
     protected void writeColumnEmbeddedPrimaryKey(Table table, Column column, StringBuilder ddl) {
         if (table.getPrimaryKeyColumnCount() == 1) {
             ddl.append(" PRIMARY KEY ");
         }
     }
-    
+
     @Override
     protected void writeEmbeddedPrimaryKeysStmt(Table table, StringBuilder ddl) {
         if (table.getPrimaryKeyColumnCount() > 1) {
-        super.writeEmbeddedPrimaryKeysStmt(table, ddl);
+            super.writeEmbeddedPrimaryKeysStmt(table, ddl);
         }
     }
-    
+
     @Override
-    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {        
+    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         ddl.append("DROP TABLE IF EXISTS ");
         ddl.append(getFullyQualifiedTableNameShorten(table));
         printEndOfStatement(ddl);
     }
-    
+
     @Override
     public String getIndexName(IIndex index) {
         return super.getIndexName(index).replace("-", "_");
     }
-    
+
     @Override
     protected String mapDefaultValue(Object defaultValue, int typeCode) {
         if (TypeMap.isDateTimeType(typeCode) && defaultValue != null) {
@@ -154,7 +145,7 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
             } else if (defaultValueStr.toUpperCase().startsWith("SYSTIME")
                     || defaultValueStr.toUpperCase().startsWith("CURRENT_TIME")) {
                 return "CURRENT_TIME";
-            } else if(defaultValueStr.contains("('")) {
+            } else if (defaultValueStr.contains("('")) {
                 int beginIndex = defaultValueStr.indexOf("('");
                 int lastIndex = defaultValueStr.lastIndexOf(")");
                 if (lastIndex > beginIndex) {
@@ -176,7 +167,7 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
-        // SQL Lite does not allow auto increment columns on a composite primary key.  Solution is to turn off
+        // SQL Lite does not allow auto increment columns on a composite primary key. Solution is to turn off
         // Auto increment and still support composite key
         if (table.getPrimaryKeyColumnCount() > 1 && table.hasAutoIncrementColumn()) {
             for (Column column : table.getColumns()) {
@@ -185,5 +176,4 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         }
         super.createTable(table, ddl, temporary, recreate);
     }
-    
 }

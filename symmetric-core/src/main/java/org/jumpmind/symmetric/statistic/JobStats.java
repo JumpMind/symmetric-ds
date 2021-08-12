@@ -23,12 +23,11 @@ package org.jumpmind.symmetric.statistic;
 import java.util.Date;
 
 public class JobStats extends AbstractNodeHostStats {
-
     private String jobName;
     private long processedCount;
     private String targetNodeId;
     private int targetNodeCount;
-    
+
     public JobStats() {
     }
 
@@ -43,7 +42,7 @@ public class JobStats extends AbstractNodeHostStats {
         this.targetNodeId = targetNodeId;
         this.targetNodeCount = targetNodeCount;
     }
-    
+
     public JobStats(String jobName, long startTime, long endTime, long processedCount) {
         this(null, null, new Date(startTime), new Date(endTime), jobName);
         this.processedCount = processedCount;
@@ -80,6 +79,4 @@ public class JobStats extends AbstractNodeHostStats {
     public void setTargetNodeCount(int targetNodeCount) {
         this.targetNodeCount = targetNodeCount;
     }
-
-    
 }

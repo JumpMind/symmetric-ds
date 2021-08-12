@@ -30,21 +30,13 @@ import org.jumpmind.symmetric.io.data.writer.NestedDataWriter;
 import org.jumpmind.util.Context;
 
 public class DataContext extends Context {
-
     protected IDataWriter writer;
-
     protected IDataReader reader;
-
     protected Batch batch;
-
     protected Table table;
-
     protected CsvData data;
-    
     protected Throwable lastError;
-    
     protected Map<String, Table> parsedTables = new HashMap<String, Table>();
-    
     protected Table lastParsedTable = null;
 
     public DataContext() {
@@ -65,7 +57,7 @@ public class DataContext extends Context {
     public IDataWriter getWriter() {
         return writer;
     }
-    
+
     public void setReader(IDataReader reader) {
         this.reader = reader;
     }
@@ -97,23 +89,23 @@ public class DataContext extends Context {
     public Table getTable() {
         return table;
     }
-    
+
     public void setLastError(Throwable lastError) {
         this.lastError = lastError;
     }
-    
+
     public Throwable getLastError() {
         return lastError;
     }
-    
+
     public Map<String, Table> getParsedTables() {
         return parsedTables;
     }
-    
+
     public Table getLastParsedTable() {
         return lastParsedTable;
     }
-    
+
     public void setLastParsedTable(Table lastParsedTable) {
         this.lastParsedTable = lastParsedTable;
     }
@@ -121,7 +113,7 @@ public class DataContext extends Context {
     public ISqlTransaction findTransaction() {
         ISqlTransaction transaction = null;
         if (writer instanceof NestedDataWriter) {
-            DefaultDatabaseWriter dbWriter = ((NestedDataWriter)writer).getNestedWriterOfType(DefaultDatabaseWriter.class);
+            DefaultDatabaseWriter dbWriter = ((NestedDataWriter) writer).getNestedWriterOfType(DefaultDatabaseWriter.class);
             if (dbWriter != null) {
                 transaction = dbWriter.getTransaction();
             }
@@ -130,7 +122,7 @@ public class DataContext extends Context {
         }
         return transaction;
     }
-    
+
     public ISqlTransaction findSymmetricTransaction(String tablePrefix) {
         ISqlTransaction transaction = null;
         if (writer instanceof NestedDataWriter) {
@@ -143,5 +135,4 @@ public class DataContext extends Context {
         }
         return transaction;
     }
-    
 }

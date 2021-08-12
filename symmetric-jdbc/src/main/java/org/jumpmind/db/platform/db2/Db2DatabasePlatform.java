@@ -56,28 +56,25 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * The DB2 platform implementation.
  */
 public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     /* The standard DB2 jdbc driver. */
     public static final String JDBC_DRIVER = "com.ibm.db2.jcc.DB2Driver";
-
     /* The subprotocol used by the standard DB2 driver. */
-    public static final String JDBC_SUBPROTOCOL = "db2";    
-    
+    public static final String JDBC_SUBPROTOCOL = "db2";
     protected int majorVersion;
     protected int minorVersion;
-    
+
     /*
      * Creates a new platform instance.
      */
     public Db2DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
-        super(dataSource, settings);        
+        super(dataSource, settings);
         majorVersion = sqlTemplate.getDatabaseMajorVersion();
         minorVersion = sqlTemplate.getDatabaseMinorVersion();
         if (majorVersion < 9 || (majorVersion == 9 && minorVersion < 7)) {
             supportsTruncate = false;
         }
     }
-    
+
     @Override
     protected Db2DdlBuilder createDdlBuilder() {
         return new Db2DdlBuilder();
@@ -96,32 +93,30 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
     public String getName() {
         return DatabaseNamesConstants.DB2;
     }
-    
+
     public String getDefaultSchema() {
         if (StringUtils.isBlank(defaultSchema)) {
             defaultSchema = (String) getSqlTemplate().queryForObject("select CURRENT SCHEMA from sysibm.sysdummy1", String.class);
         }
         return defaultSchema;
     }
-    
+
     public String getDefaultCatalog() {
         return "";
     }
-    
+
     @Override
     public boolean canColumnBeUsedInWhereClause(Column column) {
         return !column.isOfBinaryType();
     }
-    
+
     @Override
     public PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-           
-        String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " FOR EACH ROW BEGIN ATOMIC END"; 
-
+        String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
+                + " FOR EACH ROW BEGIN ATOMIC END";
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-        
         try {
             getSqlTemplate().update(triggerSql);
             result.setStatus(Status.PASS);
@@ -129,42 +124,39 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
         }
-        
         return result;
     }
-    
+
     @Override
     public String getTruncateSql(Table table) {
         String sql = super.getTruncateSql(table);
         sql += " reuse storage immediate";
         return sql;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return true;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         if (supportsLimitOffset()) {
             if (sql.endsWith(";")) {
                 sql = sql.substring(0, sql.length() - 1);
             }
-            
             int majorVersion = sqlTemplate.getDatabaseMajorVersion();
             int minorVersion = sqlTemplate.getDatabaseMinorVersion();
             if ((this instanceof Db2As400DatabasePlatform && (majorVersion >= 8 || (majorVersion == 7 && minorVersion >= 1)))
                     || (majorVersion >= 12 || (majorVersion == 11 && minorVersion >= 1))) {
                 return sql + " limit " + limit + " offset " + offset + ";";
             }
-
             int orderIndex = StringUtils.lastIndexOfIgnoreCase(sql, "order by");
             String order = sql.substring(orderIndex);
             String innerSql = sql.substring(0, orderIndex - 1);
             innerSql = StringUtils.replaceIgnoreCase(innerSql, " from", ", ROW_NUMBER() over (" + order + ") as RowNum from");
             return "select * from (" + innerSql + ") " +
-                   "where RowNum between " + (offset + 1) + " and " + (offset + limit);
+                    "where RowNum between " + (offset + 1) + " and " + (offset + limit);
         }
         return sql;
     }

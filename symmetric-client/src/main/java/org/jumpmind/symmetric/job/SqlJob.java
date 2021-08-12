@@ -31,47 +31,43 @@ import org.jumpmind.symmetric.model.JobDefinition.JobType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class SqlJob extends AbstractJob {
-    
     static final boolean AUTO_COMMIT = true;
-    
+
     public SqlJob(String jobName, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(jobName, engine, taskScheduler);
     }
-    
+
     public JobType getJobType() {
         return JobType.SQL;
     }
 
     @Override
     protected void doJob(boolean force) throws Exception {
-        try {            
-            if (getJobDefinition().getJobExpression() != null) {        
+        try {
+            if (getJobDefinition().getJobExpression() != null) {
                 ISqlTemplate sqlTemplate = engine.getDatabasePlatform().getSqlTemplate();
-                Map<String, String> replacementTokens = getReplacementTokens(engine, engine.getSymmetricDialect().getPlatform().getSqlScriptReplacementTokens());
+                Map<String, String> replacementTokens = getReplacementTokens(engine, engine.getSymmetricDialect().getPlatform()
+                        .getSqlScriptReplacementTokens());
                 SqlScript script = new SqlScript(getJobDefinition().getJobExpression(), sqlTemplate, true, replacementTokens);
                 script.execute(AUTO_COMMIT);
             }
         } catch (Exception ex) {
             log.error("Exception during sql job '" + this.getName() + "'\n" + getJobDefinition().getJobExpression(), ex);
-        }   
+        }
     }
-
 
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults();
     }
-    
+
     protected Map<String, String> getReplacementTokens(ISymmetricEngine engine, Map<String, String> startingReplacementTokens) {
         Map<String, String> replacementTokens = new HashMap<String, String>();
-        
         if (startingReplacementTokens != null) {
             replacementTokens.putAll(startingReplacementTokens);
         }
         replacementTokens.put(TokenConstants.NODE_ID, engine.getNodeId());
         replacementTokens.put(TokenConstants.NODE_GROUP_ID, engine.getNodeService().findIdentity().getNodeGroupId());
-        
         return replacementTokens;
     }
-
 }

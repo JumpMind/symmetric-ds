@@ -31,9 +31,7 @@ import org.jumpmind.symmetric.model.Node;
  *
  */
 public interface IReloadVariableFilter extends IExtensionPoint {
-
     public String filterInitalLoadSql(String sql, Node targetNode, Table table);
-      
-    public String filterPurgeSql(String sql, Node targetNode, Table table);
 
+    public String filterPurgeSql(String sql, Node targetNode, Table table);
 }

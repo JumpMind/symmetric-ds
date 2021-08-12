@@ -91,39 +91,27 @@ import org.springframework.jndi.JndiObjectFactoryBean;
 import org.xml.sax.InputSource;
 
 /**
- * Represents the client portion of a SymmetricDS engine. This class can be used
- * to embed SymmetricDS into another application.
+ * Represents the client portion of a SymmetricDS engine. This class can be used to embed SymmetricDS into another application.
  */
 public class ClientSymmetricEngine extends AbstractSymmetricEngine {
-
-	private static final Logger log = LoggerFactory.getLogger(ClientSymmetricEngine.class);
-
+    private static final Logger log = LoggerFactory.getLogger(ClientSymmetricEngine.class);
     public static final String DEPLOYMENT_TYPE_CLIENT = "client";
-    
     public static final String PROPERTIES_FACTORY_CLASS_NAME = "properties.factory.class.name";
-
     protected File propertiesFile;
-
     protected Properties properties;
-
     protected DataSource dataSource;
-
     protected ApplicationContext springContext;
-    
     protected IMonitorService monitorService;
 
     /**
      * @param dataSource
-     *            If not null, SymmetricDS will use this provided datasource
-     *            instead of creating it's own.
+     *            If not null, SymmetricDS will use this provided datasource instead of creating it's own.
      * @param springContext
-     *            If not null, SymmetricDS will use this provided Spring context
-     *            instead of creating it's own.
+     *            If not null, SymmetricDS will use this provided Spring context instead of creating it's own.
      * @param properties
      *            Properties to use for configuration.
      * @param registerEngine
-     *            Whether to store a reference to this engine in a local static
-     *            map.
+     *            Whether to store a reference to this engine in a local static map.
      */
     public ClientSymmetricEngine(DataSource dataSource, ApplicationContext springContext,
             Properties properties, boolean registerEngine) {
@@ -132,7 +120,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         this.dataSource = dataSource;
         this.springContext = springContext;
         this.properties = properties;
-        this.init();        
+        this.init();
         setDeploymentSubTypeByProperties(properties);
     }
 
@@ -157,14 +145,14 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     public ClientSymmetricEngine(File propertiesFile) {
         this(propertiesFile, true);
     }
-    
+
     public ClientSymmetricEngine(File propertiesFile, ApplicationContext springContext) {
         super(true);
         this.deploymentType = DEPLOYMENT_TYPE_CLIENT;
         this.propertiesFile = propertiesFile;
         this.springContext = springContext;
         this.init();
-        setDeploymentSubTypeByProperties(properties);                
+        setDeploymentSubTypeByProperties(properties);
     }
 
     public ClientSymmetricEngine(Properties properties, boolean registerEngine) {
@@ -174,15 +162,14 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         this.init();
         setDeploymentSubTypeByProperties(properties);
     }
-    
+
     protected final void setDeploymentSubTypeByProperties(Properties properties) {
         if (properties != null) {
             String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
-            
             setDeploymentSubType(loadOnly != null && loadOnly.equals("true") ? Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY : null);
             boolean isLogBased = Boolean.valueOf(properties.getProperty(ParameterConstants.START_LOG_MINER_JOB, "false"));
             if (isLogBased) {
-            	setDeploymentSubType(Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED);
+                setDeploymentSubType(Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED);
             }
         }
     }
@@ -213,30 +200,24 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         }
         try {
             LogSummaryAppenderUtils.initialize();
-            
             if (getSecurityServiceType() == SecurityServiceType.CLIENT) {
                 SymmetricUtils.logNotices();
             }
             super.init();
-
-            this.monitorService = new MonitorService(parameterService, symmetricDialect, nodeService, extensionService, 
+            this.monitorService = new MonitorService(parameterService, symmetricDialect, nodeService, extensionService,
                     clusterService, contextService);
             this.dataSource = platform.getDataSource();
-            
             PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
             configurer.setProperties(parameterService.getAllParameters());
-            
             ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(springContext);
             ctx.addBeanFactoryPostProcessor(configurer);
-            
             List<String> extensionLocations = new ArrayList<String>();
             extensionLocations.add("classpath:/symmetric-ext-points.xml");
             if (registerEngine) {
                 extensionLocations.add("classpath:/symmetric-jmx.xml");
-            } 
-                            
+            }
             String xml = parameterService.getString(ParameterConstants.EXTENSIONS_XML);
-            File file = new File(parameterService.getTempDirectory(), "extension.xml");     
+            File file = new File(parameterService.getTempDirectory(), "extension.xml");
             FileUtils.deleteQuietly(file);
             if (isNotBlank(xml)) {
                 try {
@@ -246,21 +227,18 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                     factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
                     DocumentBuilder builder = factory.newDocumentBuilder();
                     // the "parse" method also validates XML, will throw an exception if misformatted
-                    builder.parse(new InputSource(new StringReader(xml)));               
-                    FileUtils.write(file, xml, Charset.defaultCharset(), false); 
+                    builder.parse(new InputSource(new StringReader(xml)));
+                    FileUtils.write(file, xml, Charset.defaultCharset(), false);
                     extensionLocations.add("file:" + file.getAbsolutePath());
                 } catch (Exception e) {
                     log.error("Invalid " + ParameterConstants.EXTENSIONS_XML + " parameter.");
                 }
             }
-            
             try {
                 ctx.setConfigLocations(extensionLocations.toArray(new String[extensionLocations
                         .size()]));
                 ctx.refresh();
-
                 this.springContext = ctx;
-
                 ((ClientExtensionService) this.extensionService).setSpringContext(springContext);
                 this.extensionService.refresh();
             } catch (Exception ex) {
@@ -268,16 +246,15 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                         "Failed to initialize the extension points.  Please fix the problem and restart the server.",
                         ex);
             }
-            
             if (nodeService instanceof NodeService) {
-                ((NodeService)nodeService).setNodePasswordFilter(extensionService.getExtensionPoint(INodePasswordFilter.class));
+                ((NodeService) nodeService).setNodePasswordFilter(extensionService.getExtensionPoint(INodePasswordFilter.class));
             }
         } catch (RuntimeException ex) {
             destroy();
             throw ex;
         }
     }
-    
+
     @Override
     public synchronized boolean start() {
         if (this.springContext instanceof AbstractApplicationContext) {
@@ -289,22 +266,21 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             } catch (Exception ex) {
             }
         }
-
         return super.start();
     }
 
     @Override
     public synchronized void stop() {
         if (springContext != null) {
-	        if (this.springContext instanceof AbstractApplicationContext) {
-	            AbstractApplicationContext ctx = (AbstractApplicationContext) this.springContext;
-	            try {
-	                if (ctx.isActive()) {
-	                    ctx.stop();
-	                }
-	            } catch (Exception ex) {
-	            }
-	        }
+            if (this.springContext instanceof AbstractApplicationContext) {
+                AbstractApplicationContext ctx = (AbstractApplicationContext) this.springContext;
+                try {
+                    if (ctx.isActive()) {
+                        ctx.stop();
+                    }
+                } catch (Exception ex) {
+                }
+            }
         }
         super.stop();
     }
@@ -328,15 +304,12 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             copyProperties(properties, prefix, ParameterConstants.ALL_JDBC_PARAMS);
             copyProperties(properties, "", ParameterConstants.ALL_KAFKA_PARAMS);
             copyProperties(properties, "", ParameterConstants.ALL_GOOGLE_BIG_QUERY_PARAMS);
-            
-            IDatabasePlatform targetPlatform = createDatabasePlatform(null, properties, null, true, true, 
+            IDatabasePlatform targetPlatform = createDatabasePlatform(null, properties, null, true, true,
                     parameterService.is(ParameterConstants.START_LOG_MINER_JOB, false));
-
             if (targetPlatform instanceof GenericJdbcDatabasePlatform) {
-                targetPlatform.getDatabaseInfo().setNotNullColumnsSupported(parameterService.is(prefix + 
+                targetPlatform.getDatabaseInfo().setNotNullColumnsSupported(parameterService.is(prefix +
                         ParameterConstants.CREATE_TABLE_NOT_NULL_COLUMNS, true));
             }
-
             return new JdbcSymmetricDialectFactory(parameterService, targetPlatform).create();
         } else {
             return getSymmetricDialect();
@@ -351,16 +324,17 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected IDatabasePlatform createDatabasePlatform(TypedProperties properties) {
-        IDatabasePlatform platform = createDatabasePlatform(springContext, properties, dataSource, 
+        IDatabasePlatform platform = createDatabasePlatform(springContext, properties, dataSource,
                 Boolean.parseBoolean(System.getProperty(SystemConstants.SYSPROP_WAIT_FOR_DATABASE, "true")));
         return platform;
     }
 
     public static IDatabasePlatform createDatabasePlatform(ApplicationContext springContext, TypedProperties properties,
             DataSource dataSource, boolean waitOnAvailableDatabase) {
-            return createDatabasePlatform(springContext, properties, dataSource, waitOnAvailableDatabase, properties.is(ParameterConstants.NODE_LOAD_ONLY), 
-                    properties.is(ParameterConstants.START_LOG_MINER_JOB));
+        return createDatabasePlatform(springContext, properties, dataSource, waitOnAvailableDatabase, properties.is(ParameterConstants.NODE_LOAD_ONLY),
+                properties.is(ParameterConstants.START_LOG_MINER_JOB));
     }
+
     public static IDatabasePlatform createDatabasePlatform(ApplicationContext springContext, TypedProperties properties,
             DataSource dataSource, boolean waitOnAvailableDatabase, boolean isLoadOnly, boolean isLogBased) {
         log.info("Initializing connection to database");
@@ -386,8 +360,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                     JndiObjectFactoryBean jndiFactory = new JndiObjectFactoryBean();
                     jndiFactory.setJndiName(jndiName);
                     jndiFactory.afterPropertiesSet();
-                    dataSource = (DataSource)jndiFactory.getObject();
-
+                    dataSource = (DataSource) jndiFactory.getObject();
                     if (dataSource == null) {
                         throw new SymmetricException("Could not locate the configured datasource in jndi.  The jndi name is %s", jndiName);
                     }
@@ -397,13 +370,11 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                     throw new SymmetricException("Could not locate the configured datasource in jndi.  The jndi name is %s", e, jndiName);
                 }
             }
-            
             String springBeanName = properties.getProperty(ParameterConstants.DB_SPRING_BEAN_NAME);
             if (isNotBlank(springBeanName) && springContext != null) {
                 log.info("Using datasource from spring.  The spring bean name is {}", springBeanName);
-                dataSource = (DataSource)springContext.getBean(springBeanName);
+                dataSource = (DataSource) springContext.getBean(springBeanName);
             }
-            
             if (dataSource == null) {
                 dataSource = BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
             }
@@ -430,16 +401,13 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         settings.setRightTrimCharValues(properties.is(ParameterConstants.RIGHT_TRIM_CHAR_VALUES, false));
         settings.setAllowUpdatesWithResults(properties.is(ParameterConstants.ALLOW_UPDATES_WITH_RESULTS, false));
         settings.setAllowTriggerCreateOrReplace(properties.is(ParameterConstants.ALLOW_TRIGGER_CREATE_OR_REPLACE, true));
-        
         LogSqlBuilder logSqlBuilder = new LogSqlBuilder();
         logSqlBuilder.setLogSlowSqlThresholdMillis(properties.getInt(ParameterConstants.LOG_SLOW_SQL_THRESHOLD_MILLIS, 20000));
         logSqlBuilder.setLogSqlParametersInline(properties.is(ParameterConstants.LOG_SQL_PARAMETERS_INLINE, true));
         settings.setLogSqlBuilder(logSqlBuilder);
-        
-        if (settings.getOverrideIsolationLevel() >=0 ) {
+        if (settings.getOverrideIsolationLevel() >= 0) {
             log.info("Overriding isolation level to " + settings.getOverrideIsolationLevel());
         }
-        
         settings.setJdbcLobHandling(
                 SqlTemplateSettings.JdbcLobHandling.valueOf(
                         properties.get(ParameterConstants.DBDIALECT_ORACLE_JDBC_LOB_HANDLING,
@@ -472,7 +440,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 throw new RuntimeException(e);
             }
         }
-
         return new BatchStagingManager(this, directory);
     }
 
@@ -487,10 +454,10 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 throw new RuntimeException(e);
             }
         }
-
         return new StatisticManager(parameterService, nodeService,
                 configurationService, statisticService, clusterService);
     }
+
     protected static void waitForAvailableDatabase(DataSource dataSource) {
         boolean success = false;
         while (!success) {
@@ -502,8 +469,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 }
             } catch (Exception ex) {
                 log.error(
-                        "Could not get a connection to the database: " + ex.getMessage() + 
-                        ".  Waiting for 10 seconds before trying to connect to the database again.", ex);
+                        "Could not get a connection to the database: " + ex.getMessage() +
+                                ".  Waiting for 10 seconds before trying to connect to the database again.", ex);
                 AppUtils.sleep(10000);
             } finally {
                 JdbcSqlTemplate.close(c);
@@ -536,17 +503,17 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     public synchronized void destroy() {
         super.destroy();
         if (springContext != null) {
-	        if (springContext instanceof AbstractApplicationContext) {
-	            try {
-	            ((AbstractApplicationContext)springContext).close();
-	            } catch (Exception ex) {                
-	            }
-	        }
+            if (springContext instanceof AbstractApplicationContext) {
+                try {
+                    ((AbstractApplicationContext) springContext).close();
+                } catch (Exception ex) {
+                }
+            }
         }
         springContext = null;
         if (dataSource != null && dataSource instanceof BasicDataSource) {
             try {
-                ((BasicDataSource)dataSource).close();
+                ((BasicDataSource) dataSource).close();
             } catch (SQLException e) {
             }
         }
@@ -554,7 +521,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public List<File> listSnapshots() {
         File snapshotsDir = SnapshotUtil.getSnapshotDirectory(this);
-        List<File> files = new ArrayList<File>(FileUtils.listFiles(snapshotsDir, new String[] {"zip"}, false));
+        List<File> files = new ArrayList<File>(FileUtils.listFiles(snapshotsDir, new String[] { "zip" }, false));
         Collections.sort(files, new Comparator<File>() {
             public int compare(File o1, File o2) {
                 return -o1.compareTo(o2);
@@ -581,5 +548,4 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     public IMonitorService getMonitorService() {
         return monitorService;
     }
-
 }

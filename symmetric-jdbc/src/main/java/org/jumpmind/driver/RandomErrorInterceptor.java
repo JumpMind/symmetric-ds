@@ -27,37 +27,35 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.properties.TypedProperties;
 
 public class RandomErrorInterceptor extends StatementInterceptor {
-    
     private static AtomicInteger okCounter = new AtomicInteger(0);
     private static AtomicInteger errorCounter = new AtomicInteger(0);
-    
     private static final int MIN = 1;
     private static final int MAX = 1000;
-    private static final int ERROR_THRESHOLD = (int)(MAX * 0.01);
-    
+    private static final int ERROR_THRESHOLD = (int) (MAX * 0.01);
     private SecureRandom random = new SecureRandom();
 
     public RandomErrorInterceptor(Object wrapped, TypedProperties properties) {
         super(wrapped, properties);
     }
-    
+
     @Override
     protected InterceptResult preparedStatementPreExecute(PreparedStatementWrapper ps, String methodName, Object[] parameters) {
         if (shouldThrowError()) {
             int errorCount = errorCounter.incrementAndGet();
             int okCount = okCounter.get();
-            throw new SqlException("MOCK/RANDOM ERROR from RandomErrorInterceptor (" + okCount + " successful statements, " + errorCount + " error statements.)");
+            throw new SqlException("MOCK/RANDOM ERROR from RandomErrorInterceptor (" + okCount + " successful statements, " + errorCount
+                    + " error statements.)");
         } else {
             okCounter.incrementAndGet();
             return new InterceptResult();
         }
     }
-    
+
     @Override
     public void preparedStatementExecute(String methodName, long elapsed, String sql) {
         // no op.
     }
-    
+
     protected boolean shouldThrowError() {
         int count = okCounter.get();
         if (count < 1000) { // the database needs to be available for the engine to start up in the first place.

@@ -44,11 +44,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SimpleStagingDataWriter {
-
     protected final static int MAX_WRITE_LENGTH = 32768;
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected CsvReader reader;
     protected IStagingManager stagingManager;
     protected IProtocolDataWriterListener[] listeners;
@@ -89,7 +86,6 @@ public class SimpleStagingDataWriter {
             String batchStatsColumnsLine = null;
             String batchStatsLine = null;
             Statistics batchStats = null;
-
             while (reader.readRecord()) {
                 line = reader.getRawRecord();
                 if (line.startsWith(CsvConstants.CATALOG)) {
@@ -144,12 +140,11 @@ public class SimpleStagingDataWriter {
                     writeLine(binaryLine);
                     writeLine(channelLine);
                     writeLine(line);
-
                     if (listeners != null) {
                         for (IProtocolDataWriterListener listener : listeners) {
                             listener.start(context, batch);
                         }
-                    }                    
+                    }
                 } else if (line.startsWith(CsvConstants.COMMIT)) {
                     if (writer != null) {
                         writeLine(line);
@@ -158,7 +153,6 @@ public class SimpleStagingDataWriter {
                         writer = null;
                     }
                     batchTableLines.clear();
-                    
                     if (batch != null) {
                         batch.setStatistics(batchStats);
                         if (listeners != null) {
@@ -190,14 +184,12 @@ public class SimpleStagingDataWriter {
                         resource = null;
                         writer = null;
                     }
-
                     if (log.isDebugEnabled()) {
                         debugLine(nodeLine);
                         debugLine(binaryLine);
                         debugLine(channelLine);
                         debugLine(line);
                     }
-
                     if (listeners != null) {
                         for (IProtocolDataWriterListener listener : listeners) {
                             listener.start(context, batch);
@@ -235,13 +227,11 @@ public class SimpleStagingDataWriter {
                             writeLine(syncLine.columnsLine);
                         }
                     }
-                    
                     if (line.startsWith(CsvConstants.INSERT) || line.startsWith(CsvConstants.DELETE) || line.startsWith(CsvConstants.UPDATE)
                             || line.startsWith(CsvConstants.CREATE) || line.startsWith(CsvConstants.SQL)
                             || line.startsWith(CsvConstants.BSH)) {
                         processInfo.incrementCurrentDataCount();
                     }
-                    
                     int size = line.length();
                     if (size > MAX_WRITE_LENGTH) {
                         log.debug("Exceeded max line length with {}", size);
@@ -254,7 +244,6 @@ public class SimpleStagingDataWriter {
                         writeLine(line);
                     }
                 }
-
                 lineCount++;
                 if (System.currentTimeMillis() - ts > 60000) {
                     log.info(
@@ -265,24 +254,19 @@ public class SimpleStagingDataWriter {
                     ts = System.currentTimeMillis();
                 }
             }
-
             if (resource != null) {
                 resource.close();
                 resource.setState(State.DONE);
             }
-
             processInfo.setStatus(ProcessStatus.OK);
         } catch (Exception ex) {
             if (resource != null) {
                 resource.delete();
             }
-
             processInfo.setStatus(ProcessStatus.ERROR);
-            
             /*
-             * Just log an error here.  We want batches that come before us to continue to process and to be acknowledged
+             * Just log an error here. We want batches that come before us to continue to process and to be acknowledged
              */
-
             log.error("Failed to write batch into staging from {}.  {}: {}", context.getContext().get(Constants.DATA_CONTEXT_SOURCE_NODE).toString(),
                     ex.getClass().getName(), ex.getMessage());
         } finally {
@@ -317,14 +301,13 @@ public class SimpleStagingDataWriter {
                 log.debug("Writing staging data: {}", line);
             }
             writer.write(line);
-            writer.write("\n");            
+            writer.write("\n");
         }
     }
-    
+
     protected void putStats(Statistics stats, String columnsString, String statsString) {
         String statsColumns[] = StringUtils.split(columnsString, ',');
         String statsValues[] = StringUtils.split(statsString, ',');
-        
         if (statsValues != null && statsColumns != null) {
             for (int i = 1; i < statsColumns.length; i++) {
                 String column = statsColumns[i];

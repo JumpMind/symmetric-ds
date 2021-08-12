@@ -43,9 +43,7 @@ import org.jumpmind.symmetric.service.IMailService;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class MailService extends AbstractService implements IMailService {
-    
     protected ISecurityService securityService;
-
     protected static final String JAVAMAIL_HOST_NAME = "mail.host";
     protected static final String JAVAMAIL_TRANSPORT = "mail.transport";
     protected static final String JAVAMAIL_PORT_NUMBER = "mail.smtp.port";
@@ -60,11 +58,11 @@ public class MailService extends AbstractService implements IMailService {
         super(parameterService, symmetricDialect);
         this.securityService = securityService;
     }
-    
+
     public String sendEmail(String subject, String text, String toRecipients) {
         return sendEmail(subject, text, toRecipients, null, null);
     }
-    
+
     public String sendEmail(String subject, String text, String toRecipients, String ccRecipients, String bccRecipients) {
         String password = parameterService.getString(ParameterConstants.SMTP_PASSWORD);
         if (password != null && password.startsWith(SecurityConstants.PREFIX_ENC)) {
@@ -77,19 +75,18 @@ public class MailService extends AbstractService implements IMailService {
     }
 
     public String sendEmail(String subject, String text, String toRecipients, TypedProperties prop) {
-        return sendEmail(subject, text, toRecipients, null, null, prop);        
+        return sendEmail(subject, text, toRecipients, null, null, prop);
     }
-    
+
     public String sendEmail(String subject, String text, String toRecipients, String ccRecipients, String bccRecipients, TypedProperties prop) {
         return sendEmail(subject, text, toRecipients, ccRecipients, bccRecipients, getJavaMailProperties(prop),
                 prop.get(ParameterConstants.SMTP_TRANSPORT, "smtp"),
                 prop.is(ParameterConstants.SMTP_USE_AUTH, false),
-                prop.get(ParameterConstants.SMTP_USER), prop.get(ParameterConstants.SMTP_PASSWORD));        
+                prop.get(ParameterConstants.SMTP_USER), prop.get(ParameterConstants.SMTP_PASSWORD));
     }
 
     protected String sendEmail(String subject, String text, String toRecipients, String ccRecipients, String bccRecipients,
-            Properties prop, String transportType, boolean useAuth, String user, String password)
-    {
+            Properties prop, String transportType, boolean useAuth, String user, String password) {
         Session session = Session.getInstance(prop);
         ByteArrayOutputStream ba = null;
         if (log.isDebugEnabled()) {
@@ -105,7 +102,6 @@ public class MailService extends AbstractService implements IMailService {
             log.error("Failure while obtaining transport", e);
             return getNestedErrorMessage(e);
         }
-
         try {
             if (useAuth) {
                 transport.connect(user, password);
@@ -116,17 +112,16 @@ public class MailService extends AbstractService implements IMailService {
             log.error("Failure while connecting to transport", e);
             return getNestedErrorMessage(e);
         }
-
         try {
             MimeMessage message = new MimeMessage(session);
             message.setSentDate(new Date());
-            if(StringUtils.isNotEmpty(toRecipients)) {
+            if (StringUtils.isNotEmpty(toRecipients)) {
                 message.setRecipients(RecipientType.TO, toRecipients);
             }
-            if(StringUtils.isNotEmpty(ccRecipients)) {
+            if (StringUtils.isNotEmpty(ccRecipients)) {
                 message.setRecipients(RecipientType.CC, ccRecipients);
             }
-            if(StringUtils.isNotEmpty(bccRecipients)) {
+            if (StringUtils.isNotEmpty(bccRecipients)) {
                 message.setRecipients(RecipientType.BCC, bccRecipients);
             }
             message.setSubject(subject);
@@ -185,14 +180,14 @@ public class MailService extends AbstractService implements IMailService {
         Throwable e2 = e.getCause();
         if (e2 != null) {
             error += "\n" + e2.getMessage();
-            Throwable e3 = e2.getCause();    
+            Throwable e3 = e2.getCause();
             if (e3 != null) {
                 error += "\n" + e3.getMessage();
             }
         }
         return error;
     }
-    
+
     protected Properties getJavaMailProperties() {
         Properties prop = new Properties();
         prop.setProperty(JAVAMAIL_HOST_NAME, parameterService.getString(ParameterConstants.SMTP_HOST, "localhost"));
@@ -205,7 +200,7 @@ public class MailService extends AbstractService implements IMailService {
         prop.setProperty(JAVAMAIL_TRUST_HOST_SSL, parameterService.is(ParameterConstants.SMTP_ALLOW_UNTRUSTED_CERT, false) ? "*" : "");
         return prop;
     }
-    
+
     protected Properties getJavaMailProperties(TypedProperties typedProp) {
         Properties prop = new Properties();
         prop.setProperty(JAVAMAIL_HOST_NAME, typedProp.get(ParameterConstants.SMTP_HOST, "localhost"));
@@ -218,5 +213,4 @@ public class MailService extends AbstractService implements IMailService {
         prop.setProperty(JAVAMAIL_TRUST_HOST_SSL, typedProp.is(ParameterConstants.SMTP_ALLOW_UNTRUSTED_CERT, false) ? "*" : "");
         return prop;
     }
-
 }

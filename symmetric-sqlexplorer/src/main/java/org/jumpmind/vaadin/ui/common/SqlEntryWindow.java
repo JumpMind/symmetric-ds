@@ -24,9 +24,7 @@ import org.vaadin.aceeditor.AceEditor;
 import org.vaadin.aceeditor.AceMode;
 
 public class SqlEntryWindow extends ResizableWindow {
-
     private static final long serialVersionUID = 1L;
-
     protected AceEditor editor;
 
     public SqlEntryWindow(String sql) {
@@ -38,7 +36,7 @@ public class SqlEntryWindow extends ResizableWindow {
         content.addComponents(editor, buildButtonFooter(buildCloseButton()));
         content.setExpandRatio(editor, 1);
     }
-    
+
     public String getSQL() {
         return editor.getValue();
     }
@@ -47,5 +45,4 @@ public class SqlEntryWindow extends ResizableWindow {
     protected boolean onClose() {
         return super.onClose();
     }
-
 }

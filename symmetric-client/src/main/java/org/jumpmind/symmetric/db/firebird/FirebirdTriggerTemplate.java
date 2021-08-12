@@ -28,7 +28,6 @@ import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
 public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
-
     String quo = "";
     boolean isDialect1;
 
@@ -38,7 +37,6 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
             quo = symmetricDialect.getPlatform().getDatabaseInfo().getDelimiterToken();
         }
         isDialect1 = symmetricDialect.getPlatform() instanceof FirebirdDialect1DatabasePlatform;
-                
         // @formatter:off
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || sym_escape(substring($(tableAlias)." + quo + "$(columnName)" + quo + " from 1)) || '\"' end" ;

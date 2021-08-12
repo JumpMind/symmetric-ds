@@ -45,19 +45,15 @@ import com.google.cloud.bigquery.BigQuery;
 
 public class BigQueryDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory {
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     private IStagingManager stagingManager;
-    
     private ISecurityService securityService;
-    
     private BigQuery bigquery;
-    
+
     public BigQueryDataLoaderFactory(ISymmetricEngine engine) {
         this.stagingManager = engine.getStagingManager();
         this.parameterService = engine.getParameterService();
         this.securityService = engine.getSecurityService();
         this.bigquery = ((BigQueryPlatform) engine.getSymmetricDialect().getTargetPlatform()).getBigQuery();
-        
     }
 
     public String getTypeName() {
@@ -65,15 +61,13 @@ public class BigQueryDataLoaderFactory extends AbstractDataLoaderFactory impleme
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-                TransformWriter transformWriter,
+            TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-
         try {
-            return new BigQueryBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), 
-                    symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService, securityService, 
+            return new BigQueryBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
+                    symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService, securityService,
                     buildParameterDatabaseWritterSettings(), this.bigquery);
-            
         } catch (Exception e) {
             log.warn(
                     "Failed to create the big query database writer.",
@@ -89,5 +83,4 @@ public class BigQueryDataLoaderFactory extends AbstractDataLoaderFactory impleme
     public boolean isPlatformSupported(IDatabasePlatform platform) {
         return (DatabaseNamesConstants.BIGQUERY.equals(platform.getName()));
     }
-
 }

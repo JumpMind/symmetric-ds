@@ -23,14 +23,13 @@ package org.jumpmind.symmetric.test;
 import java.math.BigDecimal;
 
 public class OrderDetail {
-    
     private String orderId;
     private int lineNumber;
     private String itemType;
     private String itemId;
     private int quantity;
     private BigDecimal price;
-    
+
     public OrderDetail(String orderId, int lineNumber, String itemType, String itemId,
             int quantity, BigDecimal price) {
         this.orderId = orderId;
@@ -88,7 +87,4 @@ public class OrderDetail {
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
-
-    
-    
 }

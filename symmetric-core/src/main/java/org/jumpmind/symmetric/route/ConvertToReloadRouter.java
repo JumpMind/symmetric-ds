@@ -56,29 +56,20 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 
 /**
  * Converts multiple change data rows into reload batches for each table ordered by foreign key dependencies.
- *  
+ * 
  */
 public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRouter, IBuiltInExtensionPoint {
-
     public final static String ROUTER_ID = "convertToReload";
-
     private final static String ROUTERS = "c2rRouters";
-    
     private final static String SORTED_TABLES = "c2rSortedTables";
-    
-    private final static String INSERT_DATA_SQL = "insert into sym_data " + 
+    private final static String INSERT_DATA_SQL = "insert into sym_data " +
             "(data_id, table_name, event_type, row_data, trigger_hist_id, channel_id, node_list, create_time) values (null, ?, ?, ?, ?, ?, ?, ?)";
-
     private final static int[] INSERT_DATA_TYPES = new int[] { Types.VARCHAR, Types.CHAR, Types.LONGVARCHAR, Types.INTEGER,
             Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP };
-
-    private final static String INSERT_DATA_EVENT_SQL = "insert into sym_data_event " + 
+    private final static String INSERT_DATA_EVENT_SQL = "insert into sym_data_event " +
             "(data_id, batch_id, create_time) values (?, ?, current_timestamp)";
-
     protected ISymmetricEngine engine;
-    
     protected boolean firstTime = true;
-    
     protected long routeMs, sortMs, insertTempMs, queryNodesMs, insertBatchMs;
 
     public ConvertToReloadRouter(ISymmetricEngine engine) {
@@ -88,11 +79,9 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
     @Override
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
-
         if (initialLoad) {
             return toNodeIds(nodes, null);
         }
-
         long ts = System.currentTimeMillis();
         @SuppressWarnings("unchecked")
         Map<String, RouterInfo> routers = (Map<String, RouterInfo>) context.get(ROUTERS);
@@ -106,16 +95,13 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
             routerInfo = new RouterInfo(triggerRouter.getRouter(), nodes);
             routers.put(routerId, routerInfo);
         }
-
         DataEventType eventType = dataMetaData.getData().getDataEventType();
         TableInfo tableInfo = routerInfo.getTableInfo(dataMetaData, triggerRouter);
-        
         if (eventType.equals(DataEventType.INSERT) || eventType.equals(DataEventType.UPDATE)) {
-            tableInfo.getCompoundIdList().add(getPkObjects(eventType, dataMetaData));                
+            tableInfo.getCompoundIdList().add(getPkObjects(eventType, dataMetaData));
         } else if (eventType.equals(DataEventType.DELETE)) {
             return toNodeIds(nodes, null);
         }
-
         routeMs += (System.currentTimeMillis() - ts);
         return null;
     }
@@ -125,9 +111,8 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
         if (eventType.equals(DataEventType.INSERT) || eventType.equals(DataEventType.UPDATE)) {
             rowValues = dataMetaData.getData().toParsedRowData();
         } else if (eventType.equals(DataEventType.DELETE)) {
-            rowValues = dataMetaData.getData().toParsedPkData();            
+            rowValues = dataMetaData.getData().toParsedPkData();
         }
-        
         Column[] pkColumns = dataMetaData.getTable().getPrimaryKeyColumns();
         String[] pkValues = (String[]) ArrayUtils.subarray(rowValues, 0, pkColumns.length);
         return engine.getDatabasePlatform().getObjectValues(engine.getSymmetricDialect().getBinaryEncoding(), pkValues, pkColumns);
@@ -135,16 +120,15 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
 
     @Override
     public void completeBatch(SimpleRouterContext context, OutgoingBatch batch) {
-        log.debug("Completing batch {}", batch.getBatchId());        
+        log.debug("Completing batch {}", batch.getBatchId());
         if (batch.getNodeId().equals(Constants.UNROUTED_NODE_ID)) {
             @SuppressWarnings("unchecked")
-            Map<String, RouterInfo> routers = (Map<String, RouterInfo>) context.get(ROUTERS);                
+            Map<String, RouterInfo> routers = (Map<String, RouterInfo>) context.get(ROUTERS);
             List<TableInfo> tableInfos = new ArrayList<TableInfo>();
             for (RouterInfo routerInfo : routers.values()) {
                 tableInfos.addAll(routerInfo.getTableInfos());
             }
             tableInfos = sortTableInfos(context, tableInfos);
-
             ChannelRouterContext channelContext = ((ChannelRouterContext) context);
             queueEvents(channelContext, channelContext.getSqlTransaction(), batch, tableInfos);
         }
@@ -153,21 +137,19 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
     @Override
     public void contextCommitted(SimpleRouterContext context) {
         if (routeMs + sortMs + insertTempMs + queryNodesMs + insertBatchMs > 60000) {
-            log.info("{} router millis are route={}, sort={}, insert.temp={}, query.nodes={}, insert.batches={}", 
+            log.info("{} router millis are route={}, sort={}, insert.temp={}, query.nodes={}, insert.batches={}",
                     ROUTER_ID, routeMs, sortMs, insertTempMs, queryNodesMs, insertBatchMs);
         }
         routeMs = sortMs = insertTempMs = queryNodesMs = insertBatchMs = 0;
     }
-    
+
     protected List<TableInfo> sortTableInfos(SimpleRouterContext context, Collection<TableInfo> tableInfos) {
         long ts = System.currentTimeMillis();
         List<Table> sortedTables = getAllSortedTables(context);
-
         Map<Table, TableInfo> tableInfosByTable = new HashMap<Table, TableInfo>();
         for (TableInfo tableInfo : tableInfos) {
             tableInfosByTable.put(tableInfo.getTable(), tableInfo);
         }
-        
         List<TableInfo> sortedTableInfos = new ArrayList<TableInfo>();
         for (Table table : sortedTables) {
             TableInfo tableInfo = tableInfosByTable.get(table);
@@ -175,15 +157,13 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
                 sortedTableInfos.add(tableInfo);
             }
         }
-
         sortMs += (System.currentTimeMillis() - ts);
         return sortedTableInfos;
     }
-    
+
     protected List<Table> getAllSortedTables(SimpleRouterContext context) {
         @SuppressWarnings("unchecked")
         List<Table> sortedTables = (List<Table>) context.get(SORTED_TABLES);
-        
         if (sortedTables == null) {
             List<TriggerHistory> histories = null;
             if (firstTime) {
@@ -192,7 +172,6 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
             } else {
                 histories = engine.getTriggerRouterService().getActiveTriggerHistoriesFromCache();
             }
-            
             List<Table> allTables = new ArrayList<Table>(histories.size());
             for (TriggerHistory history : histories) {
                 Table table = engine.getDatabasePlatform().getTableFromCache(history.getSourceCatalogName(),
@@ -207,26 +186,21 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
     }
 
     protected void queueEvents(ChannelRouterContext context, ISqlTransaction transaction, OutgoingBatch origBatch, List<TableInfo> tableInfos) {
-
         final long loadId = engine.getSequenceService().nextVal(transaction, Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
         final int typeForId = engine.getSymmetricDialect().getSqlTypeForIds();
         boolean isPostgres = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.POSTGRESQL);
         long ts = System.currentTimeMillis();
         transaction.flush();
-
         for (TableInfo tableInfo : tableInfos) {
             RouterInfo routerInfo = tableInfo.getRouterInfo();
             String placeHolders = StringUtils.repeat("?", ", ", tableInfo.getPkColumnNames().length + 1);
             String tempSql = "insert into " + routerInfo.getTempTableName() + "(" + tableInfo.getPkColumnNamesAsString() + ", "
                     + " load_id) values (" + placeHolders + ")";
-    
             if (isPostgres) {
                 tempSql += " on conflict do nothing";
             }
             transaction.prepare(tempSql);
-    
             int[] types = ArrayUtils.addAll(tableInfo.getPkColumnTypes(), new int[] { typeForId, typeForId });
-    
             for (Object compoundId : tableInfo.getCompoundIdList()) {
                 Object[] values = ArrayUtils.add((Object[]) compoundId, loadId);
                 try {
@@ -236,12 +210,10 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
             }
         }
         insertTempMs += (System.currentTimeMillis() - ts);
-        
         Map<String, OutgoingBatch> batchByNode = new HashMap<String, OutgoingBatch>();
         for (TableInfo tableInfo : tableInfos) {
             RouterInfo routerInfo = tableInfo.getRouterInfo();
             String reloadSql = getTempTableSql(routerInfo, tableInfo, loadId);
-            
             List<String> nodes = null;
             if (StringUtils.isNotBlank(routerInfo.getNodeQuery())) {
                 ts = System.currentTimeMillis();
@@ -252,7 +224,6 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
             if (nodes == null || nodes.size() == 0) {
                 nodes = routerInfo.getNodeIds();
             }
-
             ts = System.currentTimeMillis();
             long dataId = insertData(transaction, tableInfo, DataEventType.RELOAD.getCode(), reloadSql);
             String tableName = tableInfo.getTableName().toLowerCase();
@@ -267,7 +238,7 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
                 context.getDataIds().add(dataId);
             }
             insertBatchMs += (System.currentTimeMillis() - ts);
-        }        
+        }
         origBatch.setLoadId(loadId);
     }
 
@@ -278,10 +249,10 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
         }
         if (tableInfo.getPkColumnNames().length == 1) {
             sql += " and " + tableInfo.getPkColumnName() + " in (select " + tableInfo.getPkColumnName()
-                + " from " + routerInfo.getTempTableName() + " where load_id = " + loadId + ")";
+                    + " from " + routerInfo.getTempTableName() + " where load_id = " + loadId + ")";
         } else {
             sql += " and exists (select 1 from " + routerInfo.getTempTableName() + " r where "
-                + tableInfo.getPkColumnJoinSql() + " and r.load_id = " + loadId + ")";
+                    + tableInfo.getPkColumnJoinSql() + " and r.load_id = " + loadId + ")";
         }
         return sql;
     }
@@ -310,7 +281,7 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
 
     protected void insertDataEvent(ISqlTransaction transaction, long batchId, long dataId) {
         transaction.prepareAndExecute(INSERT_DATA_EVENT_SQL, new Object[] { dataId, batchId },
-            new int[] { Types.NUMERIC, Types.NUMERIC });
+                new int[] { Types.NUMERIC, Types.NUMERIC });
     }
 
     public void setSymmetricEngine(ISymmetricEngine engine) {
@@ -318,25 +289,18 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
     }
 
     class RouterInfo {
-
         private Router router;
-        
         private List<String> nodeIds = new ArrayList<String>();
-
         private Map<Integer, TableInfo> tableInfos = new HashMap<Integer, TableInfo>();
-
         private String tempTableName;
-        
         private String nodeQuery;
 
         public RouterInfo(Router router, Set<Node> nodes) {
-            this.router = router;            
+            this.router = router;
             for (Node node : nodes) {
                 this.nodeIds.add(node.getNodeId());
             }
-            
             String expression = router.getRouterExpression();
-
             Pattern pattern = Pattern.compile(".*\\s*temptable=(\\S*)\\s*.*", Pattern.CASE_INSENSITIVE);
             if (expression != null) {
                 expression = expression.replaceAll("\n", " ").replaceAll("\r", " ");
@@ -363,7 +327,7 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
             return nodeIds;
         }
 
-        public TableInfo getTableInfo(DataMetaData dataMetaData, TriggerRouter triggerRouter) { 
+        public TableInfo getTableInfo(DataMetaData dataMetaData, TriggerRouter triggerRouter) {
             TableInfo tableInfo = tableInfos.get(dataMetaData.getTriggerHistory().getTriggerHistoryId());
             if (tableInfo == null) {
                 tableInfo = newTableInfo(dataMetaData, triggerRouter);
@@ -371,7 +335,7 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
             }
             return tableInfo;
         }
-        
+
         public Collection<TableInfo> getTableInfos() {
             return tableInfos.values();
         }
@@ -379,48 +343,32 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
         protected TableInfo newTableInfo(DataMetaData dataMetaData, TriggerRouter triggerRouter) {
             return new TableInfo(this, dataMetaData, triggerRouter);
         }
-        
+
         public String getTempTableName() {
             return tempTableName;
         }
-        
+
         public String getNodeQuery() {
             return nodeQuery;
         }
     }
-    
+
     class TableInfo {
-
         protected RouterInfo routerInfo;
-
         protected Table table;
-
         protected String tableName;
-
         protected String channelId;
-
         protected String pkColumnName;
-
         protected String sourceCatalog;
-        
         protected String sourceSchema;
-
         protected String targetCatalog;
-        
         protected String targetSchema;
-        
         protected String initialLoadSql;
-        
         protected TriggerHistory triggerHistory;
-
         protected String[] pkColumnNames;
-        
         protected String pkColumnNamesAsString;
-        
         protected String pkColumnJoinSql;
-
         protected int[] pkColumnTypes;
-
         protected List<Object> compoundIdList = new ArrayList<Object>();
 
         public TableInfo(RouterInfo routerInfo, DataMetaData dataMetaData, TriggerRouter triggerRouter) {
@@ -433,23 +381,20 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
             this.pkColumnName = table.getPrimaryKeyColumnNames()[0];
             this.initialLoadSql = triggerRouter.getInitialLoadSelect();
             this.triggerHistory = dataMetaData.getTriggerHistory();
-
             Router router = triggerRouter.getRouter();
             if (router.isUseSourceCatalogSchema()) {
                 this.targetCatalog = table.getCatalog();
-                this.targetSchema = table.getSchema();                
+                this.targetSchema = table.getSchema();
             } else {
                 if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
-                    this.targetCatalog = router.getTargetCatalogName();                    
+                    this.targetCatalog = router.getTargetCatalogName();
                 }
                 if (StringUtils.isNotBlank(router.getTargetSchemaName())) {
                     this.targetSchema = router.getTargetSchemaName();
                 }
             }
-            
             this.pkColumnNames = table.getPrimaryKeyColumnNames();
             this.pkColumnTypes = new int[table.getPrimaryKeyColumns().length];
-            
             StringBuilder sbNames = new StringBuilder();
             StringBuilder sbJoin = new StringBuilder();
             int i = 0;
@@ -509,7 +454,7 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
         public TriggerHistory getTriggerHistory() {
             return triggerHistory;
         }
-        
+
         public String[] getPkColumnNames() {
             return pkColumnNames;
         }

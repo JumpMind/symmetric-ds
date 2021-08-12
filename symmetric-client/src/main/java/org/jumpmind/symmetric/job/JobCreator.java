@@ -30,7 +30,6 @@ import org.jumpmind.symmetric.model.JobDefinition.JobType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class JobCreator {
-
     public IJob createJob(JobDefinition jobDefinition, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         AbstractJob job = null;
         if (jobDefinition.getJobType() == JobType.BSH) {
@@ -44,19 +43,16 @@ public class JobCreator {
         } else {
             throw new SymmetricException("Unknown job type " + jobDefinition.getJobType());
         }
-        
-        job.setJobDefinition(jobDefinition); 
+        job.setJobDefinition(jobDefinition);
         return job;
     }
-    
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected AbstractJob instantiateJavaJob(JobDefinition jobDefinition, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         String className = jobDefinition.getJobExpression();
-        
         try {
             Class jobClass = ClassUtils.getClass(className);
             Constructor[] constructors = jobClass.getConstructors();
-            
             // look for 3 arg constructor of name, engine, taskScheduler.
             for (Constructor constructor : constructors) {
                 if (constructor.getParameterTypes().length == 3
@@ -74,11 +70,9 @@ public class JobCreator {
                     return (AbstractJob) constructor.newInstance(engine, taskScheduler);
                 }
             }
-            
             return (AbstractJob) jobClass.getDeclaredConstructor().newInstance(); // try default constructor.
         } catch (Exception ex) {
             throw new SymmetricException("Failed to load and instantiate job class '" + className + "'", ex);
         }
     }
-    
 }

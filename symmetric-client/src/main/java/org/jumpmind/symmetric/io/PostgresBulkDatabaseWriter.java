@@ -49,33 +49,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
-
-	private static final Logger log = LoggerFactory.getLogger(PostgresBulkDatabaseWriter.class);
-
+    private static final Logger log = LoggerFactory.getLogger(PostgresBulkDatabaseWriter.class);
     protected int maxRowsBeforeFlush;
-
     protected CopyManager copyManager;
-
     protected CopyIn copyIn;
-
     protected int loadedRows = 0;
-
     protected boolean needsBinaryConversion;
-    
+
     public PostgresBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
             IDatabasePlatform targetPlatform, String tablePrefix, DatabaseWriterSettings settings,
             int maxRowsBeforeFlush) {
         super(symmetricPlatform, targetPlatform, tablePrefix, settings);
         this.maxRowsBeforeFlush = maxRowsBeforeFlush;
     }
-    
+
     @Override
     protected void bulkWrite(CsvData data) {
-
         statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
-
         DataEventType dataEventType = data.getDataEventType();
-
         if (targetTable != null || dataEventType == DataEventType.CREATE) {
             needsBinaryConversion = false;
             if (batch.getBinaryEncoding() != BinaryEncoding.NONE && targetTable != null) {
@@ -111,7 +102,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     } catch (Exception ex) {
                         throw getPlatform().getSqlTemplate().translate(ex);
                     }
-                    //endCopy();
+                    // endCopy();
                     break;
                 case UPDATE:
                 case DELETE:
@@ -120,13 +111,12 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     context.put(ContextConstants.CONTEXT_BULK_WRITER_TO_USE, "default");
                     super.write(data);
                     break;
-            } 
-    
+            }
             if (loadedRows >= maxRowsBeforeFlush) {
                 flush();
                 loadedRows = 0;
             }
-        } 
+        }
         statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
         statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
@@ -167,7 +157,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
 
     protected void startCopy() {
-        if (copyIn == null && targetTable != null) {            
+        if (copyIn == null && targetTable != null) {
             try {
                 String sql = createCopyMgrSql();
                 if (log.isDebugEnabled()) {
@@ -192,7 +182,6 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 } catch (Exception ex) {
                     statistics.get(batch).set(DataWriterStatisticConstants.ROWCOUNT, 0);
                     statistics.get(batch).set(DataWriterStatisticConstants.LINENUMBER, 0);
-                   
                     throw getPlatform().getSqlTemplate().translate(ex);
                 } finally {
                     copyIn = null;
@@ -200,7 +189,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             }
         }
     }
-    
+
     @Override
     public boolean start(Table table) {
         return super.start(table);
@@ -237,7 +226,6 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         sql.append(targetTable.getQualifiedTableName(quote, catalogSeparator, schemaSeparator));
         sql.append("(");
         Column[] columns = targetTable.getColumns();
-
         for (Column column : columns) {
             String columnName = column.getName();
             if (StringUtils.isNotBlank(columnName)) {
@@ -251,7 +239,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         sql.append("FROM STDIN with delimiter ',' csv quote ''''");
         return sql.toString();
     }
-    
+
     protected String encode(byte[] byteData) {
         StringBuilder sb = new StringBuilder();
         for (byte b : byteData) {
@@ -268,5 +256,4 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         }
         return sb.toString();
     }
-
 }

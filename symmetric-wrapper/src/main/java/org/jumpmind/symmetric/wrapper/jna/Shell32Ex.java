@@ -39,7 +39,6 @@ import com.sun.jna.win32.W32APIOptions;
 @IgnoreJRERequirement
 public interface Shell32Ex extends Shell32 {
     Shell32Ex INSTANCE = (Shell32Ex) Native.load("shell32", Shell32Ex.class, W32APIOptions.UNICODE_OPTIONS);
-
     int SW_HIDE = 0;
     int SW_MAXIMIZE = 3;
     int SW_MINIMIZE = 6;
@@ -86,5 +85,4 @@ public interface Shell32Ex extends Shell32 {
                     "hInstApp", "lpIDList", "lpClass", "hKeyClass", "dwHotKey", "hMonitor", "hProcess", });
         }
     }
-    
 }

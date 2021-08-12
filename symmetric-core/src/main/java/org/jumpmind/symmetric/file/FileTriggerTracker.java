@@ -35,9 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FileTriggerTracker {
-
     final protected Logger log = LoggerFactory.getLogger(getClass());
-
     private FileTriggerRouter fileTriggerRouter;
     private FileAlterationObserver fileObserver;
     private DirectorySnapshot lastSnapshot;
@@ -46,18 +44,15 @@ public class FileTriggerTracker {
     private ProcessInfo processInfo;
     private ISymmetricEngine engine;
     protected boolean useCrc;
-
     long startTime = System.currentTimeMillis();
     long ts = startTime;
-    
-    
+
     public FileTriggerTracker(FileTriggerRouter fileTriggerRouter, DirectorySnapshot lastSnapshot, ProcessInfo processInfo,
             boolean useCrc, ISymmetricEngine engine) {
         this.fileTriggerRouter = fileTriggerRouter;
         this.processInfo = processInfo;
         this.useCrc = useCrc;
         this.engine = engine;
-        
         changesSinceLastSnapshot = new DirectorySnapshot(fileTriggerRouter);
         fileObserver = new FileAlterationObserver(fileTriggerRouter.getFileTrigger().getBaseDir(), fileTriggerRouter.getFileTrigger()
                 .createIOFileFilter());
@@ -112,7 +107,6 @@ public class FileTriggerTracker {
     }
 
     class SnapshotUpdater extends FileAlterationListenerAdaptor {
-
         DirectorySnapshot snapshot;
 
         SnapshotUpdater(DirectorySnapshot snapshot) {
@@ -136,7 +130,6 @@ public class FileTriggerTracker {
         public void onCtlFile(File file) {
             if (snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnCtlFile()) {
                 File ctlFile = engine.getFileSyncService().getControleFile(file);
-                
                 if (ctlFile.exists()) {
                     log.debug("Control file detected: {}", ctlFile.getAbsolutePath());
                     addSnapshot(file, LastEventType.CREATE);
@@ -167,7 +160,6 @@ public class FileTriggerTracker {
                 processInfo.incrementCurrentDataCount();
             }
             snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), file, lastEventType, useCrc));
-            
             if (System.currentTimeMillis() - ts > 60000) {
                 log.info("File tracker has been processing for {} seconds.  The following stats have been gathered: {}", new Object[] {
                         (System.currentTimeMillis() - startTime) / 1000, "{ fileCount=" + snapshot.size() + " }" });
@@ -175,5 +167,4 @@ public class FileTriggerTracker {
             }
         }
     }
-
 }

@@ -57,52 +57,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractCommandLauncher {
-
     private static final Logger log;
-    
     public static final String DEFAULT_SERVER_PROPERTIES;
-
     protected static final String HELP = "help";
-
     protected static final String OPTION_PROPERTIES_FILE = "properties";
-
     protected static final String OPTION_ENGINE = "engine";
-
     protected static final String OPTION_VERBOSE_CONSOLE = "verbose";
-
     protected static final String OPTION_DEBUG = "debug";
-
     protected static final String OPTION_NO_LOG_CONSOLE = "no-log-console";
-
     protected static final String OPTION_NO_LOG_FILE = "no-log-file";
-
     protected static final String OPTION_KEYSTORE_PASSWORD = "storepass";
-
     protected static final String OPTION_KEYSTORE_TYPE = "storetype";
-
     protected static final String OPTION_JCE_PROVIDER = "providerClass";
-
     protected static final String COMMON_MESSAGE_KEY_PREFIX = "Common.Option.";
-
     protected String app;
-
     protected String argSyntax;
-
     protected String messageKeyPrefix;
-
     protected File propertiesFile;
-
     protected ISymmetricEngine engine;
-
     protected IDatabasePlatform platform;
-    
     private static boolean serverPropertiesInitialized = false;
-
     static {
         System.setProperty(SystemConstants.SYSPROP_LAUNCHER, "true");
         String symHome = AppUtils.getSymHome();
         if (isBlank(System.getProperty("h2.baseDir.disable")) && isBlank(System.getProperty("h2.baseDir"))) {
-           System.setProperty("h2.baseDir", symHome + "/db/h2");
+            System.setProperty("h2.baseDir", symHome + "/db/h2");
         }
         if (isBlank(System.getProperty("derby.baseDir"))) {
             System.setProperty("derby.baseDir", symHome + "/db/derby");
@@ -122,25 +101,20 @@ public abstract class AbstractCommandLauncher {
         boolean https2Enabled = serverProperties.is(ServerConstants.HTTPS2_ENABLE, false);
         TransportManagerFactory.initHttps(allowServerNames, allowSelfSignedCerts, https2Enabled);
     }
-    
+
     protected static void initFromServerProperties() {
         if (!serverPropertiesInitialized) {
             File serverPropertiesFile = new File(DEFAULT_SERVER_PROPERTIES);
             TypedProperties serverProperties = new TypedProperties();
-
             if (serverPropertiesFile.exists() && serverPropertiesFile.isFile()) {
-                try(FileInputStream fis = new FileInputStream(serverPropertiesFile)) {
+                try (FileInputStream fis = new FileInputStream(serverPropertiesFile)) {
                     serverProperties.load(fis);
-
                     /* System properties always override */
                     serverProperties.merge(System.getProperties());
-
                     /*
-                     * Put server properties back into System properties so they
-                     * are available to the parameter service
+                     * Put server properties back into System properties so they are available to the parameter service
                      */
                     System.getProperties().putAll(serverProperties);
-
                 } catch (IOException ex) {
                     log.error("Failed to load " + DEFAULT_SERVER_PROPERTIES, ex);
                 }
@@ -154,7 +128,7 @@ public abstract class AbstractCommandLauncher {
     }
 
     abstract protected boolean printHelpIfNoOptionsAreProvided();
-    
+
     abstract protected boolean requiresPropertiesFile(CommandLine line);
 
     public void execute(String args[]) {
@@ -163,27 +137,22 @@ public abstract class AbstractCommandLauncher {
         buildOptions(options);
         try {
             CommandLine line = parser.parse(options, args);
-
             if (line.hasOption(HELP) || (line.getArgList().contains(HELP))
-                    || ((args == null || args.length == 0) 
+                    || ((args == null || args.length == 0)
                             && line.getOptions().length == 0 && printHelpIfNoOptionsAreProvided())) {
                 printHelp(line, options);
                 System.exit(2);
             }
-
             configureLogging(line);
             configurePropertiesFile(line);
-
             if (line.getOptions() != null) {
                 for (Option option : line.getOptions()) {
-                    log.info("Option: name={}, value={}", new Object[] { 
+                    log.info("Option: name={}, value={}", new Object[] {
                             option.getLongOpt() != null ? option.getLongOpt() : option.getOpt(),
                             ArrayUtils.toString(option.getValues()) });
                 }
             }
-
             executeWithOptions(line);
-
         } catch (ParseException e) {
             System.err.println(e.getMessage());
             printUsage(options);
@@ -194,7 +163,6 @@ public abstract class AbstractCommandLauncher {
             System.err.println("An exception occurred.  Please see the following for details:");
             System.err
                     .println("-------------------------------------------------------------------------------");
-
             ExceptionUtils.printRootCauseStackTrace(e, System.err);
             System.err
                     .println("-------------------------------------------------------------------------------");
@@ -215,7 +183,6 @@ public abstract class AbstractCommandLauncher {
 
     protected void configureLogging(CommandLine line) throws MalformedURLException {
         String overrideLogFileName = null;
-        
         if (line.hasOption(OPTION_PROPERTIES_FILE)) {
             File file = new File(line.getOptionValue(OPTION_PROPERTIES_FILE));
             String name = file.getName();
@@ -225,8 +192,7 @@ public abstract class AbstractCommandLauncher {
             }
             overrideLogFileName = name + ".log";
         }
-
-        LogSummaryAppenderUtils.initialize(line.hasOption(OPTION_DEBUG), line.hasOption(OPTION_VERBOSE_CONSOLE), 
+        LogSummaryAppenderUtils.initialize(line.hasOption(OPTION_DEBUG), line.hasOption(OPTION_VERBOSE_CONSOLE),
                 line.hasOption(OPTION_NO_LOG_CONSOLE), line.hasOption(OPTION_NO_LOG_FILE), overrideLogFileName);
     }
 
@@ -247,7 +213,6 @@ public abstract class AbstractCommandLauncher {
             }
         } else {
             propertiesFile = findSingleEnginesPropertiesFile();
-
             if (propertiesFile == null && requiresPropertiesFile(line)) {
                 throw new ParseException(String.format("You must specify either --%s or --%s",
                         OPTION_ENGINE, OPTION_PROPERTIES_FILE));
@@ -266,7 +231,7 @@ public abstract class AbstractCommandLauncher {
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             Properties properties = new Properties();
-            try(FileInputStream is = new FileInputStream(file)) {
+            try (FileInputStream is = new FileInputStream(file)) {
                 properties.load(is);
                 if (engineName.equals(properties.getProperty(ParameterConstants.ENGINE_NAME))) {
                     return file;
@@ -275,14 +240,13 @@ public abstract class AbstractCommandLauncher {
             }
         }
         return null;
-
     }
 
     public static File[] findEnginePropertiesFiles() {
         List<File> propFiles = new ArrayList<File>();
         File enginesDir = new File(getEnginesDir());
         File[] files = enginesDir.listFiles();
-        if (files != null ) {
+        if (files != null) {
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
                 if (file.getName().endsWith(".properties")) {
@@ -307,12 +271,10 @@ public abstract class AbstractCommandLauncher {
             System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD,
                     line.getOptionValue(OPTION_KEYSTORE_PASSWORD));
         }
-
         if (line.hasOption(OPTION_KEYSTORE_TYPE)) {
             System.setProperty(SystemConstants.SYSPROP_KEYSTORE_TYPE,
                     line.getOptionValue(OPTION_KEYSTORE_TYPE));
         }
-
         if (line.hasOption(OPTION_JCE_PROVIDER)) {
             Provider provider = (Provider) Class.forName(line.getOptionValue(OPTION_JCE_PROVIDER))
                     .getDeclaredConstructor().newInstance();
@@ -334,7 +296,7 @@ public abstract class AbstractCommandLauncher {
         }
         return engine;
     }
-    
+
     protected void testConnection() {
         try {
             BasicDataSource ds = ClientSymmetricEngine
@@ -344,7 +306,7 @@ public abstract class AbstractCommandLauncher {
             ds.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }        
+        }
     }
 
     protected IDatabasePlatform getDatabasePlatform(boolean testConnection) {
@@ -354,8 +316,8 @@ public abstract class AbstractCommandLauncher {
             }
             TypedProperties properties = new TypedProperties(propertiesFile);
             if (properties.is(ParameterConstants.NODE_LOAD_ONLY, false)) {
-            	TypedProperties copiedProperties = new TypedProperties();
-            	String prefix = ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX;
+                TypedProperties copiedProperties = new TypedProperties();
+                String prefix = ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX;
                 copyProperties(properties, copiedProperties, prefix, BasicDataSourcePropertyConstants.ALL_PROPS);
                 copyProperties(properties, copiedProperties, prefix, ParameterConstants.ALL_JDBC_PARAMS);
                 properties = copiedProperties;
@@ -364,14 +326,14 @@ public abstract class AbstractCommandLauncher {
         }
         return platform;
     }
-    
-    private void copyProperties(TypedProperties sourceProperties, TypedProperties targetProperties, 
-    		String prefix, String[] parameterNames) {
+
+    private void copyProperties(TypedProperties sourceProperties, TypedProperties targetProperties,
+            String prefix, String[] parameterNames) {
         for (String name : parameterNames) {
             targetProperties.put(name, sourceProperties.get(prefix + name));
         }
     }
-    
+
     protected TypedProperties getTypedProperties() {
         return new TypedProperties(propertiesFile);
     }
@@ -409,5 +371,4 @@ public abstract class AbstractCommandLauncher {
     }
 
     protected abstract boolean executeWithOptions(CommandLine line) throws Exception;
-
 }

@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.job;
 
 import static org.jumpmind.symmetric.job.JobDefaults.EVERY_TEN_MINUTES_AT_THE_ONE_OCLOCK_HOUR;
@@ -30,11 +29,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * Background job that checks to see if config needs to be synced from registration server
  */
 public class SyncConfigJob extends AbstractJob {
-
     public SyncConfigJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super("job.sync.config", engine, taskScheduler);
     }
-    
+
     @Override
     public void doJob(boolean force) throws Exception {
         engine.getPullService().pullConfigData(false);
@@ -46,5 +44,4 @@ public class SyncConfigJob extends AbstractJob {
                 .schedule(EVERY_TEN_MINUTES_AT_THE_ONE_OCLOCK_HOUR)
                 .description("Check to see if configuration needs resyncd");
     }
-
 }

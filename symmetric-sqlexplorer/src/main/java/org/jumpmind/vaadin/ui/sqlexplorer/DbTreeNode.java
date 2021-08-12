@@ -32,23 +32,14 @@ import org.jumpmind.properties.TypedProperties;
 import com.vaadin.server.Resource;
 
 public class DbTreeNode implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     protected String name;
-
     protected String description;
-
     protected String type;
-
     protected Resource icon;
-
     protected TypedProperties properties = new TypedProperties();
-
     protected DbTreeNode parent;
-
     protected List<DbTreeNode> children = new ArrayList<DbTreeNode>();
-
     protected DbTree dbTree;
 
     public DbTreeNode(DbTree dbTree, String name, String type, Resource icon,
@@ -59,7 +50,7 @@ public class DbTreeNode implements Serializable {
         this.icon = icon;
         this.dbTree = dbTree;
     }
-    
+
     public DbTreeNode(DbTree dbTree, String type, DbTreeNode parent) {
         this.name = "<empty>";
         this.type = type;
@@ -122,7 +113,6 @@ public class DbTreeNode implements Serializable {
                     return child;
                 }
             }
-
             for (DbTreeNode child : children) {
                 DbTreeNode target = child.find(node);
                 if (target != null) {
@@ -130,7 +120,6 @@ public class DbTreeNode implements Serializable {
                 }
             }
         }
-
         return null;
     }
 
@@ -153,14 +142,12 @@ public class DbTreeNode implements Serializable {
                     return true;
                 }
             }
-
             for (DbTreeNode child : children) {
                 if (child.delete(node)) {
                     return true;
                 }
             }
         }
-
         return false;
     }
 
@@ -195,7 +182,6 @@ public class DbTreeNode implements Serializable {
             if (treeNode.getType().equals(type)) {
                 names.add(treeNode.getName());
             }
-
             findTreeNodeNamesOfType(type, treeNode.getChildren(), names);
         }
     }
@@ -246,5 +232,4 @@ public class DbTreeNode implements Serializable {
         }
         return true;
     }
-
 }

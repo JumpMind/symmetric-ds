@@ -27,7 +27,6 @@ import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.DmlStatement;
 
 public class MsSqlDmlStatement extends DmlStatement {
-
     public MsSqlDmlStatement(DmlType type, String catalogName, String schemaName, String tableName, Column[] keysColumns, Column[] columns,
             boolean[] nullKeyValues, DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
         super(type, catalogName, schemaName, tableName, keysColumns, columns, nullKeyValues, databaseInfo, useQuotedIdentifiers,
@@ -43,25 +42,25 @@ public class MsSqlDmlStatement extends DmlStatement {
 
     @Override
     protected String buildInsertSql(String tableName, Column[] keys, Column[] columns) {
-        return databaseInfo.getCteExpression() != null 
-                ? databaseInfo.getCteExpression() + super.buildInsertSql(tableName, keys, columns) 
+        return databaseInfo.getCteExpression() != null
+                ? databaseInfo.getCteExpression() + super.buildInsertSql(tableName, keys, columns)
                 : super.buildInsertSql(tableName, keys, columns);
     }
-    
+
     @Override
     protected String buildUpdateSql(String tableName, Column[] keyColumns, Column[] columns) {
-        return databaseInfo.getCteExpression() != null 
+        return databaseInfo.getCteExpression() != null
                 ? databaseInfo.getCteExpression() + super.buildUpdateSql(tableName, keyColumns, columns)
                 : super.buildUpdateSql(tableName, keyColumns, columns);
     }
-    
+
     @Override
     protected String buildDeleteSql(String tableName, Column[] keyColumns) {
-        return databaseInfo.getCteExpression() != null 
+        return databaseInfo.getCteExpression() != null
                 ? databaseInfo.getCteExpression() + super.buildDeleteSql(tableName, keyColumns)
                 : super.buildDeleteSql(tableName, keyColumns);
     }
-    
+
     @Override
     protected int getTypeCode(Column column, boolean isDateOverrideToTimestamp) {
         int type = column.getMappedTypeCode();
@@ -71,7 +70,7 @@ public class MsSqlDmlStatement extends DmlStatement {
             return super.getTypeCode(column, isDateOverrideToTimestamp);
         }
     }
-    
+
     @Override
     protected void appendColumnParameter(StringBuilder sql, Column column) {
         if (column.getJdbcTypeName() != null && column.getJdbcTypeName().equals("datetime2") && column.getMappedTypeCode() == Types.VARCHAR) {
@@ -82,7 +81,7 @@ public class MsSqlDmlStatement extends DmlStatement {
             super.appendColumnParameter(sql, column);
         }
     }
-    
+
     @Override
     protected void appendColumnEquals(StringBuilder sql, Column column) {
         if (column.getJdbcTypeName() != null && column.getJdbcTypeName().equals("datetime2") && column.getMappedTypeCode() == Types.VARCHAR) {

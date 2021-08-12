@@ -32,19 +32,17 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
 
 public class TestableDataWriter implements IDataWriter {
-
     List<CsvData> datas = new ArrayList<CsvData>();
-    
     Table lastTableRead;
-    
+
     public List<CsvData> getDatas() {
         return datas;
     }
-   
+
     public Table getLastTableRead() {
         return lastTableRead;
     }
-    
+
     @Override
     public void open(DataContext context) {
     }
@@ -80,5 +78,4 @@ public class TestableDataWriter implements IDataWriter {
     @Override
     public void end(Batch batch, boolean inError) {
     }
-
 }

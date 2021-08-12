@@ -57,65 +57,38 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 public class DbExportDialog extends ResizableWindow {
-
     private static final String EXPORT_TO_THE_SQL_EDITOR = "Export to the SQL Editor";
-
     private static final String EXPORT_AS_A_FILE = "Export as a File";
-
     private static final long serialVersionUID = 1L;
-
     final Logger log = LoggerFactory.getLogger(getClass());
 
     enum DbExportFormat {
         SQL, XML, CSV, SYM_XML, CSV_DQUOTE;
     }
-    
+
     private ComboBox<DbExportFormat> formatSelect;
-
     private ComboBox<Compatible> compatibilitySelect;
-
     private CheckBox data;
-
     private CheckBox createInfo;
-
     private CheckBox foreignKeys;
-
     private CheckBox indices;
-
     private CheckBox quotedIdentifiers;
-
     private CheckBox dropTables;
-
     private TextArea whereClauseField;
-
     private Button previousButton;
-
     private Button cancelButton;
-
     private Button selectAllLink;
-
     private Button selectNoneLink;
-
     public Button nextButton;
-
     private Button exportFileButton;
-
     private Button exportEditorButton;
-    
     private Button doneButton;
-
     private TableSelectionLayout tableSelectionLayout;
-
     private VerticalLayout optionLayout;
-
     private FileDownloader fileDownloader;
-
     private DbExport dbExport;
-
     private RadioButtonGroup<String> exportFormatOptionGroup;
-
     private QueryPanel queryPanel;
-
     private IDatabasePlatform databasePlatform;
 
     public DbExportDialog(IDatabasePlatform databasePlatform, QueryPanel queryPanel, String excludeTablesRegex) {
@@ -125,10 +98,8 @@ public class DbExportDialog extends ResizableWindow {
     public DbExportDialog(IDatabasePlatform databasePlatform, Set<Table> selectedTableSet,
             QueryPanel queryPanel, String excludeTablesRegex) {
         super("Database Export");
-
         this.databasePlatform = databasePlatform;
         this.queryPanel = queryPanel;
-
         tableSelectionLayout = new TableSelectionLayout(databasePlatform, selectedTableSet, excludeTablesRegex) {
             private static final long serialVersionUID = 1L;
 
@@ -137,13 +108,9 @@ public class DbExportDialog extends ResizableWindow {
                 nextButton.setEnabled(tableSelectionLayout.getSelectedTables().size() > 0);
             }
         };
-
         createOptionLayout();
-
         addComponent(tableSelectionLayout, 1);
-
         addButtons();
-        
         nextButton.setClickShortcut(KeyCode.ENTER);
         nextButton.focus();
     }
@@ -158,7 +125,6 @@ public class DbExportDialog extends ResizableWindow {
                 tableSelectionLayout.selectAll();
             }
         });
-
         selectNoneLink = new Button("Select None");
         selectNoneLink.addStyleName(ValoTheme.BUTTON_LINK);
         selectNoneLink.addClickListener(new Button.ClickListener() {
@@ -168,11 +134,9 @@ public class DbExportDialog extends ResizableWindow {
                 tableSelectionLayout.selectNone();
             }
         });
-
         nextButton = CommonUiUtils.createPrimaryButton("Next");
         nextButton.setEnabled(tableSelectionLayout.getSelectedTables().size() > 0);
         nextButton.addClickListener(new Button.ClickListener() {
-
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -180,7 +144,6 @@ public class DbExportDialog extends ResizableWindow {
                 next();
             }
         });
-
         cancelButton = new Button("Cancel", new Button.ClickListener() {
             private static final long serialVersionUID = 1L;
 
@@ -188,7 +151,6 @@ public class DbExportDialog extends ResizableWindow {
                 close();
             }
         });
-
         previousButton = new Button("Previous", new Button.ClickListener() {
             private static final long serialVersionUID = 1L;
 
@@ -197,8 +159,7 @@ public class DbExportDialog extends ResizableWindow {
             }
         });
         previousButton.setVisible(false);
-
-        exportFileButton = CommonUiUtils.createPrimaryButton("Export", new Button.ClickListener(){
+        exportFileButton = CommonUiUtils.createPrimaryButton("Export", new Button.ClickListener() {
             private static final long serialVersionUID = 1L;
 
             public void buttonClick(ClickEvent event) {
@@ -210,7 +171,6 @@ public class DbExportDialog extends ResizableWindow {
         });
         buildFileDownloader();
         exportFileButton.setVisible(false);
-
         exportEditorButton = CommonUiUtils.createPrimaryButton("Export", new Button.ClickListener() {
             private static final long serialVersionUID = 1L;
 
@@ -220,7 +180,6 @@ public class DbExportDialog extends ResizableWindow {
             }
         });
         exportEditorButton.setVisible(false);
-        
         doneButton = new Button("Close", new Button.ClickListener() {
             private static final long serialVersionUID = 1L;
 
@@ -229,10 +188,8 @@ public class DbExportDialog extends ResizableWindow {
             }
         });
         doneButton.setVisible(false);
-
         addComponent(buildButtonFooter(new Button[] { selectAllLink, selectNoneLink },
                 cancelButton, previousButton, nextButton, exportFileButton, exportEditorButton, doneButton));
-
     }
 
     protected void createOptionLayout() {
@@ -242,12 +199,10 @@ public class DbExportDialog extends ResizableWindow {
         optionLayout.setSpacing(true);
         optionLayout.setSizeFull();
         optionLayout.addComponent(new Label("Please choose from the following options"));
-
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
         optionLayout.addComponent(formLayout);
         optionLayout.setExpandRatio(formLayout, 1);
-
         formatSelect = new ComboBox<DbExportFormat>("Format", Arrays.asList(DbExportFormat.values()));
         formatSelect.setEmptySelectionAllowed(false);
         formatSelect.setValue(DbExportFormat.SQL);
@@ -285,48 +240,37 @@ public class DbExportDialog extends ResizableWindow {
         });
         formatSelect.setSelectedItem(DbExportFormat.SQL);
         formLayout.addComponent(formatSelect);
-
         compatibilitySelect = new ComboBox<Compatible>("Compatibility", Arrays.asList(Compatible.values()));
-
         compatibilitySelect.setEmptySelectionAllowed(false);
         setDefaultCompatibility();
         formLayout.addComponent(compatibilitySelect);
-
         createInfo = new CheckBox("Create Tables");
         formLayout.addComponent(createInfo);
-
         dropTables = new CheckBox("Drop Tables");
         formLayout.addComponent(dropTables);
-
         data = new CheckBox("Insert Data");
         data.setValue(true);
         formLayout.addComponent(data);
-
         foreignKeys = new CheckBox("Create Foreign Keys");
         formLayout.addComponent(foreignKeys);
-
         indices = new CheckBox("Create Indices");
         formLayout.addComponent(indices);
-
         quotedIdentifiers = new CheckBox("Qualify with Quoted Identifiers");
         formLayout.addComponent(quotedIdentifiers);
-
         whereClauseField = new TextArea("Where Clause");
         whereClauseField.setWidth(100, Unit.PERCENTAGE);
         whereClauseField.setRows(2);
         formLayout.addComponent(whereClauseField);
-
         exportFormatOptionGroup = new RadioButtonGroup<String>("Export Format");
         List<String> formatList = new ArrayList<String>();
         formatList.add(EXPORT_AS_A_FILE);
         if (queryPanel != null) {
-           formatList.add(EXPORT_TO_THE_SQL_EDITOR);
+            formatList.add(EXPORT_TO_THE_SQL_EDITOR);
         }
         exportFormatOptionGroup.setItems(formatList);
         exportFormatOptionGroup.setValue(EXPORT_AS_A_FILE);
         exportFormatOptionGroup.addValueChangeListener(event -> setExportButtonsEnabled());
         formLayout.addComponent(exportFormatOptionGroup);
-
     }
 
     protected void setDefaultCompatibility() {
@@ -383,7 +327,6 @@ public class DbExportDialog extends ResizableWindow {
         setExportButtonsEnabled();
         selectAllLink.setVisible(false);
         selectNoneLink.setVisible(false);
-
     }
 
     protected void createDbExport() {
@@ -413,9 +356,7 @@ public class DbExportDialog extends ResizableWindow {
         List<String> list = tableSelectionLayout.getSelectedTables();
         String[] array = new String[list.size()];
         list.toArray(array);
-
         createDbExport();
-
         String script;
         try {
             script = dbExport.exportTables(array);
@@ -438,7 +379,6 @@ public class DbExportDialog extends ResizableWindow {
     }
 
     private StreamResource createResource() {
-
         String format = (String) formatSelect.getValue().toString();
         if (format.equals("CSV_DQUOTE")) {
             format = "CSV";
@@ -447,13 +387,10 @@ public class DbExportDialog extends ResizableWindow {
             private static final long serialVersionUID = 1L;
 
             public InputStream getStream() {
-
                 List<String> list = tableSelectionLayout.getSelectedTables();
                 String[] array = new String[list.size()];
                 list.toArray(array);
-
                 createDbExport();
-
                 String script;
                 try {
                     script = dbExport.exportTables(array);

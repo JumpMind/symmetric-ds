@@ -46,23 +46,14 @@ import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.Statistics;
 
 public class ExtractDataReader implements IDataReader {
-    
-    public static final String DATA_CONTEXT_CURRENT_CSV_DATA = "csvData"; 
-
+    public static final String DATA_CONTEXT_CURRENT_CSV_DATA = "csvData";
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
-
     protected IDatabasePlatform platform;
-
     protected List<IExtractDataReaderSource> sourcesToUse;
-
     protected IExtractDataReaderSource currentSource;
-
     protected Batch batch;
-
     protected Table table;
-
     protected CsvData data;
-    
     protected DataContext dataContext;
 
     public ExtractDataReader(IDatabasePlatform platform, IExtractDataReaderSource source) {
@@ -89,7 +80,6 @@ public class ExtractDataReader implements IDataReader {
             this.batch = null;
         }
         return this.batch;
-
     }
 
     public Table nextTable() {
@@ -106,7 +96,6 @@ public class ExtractDataReader implements IDataReader {
                 }
             }
         }
-        
         if (this.table == null && this.batch != null) {
             this.batch.setComplete(true);
         }
@@ -130,7 +119,6 @@ public class ExtractDataReader implements IDataReader {
             if (this.data == null) {
                 this.data = this.currentSource.next();
             }
-
             if (data == null) {
                 closeCurrentSource();
             } else {
@@ -143,7 +131,6 @@ public class ExtractDataReader implements IDataReader {
                 }
             }
         }
-
         CsvData dataToReturn = this.data;
         this.data = null;
         this.dataContext.put(DATA_CONTEXT_CURRENT_CSV_DATA, dataToReturn);
@@ -160,7 +147,6 @@ public class ExtractDataReader implements IDataReader {
             this.currentSource.close();
             this.currentSource = null;
         }
-
         this.table = null;
         this.data = null;
     }
@@ -187,7 +173,6 @@ public class ExtractDataReader implements IDataReader {
                 for (int i = 0; i < pkColumns.length; i++) {
                     args[i] = columnDataMap.get(pkColumns[i].getName());
                 }
-
                 String sql = buildSelect(table, lobColumns, pkColumns);
                 Row row = sqlTemplate.queryForRow(sql, args);
                 if (row == null) {
@@ -211,11 +196,9 @@ public class ExtractDataReader implements IDataReader {
                         } else {
                             valueForCsv = row.getString(lobColumn.getName());
                         }
-    
                         int index = ArrayUtils.indexOf(columnNames, lobColumn.getName());
                         rowData[index] = valueForCsv;
                     }
-    
                     data.putParsedData(CsvData.ROW_DATA, rowData);
                 }
             }
@@ -227,7 +210,6 @@ public class ExtractDataReader implements IDataReader {
         StringBuilder sql = new StringBuilder("select ");
         DatabaseInfo dbInfo = platform.getDatabaseInfo();
         String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? dbInfo.getDelimiterToken() : "";
-
         for (Column lobColumn : lobColumns) {
             if ("XMLTYPE".equalsIgnoreCase(lobColumn.getJdbcTypeName()) && 2009 == lobColumn.getJdbcTypeCode()) {
                 sql.append("extract(").append(quote).append(lobColumn.getName()).append(quote);
@@ -237,7 +219,6 @@ public class ExtractDataReader implements IDataReader {
             }
             sql.append(",");
         }
-
         sql.delete(sql.length() - 1, sql.length());
         sql.append(" from ");
         sql.append(table.getQualifiedTableName(quote, dbInfo.getCatalogSeparator(), dbInfo.getSchemaSeparator()));
@@ -251,7 +232,7 @@ public class ExtractDataReader implements IDataReader {
     }
 
     /**
-     * When the row is missing because it was deleted, we need to temporarily satisfy not-null constraint at target 
+     * When the row is missing because it was deleted, we need to temporarily satisfy not-null constraint at target
      */
     protected Row createRowForRequiredLobs(List<Column> lobColumns) {
         Row row = null;

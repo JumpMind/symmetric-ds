@@ -59,12 +59,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWriterConflictResolver {
-
-	private static final Logger log = LoggerFactory.getLogger(DefaultDatabaseWriterConflictResolver.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultDatabaseWriterConflictResolver.class);
 
     @Override
     protected boolean isTimestampNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {
-        DynamicDefaultDatabaseWriter databaseWriter = (DynamicDefaultDatabaseWriter)writer;
+        DynamicDefaultDatabaseWriter databaseWriter = (DynamicDefaultDatabaseWriter) writer;
         IDatabasePlatform platform = databaseWriter.getPlatform();
         String columnName = conflict.getDetectExpression();
         Table targetTable = writer.getTargetTable();
@@ -72,38 +71,30 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         String[] pkData = data.getPkData(targetTable);
         Object[] objectValues = databaseWriter.getPlatform().getObjectValues(
                 writer.getBatch().getBinaryEncoding(), pkData, targetTable.getPrimaryKeyColumns());
-        DmlStatement stmt = databaseWriter.getPlatform().createDmlStatement(DmlType.FROM, targetTable
-                , writer.getWriterSettings().getTextColumnExpression());
+        DmlStatement stmt = databaseWriter.getPlatform().createDmlStatement(DmlType.FROM, targetTable, writer.getWriterSettings().getTextColumnExpression());
         Column column = targetTable.getColumnWithName(columnName);
-        
         if (column == null) {
             throw new RuntimeException(String.format("Could not find a timestamp column with a name of %s on the table %s.  "
                     + "Please check your conflict resolution configuration", columnName, targetTable.getQualifiedTableName()));
         }
-        
         String sql = stmt.getColumnsSql(new Column[] { column });
-
         Map<String, String> newData = data.toColumnNameValuePairs(sourceTable.getColumnNames(),
                 CsvData.ROW_DATA);
         String loadingStr = newData.get(columnName);
-
         Date loadingTs = null;
         Date existingTs = null;
         if (column.isTimestampWithTimezone()) {
             String existingStr = databaseWriter.getTransaction().queryForObject(sql, String.class,
                     objectValues);
-
             if (existingStr != null) {
                 existingTs = FormatUtils.parseTimestampWithTimezone(existingStr, FormatUtils.TIMESTAMP_WITH_TIMEZONE_PATTERNS);
             }
-
             if (loadingStr != null) {
                 loadingTs = FormatUtils.parseTimestampWithTimezone(loadingStr, FormatUtils.TIMESTAMP_WITH_TIMEZONE_PATTERNS);
             }
         } else {
             existingTs = databaseWriter.getTransaction().queryForObject(sql, Timestamp.class,
                     objectValues);
-
             Object[] values = platform.getObjectValues(writer.getBatch().getBinaryEncoding(),
                     new String[] { loadingStr }, new Column[] { column });
             if (values[0] instanceof Date) {
@@ -111,13 +102,12 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             } else if (values[0] instanceof String &&
                     column.getJdbcTypeName().equalsIgnoreCase(TypeMap.DATETIME2)) {
                 // SQL Server DateTime2 type is treated as a string internally.
-                loadingTs = databaseWriter.getPlatform().parseDate(Types.VARCHAR, (String)values[0], false);
+                loadingTs = databaseWriter.getPlatform().parseDate(Types.VARCHAR, (String) values[0], false);
             } else {
                 throw new ParseException("Could not parse " + columnName + " with a value of "
                         + loadingStr + " for purposes of conflict detection");
             }
         }
-
         return existingTs == null || (loadingTs != null && loadingTs.compareTo(existingTs) > 0);
     }
 
@@ -132,52 +122,46 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         String existingNodeId = null;
         boolean isLoadOnlyNode = databaseWriter.getWriterSettings().isLoadOnlyNode();
         boolean isWinnerByUk = true;
-
         if (loadingTs != null && !isLoadOnlyNode) {
             if (log.isDebugEnabled()) {
                 log.debug("Finding last capture time for table {} with pk of {}", targetTable.getName(), ArrayUtils.toString(pkData));
             }
-
             if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions() &&
                     (!databaseWriter.getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction() ||
                             !Boolean.TRUE.equals(databaseWriter.getContext().get(AbstractDatabaseWriter.TRANSACTION_ABORTED)))) {
                 // make sure we lock the row that is in conflict to prevent a race with other data loading
                 if (primaryKeyUpdateAllowed(databaseWriter, targetTable)) {
-                    DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(), 
-                            targetTable.getName(), targetTable.getPrimaryKeyColumns(), targetTable.getPrimaryKeyColumns(), 
+                    DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(),
+                            targetTable.getName(), targetTable.getPrimaryKeyColumns(), targetTable.getPrimaryKeyColumns(),
                             new boolean[targetTable.getPrimaryKeyColumnCount()], databaseWriter.getWriterSettings().getTextColumnExpression());
-                    Object[] values = databaseWriter.getPlatform().getObjectValues(writer.getBatch().getBinaryEncoding(), 
+                    Object[] values = databaseWriter.getPlatform().getObjectValues(writer.getBatch().getBinaryEncoding(),
                             pkData, targetTable.getPrimaryKeyColumns());
                     databaseWriter.getTransaction().prepareAndExecute(st.getSql(), ArrayUtils.addAll(values, values));
                 } else {
                     Column[] columns = targetTable.getNonPrimaryKeyColumns();
                     if (columns != null && columns.length > 0) {
                         Map<String, String> rowDataMap = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
-                        DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(), 
-                                targetTable.getName(), targetTable.getPrimaryKeyColumns(), new Column[] { columns[0] }, 
+                        DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(),
+                                targetTable.getName(), targetTable.getPrimaryKeyColumns(), new Column[] { columns[0] },
                                 new boolean[targetTable.getPrimaryKeyColumnCount()], databaseWriter.getWriterSettings().getTextColumnExpression());
-                        Object[] values = databaseWriter.getPlatform().getObjectValues(writer.getBatch().getBinaryEncoding(), 
+                        Object[] values = databaseWriter.getPlatform().getObjectValues(writer.getBatch().getBinaryEncoding(),
                                 ArrayUtils.addAll(new String[] { rowDataMap.get(columns[0].getName()) }, pkData),
                                 ArrayUtils.addAll(new Column[] { columns[0] }, targetTable.getPrimaryKeyColumns()));
                         databaseWriter.getTransaction().prepareAndExecute(st.getSql(), values);
                     }
                 }
             }
-
-            String sql = "select source_node_id, create_time from " + databaseWriter.getTablePrefix() + 
+            String sql = "select source_node_id, create_time from " + databaseWriter.getTablePrefix() +
                     "_data where table_name = ? and ((event_type = 'I' and row_data like ?) or " +
                     "(event_type in ('U', 'D') and pk_data like ?)) and create_time >= ? order by create_time desc";
-            
             Object[] args = new Object[] { targetTable.getName(), pkCsv + "%", pkCsv, loadingTs };
             Row row = null;
-
             if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions()) {
                 // we may have waited for another transaction to commit, so query with a new transaction
                 row = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplateDirty().queryForRow(sql, args);
             } else {
                 row = writer.getContext().findTransaction().queryForRow(sql, args);
             }
-
             if (row != null) {
                 existingTs = row.getDateTime("create_time");
                 existingNodeId = row.getString("source_node_id");
@@ -185,13 +169,12 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                     existingNodeId = writer.getContext().getBatch().getTargetNodeId();
                 }
             }
-
             if (data.getDataEventType() != DataEventType.DELETE) {
                 isWinnerByUk = isCaptureTimeNewerForUk(writer, data);
             }
         }
-
-        boolean isWinner = isLoadOnlyNode || (existingTs == null && isWinnerByUk) || (isWinnerByUk && loadingTs != null && (loadingTs.getTime() > existingTs.getTime() 
+        boolean isWinner = isLoadOnlyNode || (existingTs == null && isWinnerByUk) || (isWinnerByUk && loadingTs != null && (loadingTs.getTime() > existingTs
+                .getTime()
                 || (loadingTs.getTime() == existingTs.getTime() && writer.getContext().getBatch().getSourceNodeId().hashCode() > existingNodeId.hashCode())));
         if (!isLoadOnlyNode) {
             writer.getContext().put(DatabaseConstants.IS_CONFLICT_WINNER, isWinner);
@@ -203,15 +186,14 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 conflictLosingParentRows.add(getConflictRowKey(targetTable, rowDataMap));
             }
         }
-        
         if (log.isDebugEnabled()) {
             log.debug("{} row from batch {} with local time of {} and remote time of {} for table {} and pk of {}",
-                    isWinner ? "Winning" : "Losing", writer.getContext().getBatch().getNodeBatchId(), 
-                            existingTs, loadingTs, targetTable.getName(), ArrayUtils.toString(pkData));
+                    isWinner ? "Winning" : "Losing", writer.getContext().getBatch().getNodeBatchId(),
+                    existingTs, loadingTs, targetTable.getName(), ArrayUtils.toString(pkData));
         }
         return isWinner;
     }
-    
+
     protected boolean primaryKeyUpdateAllowed(DynamicDefaultDatabaseWriter databaseWriter, Table targetTable) {
         if (!databaseWriter.getPlatform(targetTable.getName()).getDatabaseInfo().isAutoIncrementUpdateAllowed()) {
             for (Column column : targetTable.getPrimaryKeyColumns()) {
@@ -222,7 +204,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         }
         return true;
     }
-    
+
     protected boolean uniqueKeyUpdateAllowed(DynamicDefaultDatabaseWriter databaseWriter, Table targetTable, Column[] uniqueColumns) {
         if (!databaseWriter.getPlatform(targetTable.getName()).getDatabaseInfo().isAutoIncrementUpdateAllowed()) {
             for (Column column : uniqueColumns) {
@@ -242,7 +224,6 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         Date existingTs = null;
         String existingNodeId = null;
         boolean isWinner = true;
-
         for (IIndex index : targetTable.getIndices()) {
             if (index.isUnique()) {
                 Map<String, String> rowDataMap = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
@@ -264,54 +245,49 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                         ukCsv.append("%");
                     }
                 }
-
                 int count = 0;
                 Object[] values = databaseWriter.getPlatform().getObjectValues(writer.getBatch().getBinaryEncoding(), ukData, uniqueKeyColumns);
                 if (!databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions() ||
-                        (databaseWriter.getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction() && 
-                        Boolean.TRUE.equals(databaseWriter.getContext().get(AbstractDatabaseWriter.TRANSACTION_ABORTED)))) {
-                    DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.COUNT, targetTable.getCatalog(), targetTable.getSchema(), 
-                            targetTable.getName(), uniqueKeyColumns, uniqueKeyColumns, nullKeyValues, 
+                        (databaseWriter.getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction() &&
+                                Boolean.TRUE.equals(databaseWriter.getContext().get(AbstractDatabaseWriter.TRANSACTION_ABORTED)))) {
+                    DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.COUNT, targetTable.getCatalog(), targetTable.getSchema(),
+                            targetTable.getName(), uniqueKeyColumns, uniqueKeyColumns, nullKeyValues,
                             databaseWriter.getWriterSettings().getTextColumnExpression());
-                    count = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplateDirty().queryForInt(st.getSql(), addKeyArgs(null, values));                    
+                    count = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplateDirty().queryForInt(st.getSql(), addKeyArgs(null, values));
                 } else if (uniqueKeyUpdateAllowed(databaseWriter, targetTable, uniqueKeyColumns)) {
                     // make sure we lock the row that is in conflict to prevent a race with other data loading
-                    DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(), 
-                            targetTable.getName(), uniqueKeyColumns, uniqueKeyColumns, nullKeyValues, 
+                    DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(),
+                            targetTable.getName(), uniqueKeyColumns, uniqueKeyColumns, nullKeyValues,
                             databaseWriter.getWriterSettings().getTextColumnExpression());
-                    count = databaseWriter.getTransaction().prepareAndExecute(st.getSql(), addKeyArgs(values, values));                    
+                    count = databaseWriter.getTransaction().prepareAndExecute(st.getSql(), addKeyArgs(values, values));
                 }
-
                 if (count > 0) {
-                    String sql = "select source_node_id, create_time from " + databaseWriter.getTablePrefix() + 
+                    String sql = "select source_node_id, create_time from " + databaseWriter.getTablePrefix() +
                             "_data where table_name = ? and event_type in ('I', 'U') and row_data like ? and " +
                             "create_time >= ? order by create_time desc";
                     Object[] args = new Object[] { targetTable.getName(), ukCsv.toString(), loadingTs };
                     Row row = null;
-
                     if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions()) {
                         // we may have waited for another transaction to commit, so query with a new transaction
                         row = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplateDirty().queryForRow(sql, args);
                     } else {
                         row = writer.getContext().findTransaction().queryForRow(sql, args);
                     }
-
                     if (row != null) {
                         existingTs = row.getDateTime("create_time");
                         existingNodeId = row.getString("source_node_id");
                         if (existingNodeId == null || existingNodeId.equals("")) {
                             existingNodeId = writer.getContext().getBatch().getTargetNodeId();
                         }
-                    }            
+                    }
                 }
-                
-                isWinner = existingTs == null || (loadingTs != null && (loadingTs.getTime() > existingTs.getTime() 
-                        || (loadingTs.getTime() == existingTs.getTime() && writer.getContext().getBatch().getSourceNodeId().hashCode() > existingNodeId.hashCode())));
-
+                isWinner = existingTs == null || (loadingTs != null && (loadingTs.getTime() > existingTs.getTime()
+                        || (loadingTs.getTime() == existingTs.getTime() && writer.getContext().getBatch().getSourceNodeId().hashCode() > existingNodeId
+                                .hashCode())));
                 if (log.isDebugEnabled()) {
                     log.debug("{} row from batch {} with local time of {} and remote time of {} for table {} and uk of {}",
-                            isWinner ? "Winning" : "Losing", writer.getContext().getBatch().getNodeBatchId(), 
-                                    existingTs, loadingTs, targetTable.getName(), ArrayUtils.toString(ukData));
+                            isWinner ? "Winning" : "Losing", writer.getContext().getBatch().getNodeBatchId(),
+                            existingTs, loadingTs, targetTable.getName(), ArrayUtils.toString(ukData));
                 }
                 break;
             }
@@ -324,7 +300,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         if (additionalArgs != null) {
             for (Object arg : additionalArgs) {
                 if (arg != null) {
-                    args = ArrayUtils.addAll(args, arg);                                
+                    args = ArrayUtils.addAll(args, arg);
                 }
             }
         }
@@ -333,25 +309,22 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
 
     @Override
     protected boolean isVersionNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {
-        DefaultDatabaseWriter databaseWriter = (DefaultDatabaseWriter)writer;
+        DefaultDatabaseWriter databaseWriter = (DefaultDatabaseWriter) writer;
         String columnName = conflict.getDetectExpression();
         Table targetTable = writer.getTargetTable();
         Table sourceTable = writer.getSourceTable();
         String[] pkData = data.getPkData(targetTable);
         Object[] objectValues = databaseWriter.getPlatform().getObjectValues(
                 writer.getBatch().getBinaryEncoding(), pkData, targetTable.getPrimaryKeyColumns());
-        DmlStatement stmt = databaseWriter.getPlatform().createDmlStatement(DmlType.FROM, targetTable
-                , writer.getWriterSettings().getTextColumnExpression());
+        DmlStatement stmt = databaseWriter.getPlatform().createDmlStatement(DmlType.FROM, targetTable, writer.getWriterSettings().getTextColumnExpression());
         String sql = stmt.getColumnsSql(new Column[] { targetTable.getColumnWithName(columnName) });
         Long existingVersion = null;
-        
-        try {            
+        try {
             existingVersion = databaseWriter.getTransaction().queryForObject(sql, Long.class, objectValues);
         } catch (Exception ex) {
-            throw new RuntimeException("Failed to execute conflict resolution SQL: \"" + 
-                    sql  + "\" values: " + Arrays.toString(objectValues), ex); 
+            throw new RuntimeException("Failed to execute conflict resolution SQL: \"" +
+                    sql + "\" values: " + Arrays.toString(objectValues), ex);
         }
-        
         if (existingVersion == null) {
             return true;
         } else {
@@ -361,14 +334,13 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             return loadingVersion > existingVersion;
         }
     }
-    
+
     @Override
     protected boolean checkForUniqueKeyViolation(AbstractDatabaseWriter writer, CsvData data, Conflict conflict, Throwable e, boolean isFallback) {
-        DefaultDatabaseWriter databaseWriter = (DefaultDatabaseWriter)writer;
+        DefaultDatabaseWriter databaseWriter = (DefaultDatabaseWriter) writer;
         IDatabasePlatform platform = databaseWriter.getPlatform();
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
         int count = 0;
-        
         if (e != null && sqlTemplate.isUniqueKeyViolation(e)) {
             Table targetTable = writer.getTargetTable();
             Map<String, String> values = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
@@ -386,8 +358,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             int pkCount = queryForInt(platform, databaseWriter, countStmt.getSql(), objectValues);
             boolean isUniqueKeyBlocking = false;
             boolean isPrimaryKeyBlocking = false;
-
-            if ((!isFallback && data.getDataEventType() == DataEventType.UPDATE) || 
+            if ((!isFallback && data.getDataEventType() == DataEventType.UPDATE) ||
                     (isFallback && data.getDataEventType() == DataEventType.INSERT)) {
                 Map<String, String> pkValues = data.toColumnNameValuePairs(targetTable.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
                 boolean isPkChanged = false;
@@ -412,38 +383,34 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             } else if (!isFallback && data.getDataEventType() == DataEventType.INSERT && pkCount == 0) {
                 isUniqueKeyBlocking = true;
             }
-
             if (isUniqueKeyBlocking) {
-                log.info("Unique key violation on table {} during {} with batch {}.  Attempting to correct.", 
+                log.info("Unique key violation on table {} during {} with batch {}.  Attempting to correct.",
                         targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
-    
                 for (IIndex index : targetTable.getIndices()) {
                     if (index.isUnique()) {
-                        log.info("Correcting for possible violation of unique index {} on table {} during {} with batch {}", index.getName(), 
+                        log.info("Correcting for possible violation of unique index {} on table {} during {} with batch {}", index.getName(),
                                 targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
                         count += deleteUniqueConstraintRow(platform, sqlTemplate, databaseWriter, targetTable, index, data);
                     }
                 }
             } else if (isPrimaryKeyBlocking) {
-                log.info("Correcting for update violation of primary key on table {} during {} with batch {}", targetTable.getName(), 
+                log.info("Correcting for update violation of primary key on table {} during {} with batch {}", targetTable.getName(),
                         data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
-                count += deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues, false);                            
+                count += deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues, false);
             }
         }
         return count != 0;
     }
- 
+
     @Override
     protected boolean isConflictingLosingParentRow(AbstractDatabaseWriter writer, CsvData data) {
         DefaultDatabaseWriter databaseWriter = (DefaultDatabaseWriter) writer;
         IDatabasePlatform platform = databaseWriter.getPlatform();
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
         Set<String> conflictLosingParentRows = writer.getWriterSettings().getConflictLosingParentRows();
-        
-
         if (conflictLosingParentRows != null && conflictLosingParentRows.size() > 0 && !writer.getBatch().isInitialLoad() &&
-                (platform.getDatabaseInfo().isRequiresSavePointsInTransaction() || (writer.getContext().getLastError() != null && 
-                sqlTemplate.isForeignKeyViolation(writer.getContext().getLastError())))) {
+                (platform.getDatabaseInfo().isRequiresSavePointsInTransaction() || (writer.getContext().getLastError() != null &&
+                        sqlTemplate.isForeignKeyViolation(writer.getContext().getLastError())))) {
             Table targetTable = writer.getTargetTable();
             Map<String, String> values = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
             for (ForeignKey fk : targetTable.getForeignKeys()) {
@@ -484,12 +451,10 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         Map<String, String> values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getColumnNames(), CsvData.ROW_DATA);
         List<Column> whereColumns = new ArrayList<Column>();
         List<String> whereValues = new ArrayList<String>();
-
         for (IndexColumn indexColumn : uniqueIndex.getColumns()) {
             whereColumns.add(targetTable.getColumnWithName(indexColumn.getName()));
             whereValues.add(values.get(indexColumn.getName()));
         }
-        
         return deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues, true);
     }
 
@@ -504,7 +469,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 nullKeyValues[i] = true;
             } else {
                 valuesList.add(values[i]);
-            } 
+            }
         }
         Object[] objectValues = valuesList.toArray(new Object[0]);
         DmlStatement fromStmt = platform.createDmlStatement(DmlType.FROM, targetTable.getCatalog(), targetTable.getSchema(),
@@ -522,11 +487,11 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             if (sqlTemplate.isForeignKeyChildExistsViolation(ex)) {
                 log.info("Child exists foreign key violation while correcting {} violation.  Attempting further corrections.",
                         isUniqueKey ? "unique constraint" : "primary key");
-                // Failed to delete the row because another row is referencing it                        
+                // Failed to delete the row because another row is referencing it
                 DmlStatement selectStmt = platform.createDmlStatement(DmlType.SELECT, targetTable.getCatalog(), targetTable.getSchema(),
                         targetTable.getName(), whereColumns.toArray(new Column[0]), targetTable.getColumns(), nullKeyValues,
                         databaseWriter.getWriterSettings().getTextColumnExpression());
-                // Query the row that we need to delete because it is blocking us                
+                // Query the row that we need to delete because it is blocking us
                 Row uniqueRow = queryForRow(platform, databaseWriter, selectStmt.getSql(), objectValues);
                 CsvData uniqueData = new CsvData(DataEventType.INSERT, uniqueRow.toStringArray(targetTable.getColumnNames()));
                 if (deleteForeignKeyChildren(platform, sqlTemplate, databaseWriter, targetTable, uniqueData)) {
@@ -541,21 +506,20 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
 
     @Override
     protected boolean checkForForeignKeyChildExistsViolation(AbstractDatabaseWriter writer, CsvData data, Conflict conflict, Throwable e) {
-        DefaultDatabaseWriter databaseWriter = (DefaultDatabaseWriter)writer;
+        DefaultDatabaseWriter databaseWriter = (DefaultDatabaseWriter) writer;
         IDatabasePlatform platform = databaseWriter.getPlatform();
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
-
         if (e != null && sqlTemplate.isForeignKeyChildExistsViolation(e)) {
             Table targetTable = writer.getTargetTable();
-            log.info("Child exists foreign key violation on table {} during {} with batch {}.  Attempting to correct.", 
+            log.info("Child exists foreign key violation on table {} during {} with batch {}.  Attempting to correct.",
                     targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
-            
             return deleteForeignKeyChildren(platform, sqlTemplate, databaseWriter, writer.getTargetTable(), data);
         }
         return false;
-    }    
+    }
 
-    protected boolean deleteForeignKeyChildren(IDatabasePlatform platform, ISqlTemplate sqlTemplate, DefaultDatabaseWriter databaseWriter, Table targetTable, CsvData data) {        
+    protected boolean deleteForeignKeyChildren(IDatabasePlatform platform, ISqlTemplate sqlTemplate, DefaultDatabaseWriter databaseWriter, Table targetTable,
+            CsvData data) {
         Map<String, String> values = null;
         if (data.getDataEventType() == DataEventType.INSERT) {
             values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getColumnNames(), CsvData.ROW_DATA);
@@ -565,33 +529,28 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getPrimaryKeyColumnNames(), CsvData.PK_DATA);
             }
         }
-        
         List<TableRow> tableRows = new ArrayList<TableRow>();
         tableRows.add(new TableRow(targetTable, values, null, null, null));
         List<TableRow> foreignTableRows = doInTransaction(platform, databaseWriter, new ITransactionCallback<List<TableRow>>() {
             public List<TableRow> execute(ISqlTransaction transaction) {
-                return platform.getDdlReader().getExportedForeignTableRows(transaction, tableRows, new HashSet<TableRow>(), databaseWriter.getBatch().getBinaryEncoding());
+                return platform.getDdlReader().getExportedForeignTableRows(transaction, tableRows, new HashSet<TableRow>(), databaseWriter.getBatch()
+                        .getBinaryEncoding());
             }
         });
-        
         if (foreignTableRows.isEmpty()) {
             log.info("Could not determine foreign table rows to fix foreign key violation for table '{}'", targetTable.getFullyQualifiedTableName());
             return false;
         }
-        
         Collections.reverse(foreignTableRows);
         Set<TableRow> visited = new HashSet<TableRow>();
-        
         for (TableRow foreignTableRow : foreignTableRows) {
             if (visited.add(foreignTableRow)) {
                 Table foreignTable = foreignTableRow.getTable();
-            
                 log.info("Remove foreign row from table '{}' fk name '{}' where sql '{}' to correct table '{}' for column '{}'",
-                        foreignTable.getFullyQualifiedTableName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql(), 
+                        foreignTable.getFullyQualifiedTableName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql(),
                         targetTable.getName(), foreignTableRow.getReferenceColumnName());
-                
                 DatabaseInfo info = platform.getDatabaseInfo();
-                String tableName = Table.getFullyQualifiedTableName(foreignTable.getCatalog(), foreignTable.getSchema(), foreignTable.getName(), 
+                String tableName = Table.getFullyQualifiedTableName(foreignTable.getCatalog(), foreignTable.getSchema(), foreignTable.getName(),
                         info.getDelimiterToken(), info.getCatalogSeparator(), info.getSchemaSeparator());
                 String sql = "DELETE FROM " + tableName + " WHERE " + foreignTableRow.getWhereSql();
                 prepareAndExecute(platform, databaseWriter, sql);
@@ -607,7 +566,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             }
         });
     }
-    
+
     protected Row queryForRow(IDatabasePlatform platform, DefaultDatabaseWriter databaseWriter, String sql, Object... values) {
         return doInTransaction(platform, databaseWriter, new ITransactionCallback<Row>() {
             public Row execute(ISqlTransaction transaction) {
@@ -659,9 +618,8 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             }
         }
     }
-    
+
     private interface ITransactionCallback<T> {
         public T execute(ISqlTransaction transaction);
     }
-
 }

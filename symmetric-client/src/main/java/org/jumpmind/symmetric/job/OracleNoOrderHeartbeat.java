@@ -41,13 +41,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 public class OracleNoOrderHeartbeat implements IHeartbeatListener, IBuiltInExtensionPoint {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     private ISymmetricEngine engine;
-    
     private IParameterService parameterService;
-    
     private ISqlMap sqlMap;
 
     public OracleNoOrderHeartbeat(ISymmetricEngine engine) {
@@ -59,10 +55,8 @@ public class OracleNoOrderHeartbeat implements IHeartbeatListener, IBuiltInExten
     public void heartbeat(Node me) {
         String dbUrls = parameterService.getString(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER_NEXTVALUE_DB_URLS);
         if (parameterService.is(ParameterConstants.HEARTBEAT_ENABLED) && StringUtils.isNotBlank(dbUrls)) {
-            
             String user = parameterService.getString(ParameterConstants.DB_USER);
             String password = parameterService.getString(ParameterConstants.DB_PASSWORD);
-
             if (password != null && password.startsWith(SecurityConstants.PREFIX_ENC)) {
                 try {
                     password = engine.getSecurityService().decrypt(password.substring(SecurityConstants.PREFIX_ENC.length()));
@@ -70,12 +64,10 @@ public class OracleNoOrderHeartbeat implements IHeartbeatListener, IBuiltInExten
                     throw new IllegalStateException("Failed to decrypt the database password from the engine properties file", ex);
                 }
             }
-
             Calendar cal = Calendar.getInstance();
             cal.set(Calendar.MILLISECOND, 0);
             String[] dbUrlArray = dbUrls.split(",");
             log.info("Connecting for heartbeat on {} RAC nodes", dbUrlArray.length);
-
             for (String dbUrl : dbUrlArray) {
                 SingleConnectionDataSource ds = null;
                 try {
@@ -84,14 +76,14 @@ public class OracleNoOrderHeartbeat implements IHeartbeatListener, IBuiltInExten
                     ds = new SingleConnectionDataSource(conn, true);
                     JdbcTemplate sqlTemplate = new JdbcTemplate(ds);
                     int count = sqlTemplate.update(sqlMap.getSql("updateNodeHost"), new Timestamp(cal.getTimeInMillis()), me.getNodeId(),
-                    		AppUtils.getHostName());
+                            AppUtils.getHostName());
                     log.debug("Updated {} rows for heartbeat", count);
                 } catch (Exception e) {
                     log.error("Unable to update heartbeat time", e);
                 } finally {
-                	if (ds != null) {
-                		ds.destroy();
-                	}
+                    if (ds != null) {
+                        ds.destroy();
+                    }
                 }
             }
         }

@@ -21,55 +21,55 @@
 package org.jumpmind.symmetric.io.data;
 
 public class DmlWeight {
-	private int insertWeight;
-	private int updateWeight;
-	private int deleteWeight;
+    private int insertWeight;
+    private int updateWeight;
+    private int deleteWeight;
 
-	public DmlWeight() {
-	}
+    public DmlWeight() {
+    }
 
-	public DmlWeight(int insertWeight, int updateWeight, int deleteWeight) {
-		this.insertWeight = insertWeight;
-		this.updateWeight = updateWeight;
-		this.deleteWeight = deleteWeight;
-	}
+    public DmlWeight(int insertWeight, int updateWeight, int deleteWeight) {
+        this.insertWeight = insertWeight;
+        this.updateWeight = updateWeight;
+        this.deleteWeight = deleteWeight;
+    }
 
-	public DmlWeight(String csv) {
-		if (csv != null) {
-	        String[] iud = csv.split(",");
-	        if (iud.length > 0) {
-	        	insertWeight = Integer.valueOf(iud[0]);
-	        }
-	        if (iud.length > 1) {
-	        	updateWeight = Integer.valueOf(iud[1]);
-	        }
-	        if (iud.length > 2) {
-	        	deleteWeight = Integer.valueOf(iud[2]);
-	        }
-		}
-	}
+    public DmlWeight(String csv) {
+        if (csv != null) {
+            String[] iud = csv.split(",");
+            if (iud.length > 0) {
+                insertWeight = Integer.valueOf(iud[0]);
+            }
+            if (iud.length > 1) {
+                updateWeight = Integer.valueOf(iud[1]);
+            }
+            if (iud.length > 2) {
+                deleteWeight = Integer.valueOf(iud[2]);
+            }
+        }
+    }
 
-	public int getInsertWeight() {
-		return insertWeight;
-	}
+    public int getInsertWeight() {
+        return insertWeight;
+    }
 
-	public int getUpdateWeight() {
-		return updateWeight;
-	}
+    public int getUpdateWeight() {
+        return updateWeight;
+    }
 
-	public int getDeleteWeight() {
-		return deleteWeight;
-	}
-	
-	public void setInsertWeight(int insertWeight) {
-		this.insertWeight = insertWeight;
-	}
+    public int getDeleteWeight() {
+        return deleteWeight;
+    }
 
-	public void setUpdateWeight(int updateWeight) {
-		this.updateWeight = updateWeight;
-	}
+    public void setInsertWeight(int insertWeight) {
+        this.insertWeight = insertWeight;
+    }
 
-	public void setDeleteWeight(int deleteWeight) {
-		this.deleteWeight = deleteWeight;
-	}
+    public void setUpdateWeight(int updateWeight) {
+        this.updateWeight = updateWeight;
+    }
+
+    public void setDeleteWeight(int deleteWeight) {
+        this.deleteWeight = deleteWeight;
+    }
 }

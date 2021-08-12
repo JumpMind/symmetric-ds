@@ -84,24 +84,16 @@ import org.jumpmind.util.AppUtils;
  * @see IClusterService
  */
 public class ClusterService extends AbstractService implements IClusterService {
-
     private static final String[] actions = new String[] { ROUTE, PULL, PUSH, HEARTBEAT, PURGE_INCOMING, PURGE_OUTGOING,
             PURGE_STATISTICS, SYNC_TRIGGERS, PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL,
-            FILE_SYNC_PUSH, FILE_SYNC_TRACKER, INITIAL_LOAD_EXTRACT, INITIAL_LOAD_QUEUE, OFFLINE_PUSH, OFFLINE_PULL, 
+            FILE_SYNC_PUSH, FILE_SYNC_TRACKER, INITIAL_LOAD_EXTRACT, INITIAL_LOAD_QUEUE, OFFLINE_PUSH, OFFLINE_PULL,
             MONITOR, SYNC_CONFIG, LOG_MINER };
-    
     private static final String[] sharedActions = new String[] { FILE_SYNC_SHARED };
-
     private static boolean isUpgradedInstanceId;
-
     private String serverId = null;
-
     private static String instanceId = null;
-    
     private INodeService nodeService;
-    
     private IExtensionService extensionService;
-    
     private Map<String, Lock> lockCache = new ConcurrentHashMap<String, Lock>();
 
     public ClusterService(IParameterService parameterService, ISymmetricDialect dialect, INodeService nodeService,
@@ -125,7 +117,6 @@ public class ClusterService extends AbstractService implements IClusterService {
             nodeService.deleteNodeHost(nodeService.findIdentityNodeId()); // This is cleanup mostly for an upgrade.
         }
         checkSymDbOwnership();
-        
         if (isClusteringEnabled()) {
             sqlTemplate.update(getSql("initLockSql"), new Object[] { getServerId() });
             refreshLockEntries();
@@ -136,21 +127,19 @@ public class ClusterService extends AbstractService implements IClusterService {
     public void refreshLockEntries() {
         if (isClusteringEnabled()) {
             Map<String, Lock> allLocks = findLocks();
-
             for (String action : actions) {
                 if (allLocks.get(action) == null) {
                     initLockTable(action, TYPE_CLUSTER);
                 }
             }
-
             for (String action : sharedActions) {
                 if (allLocks.get(action) == null) {
                     initLockTable(action, TYPE_SHARED);
                 }
-            }        
+            }
         }
     }
-    
+
     protected void initInstanceId() {
         if (instanceId != null) {
             return;
@@ -163,7 +152,6 @@ public class ClusterService extends AbstractService implements IClusterService {
         } else {
             instanceIdURL = getClass().getClassLoader().getResource("/instance.uuid");
         }
-
         if (instanceIdFile != null) {
             try {
                 instanceId = IOUtils.toString(new FileInputStream(instanceIdFile), Charset.defaultCharset()).trim();
@@ -175,14 +163,12 @@ public class ClusterService extends AbstractService implements IClusterService {
                 instanceId = IOUtils.toString(instanceIdURL.openStream(), Charset.defaultCharset()).trim();
             } catch (Exception ex) {
                 log.debug("Failed to load instance id from classpath '" + instanceIdURL + "'", ex);
-            }            
+            }
         }
-
         IClusterInstanceGenerator generator = null;
         if (extensionService != null) {
             generator = extensionService.getExtensionPoint(IClusterInstanceGenerator.class);
         }
-
         if (StringUtils.isBlank(instanceId) || (generator != null && !generator.isValid(instanceId))) {
             String newInstanceId = null;
             if (generator != null) {
@@ -194,7 +180,7 @@ public class ClusterService extends AbstractService implements IClusterService {
             instanceId = newInstanceId;
             isUpgradedInstanceId = true;
             if (instanceIdFile != null) {
-                try {            
+                try {
                     instanceIdFile.getParentFile().mkdirs();
                     IOUtils.write(newInstanceId, new FileOutputStream(instanceIdFile), Charset.defaultCharset());
                 } catch (Exception ex) {
@@ -203,19 +189,19 @@ public class ClusterService extends AbstractService implements IClusterService {
             }
         }
     }
-    
+
     protected void checkSymDbOwnership() {
         if (!isClusteringEnabled()) {
             List<NodeHost> nodeHosts = nodeService.findNodeHosts(nodeService.findIdentityNodeId());
             for (NodeHost nodeHost : nodeHosts) {
-                if (nodeHost.getInstanceId() != null 
+                if (nodeHost.getInstanceId() != null
                         && !StringUtils.equals(instanceId, nodeHost.getInstanceId())) {
                     String msg = String.format("*** Node '%s' failed to claim exclusive ownership of the SymmetricDS database. *** "
                             + "This is instance id '%s' but instance id '%s' is already present in sym_node_host.  This is caused when 2 copies of SymmetricDS "
                             + "are pointed at the same database, but not clustered.  If you are configuring a cluster, set cluster.lock.enabled=true and restart.  "
-                            + "If you moved your installation or re-installed, run 'delete from sym_node_host where node_id = '%s' and restart SymmetricDS.", 
+                            + "If you moved your installation or re-installed, run 'delete from sym_node_host where node_id = '%s' and restart SymmetricDS.",
                             nodeService.findIdentityNodeId(), instanceId, nodeHost.getInstanceId(), nodeService.findIdentityNodeId());
-                     throw new SymmetricException(msg);    
+                    throw new SymmetricException(msg);
                 }
             }
         }
@@ -236,9 +222,9 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     protected void insertLock(Lock lock) {
-        sqlTemplate.update(getSql("insertCompleteLockSql"), lock.getLockAction(), lock.getLockType(), lock.getLockingServerId(), lock.getLockTime(), lock.getSharedCount(), lock.isSharedEnable() ? 1 : 0, lock.getLastLockTime(), lock.getLastLockingServerId());
+        sqlTemplate.update(getSql("insertCompleteLockSql"), lock.getLockAction(), lock.getLockType(), lock.getLockingServerId(), lock.getLockTime(), lock
+                .getSharedCount(), lock.isSharedEnable() ? 1 : 0, lock.getLastLockTime(), lock.getLastLockingServerId());
     }
-
 
     protected void initLockTable(final String action) {
         initLockTable(action, TYPE_CLUSTER);
@@ -255,7 +241,7 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     protected final void initCache() {
-        lockCache .clear();
+        lockCache.clear();
         for (String action : actions) {
             Lock lock = new Lock();
             lock.setLockAction(action);
@@ -303,7 +289,7 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     @Override
     public boolean lock(final String action) {
-        final Date timeout = DateUtils.addMilliseconds(new Date(), 
+        final Date timeout = DateUtils.addMilliseconds(new Date(),
                 (int) -parameterService.getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
         return lockCluster(action, timeout, new Date(), getServerId());
     }
@@ -325,7 +311,7 @@ public class ClusterService extends AbstractService implements IClusterService {
             Lock lock = lockCache.get(action);
             if (lock != null) {
                 synchronized (lock) {
-                    if (lock.getLockType().equals(TYPE_CLUSTER) && (lock.getLockTime() == null 
+                    if (lock.getLockType().equals(TYPE_CLUSTER) && (lock.getLockTime() == null
                             || lock.getLockTime().before(timeToBreakLock) || argServerId.equals(lock.getLockingServerId()))) {
                         lock.setLockingServerId(argServerId);
                         lock.setLockTime(timeLockAcquired);
@@ -348,7 +334,7 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     protected boolean lockShared(final String action) {
         final Date timeout = DateUtils.addMilliseconds(new Date(),
-                (int) -parameterService.getLong(ParameterConstants.LOCK_TIMEOUT_MS));    
+                (int) -parameterService.getLong(ParameterConstants.LOCK_TIMEOUT_MS));
         if (isClusteringEnabled()) {
             return sqlTemplate.update(getSql("acquireSharedLockSql"), new Object[] {
                     TYPE_SHARED, getServerId(), new Date(), action, TYPE_SHARED, timeout }) == 1;
@@ -375,7 +361,7 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     protected boolean lockExclusive(final String action) {
         final Date timeout = DateUtils.addMilliseconds(new Date(),
-                (int) -parameterService.getLong(ParameterConstants.LOCK_TIMEOUT_MS));    
+                (int) -parameterService.getLong(ParameterConstants.LOCK_TIMEOUT_MS));
         if (isClusteringEnabled()) {
             return sqlTemplate.update(getSql("acquireExclusiveLockSql"), new Object[] {
                     TYPE_EXCLUSIVE, getServerId(), new Date(), action, TYPE_SHARED, timeout }) == 1;
@@ -452,16 +438,13 @@ public class ClusterService extends AbstractService implements IClusterService {
             return lockCache;
         }
     }
-    
+
     /**
-     * The instance id is similar in intent to the serverId, but it is generated by the system on 
-     * initial startup, and semi-permanently cached as a file on the local file system.  The intension
-     * is to uniquely identity SymmetricDS installations, and protect against situations where things are 
-     * misconfigured and potentially pointed at the wrong databases, or pointed at the same database without 
-     * the cluster.lock.enabled parameter turned on.
+     * The instance id is similar in intent to the serverId, but it is generated by the system on initial startup, and semi-permanently cached as a file on the
+     * local file system. The intension is to uniquely identity SymmetricDS installations, and protect against situations where things are misconfigured and
+     * potentially pointed at the wrong databases, or pointed at the same database without the cluster.lock.enabled parameter turned on.
      */
     protected String generateInstanceId(String hostName) {
-
         final int MAX_HOST_LENGTH = 23;
         StringBuilder buff = new StringBuilder();
         buff.append(hostName);
@@ -469,15 +452,12 @@ public class ClusterService extends AbstractService implements IClusterService {
             buff.setLength(MAX_HOST_LENGTH);
         }
         buff.append("-");
-
         buff.append(UUID.randomUUID().toString());
-
         return buff.toString();
     }
 
     /**
-     * Get a unique identifier that represents the JVM instance this server is
-     * currently running in.
+     * Get a unique identifier that represents the JVM instance this server is currently running in.
      */
     @Override
     public String getServerId() {
@@ -486,19 +466,16 @@ public class ClusterService extends AbstractService implements IClusterService {
             if (StringUtils.isBlank(serverId)) {
                 serverId = System.getProperty(SystemConstants.SYSPROP_CLUSTER_SERVER_ID, null);
             }
-
             if (StringUtils.isBlank(serverId)) {
                 // JBoss uses this system property to identify a server in a
                 // cluster
                 serverId = System.getProperty("bind.address", null);
             }
-
             if (StringUtils.isBlank(serverId)) {
                 // JBoss uses this system property to identify a server in a
                 // cluster
                 serverId = System.getProperty("jboss.bind.address", null);
             }
-
             if (StringUtils.isBlank(serverId)) {
                 try {
                     serverId = AppUtils.getHostName();
@@ -506,7 +483,6 @@ public class ClusterService extends AbstractService implements IClusterService {
                     serverId = "unknown";
                 }
             }
-
             serverId = StringUtils.left(serverId, 255);
             log.info("This node picked a server id of {}", serverId);
         }
@@ -644,7 +620,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         Lock lock = all.get(action);
         if (lock != null && Lock.STOPPED.equals(lock.getLockingServerId())) {
             if (isClusteringEnabled()) {
-                sqlTemplate.update(getSql("resetClusterLockSql"), new Object[] { action, TYPE_CLUSTER, Lock.STOPPED});
+                sqlTemplate.update(getSql("resetClusterLockSql"), new Object[] { action, TYPE_CLUSTER, Lock.STOPPED });
             } else if (lock.getLockType().equals(TYPE_CLUSTER) && Lock.STOPPED.equals(lock.getLockingServerId())) {
                 lock.setLastLockingServerId(null);
                 lock.setLockingServerId(null);
@@ -657,17 +633,16 @@ public class ClusterService extends AbstractService implements IClusterService {
     @Override
     public boolean refreshLock(String action) {
         if (isLockRefreshNeeded(action)) {
-            return lock(action); 
+            return lock(action);
         }
         return true;
     }
-    
+
     protected boolean isLockRefreshNeeded(String action) {
         if (isClusteringEnabled()) {
             Lock lock = lockCache.get(action);
             long clusterLockRefreshMs = this.parameterService.getLong(ParameterConstants.CLUSTER_LOCK_REFRESH_MS);
             long refreshTime = new Date().getTime() - clusterLockRefreshMs;
-            
             if (lock != null && lock.getLockTime() != null && lock.getLockTime().getTime() < refreshTime) {
                 return true;
             } else {
@@ -677,5 +652,4 @@ public class ClusterService extends AbstractService implements IClusterService {
             return false;
         }
     }
-
 }

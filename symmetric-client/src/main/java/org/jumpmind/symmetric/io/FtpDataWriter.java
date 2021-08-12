@@ -51,7 +51,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FtpDataWriter implements IDataWriter {
-
     public enum Format {
         CSV
     }
@@ -61,29 +60,17 @@ public class FtpDataWriter implements IDataWriter {
     }
 
     private static final Logger logger = LoggerFactory.getLogger(FtpDataWriter.class);
-
     protected String server;
-
     protected String username;
-
     protected String password;
-
     protected FtpDataWriter.Protocol protocol = Protocol.FTP;
-
     protected FtpDataWriter.Format format = Format.CSV;
-
     protected String stagingDir;
-
     protected String remoteDir;
-
     protected Batch batch;
-
     protected Table table;
-
     protected Map<String, FileInfo> fileInfoByTable = new HashMap<String, FtpDataWriter.FileInfo>();
-
     protected FileSystemManager manager;
-
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
 
     public void setRemoteDir(String remoteDir) {
@@ -148,7 +135,6 @@ public class FtpDataWriter implements IDataWriter {
     }
 
     public void end(Table table) {
-
     }
 
     public void end(Batch batch, boolean inError) {
@@ -164,7 +150,7 @@ public class FtpDataWriter implements IDataWriter {
                 closeFiles();
             } finally {
                 deleteFiles();
-            }            
+            }
         }
     }
 
@@ -210,7 +196,6 @@ public class FtpDataWriter implements IDataWriter {
                 FileUtils.deleteQuietly(fileInfo.outputFile);
             }
         }
-
         fileInfoByTable.clear();
     }
 
@@ -222,7 +207,6 @@ public class FtpDataWriter implements IDataWriter {
                 FtpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(opts, true);
                 SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
                 SftpFileSystemConfigBuilder.getInstance().setSessionTimeoutMillis(opts, 60000);
-
                 Collection<FileInfo> fileInfos = fileInfoByTable.values();
                 for (FileInfo fileInfo : fileInfos) {
                     FileObject fileObject = manager.resolveFile(
@@ -252,12 +236,10 @@ public class FtpDataWriter implements IDataWriter {
             }
             credentials = credentials + "@";
         }
-
         String path = "";
         if (StringUtils.isNotBlank(this.remoteDir)) {
             path = "/" + this.remoteDir;
         }
-
         return protocol.toString().toLowerCase() + "://" + credentials + server + path;
     }
 
@@ -294,5 +276,4 @@ public class FtpDataWriter implements IDataWriter {
         File outputFile;
         BufferedWriter outputFileWriter;
     }
-
 }

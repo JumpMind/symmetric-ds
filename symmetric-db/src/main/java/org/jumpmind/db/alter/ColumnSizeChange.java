@@ -46,8 +46,7 @@ import org.jumpmind.db.model.Table;
 /**
  * Represents the change of the size or scale of a column.
  */
-public class ColumnSizeChange extends TableChangeImplBase implements ColumnChange
-{
+public class ColumnSizeChange extends TableChangeImplBase implements ColumnChange {
     /** The column. */
     private Column _column;
     /** The new size. */
@@ -58,16 +57,19 @@ public class ColumnSizeChange extends TableChangeImplBase implements ColumnChang
     /**
      * Creates a new change object.
      * 
-     * @param table    The table of the column
-     * @param column   The column
-     * @param newSize  The new size
-     * @param newScale The new scale
+     * @param table
+     *            The table of the column
+     * @param column
+     *            The column
+     * @param newSize
+     *            The new size
+     * @param newScale
+     *            The new scale
      */
-    public ColumnSizeChange(Table table, Column column, int newSize, int newScale)
-    {
+    public ColumnSizeChange(Table table, Column column, int newSize, int newScale) {
         super(table);
-        _column   = column;
-        _newSize  = newSize;
+        _column = column;
+        _newSize = newSize;
         _newScale = newScale;
     }
 
@@ -76,8 +78,7 @@ public class ColumnSizeChange extends TableChangeImplBase implements ColumnChang
      *
      * @return The column
      */
-    public Column getChangedColumn()
-    {
+    public Column getChangedColumn() {
         return _column;
     }
 
@@ -86,8 +87,7 @@ public class ColumnSizeChange extends TableChangeImplBase implements ColumnChang
      *
      * @return The new size
      */
-    public int getNewSize()
-    {
+    public int getNewSize() {
         return _newSize;
     }
 
@@ -96,19 +96,16 @@ public class ColumnSizeChange extends TableChangeImplBase implements ColumnChang
      *
      * @return The new scale
      */
-    public int getNewScale()
-    {
+    public int getNewScale() {
         return _newScale;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void apply(Database database, boolean caseSensitive)
-    {
-        Table  table  = database.findTable(getChangedTable().getName(), caseSensitive);
+    public void apply(Database database, boolean caseSensitive) {
+        Table table = database.findTable(getChangedTable().getName(), caseSensitive);
         Column column = table.findColumn(_column.getName(), caseSensitive);
-
         column.setSizeAndScale(_newSize, _newScale);
     }
 }

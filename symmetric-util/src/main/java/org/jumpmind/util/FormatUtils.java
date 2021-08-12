@@ -43,57 +43,36 @@ import org.apache.commons.lang3.time.FastDateFormat;
 import org.jumpmind.exception.ParseException;
 
 public final class FormatUtils {
-    
     public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S",
-            "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm:ss.SSS", "yyyy-MM-dd HH:mm", "yyyy-MM-dd", 
+            "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm:ss.SSS", "yyyy-MM-dd HH:mm", "yyyy-MM-dd",
             "HH:mm:ss.S", "HH:mm:ss" };
-
     public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss",
             "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
-    
     public static final String[] TIMESTAMP_WITH_TIMEZONE_PATTERNS = {
             "yyyy-MM-dd HH:mm:ss.n xxx"
     };
-
     public static final FastDateFormat TIMESTAMP_FORMATTER = FastDateFormat
             .getInstance("yyyy-MM-dd HH:mm:ss.SSS");
-
     public static final FastDateFormat TIME_FORMATTER = FastDateFormat.getInstance("HH:mm:ss.SSS");
-
     /* special characters for wildcard triggers */
-    
     public final static String WILDCARD = "*";
-    
     public final static String WILDCARD_SEPARATOR = ",";
-        
     public final static String NEGATE_TOKEN = "!";
-
     /* special characters for wildcard triggers - char version for fast comparison */
-    
     public final static char WILDCARD_SEPARATOR_CHAR = WILDCARD_SEPARATOR.charAt(0);
-
     public final static char WILDCARD_CHAR = WILDCARD.charAt(0);
-
     public final static char NEGATE_TOKEN_CHAR = NEGATE_TOKEN.charAt(0);
-
     /* double up special characters to escape them */
-
     public final static String WILDCARD_ESCAPED = WILDCARD + WILDCARD;
-    
     public final static String WILDCARD_SEPARATOR_ESCAPED = WILDCARD_SEPARATOR + WILDCARD_SEPARATOR;
-
     public final static String NEGATE_TOKEN_ESCAPED = NEGATE_TOKEN + NEGATE_TOKEN;
-
     public final static int MAX_CHARS_TO_LOG = 1000;
-
     private static Pattern pattern = Pattern.compile("\\$\\((.+?)\\)");
-    
     private static boolean isInfamousTurkey = false;
-
     static {
         isInfamousTurkey = Locale.getDefault().getCountry().equalsIgnoreCase("tr");
     }
-    
+
     private FormatUtils() {
     }
 
@@ -111,16 +90,14 @@ public final class FormatUtils {
     }
 
     /**
-     * Replace the keys found in the target text with the values found in the
-     * replacements map.
+     * Replace the keys found in the target text with the values found in the replacements map.
      * 
      * @param text
      *            The text to replace
      * @param replacements
      *            The map that contains the replacement values
      * @param matchUsingPrefixSuffix
-     *            If true, look for the $(key) pattern to replace. If false,
-     *            just replace the key outright.
+     *            If true, look for the $(key) pattern to replace. If false, just replace the key outright.
      * @return The text with the token keys replaced
      */
     public static String replaceTokens(String text, Map<String, String> replacements,
@@ -143,7 +120,7 @@ public final class FormatUtils {
                         } else if (matchColon.length == 3) {
                             int startIndex = Integer.parseInt(matchColon[1]);
                             int endIndex = Integer.parseInt(matchColon[2]);
-                            if (startIndex <= replacement.length() && endIndex <= replacement.length()) { 
+                            if (startIndex <= replacement.length() && endIndex <= replacement.length()) {
                                 replacement = replacement.substring(startIndex, endIndex);
                             }
                         }
@@ -198,7 +175,7 @@ public final class FormatUtils {
         }
         return upper && lower;
     }
-    
+
     public static boolean isWildCardMatch(String text, String pattern, boolean ignoreCase) {
         boolean match = isWildCardMatch(text, pattern);
         if (ignoreCase && !match) {
@@ -210,7 +187,6 @@ public final class FormatUtils {
         return match;
     }
 
-
     public static boolean isWildCardMatch(String text, String pattern) {
         boolean match = true;
         if (pattern.startsWith(NEGATE_TOKEN)) {
@@ -219,13 +195,10 @@ public final class FormatUtils {
         // Create the cards by splitting using a RegEx. If more speed
         // is desired, a simpler character based splitting can be done.
         String[] cards = pattern.split("\\" + WILDCARD);
-
-        for(int i = 0; i < cards.length; i++) {
+        for (int i = 0; i < cards.length; i++) {
             String card = cards[i];
-            
             boolean foundToken = false;
-            
-            if (! pattern.contains("*")) {
+            if (!pattern.contains("*")) {
                 foundToken = text.equals(card);
             } else if (i == 0 && !pattern.startsWith("*") && pattern.endsWith("*")) {
                 foundToken = text.startsWith(card);
@@ -234,27 +207,26 @@ public final class FormatUtils {
             } else {
                 foundToken = text.indexOf(card) != -1;
             }
-
             // Card not detected in the text.
             if (!foundToken) {
                 return !match;
             }
-
             // Move ahead, towards the right of the text.
             text = text.substring(text.indexOf(card) + card.length());
         }
-
         return match;
     }
-    
+
     public static String unescapeWildCards(String str) {
-        return str == null ? null : str.replace(WILDCARD_ESCAPED, WILDCARD).replace(WILDCARD_SEPARATOR_ESCAPED, WILDCARD_SEPARATOR).replace(
-                NEGATE_TOKEN_ESCAPED, NEGATE_TOKEN);
+        return str == null ? null
+                : str.replace(WILDCARD_ESCAPED, WILDCARD).replace(WILDCARD_SEPARATOR_ESCAPED, WILDCARD_SEPARATOR).replace(
+                        NEGATE_TOKEN_ESCAPED, NEGATE_TOKEN);
     }
 
     public static String escapeWildCards(String str) {
-        return str == null ? null : str.replace(WILDCARD, WILDCARD_ESCAPED).replace(WILDCARD_SEPARATOR, WILDCARD_SEPARATOR_ESCAPED).replace(
-                NEGATE_TOKEN, NEGATE_TOKEN_ESCAPED);
+        return str == null ? null
+                : str.replace(WILDCARD, WILDCARD_ESCAPED).replace(WILDCARD_SEPARATOR, WILDCARD_SEPARATOR_ESCAPED).replace(
+                        NEGATE_TOKEN, NEGATE_TOKEN_ESCAPED);
     }
 
     public static boolean isWildCarded(String str) {
@@ -263,10 +235,8 @@ public final class FormatUtils {
             int countWildCard = 0;
             int countCommas = 0;
             int countNegates = 0;
-
             for (int i = 0; i < str.length(); i++) {
                 char thisChar = str.charAt(i);
-
                 if (thisChar == WILDCARD_CHAR) {
                     countWildCard++;
                 } else if (countWildCard > 0) {
@@ -276,7 +246,6 @@ public final class FormatUtils {
                     }
                     countWildCard = 0;
                 }
-
                 if (thisChar == WILDCARD_SEPARATOR_CHAR) {
                     countCommas++;
                 } else if (countCommas > 0) {
@@ -286,7 +255,6 @@ public final class FormatUtils {
                     }
                     countCommas = 0;
                 }
-                
                 if (thisChar == NEGATE_TOKEN_CHAR) {
                     countNegates++;
                 } else if (countNegates > 0) {
@@ -297,8 +265,7 @@ public final class FormatUtils {
                     countNegates = 0;
                 }
             }
-            
-            if ((countWildCard > 0 && countWildCard % 2 == 1 )|| (countCommas > 0 && countCommas % 2 == 1)
+            if ((countWildCard > 0 && countWildCard % 2 == 1) || (countCommas > 0 && countCommas % 2 == 1)
                     || (countNegates > 0 && countNegates % 2 == 1)) {
                 hasWildCard = true;
             }
@@ -307,8 +274,7 @@ public final class FormatUtils {
     }
 
     /**
-     * Word wrap a string where the line size for the first line is different
-     * than the lines sizes for the other lines.
+     * Word wrap a string where the line size for the first line is different than the lines sizes for the other lines.
      * 
      * @param str
      * @param firstLineSize
@@ -316,23 +282,18 @@ public final class FormatUtils {
      * @return
      */
     public static String[] wordWrap(String str, int firstLineSize, int nonFirstLineSize) {
-
         String[] lines = wordWrap(str, firstLineSize);
-
         if (lines.length > 1 && firstLineSize != nonFirstLineSize) {
             // More than one line. Re-wrap the non-first lines with the non
             // first line size
             String notFirstLinesString = StringUtils.join(lines, " ", 1, lines.length);
             String[] nonFirstLines = wordWrap(notFirstLinesString, nonFirstLineSize);
             List<String> nonFirstLineCollection = Arrays.asList(nonFirstLines);
-
             ArrayList<String> allLines = new ArrayList<String>();
             allLines.add(lines[0]);
             allLines.addAll(nonFirstLineCollection);
-
             lines = allLines.toArray(lines);
         }
-
         return lines;
     }
 
@@ -346,7 +307,6 @@ public final class FormatUtils {
                 String group = m.group();
                 // Preserve multiple newlines
                 String[] lines = StringUtils.splitPreserveAllTokens(group, '\n');
-
                 for (String line : lines) {
                     // Trim whitespace from end since a space on the end can
                     // push line wrap and cause an unintentional blank line.
@@ -366,9 +326,9 @@ public final class FormatUtils {
         }
         return StringUtils.abbreviate(value, MAX_CHARS_TO_LOG);
     }
-    
+
     /**
-     * Convert list of objects to abbreviated string for logging, making efficient use of memory for large lists 
+     * Convert list of objects to abbreviated string for logging, making efficient use of memory for large lists
      */
     @SuppressWarnings("rawtypes")
     public static String abbreviateForLogging(List list, int maxCharsToLog) {
@@ -390,7 +350,7 @@ public final class FormatUtils {
         sb.append("]");
         return sb.toString();
     }
-    
+
     public static Date parseDate(String str, String[] parsePatterns) {
         return parseDate(str, parsePatterns, null);
     }
@@ -399,7 +359,6 @@ public final class FormatUtils {
         if (str == null || parsePatterns == null) {
             throw new IllegalArgumentException("Date and Patterns must not be null");
         }
-        
         SimpleDateFormat parser = null;
         ParsePosition pos = new ParsePosition(0);
         for (int i = 0; i < parsePatterns.length; i++) {
@@ -417,51 +376,46 @@ public final class FormatUtils {
                 return date;
             }
         }
-        
         try {
             Date date = new Date(Long.parseLong(str));
             return date;
         } catch (NumberFormatException e) {
-            
         }
-        
         throw new ParseException("Unable to parse the date: " + str);
     }
-    
+
     public static Timestamp parseTimestampWithTimezone(String str) {
         return parseTimestampWithTimezone(str, TIMESTAMP_WITH_TIMEZONE_PATTERNS);
     }
-    
+
     public static Timestamp parseTimestampWithTimezone(String str, String[] parsePatterns) {
         Timestamp ret = null;
         // Need to make sure that the fraction seconds has nine digits,
         // because of a parse bug in Java version 8
         String dateTime = str.substring(0, str.indexOf("."));
-        String fractionSeconds = str.substring(str.indexOf(".")+1, str.lastIndexOf(" "));
-        String timeZone = str.substring(str.lastIndexOf(" ")+1);
-        if(dateTime == null || dateTime.length() == 0 ||
+        String fractionSeconds = str.substring(str.indexOf(".") + 1, str.lastIndexOf(" "));
+        String timeZone = str.substring(str.lastIndexOf(" ") + 1);
+        if (dateTime == null || dateTime.length() == 0 ||
                 fractionSeconds == null || fractionSeconds.length() == 0 ||
-                timeZone == null || timeZone.length() == 0)
-        {
+                timeZone == null || timeZone.length() == 0) {
             throw new ParseException("Unable to parse the date: " + str);
         }
         fractionSeconds = StringUtils.rightPad(fractionSeconds, 9, '0');
         str = dateTime + "." + fractionSeconds + " " + timeZone;
-        for(int i = 0; i < parsePatterns.length; i++) {
+        for (int i = 0; i < parsePatterns.length; i++) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(parsePatterns[i]);
             ret = null;
             try {
                 ret = Timestamp.from(ZonedDateTime.parse(str, formatter).toInstant());
-            } catch(DateTimeParseException e) {
-                
+            } catch (DateTimeParseException e) {
             }
-            if(ret != null) {
+            if (ret != null) {
                 return ret;
             }
         }
         throw new ParseException("Unable to parse the date: " + str);
     }
-    
+
     public static String[] splitOnSpacePreserveQuotedStrings(String source) {
         List<String> matchList = new ArrayList<String>();
         Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
@@ -477,7 +431,7 @@ public final class FormatUtils {
                 // Add unquoted word
                 matchList.add(regexMatcher.group());
             }
-        } 
+        }
         return matchList.toArray(new String[matchList.size()]);
     }
 
@@ -506,26 +460,24 @@ public final class FormatUtils {
     public static String stripTurkeyDottedI(String str) {
         return str.replace("\u0130", "I").replace("\u0131", "i");
     }
-    
+
     public static String formatDurationReadable(long duration) {
-        String result =  DurationFormatUtils.formatDurationWords(duration, true, true);
-        
+        String result = DurationFormatUtils.formatDurationWords(duration, true, true);
         result = result.replaceAll("hours", "hrs");
         result = result.replaceAll("hour", "hr");
         result = result.replaceAll("seconds", "sec.");
         result = result.replaceAll("second", "sec.");
         result = result.replaceAll("minutes", "mins");
         result = result.replaceAll("minute", "min");
-        
         return result;
     }
-    
+
     public static String formatDateTimeISO(Date date) {
         if (date != null) {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             return dateFormat.format(date);
         } else {
-            return "null";            
+            return "null";
         }
     }
 

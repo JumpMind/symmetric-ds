@@ -35,7 +35,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TransformWriterTest extends AbstractWriterTest {
-
     protected MockDataWriter mockWriter = new MockDataWriter();
 
     @BeforeClass
@@ -61,8 +60,8 @@ public class TransformWriterTest extends AbstractWriterTest {
     public void testTableNameChange() {
         mockWriter.reset();
         Table table = new Table("s1", new Column("id"));
-        writeData(getTransformWriter(), new TableCsvData(table, new CsvData(DataEventType.INSERT, new String[]{"66"}),
-           new CsvData(DataEventType.INSERT, new String[]{"77"})));
+        writeData(getTransformWriter(), new TableCsvData(table, new CsvData(DataEventType.INSERT, new String[] { "66" }),
+                new CsvData(DataEventType.INSERT, new String[] { "77" })));
         List<CsvData> datas = mockWriter.writtenDatas.get(table.getFullyQualifiedTableName());
         Assert.assertNull(datas);
         datas = mockWriter.writtenDatas.get("t1");
@@ -75,8 +74,8 @@ public class TransformWriterTest extends AbstractWriterTest {
     public void testAddColumn() {
         mockWriter.reset();
         Table table = new Table("s2", new Column("id"));
-        writeData(getTransformWriter(), new TableCsvData(table, new CsvData(DataEventType.INSERT, new String[]{"2"}),
-           new CsvData(DataEventType.INSERT, new String[]{"1"})));
+        writeData(getTransformWriter(), new TableCsvData(table, new CsvData(DataEventType.INSERT, new String[] { "2" }),
+                new CsvData(DataEventType.INSERT, new String[] { "1" })));
         List<CsvData> datas = mockWriter.writtenDatas.get(table.getFullyQualifiedTableName());
         Assert.assertNull(datas);
         datas = mockWriter.writtenDatas.get("t2");
@@ -85,7 +84,6 @@ public class TransformWriterTest extends AbstractWriterTest {
         Assert.assertEquals("1", datas.get(1).getParsedData(CsvData.ROW_DATA)[0]);
         Assert.assertEquals("added", datas.get(0).getParsedData(CsvData.ROW_DATA)[1]);
         Assert.assertEquals("added", datas.get(1).getParsedData(CsvData.ROW_DATA)[1]);
-
     }
 
     @Test
@@ -93,11 +91,11 @@ public class TransformWriterTest extends AbstractWriterTest {
         mockWriter.reset();
         Table table = new Table("s3", new Column("id"));
         writeData(getTransformWriter(), new TableCsvData(table,
-           new CsvData(DataEventType.UPDATE, new String[]{"1"}),
-           new CsvData(DataEventType.UPDATE, new String[]{"2"}),
-           new CsvData(DataEventType.UPDATE, new String[]{"3"}),
-           new CsvData(DataEventType.UPDATE, new String[]{"4"}),
-           new CsvData(DataEventType.UPDATE, new String[]{"5"})));
+                new CsvData(DataEventType.UPDATE, new String[] { "1" }),
+                new CsvData(DataEventType.UPDATE, new String[] { "2" }),
+                new CsvData(DataEventType.UPDATE, new String[] { "3" }),
+                new CsvData(DataEventType.UPDATE, new String[] { "4" }),
+                new CsvData(DataEventType.UPDATE, new String[] { "5" })));
         List<CsvData> datas = mockWriter.writtenDatas.get("t3");
         Assert.assertEquals(4, datas.size());
         Assert.assertEquals(DataEventType.INSERT, datas.get(0).getDataEventType());
@@ -105,13 +103,13 @@ public class TransformWriterTest extends AbstractWriterTest {
         Assert.assertEquals(DataEventType.UPDATE, datas.get(2).getDataEventType());
         Assert.assertEquals(DataEventType.UPDATE, datas.get(3).getDataEventType());
     }
-    
+
     @Test
     public void testDeleteNoCaptureOldData() throws Exception {
         mockWriter.reset();
         Table table = new Table("s4", new Column("id"));
         writeData(getTransformWriter(), new TableCsvData(table,
-                new CsvData(DataEventType.DELETE, new String[] {"1"}, null)));
+                new CsvData(DataEventType.DELETE, new String[] { "1" }, null)));
         List<CsvData> datas = mockWriter.writtenDatas.get("t4");
         Assert.assertEquals(1, datas.size());
         Assert.assertEquals(DataEventType.DELETE, datas.get(0).getDataEventType());
@@ -119,7 +117,6 @@ public class TransformWriterTest extends AbstractWriterTest {
         Assert.assertEquals(1, pkData.length);
         Assert.assertEquals("1", pkData[0]);
     }
-
 
     @Test
     public void testSimpleTableBeanShellMapping() throws Exception {
@@ -138,23 +135,21 @@ public class TransformWriterTest extends AbstractWriterTest {
     }
 
     protected TransformWriter getTransformWriter() {
-        TransformTable transformTable4 =
-           new TransformTable("s4", "t4", TransformPoint.LOAD,
-                   new TransformColumn("id", "id", true, "const", "1"));
-        TransformTable transformTable3 =
-           new TransformTable("s3", "t3", TransformPoint.LOAD, new TransformColumn("id", "id", true));
+        TransformTable transformTable4 = new TransformTable("s4", "t4", TransformPoint.LOAD,
+                new TransformColumn("id", "id", true, "const", "1"));
+        TransformTable transformTable3 = new TransformTable("s3", "t3", TransformPoint.LOAD, new TransformColumn("id", "id", true));
         transformTable3.setUpdateAction("switch (id) { case \"1\": return \"INS_ROW\"; case \"2\": "
-           + "return \"DEL_ROW\"; case \"3\": return \"UPD_ROW\"; case \"4\": return \"NONE\"; case \"5\": "
-           + "return \"UPDATE_COL\"; }");
+                + "return \"DEL_ROW\"; case \"3\": return \"UPD_ROW\"; case \"4\": return \"NONE\"; case \"5\": "
+                + "return \"UPDATE_COL\"; }");
         return new TransformWriter(platform, TransformPoint.LOAD, mockWriter, buildDefaultColumnTransforms(), new TransformTable[] {
                 new TransformTable("s1", "t1", TransformPoint.LOAD, new TransformColumn("id", "id", true)),
                 new TransformTable("s2", "t2", TransformPoint.LOAD, new TransformColumn("id", "id", true),
-                   new TransformColumn(null, "col2", false, "const", "added")),
+                        new TransformColumn(null, "col2", false, "const", "added")),
                 transformTable3,
                 transformTable4
         });
     }
-    
+
     public static Map<String, IColumnTransform<?>> buildDefaultColumnTransforms() {
         Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();
         addColumnTransform(AdditiveColumnTransform.NAME, columnTransforms, new AdditiveColumnTransform());
@@ -174,9 +169,8 @@ public class TransformWriterTest extends AbstractWriterTest {
         addColumnTransform(ClarionDateTimeColumnTransform.NAME, columnTransforms, new ClarionDateTimeColumnTransform());
         return columnTransforms;
     }
-    
+
     public static void addColumnTransform(String name, Map<String, IColumnTransform<?>> columnTransforms, IColumnTransform<?> columnTransform) {
         columnTransforms.put(name, columnTransform);
     }
-
 }

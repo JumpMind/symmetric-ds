@@ -28,24 +28,21 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class FileSyncPushJob extends AbstractJob {
-
     public FileSyncPushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(ClusterConstants.FILE_SYNC_PUSH, engine, taskScheduler);
     }
-    
+
     @Override
     public JobDefaults getDefaults() {
-        boolean fileSyncEnabeld = engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE); 
-        
+        boolean fileSyncEnabeld = engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE);
         return new JobDefaults()
                 .schedule(EVERY_MINUTE)
                 .enabled(fileSyncEnabeld)
                 .description("Push files to other nodes");
-    }    
-    
+    }
+
     @Override
     public void doJob(boolean force) throws Exception {
         engine.getFileSyncService().pushFilesToNodes(force);
     }
-    
 }

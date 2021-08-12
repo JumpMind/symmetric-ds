@@ -28,67 +28,51 @@ import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
 
 public class DefaultButtonBar implements IButtonBar, Serializable {
-
     private static final long serialVersionUID = 1L;
-
     MenuItem executeAtCursorButton;
-
     MenuItem executeScriptButton;
-
     MenuItem commitButton;
-
     MenuItem rollbackButton;
-
     MenuItem databaseExplorerButton;
-
     MenuItem historyButton;
-
     MenuItem settingsButton;
-
     MenuItem importButton;
-
     MenuItem exportButton;
-
     MenuItem fillButton;
-    
     IDbMenuItem[] additionalMenuItems;
-    
     QueryPanel queryPanel;
-    
     ISettingsProvider settingsProvider;
-    
     IDb db;
-    
+
     protected void init(IDb db, ISettingsProvider settingsProvider, QueryPanel queryPanel, IDbMenuItem... additionalMenuItems) {
         this.db = db;
         this.settingsProvider = settingsProvider;
         this.queryPanel = queryPanel;
         this.additionalMenuItems = additionalMenuItems;
     }
-    
+
     @Override
     public void setCommitButtonEnabled(boolean enabled) {
         commitButton.setEnabled(enabled);
     }
-    
+
     @Override
     public void setExecuteAtCursorButtonEnabled(boolean enabled) {
         executeAtCursorButton.setEnabled(enabled);
     }
-    
+
     @Override
     public void setExecuteScriptButtonEnabled(boolean enabled) {
         executeScriptButton.setEnabled(enabled);
     }
-    
+
     @Override
     public void setRollbackButtonEnabled(boolean enabled) {
         rollbackButton.setEnabled(enabled);
     }
-    
+
     protected void populate(MenuBar menuBar) {
         executeAtCursorButton = menuBar.addItem("", VaadinIcons.PLAY, new Command() {
-
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -97,9 +81,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
             }
         });
         executeAtCursorButton.setDescription("Run sql under cursor (CTRL+ENTER)");
-
         executeScriptButton = menuBar.addItem("", VaadinIcons.FORWARD, new Command() {
-
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -108,9 +90,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
             }
         });
         executeScriptButton.setDescription("Run as script");
-
         commitButton = menuBar.addItem("", VaadinIcons.ARROW_CIRCLE_RIGHT_O, new Command() {
-
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -121,9 +101,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
         commitButton.setStyleName("green");
         commitButton.setDescription("Commit");
         commitButton.setEnabled(false);
-
         rollbackButton = menuBar.addItem("", VaadinIcons.ARROW_CIRCLE_LEFT_O, new Command() {
-
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -134,9 +112,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
         rollbackButton.setStyleName("red");
         rollbackButton.setDescription("Rollback");
         rollbackButton.setEnabled(false);
-
         historyButton = menuBar.addItem("", VaadinIcons.SEARCH, new Command() {
-
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -146,12 +122,9 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
         });
         historyButton.setDescription("Sql History");
         historyButton.setEnabled(true);
-
         MenuItem optionsButton = menuBar.addItem("", VaadinIcons.TASKS, null);
         optionsButton.setDescription("Options");
-
         importButton = optionsButton.addItem("DB Import", VaadinIcons.DOWNLOAD, new Command() {
-
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -159,9 +132,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
                 new DbImportDialog(db.getPlatform()).showAtSize(0.6);
             }
         });
-
         exportButton = optionsButton.addItem("DB Export", VaadinIcons.UPLOAD, new Command() {
-
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -170,9 +141,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
                 new DbExportDialog(db.getPlatform(), queryPanel, excludeTablesRegex).showAtSize(0.6);
             }
         });
-        
         fillButton = optionsButton.addItem("DB Fill", VaadinIcons.FILL, new Command() {
-
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -181,7 +150,6 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
                 new DbFillDialog(db.getPlatform(), queryPanel, excludeTablesRegex).showAtSize(0.6);
             }
         });
-
         for (IDbMenuItem item : additionalMenuItems) {
             optionsButton.addItem(item.getCaption(), item.getIcon(), item.getCommand());
         }

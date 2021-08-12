@@ -30,9 +30,7 @@ import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 
 public class DirectorySnapshot extends ArrayList<FileSnapshot> {
-
     private static final long serialVersionUID = 1L;
-
     private FileTriggerRouter fileTriggerRouter;
 
     public DirectorySnapshot(FileTriggerRouter fileTriggerRouter, List<FileSnapshot> snapshot) {
@@ -57,13 +55,11 @@ public class DirectorySnapshot extends ArrayList<FileSnapshot> {
                 }
             }
         }
-
         for (FileSnapshot fileChange : toRemove) {
             if (fileChange.getLastEventType() == LastEventType.CREATE) {
                 toAdd.add(fileChange);
             }
         }
-
         this.removeAll(toRemove);
         this.addAll(toAdd);
     }
@@ -75,7 +71,7 @@ public class DirectorySnapshot extends ArrayList<FileSnapshot> {
             for (FileSnapshot file : this) {
                 if (anotherFile.sameFile(file)) {
                     found = true;
-                    if ((file.getLastEventType() == LastEventType.MODIFY || 
+                    if ((file.getLastEventType() == LastEventType.MODIFY ||
                             file.getLastEventType() == LastEventType.CREATE)
                             && anotherFile.getLastEventType() == LastEventType.CREATE) {
                         file.setLastEventType(LastEventType.MODIFY);
@@ -90,7 +86,6 @@ public class DirectorySnapshot extends ArrayList<FileSnapshot> {
                 differences.add(anotherFile);
             }
         }
-
         for (FileSnapshot file : this) {
             boolean found = false;
             for (FileSnapshot anotherFile : anotherSnapshot) {
@@ -106,9 +101,8 @@ public class DirectorySnapshot extends ArrayList<FileSnapshot> {
         }
         return differences;
     }
-    
+
     public FileTriggerRouter getFileTriggerRouter() {
         return fileTriggerRouter;
     }
-
 }

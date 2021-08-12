@@ -26,15 +26,13 @@ import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
 public class GenericTriggerTemplate extends AbstractTriggerTemplate {
-    
     public GenericTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
-        
-        sqlTemplates = new HashMap<String,String>();
-        sqlTemplates.put("insertTriggerTemplate" , "");
-        sqlTemplates.put("updateTriggerTemplate" , "");
-        sqlTemplates.put("deleteTriggerTemplate" , "");
-        sqlTemplates.put("initialLoadSqlTemplate" , "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
+        sqlTemplates = new HashMap<String, String>();
+        sqlTemplates.put("insertTriggerTemplate", "");
+        sqlTemplates.put("updateTriggerTemplate", "");
+        sqlTemplates.put("deleteTriggerTemplate", "");
+        sqlTemplates.put("initialLoadSqlTemplate",
+                "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                ");
     }
-
 }

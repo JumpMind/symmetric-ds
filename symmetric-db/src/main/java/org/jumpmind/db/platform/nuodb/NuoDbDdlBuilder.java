@@ -46,11 +46,8 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
  * The SQL Builder for MySQL.
  */
 public class NuoDbDdlBuilder extends AbstractDdlBuilder {
-
     public NuoDbDdlBuilder() {
-      
         super(DatabaseNamesConstants.NUODB);
-        
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         databaseInfo.setMaxIdentifierLength(128);
         databaseInfo.setNullAsDefaultValueRequired(true);
@@ -60,7 +57,6 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setAlterTableForDropUsed(true);
         databaseInfo.setCommentPrefix("//");
         databaseInfo.setDelimiterToken("`");
-
         databaseInfo.addNativeTypeMapping(Types.BIT, "BOOLEAN", Types.BOOLEAN);
         databaseInfo.addNativeTypeMapping(Types.BLOB, "BLOB");
         databaseInfo.addNativeTypeMapping(Types.CLOB, "TEXT");
@@ -73,28 +69,24 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.CHAR, "CHAR");
         databaseInfo.addNativeTypeMapping(Types.VARCHAR, "VARCHAR");
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP");
-        databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT",Types.SMALLINT);
+        databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
         databaseInfo.addNativeTypeMapping(Types.SMALLINT, "SMALLINT");
         databaseInfo.addNativeTypeMapping(Types.INTEGER, "INTEGER");
         databaseInfo.addNativeTypeMapping(Types.BIGINT, "BIGINT");
-        databaseInfo.addNativeTypeMapping(Types.BOOLEAN, "BOOLEAN",Types.BOOLEAN);
+        databaseInfo.addNativeTypeMapping(Types.BOOLEAN, "BOOLEAN", Types.BOOLEAN);
         databaseInfo.addNativeTypeMapping(Types.DECIMAL, "DECIMAL");
         databaseInfo.addNativeTypeMapping(Types.DATE, "DATE");
         databaseInfo.addNativeTypeMapping(Types.TIME, "TIME");
         databaseInfo.addNativeTypeMapping(ColumnTypes.NCHAR, "NATIONAL CHARACTER");
-
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
-
         databaseInfo.setNonBlankCharColumnSpacePadded(false);
         databaseInfo.setBlankCharColumnSpacePadded(false);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
-
         databaseInfo.setSyntheticDefaultValueForRequiredReturned(false);
-
         // we need to handle the backslash first otherwise the other
         // already escaped sequences would be affected
         addEscapedCharSequence("\\", "\\\\");
@@ -106,32 +98,32 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
         addEscapedCharSequence("\t", "\\t");
         addEscapedCharSequence("\u001A", "\\Z");
     }
-    
+
     @Override
     protected String getFullyQualifiedTableNameShorten(Table table) {
-        String result="";
-        result+=getDelimitedIdentifier(getTableName(table.getName()));
+        String result = "";
+        result += getDelimitedIdentifier(getTableName(table.getName()));
         return result;
     }
-    
+
     @Override
-    public boolean areColumnSizesTheSame(Column sourceColumn, Column targetColumn){
-        if(sourceColumn.getMappedType().equals("DECIMAL") && targetColumn.getMappedType().equals("DECIMAL")){
+    public boolean areColumnSizesTheSame(Column sourceColumn, Column targetColumn) {
+        if (sourceColumn.getMappedType().equals("DECIMAL") && targetColumn.getMappedType().equals("DECIMAL")) {
             int targetSize = targetColumn.getSizeAsInt();
             int sourceSize = sourceColumn.getSizeAsInt();
-            if (targetSize > 8 && sourceSize == 8 && 
+            if (targetSize > 8 && sourceSize == 8 &&
                     targetColumn.getScale() == sourceColumn.getScale()) {
                 return true;
-            }else{
+            } else {
                 return false;
-            }     
-        }else{
+            }
+        } else {
             return super.areColumnSizesTheSame(sourceColumn, targetColumn);
         }
     }
-    
+
     @Override
-    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {        
+    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         ddl.append("DROP TABLE IF EXISTS ");
         ddl.append(getFullyQualifiedTableNameShorten(table));
         printEndOfStatement(ddl);
@@ -146,32 +138,29 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
     public String getSelectLastIdentityValues(Table table) {
         return "SELECT LAST_INSERT_ID() FROM SYSTEM.DUAL";
     }
-    
+
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         List<Column> changedColumns = new ArrayList<Column>();
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof RemoveColumnChange) {
                 processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
+                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange) change;
                 processChange(currentModel, desiredModel, copyColumnChange, ddl);
-                changeIt.remove();                                       
-            }else if (change instanceof AddPrimaryKeyChange) {
-                processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
-                changeIt.remove(); 
-            }else if (change instanceof AddColumnChange) {
-                processChange(currentModel,desiredModel, (AddColumnChange)change,ddl);
                 changeIt.remove();
-            }
-            else if (change instanceof ColumnChange) {
+            } else if (change instanceof AddPrimaryKeyChange) {
+                processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
+                changeIt.remove();
+            } else if (change instanceof AddColumnChange) {
+                processChange(currentModel, desiredModel, (AddColumnChange) change, ddl);
+                changeIt.remove();
+            } else if (change instanceof ColumnChange) {
                 /*
-                 * we gather all changed columns because we can use the ALTER
-                 * TABLE MODIFY COLUMN statement for them
+                 * we gather all changed columns because we can use the ALTER TABLE MODIFY COLUMN statement for them
                  */
                 Column column = ((ColumnChange) change).getChangedColumn();
                 if (!changedColumns.contains(column)) {
@@ -180,15 +169,12 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
                 changeIt.remove();
             }
         }
-        
         for (Iterator<Column> columnIt = changedColumns.iterator(); columnIt.hasNext();) {
             Column sourceColumn = columnIt.next();
             Column targetColumn = targetTable.findColumn(sourceColumn.getName(),
                     delimitedIdentifierModeOn);
-
             processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
         }
-        
         super.processTableStructureChanges(currentModel, desiredModel, sourceTable, targetTable,
                 changes, ddl);
     }
@@ -213,7 +199,7 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
             printEndOfStatement(ddl);
         }
     }
-    
+
     @Override
     protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey,
             StringBuilder ddl) {
@@ -221,9 +207,8 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP CONSTRAINT ");
         printIdentifier(getForeignKeyName(table, foreignKey), ddl);
         printEndOfStatement(ddl);
-
     }
-    
+
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
         writeTableAlterStmt(table, ddl);
@@ -260,17 +245,17 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
-    
+
     /*
      * Processes the change of datatype to column.
      */
     protected void processChange(Database currentModel, Database desiredModel,
-            ColumnDataTypeChange change, StringBuilder ddl){
+            ColumnDataTypeChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
         ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
         printIndent(ddl);
         ddl.append("ALTER COLUMN ");
-        printIdentifier(getColumnName(change.getChangedColumn()),ddl);
+        printIdentifier(getColumnName(change.getChangedColumn()), ddl);
         ddl.append("TYPE ");
         ddl.append(change.getChangedColumn().getMappedType());
         printEndOfStatement(ddl);
@@ -287,11 +272,11 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
         printIndent(ddl);
         ddl.append("MODIFY COLUMN ");
         boolean autoInc = targetColumn.isAutoIncrement();
-        if(autoInc){
+        if (autoInc) {
             targetColumn.setAutoIncrement(false);
         }
         writeColumn(targetTable, targetColumn, ddl);
-        if(autoInc){
+        if (autoInc) {
             targetColumn.setAutoIncrement(true);
         }
         printEndOfStatement(ddl);
@@ -299,30 +284,29 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
 
     protected void writeColumnNullableStmt(StringBuilder ddl) {
     }
-    
+
     @Override
     protected void writeCascadeAttributesForForeignKey(ForeignKey key, StringBuilder ddl) {
         // NuoDB does not support cascade actions
         return;
     }
-    
+
     @Override
     protected String getSqlType(Column column) {
         String sqlType = super.getSqlType(column);
-        
-        if("ENUM".equalsIgnoreCase(column.getJdbcTypeName())) {
+        if ("ENUM".equalsIgnoreCase(column.getJdbcTypeName())) {
             PlatformColumn pc = column.getPlatformColumns().get(DatabaseNamesConstants.NUODB);
-            if(pc != null) {
+            if (pc != null) {
                 String[] enumValues = pc.getEnumValues();
-                if(enumValues != null && enumValues.length > 0) {
+                if (enumValues != null && enumValues.length > 0) {
                     // Redo the enum, specifying the values returned from the database in the enumValues field
                     // instead of the size of the column
                     StringBuilder tmpSqlType = new StringBuilder();
                     tmpSqlType.append(column.getJdbcTypeName());
                     tmpSqlType.append("(");
                     boolean appendComma = false;
-                    for(String s : enumValues) {
-                        if(appendComma) {
+                    for (String s : enumValues) {
+                        if (appendComma) {
                             tmpSqlType.append(",");
                         }
                         tmpSqlType.append("'").append(s).append("'");
@@ -335,5 +319,4 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
         }
         return sqlType;
     }
-
 }

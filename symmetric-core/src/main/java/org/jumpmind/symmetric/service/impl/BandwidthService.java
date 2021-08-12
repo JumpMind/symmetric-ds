@@ -49,13 +49,9 @@ import com.google.gson.Gson;
  * @see IBandwidthService
  */
 public class BandwidthService implements IBandwidthService {
-
-
     public static final String Diagnostic_BandwidthFail = "Could not get Bandwidth";
     public static final String Diagnostic_BandwidthFailure = "%s";
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    
     private ISymmetricEngine engine;
 
     public BandwidthService(ISymmetricEngine engine) {
@@ -73,7 +69,6 @@ public class BandwidthService implements IBandwidthService {
             log.error("", e);
         }
         return downloadSpeed;
-
     }
 
     protected BandwidthTestResults getDownloadResultsFor(String syncUrl, long sampleSize,
@@ -94,47 +89,45 @@ public class BandwidthService implements IBandwidthService {
         log.info("{} was calculated to have a download bandwidth of {} kbps", syncUrl, bw.getKbps());
         return bw;
     }
-    
+
     public double getUploadKbpsFor(Node remoteNode, Node localNode, long sampleSize, long maxTestDuration) throws IOException {
         double uploadSpeed = -1d;
         try {
             BandwidthTestResults bwtr = getUploadResultsFor(remoteNode, localNode, sampleSize, maxTestDuration);
             uploadSpeed = bwtr.getKbps();
-        } catch(SocketTimeoutException e) {
-            log.error(e.getMessage(),e);
-        } catch(Exception e) {
+        } catch (SocketTimeoutException e) {
+            log.error(e.getMessage(), e);
+        } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-        
         return uploadSpeed;
     }
-    
+
     protected BandwidthTestResults getUploadResultsFor(Node remoteNode, Node localNode, long sampleSize, long maxTestDuration) throws IOException {
         IOutgoingWithResponseTransport outgoing = null;
         try {
             Map<String, String> requestProperties = new HashMap<String, String>();
             requestProperties.put("direction", "push");
             NodeSecurity identitySecurity = engine.getNodeService().findNodeSecurity(localNode.getNodeId(), true);
-            outgoing =
-                    engine.getTransportManager().getBandwidthPushTransport(
-                            remoteNode, localNode, identitySecurity.getNodePassword(), requestProperties, engine.getParameterService().getRegistrationUrl());
+            outgoing = engine.getTransportManager().getBandwidthPushTransport(
+                    remoteNode, localNode, identitySecurity.getNodePassword(), requestProperties, engine.getParameterService().getRegistrationUrl());
             outgoing.getSuspendIgnoreChannelLists(engine.getConfigurationService(), Constants.CHANNEL_DEFAULT, remoteNode);
             long startTime = System.currentTimeMillis();
             BufferedWriter writer = outgoing.openWriter();
             String stringToWriter = "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
-                                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
-                                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
-                                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
-                                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
-                                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
-                                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
-                                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
-                                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
-                                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
-            for(long i = 0l; i < sampleSize;) {
+                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
+                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
+                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
+                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
+                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
+                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
+                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
+                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
+                    "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
+            for (long i = 0l; i < sampleSize;) {
                 writer.write(stringToWriter);
                 i += stringToWriter.length();
-                if(System.currentTimeMillis() - startTime > maxTestDuration) {
+                if (System.currentTimeMillis() - startTime > maxTestDuration) {
                     break;
                 }
             }
@@ -143,31 +136,30 @@ public class BandwidthService implements IBandwidthService {
             log.info("{} was calculated to have a upload bandwidth of {} kbps", remoteNode.getSyncUrl(), results.getKbps());
             return results;
         } finally {
-        	if (outgoing != null) {
-        		outgoing.close();
-        	}
+            if (outgoing != null) {
+                outgoing.close();
+            }
         }
     }
-    
+
     public List<BandwidthService.BandwidthResults> diagnoseDownloadBandwidth(Node localNode, Node remoteNode) {
         List<Long> downloadPayloadsList = new ArrayList<Long>();
         List<BandwidthService.BandwidthResults> downloadBandwidthResultsList = new ArrayList<BandwidthService.BandwidthResults>();
-        String downloadPayloads = engine.getParameterService().getString("console.node.connection.diagnostic.download.bandwidth.payloads","");
-        if(downloadPayloads != null && downloadPayloads.length() > 0) {
-            for(String s : Arrays.asList(downloadPayloads.split(","))) {
+        String downloadPayloads = engine.getParameterService().getString("console.node.connection.diagnostic.download.bandwidth.payloads", "");
+        if (downloadPayloads != null && downloadPayloads.length() > 0) {
+            for (String s : Arrays.asList(downloadPayloads.split(","))) {
                 downloadPayloadsList.add(Long.valueOf(s));
             }
         }
-        
-        for(Long payload : downloadPayloadsList) {
+        for (Long payload : downloadPayloadsList) {
             BandwidthService.BandwidthResults bw = ((BandwidthService) engine.getBandwidthService()).new BandwidthResults();
             bw.setPayloadSize(payload);
             double dlSpeed = 0d;
-            if(isPullEnabled(localNode, remoteNode)) {
+            if (isPullEnabled(localNode, remoteNode)) {
                 try {
                     dlSpeed = engine.getBandwidthService().getDownloadKbpsFor(remoteNode.getSyncUrl(), payload, 5000);
                     bw.setKbps(dlSpeed);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     bw.setFailure(true);
                     bw.setFailureMessage(Diagnostic_BandwidthFail);
                     bw.setException(e);
@@ -180,7 +172,7 @@ public class BandwidthService implements IBandwidthService {
         }
         return downloadBandwidthResultsList;
     }
-    
+
     protected boolean isPullEnabled(Node localNode, Node remoteNode) {
         List<NodeGroupLink> groupLinks = engine.getConfigurationService().getNodeGroupLinks(false);
         for (NodeGroupLink link : groupLinks) {
@@ -192,26 +184,25 @@ public class BandwidthService implements IBandwidthService {
         }
         return false;
     }
-    
+
     public List<BandwidthService.BandwidthResults> diagnoseUploadBandwidth(Node localNode, Node remoteNode) {
         List<Long> uploadPayloadsList = new ArrayList<Long>();
         List<BandwidthService.BandwidthResults> uploadBandwidthResultsList = new ArrayList<BandwidthService.BandwidthResults>();
-        String uploadPayloads = engine.getParameterService().getString("console.node.connection.diagnostic.upload.bandwidth.payloads","");
-        if(uploadPayloads != null && uploadPayloads.length() > 0) {
-            for(String s : Arrays.asList(uploadPayloads.split(","))) {
+        String uploadPayloads = engine.getParameterService().getString("console.node.connection.diagnostic.upload.bandwidth.payloads", "");
+        if (uploadPayloads != null && uploadPayloads.length() > 0) {
+            for (String s : Arrays.asList(uploadPayloads.split(","))) {
                 uploadPayloadsList.add(Long.valueOf(s));
             }
         }
-        
-        for(Long payload : uploadPayloadsList) {
+        for (Long payload : uploadPayloadsList) {
             BandwidthService.BandwidthResults bw = ((BandwidthService) engine.getBandwidthService()).new BandwidthResults();
             bw.setPayloadSize(payload);
             double dlSpeed = 0d;
-            if(isPushEnabled(localNode, remoteNode)) {
+            if (isPushEnabled(localNode, remoteNode)) {
                 try {
                     dlSpeed = engine.getBandwidthService().getUploadKbpsFor(remoteNode, localNode, payload, 5000);
                     bw.setKbps(dlSpeed);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     bw.setFailure(true);
                     bw.setFailureMessage(BandwidthService.Diagnostic_BandwidthFail);
                     bw.setException(e);
@@ -224,11 +215,11 @@ public class BandwidthService implements IBandwidthService {
         }
         return uploadBandwidthResultsList;
     }
-    
+
     protected boolean isPushEnabled(Node localNode, Node remoteNode) {
         List<NodeGroupLink> groupLinks = engine.getConfigurationService().getNodeGroupLinks(false);
         for (NodeGroupLink link : groupLinks) {
-            if(link.getSourceNodeGroupId().equals(localNode.getNodeGroupId())
+            if (link.getSourceNodeGroupId().equals(localNode.getNodeGroupId())
                     && link.getTargetNodeGroupId().equals(remoteNode.getNodeGroupId())
                     && link.getDataEventAction().getShortName().equals("push")) {
                 return true;
@@ -237,43 +228,51 @@ public class BandwidthService implements IBandwidthService {
         return false;
     }
 
-
     public class BandwidthResults {
         private long payloadSize;
         private double kbps;
         private boolean failure = false;
         private String failureMessage = null;
         private Exception exception = null;
+
         public Exception getException() {
             return exception;
         }
+
         public void setException(Exception exception) {
             this.exception = exception;
         }
+
         public boolean isFailure() {
             return failure;
         }
+
         public void setFailure(boolean failure) {
             this.failure = failure;
         }
+
         public String getFailureMessage() {
             return failureMessage;
         }
+
         public void setFailureMessage(String failureMessage) {
             this.failureMessage = failureMessage;
         }
+
         public long getPayloadSize() {
             return payloadSize;
         }
+
         public void setPayloadSize(long payloadSize) {
             this.payloadSize = payloadSize;
         }
+
         public double getKbps() {
             return kbps;
         }
+
         public void setKbps(double kbps) {
             this.kbps = kbps;
         }
     }
-
 }

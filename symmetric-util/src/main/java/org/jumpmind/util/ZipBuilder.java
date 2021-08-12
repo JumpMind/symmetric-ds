@@ -30,13 +30,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class ZipBuilder {
-
     private File baseDir;
-
     private File[] sourceFiles;
-
     private File outputFile;
-    
+
     public ZipBuilder(File baseDir, File outputFile, File[] sourceFiles) {
         this.sourceFiles = sourceFiles;
         this.outputFile = outputFile;
@@ -64,9 +61,7 @@ public class ZipBuilder {
                 name = "";
             }
         }
-
-        name = name.replace("\\","/");
-        
+        name = name.replace("\\", "/");
         if (name.equals("META-INF/MANIFEST.MF")) {
             name = "";
         }
@@ -108,5 +103,4 @@ public class ZipBuilder {
             }
         }
     }
-
 }

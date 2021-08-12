@@ -31,8 +31,8 @@ public class DBFException extends Exception {
     }
 
     public DBFException(Throwable throwable) {
-    this(throwable.getMessage(), throwable);
-  }
+        this(throwable.getMessage(), throwable);
+    }
 
     public DBFException(String s, Throwable throwable) {
         super(s);
@@ -68,7 +68,6 @@ public class DBFException extends Exception {
             return;
         }
         PrintWriter printwriter1 = printwriter;
-
         printwriter1.println(this);
         detail.printStackTrace(printwriter);
         return;

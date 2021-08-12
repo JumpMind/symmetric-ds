@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Random;
 
 public class Colors {
-
     final static String[] COLORS = { "#000000", "#0C090A", "#2C3539", "#2B1B17", "#34282C",
             "#25383C", "#3B3131", "#413839", "#3D3C3A", "#463E3F", "#4C4646", "#504A4B", "#565051",
             "#5C5858", "#625D5D", "#666362", "#6D6968", "#726E6D", "#736F6E", "#837E7C", "#848482",
@@ -76,7 +75,6 @@ public class Colors {
         for (String color : COLORS) {
             allColors.add(color);
         }
-
         List<String> colors = new ArrayList<String>();
         int increment = 26;
         int startIndex = 100;
@@ -84,7 +82,6 @@ public class Colors {
             for (int i = startIndex; i < allColors.size(); i = i + increment) {
                 colors.add(allColors.remove(i));
             }
-
             if (allColors.size() < increment) {
                 increment = 1;
             }
@@ -103,5 +100,4 @@ public class Colors {
         Collections.shuffle(colors, new Random(seed));
         return colors.toArray(new String[colors.size()]);
     }
-
 }

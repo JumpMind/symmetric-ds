@@ -39,36 +39,30 @@ import com.google.gson.GsonBuilder;
 
 public class MonitorTypeLog implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     ISymmetricEngine engine;
-    
+
     @Override
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.engine = engine;
     }
-    
+
     @Override
     public MonitorEvent check(Monitor monitor) {
         List<LogSummary> all = new ArrayList<LogSummary>();
         MonitorEvent event = new MonitorEvent();
-        
         if (monitor.getSeverityLevel() == Monitor.SEVERE) {
             all.addAll(LogSummaryAppenderUtils.getLogSummaryErrors(engine.getEngineName()));
         } else if (monitor.getSeverityLevel() == Monitor.WARNING) {
             all.addAll(LogSummaryAppenderUtils.getLogSummaryWarnings(engine.getEngineName()));
         }
-        
         Collections.sort(all);
-        
         int count = 0;
         for (LogSummary logSummary : all) {
             count += logSummary.getCount();
         }
-
         event.setDetails(serializeDetails(all));
         event.setValue(all.size());
         event.setCount(count);
-        
         return event;
     }
 
@@ -79,13 +73,12 @@ public class MonitorTypeLog implements IMonitorType, ISymmetricEngineAware, IBui
             builder.addSerializationExclusionStrategy(new SuperClassExclusion());
             builder.addDeserializationExclusionStrategy(new SuperClassExclusion());
             result = builder.create().toJson(logs);
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.warn("Unable to convert list of logs to JSON", e);
         }
-       
         return result;
     }
-    
+
     @Override
     public boolean requiresClusterLock() {
         return false;

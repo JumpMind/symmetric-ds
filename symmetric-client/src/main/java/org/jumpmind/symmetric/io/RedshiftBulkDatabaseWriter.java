@@ -44,37 +44,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RedshiftBulkDatabaseWriter extends CloudBulkDatabaseWriter {
-
-	private static final Logger log = LoggerFactory.getLogger(RedshiftBulkDatabaseWriter.class);
-			
+    private static final Logger log = LoggerFactory.getLogger(RedshiftBulkDatabaseWriter.class);
     private String appendToCopyCommand;
-    
+
     public RedshiftBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
             String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService,
             ISecurityService securityService, DatabaseWriterSettings settings) {
-        
         super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService,
                 securityService, settings);
-        
         this.appendToCopyCommand = parameterService.getString(ParameterConstants.REDSHIFT_APPEND_TO_COPY_COMMAND);
-        
         if (parameterService.getInt(ParameterConstants.REDSHIFT_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH) > 0) {
             super.maxRowsBeforeFlush = parameterService.getInt(ParameterConstants.REDSHIFT_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH);
         }
-        
         if (parameterService.getLong(ParameterConstants.REDSHIFT_BULK_LOAD_MAX_BYTES_BEFORE_FLUSH) > 0) {
             super.maxBytesBeforeFlush = parameterService.getLong(ParameterConstants.REDSHIFT_BULK_LOAD_MAX_BYTES_BEFORE_FLUSH);
         }
-        
         if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_BUCKET))) {
             super.s3Bucket = parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_BUCKET);
         }
-        
         if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_ACCESS_KEY))) {
             super.s3AccessKey = parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_ACCESS_KEY);
         }
-        
         String secretKey = parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_SECRET_KEY);
         if (secretKey != null && secretKey.startsWith(SecurityConstants.PREFIX_ENC)) {
             secretKey = securityService.decrypt(secretKey.substring(SecurityConstants.PREFIX_ENC.length()));
@@ -82,7 +73,6 @@ public class RedshiftBulkDatabaseWriter extends CloudBulkDatabaseWriter {
         if (StringUtils.isNotBlank(secretKey)) {
             super.s3SecretKey = secretKey;
         }
-        
         if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_ENDPOINT))) {
             super.s3Endpoint = parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_ENDPOINT);
         }
@@ -100,14 +90,13 @@ public class RedshiftBulkDatabaseWriter extends CloudBulkDatabaseWriter {
             Connection c = jdbcTransaction.getConnection();
             String sql = "COPY " + getTargetTable().getFullyQualifiedTableName() +
                     " (" + Table.getCommaDeliminatedColumns(targetTable.getColumns()) +
-                    ") FROM 's3://" + s3Bucket + "/" + super.fileName + 
+                    ") FROM 's3://" + s3Bucket + "/" + super.fileName +
                     "' REGION '" + s3Region +
-                    "' CREDENTIALS 'aws_access_key_id=" + s3AccessKey + ";aws_secret_access_key=" + s3SecretKey + 
-                    "' DELIMITER '" + fieldTerminator + 
-                    "' CSV DATEFORMAT 'YYYY-MM-DD HH:MI:SS' " + (needsExplicitIds ? "EXPLICIT_IDS" : "") + 
+                    "' CREDENTIALS 'aws_access_key_id=" + s3AccessKey + ";aws_secret_access_key=" + s3SecretKey +
+                    "' DELIMITER '" + fieldTerminator +
+                    "' CSV DATEFORMAT 'YYYY-MM-DD HH:MI:SS' " + (needsExplicitIds ? "EXPLICIT_IDS" : "") +
                     (isNotBlank(appendToCopyCommand) ? (" " + appendToCopyCommand) : "");
             Statement stmt = c.createStatement();
-
             log.debug(sql);
             stmt.execute(sql);
             stmt.close();
@@ -123,6 +112,4 @@ public class RedshiftBulkDatabaseWriter extends CloudBulkDatabaseWriter {
     public void cleanUpCloudStorage() {
         cleanUpS3Storage();
     }
-
-
 }

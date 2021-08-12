@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.transport;
 
 import java.io.IOException;
@@ -32,9 +31,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.web.WebConstants;
 
 public class MockTransportManager implements ITransportManager {
-
     protected IIncomingTransport incomingTransport;
-
     protected IOutgoingWithResponseTransport outgoingTransport;
 
     public String resolveURL(String url, String registrationUrl) {
@@ -53,14 +50,14 @@ public class MockTransportManager implements ITransportManager {
     public IIncomingTransport getPingTransport(Node remote, Node local, String registrationUrl) throws IOException {
         return incomingTransport;
     }
-    
+
     public IIncomingTransport getFilePullTransport(Node remote, Node local, String securityToken,
             Map<String, String> requestProperties, String registrationUrl) throws IOException {
         return incomingTransport;
     }
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote,
-        Node local, String securityToken, String registrationUrl) throws IOException {
+            Node local, String securityToken, String registrationUrl) throws IOException {
         return outgoingTransport;
     }
 
@@ -70,15 +67,15 @@ public class MockTransportManager implements ITransportManager {
     }
 
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list,
-                Node local, String securityToken, String registrationUrl) throws IOException {
+            Node local, String securityToken, String registrationUrl) throws IOException {
         return WebConstants.SC_OK;
     }
-    
+
     @Override
     public int sendCopyRequest(Node local) throws IOException {
         return -1;
     }
-    
+
     @Override
     public int sendStatusRequest(Node local, Map<String, String> statuses) throws IOException {
         return -1;
@@ -124,7 +121,7 @@ public class MockTransportManager implements ITransportManager {
     public List<BatchAck> readAcknowledgement(String parameterString1, String parameterString2) throws IOException {
         return null;
     }
-    
+
     public IOutgoingWithResponseTransport getFilePushTransport(Node remote, Node local,
             String securityToken, String registrationUrl) throws IOException {
         return outgoingTransport;
@@ -143,9 +140,9 @@ public class MockTransportManager implements ITransportManager {
     }
 
     @Override
-    public IOutgoingWithResponseTransport getBandwidthPushTransport(Node remote, Node local, String securityToken, Map<String, String> requestProperties, String registrationUrl)
+    public IOutgoingWithResponseTransport getBandwidthPushTransport(Node remote, Node local, String securityToken, Map<String, String> requestProperties,
+            String registrationUrl)
             throws IOException {
         return null;
     }
-
 }

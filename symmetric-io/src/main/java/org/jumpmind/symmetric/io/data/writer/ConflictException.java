@@ -27,15 +27,10 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.CsvData;
 
 public class ConflictException extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
-
     protected CsvData data;
-
     protected Table table;
-
     protected boolean fallbackOperationFailed = false;
-    
     protected Conflict conflict;
 
     public ConflictException(CsvData data, Table table, boolean fallbackOperationFailed, Conflict conflict, Exception originalCause) {
@@ -45,7 +40,7 @@ public class ConflictException extends RuntimeException {
         this.fallbackOperationFailed = fallbackOperationFailed;
         this.conflict = conflict;
     }
-    
+
     protected static String message(CsvData data, Table table, boolean fallbackOperationFailed, Exception originalCause) {
         Map<String, String> pks = data.toKeyColumnValuePairs(table);
         String msg = String.format(
@@ -69,7 +64,7 @@ public class ConflictException extends RuntimeException {
     public Table getTable() {
         return table;
     }
-    
+
     public Conflict getConflict() {
         return conflict;
     }
@@ -77,5 +72,4 @@ public class ConflictException extends RuntimeException {
     public boolean isFallbackOperationFailed() {
         return fallbackOperationFailed;
     }
-
 }

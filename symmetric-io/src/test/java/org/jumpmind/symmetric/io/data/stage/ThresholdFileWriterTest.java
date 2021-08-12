@@ -29,7 +29,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class ThresholdFileWriterTest {
-
     final String TEST_STR = "The quick brown fox jumped over the lazy dog";
 
     @Test
@@ -37,13 +36,10 @@ public class ThresholdFileWriterTest {
         File file = getTestFile();
         ThresholdFileWriter writer = new ThresholdFileWriter(TEST_STR.length() + 1, new StringBuilder(), file);
         writer.write(TEST_STR);
-
         // File does not exist since we did not meet the threshold
         assertFalse(file.exists());
-        
         // Check the contents of the buffer (not yet written to a file)
         assertEquals(TEST_STR, IOUtils.toString(writer.getReader()));
-        
         writer.close();
     }
 
@@ -51,25 +47,20 @@ public class ThresholdFileWriterTest {
     public void testWriteToFile() throws Exception {
         File file = getTestFile();
         assertFalse(file.exists());
-
-        ThresholdFileWriter writer = new ThresholdFileWriter( TEST_STR.length() - 1, new StringBuilder(), file);
+        ThresholdFileWriter writer = new ThresholdFileWriter(TEST_STR.length() - 1, new StringBuilder(), file);
         writer.write(TEST_STR);
         writer.close();
-
         // The write string exceeded the threshold so the writer should have created/written to the file
         assertTrue(file.exists());
-        
         BufferedReader reader = writer.getReader();
         assertEquals(TEST_STR, IOUtils.toString(reader));
         reader.close();
-
         assertTrue(file.delete());
     }
 
     private File getTestFile() {
         File file = new File("target/test/buffered.file.writer.tst");
         file.getParentFile().mkdirs();
-        
         // Make sure the file doesn't already exist
         file.delete();
         return file;

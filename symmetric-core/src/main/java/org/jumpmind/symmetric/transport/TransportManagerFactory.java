@@ -57,9 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TransportManagerFactory {
-
     private static final Logger log = LoggerFactory.getLogger(TransportManagerFactory.class);
-    
     private ISymmetricEngine symmetricEngine;
 
     public TransportManagerFactory(ISymmetricEngine symmetricEngine) {
@@ -93,15 +91,12 @@ public class TransportManagerFactory {
                 HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
                 Http2Connection.setHostnameVerifier(hostnameVerifier);
             }
-
             if (allowSelfSignedCerts) {
                 initSelfSignedSocketFactory(enableHttps2);
             }
-
         } catch (GeneralSecurityException ex) {
             throw new SecurityException(ex);
         }
-
     }
 
     public ITransportManager create() {
@@ -128,23 +123,23 @@ public class TransportManagerFactory {
                     + " was specified.");
         }
     }
-    
+
     protected HttpTransportManager createHttpTransportManager(ISymmetricEngine symmetricEngine) {
         String impl = symmetricEngine.getParameterService().getString("http.transport.manager.class");
         if (StringUtils.isEmpty(impl)) {
-            return new HttpTransportManager(symmetricEngine);     
+            return new HttpTransportManager(symmetricEngine);
         } else {
-            String className = impl.trim();                
+            String className = impl.trim();
             try {
                 Class<?> clazz = ClassUtils.getClass(className);
                 HttpTransportManager httpTransportManager = null;
                 for (Constructor<?> c : clazz.getConstructors()) {
-                    if (c.getParameterTypes().length == 1 
+                    if (c.getParameterTypes().length == 1
                             && c.getParameterTypes()[0].isAssignableFrom(ISymmetricEngine.class)) {
                         httpTransportManager = (HttpTransportManager) c.newInstance(symmetricEngine);
                     }
                 }
-                if (httpTransportManager == null) {                        
+                if (httpTransportManager == null) {
                     httpTransportManager = (HttpTransportManager) clazz.getDeclaredConstructor().newInstance();
                 }
                 return httpTransportManager;
@@ -164,7 +159,6 @@ public class TransportManagerFactory {
      */
     private static void initSelfSignedSocketFactory(boolean enableHttps2)
             throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
-
         if (enableHttps2) {
             new ConscryptHelper().checkProviderInstalled();
         }
@@ -185,10 +179,8 @@ public class TransportManagerFactory {
         }
         context.init(keyManagers, new TrustManager[] { trustManager }, new SecureRandom());
         SSLSocketFactory sslSocketFactory = context.getSocketFactory();
-        
         HttpsURLConnection.setDefaultSSLSocketFactory(sslSocketFactory);
         Http2Connection.setSslSocketFactory(sslSocketFactory);
         Http2Connection.setTrustManager(trustManager);
     }
-
 }

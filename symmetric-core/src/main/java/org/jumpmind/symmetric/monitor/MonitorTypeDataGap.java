@@ -28,7 +28,6 @@ import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.service.IDataService;
 
 public class MonitorTypeDataGap implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
-
     protected IDataService dataService;
 
     @Override
@@ -52,5 +51,4 @@ public class MonitorTypeDataGap implements IMonitorType, ISymmetricEngineAware, 
     public void setSymmetricEngine(ISymmetricEngine engine) {
         dataService = engine.getDataService();
     }
-
 }

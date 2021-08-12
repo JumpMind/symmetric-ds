@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
@@ -31,51 +30,35 @@ import org.jumpmind.util.FormatUtils;
  * Metadata about how and when to route data to a node group or a specific node
  */
 public class Router implements Serializable, Cloneable {
-
     private static final long serialVersionUID = 1L;
-
     private static int maxRouterId;
-
     private String routerId;
-
     private NodeGroupLink nodeGroupLink;
-
     private String routerType = "default";
-
     /**
      * Default to routing all data to all nodes.
      */
     private String routerExpression = null;
-
     private boolean syncOnUpdate = true;
-
     private boolean syncOnInsert = true;
-
     private boolean syncOnDelete = true;
-    
     private String targetCatalogName;
-    
     private String targetSchemaName;
-
     private String targetTableName;
-
     private boolean useSourceCatalogSchema;
-
     private Date createTime;
-
     private Date lastUpdateTime;
-
     private String lastUpdateBy;
-    
+
     public Router() {
         routerId = Integer.toString(maxRouterId++);
     }
-    
+
     public Router(String id, String sourceNodeGroupId, String targetNodeGroupId, String routerType) {
         this(id, new NodeGroupLink(sourceNodeGroupId, targetNodeGroupId));
         this.routerType = routerType;
     }
-    
+
     public Router(String id, NodeGroupLink link) {
         this.routerId = id;
         this.nodeGroupLink = link;
@@ -83,14 +66,14 @@ public class Router implements Serializable, Cloneable {
         this.lastUpdateBy = "symmetricds";
         this.lastUpdateTime = this.createTime;
     }
-    
+
     public void nullOutBlankFields() {
         if (StringUtils.isBlank(targetCatalogName)) {
             targetCatalogName = null;
-        } 
+        }
         if (StringUtils.isBlank(targetSchemaName)) {
             targetSchemaName = null;
-        } 
+        }
     }
 
     public Date getCreateTime() {
@@ -121,11 +104,11 @@ public class Router implements Serializable, Cloneable {
         return lastTriggerBuildTime == null || getLastUpdateTime() == null
                 || lastTriggerBuildTime.before(getLastUpdateTime());
     }
-    
+
     public void setNodeGroupLink(NodeGroupLink nodeGroupLink) {
         this.nodeGroupLink = nodeGroupLink;
     }
-    
+
     public NodeGroupLink getNodeGroupLink() {
         return nodeGroupLink;
     }
@@ -187,23 +170,23 @@ public class Router implements Serializable, Cloneable {
     public void setSyncOnDelete(boolean syncOnDelete) {
         this.syncOnDelete = syncOnDelete;
     }
-    
+
     public boolean isSyncOnDelete() {
         return syncOnDelete;
     }
-    
+
     public void setSyncOnInsert(boolean syncOnInsert) {
         this.syncOnInsert = syncOnInsert;
     }
-    
+
     public boolean isSyncOnInsert() {
         return syncOnInsert;
     }
-    
+
     public void setSyncOnUpdate(boolean syncOnUpdate) {
         this.syncOnUpdate = syncOnUpdate;
     }
-    
+
     public boolean isSyncOnUpdate() {
         return syncOnUpdate;
     }
@@ -234,7 +217,7 @@ public class Router implements Serializable, Cloneable {
 
     public void setUseSourceCatalogSchema(boolean useSourceCatalogSchema) {
         this.useSourceCatalogSchema = useSourceCatalogSchema;
-    }   
+    }
 
     @Override
     public boolean equals(Object obj) {
@@ -249,7 +232,7 @@ public class Router implements Serializable, Cloneable {
     public int hashCode() {
         return routerId != null ? routerId.hashCode() : super.hashCode();
     }
-    
+
     @Override
     public String toString() {
         if (routerId != null) {

@@ -45,11 +45,10 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 
 public class Db2As400DdlReader extends Db2DdlReader {
-
     public Db2As400DdlReader(IDatabasePlatform platform) {
         super(platform);
     }
-    
+
     @Override
     public List<String> getSchemaNames(String catalog) {
         try {
@@ -66,7 +65,6 @@ public class Db2As400DdlReader extends Db2DdlReader {
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) throws SQLException {
         ResultSet pkData = null;
         HashSet<String> pkColNames = new HashSet<String>();
-
         try {
             pkData = metaData.getPrimaryKeys(table.getName());
             while (pkData.next()) {
@@ -78,7 +76,6 @@ public class Db2As400DdlReader extends Db2DdlReader {
                 pkData.close();
             }
         }
-
         boolean indexMatchesPk = true;
         for (int i = 0; i < index.getColumnCount(); i++) {
             if (!pkColNames.contains(index.getColumn(i).getName())) {
@@ -86,21 +83,20 @@ public class Db2As400DdlReader extends Db2DdlReader {
                 break;
             }
         }
-
         return indexMatchesPk;
     }
-    
+
     @Override
     protected void enhanceTableMetaData(Connection connection, DatabaseMetaDataWrapper metaData,
             Table table) throws SQLException {
         log.debug("about to read additional column data");
-        /* DB2 does not return the auto-increment status via the database
-         metadata */
+        /*
+         * DB2 does not return the auto-increment status via the database metadata
+         */
         String sql = "SELECT NAME, IDENTITY, DEFAULT, DFTVALUE FROM QSYS2.SYSCOLUMNS WHERE TBNAME=?";
         if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
             sql = sql + " AND DBNAME=?";
         }
-
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {
@@ -109,7 +105,6 @@ public class Db2As400DdlReader extends Db2DdlReader {
             if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
                 pstmt.setString(2, metaData.getSchemaPattern());
             }
-
             rs = pstmt.executeQuery();
             while (rs.next()) {
                 String columnName = rs.getString(1);
@@ -138,22 +133,17 @@ public class Db2As400DdlReader extends Db2DdlReader {
         log.debug("done reading additional column data");
     }
 
-    
     @Override
     protected Collection<IIndex> readIndices(Connection connection, DatabaseMetaDataWrapper metaData, String tableName)
             throws SQLException {
         Map<String, IIndex> indices = new LinkedHashMap<String, IIndex>();
         if (getPlatformInfo().isIndicesSupported()) {
             ResultSet indexData = null;
-    
             try {
                 indexData = metaData.getIndices(getTableNamePatternForConstraints(tableName), false, false);
-                
                 Collection<Column> columns = readColumns(metaData, tableName);
-                
                 while (indexData.next()) {
                     Map<String, Object> values = readMetaData(indexData, getColumnsForIndex());
-    
                     String columnName = (String) values.get("COLUMN_NAME");
                     if (hasColumn(columns, columnName)) {
                         readIndex(metaData, values, indices);
@@ -165,39 +155,36 @@ public class Db2As400DdlReader extends Db2DdlReader {
         }
         return indices.values();
     }
-    
+
     private boolean hasColumn(Collection<Column> columns, String targetColumn) {
         if (targetColumn == null || columns == null || columns.size() == 0) {
             return false;
         }
         boolean found = false;
-        for(Column column : columns) {
+        for (Column column : columns) {
             if (targetColumn.equals(column.getName())) {
                 found = true;
             }
         }
         return found;
     }
-    
+
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) throws SqlException {
-        
         List<Trigger> triggers = new ArrayList<Trigger>();
-
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
-        
         String sql = "SELECT "
-                        + "TRIGGER_NAME, "
-                        + "TRIGGER_SCHEMA, "
-                        + "EVENT_OBJECT_TABLE as TABLE_NAME, "
-                        + "ACTION_TIMING as TRIGGER_TIME, "
-                        + "EVENT_MANIPULATION as TRIGGER_TYPE, "
-                        + "CREATED, "
-                        + "ENABLED "
-                    + "FROM QSYS2.SYSTRIGGERS "
-                    + "WHERE EVENT_OBJECT_TABLE=? and EVENT_OBJECT_SCHEMA=?";
+                + "TRIGGER_NAME, "
+                + "TRIGGER_SCHEMA, "
+                + "EVENT_OBJECT_TABLE as TABLE_NAME, "
+                + "ACTION_TIMING as TRIGGER_TIME, "
+                + "EVENT_MANIPULATION as TRIGGER_TYPE, "
+                + "CREATED, "
+                + "ENABLED "
+                + "FROM QSYS2.SYSTRIGGERS "
+                + "WHERE EVENT_OBJECT_TABLE=? and EVENT_OBJECT_SCHEMA=?";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
             public Trigger mapRow(Row row) {
                 Trigger trigger = new Trigger();
@@ -210,7 +197,6 @@ public class Db2As400DdlReader extends Db2DdlReader {
                 return trigger;
             }
         }, tableName, schema);
-        
         return triggers;
     }
 }
