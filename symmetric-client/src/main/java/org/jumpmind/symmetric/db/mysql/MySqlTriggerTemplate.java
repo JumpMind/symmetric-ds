@@ -87,8 +87,8 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) after update on $(schemaName)$(tableName)                                                                                                                                \n" +
 "                                for each row begin                                                                                                                                                     \n" +
-"                                  DECLARE var_row_data mediumtext character set " + characterSet + ";\n" +
-"                                  DECLARE var_old_data mediumtext character set " + characterSet + ";\n" +
+"                                  DECLARE var_row_data longtext character set " + characterSet + ";\n" +
+"                                  DECLARE var_old_data longtext character set " + characterSet + ";\n" +
 "                                  $(custom_before_update_text) \n" +
 "                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
 "                                   set var_row_data = concat($(columns));                                                                                                                              \n" +
