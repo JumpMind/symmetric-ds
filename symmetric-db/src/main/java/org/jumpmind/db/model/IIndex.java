@@ -45,8 +45,7 @@ import java.util.Map;
 /**
  * Represents an index definition for a table which may be either unique or non-unique.
  */
-public interface IIndex extends Cloneable, Serializable
-{
+public interface IIndex extends Cloneable, Serializable {
     /**
      * Determines whether this index is unique or not.
      * 
@@ -60,11 +59,12 @@ public interface IIndex extends Cloneable, Serializable
      * @return The name
      */
     public String getName();
-    
+
     /**
      * Sets the name of the index.
      * 
-     * @param name The name
+     * @param name
+     *            The name
      */
     public void setName(String name);
 
@@ -78,7 +78,8 @@ public interface IIndex extends Cloneable, Serializable
     /**
      * Returns the indicated column making up this index.
      * 
-     * @param idx The index of the column
+     * @param idx
+     *            The index of the column
      * @return The column
      */
     public IndexColumn getColumn(int idx);
@@ -93,7 +94,8 @@ public interface IIndex extends Cloneable, Serializable
     /**
      * Determines whether this index includes the given column.
      * 
-     * @param column The column to check for
+     * @param column
+     *            The column to check for
      * @return <code>true</code> if the column is included in this index
      */
     public boolean hasColumn(Column column);
@@ -101,21 +103,24 @@ public interface IIndex extends Cloneable, Serializable
     /**
      * Adds a column that makes up this index.
      * 
-     * @param column The column to add
+     * @param column
+     *            The column to add
      */
     public void addColumn(IndexColumn column);
 
     /**
      * Removes the given index column from this index.
      * 
-     * @param column The column to remove
+     * @param column
+     *            The column to remove
      */
     public void removeColumn(IndexColumn column);
 
     /**
      * Removes the column at the specified position in this index.
      * 
-     * @param idx The position of the index column to remove
+     * @param idx
+     *            The position of the index column to remove
      */
     public void removeColumn(int idx);
 
@@ -123,14 +128,16 @@ public interface IIndex extends Cloneable, Serializable
      * Clones this index.
      * 
      * @return The clone
-     * @throws CloneNotSupportedException If the cloning did fail
+     * @throws CloneNotSupportedException
+     *             If the cloning did fail
      */
     public Object clone() throws CloneNotSupportedException;
 
     /**
      * Compares this index to the given one while ignoring the case of identifiers.
      * 
-     * @param otherIndex The other index
+     * @param otherIndex
+     *            The other index
      * @return <code>true</code> if this index is equal (ignoring case) to the given one
      */
     public boolean equalsIgnoreCase(IIndex otherIndex);
@@ -141,11 +148,14 @@ public interface IIndex extends Cloneable, Serializable
      * @return The string representation
      */
     public String toVerboseString();
-    
+
     public boolean hasAllPrimaryKeys();
-    
+
     public void removePlatformIndex(PlatformIndex platformIndex);
+
     public void addPlatformIndex(PlatformIndex platformIndex);
+
     public Map<String, PlatformIndex> getPlatformIndexes();
+
     public PlatformIndex findPlatformIndex(PlatformIndex platformIndex);
 }

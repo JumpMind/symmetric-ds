@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StatementInterceptor extends WrapperInterceptor {
-    
     private final static Logger log = LoggerFactory.getLogger(StatementInterceptor.class);
     protected List<Object> psArgs = new ArrayList<Object>();
     protected LogSqlBuilder sqlBuilder = new LogSqlBuilder();
@@ -42,7 +41,7 @@ public class StatementInterceptor extends WrapperInterceptor {
     @Override
     public InterceptResult preExecute(String methodName, Object... parameters) {
         if (getWrapped() instanceof PreparedStatementWrapper) {
-            return preparedStatementPreExecute((PreparedStatementWrapper)getWrapped(),  methodName, parameters);
+            return preparedStatementPreExecute((PreparedStatementWrapper) getWrapped(), methodName, parameters);
         }
         return new InterceptResult();
     }
@@ -53,44 +52,41 @@ public class StatementInterceptor extends WrapperInterceptor {
         }
         return new InterceptResult();
     }
-    
+
     @Override
     public InterceptResult postExecute(String methodName, Object result, long startTime, long endTime, Object... parameters) {
         if (getWrapped() instanceof PreparedStatementWrapper) {
-            return preparedStatementPostExecute((PreparedStatementWrapper)getWrapped(), methodName, result, startTime, endTime, parameters);
+            return preparedStatementPostExecute((PreparedStatementWrapper) getWrapped(), methodName, result, startTime, endTime, parameters);
         } else if (getWrapped() instanceof StatementWrapper) {
-            return statementPostExecute((StatementWrapper)getWrapped(), methodName, result, startTime, endTime, parameters);
+            return statementPostExecute((StatementWrapper) getWrapped(), methodName, result, startTime, endTime, parameters);
         } else {
             return new InterceptResult();
         }
     }
-    
-    
-    public InterceptResult preparedStatementPostExecute(PreparedStatementWrapper ps, String methodName, Object result, long startTime, long endTime, Object... parameters) {
+
+    public InterceptResult preparedStatementPostExecute(PreparedStatementWrapper ps, String methodName, Object result, long startTime, long endTime,
+            Object... parameters) {
         if (methodName.startsWith("execute")) {
-            long elapsed = endTime-startTime;
+            long elapsed = endTime - startTime;
             String sql = sqlBuilder.buildDynamicSqlForLog(ps.getStatement(), psArgs.toArray(), null);
             preparedStatementExecute(methodName, elapsed, sql);
         }
-        
         return new InterceptResult();
-    }
-    
-    public InterceptResult statementPostExecute(StatementWrapper ps, String methodName, Object result, long startTime, long endTime, Object... parameters) {
-        if (methodName.startsWith("execute")) {
-            long elapsed = endTime-startTime;
-            statementExecute(methodName, elapsed, parameters);
-        }
-        
-        return new InterceptResult();
-    }
-    
-    public void preparedStatementExecute(String methodName, long elapsed, String sql) {
-        log.info("PreparedStatement." + methodName + " (" + elapsed + "ms.) " + sql) ;          
-    }
-    
-    public void statementExecute(String methodName, long elapsed, Object... parameters) {
-        log.info("Statement." + methodName + " (" + elapsed + "ms.) " + Arrays.toString(parameters)) ;          
     }
 
+    public InterceptResult statementPostExecute(StatementWrapper ps, String methodName, Object result, long startTime, long endTime, Object... parameters) {
+        if (methodName.startsWith("execute")) {
+            long elapsed = endTime - startTime;
+            statementExecute(methodName, elapsed, parameters);
+        }
+        return new InterceptResult();
+    }
+
+    public void preparedStatementExecute(String methodName, long elapsed, String sql) {
+        log.info("PreparedStatement." + methodName + " (" + elapsed + "ms.) " + sql);
+    }
+
+    public void statementExecute(String methodName, long elapsed, Object... parameters) {
+        log.info("Statement." + methodName + " (" + elapsed + "ms.) " + Arrays.toString(parameters));
+    }
 }

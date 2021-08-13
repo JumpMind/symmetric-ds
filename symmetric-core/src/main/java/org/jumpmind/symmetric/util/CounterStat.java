@@ -21,9 +21,7 @@
 package org.jumpmind.symmetric.util;
 
 public class CounterStat {
-
     private long count;
-
     private Object object;
 
     public CounterStat(Object object) {

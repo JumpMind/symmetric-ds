@@ -41,31 +41,19 @@ import org.slf4j.MDC;
  * Launch the SymmetricDS engine as a stand alone client or server.
  */
 public class SymmetricLauncher extends AbstractCommandLauncher {
-
-	private static final Logger log = LoggerFactory.getLogger(SymmetricLauncher.class);
-
+    private static final Logger log = LoggerFactory.getLogger(SymmetricLauncher.class);
     private static final String OPTION_PORT_SERVER = "port";
-
     private static final String OPTION_HOST_SERVER = "host";
-
     private static final String OPTION_SECURE_PORT_SERVER = "secure-port";
-
     private static final String OPTION_MAX_IDLE_TIME = "max-idle-time";
-
     private static final String OPTION_START_SERVER = "server";
-
     private static final String OPTION_START_CLIENT = "client";
-
     private static final String OPTION_START_SECURE_SERVER = "secure-server";
-
     private static final String OPTION_START_MIXED_SERVER = "mixed-server";
-
     private static final String OPTION_NO_NIO = "no-nio";
-
     private static final String OPTION_NO_DIRECT_BUFFER = "no-directbuffer";
-    
     private static final String OPTION_WINXP = "winxp";
-    
+
     public SymmetricLauncher(String app, String argSyntax, String messageKeyPrefix) {
         super(app, argSyntax, messageKeyPrefix);
     }
@@ -111,43 +99,33 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
 
     @Override
     protected boolean executeWithOptions(CommandLine line) throws Exception {
-
         String host = null;
         int httpPort = 0;
         int httpSecurePort = 0;
-        
         String webDir = SymmetricWebServer.DEFAULT_WEBAPP_DIR;
         int maxIdleTime = SymmetricWebServer.DEFAULT_MAX_IDLE_TIME;
         boolean noNio = false;
         boolean noDirectBuffer = false;
-
         configureCrypto(line);
         removeOldHeapDumps();
-
         if (line.hasOption(OPTION_HOST_SERVER)) {
             host = line.getOptionValue(OPTION_HOST_SERVER);
         }
-
         if (line.hasOption(OPTION_PORT_SERVER)) {
             httpPort = Integer.valueOf(line.getOptionValue(OPTION_PORT_SERVER));
         }
-
         if (line.hasOption(OPTION_SECURE_PORT_SERVER)) {
             httpSecurePort = Integer.valueOf(line.getOptionValue(OPTION_SECURE_PORT_SERVER));
         }
-
         if (line.hasOption(OPTION_MAX_IDLE_TIME)) {
             maxIdleTime = Integer.valueOf(line.getOptionValue(OPTION_MAX_IDLE_TIME));
         }
-
         if (line.hasOption(OPTION_NO_NIO)) {
             noNio = true;
         }
-
         if (line.hasOption(OPTION_NO_DIRECT_BUFFER)) {
             noDirectBuffer = true;
         }
-        
         if (line.hasOption(OPTION_WINXP)) {
             new Thread() {
                 {
@@ -168,7 +146,6 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
                 }
             };
         }
-
         if (line.hasOption(OPTION_START_CLIENT)) {
             getSymmetricEngine(false).start();
         } else {
@@ -178,15 +155,12 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
             if (isNotBlank(host)) {
                 webServer.setHost(host);
             }
-            
             if (httpPort > 0) {
                 webServer.setHttpPort(httpPort);
-            }     
-
+            }
             if (httpSecurePort > 0) {
                 webServer.setHttpsPort(httpSecurePort);
             }
-            
             if (line.hasOption(OPTION_START_MIXED_SERVER)) {
                 webServer.setHttpEnabled(true);
                 webServer.setHttpsEnabled(true);
@@ -204,9 +178,8 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
                 }
             } else if (line.hasOption(OPTION_START_SERVER)) {
                 webServer.setHttpEnabled(true);
-                webServer.setHttpsEnabled(false);                
+                webServer.setHttpsEnabled(false);
             }
-            
             webServer.start();
         }
         return true;
@@ -223,16 +196,14 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         if (log.isDebugEnabled()) {
             log.debug("Heap dump path is " + (heapDumpPath == null ? null : new File(heapDumpPath).getAbsolutePath()));
         }
-
         if (heapDumpPath != null) {
             File directory = new File(heapDumpPath);
             if (!directory.exists()) { // Happens if whole tmp directory is removed.
                 return;
             }
-            Collection<File> files = FileUtils.listFiles(directory, new String[] { "hprof" }, false);        
+            Collection<File> files = FileUtils.listFiles(directory, new String[] { "hprof" }, false);
             List<File> recentFiles = new ArrayList<File>();
             List<File> oldFiles = new ArrayList<File>();
-            
             for (File file : files) {
                 if (file.lastModified() < (System.currentTimeMillis() - 604800000)) {
                     oldFiles.add(file);
@@ -240,18 +211,15 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
                     recentFiles.add(file);
                 }
             }
-            
             Collections.sort(recentFiles, new Comparator<File>() {
                 @Override
                 public int compare(File f1, File f2) {
                     return f1.lastModified() > f2.lastModified() ? -1 : 1;
                 }
             });
-    
             for (int i = 2; i < recentFiles.size(); i++) {
                 oldFiles.add(recentFiles.get(i));
             }
-    
             for (File file : oldFiles) {
                 log.info("Removing old heap dump " + file.getName());
                 file.delete();
@@ -262,5 +230,4 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
     protected String chooseWebDir(CommandLine line, String webDir) {
         return webDir;
     }
-
 }

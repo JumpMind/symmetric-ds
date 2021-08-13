@@ -28,11 +28,10 @@ import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.DmlStatement;
 
 public class RedshiftDmlStatement extends DmlStatement {
-
     public RedshiftDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
-            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
+            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues,
             DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
-        super(type, catalogName, schemaName, tableName, keysColumns, columns, 
+        super(type, catalogName, schemaName, tableName, keysColumns, columns,
                 nullKeyValues, databaseInfo, useQuotedIdentifiers, textColumnExpression);
     }
 
@@ -108,5 +107,4 @@ public class RedshiftDmlStatement extends DmlStatement {
             return super.buildTypes(keys, columns, isDateOverrideToTimestamp);
         }
     }
-    
 }

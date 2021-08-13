@@ -29,15 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConfigDatabaseUpgrader {
-
-	private static final Logger log = LoggerFactory.getLogger(ConfigDatabaseUpgrader.class);
-
+    private static final Logger log = LoggerFactory.getLogger(ConfigDatabaseUpgrader.class);
     protected String tablePrefix = "SYM";
-
     protected IDatabasePlatform configDatabasePlatform;
-
     protected boolean logOutput = true;
-
     protected String schemaXml;
 
     public ConfigDatabaseUpgrader(String schemaXml, IDatabasePlatform configDatabasePlatform,
@@ -53,17 +48,13 @@ public class ConfigDatabaseUpgrader {
 
     public boolean upgrade() {
         try {
-
             if (logOutput) {
                 log.info("Checking if config tables need created or altered");
             }
-
             Database modelFromXml = configDatabasePlatform.readDatabaseFromXml(schemaXml, true);
-
             configDatabasePlatform.prefixDatabase(tablePrefix, modelFromXml);
             Database modelFromDatabase = configDatabasePlatform.readFromDatabase(modelFromXml
                     .getTables());
-
             IDdlBuilder builder = configDatabasePlatform.getDdlBuilder();
             if (builder.isAlterDatabase(modelFromDatabase, modelFromXml)) {
                 if (logOutput) {
@@ -71,11 +62,8 @@ public class ConfigDatabaseUpgrader {
                 }
                 String delimiter = configDatabasePlatform.getDatabaseInfo()
                         .getSqlCommandDelimiter();
-
                 String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml);
-
                 log.debug("Alter SQL generated: {}", alterSql);
-
                 SqlScript script = new SqlScript(alterSql, configDatabasePlatform.getSqlTemplate(),
                         true, false, false, delimiter, null);
                 if (logOutput) {
@@ -83,7 +71,6 @@ public class ConfigDatabaseUpgrader {
                 }
                 script.execute(configDatabasePlatform.getDatabaseInfo()
                         .isRequiresAutoCommitForDdl());
-
                 if (logOutput) {
                     log.info("Done with auto update of config tables");
                 }
@@ -129,5 +116,4 @@ public class ConfigDatabaseUpgrader {
     public String getTablePrefix() {
         return tablePrefix;
     }
-
 }

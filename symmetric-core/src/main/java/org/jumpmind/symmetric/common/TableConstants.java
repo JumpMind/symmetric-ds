@@ -29,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
  * Constants that represent SymmetricDS tables
  */
 public class TableConstants {
-
     public static final String SYM_PARAMETER = "parameter";
     public static final String SYM_LOCK = "lock";
     public static final String SYM_OUTGOING_BATCH = "outgoing_batch";
@@ -86,11 +85,8 @@ public class TableConstants {
     public static final String SYM_CONTEXT = "context";
     public static final String SYM_JOB = "job";
     public static final String SYM_TABLE_RELOAD_STATUS = "table_reload_status";
-
     private static volatile List<String> tablesWithPrefix;
-
     private static volatile List<String> configTablesWithPrefix;
-
     private static volatile List<String> tablesWithoutPrefix;
 
     public static final List<String> getTables(String tablePrefix) {
@@ -215,7 +211,6 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_CONTEXT));
         tables.add(getTableName(tablePrefix, SYM_JOB));
         tables.add(getTableName(tablePrefix, SYM_TABLE_RELOAD_STATUS));
-
         return tables;
     }
 

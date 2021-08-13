@@ -32,7 +32,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 public class SqlScriptTest {
-
     @Test
     public void testSimpleSqlScript() throws Exception {
         SingleConnectionDataSource ds = getDataSource();
@@ -40,11 +39,11 @@ public class SqlScriptTest {
         SqlScript script = new SqlScript(getClass().getResource("sqlscript-simple.sql"), platform.getSqlTemplate());
         script.execute();
         JdbcTemplate template = new JdbcTemplate(ds);
-        assertEquals(2, (int)template.queryForObject("select count(*) from test", Integer.class));
+        assertEquals(2, (int) template.queryForObject("select count(*) from test", Integer.class));
         assertEquals(3, template.queryForObject("select test from test where test_id=2", String.class).split("\r\n|\r|\n").length);
         ds.destroy();
     }
-    
+
     private SingleConnectionDataSource getDataSource() throws Exception {
         Class.forName("org.h2.Driver");
         Connection c = DriverManager.getConnection("jdbc:h2:mem:sqlscript");

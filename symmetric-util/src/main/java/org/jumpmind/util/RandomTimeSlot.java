@@ -24,13 +24,10 @@ import java.nio.charset.Charset;
 import java.security.SecureRandom;
 
 /**
- * Use runtime configuration specific seeding to get a random number for use in
- * time slotting nodes to help stagger load.
+ * Use runtime configuration specific seeding to get a random number for use in time slotting nodes to help stagger load.
  */
 public class RandomTimeSlot {
-
     protected int maxValue = -1;
-
     protected SecureRandom random;
 
     public RandomTimeSlot() {
@@ -40,7 +37,7 @@ public class RandomTimeSlot {
     public RandomTimeSlot(String externalId, int maxValue) {
         this.maxValue = maxValue;
         if (externalId != null) {
-        	random = new SecureRandom(externalId.getBytes(Charset.defaultCharset()));
+            random = new SecureRandom(externalId.getBytes(Charset.defaultCharset()));
         }
     }
 
@@ -48,5 +45,4 @@ public class RandomTimeSlot {
         int nextValue = random.nextInt(maxValue);
         return nextValue == 0 ? 1 : nextValue;
     }
-
 }

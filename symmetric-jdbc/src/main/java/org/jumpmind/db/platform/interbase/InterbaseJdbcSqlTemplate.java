@@ -28,23 +28,20 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class InterbaseJdbcSqlTemplate extends JdbcSqlTemplate {
-
     public InterbaseJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
-        primaryKeyViolationCodes = new int [] {335544665,335544349};
-        foreignKeyViolationCodes = new int[] {335544466};
+        primaryKeyViolationCodes = new int[] { 335544665, 335544349 };
+        foreignKeyViolationCodes = new int[] { 335544466 };
     }
-    
+
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select gen_id(GEN_" + sequenceName + ", 0) from rdb$database";
     }
-    
+
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return true;
     }
-
-    
 }

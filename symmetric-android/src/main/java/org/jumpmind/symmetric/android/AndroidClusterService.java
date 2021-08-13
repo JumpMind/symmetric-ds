@@ -26,19 +26,17 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.impl.ClusterService;
 
 public class AndroidClusterService extends ClusterService {
-    
     public AndroidClusterService(IParameterService parameterService, ISymmetricDialect dialect, INodeService nodeService) {
         super(parameterService, dialect, nodeService, null);
     }
-    
+
     @Override
     protected void initInstanceId() {
         // not relevant on Android.
     }
-    
+
     @Override
     protected void checkSymDbOwnership() {
         // not relevant on Android.
     }
-
 }

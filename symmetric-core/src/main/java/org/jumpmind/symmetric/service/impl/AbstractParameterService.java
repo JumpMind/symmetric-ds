@@ -41,30 +41,18 @@ import bsh.EvalError;
 import bsh.Interpreter;
 
 abstract public class AbstractParameterService {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected IExtensionService extensionService;
-    
     protected TypedProperties parameters;
-
     private long cacheTimeoutInMs = 0;
-
     private long lastTimeParameterWereCached;
-
     protected Properties systemProperties;
-
     protected boolean databaseHasBeenInitialized = false;
-
-    protected String externalId=null;
-    
-    protected String engineName=null;
-
-    protected String nodeGroupId=null;
-
-    protected String syncUrl=null;
-
-    protected String registrationUrl=null;
+    protected String externalId = null;
+    protected String engineName = null;
+    protected String nodeGroupId = null;
+    protected String syncUrl = null;
+    protected String registrationUrl = null;
 
     public AbstractParameterService() {
         this.systemProperties = (Properties) System.getProperties().clone();
@@ -148,7 +136,6 @@ abstract public class AbstractParameterService {
     public String getTempDirectory() {
         String engineName = this.getEngineName();
         String tmpDirBase = getString("java.io.tmpdir", System.getProperty("java.io.tmpdir"));
-
         if (StringUtils.trimToNull(engineName) == null) {
             return tmpDirBase;
         } else {
@@ -193,21 +180,20 @@ abstract public class AbstractParameterService {
         return new Date(lastTimeParameterWereCached);
     }
 
-   
     public synchronized String getExternalId() {
-        if (externalId==null) {
+        if (externalId == null) {
             String value = getString(ParameterConstants.EXTERNAL_ID);
             value = substituteScripts(value);
             externalId = value;
             if (log.isDebugEnabled()) {
-                log.debug("External Id eval results in: {}",externalId);
+                log.debug("External Id eval results in: {}", externalId);
             }
         }
         return externalId;
     }
 
-    public synchronized  String getSyncUrl() {
-        if (syncUrl==null) {
+    public synchronized String getSyncUrl() {
+        if (syncUrl == null) {
             String value = getString(ParameterConstants.SYNC_URL);
             value = substituteScripts(value);
             if (value != null) {
@@ -215,26 +201,26 @@ abstract public class AbstractParameterService {
             }
             syncUrl = value;
             if (log.isDebugEnabled()) {
-                log.debug("Sync URL eval results in: {}",syncUrl);
+                log.debug("Sync URL eval results in: {}", syncUrl);
             }
         }
         return syncUrl;
     }
 
     public synchronized String getNodeGroupId() {
-        if (nodeGroupId==null) {
+        if (nodeGroupId == null) {
             String value = getString(ParameterConstants.NODE_GROUP_ID);
             value = substituteScripts(value);
             nodeGroupId = value;
             if (log.isDebugEnabled()) {
-                log.debug("Node Group Id eval results in: {}",nodeGroupId);
+                log.debug("Node Group Id eval results in: {}", nodeGroupId);
             }
         }
         return nodeGroupId;
     }
 
-    public synchronized  String getRegistrationUrl() {
-        if (registrationUrl==null) {
+    public synchronized String getRegistrationUrl() {
+        if (registrationUrl == null) {
             String value = getString(ParameterConstants.REGISTRATION_URL);
             value = substituteScripts(value);
             if (value != null) {
@@ -242,20 +228,20 @@ abstract public class AbstractParameterService {
             }
             registrationUrl = value;
             if (log.isDebugEnabled()) {
-                log.debug("Registration URL eval results in: {}",registrationUrl);
+                log.debug("Registration URL eval results in: {}", registrationUrl);
             }
         }
         return registrationUrl;
     }
 
-    public synchronized  String getEngineName() {
-        if (engineName==null) {
-            String value = getString(ParameterConstants.ENGINE_NAME,"SymmetricDS");
+    public synchronized String getEngineName() {
+        if (engineName == null) {
+            String value = getString(ParameterConstants.ENGINE_NAME, "SymmetricDS");
             value = substituteScripts(value);
             engineName = value;
             if (log.isDebugEnabled()) {
-                log.debug("Engine Name eval results in: {}",engineName);
-            }            
+                log.debug("Engine Name eval results in: {}", engineName);
+            }
         }
         return engineName;
     }
@@ -269,7 +255,7 @@ abstract public class AbstractParameterService {
         replacementValues.put("registrationUrl", getRegistrationUrl());
         return replacementValues;
     }
-    
+
     public synchronized void setDatabaseHasBeenInitialized(boolean databaseHasBeenInitialized) {
         if (this.databaseHasBeenInitialized != databaseHasBeenInitialized) {
             this.databaseHasBeenInitialized = databaseHasBeenInitialized;
@@ -293,58 +279,50 @@ abstract public class AbstractParameterService {
             return new TypedProperties();
         }
     }
-        
 
     public void setExtensionService(IExtensionService extensionService) {
         this.extensionService = extensionService;
     }
 
-    
-    protected  String substituteScripts(String value) {
+    protected String substituteScripts(String value) {
         if (log.isDebugEnabled()) {
-            log.debug("substituteScripts starting value is: {}",value);
+            log.debug("substituteScripts starting value is: {}", value);
         }
         int startTick = StringUtils.indexOf(value, '`');
-        if (startTick!=-1) {
+        if (startTick != -1) {
             int endTick = StringUtils.lastIndexOf(value, '`');
-            if (endTick!=-1 && startTick!=endTick) {
+            if (endTick != -1 && startTick != endTick) {
                 // there's a bean shell script present in this case
-                String script = StringUtils.substring(value, startTick+1,endTick);
+                String script = StringUtils.substring(value, startTick + 1, endTick);
                 if (log.isDebugEnabled()) {
-                    log.debug("Script found.  Script is is: {}",script);
+                    log.debug("Script found.  Script is is: {}", script);
                 }
-                
                 Interpreter interpreter = new Interpreter();
                 try {
-                    interpreter.set("hostName",  AppUtils.getHostName());
+                    interpreter.set("hostName", AppUtils.getHostName());
                     interpreter.set("log", log);
                     interpreter.set("nodeGroupId", nodeGroupId);
                     interpreter.set("syncUrl", syncUrl);
                     interpreter.set("registrationUrl", registrationUrl);
                     interpreter.set("externalId", externalId);
                     interpreter.set("engineName", engineName);
-                    
                     Object scriptResult = interpreter.eval(script);
-              
-                    if (scriptResult==null) {
-                        scriptResult ="";
+                    if (scriptResult == null) {
+                        scriptResult = "";
                     }
-                    
                     if (log.isDebugEnabled()) {
-                        log.debug("Script output is: {}",scriptResult);
+                        log.debug("Script output is: {}", scriptResult);
                     }
-                       value = StringUtils.substring(value, 0,startTick) + scriptResult.toString() +
-                                StringUtils.substring(value, endTick+1);
+                    value = StringUtils.substring(value, 0, startTick) + scriptResult.toString() +
+                            StringUtils.substring(value, endTick + 1);
                 } catch (EvalError e) {
-                    throw new RuntimeException(e.getMessage(),e);
+                    throw new RuntimeException(e.getMessage(), e);
                 }
-                
                 if (log.isDebugEnabled()) {
-                    log.debug("substituteScripts return value is {}",value);
+                    log.debug("substituteScripts return value is {}", value);
                 }
-               }
+            }
         }
         return value;
     }
-
 }

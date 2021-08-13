@@ -24,7 +24,6 @@ import org.jumpmind.db.AbstractDdlTypesTest;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class FirebirdDdlTypesTest extends AbstractDdlTypesTest {
-
     @Override
     protected String getName() {
         return DatabaseNamesConstants.FIREBIRD;
@@ -34,5 +33,4 @@ public class FirebirdDdlTypesTest extends AbstractDdlTypesTest {
     protected String[] getDdlTypes() {
         return new String[] { "numeric(15,2)" };
     }
-
 }

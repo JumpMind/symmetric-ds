@@ -25,27 +25,16 @@ import java.util.Date;
 import org.jumpmind.symmetric.common.ParameterConstants;
 
 public class Notification {
-
     private String notificationId;
-    
     private String nodeGroupId;
-
     private String externalId;
-
     private int severityLevel;
-    
     private String type;
-    
     private String expression;
-
     private boolean enabled;
-    
     private Date createTime;
-    
     private String lastUpdateBy;
-    
     private Date lastUpdateTime;
-    
     private transient String targetNode;
 
     public String getNotificationId() {
@@ -86,7 +75,7 @@ public class Notification {
 
     public void setType(String type) {
         this.type = type;
-    }    
+    }
 
     public boolean isEnabled() {
         return enabled;
@@ -146,7 +135,7 @@ public class Notification {
         }
         return targetNode;
     }
-    
+
     public void setTargetNode(String targetNode) {
         this.targetNode = targetNode;
     }

@@ -21,11 +21,9 @@
 package org.jumpmind.exception;
 
 public class HttpException extends IoException {
-
     private static final long serialVersionUID = 1L;
-    
     private int code;
-    
+
     public HttpException(int code, String message) {
         super(message);
         this.code = code;

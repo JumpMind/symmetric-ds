@@ -21,8 +21,9 @@
 package org.jumpmind.db.sql;
 
 public class SqlTemplateSettings {
-    
-    public enum JdbcLobHandling {PLAIN, CREATETEMPORARYLOB, STREAMLOB};
+    public enum JdbcLobHandling {
+        PLAIN, CREATETEMPORARYLOB, STREAMLOB
+    };
 
     protected int fetchSize = 1000;
     protected int queryTimeout;
@@ -37,9 +38,9 @@ public class SqlTemplateSettings {
     protected boolean allowUpdatesWithResults = false;
     protected boolean allowTriggerCreateOrReplace;
     protected JdbcLobHandling jdbcLobHandling;
-    
-    public SqlTemplateSettings() {     
-    }      
+
+    public SqlTemplateSettings() {
+    }
 
     public void setFetchSize(int fetchSize) {
         this.fetchSize = fetchSize;
@@ -56,27 +57,27 @@ public class SqlTemplateSettings {
     public int getQueryTimeout() {
         return queryTimeout;
     }
-    
+
     public void setBatchSize(int batchSize) {
         this.batchSize = batchSize;
     }
-    
+
     public int getBatchSize() {
         return batchSize;
     }
-    
+
     public void setReadStringsAsBytes(boolean readStringsAsBytes) {
         this.readStringsAsBytes = readStringsAsBytes;
     }
-    
+
     public boolean isReadStringsAsBytes() {
         return readStringsAsBytes;
     }
-    
+
     public void setTreatBinaryAsLob(boolean treatBinaryAsLob) {
         this.treatBinaryAsLob = treatBinaryAsLob;
     }
-    
+
     public boolean isTreatBinaryAsLob() {
         return treatBinaryAsLob;
     }
@@ -104,13 +105,13 @@ public class SqlTemplateSettings {
     public void setResultSetType(int resultSetType) {
         this.resultSetType = resultSetType;
     }
-    
-    public boolean isRightTrimCharValues() { 
-        return rightTrimCharValues; 
+
+    public boolean isRightTrimCharValues() {
+        return rightTrimCharValues;
     }
 
-    public void setRightTrimCharValues(boolean rightTrimCharValues) { 
-        this.rightTrimCharValues = rightTrimCharValues; 
+    public void setRightTrimCharValues(boolean rightTrimCharValues) {
+        this.rightTrimCharValues = rightTrimCharValues;
     }
 
     public boolean isAllowUpdatesWithResults() {
@@ -144,5 +145,4 @@ public class SqlTemplateSettings {
     public void setJdbcLobHandling(JdbcLobHandling jdbcLobHandling) {
         this.jdbcLobHandling = jdbcLobHandling;
     }
-
 }

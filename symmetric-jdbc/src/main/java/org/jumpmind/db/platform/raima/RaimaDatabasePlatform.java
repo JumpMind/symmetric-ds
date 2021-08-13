@@ -19,6 +19,7 @@
  * under the License.
  */
 package org.jumpmind.db.platform.raima;
+
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
@@ -31,11 +32,9 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class RaimaDatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     public static final String JDBC_DRIVER = "com.raima.rdm.jdbc.RDMDriverr";
-
     public static final String JDBC_SUBPROTOCOL = "raima";
-    
+
     public RaimaDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         supportsTruncate = false;
@@ -61,7 +60,7 @@ public class RaimaDatabasePlatform extends AbstractJdbcDatabasePlatform {
     protected ISqlTemplate createSqlTemplateDirty() {
         return sqlTemplate;
     }
-    
+
     public String getName() {
         return DatabaseNamesConstants.RAIMA;
     }
@@ -77,9 +76,7 @@ public class RaimaDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     public PermissionResult getCreateSymTriggerPermission() {
         String createTriggerSql = "create trigger test_trigger after insert on " + PERMISSION_TEST_TABLE_NAME + " for each row begin atomic end";
-
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, createTriggerSql);
-
         try {
             getSqlTemplate().update(createTriggerSql);
             result.setStatus(Status.PASS);
@@ -87,7 +84,6 @@ public class RaimaDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant CREATE DATABASE permission and TRIGGER permission");
         }
-
         return result;
     }
 
@@ -95,7 +91,6 @@ public class RaimaDatabasePlatform extends AbstractJdbcDatabasePlatform {
     protected PermissionResult getDropSymTriggerPermission() {
         String dropTriggerSql = "drop trigger test_trigger";
         PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, dropTriggerSql);
-
         try {
             getSqlTemplate().update(dropTriggerSql);
             result.setStatus(Status.PASS);
@@ -103,7 +98,6 @@ public class RaimaDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant CREATE DATABASE permission and TRIGGER permission");
         }
-
         return result;
     }
 }

@@ -73,7 +73,6 @@ import org.jumpmind.db.sql.SqlException;
  * The Jdbc Model Reader for Interbase.
  */
 public class InterbaseDdlReader extends AbstractJdbcDdlReader {
-
     public InterbaseDdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
@@ -86,13 +85,11 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
         Table table = super.readTable(connection, metaData, values);
-
         if (table != null) {
             determineExtraColumnInfo(connection, table);
             determineAutoIncrementColumns(connection, table);
             adjustColumns(table);
         }
-
         return table;
     }
 
@@ -112,34 +109,27 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
     protected Collection<Column> readColumns(DatabaseMetaDataWrapper metaData, String tableName)
             throws SQLException {
         ResultSet columnData = null;
-
         try {
             List<Column> columns = new ArrayList<Column>();
-
             if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
                 // Jaybird has a problem when delimited identifiers are used as
                 // it is not able to find the columns for the table
                 // So we have to filter manually below
                 columnData = metaData.getColumns(getDefaultTablePattern(),
                         getDefaultColumnPattern());
-
                 while (columnData.next()) {
                     Map<String, Object> values = readMetaData(columnData, getColumnsForColumn());
-
                     if (tableName.equals(values.get("TABLE_NAME"))) {
                         columns.add(readColumn(metaData, values));
                     }
                 }
             } else {
                 columnData = metaData.getColumns(tableName, getDefaultColumnPattern());
-
                 while (columnData.next()) {
                     Map<String, Object> values = readMetaData(columnData, getColumnsForColumn());
-
                     columns.add(readColumn(metaData, values));
                 }
             }
-
             return columns;
         } finally {
             if (columnData != null) {
@@ -149,35 +139,27 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
     }
 
     /*
-     * Helper method that determines extra column info from the system tables:
-     * default value, precision, scale.
+     * Helper method that determines extra column info from the system tables: default value, precision, scale.
      * 
      * @param table The table
      */
     protected void determineExtraColumnInfo(Connection connection, Table table) throws SQLException {
-    	StringBuilder query = new StringBuilder();
-
+        StringBuilder query = new StringBuilder();
         query.append("SELECT a.RDB$FIELD_NAME, a.RDB$DEFAULT_SOURCE, b.RDB$FIELD_PRECISION, b.RDB$FIELD_SCALE,");
         query.append(" b.RDB$FIELD_TYPE, b.RDB$FIELD_SUB_TYPE FROM RDB$RELATION_FIELDS a, RDB$FIELDS b");
         query.append(" WHERE a.RDB$RELATION_NAME=? AND a.RDB$FIELD_SOURCE=b.RDB$FIELD_NAME");
-
         PreparedStatement prepStmt = connection.prepareStatement(query.toString());
-
         try {
             prepStmt.setString(1, getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? table.getName()
                     : table.getName().toUpperCase());
-
             ResultSet rs = prepStmt.executeQuery();
-
             while (rs.next()) {
                 String columnName = rs.getString(1).trim();
                 Column column = table.findColumn(columnName, getPlatform().getDdlBuilder()
                         .isDelimitedIdentifierModeOn());
-
                 if (column != null) {
                     byte[] defaultBytes = rs.getBytes(2);
                     String defaultValue = defaultBytes != null ? new String(defaultBytes, Charset.defaultCharset()) : null;
-
                     if (!rs.wasNull() && (defaultValue != null)) {
                         defaultValue = defaultValue.trim();
                         if (defaultValue.startsWith("DEFAULT ")) {
@@ -185,20 +167,16 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                         }
                         column.setDefaultValue(defaultValue);
                     }
-
                     short precision = rs.getShort(3);
                     boolean precisionSpecified = !rs.wasNull();
                     short scale = rs.getShort(4);
                     boolean scaleSpecified = !rs.wasNull();
-
                     if (precisionSpecified) {
                         // for some reason, Interbase stores the negative scale
                         column.setSizeAndScale(precision, scaleSpecified ? -scale : 0);
                     }
-
                     short dbType = rs.getShort(5);
                     short blobSubType = rs.getShort(6);
-
                     // CLOBs are returned by the driver as VARCHAR
                     if (!rs.wasNull() && (dbType == 261) && (blobSubType == 1)) {
                         column.setMappedTypeCode(Types.CLOB);
@@ -212,8 +190,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
     }
 
     /*
-     * Helper method that determines the auto increment status using Interbase's
-     * system tables.
+     * Helper method that determines the auto increment status using Interbase's system tables.
      * 
      * @param table The table
      */
@@ -227,7 +204,6 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         Column[] columns = table.getColumns();
         HashMap<String, Column> names = new HashMap<String, Column>();
         String name;
-
         for (int idx = 0; idx < columns.length; idx++) {
             name = builder.getGeneratorName(table, columns[idx]);
             if (!getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
@@ -235,16 +211,12 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
             }
             names.put(name, columns[idx]);
         }
-
         Statement stmt = connection.createStatement();
-
         try {
             ResultSet rs = stmt.executeQuery("SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS");
-
             while (rs.next()) {
                 String generatorName = rs.getString(1).trim();
                 Column column = (Column) names.get(generatorName);
-
                 if (column != null) {
                     column.setAutoIncrement(true);
                 }
@@ -262,7 +234,6 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
      */
     protected void adjustColumns(Table table) {
         Column[] columns = table.getColumns();
-
         for (int idx = 0; idx < columns.length; idx++) {
             if (columns[idx].getMappedTypeCode() == Types.FLOAT) {
                 columns[idx].setMappedTypeCode(Types.REAL);
@@ -283,7 +254,6 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
             String tableName) throws SQLException {
         List<String> pks = new ArrayList<String>();
         ResultSet pkData = null;
-
         try {
             if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
                 // Jaybird has a problem when delimited identifiers are used as
@@ -292,7 +262,6 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                 pkData = metaData.getPrimaryKeys(getDefaultTablePattern());
                 while (pkData.next()) {
                     Map<String, Object> values = readMetaData(pkData, getColumnsForPK());
-
                     if (tableName.equals(values.get("TABLE_NAME"))) {
                         pks.add(readPrimaryKeyName(metaData, values));
                     }
@@ -301,7 +270,6 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                 pkData = metaData.getPrimaryKeys(tableName);
                 while (pkData.next()) {
                     Map<String, Object> values = readMetaData(pkData, getColumnsForPK());
-
                     pks.add(readPrimaryKeyName(metaData, values));
                 }
             }
@@ -312,7 +280,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         }
         return pks;
     }
-    
+
     @Override
     protected Collection<IIndex> readIndices(Connection connection, DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
@@ -321,23 +289,18 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         // so we gather the data manually using Firebird's system tables
         Map<String, IIndex> indices = new ListOrderedMap<String, IIndex>();
         StringBuilder query = new StringBuilder();
-
         query.append("SELECT a.RDB$INDEX_NAME, b.RDB$RELATION_NAME, b.RDB$UNIQUE_FLAG,    ");
         query.append(" a.RDB$FIELD_POSITION, a.RDB$FIELD_NAME                             ");
         query.append(" FROM RDB$INDEX_SEGMENTS a, RDB$INDICES b                           ");
         query.append(" WHERE a.RDB$INDEX_NAME=b.RDB$INDEX_NAME AND b.RDB$RELATION_NAME = ?");
-
         PreparedStatement stmt = connection.prepareStatement(query.toString());
         ResultSet indexData = null;
-
         stmt.setString(1,
                 getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName.toUpperCase());
-
         try {
             indexData = stmt.executeQuery();
-
             while (indexData.next()) {
-                Map<String,Object> values = new HashMap<String, Object>();
+                Map<String, Object> values = new HashMap<String, Object>();
                 values.put("INDEX_NAME", indexData.getString(1).trim());
                 values.put("TABLE_NAME", indexData.getString(2).trim());
                 values.put("NON_UNIQUE", !indexData.getBoolean(3));
@@ -353,14 +316,12 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         }
         return indices.values();
     }
-    
 
     @Override
     protected Collection<ForeignKey> readForeignKeys(Connection connection, DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
-        Map<String,ForeignKey> fks = new ListOrderedMap<String,ForeignKey>();
+        Map<String, ForeignKey> fks = new ListOrderedMap<String, ForeignKey>();
         ResultSet fkData = null;
-
         try {
             if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
                 // Jaybird has a problem when delimited identifiers are used as
@@ -368,8 +329,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                 // So we have to filter manually below
                 fkData = metaData.getForeignKeys(getDefaultTablePattern());
                 while (fkData.next()) {
-                    Map<String,Object> values = readMetaData(fkData, getColumnsForFK());
-
+                    Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
                     if (tableName.equals(values.get("FKTABLE_NAME"))) {
                         readForeignKey(metaData, values, fks);
                     }
@@ -377,8 +337,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
             } else {
                 fkData = metaData.getForeignKeys(tableName);
                 while (fkData.next()) {
-                    Map<String,Object> values = readMetaData(fkData, getColumnsForFK());
-
+                    Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
                     readForeignKey(metaData, values, fks);
                 }
             }
@@ -396,21 +355,17 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         String tableName = builder.getTableName(table.getName());
         String indexName = builder.getIndexName(index);
         StringBuilder query = new StringBuilder();
-
         query.append("SELECT RDB$CONSTRAINT_NAME FROM RDB$RELATION_CONSTRAINTS where RDB$RELATION_NAME=? AND RDB$CONSTRAINT_TYPE=? AND RDB$INDEX_NAME=?");
-
         PreparedStatement stmt = connection.prepareStatement(query.toString());
-
         try {
             stmt.setString(
                     1,
-                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName
-                            .toUpperCase());
+                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName
+                            : tableName
+                                    .toUpperCase());
             stmt.setString(2, "PRIMARY KEY");
             stmt.setString(3, indexName);
-
             ResultSet resultSet = stmt.executeQuery();
-
             return resultSet.next();
         } finally {
             if (stmt != null) {
@@ -427,22 +382,19 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         String indexName = builder.getIndexName(index);
         String fkName = builder.getForeignKeyName(table, fk);
         StringBuilder query = new StringBuilder();
-
-        query.append("SELECT RDB$CONSTRAINT_NAME FROM RDB$RELATION_CONSTRAINTS where RDB$RELATION_NAME=? AND RDB$CONSTRAINT_TYPE=? AND RDB$CONSTRAINT_NAME=? AND RDB$INDEX_NAME=?");
-
+        query.append(
+                "SELECT RDB$CONSTRAINT_NAME FROM RDB$RELATION_CONSTRAINTS where RDB$RELATION_NAME=? AND RDB$CONSTRAINT_TYPE=? AND RDB$CONSTRAINT_NAME=? AND RDB$INDEX_NAME=?");
         PreparedStatement stmt = connection.prepareStatement(query.toString());
-
         try {
             stmt.setString(
                     1,
-                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName
-                            .toUpperCase());
+                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName
+                            : tableName
+                                    .toUpperCase());
             stmt.setString(2, "FOREIGN KEY");
             stmt.setString(3, fkName);
             stmt.setString(4, indexName);
-
             ResultSet resultSet = stmt.executeQuery();
-
             return resultSet.next();
         } finally {
             if (stmt != null) {
@@ -450,65 +402,64 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
             }
         }
     }
-    
+
     @Override
     protected String getTableNamePattern(String tableName) {
         return String.format("\"%s\"", tableName);
     }
-    
+
     @Override
     protected String getTableNamePatternForConstraints(String tableName) {
         return String.format("\"%s\"", tableName);
     }
-    
+
     @Override
-       public List<Trigger> getTriggers(final String catalog, final String schema,
-               final String tableName) throws SqlException {
-           
-           List<Trigger> triggers = new ArrayList<Trigger>();
-
-           log.debug("Reading triggers for: " + tableName);
-           JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
-                   .getSqlTemplate();
-           
-           String sql = "select "
-                           + "TRIG.RDB$TRIGGER_NAME as TRIGGER_NAME, "
-                           + "TRIG.RDB$RELATION_NAME as TABLE_NAME, "
-                           + "TYPES1.RDB$TYPE_NAME as TRIGGER_TYPE, "
-                           + "TRIG.RDB$TRIGGER_SEQUENCE as TRIGGER_SEQUENCE, "
-                           + "TRIG.RDB$TRIGGER_BLR as TRIGGER_BLR, "
-                           + "TRIG.RDB$DESCRIPTION as DESCRIPTION, "
-                           + "TRIG.RDB$TRIGGER_INACTIVE as TRIGGER_INACTIVE, "
-                           + "TYPES2.RDB$TYPE_NAME as SYSTEM_FLAG, "
-                           + "TRIG.RDB$FLAGS as FLAGS, "
-                           + "TRIG.RDB$VALID_BLR as VALID_BLR, "
-                           + "TRIG.RDB$DEBUG_INFO as DEBUG_INFO,"
-                           + "TRIG.RDB$TRIGGER_SOURCE as TRIGGER_SOURCE "
-                       + "from RDB$TRIGGERS as TRIG "
-                       + "inner join RDB$TYPES as TYPES1 "
-                           + "on TYPES1.RDB$FIELD_NAME = 'RDB$TRIGGER_TYPE' "
-                           + "and TYPES1.RDB$TYPE = TRIG.RDB$TRIGGER_TYPE "
-                       + "inner join RDB$TYPES as TYPES2 "
-                           + "on TYPES2.RDB$FIELD_NAME = 'RDB$SYSTEM_FLAG' "
-                           + "and TYPES2.RDB$TYPE = TRIG.RDB$SYSTEM_FLAG "
-                       + "where RDB$RELATION_NAME = ? ;";
-           triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
-               public Trigger mapRow(Row row) {
-                   Trigger trigger = new Trigger();
-                   trigger.setName(row.getString("TRIGGER_NAME"));
-                   trigger.setTableName(row.getString("TABLE_NAME"));
-                   trigger.setEnabled(true);
-                   trigger.setSource(row.getString("TRIGGER_SOURCE"));
-                   row.remove("TRIGGER_SOURCE");
-                   String triggerType = row.getString("TRIGGER_TYPE");
-                   if (triggerType.contains("STORE")) trigger.setTriggerType(TriggerType.INSERT);
-                   else if (triggerType.contains("ERASE")) trigger.setTriggerType(TriggerType.DELETE);
-                   else if (triggerType.contains("MODIFY")) trigger.setTriggerType(TriggerType.UPDATE);
-                   trigger.setMetaData(row);
-                   return trigger;
-               }
-           }, tableName);
-
-           return triggers;
-       }
+    public List<Trigger> getTriggers(final String catalog, final String schema,
+            final String tableName) throws SqlException {
+        List<Trigger> triggers = new ArrayList<Trigger>();
+        log.debug("Reading triggers for: " + tableName);
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+                .getSqlTemplate();
+        String sql = "select "
+                + "TRIG.RDB$TRIGGER_NAME as TRIGGER_NAME, "
+                + "TRIG.RDB$RELATION_NAME as TABLE_NAME, "
+                + "TYPES1.RDB$TYPE_NAME as TRIGGER_TYPE, "
+                + "TRIG.RDB$TRIGGER_SEQUENCE as TRIGGER_SEQUENCE, "
+                + "TRIG.RDB$TRIGGER_BLR as TRIGGER_BLR, "
+                + "TRIG.RDB$DESCRIPTION as DESCRIPTION, "
+                + "TRIG.RDB$TRIGGER_INACTIVE as TRIGGER_INACTIVE, "
+                + "TYPES2.RDB$TYPE_NAME as SYSTEM_FLAG, "
+                + "TRIG.RDB$FLAGS as FLAGS, "
+                + "TRIG.RDB$VALID_BLR as VALID_BLR, "
+                + "TRIG.RDB$DEBUG_INFO as DEBUG_INFO,"
+                + "TRIG.RDB$TRIGGER_SOURCE as TRIGGER_SOURCE "
+                + "from RDB$TRIGGERS as TRIG "
+                + "inner join RDB$TYPES as TYPES1 "
+                + "on TYPES1.RDB$FIELD_NAME = 'RDB$TRIGGER_TYPE' "
+                + "and TYPES1.RDB$TYPE = TRIG.RDB$TRIGGER_TYPE "
+                + "inner join RDB$TYPES as TYPES2 "
+                + "on TYPES2.RDB$FIELD_NAME = 'RDB$SYSTEM_FLAG' "
+                + "and TYPES2.RDB$TYPE = TRIG.RDB$SYSTEM_FLAG "
+                + "where RDB$RELATION_NAME = ? ;";
+        triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+            public Trigger mapRow(Row row) {
+                Trigger trigger = new Trigger();
+                trigger.setName(row.getString("TRIGGER_NAME"));
+                trigger.setTableName(row.getString("TABLE_NAME"));
+                trigger.setEnabled(true);
+                trigger.setSource(row.getString("TRIGGER_SOURCE"));
+                row.remove("TRIGGER_SOURCE");
+                String triggerType = row.getString("TRIGGER_TYPE");
+                if (triggerType.contains("STORE"))
+                    trigger.setTriggerType(TriggerType.INSERT);
+                else if (triggerType.contains("ERASE"))
+                    trigger.setTriggerType(TriggerType.DELETE);
+                else if (triggerType.contains("MODIFY"))
+                    trigger.setTriggerType(TriggerType.UPDATE);
+                trigger.setMetaData(row);
+                return trigger;
+            }
+        }, tableName);
+        return triggers;
+    }
 }

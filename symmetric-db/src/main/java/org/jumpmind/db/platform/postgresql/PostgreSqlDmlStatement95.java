@@ -26,7 +26,6 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.DatabaseInfo;
 
 public class PostgreSqlDmlStatement95 extends PostgreSqlDmlStatement {
-    
     public static final String ON_CONFLICT_DO_NOTHING = "on conflict do nothing";
 
     public PostgreSqlDmlStatement95(DmlType type, String catalogName, String schemaName, String tableName,
@@ -45,7 +44,7 @@ public class PostgreSqlDmlStatement95 extends PostgreSqlDmlStatement {
         sql.append(") ").append(ON_CONFLICT_DO_NOTHING);
         return sql.toString();
     }
-    
+
     @Override
     public String getSql(boolean allowIgnoreOnConflict) {
         if (allowIgnoreOnConflict) {
@@ -94,5 +93,4 @@ public class PostgreSqlDmlStatement95 extends PostgreSqlDmlStatement {
             return super.buildTypes(keys, columns, isDateOverrideToTimestamp);
         }
     }
-    
 }

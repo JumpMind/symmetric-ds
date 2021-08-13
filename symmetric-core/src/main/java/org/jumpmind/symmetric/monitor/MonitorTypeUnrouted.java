@@ -28,7 +28,6 @@ import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.service.IRouterService;
 
 public class MonitorTypeUnrouted implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
-
     protected IRouterService routerService;
 
     @Override
@@ -52,5 +51,4 @@ public class MonitorTypeUnrouted implements IMonitorType, ISymmetricEngineAware,
     public void setSymmetricEngine(ISymmetricEngine engine) {
         routerService = engine.getRouterService();
     }
-
 }

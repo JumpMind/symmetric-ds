@@ -46,7 +46,6 @@ import java.util.Calendar;
 import org.jumpmind.properties.TypedProperties;
 
 public class PreparedStatementWrapper implements PreparedStatement {
-
     private WrapperInterceptor interceptor;
     private PreparedStatement wrapped;
     private String statement;
@@ -57,136 +56,137 @@ public class PreparedStatementWrapper implements PreparedStatement {
         this.interceptor = WrapperInterceptor.createInterceptor(this, engineProperties);
         this.statement = statement;
     }
+
     public void setBoolean(int arg1, boolean arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setBoolean", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setBoolean", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setBoolean(arg1,arg2);
+        wrapped.setBoolean(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setBoolean", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setBoolean", null, startTime, endTime, arg1, arg2);
     }
 
     public void setByte(int arg1, byte arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setByte", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setByte", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setByte(arg1,arg2);
+        wrapped.setByte(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setByte", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setByte", null, startTime, endTime, arg1, arg2);
     }
 
     public void setShort(int arg1, short arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setShort", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setShort", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setShort(arg1,arg2);
+        wrapped.setShort(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setShort", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setShort", null, startTime, endTime, arg1, arg2);
     }
 
     public void setInt(int arg1, int arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setInt", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setInt", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setInt(arg1,arg2);
+        wrapped.setInt(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setInt", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setInt", null, startTime, endTime, arg1, arg2);
     }
 
     public void setLong(int arg1, long arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setLong", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setLong", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setLong(arg1,arg2);
+        wrapped.setLong(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setLong", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setLong", null, startTime, endTime, arg1, arg2);
     }
 
     public void setFloat(int arg1, float arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setFloat", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setFloat", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setFloat(arg1,arg2);
+        wrapped.setFloat(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setFloat", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setFloat", null, startTime, endTime, arg1, arg2);
     }
 
     public void setDouble(int arg1, double arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setDouble", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setDouble", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setDouble(arg1,arg2);
+        wrapped.setDouble(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setDouble", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setDouble", null, startTime, endTime, arg1, arg2);
     }
 
     public void setTimestamp(int arg1, Timestamp arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setTimestamp", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setTimestamp", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setTimestamp(arg1,arg2);
+        wrapped.setTimestamp(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setTimestamp", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setTimestamp", null, startTime, endTime, arg1, arg2);
     }
 
     public void setTimestamp(int arg1, Timestamp arg2, Calendar arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setTimestamp", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setTimestamp", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setTimestamp(arg1,arg2,arg3);
+        wrapped.setTimestamp(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setTimestamp", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setTimestamp", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setURL(int arg1, URL arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setURL", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setURL", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setURL(arg1,arg2);
+        wrapped.setURL(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setURL", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setURL", null, startTime, endTime, arg1, arg2);
     }
 
     public void setTime(int arg1, Time arg2, Calendar arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setTime", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setTime", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setTime(arg1,arg2,arg3);
+        wrapped.setTime(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setTime", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setTime", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setTime(int arg1, Time arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setTime", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setTime", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setTime(arg1,arg2);
+        wrapped.setTime(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setTime", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setTime", null, startTime, endTime, arg1, arg2);
     }
 
     public boolean execute() throws SQLException {
@@ -197,7 +197,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         boolean value = wrapped.execute();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("execute", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("execute", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (boolean) postResult.getInterceptResult();
         }
@@ -212,7 +212,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         ResultSetMetaData value = wrapped.getMetaData();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getMetaData", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getMetaData", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (ResultSetMetaData) postResult.getInterceptResult();
         }
@@ -227,7 +227,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         ResultSet value = wrapped.executeQuery();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("executeQuery", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("executeQuery", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (ResultSet) postResult.getInterceptResult();
         }
@@ -242,7 +242,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         int value = wrapped.executeUpdate();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("executeUpdate", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("executeUpdate", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (int) postResult.getInterceptResult();
         }
@@ -257,162 +257,162 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.addBatch();
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("addBatch", null,startTime, endTime );
+        interceptor.postExecute("addBatch", null, startTime, endTime);
     }
 
     public void setNull(int arg1, int arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setNull", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setNull", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setNull(arg1,arg2);
+        wrapped.setNull(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setNull", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setNull", null, startTime, endTime, arg1, arg2);
     }
 
     public void setNull(int arg1, int arg2, String arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setNull", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setNull", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setNull(arg1,arg2,arg3);
+        wrapped.setNull(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setNull", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setNull", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setBigDecimal(int arg1, BigDecimal arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setBigDecimal", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setBigDecimal", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setBigDecimal(arg1,arg2);
+        wrapped.setBigDecimal(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setBigDecimal", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setBigDecimal", null, startTime, endTime, arg1, arg2);
     }
 
     public void setString(int arg1, String arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setString", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setString", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setString(arg1,arg2);
+        wrapped.setString(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setString", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setString", null, startTime, endTime, arg1, arg2);
     }
 
     public void setBytes(int arg1, byte[] arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setBytes", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setBytes", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setBytes(arg1,arg2);
+        wrapped.setBytes(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setBytes", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setBytes", null, startTime, endTime, arg1, arg2);
     }
 
     public void setDate(int arg1, Date arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setDate", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setDate", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setDate(arg1,arg2);
+        wrapped.setDate(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setDate", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setDate", null, startTime, endTime, arg1, arg2);
     }
 
     public void setDate(int arg1, Date arg2, Calendar arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setDate", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setDate", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setDate(arg1,arg2,arg3);
+        wrapped.setDate(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setDate", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setDate", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setAsciiStream(int arg1, InputStream arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setAsciiStream", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setAsciiStream", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setAsciiStream(arg1,arg2);
+        wrapped.setAsciiStream(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setAsciiStream", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setAsciiStream", null, startTime, endTime, arg1, arg2);
     }
 
     public void setAsciiStream(int arg1, InputStream arg2, long arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setAsciiStream", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setAsciiStream", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setAsciiStream(arg1,arg2,arg3);
+        wrapped.setAsciiStream(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setAsciiStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setAsciiStream", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setAsciiStream(int arg1, InputStream arg2, int arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setAsciiStream", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setAsciiStream", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setAsciiStream(arg1,arg2,arg3);
+        wrapped.setAsciiStream(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setAsciiStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setAsciiStream", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     @Deprecated
     public void setUnicodeStream(int arg1, InputStream arg2, int arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setUnicodeStream", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setUnicodeStream", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setUnicodeStream(arg1,arg2,arg3);
+        wrapped.setUnicodeStream(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setUnicodeStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setUnicodeStream", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setBinaryStream(int arg1, InputStream arg2, long arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setBinaryStream", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setBinaryStream", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setBinaryStream(arg1,arg2,arg3);
+        wrapped.setBinaryStream(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setBinaryStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setBinaryStream", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setBinaryStream(int arg1, InputStream arg2, int arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setBinaryStream", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setBinaryStream", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setBinaryStream(arg1,arg2,arg3);
+        wrapped.setBinaryStream(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setBinaryStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setBinaryStream", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setBinaryStream(int arg1, InputStream arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setBinaryStream", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setBinaryStream", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setBinaryStream(arg1,arg2);
+        wrapped.setBinaryStream(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setBinaryStream", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setBinaryStream", null, startTime, endTime, arg1, arg2);
     }
 
     public void clearParameters() throws SQLException {
@@ -423,161 +423,161 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.clearParameters();
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("clearParameters", null,startTime, endTime );
+        interceptor.postExecute("clearParameters", null, startTime, endTime);
     }
 
     public void setObject(int arg1, Object arg2, int arg3, int arg4) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setObject", arg1,arg2,arg3,arg4);
+        InterceptResult preResult = interceptor.preExecute("setObject", arg1, arg2, arg3, arg4);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setObject(arg1,arg2,arg3,arg4);
+        wrapped.setObject(arg1, arg2, arg3, arg4);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setObject", null,startTime, endTime ,arg1,arg2,arg3,arg4);
+        interceptor.postExecute("setObject", null, startTime, endTime, arg1, arg2, arg3, arg4);
     }
 
     public void setObject(int arg1, Object arg2, int arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setObject", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setObject", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setObject(arg1,arg2,arg3);
+        wrapped.setObject(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setObject", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setObject", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setObject(int arg1, Object arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setObject", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setObject", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setObject(arg1,arg2);
+        wrapped.setObject(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setObject", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setObject", null, startTime, endTime, arg1, arg2);
     }
 
     public void setCharacterStream(int arg1, Reader arg2, long arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setCharacterStream", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setCharacterStream", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setCharacterStream(arg1,arg2,arg3);
+        wrapped.setCharacterStream(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setCharacterStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setCharacterStream", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setCharacterStream(int arg1, Reader arg2, int arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setCharacterStream", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setCharacterStream", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setCharacterStream(arg1,arg2,arg3);
+        wrapped.setCharacterStream(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setCharacterStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setCharacterStream", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setCharacterStream(int arg1, Reader arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setCharacterStream", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setCharacterStream", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setCharacterStream(arg1,arg2);
+        wrapped.setCharacterStream(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setCharacterStream", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setCharacterStream", null, startTime, endTime, arg1, arg2);
     }
 
     public void setRef(int arg1, Ref arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setRef", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setRef", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setRef(arg1,arg2);
+        wrapped.setRef(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setRef", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setRef", null, startTime, endTime, arg1, arg2);
     }
 
     public void setBlob(int arg1, InputStream arg2, long arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setBlob", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setBlob", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setBlob(arg1,arg2,arg3);
+        wrapped.setBlob(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setBlob", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setBlob", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setBlob(int arg1, InputStream arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setBlob", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setBlob", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setBlob(arg1,arg2);
+        wrapped.setBlob(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setBlob", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setBlob", null, startTime, endTime, arg1, arg2);
     }
 
     public void setBlob(int arg1, Blob arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setBlob", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setBlob", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setBlob(arg1,arg2);
+        wrapped.setBlob(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setBlob", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setBlob", null, startTime, endTime, arg1, arg2);
     }
 
     public void setClob(int arg1, Reader arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setClob", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setClob", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setClob(arg1,arg2);
+        wrapped.setClob(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setClob", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setClob", null, startTime, endTime, arg1, arg2);
     }
 
     public void setClob(int arg1, Reader arg2, long arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setClob", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setClob", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setClob(arg1,arg2,arg3);
+        wrapped.setClob(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setClob", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setClob", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setClob(int arg1, Clob arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setClob", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setClob", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setClob(arg1,arg2);
+        wrapped.setClob(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setClob", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setClob", null, startTime, endTime, arg1, arg2);
     }
 
     public void setArray(int arg1, Array arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setArray", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setArray", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setArray(arg1,arg2);
+        wrapped.setArray(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setArray", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setArray", null, startTime, endTime, arg1, arg2);
     }
 
     public ParameterMetaData getParameterMetaData() throws SQLException {
@@ -588,7 +588,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         ParameterMetaData value = wrapped.getParameterMetaData();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getParameterMetaData", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getParameterMetaData", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (ParameterMetaData) postResult.getInterceptResult();
         }
@@ -596,91 +596,91 @@ public class PreparedStatementWrapper implements PreparedStatement {
     }
 
     public void setRowId(int arg1, RowId arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setRowId", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setRowId", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setRowId(arg1,arg2);
+        wrapped.setRowId(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setRowId", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setRowId", null, startTime, endTime, arg1, arg2);
     }
 
     public void setNString(int arg1, String arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setNString", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setNString", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setNString(arg1,arg2);
+        wrapped.setNString(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setNString", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setNString", null, startTime, endTime, arg1, arg2);
     }
 
     public void setNCharacterStream(int arg1, Reader arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setNCharacterStream", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setNCharacterStream", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setNCharacterStream(arg1,arg2);
+        wrapped.setNCharacterStream(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setNCharacterStream", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setNCharacterStream", null, startTime, endTime, arg1, arg2);
     }
 
     public void setNCharacterStream(int arg1, Reader arg2, long arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setNCharacterStream", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setNCharacterStream", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setNCharacterStream(arg1,arg2,arg3);
+        wrapped.setNCharacterStream(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setNCharacterStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setNCharacterStream", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setNClob(int arg1, Reader arg2, long arg3) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setNClob", arg1,arg2,arg3);
+        InterceptResult preResult = interceptor.preExecute("setNClob", arg1, arg2, arg3);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setNClob(arg1,arg2,arg3);
+        wrapped.setNClob(arg1, arg2, arg3);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setNClob", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setNClob", null, startTime, endTime, arg1, arg2, arg3);
     }
 
     public void setNClob(int arg1, NClob arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setNClob", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setNClob", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setNClob(arg1,arg2);
+        wrapped.setNClob(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setNClob", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setNClob", null, startTime, endTime, arg1, arg2);
     }
 
     public void setNClob(int arg1, Reader arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setNClob", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setNClob", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setNClob(arg1,arg2);
+        wrapped.setNClob(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setNClob", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setNClob", null, startTime, endTime, arg1, arg2);
     }
 
     public void setSQLXML(int arg1, SQLXML arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("setSQLXML", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("setSQLXML", arg1, arg2);
         if (preResult.isIntercepted()) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        wrapped.setSQLXML(arg1,arg2);
+        wrapped.setSQLXML(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setSQLXML", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setSQLXML", null, startTime, endTime, arg1, arg2);
     }
 
     public void close() throws SQLException {
@@ -691,7 +691,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.close();
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("close", null,startTime, endTime );
+        interceptor.postExecute("close", null, startTime, endTime);
     }
 
     public Connection getConnection() throws SQLException {
@@ -702,7 +702,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         Connection value = wrapped.getConnection();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getConnection", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getConnection", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (Connection) postResult.getInterceptResult();
         }
@@ -710,14 +710,14 @@ public class PreparedStatementWrapper implements PreparedStatement {
     }
 
     public boolean execute(String arg1, int arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("execute", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("execute", arg1, arg2);
         if (preResult.isIntercepted()) {
             return (boolean) preResult.getInterceptResult();
         }
         long startTime = System.currentTimeMillis();
-        boolean value = wrapped.execute(arg1,arg2);
+        boolean value = wrapped.execute(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("execute", value,startTime, endTime ,arg1,arg2);
+        InterceptResult postResult = interceptor.postExecute("execute", value, startTime, endTime, arg1, arg2);
         if (postResult.isIntercepted()) {
             return (boolean) postResult.getInterceptResult();
         }
@@ -732,7 +732,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         boolean value = wrapped.execute(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("execute", value,startTime, endTime ,arg1);
+        InterceptResult postResult = interceptor.postExecute("execute", value, startTime, endTime, arg1);
         if (postResult.isIntercepted()) {
             return (boolean) postResult.getInterceptResult();
         }
@@ -740,14 +740,14 @@ public class PreparedStatementWrapper implements PreparedStatement {
     }
 
     public boolean execute(String arg1, String[] arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("execute", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("execute", arg1, arg2);
         if (preResult.isIntercepted()) {
             return (boolean) preResult.getInterceptResult();
         }
         long startTime = System.currentTimeMillis();
-        boolean value = wrapped.execute(arg1,arg2);
+        boolean value = wrapped.execute(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("execute", value,startTime, endTime ,arg1,arg2);
+        InterceptResult postResult = interceptor.postExecute("execute", value, startTime, endTime, arg1, arg2);
         if (postResult.isIntercepted()) {
             return (boolean) postResult.getInterceptResult();
         }
@@ -755,14 +755,14 @@ public class PreparedStatementWrapper implements PreparedStatement {
     }
 
     public boolean execute(String arg1, int[] arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("execute", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("execute", arg1, arg2);
         if (preResult.isIntercepted()) {
             return (boolean) preResult.getInterceptResult();
         }
         long startTime = System.currentTimeMillis();
-        boolean value = wrapped.execute(arg1,arg2);
+        boolean value = wrapped.execute(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("execute", value,startTime, endTime ,arg1,arg2);
+        InterceptResult postResult = interceptor.postExecute("execute", value, startTime, endTime, arg1, arg2);
         if (postResult.isIntercepted()) {
             return (boolean) postResult.getInterceptResult();
         }
@@ -777,7 +777,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         boolean value = wrapped.isClosed();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("isClosed", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("isClosed", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (boolean) postResult.getInterceptResult();
         }
@@ -792,7 +792,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         SQLWarning value = wrapped.getWarnings();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getWarnings", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getWarnings", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (SQLWarning) postResult.getInterceptResult();
         }
@@ -807,7 +807,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.clearWarnings();
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("clearWarnings", null,startTime, endTime );
+        interceptor.postExecute("clearWarnings", null, startTime, endTime);
     }
 
     public ResultSet executeQuery(String arg1) throws SQLException {
@@ -818,7 +818,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         ResultSet value = wrapped.executeQuery(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("executeQuery", value,startTime, endTime ,arg1);
+        InterceptResult postResult = interceptor.postExecute("executeQuery", value, startTime, endTime, arg1);
         if (postResult.isIntercepted()) {
             return (ResultSet) postResult.getInterceptResult();
         }
@@ -826,14 +826,14 @@ public class PreparedStatementWrapper implements PreparedStatement {
     }
 
     public int executeUpdate(String arg1, int arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("executeUpdate", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("executeUpdate", arg1, arg2);
         if (preResult.isIntercepted()) {
             return (int) preResult.getInterceptResult();
         }
         long startTime = System.currentTimeMillis();
-        int value = wrapped.executeUpdate(arg1,arg2);
+        int value = wrapped.executeUpdate(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("executeUpdate", value,startTime, endTime ,arg1,arg2);
+        InterceptResult postResult = interceptor.postExecute("executeUpdate", value, startTime, endTime, arg1, arg2);
         if (postResult.isIntercepted()) {
             return (int) postResult.getInterceptResult();
         }
@@ -841,14 +841,14 @@ public class PreparedStatementWrapper implements PreparedStatement {
     }
 
     public int executeUpdate(String arg1, int[] arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("executeUpdate", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("executeUpdate", arg1, arg2);
         if (preResult.isIntercepted()) {
             return (int) preResult.getInterceptResult();
         }
         long startTime = System.currentTimeMillis();
-        int value = wrapped.executeUpdate(arg1,arg2);
+        int value = wrapped.executeUpdate(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("executeUpdate", value,startTime, endTime ,arg1,arg2);
+        InterceptResult postResult = interceptor.postExecute("executeUpdate", value, startTime, endTime, arg1, arg2);
         if (postResult.isIntercepted()) {
             return (int) postResult.getInterceptResult();
         }
@@ -856,14 +856,14 @@ public class PreparedStatementWrapper implements PreparedStatement {
     }
 
     public int executeUpdate(String arg1, String[] arg2) throws SQLException {
-        InterceptResult preResult = interceptor.preExecute("executeUpdate", arg1,arg2);
+        InterceptResult preResult = interceptor.preExecute("executeUpdate", arg1, arg2);
         if (preResult.isIntercepted()) {
             return (int) preResult.getInterceptResult();
         }
         long startTime = System.currentTimeMillis();
-        int value = wrapped.executeUpdate(arg1,arg2);
+        int value = wrapped.executeUpdate(arg1, arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("executeUpdate", value,startTime, endTime ,arg1,arg2);
+        InterceptResult postResult = interceptor.postExecute("executeUpdate", value, startTime, endTime, arg1, arg2);
         if (postResult.isIntercepted()) {
             return (int) postResult.getInterceptResult();
         }
@@ -878,7 +878,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         int value = wrapped.executeUpdate(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("executeUpdate", value,startTime, endTime ,arg1);
+        InterceptResult postResult = interceptor.postExecute("executeUpdate", value, startTime, endTime, arg1);
         if (postResult.isIntercepted()) {
             return (int) postResult.getInterceptResult();
         }
@@ -893,7 +893,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         int value = wrapped.getMaxFieldSize();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getMaxFieldSize", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getMaxFieldSize", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (int) postResult.getInterceptResult();
         }
@@ -908,7 +908,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setMaxFieldSize(arg1);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setMaxFieldSize", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setMaxFieldSize", null, startTime, endTime, arg1);
     }
 
     public int getMaxRows() throws SQLException {
@@ -919,7 +919,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         int value = wrapped.getMaxRows();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getMaxRows", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getMaxRows", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (int) postResult.getInterceptResult();
         }
@@ -934,7 +934,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setMaxRows(arg1);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setMaxRows", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setMaxRows", null, startTime, endTime, arg1);
     }
 
     public void setEscapeProcessing(boolean arg1) throws SQLException {
@@ -945,7 +945,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setEscapeProcessing(arg1);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setEscapeProcessing", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setEscapeProcessing", null, startTime, endTime, arg1);
     }
 
     public int getQueryTimeout() throws SQLException {
@@ -956,7 +956,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         int value = wrapped.getQueryTimeout();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getQueryTimeout", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getQueryTimeout", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (int) postResult.getInterceptResult();
         }
@@ -971,7 +971,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setQueryTimeout(arg1);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setQueryTimeout", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setQueryTimeout", null, startTime, endTime, arg1);
     }
 
     public void cancel() throws SQLException {
@@ -982,7 +982,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.cancel();
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("cancel", null,startTime, endTime );
+        interceptor.postExecute("cancel", null, startTime, endTime);
     }
 
     public void setCursorName(String arg1) throws SQLException {
@@ -993,7 +993,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setCursorName(arg1);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setCursorName", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setCursorName", null, startTime, endTime, arg1);
     }
 
     public ResultSet getResultSet() throws SQLException {
@@ -1004,7 +1004,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         ResultSet value = wrapped.getResultSet();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getResultSet", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getResultSet", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (ResultSet) postResult.getInterceptResult();
         }
@@ -1019,7 +1019,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         int value = wrapped.getUpdateCount();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getUpdateCount", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getUpdateCount", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (int) postResult.getInterceptResult();
         }
@@ -1034,7 +1034,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         boolean value = wrapped.getMoreResults(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getMoreResults", value,startTime, endTime ,arg1);
+        InterceptResult postResult = interceptor.postExecute("getMoreResults", value, startTime, endTime, arg1);
         if (postResult.isIntercepted()) {
             return (boolean) postResult.getInterceptResult();
         }
@@ -1049,7 +1049,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         boolean value = wrapped.getMoreResults();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getMoreResults", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getMoreResults", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (boolean) postResult.getInterceptResult();
         }
@@ -1064,7 +1064,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setFetchDirection(arg1);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setFetchDirection", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setFetchDirection", null, startTime, endTime, arg1);
     }
 
     public int getFetchDirection() throws SQLException {
@@ -1075,7 +1075,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         int value = wrapped.getFetchDirection();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getFetchDirection", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getFetchDirection", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (int) postResult.getInterceptResult();
         }
@@ -1090,7 +1090,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setFetchSize(arg1);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setFetchSize", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setFetchSize", null, startTime, endTime, arg1);
     }
 
     public int getFetchSize() throws SQLException {
@@ -1101,7 +1101,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         int value = wrapped.getFetchSize();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getFetchSize", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getFetchSize", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (int) postResult.getInterceptResult();
         }
@@ -1116,7 +1116,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         int value = wrapped.getResultSetConcurrency();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getResultSetConcurrency", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getResultSetConcurrency", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (int) postResult.getInterceptResult();
         }
@@ -1131,7 +1131,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         int value = wrapped.getResultSetType();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getResultSetType", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getResultSetType", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (int) postResult.getInterceptResult();
         }
@@ -1146,7 +1146,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.addBatch(arg1);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("addBatch", null,startTime, endTime ,arg1);
+        interceptor.postExecute("addBatch", null, startTime, endTime, arg1);
     }
 
     public void clearBatch() throws SQLException {
@@ -1157,7 +1157,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.clearBatch();
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("clearBatch", null,startTime, endTime );
+        interceptor.postExecute("clearBatch", null, startTime, endTime);
     }
 
     public int[] executeBatch() throws SQLException {
@@ -1168,7 +1168,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         int[] value = wrapped.executeBatch();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("executeBatch", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("executeBatch", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (int[]) postResult.getInterceptResult();
         }
@@ -1183,7 +1183,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         ResultSet value = wrapped.getGeneratedKeys();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getGeneratedKeys", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getGeneratedKeys", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (ResultSet) postResult.getInterceptResult();
         }
@@ -1198,7 +1198,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         int value = wrapped.getResultSetHoldability();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("getResultSetHoldability", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("getResultSetHoldability", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (int) postResult.getInterceptResult();
         }
@@ -1213,7 +1213,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setPoolable(arg1);
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("setPoolable", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setPoolable", null, startTime, endTime, arg1);
     }
 
     public boolean isPoolable() throws SQLException {
@@ -1224,7 +1224,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         boolean value = wrapped.isPoolable();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("isPoolable", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("isPoolable", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (boolean) postResult.getInterceptResult();
         }
@@ -1239,7 +1239,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.closeOnCompletion();
         long endTime = System.currentTimeMillis();
-        interceptor.postExecute("closeOnCompletion", null,startTime, endTime );
+        interceptor.postExecute("closeOnCompletion", null, startTime, endTime);
     }
 
     public boolean isCloseOnCompletion() throws SQLException {
@@ -1250,7 +1250,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         boolean value = wrapped.isCloseOnCompletion();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("isCloseOnCompletion", value,startTime, endTime );
+        InterceptResult postResult = interceptor.postExecute("isCloseOnCompletion", value, startTime, endTime);
         if (postResult.isIntercepted()) {
             return (boolean) postResult.getInterceptResult();
         }
@@ -1266,7 +1266,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         Object value = wrapped.unwrap(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("unwrap", value,startTime, endTime ,arg1);
+        InterceptResult postResult = interceptor.postExecute("unwrap", value, startTime, endTime, arg1);
         if (postResult.isIntercepted()) {
             return (Object) postResult.getInterceptResult();
         }
@@ -1282,21 +1282,22 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         boolean value = wrapped.isWrapperFor(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("isWrapperFor", value,startTime, endTime ,arg1);
+        InterceptResult postResult = interceptor.postExecute("isWrapperFor", value, startTime, endTime, arg1);
         if (postResult.isIntercepted()) {
             return (boolean) postResult.getInterceptResult();
         }
         return value;
     }
-    
+
     public String getStatement() {
         return statement;
     }
+
     public TypedProperties getEngineProperties() {
         return engineProperties;
     }
+
     public void setEngineProperties(TypedProperties engineProperties) {
         this.engineProperties = engineProperties;
     }
 }
-

@@ -71,9 +71,8 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 
-
 public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
-	private static final Logger log = LoggerFactory.getLogger(CloudBulkDatabaseWriter.class);
+    private static final Logger log = LoggerFactory.getLogger(CloudBulkDatabaseWriter.class);
     protected IStagingManager stagingManager;
     protected IStagedResource stagedInputFile;
     protected boolean needsBinaryConversion;
@@ -86,7 +85,6 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
     protected String fileName = null;
     protected String rowTerminator = "\r\n";
     protected String fieldTerminator = "|";
-    
     protected int maxRowsBeforeFlush;
     protected long maxBytesBeforeFlush;
     protected String s3Bucket;
@@ -95,19 +93,19 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
     protected String s3Endpoint;
     protected String s3ObjectKey;
     protected String s3Region;
-    
     protected String azureAccountName;
     protected String azureAccountKey;
     protected String azureBlobContainer;
     protected String azureSasToken;
-    
     protected AmazonS3 s3client;
     protected CloudBlockBlob azureBlobReference;
-    
+
     public abstract void copyToCloudStorage() throws SQLException;
+
     public abstract void loadToCloudDatabase() throws SQLException;
+
     public abstract void cleanUpCloudStorage() throws SQLException;
-    
+
     public CloudBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
             IDatabasePlatform targetPlatform, String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService,
@@ -118,49 +116,38 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
         this.writerSettings.setDatabaseWriterFilters(filters);
         this.writerSettings.setDatabaseWriterErrorHandlers(errorHandlers);
         this.writerSettings.setCreateTableFailOnError(false);
-        
         this.maxRowsBeforeFlush = parameterService.getInt(ParameterConstants.CLOUD_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH, -1);
         this.maxBytesBeforeFlush = parameterService.getLong(ParameterConstants.CLOUD_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH, -1);
-        
         this.s3Bucket = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_BUCKET);
         this.s3AccessKey = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_ACCESS_KEY);
-        
         String secretKey = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_SECRET_KEY);
         if (secretKey != null && secretKey.startsWith(SecurityConstants.PREFIX_ENC)) {
             secretKey = securityService.decrypt(secretKey.substring(SecurityConstants.PREFIX_ENC.length()));
         }
         this.s3SecretKey = secretKey;
-        
         this.s3Endpoint = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_ENDPOINT);
         this.s3Region = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_REGION, Regions.US_EAST_1.getName());
-        
         this.azureAccountName = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_ACCOUNT_NAME);
         this.azureAccountKey = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_ACCOUNT_KEY);
         this.azureBlobContainer = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_BLOB_CONTAINER, "symmetricds");
-        
         String token = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_SAS_TOKEN);
         if (token != null && token.startsWith(SecurityConstants.PREFIX_ENC)) {
             token = securityService.decrypt(token.substring(SecurityConstants.PREFIX_ENC.length()));
         }
         this.azureSasToken = token;
     }
-    
+
     public void copyToS3CloudStorage() {
         stagedInputFile.close();
-        statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS); 
-        
+        statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
         BasicAWSCredentials awsCreds = new BasicAWSCredentials(s3AccessKey, s3SecretKey);
- 
         s3client = AmazonS3ClientBuilder.standard()
-                                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                                .withRegion(s3Region)
-                                .build();
-        
+                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                .withRegion(s3Region)
+                .build();
         TransferManager tm = TransferManagerBuilder.standard()
                 .withS3Client(s3client)
                 .build();
-        
-        
         if (isNotBlank(s3Endpoint)) {
             s3client.setEndpoint(s3Endpoint);
         }
@@ -176,16 +163,14 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
             log.info("Upload to AWS interrupted", e);
         }
     }
-    
-    public void copyToAzureCloudStorage()  {
-       try {
-            String connectionString = String.format("DefaultEndpointsProtocol=https;AccountName=%s;AccountKey=%s;EndpointSuffix=core.windows.net", 
+
+    public void copyToAzureCloudStorage() {
+        try {
+            String connectionString = String.format("DefaultEndpointsProtocol=https;AccountName=%s;AccountKey=%s;EndpointSuffix=core.windows.net",
                     this.azureAccountName, this.azureAccountKey);
             CloudStorageAccount storageAccount = CloudStorageAccount.parse(connectionString);
-
             CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
             CloudBlobContainer container = blobClient.getContainerReference(azureBlobContainer);
-
             azureBlobReference = container.getBlockBlobReference(this.fileName);
             container.createIfNotExists(BlobContainerPublicAccessType.CONTAINER, new BlobRequestOptions(), new OperationContext());
             azureBlobReference.uploadFromFile(this.stagedInputFile.getFile().getPath());
@@ -193,7 +178,7 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
             log.warn("Unable to copy staged file to Azure {}", this.fileName);
         }
     }
-    
+
     public void cleanUpS3Storage() {
         try {
             if (s3ObjectKey != null) {
@@ -205,7 +190,7 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
             log.info("Exception from AWS client: " + ace.getMessage());
         }
     }
-    
+
     public void cleanUpAzureStorage() {
         try {
             if (azureBlobReference != null) {
@@ -215,7 +200,7 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
             log.warn("Exception from Azure service while cleaning up blob reference: " + se.getMessage());
         }
     }
-    
+
     public boolean start(Table table) {
         this.table = table;
         if (super.start(table)) {
@@ -228,10 +213,9 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
                     }
                 }
             }
-
             if (sourceTable != null && targetTable == null) {
                 String qualifiedName = sourceTable.getFullyQualifiedTableName();
-                if (writerSettings.isIgnoreMissingTables()) {                    
+                if (writerSettings.isIgnoreMissingTables()) {
                     if (missingTables.add(qualifiedName)) {
                         log.info("Did not find the {} table in the target database. This might have been part of a sql "
                                 + "command (truncate) but will work if the fully qualified name was in the sql provided", qualifiedName);
@@ -240,7 +224,6 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
                     throw new SymmetricException("Could not load the %s table.  It is not in the target database", qualifiedName);
                 }
             }
-            
             needsBinaryConversion = false;
             if (batch.getBinaryEncoding() != BinaryEncoding.HEX && targetTable != null) {
                 for (Column column : targetTable.getColumns()) {
@@ -257,7 +240,7 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
                 String[] columnNames = databaseTable.getColumnNames();
                 needsColumnsReordered = false;
                 for (int i = 0; i < csvNames.length; i++) {
-                    if (! csvNames[i].equals(columnNames[i])) {
+                    if (!csvNames[i].equals(columnNames[i])) {
                         needsColumnsReordered = true;
                         break;
                     }
@@ -282,19 +265,16 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
             super.end(table);
         }
     }
-    
+
     public void bulkWrite(CsvData data) {
-        
         if (filterBefore(data)) {
             try {
                 DataEventType dataEventType = data.getDataEventType();
-        
                 switch (dataEventType) {
                     case INSERT:
                         statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
                         try {
                             String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
-                            
                             if (needsBinaryConversion) {
                                 Column[] columns = targetTable.getColumns();
                                 for (int i = 0; i < columns.length; i++) {
@@ -305,7 +285,7 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
                                     }
                                 }
                             }
-                            OutputStream out =  this.stagedInputFile.getOutputStream();
+                            OutputStream out = this.stagedInputFile.getOutputStream();
                             if (needsColumnsReordered) {
                                 Map<String, String> mapData = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
                                 String[] columnNames = databaseTable.getColumnNames();
@@ -319,7 +299,6 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
                                         out.write(fieldTerminator.getBytes(Charset.defaultCharset()));
                                         loadedBytes += fieldTerminator.getBytes(Charset.defaultCharset()).length;
                                     }
-                                    
                                 }
                             } else {
                                 for (int i = 0; i < parsedData.length; i++) {
@@ -333,8 +312,6 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
                                     }
                                 }
                             }
-                            
-                            
                             out.write(rowTerminator.getBytes(Charset.defaultCharset()));
                             loadedBytes += rowTerminator.getBytes(Charset.defaultCharset()).length;
                             loadedRows++;
@@ -355,8 +332,7 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
                         writeDefault(data);
                         break;
                 }
-        
-                if ((loadedRows >= maxRowsBeforeFlush && maxRowsBeforeFlush > 0) 
+                if ((loadedRows >= maxRowsBeforeFlush && maxRowsBeforeFlush > 0)
                         || (loadedBytes >= maxBytesBeforeFlush && maxBytesBeforeFlush > 0)) {
                     flush();
                 }
@@ -368,20 +344,17 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
             }
         }
     }
-    
+
     protected void flush() {
         if (loadedRows > 0) {
             this.stagedInputFile.close();
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
-            
             try {
                 copyToCloudStorage();
                 loadToCloudDatabase();
                 stagedInputFile.delete();
                 cleanUpCloudStorage();
-                
                 createStagingFile();
-
             } catch (Throwable ex) {
                 throw getPlatform().getSqlTemplate().translate(ex);
             } finally {
@@ -397,5 +370,4 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
         this.fileName = table.getName() + this.getBatch().getBatchId() + ".csv";
         stagedInputFile = stagingManager.create(Constants.STAGING_CATEGORY_BULK_LOAD, this.fileName);
     }
-
 }

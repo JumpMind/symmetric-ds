@@ -24,22 +24,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BatchResults {
-
     /**
      * The node ID for which batches are being acknowledged
      */
     private String nodeId;
-
     /**
      * A list of batchResults to be acknowledged on the Server
      */
     List<BatchResult> batchResults = new ArrayList<BatchResult>();
-
     /**
-     * Time provided by client that will be recorded in the network millis in
-     * the outgoing batch table. The client can calculate it based on the time
-     * it starts to process a batch minus the transfer start time ( assuming
-     * both client and server are in the same timezone)
+     * Time provided by client that will be recorded in the network millis in the outgoing batch table. The client can calculate it based on the time it starts
+     * to process a batch minus the transfer start time ( assuming both client and server are in the same timezone)
      */
     private long transferTimeInMillis;
 
@@ -78,13 +73,12 @@ public class BatchResults {
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
     }
-    
+
     public void setTransferTimeInMillis(long transferTimeInMillis) {
         this.transferTimeInMillis = transferTimeInMillis;
     }
-    
+
     public long getTransferTimeInMillis() {
         return transferTimeInMillis;
     }
-
 }

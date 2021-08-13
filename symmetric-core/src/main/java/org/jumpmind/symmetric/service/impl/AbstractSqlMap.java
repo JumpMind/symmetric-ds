@@ -30,15 +30,11 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.util.FormatUtils;
 
 /**
- * Utility SQL container that should be sub-classed in order to populate with
- * SQL statements from the subclasses constructor.
+ * Utility SQL container that should be sub-classed in order to populate with SQL statements from the subclasses constructor.
  */
 abstract public class AbstractSqlMap implements ISqlMap {
-
     private IDatabasePlatform platform;
-
     private Map<String, String> sql = new HashMap<String, String>();
-
     protected Map<String, String> replacementTokens;
 
     public AbstractSqlMap(IDatabasePlatform platform, String tablePrefix) {
@@ -55,9 +51,7 @@ abstract public class AbstractSqlMap implements ISqlMap {
         if (replacementTokens != null) {
             sql = FormatUtils.replaceTokens(sql, this.replacementTokens, true);
         }
-        
         sql = sql.replaceAll("\\s+", " ");
-
         this.sql.put(key, this.platform != null ? this.platform.scrubSql(sql) : sql);
     }
 
@@ -82,13 +76,12 @@ abstract public class AbstractSqlMap implements ISqlMap {
     public static Map<String, String> mergeSqlReplacementTokens(Map<String, String> replacementTokens, String tablePrefix) {
         Map<String, String> map = new HashMap<String, String>();
         List<String> tables = TableConstants.getTablesWithoutPrefix();
-		for (String table : tables) {
-			map.put(table, String.format("%s%s%s", tablePrefix, StringUtils.isNotBlank(tablePrefix) ? "_" : "", table));
-		}
-		if (replacementTokens != null) {
-			map.putAll(replacementTokens);
-		}
+        for (String table : tables) {
+            map.put(table, String.format("%s%s%s", tablePrefix, StringUtils.isNotBlank(tablePrefix) ? "_" : "", table));
+        }
+        if (replacementTokens != null) {
+            map.putAll(replacementTokens);
+        }
         return map;
     }
-
 }

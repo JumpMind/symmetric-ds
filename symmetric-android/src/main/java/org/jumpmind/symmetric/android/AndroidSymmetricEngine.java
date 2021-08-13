@@ -66,9 +66,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
-
-	private static final Logger log = LoggerFactory.getLogger(AndroidSymmetricEngine.class);
-			
+    private static final Logger log = LoggerFactory.getLogger(AndroidSymmetricEngine.class);
     protected String registrationUrl;
     protected String externalId;
     protected String nodeGroupId;
@@ -109,7 +107,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     protected IStagingManager createStagingManager() {
         String directory = androidContext.getCacheDir().toString();
         log.info("Staging manager directory: " + directory);
-        return new StagingManager(directory,false);
+        return new StagingManager(directory, false);
     }
 
     @Override
@@ -117,7 +115,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         return new StatisticManager(parameterService, nodeService,
                 configurationService, statisticService, clusterService);
     }
-    
+
     @Override
     protected ISymmetricDialect createSymmetricDialect() {
         return new SqliteSymmetricDialect(parameterService, platform);
@@ -141,15 +139,14 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     @Override
     protected IFileSyncService buildFileSyncService() {
         return new AndroidFileSyncService(this);
-    }        
-    
+    }
+
     @Override
     protected IClusterService createClusterService() {
         return new AndroidClusterService(parameterService, symmetricDialect, nodeService);
     }
 
     static class AndroidRouterService extends RouterService {
-
         public AndroidRouterService(ISymmetricEngine engine) {
             super(engine);
         }
@@ -161,7 +158,6 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
             reader.run();
             return reader;
         }
-
     }
 
     @Override
@@ -171,7 +167,6 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     }
 
     static class AndroidNodeCommunicationService extends NodeCommunicationService {
-
         public AndroidNodeCommunicationService(IClusterService clusterService, INodeService nodeService,
                 IParameterService parameterService, IConfigurationService configurationService, ISymmetricDialect symmetricDialect) {
             super(clusterService, nodeService, parameterService, configurationService, symmetricDialect);
@@ -180,7 +175,6 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         @Override
         public boolean execute(NodeCommunication nodeCommunication, RemoteNodeStatuses statuses,
                 INodeCommunicationExecutor executor) {
-
             final RemoteNodeStatus status = statuses.add(nodeCommunication.getNodeId());
             long ts = System.currentTimeMillis();
             boolean failed = false;
@@ -203,7 +197,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
                 } else {
                     nodeCommunication.setSuccessCount(nodeCommunication.getSuccessCount() + 1);
                     nodeCommunication
-                    .setTotalSuccessCount(nodeCommunication.getTotalSuccessCount() + 1);
+                            .setTotalSuccessCount(nodeCommunication.getTotalSuccessCount() + 1);
                     nodeCommunication.setTotalSuccessMillis(nodeCommunication
                             .getTotalSuccessMillis() + millis);
                     nodeCommunication.setFailCount(0);
@@ -218,7 +212,6 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         public int getAvailableThreads(CommunicationType communicationType) {
             return 10;
         }
-
     }
 
     public File snapshot(IProgressListener listener) {
@@ -232,5 +225,4 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     public IMonitorService getMonitorService() {
         throw new NotImplementedException();
     }
-
 }

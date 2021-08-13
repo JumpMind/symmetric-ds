@@ -30,10 +30,10 @@ import java.util.List;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 
-public class CSVRouter extends AbstractFileParsingRouter implements IDataRouter, IBuiltInExtensionPoint{
+public class CSVRouter extends AbstractFileParsingRouter implements IDataRouter, IBuiltInExtensionPoint {
     private ISymmetricEngine engine;
     private String columns;
-    
+
     public CSVRouter(ISymmetricEngine engine) {
         this.engine = engine;
     }
@@ -42,38 +42,33 @@ public class CSVRouter extends AbstractFileParsingRouter implements IDataRouter,
     public ISymmetricEngine getEngine() {
         return this.engine;
     }
-    
+
     @Override
     public List<String> parse(File file, int lineNumber, int tableIndex) {
         List<String> rows = new ArrayList<String>();
         int currentLine = 1;
-        
         try {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             String line;
-            while((line = reader.readLine()) != null){
-                if(currentLine == 1){
+            while ((line = reader.readLine()) != null) {
+                if (currentLine == 1) {
                     columns = line;
-                }else{
-                    if(currentLine > lineNumber){
+                } else {
+                    if (currentLine > lineNumber) {
                         rows.add(line);
-                    }       
+                    }
                 }
                 currentLine++;
             }
-            reader.close();  
+            reader.close();
         } catch (IOException e) {
             log.error("Unable to parse CSV file " + file.getName() + " line number " + currentLine, e);
         }
-
         return rows;
     }
 
     @Override
     public String getColumnNames() {
-           return this.columns;
+        return this.columns;
     }
-
-
-
 }

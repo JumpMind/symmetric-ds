@@ -40,39 +40,32 @@ import com.google.gson.Gson;
 
 public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected IOutgoingBatchService outgoingBatchService;
-    
     protected IIncomingBatchService incomingBatchService;
 
     @Override
     public String getName() {
         return "batchError";
     }
-    
+
     @Override
     public MonitorEvent check(Monitor monitor) {
         int outgoingErrorCount = 0;
         MonitorEvent event = new MonitorEvent();
-        
         List<OutgoingBatch> outgoingErrors = new ArrayList<OutgoingBatch>();
         List<IncomingBatch> incomingErrors = new ArrayList<IncomingBatch>();
-        
         OutgoingBatches outgoingBatches = outgoingBatchService.getOutgoingBatchErrors(1000);
         for (OutgoingBatch batch : outgoingBatches.getBatches()) {
             outgoingErrorCount++;
             outgoingErrors.add(batch);
         }
-
         int incomingErrorCount = 0;
         List<IncomingBatch> incomingBatches = incomingBatchService.findIncomingBatchErrors(1000);
         for (IncomingBatch batch : incomingBatches) {
             incomingErrorCount++;
             incomingErrors.add(batch);
         }
-
         event.setValue(outgoingErrorCount + incomingErrorCount);
-        
         BatchErrorWrapper wrapper = new BatchErrorWrapper();
         if (outgoingErrors.size() > 0) {
             wrapper.setOutgoingErrors(outgoingErrors);
@@ -80,7 +73,6 @@ public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAwar
         if (incomingErrors.size() > 0) {
             wrapper.setIncomingErrors(incomingErrors);
         }
-        
         event.setDetails(serializeDetails(wrapper));
         return event;
     }
@@ -95,17 +87,14 @@ public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAwar
         outgoingBatchService = engine.getOutgoingBatchService();
         incomingBatchService = engine.getIncomingBatchService();
     }
-    
+
     protected String serializeDetails(BatchErrorWrapper details) {
         String result = null;
         try {
             result = new Gson().toJson(details);
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.warn("Unable to convert batch errors to JSON", e);
         }
-       
         return result;
     }
-    
-
 }

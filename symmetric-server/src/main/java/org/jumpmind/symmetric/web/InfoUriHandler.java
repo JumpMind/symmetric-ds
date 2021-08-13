@@ -39,15 +39,12 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
- * Responsible for providing high level information about the node in property
- * format
+ * Responsible for providing high level information about the node in property format
  */
 public class InfoUriHandler extends AbstractUriHandler {
-
     private INodeService nodeService;
-
     private IConfigurationService configurationService;
-       
+
     public InfoUriHandler(IParameterService parameterService,
             INodeService nodeService,
             IConfigurationService configurationService, IInterceptor[] interceptors) {
@@ -75,13 +72,11 @@ public class InfoUriHandler extends AbstractUriHandler {
                     groups.add(nodeGroupLink.getSourceNodeGroupId());
                 }
             }
-            
             for (String group : groups) {
                 b.append(group).append(",");
             }
             properties.setProperty(InfoConstants.NODE_GROUP_IDS, b.substring(0, b.length() > 0 ? b.length() - 1 : 0));
         }
-
         if (node != null) {
             properties.setProperty(InfoConstants.NODE_ID, node.getNodeId());
             if (node.getDatabaseType() != null) {
@@ -93,14 +88,11 @@ public class InfoUriHandler extends AbstractUriHandler {
             if (node.getDeploymentType() != null) {
                 properties.setProperty(InfoConstants.DEPLOYMENT_TYPE, node.getDeploymentType());
             }
-
             if (node.getSymmetricVersion() != null) {
                 properties.setProperty(InfoConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
             }
         }
-
         properties.store(res.getOutputStream(), "SymmetricDS");
         res.flushBuffer();
     }
-
 }

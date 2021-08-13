@@ -33,11 +33,9 @@ import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 /**
- * Read CSV formatted data for a single table. Requires that the column names be
- * the header of the CSV.
+ * Read CSV formatted data for a single table. Requires that the column names be the header of the CSV.
  */
 public class CsvTableDataReader extends AbstractTableDataReader {
-
     protected CsvReader csvReader;
 
     public CsvTableDataReader(BinaryEncoding binaryEncoding, String catalogName, String schemaName,
@@ -77,7 +75,6 @@ public class CsvTableDataReader extends AbstractTableDataReader {
         } catch (IOException ex) {
             throw new IoException(ex);
         }
-
     }
 
     @Override
@@ -86,5 +83,4 @@ public class CsvTableDataReader extends AbstractTableDataReader {
             csvReader.close();
         }
     }
-
 }

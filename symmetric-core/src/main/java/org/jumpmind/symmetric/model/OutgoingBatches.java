@@ -38,9 +38,7 @@ import org.jumpmind.symmetric.model.AbstractBatch.Status;
  * A container for {@link OutgoingBatch}s.
  */
 public class OutgoingBatches implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>();
     Set<NodeChannel> activeChannels = new HashSet<NodeChannel>();
     Set<String> activeChannelIds = new HashSet<String>();
@@ -82,8 +80,7 @@ public class OutgoingBatches implements Serializable {
     }
 
     /**
-     * Removes all batches associated with the provided channel from this
-     * object.
+     * Removes all batches associated with the provided channel from this object.
      * 
      * @param channel
      *            - channel for which corresponding batches are removed
@@ -147,7 +144,7 @@ public class OutgoingBatches implements Serializable {
             }
         }
     }
-    
+
     public boolean containsLoadBatches() {
         for (OutgoingBatch b : batches) {
             if (b.isLoadFlag()) {
@@ -196,29 +193,25 @@ public class OutgoingBatches implements Serializable {
             }
         }
         return batchList;
-    }    
+    }
 
     /**
      * Removes all batches that are not associated with an 'activeChannel'.
      * 
      * @return List of batches that were filtered
      */
-
     public List<OutgoingBatch> filterBatchesForInactiveChannels() {
         List<OutgoingBatch> filtered = new ArrayList<OutgoingBatch>();
-
         for (OutgoingBatch batch : batches) {
             if (!activeChannelIds.contains(batch.getChannelId())) {
                 filtered.add(batch);
             }
         }
-
         batches.removeAll(filtered);
         return filtered;
     }
 
     public void sortChannels(List<NodeChannel> channels) {
-
         final HashMap<String, Date> errorChannels = new HashMap<String, Date>();
         for (OutgoingBatch batch : batches) {
             if (batch.isErrorFlag()) {
@@ -228,7 +221,6 @@ public class OutgoingBatches implements Serializable {
                 }
             }
         }
-
         Collections.sort(channels, new Comparator<NodeChannel>() {
             public int compare(NodeChannel b1, NodeChannel b2) {
                 boolean isError1 = errorChannels.containsKey(b1.getChannelId());
@@ -245,20 +237,15 @@ public class OutgoingBatches implements Serializable {
                 }
             }
         });
-
         for (NodeChannel nodeChannel : channels) {
             long extractPeriodMillis = nodeChannel.getExtractPeriodMillis();
             Date lastExtractedTime = nodeChannel.getLastExtractTime();
-
             if ((extractPeriodMillis < 1)
                     || (lastExtractedTime == null)
                     || (Calendar.getInstance().getTimeInMillis() - lastExtractedTime.getTime() >= extractPeriodMillis)) {
                 addActiveChannel(nodeChannel);
             }
         }
-
         filterBatchesForInactiveChannels();
-
     }
-
 }

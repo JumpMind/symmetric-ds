@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.test;
 import java.util.Date;
 
 public class Customer {
-
     int customerId;
     String name;
     boolean active;
@@ -35,7 +34,7 @@ public class Customer {
     Date entryTime;
     String notes;
     byte[] icon;
-    
+
     public Customer() {
     }
 
@@ -54,8 +53,6 @@ public class Customer {
         this.notes = notes;
         this.icon = icon;
     }
-
-
 
     public int getCustomerId() {
         return customerId;
@@ -144,5 +141,4 @@ public class Customer {
     public void setIcon(byte[] icon) {
         this.icon = icon;
     }
-
 }

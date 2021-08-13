@@ -25,19 +25,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class Wrapper {
-
     public static void main(String[] args) throws Exception {
-
         if (args.length < 1) {
             printUsage();
             System.exit(Constants.RC_BAD_USAGE);
         }
-
         String appDir = null;
         String configFile = null;
         // Decode spaces and other special characters
         String jarFile = Wrapper.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-
         if (args.length == 2) {
             configFile = args[1];
             appDir = getParentDir(configFile);
@@ -48,7 +44,6 @@ public class Wrapper {
             appDir = getParentDir(jarFile);
             configFile = findConfigFile(appDir + File.separator + "conf");
         }
-
         WrapperService service = WrapperService.getInstance();
         try {
             service.loadConfig(appDir, configFile, jarFile);
@@ -61,7 +56,6 @@ public class Wrapper {
             System.out.println(e.getMessage());
             System.exit(Constants.RC_FAIL_READ_CONFIG_FILE);
         }
-
         try {
             if (args[0].equalsIgnoreCase("start")) {
                 service.start();
@@ -71,7 +65,7 @@ public class Wrapper {
                 service.init();
             } else if (args[0].equalsIgnoreCase("stop")) {
                 service.stop();
-            } else if (args[0].equalsIgnoreCase("restart")) {    
+            } else if (args[0].equalsIgnoreCase("restart")) {
                 service.restart();
             } else if (args[0].equalsIgnoreCase("install")) {
                 service.install();
@@ -93,7 +87,7 @@ public class Wrapper {
                         + e.getCause().getMessage());
             }
             if (e.getNativeErrorCode() > 0) {
-                System.out.println("Native error " + e.getErrorCode());    
+                System.out.println("Native error " + e.getErrorCode());
             }
             System.exit(e.getErrorCode());
         } catch (Throwable ex) {
@@ -123,7 +117,7 @@ public class Wrapper {
                 }
             }
         }
-        return dirpath + File.separator + "wrapper_service.conf"; 
+        return dirpath + File.separator + "wrapper_service.conf";
     }
 
     protected static void printUsage() {
@@ -136,5 +130,4 @@ public class Wrapper {
         System.out.println("   status     - Status of service");
         System.out.println("   console    - Run from console");
     }
-
 }

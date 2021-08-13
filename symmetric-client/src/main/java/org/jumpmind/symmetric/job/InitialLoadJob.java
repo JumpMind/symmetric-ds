@@ -27,7 +27,6 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class InitialLoadJob extends AbstractJob {
-
     public InitialLoadJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(ClusterConstants.INITIAL_LOAD_QUEUE, engine, taskScheduler);
     }
@@ -43,5 +42,4 @@ public class InitialLoadJob extends AbstractJob {
             engine.getInitialLoadService().queueLoads(false);
         }
     }
-
 }

@@ -28,43 +28,24 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class IncomingError implements Serializable {
-
     private static final String CUR_DATA = "curData";
-
     private static final long serialVersionUID = 1L;
-
     private long batchId;
-
     private String nodeId;
-
     private long failedRowNumber;
-
     private long failedLineNumber;
-
     private String targetCatalogName;
-
     private String targetSchemaName;
-
     private String targetTableName;
-
     private BinaryEncoding binaryEncoding = BinaryEncoding.HEX;
-
     private DataEventType eventType;
-
     private String columnNames;
-
     private String primaryKeyColumnNames;
-
     private CsvData csvData = new CsvData();
-
     private boolean resolveIgnore = false;
-    
     private String conflictId;
-
     private Date createTime = new Date();
-
     private Date lastUpdateTime = new Date();
-
     private String lastUpdateBy = "symmetricds";
 
     public String[] getParsedRowData() {
@@ -98,11 +79,11 @@ public class IncomingError implements Serializable {
     public void setOldData(String oldData) {
         csvData.putCsvData(CsvData.OLD_DATA, oldData);
     }
-    
+
     public String getCurData() {
         return csvData.getCsvData(CUR_DATA);
     }
-    
+
     public void setCurData(String curData) {
         csvData.putCsvData(CUR_DATA, curData);
     }
@@ -114,7 +95,6 @@ public class IncomingError implements Serializable {
     public void setResolveData(String resolveData) {
         csvData.putCsvData(CsvData.RESOLVE_DATA, resolveData);
     }
-
     /* getters and setters */
 
     public long getBatchId() {
@@ -262,13 +242,12 @@ public class IncomingError implements Serializable {
     public BinaryEncoding getBinaryEncoding() {
         return binaryEncoding;
     }
-    
+
     public void setConflictId(String conflictId) {
         this.conflictId = conflictId;
     }
-    
+
     public String getConflictId() {
         return conflictId;
     }
-
 }

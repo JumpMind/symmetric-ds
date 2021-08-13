@@ -44,53 +44,51 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
 
 public class RedshiftDdlReader extends AbstractJdbcDdlReader {
-    protected static Map<String,String> columnNames;
+    protected static Map<String, String> columnNames;
     static {
         columnNames = mapNames();
     }
-    
+
     public RedshiftDdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern(null);
     }
-    
-    protected static Map<String,String> mapNames(){
-        Map<String,String> values = new HashMap<String,String>();
+
+    protected static Map<String, String> mapNames() {
+        Map<String, String> values = new HashMap<String, String>();
         values.put("IS_NULLABLE", "NULLABLE");
         return values;
     }
+
     @Override
-    protected String getName(String defaultName){
+    protected String getName(String defaultName) {
         String name = columnNames.get(defaultName);
         if (name == null) {
             name = super.getName(defaultName);
         }
         return name;
     }
-    
+
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Table table = super.readTable(connection, metaData, values);
-
         if (table != null) {
             determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
         }
         return table;
     }
-    
+
     @Override
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
-        
         if (column.getJdbcTypeCode() == Types.VARCHAR && column.getSizeAsInt() == 65535) {
             column.setJdbcTypeCode(Types.LONGVARCHAR);
             column.setMappedTypeCode(Types.LONGVARCHAR);
             column.setSize(null);
         }
-
         String defaultValue = column.getDefaultValue();
         if ((defaultValue != null) && (defaultValue.length() > 0)) {
             // If the default value looks like "identity"(102643, 0, '1,1'::text)
@@ -103,20 +101,20 @@ public class RedshiftDdlReader extends AbstractJdbcDdlReader {
                 // "-9000000000000000000::bigint" or
                 // "'some value'::character varying" or "'2000-01-01'::date"
                 switch (column.getMappedTypeCode()) {
-                case Types.INTEGER:
-                case Types.BIGINT:
-                case Types.DECIMAL:
-                case Types.NUMERIC:
-                    defaultValue = extractUndelimitedDefaultValue(defaultValue);
-                    break;
-                case Types.CHAR:
-                case Types.VARCHAR:
-                case Types.LONGVARCHAR:
-                case Types.DATE:
-                case Types.TIME:
-                case Types.TIMESTAMP:
-                    defaultValue = extractDelimitedDefaultValue(defaultValue);
-                    break;
+                    case Types.INTEGER:
+                    case Types.BIGINT:
+                    case Types.DECIMAL:
+                    case Types.NUMERIC:
+                        defaultValue = extractUndelimitedDefaultValue(defaultValue);
+                        break;
+                    case Types.CHAR:
+                    case Types.VARCHAR:
+                    case Types.LONGVARCHAR:
+                    case Types.DATE:
+                    case Types.TIME:
+                    case Types.TIMESTAMP:
+                        defaultValue = extractDelimitedDefaultValue(defaultValue);
+                        break;
                 }
                 if (TypeMap.isTextType(column.getMappedTypeCode())) {
                     // We assume escaping via double quote (see also the
@@ -131,8 +129,7 @@ public class RedshiftDdlReader extends AbstractJdbcDdlReader {
     }
 
     /*
-     * Extracts the default value from a default value spec of the form
-     * "'some value'::character varying" or "'2000-01-01'::date".
+     * Extracts the default value from a default value spec of the form "'some value'::character varying" or "'2000-01-01'::date".
      * 
      * @param defaultValue The default value spec
      * 
@@ -141,7 +138,6 @@ public class RedshiftDdlReader extends AbstractJdbcDdlReader {
     private String extractDelimitedDefaultValue(String defaultValue) {
         if (defaultValue.startsWith("'")) {
             int valueEnd = defaultValue.indexOf("'::");
-
             if (valueEnd > 0) {
                 return defaultValue.substring("'".length(), valueEnd);
             }
@@ -150,11 +146,9 @@ public class RedshiftDdlReader extends AbstractJdbcDdlReader {
     }
 
     /*
-     * Extracts the default value from a default value spec of the form
-     * "-9000000000000000000::bigint".
+     * Extracts the default value from a default value spec of the form "-9000000000000000000::bigint".
      * 
-     * Handles sequence evaluations where the end paren is after the ::
-     * nextval('"sym_data_data_id_seq"'::text)
+     * Handles sequence evaluations where the end paren is after the :: nextval('"sym_data_data_id_seq"'::text)
      * 
      * @param defaultValue The default value spec
      * 
@@ -162,18 +156,13 @@ public class RedshiftDdlReader extends AbstractJdbcDdlReader {
      */
     private String extractUndelimitedDefaultValue(String defaultValue) {
         int valueEnd = defaultValue.indexOf("::");
-
         if (valueEnd > 0) {
-            
             defaultValue = defaultValue.substring(0, valueEnd);
-            
             int startParen = defaultValue.indexOf("(");
             int endParen = defaultValue.indexOf(")");
-            
             if (startParen > 0 && endParen < 0) {
                 defaultValue = defaultValue + ")";
             }
-            
         } else {
             if (defaultValue.startsWith("(") && defaultValue.endsWith(")")) {
                 defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
@@ -181,36 +170,33 @@ public class RedshiftDdlReader extends AbstractJdbcDdlReader {
         }
         return defaultValue;
     }
-    
+
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
         return table.doesIndexContainOnlyPrimaryKeyColumns(index);
     }
-    
+
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) {
-        
         List<Trigger> triggers = new ArrayList<Trigger>();
-        
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
-        
         String sql = "SELECT "
-                        + "trigger_name, "
-                        + "trigger_schema, "
-                        + "trigger_catalog, "
-                        + "event_manipulation AS trigger_type, "
-                        + "event_object_table AS table_name,"
-                        + "trig.*, "
-                        + "pgproc.prosrc "
-                    + "FROM INFORMATION_SCHEMA.TRIGGERS AS trig "
-                    + "INNER JOIN pg_catalog.pg_trigger AS pgtrig "
-                        + "ON pgtrig.tgname=trig.trigger_name "
-                    + "INNER JOIN pg_catalog.pg_proc AS pgproc "
-                        + "ON pgproc.oid=pgtrig.tgfoid "
-                    + "WHERE event_object_table=? AND event_object_schema=?;";
+                + "trigger_name, "
+                + "trigger_schema, "
+                + "trigger_catalog, "
+                + "event_manipulation AS trigger_type, "
+                + "event_object_table AS table_name,"
+                + "trig.*, "
+                + "pgproc.prosrc "
+                + "FROM INFORMATION_SCHEMA.TRIGGERS AS trig "
+                + "INNER JOIN pg_catalog.pg_trigger AS pgtrig "
+                + "ON pgtrig.tgname=trig.trigger_name "
+                + "INNER JOIN pg_catalog.pg_proc AS pgproc "
+                + "ON pgproc.oid=pgtrig.tgfoid "
+                + "WHERE event_object_table=? AND event_object_schema=?;";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
             public Trigger mapRow(Row row) {
                 Trigger trigger = new Trigger();
@@ -231,7 +217,6 @@ public class RedshiftDdlReader extends AbstractJdbcDdlReader {
                 return trigger;
             }
         }, tableName, schema);
-        
         return triggers;
     }
 

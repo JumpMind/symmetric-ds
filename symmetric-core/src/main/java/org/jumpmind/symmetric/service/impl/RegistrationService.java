@@ -77,29 +77,17 @@ import org.jumpmind.util.RandomTimeSlot;
  * @see IRegistrationService
  */
 public class RegistrationService extends AbstractService implements IRegistrationService {
-
     private INodeService nodeService;
-
     private IDataExtractorService dataExtractorService;
-
     private IDataService dataService;
-
     private IDataLoaderService dataLoaderService;
-
     private ITransportManager transportManager;
-    
     private IOutgoingBatchService outgoingBatchService;
-
     private RandomTimeSlot randomTimeSlot;
-
     private IStatisticManager statisticManager;
-
     private IConfigurationService configurationService;
-    
     private IExtensionService extensionService;
-    
     private ISymmetricEngine engine;
-
     private boolean allowClientRegistration = true;
 
     public RegistrationService(ISymmetricEngine engine) {
@@ -120,9 +108,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
     }
 
     public Node registerPullOnlyNode(String externalId, String nodeGroupId,
-            String databaseType, String databaseVersion, String databaseName) 
+            String databaseType, String databaseVersion, String databaseName)
             throws IOException {
-        
         Node node = new Node();
         node.setExternalId(externalId);
         node.setNodeGroupId(nodeGroupId);
@@ -130,17 +117,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
         node.setDatabaseVersion(databaseVersion);
         node.setDatabaseName(databaseName);
         node.setDeploymentType(Constants.DEPLOYMENT_TYPE_REST);
-
         node = processRegistration(node, null, null, null, null, true);
-        
         if (node.isSyncEnabled()) {
-            //set the node as registered as we have no 
-            //virtual batch for registration to be ok'd
+            // set the node as registered as we have no
+            // virtual batch for registration to be ok'd
             markNodeAsRegistered(node.getNodeId());
-        }        
+        }
         return node;
-    }    
-    
+    }
+
     public boolean registerNode(Node preRegisteredNode, OutputStream out, boolean isRequestedRegistration)
             throws IOException {
         return registerNode(preRegisteredNode, null, null, out, null, null, isRequestedRegistration);
@@ -149,19 +134,16 @@ public class RegistrationService extends AbstractService implements IRegistratio
     protected void extractConfiguration(OutputStream out, Node registeredNode) {
         dataExtractorService.extractConfigurationStandalone(registeredNode, out);
     }
-    
+
     protected Node processRegistration(Node nodePriorToRegistration, String remoteHost,
             String remoteAddress, String userId, String password, boolean isRequestedRegistration)
             throws IOException {
-
         Node processedNode = new Node();
         processedNode.setSyncEnabled(false);
-
         if (!allowClientRegistration) {
             log.warn("Cannot register a client node until this node has synced triggers");
             return processedNode;
         }
-        
         Node identity = nodeService.findIdentity();
         if (identity == null) {
             RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
@@ -171,25 +153,23 @@ public class RegistrationService extends AbstractService implements IRegistratio
             log.warn(req.getErrorMessage());
             return processedNode;
         }
-
         try {
             if (!nodeService.isRegistrationServer()) {
                 /*
-                 * registration is not allowed until this node has an identity
-                 * and an initial load
+                 * registration is not allowed until this node has an identity and an initial load
                  */
                 boolean requiresInitialLoad = parameterService.is(ParameterConstants.REGISTRATION_REQUIRE_INITIAL_LOAD, true);
                 NodeSecurity security = nodeService.findNodeSecurity(identity.getNodeId());
                 if (requiresInitialLoad && (security == null || security.getInitialLoadTime() == null)) {
                     RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                             RegistrationStatus.ER, remoteHost, remoteAddress);
-                    req.setErrorMessage("Cannot register a client node until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
+                    req.setErrorMessage(
+                            "Cannot register a client node until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
                     saveRegistrationRequest(req);
                     log.warn(req.getErrorMessage());
                     return processedNode;
                 }
             }
-
             String redirectUrl = null;
             IRegistrationRedirect registrationRedirect = extensionService.getExtensionPoint(IRegistrationRedirect.class);
             if (registrationRedirect != null) {
@@ -198,7 +178,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
             } else {
                 redirectUrl = getRedirectionUrlFor(nodePriorToRegistration.getExternalId());
             }
-
             if (redirectUrl != null) {
                 log.info("Redirecting {} to {} for registration.",
                         nodePriorToRegistration.getExternalId(), redirectUrl);
@@ -206,10 +185,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         RegistrationStatus.RR, remoteHost, remoteAddress));
                 throw new RegistrationRedirectException(redirectUrl);
             }
-
             /*
-             * Check to see if there is a link that exists to service the node
-             * that is requesting registration
+             * Check to see if there is a link that exists to service the node that is requesting registration
              */
             NodeGroupLink link = configurationService.getNodeGroupLinkFor(
                     identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId(), false);
@@ -218,34 +195,31 @@ public class RegistrationService extends AbstractService implements IRegistratio
                             true)) {
                 RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.ER, remoteHost, remoteAddress);
-                req.setErrorMessage(String.format("Cannot register a client node unless a node group link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is %s and the target group id is %s",
+                req.setErrorMessage(String.format(
+                        "Cannot register a client node unless a node group link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is %s and the target group id is %s",
                         identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId()));
                 saveRegistrationRequest(req);
                 log.warn(req.getErrorMessage());
                 return processedNode;
             }
-
-            String nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? extensionService.
-                    getExtensionPoint(INodeIdCreator.class).selectNodeId(nodePriorToRegistration, remoteHost,
-                            remoteAddress) : nodePriorToRegistration.getNodeId();
-            
+            String nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? extensionService.getExtensionPoint(INodeIdCreator.class).selectNodeId(
+                    nodePriorToRegistration, remoteHost,
+                    remoteAddress) : nodePriorToRegistration.getNodeId();
             Node foundNode = nodeService.findNode(nodeId);
             NodeSecurity security = nodeService.findNodeSecurity(nodeId);
             boolean isRegistrationAuthenticated = false;
-            
             if (userId != null || password != null) {
                 List<INodeRegistrationAuthenticator> listeners = extensionService.getExtensionPointList(INodeRegistrationAuthenticator.class);
                 for (INodeRegistrationAuthenticator listener : listeners) {
                     isRegistrationAuthenticated |= listener.authenticate(userId, password);
-                }                
+                }
             }
-            
             if ((foundNode == null || security == null || !security.isRegistrationEnabled())
                     && (parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED) || isRegistrationAuthenticated)) {
                 openRegistration(nodePriorToRegistration, remoteHost, remoteAddress);
-                nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? extensionService.
-                        getExtensionPoint(INodeIdCreator.class).selectNodeId(nodePriorToRegistration, remoteHost,
-                                remoteAddress) : nodePriorToRegistration.getNodeId();
+                nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? extensionService.getExtensionPoint(INodeIdCreator.class).selectNodeId(
+                        nodePriorToRegistration, remoteHost,
+                        remoteAddress) : nodePriorToRegistration.getNodeId();
                 security = nodeService.findNodeSecurity(nodeId);
                 foundNode = nodeService.findNode(nodeId);
             } else if (foundNode == null || security == null
@@ -254,7 +228,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         RegistrationStatus.RQ, remoteHost, remoteAddress));
                 return processedNode;
             }
-
             // TODO: since we send sym_node in registration batch, save this record with source_node_id = node_id
             foundNode.setSyncEnabled(true);
             foundNode.setSyncUrl(nodePriorToRegistration.getSyncUrl());
@@ -265,29 +238,22 @@ public class RegistrationService extends AbstractService implements IRegistratio
             foundNode.setDatabaseName(nodePriorToRegistration.getDatabaseName());
             nodeService.save(foundNode);
             log.info("Completed registration of node " + foundNode);
-            
             /**
-             * Only send automatic initial load once or if the client is really
-             * re-registering
+             * Only send automatic initial load once or if the client is really re-registering
              */
             if ((security != null && security.getInitialLoadTime() == null) || isRequestedRegistration) {
                 if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
                     nodeService.setInitialLoadEnabled(nodeId, true, false, -1, "registration");
                 }
-
                 if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
                     nodeService.setReverseInitialLoadEnabled(nodeId, true, false, -1, "registration");
                 }
             }
-            
             saveRegistrationRequest(new RegistrationRequest(foundNode, RegistrationStatus.OK,
                     remoteHost, remoteAddress));
             markNodeAsRegistrationPending(nodeId);
-
             statisticManager.incrementNodesRegistered(1);
-
-           return foundNode;
-            
+            return foundNode;
         } catch (RegistrationNotOpenException ex) {
             if (StringUtils.isNotBlank(ex.getMessage())) {
                 log.warn("Registration not allowed for {} because {}", nodePriorToRegistration, ex.getMessage());
@@ -295,7 +261,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             return processedNode;
         }
     }
-    
+
     /**
      * @see IRegistrationService#registerNode(Node, OutputStream, boolean)
      */
@@ -303,19 +269,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
     public boolean registerNode(Node nodePriorToRegistration, String remoteHost,
             String remoteAddress, OutputStream out, String userId, String password, boolean isRequestedRegistration)
             throws IOException {
-
         Node processedNode = processRegistration(nodePriorToRegistration, remoteHost,
                 remoteAddress, userId, password, isRequestedRegistration);
-
         if (processedNode.isSyncEnabled()) {
             /*
-             * Mark all configuration batches as processed because we are about to reload
-             * the configuration for the node
+             * Mark all configuration batches as processed because we are about to reload the configuration for the node
              */
             outgoingBatchService.markAllConfigAsSentForNode(processedNode.getNodeId());
             extractConfiguration(out, processedNode);
         }
-        
         return processedNode.isSyncEnabled();
     }
 
@@ -348,14 +310,13 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     public void saveRegistrationRequest(RegistrationRequest request) {
         /**
-         * Lookup existing registration requests to update the attempt count.  We previously
-         * did this in SQL on the update, but as400 v5 didn't like that
+         * Lookup existing registration requests to update the attempt count. We previously did this in SQL on the update, but as400 v5 didn't like that
          */
         boolean foundOne = false;
         List<RegistrationRequest> requests = getRegistrationRequests(true);
         for (RegistrationRequest registrationRequest : requests) {
             if (registrationRequest.getNodeGroupId().equals(request.getNodeGroupId()) && registrationRequest.getExternalId().equals(request.getExternalId())) {
-                request.setAttemptCount(registrationRequest.getAttemptCount()+1);
+                request.setAttemptCount(registrationRequest.getAttemptCount() + 1);
                 foundOne = true;
                 break;
             }
@@ -370,10 +331,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
                             request.getLastUpdateTime(), request.getRegisteredNodeId(),
                             request.getStatus().name(), request.getErrorMessage(), nodeGroupId,
                             externalId, request.getHostName() }, new int[] {
-                            Types.NUMERIC, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+                                    Types.NUMERIC, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
+                                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         }
-        
         if (count == 0) {
             sqlTemplate.update(
                     getSql("insertRegistrationRequestSql"),
@@ -381,10 +341,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
                             request.getRegisteredNodeId(), request.getStatus().name(), nodeGroupId,
                             externalId, request.getIpAddress(), request.getHostName(),
                             request.getErrorMessage() }, new int[] { Types.VARCHAR, Types.TIMESTAMP,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+                                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         }
-
     }
 
     public String getRedirectionUrlFor(String externalId) {
@@ -400,11 +359,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
     public void saveRegistrationRedirect(String externalIdToRedirect, String nodeIdToRedirectTo) {
         int count = sqlTemplate.update(getSql("updateRegistrationRedirectUrlSql"), new Object[] {
                 nodeIdToRedirectTo, externalIdToRedirect }, new int[] { Types.VARCHAR,
-                Types.VARCHAR });
+                        Types.VARCHAR });
         if (count == 0) {
             sqlTemplate.update(getSql("insertRegistrationRedirectUrlSql"), new Object[] {
                     nodeIdToRedirectTo, externalIdToRedirect }, new int[] { Types.VARCHAR,
-                    Types.VARCHAR });
+                            Types.VARCHAR });
         }
     }
 
@@ -450,7 +409,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         log.info("Could not register.  Sleeping for {}ms before attempting again.", sleepTimeInMs);
         List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
         for (INodeRegistrationListener l : registrationListeners) {
-            l.registrationNextAttemptUpdated((int)(sleepTimeInMs/1000));
+            l.registrationNextAttemptUpdated((int) (sleepTimeInMs / 1000));
         }
         AppUtils.sleep(sleepTimeInMs);
     }
@@ -458,7 +417,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     public boolean isRegisteredWithServer() {
         return nodeService.findIdentity() != null;
     }
-    
+
     /**
      * @see IRegistrationService#registerWithServer()
      */
@@ -466,19 +425,14 @@ public class RegistrationService extends AbstractService implements IRegistratio
         boolean wasRegistered = isRegisteredWithServer();
         boolean registered = wasRegistered;
         int maxNumberOfAttempts = parameterService
-                .getInt(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS);        
-        
+                .getInt(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS);
         while (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0) && engine.isStarted()) {
-
             maxNumberOfAttempts--;
-
             registered = attemptToRegisterWithServer(maxNumberOfAttempts);
- 
             if (!registered && maxNumberOfAttempts != 0) {
                 sleepBeforeRegistrationRetry();
             }
         }
-
         if (!registered) {
             throw new RegistrationFailedException(String.format(
                     "Failed after trying to register %s times.",
@@ -489,7 +443,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     public synchronized boolean attemptToRegisterWithServer(int maxNumberOfAttempts) {
         List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
-
         boolean registered = isRegisteredWithServer();
         if (!registered) {
             try {
@@ -497,7 +450,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     l.registrationStarting(Thread.currentThread());
                 }
                 log.info("This node is unregistered.  It will attempt to register using the registration.url");
-                registered = dataLoaderService.loadDataFromPull(null, (String)null).getStatus() == Status.DATA_PROCESSED;
+                registered = dataLoaderService.loadDataFromPull(null, (String) null).getStatus() == Status.DATA_PROCESSED;
             } catch (ConnectException e) {
                 log.warn(
                         "The request to register failed because the client failed to connect to the server.  The connection error message was: {}",
@@ -525,7 +478,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 boolean authWasAttempted = false;
                 for (INodeRegistrationListener l : registrationListeners) {
                     Map<String, String> prop = l.getRequestProperties();
-                    if (prop != null && prop.containsKey(WebConstants.REG_USER_ID))  {
+                    if (prop != null && prop.containsKey(WebConstants.REG_USER_ID)) {
                         authWasAttempted = true;
                     }
                 }
@@ -549,9 +502,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                             + (StringUtils.isNotBlank(e.getMessage()) ? e.getMessage() : e.getClass().getName()));
                 }
             }
-
             registered = checkRegistrationSuccessful(registered, maxNumberOfAttempts);
-
         }
         return registered;
     }
@@ -560,7 +511,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
         if (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
             registered = isRegisteredWithServer();
             if (registered) {
-                log.info("We registered, but were not able to acknowledge our registration.  Sending a sql event to the node where we registered to indicate that we are alive and registered");
+                log.info(
+                        "We registered, but were not able to acknowledge our registration.  Sending a sql event to the node where we registered to indicate that we are alive and registered");
                 Node identity = nodeService.findIdentity();
                 Node parentNode = nodeService.findNode(identity.getCreatedAtNodeId());
                 dataService
@@ -572,10 +524,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
                                         + identity.getNodeId() + "'", false, -1, null);
             }
         }
-
         if (registered) {
             List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
-
             Node node = nodeService.findIdentity();
             if (node != null) {
                 log.info("Successfully registered node [id={}]", node.getNodeId());
@@ -601,7 +551,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     public synchronized void reOpenRegistration(String nodeId) {
         reOpenRegistration(nodeId, null, null);
     }
-    
+
     protected synchronized void reOpenRegistration(String nodeId, String remoteHost, String remoteAddress) {
         Node node = nodeService.findNode(nodeId);
         NodeSecurity security = nodeService.findNodeSecurity(nodeId);
@@ -620,14 +570,13 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 // node table, but not in node security.
                 // lets go ahead and try to insert into node security.
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
-                        nodeId, password, nodeService.findIdentityNodeId() });                
+                        nodeId, password, nodeService.findIdentityNodeId() });
                 log.info("Registration was opened for {}", nodeId);
             } else if (updateCount == 0) {
                 log.warn("Registration was already enabled for {}.  No need to reenable it", nodeId);
             } else {
                 log.info("Registration was reopened for {}", nodeId);
             }
-            
             if (isNotBlank(remoteHost)) {
                 NodeHost nodeHost = new NodeHost(node.getNodeId(), null);
                 nodeHost.setHeartbeatTime(new Date());
@@ -635,7 +584,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 nodeHost.setHostName(remoteHost);
                 nodeService.updateNodeHost(nodeHost);
             }
-            
             nodeService.flushNodeAuthorizedCache();
         } else {
             log.warn("There was no row with a node id of {} to 'reopen' registration for", nodeId);
@@ -652,7 +600,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         node.setNodeGroupId(nodeGroup);
         return openRegistration(node);
     }
-    
+
     public synchronized String openRegistration(String nodeGroup, String externalId, String remoteHost, String remoteAddress) {
         Node node = new Node();
         node.setExternalId(externalId);
@@ -672,11 +620,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
             if (existingNode == null) {
                 node.setNodeId(nodeId);
                 node.setSyncEnabled(false);
-                
                 boolean masterToMasterOnly = configurationService.containsMasterToMaster();
-                node.setCreatedAtNodeId(masterToMasterOnly ? null: me.getNodeId());
+                node.setCreatedAtNodeId(masterToMasterOnly ? null : me.getNodeId());
                 nodeService.save(node);
-
                 // make sure there isn't a node security row lying around w/out
                 // a node row
                 nodeService.deleteNodeSecurity(nodeId);
@@ -684,7 +630,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 password = filterPasswordOnSaveIfNeeded(password);
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
                         nodeId, password, me.getNodeId() });
-                
                 if (isNotBlank(remoteHost)) {
                     NodeHost nodeHost = new NodeHost(node.getNodeId(), null);
                     nodeHost.setHeartbeatTime(new Date());
@@ -696,7 +641,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 nodeService.flushNodeCache();
                 nodeService.insertNodeGroup(node.getNodeGroupId(), null);
                 nodeService.flushNodeGroupCache();
-                
                 log.info(
                         "Just opened registration for external id of {} and a node group of {} and a node id of {}",
                         new Object[] { node.getExternalId(), node.getNodeGroupId(), nodeId });
@@ -731,7 +675,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         }
         return false;
     }
-    
+
     public void requestNodeCopy() {
         Node copyFrom = nodeService.findIdentity();
         if (copyFrom == null) {
@@ -741,25 +685,23 @@ public class RegistrationService extends AbstractService implements IRegistratio
         int maxNumberOfAttempts = parameterService
                 .getInt(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS);
         while (!copied && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
-            
             try {
                 log.info("Detected that node '{}' should be copied to a new node id.  Attempting to contact server to accomplish this", copyFrom.getNodeId());
-                 copied = transportManager.sendCopyRequest(copyFrom) == WebConstants.SC_OK;   
-                 if (copied) {
-                     nodeService.deleteIdentity();
-                 }
+                copied = transportManager.sendCopyRequest(copyFrom) == WebConstants.SC_OK;
+                if (copied) {
+                    nodeService.deleteIdentity();
+                }
             } catch (ConnectException e) {
                 log.warn("The request to copy failed because the client failed to connect to the server");
             } catch (UnknownHostException e) {
                 log.warn("The request to copy failed because the host was unknown");
             } catch (ConnectionRejectedException ex) {
-                log.warn("The request to copy was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
+                log.warn(
+                        "The request to copy was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
             } catch (Exception e) {
                 log.error("", e);
             }
-
             maxNumberOfAttempts--;
-            
             if (!copied) {
                 long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND
                         * randomTimeSlot.getRandomValueSeededByExternalId();
@@ -767,14 +709,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 log.info("Sleeping for {}ms", sleepTimeInMs);
                 AppUtils.sleep(sleepTimeInMs);
             }
-
         }
-
         if (!copied) {
             throw new RegistrationFailedException(String.format(
                     "Failed after trying to copy %s times.",
                     parameterService.getString(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS)));
-        }        
+        }
     }
 
     public void setAllowClientRegistration(boolean enabled) {
@@ -799,5 +739,4 @@ public class RegistrationService extends AbstractService implements IRegistratio
             return request;
         }
     }
-
 }

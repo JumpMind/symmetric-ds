@@ -21,7 +21,6 @@
 package org.jumpmind.exception;
 
 public class ParseException extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
 
     public ParseException() {
@@ -39,5 +38,4 @@ public class ParseException extends RuntimeException {
     public ParseException(Throwable cause) {
         super(cause);
     }
-
 }

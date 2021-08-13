@@ -27,13 +27,10 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterFilterAdapter;
 
 /**
- * An extension that prefixes the table name with a schema name that is equal to
- * the incoming node_id.
+ * An extension that prefixes the table name with a schema name that is equal to the incoming node_id.
  */
 public class SchemaPerNodeDataLoaderFilter extends DatabaseWriterFilterAdapter {
-
     private String tablePrefix;
-
     private String schemaPrefix;
 
     @Override
@@ -54,5 +51,4 @@ public class SchemaPerNodeDataLoaderFilter extends DatabaseWriterFilterAdapter {
     public void setSchemaPrefix(String schemaPrefix) {
         this.schemaPrefix = schemaPrefix;
     }
-
 }

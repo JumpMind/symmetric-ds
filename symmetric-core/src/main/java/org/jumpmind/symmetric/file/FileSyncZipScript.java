@@ -28,31 +28,30 @@ import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 
 public abstract class FileSyncZipScript {
-    
     private StringBuilder buff = new StringBuilder();
-    
+
     public abstract String getScriptFileName(Batch batch);
-    
+
     public abstract void buildScriptStart(Batch batch);
-    
-    public abstract void buildScriptFileSnapshot(Batch batch, FileSnapshot snapshot, FileTriggerRouter triggerRouter, 
+
+    public abstract void buildScriptFileSnapshot(Batch batch, FileSnapshot snapshot, FileTriggerRouter triggerRouter,
             FileTrigger fileTrigger, File file, String targetBaseDir, String targetFile);
-    
+
     public abstract void buildScriptEnd(Batch batch);
-    
+
     public StringBuilder getScript() {
         return buff;
     }
-    
+
     public void appendln() {
         append("\n");
     }
-    
+
     public void appendln(String string) {
         append(string);
         appendln();
     }
-    
+
     public void append(String string) {
         getScript().append(string);
     }

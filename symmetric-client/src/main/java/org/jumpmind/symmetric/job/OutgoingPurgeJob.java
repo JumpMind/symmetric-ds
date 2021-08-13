@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.job;
 
 import static org.jumpmind.symmetric.job.JobDefaults.EVERY_NIGHT_AT_MIDNIGHT;
@@ -32,27 +31,24 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * Background job that is responsible for purging already synchronized data
  */
 public class OutgoingPurgeJob extends AbstractJob {
-
     public OutgoingPurgeJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(ClusterConstants.PURGE_OUTGOING, engine, taskScheduler);
     }
-    
+
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
                 .schedule(EVERY_NIGHT_AT_MIDNIGHT)
                 .description("Purge sync'd outgoing data");
-    }    
-        
+    }
+
     @Override
     public void doJob(boolean force) throws Exception {
-        setProcessedCount(engine.getPurgeService().purgeOutgoing(force));        
+        setProcessedCount(engine.getPurgeService().purgeOutgoing(force));
     }
-    
+
     @Override
     public String getDeprecatedStartParameter() {
         return ParameterConstants.START_PURGE_JOB_38;
     }
-        
-    
 }

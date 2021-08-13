@@ -26,10 +26,8 @@ import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
 public class RedshiftTriggerTemplate extends AbstractTriggerTemplate {
-
     protected RedshiftTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
-
         emptyColumnTemplate = "''";
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end";
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || cast($(tableAlias).\"$(columnName)\" as varchar) || '\"' end";
@@ -40,12 +38,10 @@ public class RedshiftTriggerTemplate extends AbstractTriggerTemplate {
         oldTriggerValue = "old";
         oldColumnPrefix = "";
         newColumnPrefix = "";
-
-        sqlTemplates = new HashMap<String,String>();
+        sqlTemplates = new HashMap<String, String>();
         sqlTemplates.put("insertTriggerTemplate", "");
         sqlTemplates.put("updateTriggerTemplate", "");
         sqlTemplates.put("deleteTriggerTemplate", "");
         sqlTemplates.put("initialLoadSqlTemplate", "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)");
     }
-
 }

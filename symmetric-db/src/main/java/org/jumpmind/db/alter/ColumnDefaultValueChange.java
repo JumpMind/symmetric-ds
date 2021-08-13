@@ -48,8 +48,7 @@ import org.jumpmind.db.model.Table;
  * 
  * @version $Revision: $
  */
-public class ColumnDefaultValueChange extends TableChangeImplBase implements ColumnChange
-{
+public class ColumnDefaultValueChange extends TableChangeImplBase implements ColumnChange {
     /** The column. */
     private Column _column;
     /** The new default value. */
@@ -58,14 +57,16 @@ public class ColumnDefaultValueChange extends TableChangeImplBase implements Col
     /**
      * Creates a new change object.
      * 
-     * @param table           The table of the column
-     * @param column          The column
-     * @param newDefaultValue The new default value
+     * @param table
+     *            The table of the column
+     * @param column
+     *            The column
+     * @param newDefaultValue
+     *            The new default value
      */
-    public ColumnDefaultValueChange(Table table, Column column, String newDefaultValue)
-    {
+    public ColumnDefaultValueChange(Table table, Column column, String newDefaultValue) {
         super(table);
-        _column          = column;
+        _column = column;
         _newDefaultValue = newDefaultValue;
     }
 
@@ -74,8 +75,7 @@ public class ColumnDefaultValueChange extends TableChangeImplBase implements Col
      *
      * @return The column
      */
-    public Column getChangedColumn()
-    {
+    public Column getChangedColumn() {
         return _column;
     }
 
@@ -84,19 +84,16 @@ public class ColumnDefaultValueChange extends TableChangeImplBase implements Col
      *
      * @return The new default value
      */
-    public String getNewDefaultValue()
-    {
+    public String getNewDefaultValue() {
         return _newDefaultValue;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void apply(Database database, boolean caseSensitive)
-    {
-        Table  table  = database.findTable(getChangedTable().getName(), caseSensitive);
+    public void apply(Database database, boolean caseSensitive) {
+        Table table = database.findTable(getChangedTable().getName(), caseSensitive);
         Column column = table.findColumn(_column.getName(), caseSensitive);
-
         column.setDefaultValue(_newDefaultValue);
     }
 }

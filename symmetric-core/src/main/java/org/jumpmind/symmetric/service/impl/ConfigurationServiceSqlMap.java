@@ -25,11 +25,9 @@ import java.util.Map;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class ConfigurationServiceSqlMap extends AbstractSqlMap {
-
     public ConfigurationServiceSqlMap(IDatabasePlatform platform,
             Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
-
         // @formatter:off
         
         putSql("updateNodeChannelLastExtractTime", "update $(node_channel_ctl) set last_extract_time=? where channel_id=? and node_id=?");

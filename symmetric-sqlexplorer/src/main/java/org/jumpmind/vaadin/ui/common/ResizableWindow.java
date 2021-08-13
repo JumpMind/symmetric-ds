@@ -40,31 +40,25 @@ import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
 public class ResizableWindow extends Window {
-
     private static final long serialVersionUID = 1L;
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    
     protected VerticalLayout content;
 
     public ResizableWindow() {
         this("");
     }
-    
+
     public ResizableWindow(String caption) {
         setCaption(caption);
         setModal(true);
         setResizable(true);
-        
         content = new VerticalLayout();
         content.setSizeFull();
         content.setMargin(false);
         content.setSpacing(false);
         setContent(content);
-        
         addShortcutListener(new ShortcutListener("Maximize", KeyCode.M,
                 new int[] { ModifierKey.CTRL }) {
-
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -76,9 +70,7 @@ public class ResizableWindow extends Window {
                 }
             }
         });
-        
         addShortcutListener(new ShortcutListener("Close", KeyCode.ESCAPE, null) {
-
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -87,20 +79,20 @@ public class ResizableWindow extends Window {
             }
         });
     }
-    
+
     protected void addComponent(Component component, int expandRatio) {
         content.addComponent(component);
         content.setExpandRatio(component, expandRatio);
     }
-    
+
     protected void addComponent(Component component) {
         content.addComponent(component);
     }
-    
+
     protected void addComponents(Component... components) {
         for (Component component : components) {
-            content.addComponent(component);    
-        }        
+            content.addComponent(component);
+        }
     }
 
     protected Button buildCloseButton() {
@@ -110,75 +102,63 @@ public class ResizableWindow extends Window {
         closeButton.focus();
         return closeButton;
     }
-    
+
     protected HorizontalLayout buildButtonFooter(Button... toTheRightButtons) {
-        return buildButtonFooter((Button[])null, toTheRightButtons);
+        return buildButtonFooter((Button[]) null, toTheRightButtons);
     }
 
     protected HorizontalLayout buildButtonFooter(Button[] toTheLeftButtons, Button... toTheRightButtons) {
         HorizontalLayout footer = new HorizontalLayout();
-
         footer.setWidth("100%");
         footer.setSpacing(true);
         footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
-
         if (toTheLeftButtons != null) {
             footer.addComponents(toTheLeftButtons);
         }
-        
         Label footerText = new Label("");
         footerText.setSizeUndefined();
-
         footer.addComponents(footerText);
         footer.setExpandRatio(footerText, 1);
-
         if (toTheRightButtons != null) {
             footer.addComponents(toTheRightButtons);
         }
-
-
         return footer;
     }
 
     protected void grabFocus() {
         this.focus();
     }
-    
-    protected boolean onClose() { return true;}
+
+    protected boolean onClose() {
+        return true;
+    }
 
     public void show() {
         if (!UI.getCurrent().getWindows().contains(this)) {
             UI.getCurrent().addWindow(this);
             grabFocus();
         }
-        
         center();
     }
-    
+
     public void showAtSize(double percentOfBrowserSize) {
         Page page = Page.getCurrent();
-
         setWindowMode(WindowMode.NORMAL);
-
         int pageHeight = page.getBrowserWindowHeight();
         int pageWidth = page.getBrowserWindowWidth();
-
         setHeight((int) (pageHeight * percentOfBrowserSize), Unit.PIXELS);
         setWidth((int) (pageWidth * percentOfBrowserSize), Unit.PIXELS);
-
-        show();       
-       
+        show();
     }
 
     @Override
     public void bringToFront() {
         if (isAttached()) {
-           super.bringToFront();
+            super.bringToFront();
         }
     }
-    
-    public class CloseButtonListener implements ClickListener {
 
+    public class CloseButtonListener implements ClickListener {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -187,7 +167,5 @@ public class ResizableWindow extends Window {
                 close();
             }
         }
-
     }
-
 }

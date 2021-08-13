@@ -30,14 +30,13 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class InformixJdbcSqlTemplate extends JdbcSqlTemplate {
-
     public InformixJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
-        super(dataSource, settings, lobHandler, databaseInfo);        
-        primaryKeyViolationCodes = new int[] {-268};
-        uniqueKeyViolationNameRegex = new String[] {"Unique Index:(.*)"};
-        foreignKeyViolationCodes = new int[] {-691};
-        foreignKeyChildExistsViolationCodes = new int[] {-692};
+        super(dataSource, settings, lobHandler, databaseInfo);
+        primaryKeyViolationCodes = new int[] { -268 };
+        uniqueKeyViolationNameRegex = new String[] { "Unique Index:(.*)" };
+        foreignKeyViolationCodes = new int[] { -691 };
+        foreignKeyChildExistsViolationCodes = new int[] { -692 };
     }
 
     @Override
@@ -45,11 +44,10 @@ public class InformixJdbcSqlTemplate extends JdbcSqlTemplate {
         SQLException sqlEx = findSQLException(ex);
         return sqlEx != null && sqlEx.getMessage() != null && (sqlEx.getMessage().contains("duplicate value") ||
                 sqlEx.getErrorCode() == -268);
-    }    
+    }
 
     @Override
     public boolean allowsNullForIdentityColumn() {
         return false;
     }
-    
 }

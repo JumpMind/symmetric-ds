@@ -21,25 +21,19 @@
 package org.jumpmind.db.model;
 
 final public class ColumnTypes {
-
     private ColumnTypes() {
     }
-    
+
     public static final int SQLXML = 2009;
     public static final int NCHAR = -15;
     public static final int NCLOB = 2011;
     public static final int NVARCHAR = -9;
     public static final int LONGNVARCHAR = -16;
-        
-    public static final int ORACLE_TIMESTAMPTZ = -101;    
-    public static final int ORACLE_TIMESTAMPLTZ = -102;   
-    
-    public static final int TIBERO_TIMESTAMPTZ = -101;    
-    public static final int TIBERO_TIMESTAMPLTZ = -102;   
-    
+    public static final int ORACLE_TIMESTAMPTZ = -101;
+    public static final int ORACLE_TIMESTAMPLTZ = -102;
+    public static final int TIBERO_TIMESTAMPTZ = -101;
+    public static final int TIBERO_TIMESTAMPLTZ = -102;
     public static final int MSSQL_SQL_VARIANT = -150;
     public static final int MSSQL_NTEXT = -10;
-    
     public static final int MAPPED_TIMESTAMPTZ = ORACLE_TIMESTAMPTZ;
-    
 }

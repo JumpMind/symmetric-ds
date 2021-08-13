@@ -51,7 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
-	private static final Logger log = LoggerFactory.getLogger(TeradataBulkDatabaseWriter.class);
+    private static final Logger log = LoggerFactory.getLogger(TeradataBulkDatabaseWriter.class);
     protected IStagingManager stagingManager;
     protected IStagedResource stagedInputFile;
     protected String rowTerminator = "\r\n";
@@ -61,7 +61,7 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected boolean columnHeaderWritten;
     protected Table table = null;
     protected int totalBytes;
-    
+
     public TeradataBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
             IDatabasePlatform tar, String tablePrefix,
             IStagingManager stagingManager, DatabaseWriterSettings settings) {
@@ -69,13 +69,13 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         this.stagingManager = stagingManager;
         this.writerSettings = settings;
     }
-    
+
     public boolean start(Table table) {
         this.table = table;
         if (super.start(table)) {
             if (sourceTable != null && targetTable == null) {
                 String qualifiedName = sourceTable.getFullyQualifiedTableName();
-                if (writerSettings.isIgnoreMissingTables()) {                    
+                if (writerSettings.isIgnoreMissingTables()) {
                     if (missingTables.add(qualifiedName)) {
                         log.warn("Did not find the {} table in the target database", qualifiedName);
                     }
@@ -83,7 +83,6 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     throw new SymmetricException("Could not load the %s table.  It is not in the target database", qualifiedName);
                 }
             }
-            
             needsBinaryConversion = false;
             if (batch.getBinaryEncoding() != BinaryEncoding.HEX) {
                 for (Column column : targetTable.getColumns()) {
@@ -93,22 +92,20 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     }
                 }
             }
-
             columnHeaderWritten = false;
             if (this.stagedInputFile == null) {
                 createStagingFile();
             }
-            
             return true;
         } else {
             return false;
         }
     }
-    
+
     @Override
     public void end(Table table) {
         try {
-                flush();
+            flush();
             this.stagedInputFile.close();
             this.stagedInputFile.delete();
         } finally {
@@ -117,9 +114,7 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
 
     protected void bulkWrite(CsvData data) {
-        
         DataEventType dataEventType = data.getDataEventType();
-
         switch (dataEventType) {
             case INSERT:
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
@@ -135,7 +130,7 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                             }
                         }
                     }
-                    OutputStream out =  this.stagedInputFile.getOutputStream();
+                    OutputStream out = this.stagedInputFile.getOutputStream();
                     if (!columnHeaderWritten) {
                         String[] columnNames = targetTable.getColumnNames();
                         for (int i = 0; i < columnNames.length; i++) {
@@ -150,10 +145,8 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                         }
                         out.write(rowTerminator.getBytes(Charset.defaultCharset()));
                         totalBytes += rowTerminator.getBytes(Charset.defaultCharset()).length;
-                        
-                        columnHeaderWritten=true;
-                    } 
-                    
+                        columnHeaderWritten = true;
+                    }
                     for (int i = 0; i < parsedData.length; i++) {
                         if (parsedData[i] != null) {
                             out.write(parsedData[i].getBytes(Charset.defaultCharset()));
@@ -164,10 +157,8 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                             totalBytes += fieldTerminator.getBytes(Charset.defaultCharset()).length;
                         }
                     }
-                    
                     out.write(rowTerminator.getBytes(Charset.defaultCharset()));
                     totalBytes += (rowTerminator.getBytes(Charset.defaultCharset()).length);
-                    
                     loadedRows++;
                 } catch (Exception ex) {
                     throw getPlatform(table).getSqlTemplate().translate(ex);
@@ -185,7 +176,7 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 break;
         }
     }
-    
+
     protected void flush() {
         if (loadedRows > 0) {
             this.stagedInputFile.close();
@@ -199,54 +190,40 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             String catalogSeparator = dbInfo.getCatalogSeparator();
             String schemaSeparator = dbInfo.getSchemaSeparator();
             String tableName = this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator);
-            
             try {
                 cleanUpFastLoadTables(tableName, false);
-
                 IDatabasePlatform platform = getPlatform();
                 ds = ((ResettableBasicDataSource) platform.getDataSource());
-                
                 boolean containsCommas = ds.getUrl().indexOf(",") > 0;
                 boolean lastCharSlash = ds.getUrl().charAt(ds.getUrl().length() - 1) == '/';
-                
                 fastLoadConnectionString = (lastCharSlash && containsCommas ? "," : lastCharSlash ? "" : "/") + fastLoadConnectionString;
-                
                 if (ds.getUrl().indexOf(fastLoadConnectionString) < 0) {
                     ds.setUrl(ds.getUrl() + fastLoadConnectionString);
                 }
-                
                 c = DriverManager.getConnection(ds.getUrl(), ds.getUsername(), ds.getPassword());
-                
                 String sql = String.format("INSERT INTO " + tableName + " VALUES " + buildSql());
-                
                 ps = c.prepareStatement(sql);
-                
                 InputStream dataStream = new FileInputStream(this.stagedInputFile.getFile());
                 ps.setAsciiStream(1, dataStream, -1);
                 ps.executeUpdate();
-                
                 log.info("Fast load complete.");
             } catch (SQLException e) {
-               while (e != null) {
+                while (e != null) {
                     log.error("SQL State = "
-                        + e.getSQLState()
-                        + ", Error Code = "
-                        + e.getErrorCode());
+                            + e.getSQLState()
+                            + ", Error Code = "
+                            + e.getErrorCode());
                     e = e.getNextException();
                     if (e.getErrorCode() == 2636) {
-                            log.warn("In order to use the teradata bulk loader the target table " + tableName + " must me empty");
+                        log.warn("In order to use the teradata bulk loader the target table " + tableName + " must me empty");
                     }
                 }
-
                 throw getPlatform().getSqlTemplate().translate(e);
             } catch (Exception ex) {
-                    
             } finally {
                 statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
-                totalBytes=0;
-                
+                totalBytes = 0;
                 cleanUpFastLoadTables(tableName, false);
-
                 if (c != null) {
                     try {
                         c.close();
@@ -264,12 +241,11 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             }
         }
     }
-    
+
     protected void cleanUpFastLoadTables(String tableName, boolean clearTargetTable) {
-            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
+        JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
         Connection normalConnection = jdbcTransaction.getConnection();
         Statement stmt = null;
-
         if (clearTargetTable) {
             try {
                 stmt = normalConnection.createStatement();
@@ -280,7 +256,6 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 closeStatement(stmt);
             }
         }
-        
         try {
             normalConnection.setAutoCommit(true);
             stmt = normalConnection.createStatement();
@@ -290,7 +265,6 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         } finally {
             closeStatement(stmt);
         }
-        
         try {
             normalConnection.setAutoCommit(true);
             stmt = normalConnection.createStatement();
@@ -311,9 +285,9 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             }
         }
     }
-    
+
     protected String buildSql() {
-    	StringBuilder sql = new StringBuilder("(");
+        StringBuilder sql = new StringBuilder("(");
         for (int i = 0; i < this.getTargetTable().getColumnCount(); i++) {
             if (i > 0) {
                 sql.append(",");
@@ -323,10 +297,9 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         sql.append(")");
         return sql.toString();
     }
-    
+
     protected void createStagingFile() {
         this.stagedInputFile = stagingManager.create(Constants.STAGING_CATEGORY_BULK_LOAD,
                 table.getName() + this.getBatch().getBatchId() + ".csv");
     }
-
 }

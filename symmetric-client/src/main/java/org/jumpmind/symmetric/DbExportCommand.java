@@ -34,59 +34,42 @@ import org.jumpmind.symmetric.io.data.DbExport.Format;
  * Export the structure and data from database tables to file.
  */
 public class DbExportCommand extends AbstractCommandLauncher {
-
     private static final String OPTION_FORMAT = "format";
-
     private static final String OPTION_COMPATIBLE = "compatible";
-    
     private static final String OPTION_ADD_DROP_TABLE = "add-drop-table";
-    
     private static final String OPTION_NO_CREATE_INFO = "no-create-info";
-
     private static final String OPTION_NO_INDICES = "no-indices";
-
     private static final String OPTION_NO_FOREIGN_KEYS = "no-foreign-keys";
-
     private static final String OPTION_NO_DATA = "no-data";
-
     private static final String OPTION_USE_VARIABLE_DATES = "use-variable-dates";
-    
     private static final String OPTION_NO_QUALIFIERS = "no-qualifiers";
-    
     private static final String OPTION_USE_JDBC_TIMESTAMP_FORMAT = "use-jdbc-timestamp-format";
-
     private static final String OPTION_SQL = "sql";
-
     private static final String OPTION_COMMENTS = "comments";
-    
     private static final String OPTION_SCHEMA = "schema";
-    
     private static final String OPTION_CATALOG = "catalog";
-    
     private static final String OPTION_DIR = "dir";
-    
     private static final String OPTION_WHERE = "where";
-
     private static final String OPTION_EXCLUDE_COLUMNS = "exclude-columns";
-    
+
     public DbExportCommand() {
         super("dbexport", "[tablename...]", "DbExport.Option.");
     }
-    
+
     public static void main(String[] args) {
         new DbExportCommand().execute(args);
     }
-    
+
     @Override
     protected boolean printHelpIfNoOptionsAreProvided() {
         return false;
     }
-    
+
     @Override
     protected boolean requiresPropertiesFile(CommandLine line) {
         return true;
     }
-    
+
     @Override
     protected void printHelp(CommandLine cmd, Options options) {
         System.out.println(app + " version " + Version.version());
@@ -115,20 +98,18 @@ public class DbExportCommand extends AbstractCommandLauncher {
         addOption(options, "i", OPTION_COMMENTS, false);
         addOption(options, null, OPTION_EXCLUDE_COLUMNS, true);
     }
-    
+
     @Override
     protected boolean executeWithOptions(CommandLine line) throws Exception {
         DbExport dbExport = new DbExport(getDatabasePlatform(false));
-
         if (line.hasOption(OPTION_DIR)) {
             String dir = line.getOptionValue(OPTION_DIR);
             if (new File(dir).exists()) {
-                dbExport.setDir(line.getOptionValue(OPTION_DIR));    
+                dbExport.setDir(line.getOptionValue(OPTION_DIR));
             } else {
                 throw new ParseException(String.format("The directory does not exist: %s", dir));
-            }            
+            }
         }
-        
         if (line.hasOption(OPTION_FORMAT)) {
             dbExport.setFormat(Format.valueOf(line.getOptionValue(OPTION_FORMAT).toUpperCase()));
             if ((dbExport.getFormat() == Format.CSV || dbExport.getFormat() == Format.CSV_DQUOTE) && line.getArgs().length > 1
@@ -137,21 +118,20 @@ public class DbExportCommand extends AbstractCommandLauncher {
                         "When exporting multiple tables to CSV format you must designate a directory where the files will be written");
             }
         }
-        
         if (line.hasOption(OPTION_COMPATIBLE)) {
-        	String compatibleStr = line.getOptionValue(OPTION_COMPATIBLE).toUpperCase();
-        	Compatible compatible = null;
-        	for (Compatible c: Compatible.values()) {
-        		if (c.name().equals(compatibleStr)) {
-        			compatible = c;
-        			break;
-        		}
-        	}
-        	if (compatible != null) {
-        		dbExport.setCompatible(compatible);
-        	} else {
-        		throw new SymmetricException("Invalid compatible database option: %s", line.getOptionValue(OPTION_COMPATIBLE));
-        	}
+            String compatibleStr = line.getOptionValue(OPTION_COMPATIBLE).toUpperCase();
+            Compatible compatible = null;
+            for (Compatible c : Compatible.values()) {
+                if (c.name().equals(compatibleStr)) {
+                    compatible = c;
+                    break;
+                }
+            }
+            if (compatible != null) {
+                dbExport.setCompatible(compatible);
+            } else {
+                throw new SymmetricException("Invalid compatible database option: %s", line.getOptionValue(OPTION_COMPATIBLE));
+            }
         }
         if (line.hasOption(OPTION_ADD_DROP_TABLE)) {
             dbExport.setAddDropTable(true);
@@ -185,15 +165,14 @@ public class DbExportCommand extends AbstractCommandLauncher {
         }
         if (line.hasOption(OPTION_CATALOG)) {
             dbExport.setCatalog(line.getOptionValue(OPTION_CATALOG));
-        }        
+        }
         if (line.hasOption(OPTION_WHERE)) {
             dbExport.setWhereClause(line.getOptionValue(OPTION_WHERE));
-        }        
+        }
         if (line.hasOption(OPTION_EXCLUDE_COLUMNS)) {
             dbExport.setExcludeColumns(line.getOptionValue(OPTION_EXCLUDE_COLUMNS).split(","));
         }
-        
-        String[] args = line.getArgs();  
+        String[] args = line.getArgs();
         if (line.hasOption(OPTION_SQL)) {
             if (args.length != 1) {
                 throw new ParseException(
@@ -207,5 +186,4 @@ public class DbExportCommand extends AbstractCommandLauncher {
         }
         return true;
     }
-
 }

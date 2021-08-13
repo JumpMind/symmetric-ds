@@ -25,11 +25,9 @@ import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
 
 public interface IMonitorType extends IExtensionPoint {
-
     public MonitorEvent check(Monitor monitor);
-    
-    public boolean requiresClusterLock();
-    
-    public String getName();
 
+    public boolean requiresClusterLock();
+
+    public String getName();
 }

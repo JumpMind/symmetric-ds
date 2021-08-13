@@ -33,31 +33,29 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class RaimaJdbcSqlTemplate extends JdbcSqlTemplate {
-
     public RaimaJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
         primaryKeyViolationSqlStates = new String[] { "40002" };
         setIsolationLevel(Connection.TRANSACTION_READ_COMMITTED);
     }
-    
+
     @Override
     protected int verifyArgType(Object arg, int argType) {
-        if (argType == Types.NUMERIC){
+        if (argType == Types.NUMERIC) {
             return Types.DECIMAL;
         } else {
             return super.verifyArgType(arg, argType);
         }
     }
-    
+
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select last_insert_id()";
     }
-    
+
     @Override
     public ISqlTransaction startSqlTransaction() {
         return new JdbcSqlTransaction(this, true);
     }
-
 }

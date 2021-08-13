@@ -39,9 +39,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ISequenceService;
 
 public class SequenceService extends AbstractService implements ISequenceService {
-
     private Map<String, Sequence> sequenceDefinitionCache = new HashMap<String, Sequence>();
-    
     private Map<String, CachedRange> sequenceCache = new HashMap<String, CachedRange>();
 
     public SequenceService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
@@ -55,23 +53,20 @@ public class SequenceService extends AbstractService implements ISequenceService
         if (sequences.get(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID) == null) {
             initSequence(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID, 1, 0);
         }
-        
         if (sequences.get(Constants.SEQUENCE_OUTGOING_BATCH) == null) {
             long maxBatchId = sqlTemplate.queryForLong(getSql("maxOutgoingBatchSql"));
             initSequence(Constants.SEQUENCE_OUTGOING_BATCH, maxBatchId, 10);
         }
-        
         if (sequences.get(Constants.SEQUENCE_TRIGGER_HIST) == null) {
             long maxTriggerHistId = sqlTemplate.queryForLong(getSql("maxTriggerHistSql"));
             initSequence(Constants.SEQUENCE_TRIGGER_HIST, maxTriggerHistId, 0);
         }
-        
         if (sequences.get(Constants.SEQUENCE_EXTRACT_REQ) == null) {
             long maxRequestId = sqlTemplate.queryForLong(getSql("maxExtractRequestSql"));
             initSequence(Constants.SEQUENCE_EXTRACT_REQ, maxRequestId, 0);
         }
     }
-    
+
     private void initSequence(String name, long initialValue, int cacheSize) {
         try {
             if (initialValue < 1) {
@@ -121,12 +116,12 @@ public class SequenceService extends AbstractService implements ISequenceService
         }
         return nextValFromDatabase(transaction, name, 1);
     }
-    
+
     protected long nextValFromDatabase(final String name, long size) {
         return new DoTransaction<Long>() {
             public Long execute(ISqlTransaction transaction) {
                 return nextValFromDatabase(transaction, name, size);
-            }            
+            }
         }.execute();
     }
 
@@ -143,7 +138,6 @@ public class SequenceService extends AbstractService implements ISequenceService
                     return nextVal;
                 }
             } while (System.currentTimeMillis() - sequenceTimeoutInMs < ts);
-
             throw new IllegalStateException(String.format(
                     "Timed out after %d ms trying to get the next val for %s",
                     System.currentTimeMillis() - ts, name));
@@ -171,14 +165,12 @@ public class SequenceService extends AbstractService implements ISequenceService
                                 + "No more numbers can be handed out.", name));
             }
         }
-
         CachedRange range = null;
         if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && sequence.getCacheSize() > 0) {
             long endVal = nextVal + (sequence.getIncrementBy() * (sequence.getCacheSize() - 1));
             range = new CachedRange(nextVal, endVal, sequence.getIncrementBy());
             nextVal = endVal;
         }
-
         int updateCount = transaction.prepareAndExecute(getSql("updateCurrentValueSql"), nextVal,
                 name, currVal);
         if (updateCount != 1) {
@@ -191,12 +183,14 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     /**
-     * Obtain a contiguous range of sequence numbers.  The initial load extract in background needs an uninterrupted range
-     * of batch numbers.  As a bonus, it's more efficient to request the entire range in one call.
+     * Obtain a contiguous range of sequence numbers. The initial load extract in background needs an uninterrupted range of batch numbers. As a bonus, it's
+     * more efficient to request the entire range in one call.
      * 
-     *  @param name Sequence name to use
-     *  @param size Number of sequence numbers to obtain
-     *  @return Starting sequence number for the entire range that was obtained
+     * @param name
+     *            Sequence name to use
+     * @param size
+     *            Number of sequence numbers to obtain
+     * @return Starting sequence number for the entire range that was obtained
      */
     public synchronized long nextRange(ISqlTransaction transaction, String name, long size) {
         Sequence sequence = getSequenceDefinition(name);
@@ -208,7 +202,6 @@ public class SequenceService extends AbstractService implements ISequenceService
         }
         long startingValue = 0;
         long rangeNeeded = size * sequence.getIncrementBy();
-
         if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && sequence.getCacheSize() > 0) {
             CachedRange range = sequenceCache.get(name);
             if (range != null) {
@@ -216,7 +209,6 @@ public class SequenceService extends AbstractService implements ISequenceService
                 long endValue = range.getEndValue();
                 long rangeAvailable = endValue - currentValue;
                 long rangeEndValue = currentValue + rangeNeeded;
-                
                 if (currentValue < endValue && rangeEndValue <= sequence.getMaxValue()) {
                     startingValue = currentValue + sequence.getIncrementBy();
                     if (rangeNeeded <= rangeAvailable) {
@@ -232,7 +224,6 @@ public class SequenceService extends AbstractService implements ISequenceService
                 }
             }
         }
-        
         if (rangeNeeded > 0) {
             long databaseStartingValue = 0;
             if (transaction == null) {
@@ -256,11 +247,10 @@ public class SequenceService extends AbstractService implements ISequenceService
         if (sequence != null) {
             return sequence;
         }
-
         return new DoTransaction<Sequence>() {
             public Sequence execute(ISqlTransaction transaction) {
                 return getSequenceDefinition(transaction, name);
-            }            
+            }
         }.execute();
     }
 
@@ -296,11 +286,10 @@ public class SequenceService extends AbstractService implements ISequenceService
                 return range.getCurrentValue();
             }
         }
-
         return new DoTransaction<Long>() {
             public Long execute(ISqlTransaction transaction) {
-                return currVal(transaction, name);    
-            }            
+                return currVal(transaction, name);
+            }
         }.execute();
     }
 
@@ -311,7 +300,7 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     protected Sequence get(ISqlTransaction transaction, String name) {
-        List<Sequence> values = transaction.query(getSql("getSequenceSql"), new SequenceRowMapper(), new Object[] {name}, new int [] {Types.VARCHAR});
+        List<Sequence> values = transaction.query(getSql("getSequenceSql"), new SequenceRowMapper(), new Object[] { name }, new int[] { Types.VARCHAR });
         if (values.size() > 0) {
             return values.get(0);
         } else {
@@ -332,7 +321,7 @@ public class SequenceService extends AbstractService implements ISequenceService
         long currentValue;
         long endValue;
         int incrementBy;
-        
+
         public CachedRange(long currentValue, long endValue, int incrementBy) {
             this.currentValue = currentValue;
             this.endValue = endValue;
@@ -342,20 +331,20 @@ public class SequenceService extends AbstractService implements ISequenceService
         public long getCurrentValue() {
             return currentValue;
         }
-        
+
         public void setCurrentValue(long currentValue) {
             this.currentValue = currentValue;
         }
-        
+
         public long getEndValue() {
             return endValue;
         }
-        
+
         public int getIncrementBy() {
             return incrementBy;
         }
     }
-    
+
     abstract class DoTransaction<T> {
         public T execute() {
             ISqlTransaction transaction = null;
@@ -373,12 +362,12 @@ public class SequenceService extends AbstractService implements ISequenceService
                 if (transaction != null) {
                     transaction.rollback();
                 }
-                throw ex;              
+                throw ex;
             } finally {
                 close(transaction);
             }
         }
-        
+
         abstract public T execute(ISqlTransaction transaction);
     }
 
@@ -398,5 +387,4 @@ public class SequenceService extends AbstractService implements ISequenceService
             return sequence;
         }
     }
-
 }

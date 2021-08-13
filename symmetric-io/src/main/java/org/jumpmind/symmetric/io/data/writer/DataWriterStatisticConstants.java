@@ -20,9 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data.writer;
 
-
 abstract public class DataWriterStatisticConstants {
-    
     public static final String BYTECOUNT = "BYTECOUNT";
     public static final String TRANSFORMMILLIS = "TRANSFORMMILLIS";
     public static final String FILTERMILLIS = "FILTERMILLIS";
@@ -42,5 +40,4 @@ abstract public class DataWriterStatisticConstants {
     public static final String IGNOREROWCOUNT = "IGNOREROWCOUNT";
     public static final String LINENUMBER = "LINENUMBER";
     public static final String STARTTIME = "STARTTIME";
-
 }

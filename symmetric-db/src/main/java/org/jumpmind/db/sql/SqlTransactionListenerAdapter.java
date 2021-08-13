@@ -21,7 +21,6 @@
 package org.jumpmind.db.sql;
 
 public class SqlTransactionListenerAdapter implements ISqlTransactionListener {
-
     public SqlTransactionListenerAdapter() {
     }
 
@@ -32,5 +31,4 @@ public class SqlTransactionListenerAdapter implements ISqlTransactionListener {
     @Override
     public void transactionRolledBack() {
     }
-
 }

@@ -20,9 +20,6 @@
  */
 package org.jumpmind.symmetric.transport;
 
-
 public class ConnectionRejectedException extends OfflineException {
-
     private static final long serialVersionUID = 3770259092569043530L;
-
 }

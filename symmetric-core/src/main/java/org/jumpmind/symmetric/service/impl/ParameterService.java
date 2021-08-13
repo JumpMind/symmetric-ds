@@ -43,17 +43,11 @@ import org.jumpmind.symmetric.service.IParameterService;
  * @see IParameterService
  */
 public class ParameterService extends AbstractParameterService implements IParameterService {
-
     String tablePrefix;
-
     private ITypedPropertiesFactory factory;
-
     private ParameterServiceSqlMap sql;
-
     private ISqlTemplate sqlTemplate;
-
     private Date lastUpdateTime;
-    
     private List<DatabaseParameter> offlineParameters;
 
     public ParameterService(IDatabasePlatform platform, ITypedPropertiesFactory factory, String tablePrefix) {
@@ -72,7 +66,7 @@ public class ParameterService extends AbstractParameterService implements IParam
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
                 if (lastUpdateTime != null) {
-                  log.info("Newer database parameters were detected");
+                    log.info("Newer database parameters were detected");
                 }
                 lastUpdateTime = date;
                 rereadParameters();
@@ -83,8 +77,7 @@ public class ParameterService extends AbstractParameterService implements IParam
     }
 
     /**
-     * Save a parameter that applies to {@link ParameterConstants#ALL} external
-     * ids and all node groups.
+     * Save a parameter that applies to {@link ParameterConstants#ALL} external ids and all node groups.
      */
     public void saveParameter(String key, Object paramValue, String lastUpdateBy) {
         this.saveParameter(ParameterConstants.ALL, ParameterConstants.ALL, key, paramValue, lastUpdateBy);
@@ -97,15 +90,12 @@ public class ParameterService extends AbstractParameterService implements IParam
                 paramValue = filter.filterSaveParameter(key, (String) paramValue);
             }
         }
-
         int count = sqlTemplate.update(sql.getSql("updateParameterSql"), new Object[] { paramValue, lastUpdateBy,
                 externalId, nodeGroupId, key });
-
         if (count <= 0) {
             sqlTemplate.update(sql.getSql("insertParameterSql"), new Object[] { externalId,
                     nodeGroupId, key, paramValue, lastUpdateBy });
         }
-
         rereadParameters();
     }
 
@@ -114,13 +104,13 @@ public class ParameterService extends AbstractParameterService implements IParam
         sqlTemplate.update(sql.getSql("deleteParameterByKeySql"), key);
         rereadParameters();
     }
-    
+
     @Override
     public void deleteParameter(String externalId, String nodeGroupId, String key) {
         sqlTemplate.update(sql.getSql("deleteParameterSql"), externalId, nodeGroupId, key);
         rereadParameters();
     }
-    
+
     public void deleteParameterWithUpdate(String externalId, String nodeGroupId, String key) {
         String oldSql = sql.getSql("deleteParameterSql");
         String newSql = "";
@@ -128,7 +118,8 @@ public class ParameterService extends AbstractParameterService implements IParam
         for (int i = 0; i < oldSql.length(); i++) {
             if (oldSql.charAt(i) == '?') {
                 if (j == 0) {
-                    newSql += "'" + externalId + "'";;
+                    newSql += "'" + externalId + "'";
+                    ;
                 } else if (j == 1) {
                     newSql += "'" + nodeGroupId + "'";
                 } else {
@@ -141,7 +132,6 @@ public class ParameterService extends AbstractParameterService implements IParam
         }
         sqlTemplate.update(newSql);
     }
-    
 
     public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters, String lastUpdateBy) {
         Set<String> keys = parameters.keySet();
@@ -173,7 +163,7 @@ public class ParameterService extends AbstractParameterService implements IParam
         return StringUtils.isBlank(getRegistrationUrl())
                 || getRegistrationUrl().equalsIgnoreCase(getSyncUrl());
     }
-    
+
     public boolean isRemoteNodeRegistrationServer(Node remoteNode) {
         return getRegistrationUrl().equalsIgnoreCase(remoteNode.getSyncUrl());
     }
@@ -210,14 +200,14 @@ public class ParameterService extends AbstractParameterService implements IParam
 
     class DatabaseParameterMapper implements ISqlRowMapper<DatabaseParameter> {
         IParameterFilter filter = extensionService != null ? extensionService.getExtensionPoint(IParameterFilter.class) : null;
+
         public DatabaseParameter mapRow(Row row) {
             String key = row.getString("param_key");
             String value = row.getString("param_value");
             if (filter != null) {
                 value = filter.filterParameter(key, value);
-            }           
+            }
             return new DatabaseParameter(key, value, row.getString("external_id"), row.getString("node_group_id"));
         }
     }
-
 }

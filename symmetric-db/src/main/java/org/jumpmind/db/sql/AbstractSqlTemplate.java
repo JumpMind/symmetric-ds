@@ -29,14 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class AbstractSqlTemplate implements ISqlTemplate {
-
     protected final static Logger log = LoggerFactory.getLogger(AbstractSqlTemplate.class
             .getPackage().getName());
-
     protected boolean dateOverrideToTimestamp;
-
     protected String identifierQuoteString;
-    
     protected LogSqlBuilder logSqlBuilder = new LogSqlBuilder();
 
     public <T> T queryForObject(String sql, ISqlRowMapper<T> mapper, Object... args) {
@@ -108,16 +104,16 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     }
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
-        IConnectionHandler connectionHandler, Object[] args,
-        int[] types) {
+            IConnectionHandler connectionHandler, Object[] args,
+            int[] types) {
         return queryForCursor(sql, mapper, connectionHandler, args, types);
     }
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, boolean returnLobObjects) {
         return queryForCursor(sql, mapper);
     }
-    
-    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, Map<String,Object> namedParams) {
+
+    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, Map<String, Object> namedParams) {
         ParsedSql parsedSql = NamedParameterUtils.parseSqlStatement(sql);
         String newSql = NamedParameterUtils.substituteNamedParameters(parsedSql, namedParams);
         Object[] params = NamedParameterUtils.buildValueArray(parsedSql, namedParams);
@@ -125,18 +121,18 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     }
 
     public List<Row> query(String sql) {
-        return query(sql, (Object[])null, (int[]) null);
+        return query(sql, (Object[]) null, (int[]) null);
     }
 
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object... args) {
         return query(sql, mapper, args, null);
     }
-    
+
     @Override
     public <T> List<T> queryWithHandler(String sql, ISqlRowMapper<T> mapper, IConnectionHandler conHandler, Object... params) {
         return query(sql, mapper, conHandler, params, null);
     }
-    
+
     public Row queryForRow(String sql, Object... args) {
         return queryForObject(sql, new ISqlRowMapper<Row>() {
             public Row mapRow(Row row) {
@@ -195,7 +191,7 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object[] args, int[] types) {
         return query(sql, -1, mapper, args, types);
     }
-    
+
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, IConnectionHandler handler, Object[] args, int[] types) {
         return query(sql, -1, mapper, handler, args, types);
     }
@@ -205,6 +201,7 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
         IConnectionHandler handler = null;
         return query(sql, maxNumberOfRowsToFetch, mapper, handler, args, types);
     }
+
     public <T> List<T> query(String sql, int maxNumberOfRowsToFetch, ISqlRowMapper<T> mapper,
             IConnectionHandler handler, Object[] args, int[] types) {
         ISqlReadCursor<T> cursor = queryForCursor(sql, mapper, handler, args, types);
@@ -218,7 +215,6 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
                     list.add(next);
                     rowCount++;
                 }
-
                 if (maxNumberOfRowsToFetch > 0 && rowCount >= maxNumberOfRowsToFetch) {
                     break;
                 }
@@ -290,7 +286,6 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
                     argsList.add(arg);
                 }
             }
-
             if (argsList != null) {
                 args = argsList.toArray(new Object[argsList.size()]);
             }
@@ -305,8 +300,8 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     public SqlException translate(String message, Throwable ex) {
         if (isUniqueKeyViolation(ex) && !(ex instanceof UniqueKeyException)) {
             return new UniqueKeyException(ex);
-        } else if (isDataTruncationViolation(ex))  {
-                return new DataTruncationException(ex);
+        } else if (isDataTruncationViolation(ex)) {
+            return new DataTruncationException(ex);
         } else if (ex instanceof SqlException) {
             return (SqlException) ex;
         } else {
@@ -323,10 +318,9 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     public boolean isForeignKeyChildExistsViolation(Throwable ex) {
         return false;
     }
-    
+
     @Override
     public boolean isDeadlock(Throwable ex) {
         return false;
     }
-
 }

@@ -57,55 +57,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is responsible for reading data for the purpose of routing. It
- * reads ahead and tries to keep a blocking queue populated for another thread
- * to process.
+ * This class is responsible for reading data for the purpose of routing. It reads ahead and tries to keep a blocking queue populated for another thread to
+ * process.
  */
 public class DataGapRouteReader implements IDataToRouteReader {
-
-	private final static Logger log = LoggerFactory.getLogger(DataGapRouteReader.class);
-
+    private final static Logger log = LoggerFactory.getLogger(DataGapRouteReader.class);
     protected List<DataGap> dataGaps;
-
     protected DataGap currentGap;
-
     protected BlockingQueue<Data> dataQueue;
-
     protected ChannelRouterContext context;
-
     protected ISymmetricEngine engine;
-
     protected volatile boolean reading = true;
-    
     protected int peekAheadCount = 1000;
-    
     protected int takeTimeout;
-    
     protected ProcessInfo processInfo;
-    
     protected double percentOfHeapToUse = .5;
-    
     protected long peekAheadSizeInBytes = 0;
-    
     protected boolean finishTransactionMode = false;
-
     protected boolean isEachGapQueried;
-    
     protected boolean isOracleNoOrder;
-    
     protected boolean isSortInMemory;
-
     protected String lastTransactionId = null;
-    
-    protected static Map<String, Boolean> lastSelectUsedGreaterThanQueryByEngineName = new HashMap<String, Boolean>(); 
-    
+    protected static Map<String, Boolean> lastSelectUsedGreaterThanQueryByEngineName = new HashMap<String, Boolean>();
     long lastStatsPrintOutBaselineInMs = System.currentTimeMillis();
 
     public DataGapRouteReader(ChannelRouterContext context, ISymmetricEngine engine) {
         this.engine = engine;
         IParameterService parameterService = engine.getParameterService();
         this.peekAheadCount = parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
-        this.percentOfHeapToUse = (double)parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_MEMORY_THRESHOLD)/(double)100;
+        this.percentOfHeapToUse = (double) parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_MEMORY_THRESHOLD) / (double) 100;
         this.takeTimeout = engine.getParameterService().getInt(
                 ParameterConstants.ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS, 330);
         this.isOracleNoOrder = parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false);
@@ -117,7 +97,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
             this.dataQueue = new LinkedBlockingQueue<Data>(peekAheadCount);
         }
         this.context = context;
-        
         String engineName = parameterService.getEngineName();
         if (lastSelectUsedGreaterThanQueryByEngineName.get(engineName) == null) {
             lastSelectUsedGreaterThanQueryByEngineName.put(engineName, Boolean.FALSE);
@@ -133,7 +112,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         }
     }
 
-    protected void execute() {    
+    protected void execute() {
         ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
         ISqlReadCursor<Data> cursor = null;
         processInfo = engine.getStatisticManager().newProcessInfo(
@@ -144,17 +123,14 @@ public class DataGapRouteReader implements IDataToRouteReader {
             boolean transactional = !context.getChannel().getBatchAlgorithm()
                     .equals(NonTransactionalBatchAlgorithm.NAME)
                     || !symmetricDialect.supportsTransactionId();
-            
             processInfo.setStatus(ProcessStatus.QUERYING);
             cursor = prepareCursor();
-            processInfo.setStatus(ProcessStatus.EXTRACTING);            
-            
+            processInfo.setStatus(ProcessStatus.EXTRACTING);
             if (transactional) {
                 executeTransactional(cursor);
             } else {
                 executeNonTransactional(cursor);
-            }            
-            
+            }
             processInfo.setStatus(ProcessStatus.OK);
         } catch (Throwable ex) {
             processInfo.setStatus(ProcessStatus.ERROR);
@@ -175,24 +151,20 @@ public class DataGapRouteReader implements IDataToRouteReader {
             copyToQueue(new EOD());
             reading = false;
         }
-
     }
-    
+
     protected void executeTransactional(ISqlReadCursor<Data> cursor) throws Exception {
-        long maxPeekAheadSizeInBytes = (long)(Runtime.getRuntime().maxMemory() * percentOfHeapToUse);
+        long maxPeekAheadSizeInBytes = (long) (Runtime.getRuntime().maxMemory() * percentOfHeapToUse);
         int lastPeekAheadIndex = 0;
         int dataCount = 0;
         long maxDataToRoute = context.getChannel().getMaxDataToRoute();
         List<Data> peekAheadQueue = new ArrayList<Data>(peekAheadCount);
-
         boolean moreData = true;
         while (dataCount < maxDataToRoute || (lastTransactionId != null)) {
             if (moreData && (lastTransactionId != null || peekAheadQueue.size() == 0)) {
                 moreData = fillPeekAheadQueue(peekAheadQueue, peekAheadCount, cursor);
-            }                
-
+            }
             int dataWithSameTransactionIdCount = 0;
-            
             while (peekAheadQueue.size() > 0 && lastTransactionId == null &&
                     dataCount < maxDataToRoute) {
                 Data data = peekAheadQueue.remove(0);
@@ -203,12 +175,11 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 lastTransactionId = data.getTransactionId();
                 dataWithSameTransactionIdCount++;
             }
-
             if (lastTransactionId != null && peekAheadQueue.size() > 0) {
                 Iterator<Data> datas = peekAheadQueue.iterator();
                 int index = 0;
                 while (datas.hasNext()) {
-                    Data data = datas.next();                        
+                    Data data = datas.next();
                     if (lastTransactionId.equals(data.getTransactionId())) {
                         dataWithSameTransactionIdCount++;
                         datas.remove();
@@ -220,35 +191,29 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     } else {
                         index++;
                     }
-                    
                 }
-
-                if (dataWithSameTransactionIdCount == 0 || peekAheadQueue.size()-lastPeekAheadIndex > peekAheadCount) {
+                if (dataWithSameTransactionIdCount == 0 || peekAheadQueue.size() - lastPeekAheadIndex > peekAheadCount) {
                     lastTransactionId = null;
                     lastPeekAheadIndex = 0;
                 }
-
-            } 
-            
+            }
             if (!moreData && peekAheadQueue.size() == 0) {
                 // we've reached the end of the result set
                 break;
             } else if (peekAheadSizeInBytes >= maxPeekAheadSizeInBytes) {
                 log.info("The peek ahead queue has reached its max size of {} bytes.  Finishing reading the current transaction", peekAheadSizeInBytes);
                 finishTransactionMode = true;
-                peekAheadQueue.clear();                    
+                peekAheadQueue.clear();
             }
         }
     }
-    
-    
+
     protected void executeNonTransactional(ISqlReadCursor<Data> cursor) throws Exception {
         long maxDataToRoute = context.getChannel().getMaxDataToRoute();
         List<Data> peekAheadQueue = new ArrayList<Data>(peekAheadCount);
         int dataCount = 0;
         while (dataCount < maxDataToRoute) {
             fillPeekAheadQueue(peekAheadQueue, peekAheadCount, cursor);
-            
             if (peekAheadQueue.size() > 0) {
                 while (peekAheadQueue.size() > 0 && dataCount < maxDataToRoute) {
                     Data data = peekAheadQueue.remove(0);
@@ -257,12 +222,11 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     processInfo.incrementCurrentDataCount();
                     processInfo.setCurrentTableName(data.getTableName());
                 }
-                
             } else {
-                 break;
+                break;
             }
         }
-    }    
+    }
 
     protected boolean process(Data data) {
         long dataId = data.getDataId();
@@ -293,7 +257,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         }
         return okToProcess;
     }
-    
+
     protected boolean isInDataGap(long dataId) {
         // binary search algorithm
         int start = 0;
@@ -304,29 +268,26 @@ public class DataGapRouteReader implements IDataToRouteReader {
             if (dataId >= midGap.getStartId() && dataId <= midGap.getEndId()) {
                 return true;
             }
-            if (dataId< midGap.getStartId()) {
+            if (dataId < midGap.getStartId()) {
                 end = mid - 1;
             } else {
                 start = mid + 1;
             }
         }
         return false;
-    }    
+    }
 
     public Data take() throws InterruptedException {
         Data data = null;
         do {
             data = dataQueue.poll(takeTimeout, TimeUnit.SECONDS);
-
             if (data == null && !reading) {
                 throw new SymmetricException("The read of the data to route queue has timed out");
             } else if (data instanceof EOD) {
                 data = null;
                 break;
-            } 
-            
+            }
         } while (data == null && reading);
-        
         return data;
     }
 
@@ -334,25 +295,19 @@ public class DataGapRouteReader implements IDataToRouteReader {
         IParameterService parameterService = engine.getParameterService();
         int numberOfGapsToQualify = parameterService.getInt(
                 ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL, 100);
-        
         int maxGapsBeforeGreaterThanQuery = parameterService.getInt(ParameterConstants.ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY, 100);
-                
         boolean useGreaterThanDataId = false;
         if (maxGapsBeforeGreaterThanQuery > 0 && this.dataGaps.size() > maxGapsBeforeGreaterThanQuery) {
             useGreaterThanDataId = true;
         }
-
         isEachGapQueried = !useGreaterThanDataId && this.dataGaps.size() <= numberOfGapsToQualify;
         String channelId = context.getChannel().getChannelId();
-
         String sql = null;
-        
         Boolean lastSelectUsedGreaterThanQuery = lastSelectUsedGreaterThanQueryByEngineName.get(parameterService.getEngineName());
         if (lastSelectUsedGreaterThanQuery == null) {
             lastSelectUsedGreaterThanQuery = Boolean.FALSE;
         }
-        
-        if (useGreaterThanDataId) {            
+        if (useGreaterThanDataId) {
             sql = getSql("selectDataUsingStartDataId");
             if (!lastSelectUsedGreaterThanQuery) {
                 log.info("Switching to select from the data table where data_id >= start gap because there were {} gaps found "
@@ -360,13 +315,12 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 lastSelectUsedGreaterThanQueryByEngineName.put(parameterService.getEngineName(), Boolean.TRUE);
             }
         } else {
-            sql = qualifyUsingDataGaps(dataGaps, numberOfGapsToQualify, getSql("selectDataUsingGapsSql"));            
+            sql = qualifyUsingDataGaps(dataGaps, numberOfGapsToQualify, getSql("selectDataUsingGapsSql"));
             if (lastSelectUsedGreaterThanQuery) {
                 log.info("Switching to select from the data table where data_id between gaps");
                 lastSelectUsedGreaterThanQueryByEngineName.put(parameterService.getEngineName(), Boolean.FALSE);
-            }            
+            }
         }
-        
         if (!isSortInMemory) {
             if (isOracleNoOrder) {
                 sql = String.format("%s %s", sql, engine.getRouterService().getSql("orderByCreateTime"));
@@ -374,11 +328,9 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 sql = String.format("%s %s", sql, engine.getRouterService().getSql("orderByDataId"));
             }
         }
-
         ISqlTemplate sqlTemplate = engine.getSymmetricDialect().getPlatform().getSqlTemplate();
         Object[] args = null;
         int[] types = null;
-        
         int dataIdSqlType = engine.getSymmetricDialect().getSqlTypeForIds();
         if (useGreaterThanDataId) {
             args = new Object[] { channelId, dataGaps.get(0).getStartId() };
@@ -390,15 +342,13 @@ public class DataGapRouteReader implements IDataToRouteReader {
             types = new int[numberOfArgs];
             args[0] = channelId;
             types[0] = Types.VARCHAR;
-
             for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {
                 DataGap gap = dataGaps.get(i);
                 args[i * 2 + 1] = gap.getStartId();
                 types[i * 2 + 1] = dataIdSqlType;
                 if ((i + 1) == numberOfGapsToQualify && (i + 1) < dataGaps.size()) {
                     /*
-                     * there were more gaps than we are going to use in the SQL.
-                     * use the last gap as the end data id for the last range
+                     * there were more gaps than we are going to use in the SQL. use the last gap as the end data id for the last range
                      */
                     args[i * 2 + 2] = dataGaps.get(dataGaps.size() - 1).getEndId();
                 } else {
@@ -407,11 +357,9 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 types[i * 2 + 2] = dataIdSqlType;
             }
         }
-
         if (!isOracleNoOrder) {
             this.currentGap = dataGaps.remove(0);
         }
-
         ISqlRowMapper<Data> dataMapper = engine.getDataService().getDataMapper();
         ISqlReadCursor<Data> cursor = null;
         try {
@@ -421,7 +369,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
             AppUtils.sleep(1000);
             cursor = sqlTemplate.queryForCursor(sql, dataMapper, args, types);
         }
-        
         if (isSortInMemory) {
             Comparator<Data> comparator = null;
             if (isOracleNoOrder) {
@@ -429,10 +376,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
             } else if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
                 comparator = DataMemoryCursor.SORT_BY_ID;
             }
-
             cursor = new DataMemoryCursor(cursor, context, comparator);
         }
-
         return cursor;
     }
 
@@ -479,7 +424,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
             if (data != null) {
                 if (process(data)) {
                     peekAheadQueue.add(data);
-                    peekAheadSizeInBytes += data.getSizeInBytes();                    
+                    peekAheadSizeInBytes += data.getSizeInBytes();
                     dataCount++;
                     context.incrementStat(System.currentTimeMillis() - ts,
                             ChannelRouterContext.STAT_READ_DATA_MS);
@@ -494,7 +439,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 }
                 context.setEndDataId(data.getDataId());
                 ts = System.currentTimeMillis();
-                
                 long totalTimeInMs = System.currentTimeMillis() - lastStatsPrintOutBaselineInMs;
                 if (totalTimeInMs > LOG_PROCESS_SUMMARY_THRESHOLD) {
                     log.info(
@@ -507,7 +451,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 moreData = false;
                 break;
             }
-
         }
         context.incrementDataReadCount(dataCount);
         context.incrementPeekAheadFillCount(1);
@@ -546,5 +489,4 @@ public class DataGapRouteReader implements IDataToRouteReader {
     static class EOD extends Data {
         private static final long serialVersionUID = 1L;
     }
-
 }

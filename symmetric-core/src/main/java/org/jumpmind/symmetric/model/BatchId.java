@@ -23,11 +23,8 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 
 public class BatchId implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     private long batchId;
-
     private String nodeId;
 
     public BatchId() {
@@ -53,7 +50,7 @@ public class BatchId implements Serializable {
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
     }
-    
+
     @Override
     public String toString() {
         return nodeId + "-" + batchId;
@@ -86,7 +83,4 @@ public class BatchId implements Serializable {
             return false;
         return true;
     }
-    
-    
-
 }

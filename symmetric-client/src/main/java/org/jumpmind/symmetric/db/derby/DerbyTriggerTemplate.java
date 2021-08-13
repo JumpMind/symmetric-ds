@@ -30,7 +30,6 @@ import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
 public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
-
     public DerbyTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         //@formatter:off
@@ -99,7 +98,6 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
 "select $(columns) from $(schemaName)$(tableName) t  where $(whereClause)     " );
         
         //@formatter:on
-
     }
 
     @Override
@@ -110,7 +108,6 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
                 columnsMinusLobs.add(column);
             }
         }
-
         StringBuilder b = new StringBuilder("'");
         for (Column column : columnsMinusLobs) {
             b.append("\"").append(column.getName()).append("\"=");
@@ -153,6 +150,4 @@ public class DerbyTriggerTemplate extends AbstractTriggerTemplate {
         b.append("'");
         return b.toString();
     }
-
-
 }

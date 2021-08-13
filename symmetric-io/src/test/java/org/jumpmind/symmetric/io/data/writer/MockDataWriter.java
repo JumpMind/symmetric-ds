@@ -33,13 +33,9 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
 
 public class MockDataWriter implements IDataWriter {
-
     protected boolean closeCalled = false;
-
     protected Map<String, List<CsvData>> writtenDatas = new HashMap<String, List<CsvData>>();
-
     protected Table currentTable;
-    
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
 
     public void open(DataContext context) {
@@ -70,13 +66,12 @@ public class MockDataWriter implements IDataWriter {
 
     public void end(Batch batch, boolean inError) {
     }
-    
+
     protected void reset() {
         writtenDatas.clear();
     }
-    
+
     public Map<Batch, Statistics> getStatistics() {
         return statistics;
     }
-
 }

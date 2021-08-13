@@ -52,9 +52,8 @@ import org.jumpmind.symmetric.service.IParameterService;
  *  create database symmetricclient on master = '30M'
  */
 public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-
     static final String SQL_DROP_FUNCTION = "drop function dbo.$(functionName)";
-    static final String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))" ;
+    static final String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))";
 
     public AseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
@@ -70,7 +69,6 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
         boolean altered = super.createOrAlterTablesIfNecessary(tableNames);
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
         String prefix = getTablePrefix();
-
         try {
             int changeIdentityGap = parameterService.getInt(ParameterConstants.SYBASE_CHANGE_IDENTITY_GAP, 1000);
             if (changeIdentityGap > 0) {
@@ -83,11 +81,10 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                     altered = true;
                 }
             }
-        } catch (Exception e) {            
+        } catch (Exception e) {
             log.warn("Failed to alter identity gap: {}", e.getMessage());
             log.debug("", e);
         }
-
         try {
             if (parameterService.is(ParameterConstants.SYBASE_ROW_LEVEL_LOCKS_ONLY, true)) {
                 List<String> tables = new ArrayList<String>();
@@ -96,7 +93,6 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                 tables.add(TableConstants.getTableName(prefix, TableConstants.SYM_OUTGOING_BATCH).toLowerCase());
                 tables.add(TableConstants.getTableName(prefix, TableConstants.SYM_MONITOR_EVENT).toLowerCase());
                 String sql = "select case (sysstat2 & 57344) when 32768 then 1 else 0 end from sysobjects where name = ?";
-
                 for (String table : tables) {
                     if (sqlTemplate.queryForInt(sql, table) == 0) {
                         log.info("Altering {} for row-level locking", table);
@@ -105,7 +101,7 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                     }
                 }
             }
-        } catch (Exception e) {            
+        } catch (Exception e) {
             log.warn("Failed to alter row-level locking: {}", e.getMessage());
             log.debug("", e);
         }
@@ -128,32 +124,32 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
-          ((JdbcSqlTransaction) transaction)
-            .executeCallback(new IConnectionCallback<Boolean>() {
-                public Boolean execute(Connection con) throws SQLException {
-                    String previousCatalog = con.getCatalog();
-                    Statement stmt = null;
-                    try {
-                        if (catalogName != null) {
-                            con.setCatalog(catalogName);
+            ((JdbcSqlTransaction) transaction)
+                    .executeCallback(new IConnectionCallback<Boolean>() {
+                        public Boolean execute(Connection con) throws SQLException {
+                            String previousCatalog = con.getCatalog();
+                            Statement stmt = null;
+                            try {
+                                if (catalogName != null) {
+                                    con.setCatalog(catalogName);
+                                }
+                                stmt = con.createStatement();
+                                stmt.execute(sql);
+                            } catch (Exception e) {
+                                log.warn("Error removing {}: {}", triggerName, e.getMessage());
+                                throw e;
+                            } finally {
+                                if (catalogName != null) {
+                                    con.setCatalog(previousCatalog);
+                                }
+                                try {
+                                    stmt.close();
+                                } catch (Exception e) {
+                                }
+                            }
+                            return Boolean.FALSE;
                         }
-                        stmt = con.createStatement();
-                        stmt.execute(sql);
-                    } catch (Exception e) {
-                        log.warn("Error removing {}: {}", triggerName, e.getMessage());
-                        throw e;
-                    } finally {
-                        if (catalogName != null) {
-                            con.setCatalog(previousCatalog);
-                        }
-                        try {
-                            stmt.close();
-                        } catch (Exception e) {
-                        }
-                    }
-                    return Boolean.FALSE;
-                }
-            });
+                    });
         }
     }
 
@@ -183,56 +179,65 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
     protected boolean doesTriggerExistOnPlatform(final String catalogName, final String schema, final String tableName,
             final String triggerName) {
         return ((JdbcSqlTemplate) platform.getSqlTemplate())
-        .execute(new IConnectionCallback<Boolean>() {
-            public Boolean execute(Connection con) throws SQLException {
-                String previousCatalog = con.getCatalog();
-                PreparedStatement stmt = con
-                        .prepareStatement("select count(*) from dbo.sysobjects where type = 'TR' AND name = ?");
-                try {
-                    if (catalogName != null) {
-                        con.setCatalog(catalogName);
-                    }
-                    stmt.setString(1, triggerName);
-                    ResultSet rs = null;
-                    try {                        
-                        rs = stmt.executeQuery();
-                    } catch (Exception ex) {
-                        try {                            
-                            stmt.close();
-                        } catch (Exception exClose) {
-                            log.debug("Falied to close stmt", exClose);
-                        }
-                        if (catalogName != null) {                            
-                            log.debug("Tried: select count(*) from dbo.sysobjects where type = 'TR' AND name ='{}' which failed, will try again with catalog.", triggerName);
-                            // try again with the source catalog prefixed.
-                            try {
-                                PreparedStatement stmt2 = con
-                                        .prepareStatement(String.format("select count(*) from %s.dbo.sysobjects where type = 'TR' AND name = ?", catalogName));
-                                stmt2.setString(1, triggerName);
-                                log.debug("TRY AGAIN Exceute:  select count(*) from {}.dbo.sysobjects where type = 'TR' AND name ='{}'", catalogName, triggerName);
-                                rs = stmt2.executeQuery();
-                            } catch (Exception ex2) {
-                                log.error(String.format("Failed again with catalog... select count(*) from %s.dbo.sysobjects where type = 'TR' AND name = '%s'", catalogName, triggerName), ex2);
-                                throw new RuntimeException(String.format("Detect trigger query failed. select count(*) from dbo.sysobjects where type = 'TR' AND name ='%s'", triggerName), ex);
+                .execute(new IConnectionCallback<Boolean>() {
+                    public Boolean execute(Connection con) throws SQLException {
+                        String previousCatalog = con.getCatalog();
+                        PreparedStatement stmt = con
+                                .prepareStatement("select count(*) from dbo.sysobjects where type = 'TR' AND name = ?");
+                        try {
+                            if (catalogName != null) {
+                                con.setCatalog(catalogName);
                             }
-                        } else {
-                            throw new RuntimeException(String.format("Detect trigger query failed. select count(*) from dbo.sysobjects where type = 'TR' AND name ='%s'", triggerName), ex);
+                            stmt.setString(1, triggerName);
+                            ResultSet rs = null;
+                            try {
+                                rs = stmt.executeQuery();
+                            } catch (Exception ex) {
+                                try {
+                                    stmt.close();
+                                } catch (Exception exClose) {
+                                    log.debug("Falied to close stmt", exClose);
+                                }
+                                if (catalogName != null) {
+                                    log.debug(
+                                            "Tried: select count(*) from dbo.sysobjects where type = 'TR' AND name ='{}' which failed, will try again with catalog.",
+                                            triggerName);
+                                    // try again with the source catalog prefixed.
+                                    try {
+                                        PreparedStatement stmt2 = con
+                                                .prepareStatement(String.format("select count(*) from %s.dbo.sysobjects where type = 'TR' AND name = ?",
+                                                        catalogName));
+                                        stmt2.setString(1, triggerName);
+                                        log.debug("TRY AGAIN Exceute:  select count(*) from {}.dbo.sysobjects where type = 'TR' AND name ='{}'", catalogName,
+                                                triggerName);
+                                        rs = stmt2.executeQuery();
+                                    } catch (Exception ex2) {
+                                        log.error(String.format(
+                                                "Failed again with catalog... select count(*) from %s.dbo.sysobjects where type = 'TR' AND name = '%s'",
+                                                catalogName, triggerName), ex2);
+                                        throw new RuntimeException(String.format(
+                                                "Detect trigger query failed. select count(*) from dbo.sysobjects where type = 'TR' AND name ='%s'",
+                                                triggerName), ex);
+                                    }
+                                } else {
+                                    throw new RuntimeException(String.format(
+                                            "Detect trigger query failed. select count(*) from dbo.sysobjects where type = 'TR' AND name ='%s'", triggerName),
+                                            ex);
+                                }
+                            }
+                            if (rs.next()) {
+                                int count = rs.getInt(1);
+                                return count > 0;
+                            }
+                        } finally {
+                            if (catalogName != null) {
+                                con.setCatalog(previousCatalog);
+                            }
+                            stmt.close();
                         }
-                        
+                        return Boolean.FALSE;
                     }
-                    if (rs.next()) {
-                        int count = rs.getInt(1);
-                        return count > 0;
-                    }
-                } finally {
-                    if (catalogName != null) {
-                        con.setCatalog(previousCatalog);
-                    }
-                    stmt.close();
-                }
-                return Boolean.FALSE;
-            }
-        });
+                });
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
@@ -268,7 +273,7 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
     }
 
     public void cleanDatabase() {
-        platform.getSqlTemplate().update("dump transaction "+platform.getDefaultCatalog()+" with no_log");
+        platform.getSqlTemplate().update("dump transaction " + platform.getDefaultCatalog() + " with no_log");
     }
 
     public boolean needsToSelectLobData() {
@@ -279,5 +284,4 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
     public int getMaxTriggerNameLength() {
         return 28;
     }
-
 }

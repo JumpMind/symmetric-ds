@@ -31,18 +31,17 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
 
 abstract public class AbstractEmbeddedSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-    
     public AbstractEmbeddedSymmetricDialect(IParameterService parameterService,
             IDatabasePlatform platform) {
         super(parameterService, platform);
     }
 
     /**
-     * All the templates have ' escaped because the SQL is inserted into a view.
-     * When returning the raw SQL for use as SQL it needs to be un-escaped.
+     * All the templates have ' escaped because the SQL is inserted into a view. When returning the raw SQL for use as SQL it needs to be un-escaped.
      */
     @Override
-    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table, TriggerHistory triggerHistory, Channel channel, String overrideSelectSql) {
+    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table, TriggerHistory triggerHistory, Channel channel,
+            String overrideSelectSql) {
         String sql = super.createInitialLoadSqlFor(node, trigger, table, triggerHistory, channel, overrideSelectSql);
         sql = sql.replace("''", "'");
         return sql;
@@ -62,7 +61,6 @@ abstract public class AbstractEmbeddedSymmetricDialect extends AbstractSymmetric
         return sql;
     }
 
-  
     public void cleanDatabase() {
     }
 
@@ -86,7 +84,7 @@ abstract public class AbstractEmbeddedSymmetricDialect extends AbstractSymmetric
             return sqlClause;
         }
     }
-    
+
     @Override
     public boolean escapesTemplatesForDatabaseInserts() {
         return true;

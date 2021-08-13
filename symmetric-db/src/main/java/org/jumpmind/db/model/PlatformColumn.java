@@ -23,21 +23,14 @@ package org.jumpmind.db.model;
 import java.io.Serializable;
 
 public class PlatformColumn implements Serializable, Cloneable {
-
     private static final long serialVersionUID = 1L;
-    
     private String name;
-    
     private String type;
-    
     private int size = -1;
-    
     private int decimalDigits = -1;
-    
     private String defaultValue;
-    
     private String[] enumValues;
-    
+
     public PlatformColumn(String name, String type, int size, int decimalDigits, String defaultValue) {
         this.name = name;
         this.type = type;
@@ -45,65 +38,64 @@ public class PlatformColumn implements Serializable, Cloneable {
         this.decimalDigits = decimalDigits;
         this.defaultValue = defaultValue;
     }
-    
+
     public PlatformColumn() {
     }
-    
+
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
     }
-    
+
     public String getDefaultValue() {
         return defaultValue;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public void setSize(int size) {
         this.size = size;
     }
-    
+
     public int getSize() {
         return size;
     }
-    
+
     public void setType(String type) {
         this.type = type;
     }
-    
+
     public String getType() {
         return type;
     }
-    
+
     public void setDecimalDigits(int decimalDigits) {
         this.decimalDigits = decimalDigits;
     }
-    
+
     public int getDecimalDigits() {
         return decimalDigits;
-    }    
-    
+    }
+
     public void setEnumValues(String[] enumValues) {
         this.enumValues = enumValues;
     }
-    
+
     public String[] getEnumValues() {
         return enumValues;
     }
-    
+
     public boolean isEnum() {
         return enumValues != null && enumValues.length > 0;
     }
-        
+
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
-
 }

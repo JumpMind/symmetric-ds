@@ -34,7 +34,6 @@ import com.sun.jna.win32.StdCallLibrary.StdCallCallback;
 
 @IgnoreJRERequirement
 public interface WinsvcEx extends Winsvc {
-
     int SERVICE_WIN32_OWN_PROCESS = 0x00000010;
     int SERVICE_AUTO_START = 0x00000002;
     int SERVICE_DEMAND_START = 0x00000003;
@@ -43,12 +42,11 @@ public interface WinsvcEx extends Winsvc {
     int SERVICE_CONFIG_FAILURE_ACTIONS = 2;
     int SERVICE_CONFIG_DELAYED_AUTO_START_INFO = 3;
     int SERVICE_CONFIG_FAILURE_ACTIONS_FLAG = 4;
-
     int SC_ACTION_NONE = 0;
     int SC_ACTION_RESTART = 1;
     int SC_ACTION_REBOOT = 2;
     int SC_ACTION_RUN_COMMAND = 3;
-    
+
     public interface SERVICE_MAIN_FUNCTION extends StdCallCallback {
         void serviceMain(int argc, Pointer argv);
     }
@@ -59,37 +57,37 @@ public interface WinsvcEx extends Winsvc {
 
         public SERVICE_TABLE_ENTRY() {
         }
-        
+
         public SERVICE_TABLE_ENTRY(String serviceName, SERVICE_MAIN_FUNCTION serviceCallback) {
             this.serviceName = serviceName;
             this.serviceCallback = serviceCallback;
         }
-        
+
         @Override
         protected List<String> getFieldOrder() {
             return Arrays.asList(new String[] { "serviceName", "serviceCallback" });
         }
     }
-    
+
     public static class SERVICE_DELAYED_AUTO_START_INFO extends SERVICE_INFO {
         public int fDelayedAutostart;
 
         public SERVICE_DELAYED_AUTO_START_INFO() {
         }
-        
+
         public SERVICE_DELAYED_AUTO_START_INFO(boolean fDelayedAutostart) {
             this.fDelayedAutostart = fDelayedAutostart ? 1 : 0;
         }
-        
+
         @Override
         protected List<String> getFieldOrder() {
             return Arrays.asList(new String[] { "fDelayedAutostart" });
         }
     }
-    
+
     public static class SERVICE_FAILURE_ACTIONS_FLAG extends SERVICE_INFO {
         public boolean fFailureActionsOnNonCrashFailures;
-        
+
         public SERVICE_FAILURE_ACTIONS_FLAG() {
         }
 
@@ -100,7 +98,7 @@ public interface WinsvcEx extends Winsvc {
         @Override
         protected List<String> getFieldOrder() {
             return Arrays.asList(new String[] { "fFailureActionsOnNonCrashFailures" });
-        }        
+        }
     }
 
     public static class SERVICE_FAILURE_ACTIONS extends SERVICE_INFO {
@@ -109,7 +107,7 @@ public interface WinsvcEx extends Winsvc {
         public WString lpCommand;
         public int cActions;
         public SC_ACTION.ByReference lpsaActions;
-        
+
         public SERVICE_FAILURE_ACTIONS() {
         }
 
@@ -124,14 +122,16 @@ public interface WinsvcEx extends Winsvc {
         @Override
         protected List<String> getFieldOrder() {
             return Arrays.asList(new String[] { "dwResetPeriod", "lpRebootMsg", "lpCommand", "cActions", "lpsaActions" });
-        }        
+        }
     }
 
     public static class SC_ACTION extends Structure {
-        public static class ByReference extends SC_ACTION implements Structure.ByReference {}
+        public static class ByReference extends SC_ACTION implements Structure.ByReference {
+        }
+
         public int type;
         public int delay;
-        
+
         public SC_ACTION() {
         }
 
@@ -143,7 +143,6 @@ public interface WinsvcEx extends Winsvc {
         @Override
         protected List<String> getFieldOrder() {
             return Arrays.asList(new String[] { "type", "delay" });
-        }        
+        }
     }
-    
 }

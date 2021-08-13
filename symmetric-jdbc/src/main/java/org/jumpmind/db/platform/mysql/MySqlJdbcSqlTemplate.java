@@ -28,20 +28,18 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class MySqlJdbcSqlTemplate extends JdbcSqlTemplate {
-
     public MySqlJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
-        primaryKeyViolationCodes = new int[] {1062};
+        primaryKeyViolationCodes = new int[] { 1062 };
         uniqueKeyViolationNameRegex = new String[] { "Duplicate entry .* for key '(.*)'" };
-        foreignKeyViolationCodes = new int[] {1452, 1216};
-        foreignKeyChildExistsViolationCodes = new int[] {1451};
-        deadlockCodes = new int[] {1213};
+        foreignKeyViolationCodes = new int[] { 1452, 1216 };
+        foreignKeyChildExistsViolationCodes = new int[] { 1451 };
+        deadlockCodes = new int[] { 1213 };
     }
-    
+
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select last_insert_id()";
     }
-
 }

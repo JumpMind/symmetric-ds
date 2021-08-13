@@ -77,10 +77,8 @@ import org.jumpmind.db.sql.SqlException;
  * Reads a database model from a Sybase database.
  */
 public class AseDdlReader extends AbstractJdbcDdlReader {
-
     /* The regular expression pattern for the ISO dates. */
     private Pattern isoDatePattern = Pattern.compile("'(\\d{4}\\-\\d{2}\\-\\d{2})'");
-
     /* The regular expression pattern for the ISO times. */
     private Pattern isoTimePattern = Pattern.compile("'(\\d{2}:\\d{2}:\\d{2})'");
 
@@ -95,7 +93,6 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
         Table table = super.readTable(connection, metaData, values);
-
         if (table != null) {
             // Sybase does not return the auto-increment status via the database
             // metadata
@@ -115,9 +112,8 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
-
         if ((column.getMappedTypeCode() == Types.NUMERIC) && (column.getSizeAsInt() == 18)
                 && (column.getScale() == 0)) {
             // Back-mapping to BIGINT
@@ -133,7 +129,6 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
                 // migrate the default value to TIMESTAMP
                 Matcher matcher = isoDatePattern.matcher(column.getDefaultValue());
                 Timestamp timestamp = null;
-
                 if (matcher.matches()) {
                     timestamp = new Timestamp(Date.valueOf(matcher.group(1)).getTime());
                 } else {
@@ -153,17 +148,15 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected void readIndex(DatabaseMetaDataWrapper metaData, Map<String,Object> values, Map<String,IIndex> knownIndices)
+    protected void readIndex(DatabaseMetaDataWrapper metaData, Map<String, Object> values, Map<String, IIndex> knownIndices)
             throws SQLException {
         if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
             String indexName = (String) values.get("INDEX_NAME");
-
             // Sometimes, Sybase keeps the delimiter quotes around the index
             // names
             // when returning them in the metadata, so we strip them
             if (indexName != null) {
                 String delimiter = getPlatformInfo().getDelimiterToken();
-
                 if ((indexName != null) && indexName.startsWith(delimiter)
                         && indexName.endsWith(delimiter)) {
                     indexName = indexName.substring(delimiter.length(), indexName.length()
@@ -182,7 +175,6 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
         // have to
         // read the foreign keys manually from the system tables
         StringBuffer query = new StringBuffer();
-
         query.append("SELECT refobjs.name, localtables.id, remotetables.name, remotetables.id");
         for (int idx = 1; idx <= 16; idx++) {
             query.append(", refs.fokey");
@@ -195,61 +187,47 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
         query.append(" localtables.type = 'U' AND refs.tableid = localtables.id AND localtables.name = '");
         query.append(tableName);
         query.append("' AND remotetables.type = 'U' AND refs.reftabid = remotetables.id");
-
         Statement stmt = connection.createStatement();
         PreparedStatement prepStmt = connection
                 .prepareStatement("SELECT name FROM dbo.syscolumns WHERE id = ? AND colid = ?");
         ArrayList<ForeignKey> result = new ArrayList<ForeignKey>();
-
         try {
             ResultSet fkRs = stmt.executeQuery(query.toString());
-
             while (fkRs.next()) {
                 ForeignKey fk = new ForeignKey(fkRs.getString(1));
                 int localTableId = fkRs.getInt(2);
                 int remoteTableId = fkRs.getInt(4);
-
                 fk.setForeignTableName(fkRs.getString(3));
                 for (int idx = 0; idx < 16; idx++) {
                     short fkColIdx = fkRs.getShort(5 + idx + idx);
                     short pkColIdx = fkRs.getShort(6 + idx + idx);
                     Reference ref = new Reference();
-
                     if (fkColIdx == 0) {
                         break;
                     }
-
                     prepStmt.setInt(1, localTableId);
                     prepStmt.setShort(2, fkColIdx);
-
                     ResultSet colRs = prepStmt.executeQuery();
-
                     if (colRs.next()) {
                         ref.setLocalColumnName(colRs.getString(1));
                     }
                     colRs.close();
-
                     prepStmt.setInt(1, remoteTableId);
                     prepStmt.setShort(2, pkColIdx);
-
                     colRs = prepStmt.executeQuery();
-
                     if (colRs.next()) {
                         ref.setForeignColumnName(colRs.getString(1));
                     }
                     colRs.close();
-
                     fk.addReference(ref);
                 }
                 result.add(fk);
             }
-
             fkRs.close();
         } finally {
             stmt.close();
             prepStmt.close();
         }
-
         return result;
     }
 
@@ -259,54 +237,47 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
         // We can simply check the sysindexes table where a specific flag is set
         // for pk indexes
         StringBuffer query = new StringBuffer();
-
         query.append("SELECT name = si.name FROM dbo.sysindexes si, dbo.sysobjects so WHERE so.name = '");
         query.append(table.getName());
         query.append("' AND si.name = '");
         query.append(index.getName());
         query.append("' AND so.id = si.id AND (si.status & 2048) > 0");
-
         Statement stmt = connection.createStatement();
-
         try {
             ResultSet rs = stmt.executeQuery(query.toString());
             boolean result = rs.next();
-
             rs.close();
             return result;
         } finally {
             stmt.close();
         }
     }
-    
+
     @Override
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) throws SqlException {
-        
         List<Trigger> triggers = new ArrayList<Trigger>();
-
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
-        
         String sql = "SELECT "
-                        + "trig.name AS trigger_name, "
-                        + "trig.id AS trigger_id, "
-                        + "tab.name AS table_name, "
-                        + "tab.id AS table_id, "
-                        + "db.name AS catalog, "
-                        + "trig.crdate AS created_on, "
-                        + "tab.deltrig AS table_delete_trigger_id, "
-                        + "tab.instrig AS table_insert_trigger_id, "
-                        + "tab.updtrig AS table_update_trigger_id "
-                   + "FROM sysobjects AS trig "
-                   + "INNER JOIN sysobjects AS tab "
-                           + "ON trig.id = tab.deltrig "
-                           + "OR trig.id = tab.instrig "
-                           + "OR trig.id = tab.updtrig "
-                       + "INNER JOIN master.dbo.sysdatabases AS db "
-                           + "ON db.dbid = db_id() "
-                   + "WHERE tab.name = ? AND db.name = ? ";
+                + "trig.name AS trigger_name, "
+                + "trig.id AS trigger_id, "
+                + "tab.name AS table_name, "
+                + "tab.id AS table_id, "
+                + "db.name AS catalog, "
+                + "trig.crdate AS created_on, "
+                + "tab.deltrig AS table_delete_trigger_id, "
+                + "tab.instrig AS table_insert_trigger_id, "
+                + "tab.updtrig AS table_update_trigger_id "
+                + "FROM sysobjects AS trig "
+                + "INNER JOIN sysobjects AS tab "
+                + "ON trig.id = tab.deltrig "
+                + "OR trig.id = tab.instrig "
+                + "OR trig.id = tab.updtrig "
+                + "INNER JOIN master.dbo.sysdatabases AS db "
+                + "ON db.dbid = db_id() "
+                + "WHERE tab.name = ? AND db.name = ? ";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
             public Trigger mapRow(Row row) {
                 Trigger trigger = new Trigger();
@@ -335,22 +306,19 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
                 return trigger;
             }
         }, tableName, catalog);
-        
-        
         for (final Trigger trigger : triggers) {
             int id = (Integer) trigger.getMetaData().get("trigger_id");
             String sourceSql = "SELECT text "
-                             + "FROM syscomments "
-                             + "WHERE id = ? "
-                             + "ORDER BY colid ";
+                    + "FROM syscomments "
+                    + "WHERE id = ? "
+                    + "ORDER BY colid ";
             sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
                 public Trigger mapRow(Row row) {
-                    trigger.setSource(trigger.getSource()+"\n"+row.getString("text"));                    
+                    trigger.setSource(trigger.getSource() + "\n" + row.getString("text"));
                     return trigger;
                 }
             }, id);
         }
-        
         return triggers;
     }
 
@@ -360,7 +328,7 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
         tableName = tableName.replace("%", "\\%");
         return tableName;
     }
-    
+
     @Override
     protected StringBuilder appendColumn(StringBuilder query, String identifier) {
         query.append("\"");
@@ -368,7 +336,7 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
         query.append("\"");
         return query;
     }
-    
+
     @Override
     protected IConnectionHandler getConnectionHandler(String catalog) {
         return new ChangeCatalogConnectionHandler(catalog == null ? platform.getDefaultCatalog() : catalog);

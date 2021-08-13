@@ -35,19 +35,17 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
 public class TypedPropertiesFactory implements ITypedPropertiesFactory {
-
     protected File propertiesFile;
-    
     protected Properties properties;
-    
-    public TypedPropertiesFactory() {    
+
+    public TypedPropertiesFactory() {
     }
-    
+
     public void init(File propertiesFile, Properties properties) {
         this.propertiesFile = propertiesFile;
         this.properties = properties;
     }
-    
+
     public TypedProperties reload() {
         PropertiesFactoryBean factoryBean = new PropertiesFactoryBean();
         factoryBean.setIgnoreResourceNotFound(true);
@@ -63,12 +61,10 @@ public class TypedPropertiesFactory implements ITypedPropertiesFactory {
             throw new IoException(e);
         }
     }
-    
+
     protected Resource[] buildLocations(File propertiesFile) {
         /*
-         * System properties always override the properties found in
-         * these files. System properties are merged in the parameter
-         * service.
+         * System properties always override the properties found in these files. System properties are merged in the parameter service.
          */
         List<Resource> resources = new ArrayList<Resource>();
         resources.add(new ClassPathResource("/symmetric-default.properties"));
@@ -82,5 +78,4 @@ public class TypedPropertiesFactory implements ITypedPropertiesFactory {
         }
         return resources.toArray(new Resource[resources.size()]);
     }
-
 }

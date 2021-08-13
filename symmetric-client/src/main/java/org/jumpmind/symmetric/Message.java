@@ -29,30 +29,23 @@ import java.util.ResourceBundle;
  * Helper class that wraps resource bundles.
  */
 public class Message {
-
     private static Locale locale = null;
-
     private static String bundleName = "symmetric-messages";
-
     private static ResourceBundle bundle = null;
     private static String MESSAGE_KEY = "MessageKey: ";
-
     static {
         setLocale(Locale.getDefault());
     }
 
     /*
-     * @see
-     * org.jumpmind.symmetric.common.logging.ILog#getMessage(java.lang.String)
+     * @see org.jumpmind.symmetric.common.logging.ILog#getMessage(java.lang.String)
      */
     public static String get(String key) {
         return get(key, (Object) null);
     }
 
     /*
-     * @see
-     * org.jumpmind.symmetric.common.logging.ILog#getMessage(java.lang.String,
-     * java.lang.Object)
+     * @see org.jumpmind.symmetric.common.logging.ILog#getMessage(java.lang.String, java.lang.Object)
      */
     public static String get(String key, Object... args) {
         if (bundle != null) {
@@ -77,9 +70,9 @@ public class Message {
             return false;
         }
     }
-    
-    /*
 
+    /*
+     * 
      * 
      * @see org.jumpmind.symmetric.common.logging.ILog#getLocale()
      */
@@ -88,8 +81,7 @@ public class Message {
     }
 
     /*
-     * @see
-     * org.jumpmind.symmetric.common.logging.ILog#setLocale(java.util.Locale)
+     * @see org.jumpmind.symmetric.common.logging.ILog#setLocale(java.util.Locale)
      */
     public static void setLocale(Locale locale) {
         Message.locale = locale;
@@ -108,9 +100,7 @@ public class Message {
     }
 
     /*
-     * @see
-     * org.jumpmind.symmetric.common.logging.ILog#setBundleName(java.lang.String
-     * )
+     * @see org.jumpmind.symmetric.common.logging.ILog#setBundleName(java.lang.String )
      */
     public static void setBundleName(String bundleName) {
         Message.bundleName = bundleName;

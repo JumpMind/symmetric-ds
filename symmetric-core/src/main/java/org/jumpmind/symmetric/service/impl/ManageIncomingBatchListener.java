@@ -66,27 +66,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class ManageIncomingBatchListener implements IDataProcessorListener {
-
     private static final Logger log = LoggerFactory.getLogger(ManageIncomingBatchListener.class);
-
     protected List<IncomingBatch> batchesProcessed = new ArrayList<IncomingBatch>();
-
     protected IncomingBatch currentBatch;
-
     protected boolean isNewErrorForCurrentBatch;
-
     protected ProcessInfo processInfo;
-
     private ISymmetricEngine engine;
-
     private IParameterService parameterService;
-
     private IIncomingBatchService incomingBatchService;
-
     private IStatisticManager statisticManager;
-
     private ISymmetricDialect symmetricDialect;
-
     private IDataLoaderService dataLoaderService;
 
     public ManageIncomingBatchListener(ProcessInfo processInfo, ISymmetricEngine engine) {
@@ -111,13 +100,12 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
         Batch batch = context.getBatch();
         this.currentBatch = null;
         context.remove("currentBatch");
-
         if (parameterService.is(ParameterConstants.DATA_LOADER_ENABLED)
                 || (batch.getChannelId() != null && batch.getChannelId().equals(
                         Constants.CHANNEL_CONFIG))) {
             if (batch.getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
-                /* Remove outgoing configuration batches because we are about to get 
-                 * the complete configuration.
+                /*
+                 * Remove outgoing configuration batches because we are about to get the complete configuration.
                  */
                 IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
                 IDataService dataService = engine.getDataService();
@@ -126,15 +114,12 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
             }
             IncomingBatch incomingBatch = new IncomingBatch(batch);
             this.batchesProcessed.add(incomingBatch);
-
             if (batch.getStatistics() != null) {
                 incomingBatch.mergeInjectedBatchStatistics(batch.getStatistics());
                 processInfo.setTotalDataCount(incomingBatch.getExtractRowCount());
             }
-
             this.currentBatch = incomingBatch;
             context.put("currentBatch", this.currentBatch);
-            
             if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
                 return true;
             }
@@ -159,7 +144,6 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
         statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
                 this.currentBatch.getByteCount());
         Status oldStatus = this.currentBatch.getStatus();
-
         try {
             this.currentBatch.setStatus(Status.OK);
             if (incomingBatchService.isRecordOkBatchesEnabled()) {
@@ -193,30 +177,24 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
         try {
             if (this.currentBatch == null) {
                 /*
-                 * if the current batch is null, there isn't anything we can
-                 * do other than log the error
+                 * if the current batch is null, there isn't anything we can do other than log the error
                  */
                 throw ex;
             }
-
             if (context.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE) != null && context.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE).equals("bulk")) {
                 log.info("Bulk loading failed for this batch " + context.getBatch().getBatchId() + ", falling back to default loading. (" + ex + ")");
                 log.debug("Bulk loading error.", ex);
             } else {
-            
                 /*
                  * Reread batch to make sure it wasn't set to IG or OK
                  */
                 engine.getIncomingBatchService().refreshIncomingBatch(currentBatch);
-
                 if (currentBatch.getStatus() != Status.OK && currentBatch.getStatus() != Status.IG) {
                     currentBatch.setStatus(IncomingBatch.Status.ER);
                     currentBatch.setErrorFlag(true);
                 }
-
                 Batch batch = context.getBatch();
                 isNewErrorForCurrentBatch = batch != null && batch.getLineCount() != currentBatch.getFailedLineNumber();
-    
                 if (context.getWriter() != null
                         && context.getReader().getStatistics().get(batch) != null
                         && context.getWriter().getStatistics().get(batch) != null) {
@@ -228,12 +206,10 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                             this.currentBatch.getByteCount());
                     statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
                 } else {
-                    log.error("An error caused a batch to fail without attempting to load data for batch " + 
+                    log.error("An error caused a batch to fail without attempting to load data for batch " +
                             (batch != null ? batch.getNodeBatchId() : "?"), ex);
                 }
-    
                 enableSyncTriggers(context);
-
                 if (ex instanceof CancellationException) {
                     log.info("Cancelling batch " + this.currentBatch.getNodeBatchId());
                 } else if (ex instanceof IOException || ex instanceof TransportException
@@ -248,7 +224,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                     } else {
                         log.error(String.format("Failed to parse batch %s", this.currentBatch.getNodeBatchId()), ex);
                     }
-                } else {    
+                } else {
                     SQLException se = ExceptionUtils.unwrapSqlException(ex);
                     if (ex instanceof ConflictException) {
                         String message = ex.getMessage();
@@ -285,7 +261,6 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                     } else {
                         this.currentBatch.setSqlMessage(ExceptionUtils.getRootMessage(ex));
                     }
-
                     if (ex instanceof TableNotFoundException) {
                         log.error("The incoming batch {} failed: {}", this.currentBatch.getNodeBatchId(), ex.getMessage());
                     } else if (isNewErrorForCurrentBatch && (this.currentBatch.getSqlCode() == ErrorConstants.FK_VIOLATION_CODE
@@ -296,12 +271,10 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                         log.error(String.format("Failed to load batch %s", this.currentBatch.getNodeBatchId()), ex);
                     }
                 }
-    
                 ISqlTransaction transaction = context.findSymmetricTransaction(engine.getTablePrefix());
                 if (Boolean.TRUE.equals(context.get(AbstractDatabaseWriter.TRANSACTION_ABORTED))) {
                     transaction = null;
                 }
-    
                 if (currentBatch.getStatus() == Status.ER) {
                     if (context.getTable() != null && context.getData() != null) {
                         try {
@@ -342,7 +315,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                                 transaction.rollback();
                             }
                             if (context.get(AbstractDatabaseWriter.CONFLICT_IGNORE) != null) {
-                                IncomingError error = dataLoaderService.getIncomingError(currentBatch.getBatchId(), currentBatch.getNodeId(), 
+                                IncomingError error = dataLoaderService.getIncomingError(currentBatch.getBatchId(), currentBatch.getNodeId(),
                                         currentBatch.getFailedRowNumber());
                                 if (error != null) {
                                     error.setResolveIgnore(true);
@@ -352,7 +325,6 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                         }
                     }
                 }
-
                 if (transaction != null) {
                     if (incomingBatchService.isRecordOkBatchesEnabled()
                             || this.currentBatch.isRetry()) {
@@ -371,12 +343,13 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
             }
         } catch (Throwable e) {
             log.error("Failed to record status of batch {}",
-                    this.currentBatch != null ? this.currentBatch.getNodeBatchId() : context
-                            .getBatch().getNodeBatchId(), e);
+                    this.currentBatch != null ? this.currentBatch.getNodeBatchId()
+                            : context
+                                    .getBatch().getNodeBatchId(), e);
         }
     }
 
-    public void batchProgressUpdate(DataContext context){
+    public void batchProgressUpdate(DataContext context) {
     }
 
     public List<IncomingBatch> getBatchesProcessed() {
@@ -390,5 +363,4 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
     public boolean isNewErrorForCurrentBatch() {
         return isNewErrorForCurrentBatch;
     }
-
 }

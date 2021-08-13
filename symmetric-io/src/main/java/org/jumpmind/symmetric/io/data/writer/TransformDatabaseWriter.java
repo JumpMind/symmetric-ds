@@ -28,10 +28,9 @@ import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 
 public class TransformDatabaseWriter extends TransformWriter {
-
     public TransformDatabaseWriter(IDatabasePlatform symmetricPlatform,
-                IDatabasePlatform targetPlatform, String tablePrefix, 
-            DatabaseWriterSettings defaultSettings, Map<String, IColumnTransform<?>> columnTransforms, 
+            IDatabasePlatform targetPlatform, String tablePrefix,
+            DatabaseWriterSettings defaultSettings, Map<String, IColumnTransform<?>> columnTransforms,
             TransformTable[] transforms) {
         super(targetPlatform, TransformPoint.LOAD,
                 new DynamicDefaultDatabaseWriter(symmetricPlatform, targetPlatform, tablePrefix, defaultSettings), columnTransforms, transforms);
@@ -41,5 +40,4 @@ public class TransformDatabaseWriter extends TransformWriter {
     public final DefaultDatabaseWriter getDatabaseWriter() {
         return getNestedWriterOfType(DefaultDatabaseWriter.class);
     }
-
 }

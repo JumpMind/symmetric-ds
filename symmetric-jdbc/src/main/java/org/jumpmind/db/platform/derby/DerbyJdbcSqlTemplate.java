@@ -28,17 +28,16 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class DerbyJdbcSqlTemplate extends JdbcSqlTemplate {
-
     public DerbyJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
-        primaryKeyViolationSqlStates = new String[] {"23505"};
-        uniqueKeyViolationNameRegex = new String[] {"unique index identified by '(.*)' defined"};
-        foreignKeyViolationSqlStates = new String[] {"23503"};
-        foreignKeyChildExistsViolationMessageParts = new String[] {"delete on table .* caused a violation of foreign key constraint .*",
-                "update on table .* caused a violation of foreign key constraint .*"};
+        primaryKeyViolationSqlStates = new String[] { "23505" };
+        uniqueKeyViolationNameRegex = new String[] { "unique index identified by '(.*)' defined" };
+        foreignKeyViolationSqlStates = new String[] { "23503" };
+        foreignKeyChildExistsViolationMessageParts = new String[] { "delete on table .* caused a violation of foreign key constraint .*",
+                "update on table .* caused a violation of foreign key constraint .*" };
     }
-    
+
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "values IDENTITY_VAL_LOCAL()";
@@ -53,5 +52,4 @@ public class DerbyJdbcSqlTemplate extends JdbcSqlTemplate {
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
-
 }

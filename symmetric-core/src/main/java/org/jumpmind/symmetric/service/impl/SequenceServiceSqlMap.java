@@ -25,10 +25,8 @@ import java.util.Map;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class SequenceServiceSqlMap extends AbstractSqlMap {
-
     public SequenceServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
-
         // @formatter:off
         putSql("getSequenceSql",
           "select sequence_name,current_value,increment_by,min_value,max_value,                    " + 
@@ -60,5 +58,4 @@ public class SequenceServiceSqlMap extends AbstractSqlMap {
                 
        // @formatter:on
     }
-
 }

@@ -26,13 +26,10 @@ import org.jumpmind.db.sql.LogSqlResultsListener;
 import org.jumpmind.symmetric.ext.IDatabaseInstallStatementListener;
 
 public class LogSqlResultsInstallListener extends LogSqlResultsListener {
-
     protected String engineName;
-
     protected int totalStatements;
-
     protected List<IDatabaseInstallStatementListener> listeners;
-    
+
     public LogSqlResultsInstallListener(String engineName, int totalStatements, List<IDatabaseInstallStatementListener> listeners) {
         this.engineName = engineName;
         this.totalStatements = totalStatements;
@@ -45,5 +42,4 @@ public class LogSqlResultsInstallListener extends LogSqlResultsListener {
             listener.sqlApplied(engineName, sql, lineNumber + 1, totalStatements);
         }
     }
-
 }

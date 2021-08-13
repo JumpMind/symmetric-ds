@@ -60,16 +60,12 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 
 public class TiberoDdlReader extends AbstractJdbcDdlReader {
-
     /* The regular expression pattern for the Tibero conversion of ISO dates. */
     private Pattern TiberoIsoDatePattern;
-
     /* The regular expression pattern for the Tibero conversion of ISO times. */
     private Pattern TiberoIsoTimePattern;
-
     /*
-     * The regular expression pattern for the Tibero conversion of ISO
-     * timestamps.
+     * The regular expression pattern for the Tibero conversion of ISO timestamps.
      */
     private Pattern TiberoIsoTimestampPattern;
 
@@ -78,7 +74,6 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");
-
         TiberoIsoDatePattern = Pattern.compile("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD'\\)");
         TiberoIsoTimePattern = Pattern.compile("TO_DATE\\('([^']*)'\\, 'HH24:MI:SS'\\)");
         TiberoIsoTimestampPattern = Pattern
@@ -89,24 +84,19 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
         /*
-         * Tibero 10 added the recycle bin which contains dropped database
-         * objects not yet purged Since we don't want entries from the recycle
-         * bin, we filter them out
+         * Tibero 10 added the recycle bin which contains dropped database objects not yet purged Since we don't want entries from the recycle bin, we filter
+         * them out
          */
         boolean tableHasBeenDeleted = isTableInRecycleBin(connection, values);
-
         /*
          * System tables are in the system schema
          */
         String schema = (String) values.get(getResultSetSchemaName());
-
         if (!tableHasBeenDeleted && !"SYSTEM".equals(schema)) {
-
             Table table = super.readTable(connection, metaData, values);
             if (table != null) {
                 determineAutoIncrementColumns(connection, table);
             }
-
             return table;
         } else {
             return null;
@@ -115,7 +105,7 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
 
     protected boolean isTableInRecycleBin(Connection connection, Map<String, Object> values)
             throws SQLException {
-        String tablename = (String)values.get("TABLE_NAME");
+        String tablename = (String) values.get("TABLE_NAME");
         return StringUtils.isNotBlank(tablename) && tablename.toLowerCase().startsWith("bin$");
     }
 
@@ -152,7 +142,7 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
         } else if (typeName != null && typeName.startsWith("BFILE")) {
             return Types.VARCHAR;
         } else if (typeName != null && typeName.startsWith("INTERVAL")) {
-            return Types.VARCHAR;            
+            return Types.VARCHAR;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
@@ -164,9 +154,9 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
         Column column = super.readColumn(metaData, values);
         if (column.getMappedTypeCode() == Types.NUMERIC) {
             // PlatformColumn platformColumn = column.getPlatformColumns().get(platform.getName());
-            //if (platformColumn.getDecimalDigits() == 0 && column.getSizeAsInt() == 15) {
-            //    column.setSize("15");
-            //}
+            // if (platformColumn.getDecimalDigits() == 0 && column.getSizeAsInt() == 15) {
+            // column.setSize("15");
+            // }
             if (column.getScale() == 0) {
                 if (column.getSizeAsInt() == 3) {
                     column.setMappedTypeCode(Types.TINYINT);
@@ -175,16 +165,10 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
                 } else if (column.getSizeAsInt() == 38) {
                     column.setMappedTypeCode(Types.BIGINT);
                 }
-            } 
+            }
             /*
-            else {
-                if (column.getSizeAsInt() <= 63) {
-                    column.setMappedTypeCode(Types.REAL);
-                } else {
-                    column.setMappedTypeCode(Types.DOUBLE);
-                }
-            }*/
-                
+             * else { if (column.getSizeAsInt() <= 63) { column.setMappedTypeCode(Types.REAL); } else { column.setMappedTypeCode(Types.DOUBLE); } }
+             */
         } else if (column.getMappedTypeCode() == Types.FLOAT) {
             // Same for REAL, FLOAT, DOUBLE PRECISION, which all back-map to
             // FLOAT but with
@@ -203,9 +187,7 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
             // value to timestamp
             if (column.getDefaultValue() != null) {
                 Timestamp timestamp = null;
-
                 Matcher matcher = TiberoIsoTimestampPattern.matcher(column.getDefaultValue());
-
                 if (matcher.matches()) {
                     String timestampVal = matcher.group(1);
                     timestamp = Timestamp.valueOf(timestampVal);
@@ -218,7 +200,6 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
                         matcher = TiberoIsoTimePattern.matcher(column.getDefaultValue());
                         if (matcher.matches()) {
                             String timeVal = matcher.group(1);
-
                             timestamp = new Timestamp(Time.valueOf(timeVal).getTime());
                         }
                     }
@@ -230,29 +211,26 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
         } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
             String defaultValue = column.getDefaultValue();
             if (isNotBlank(defaultValue) && defaultValue.startsWith("('") && defaultValue.endsWith("')")) {
-                defaultValue = defaultValue.substring(2, defaultValue.length()-2);
+                defaultValue = defaultValue.substring(2, defaultValue.length() - 2);
             }
             column.setDefaultValue(unescape(defaultValue, "'", "''"));
         }
         return column;
     }
-
-//    private boolean isColumnInteger(String tableName, String columnName) {
-//        return (platform.getSqlTemplate().queryForInt(
-//                "select case when data_precision is null and data_scale=0 then 1 else 0 end " +
-//                "from all_tab_columns where table_name=? and column_name=?", tableName, columnName) == 1);
-//    }
+    // private boolean isColumnInteger(String tableName, String columnName) {
+    // return (platform.getSqlTemplate().queryForInt(
+    // "select case when data_precision is null and data_scale=0 then 1 else 0 end " +
+    // "from all_tab_columns where table_name=? and column_name=?", tableName, columnName) == 1);
+    // }
 
     /*
-     * Helper method that determines the auto increment status using Firebird's
-     * system tables.
+     * Helper method that determines the auto increment status using Firebird's system tables.
      *
      * @param table The table
      */
     protected void determineAutoIncrementColumns(Connection connection, Table table)
             throws SQLException {
         Column[] columns = table.getColumns();
-
         for (int idx = 0; idx < columns.length; idx++) {
             columns[idx].setAutoIncrement(isAutoIncrement(connection, table, columns[idx]));
         }
@@ -282,7 +260,6 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
                 column.getName(), null);
         String seqName = builder.getConstraintName(TiberoDdlBuilder.PREFIX_SEQUENCE, table,
                 column.getName(), null);
-
         if (!getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
             triggerName = triggerName.toUpperCase();
             seqName = seqName.toUpperCase();
@@ -291,20 +268,16 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
             prepStmt = connection
                     .prepareStatement("SELECT * FROM user_triggers WHERE trigger_name = ?");
             prepStmt.setString(1, triggerName);
-
             ResultSet resultSet = prepStmt.executeQuery();
-
             if (!resultSet.next()) {
                 resultSet.close();
                 return false;
             }
             // we have a trigger, so lets check the sequence
             prepStmt.close();
-
             prepStmt = connection
                     .prepareStatement("SELECT * FROM user_sequences WHERE sequence_name = ?");
             prepStmt.setString(1, seqName);
-
             resultSet = prepStmt.executeQuery();
             boolean resultFound = resultSet.next();
             resultSet.close();
@@ -331,9 +304,7 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
         // having GENERATED='Y' in the query result, or by their index names
         // being equal to the
         // name of the primary key of the table
-
         StringBuilder query = new StringBuilder();
-
         query.append("SELECT a.INDEX_NAME, a.INDEX_TYPE, a.UNIQUENESS, b.COLUMN_NAME, b.COLUMN_POSITION FROM USER_INDEXES a, USER_IND_COLUMNS b WHERE ");
         query.append("a.TABLE_NAME=? AND a.GENERATED_BY_SYSTEM=? AND a.TABLE_TYPE=? AND a.TABLE_NAME=b.TABLE_NAME AND a.INDEX_NAME=b.INDEX_NAME AND ");
         query.append("a.INDEX_NAME NOT IN (SELECT DISTINCT c.CONSTRAINT_NAME FROM USER_CONSTRAINTS c WHERE c.CONSTRAINT_TYPE=? AND c.TABLE_NAME=a.TABLE_NAME");
@@ -342,16 +313,15 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
         } else {
             query.append(")");
         }
-
         Map<String, IIndex> indices = new LinkedHashMap<String, IIndex>();
         PreparedStatement stmt = null;
-
         try {
             stmt = connection.prepareStatement(query.toString());
             stmt.setString(
                     1,
-                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName
-                            .toUpperCase());
+                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName
+                            : tableName
+                                    .toUpperCase());
             stmt.setString(2, "N");
             stmt.setString(3, "TABLE");
             stmt.setString(4, "P");
@@ -359,10 +329,8 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
                 stmt.setString(5, metaData.getSchemaPattern().toUpperCase());
                 stmt.setString(6, metaData.getSchemaPattern().toUpperCase());
             }
-
             ResultSet rs = stmt.executeQuery();
             Map<String, Object> values = new HashMap<String, Object>();
-
             while (rs.next()) {
                 String name = rs.getString(1);
                 String type = rs.getString(2);
@@ -375,13 +343,11 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
                                     : Boolean.TRUE);
                     values.put("COLUMN_NAME", rs.getString(4));
                     values.put("ORDINAL_POSITION", Short.valueOf(rs.getShort(5)));
-
                     readIndex(metaData, values, indices);
                 } else if (log.isDebugEnabled()) {
                     log.debug("Skipping index " + name + " of type " + type);
                 }
             }
-
             rs.close();
         } finally {
             if (stmt != null) {
@@ -390,25 +356,20 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
         }
         return indices.values();
     }
-    
+
     @Override
     protected String getTableNamePattern(String tableName) {
         /*
-         * When looking up a table definition, Tibero treats underscore (_) in
-         * the table name as a wildcard, so it needs to be escaped, or you'll
-         * get back column names for more than one table. Example:
-         * DatabaseMetaData.metaData.getColumns(null, null, "SYM\\_NODE", null)
+         * When looking up a table definition, Tibero treats underscore (_) in the table name as a wildcard, so it needs to be escaped, or you'll get back
+         * column names for more than one table. Example: DatabaseMetaData.metaData.getColumns(null, null, "SYM\\_NODE", null)
          */
-       return String.format("%s", tableName).replaceAll("\\_", "/_");
+        return String.format("%s", tableName).replaceAll("\\_", "/_");
     }
-    
+
     public List<String> getTableNames(final String catalog, final String schema,
             final String[] tableTypes) {
-        
         List<String> tableNames = new ArrayList<String>();
-        
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-        
         StringBuilder sql = new StringBuilder("select TABLE_NAME from ALL_TABLES");
         Object[] params = null;
         if (isNotBlank(schema)) {
@@ -420,19 +381,15 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
                 return row.getString("TABLE_NAME");
             }
         }, params);
-        
         return tableNames;
     }
-    
+
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) throws SqlException {
-        
         List<Trigger> triggers = new ArrayList<Trigger>();
-
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
-        
         String sql = "SELECT * FROM ALL_TRIGGERS "
                 + "WHERE TABLE_NAME=? and OWNER=?";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
@@ -453,22 +410,21 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
                 return trigger;
             }
         }, tableName, schema);
-        
         for (final Trigger trigger : triggers) {
             String name = trigger.getName();
             String sourceSql = "select TEXT from all_source "
-                             + "where NAME=? order by LINE ";
+                    + "where NAME=? order by LINE ";
             sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
                 public Trigger mapRow(Row row) {
-                    trigger.setSource(trigger.getSource()+"\n"+row.getString("TEXT"));;
+                    trigger.setSource(trigger.getSource() + "\n" + row.getString("TEXT"));
+                    ;
                     return trigger;
                 }
             }, name);
         }
-        
         return triggers;
     }
-    
+
     // Tibero does not support on update actions
     @Override
     protected void readForeignKeyUpdateRule(Map<String, Object> values, ForeignKey fk) {

@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.io.stage;
 
 public class StagingLowFreeSpace extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
 
     public StagingLowFreeSpace() {
@@ -31,5 +30,4 @@ public class StagingLowFreeSpace extends RuntimeException {
     public StagingLowFreeSpace(String message) {
         super(message);
     }
-
 }

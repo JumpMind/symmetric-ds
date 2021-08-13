@@ -37,35 +37,32 @@ import org.jumpmind.symmetric.service.impl.ContextService;
 import org.jumpmind.util.AppUtils;
 
 public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
-
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
-    
     IContextService contextService;
-    
     String sqliteFunctionToOverride;
-    
+
     public SqliteSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new SqliteTriggerTemplate(this);
         this.contextService = new ContextService(parameterService, this);
         sqliteFunctionToOverride = parameterService.getString(ParameterConstants.SQLITE_TRIGGER_FUNCTION_TO_USE);
     }
-        
+
     @Override
     public void createRequiredDatabaseObjects() {
     }
-    
+
     @Override
     public void dropRequiredDatabaseObjects() {
     }
 
     public void cleanDatabase() {
     }
-    
-    protected void setSqliteFunctionResult(ISqlTransaction transaction, final String name, final String result) {        
+
+    protected void setSqliteFunctionResult(ISqlTransaction transaction, final String name, final String result) {
     }
-    
+
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         if (isBlank(sqliteFunctionToOverride)) {
             contextService.insert(transaction, SYNC_TRIGGERS_DISABLED_USER_VARIABLE, "1");
@@ -95,7 +92,6 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
             return "(" + sqliteFunctionToOverride + "() not like 'DISABLED%')";
         }
     }
-    
 
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return platform.getSqlTemplate().queryForInt(
@@ -106,7 +102,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }
-     
+
     public boolean isBlobSyncSupported() {
         return true;
     }
@@ -114,7 +110,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     public boolean isClobSyncSupported() {
         return true;
     }
-    
+
     public boolean isTransactionIdOverrideSupported() {
         return false;
     }
@@ -124,35 +120,34 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
         /* gets filled/replaced by trigger template as it will compare by each column */
         return "$(anyColumnChanged)";
     }
-    
+
     @Override
     public void truncateTable(String tableName) {
         String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
                 .getDatabaseInfo().getDelimiterToken() : "";
-         boolean success = false;
-         int tryCount = 5;
-         while (!success && tryCount > 0) {
-             try {
-                 Table table = platform.getTableFromCache(tableName, false);
-                 if (table != null) {
-                     platform.getSqlTemplate().update(
-                             String.format("delete from %s%s%s", quote, table.getName(), quote));
-                     success = true;
-                 } else {
-                     throw new RuntimeException(String.format("Could not find %s to trunate",
-                             tableName));
-                 }
-             } catch (SqlException ex) {
-                 log.warn("Failed to truncate the " + tableName + " table", ex);
-                 AppUtils.sleep(5000);
-                 tryCount--;
-             }
-         }
+        boolean success = false;
+        int tryCount = 5;
+        while (!success && tryCount > 0) {
+            try {
+                Table table = platform.getTableFromCache(tableName, false);
+                if (table != null) {
+                    platform.getSqlTemplate().update(
+                            String.format("delete from %s%s%s", quote, table.getName(), quote));
+                    success = true;
+                } else {
+                    throw new RuntimeException(String.format("Could not find %s to trunate",
+                            tableName));
+                }
+            } catch (SqlException ex) {
+                log.warn("Failed to truncate the " + tableName + " table", ex);
+                AppUtils.sleep(5000);
+                tryCount--;
+            }
+        }
     }
-    
+
     @Override
     public boolean canGapsOccurInCapturedDataIds() {
         return false;
     }
-    
 }

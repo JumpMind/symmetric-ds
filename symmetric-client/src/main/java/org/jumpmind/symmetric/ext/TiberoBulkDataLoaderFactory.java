@@ -40,7 +40,6 @@ import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class TiberoBulkDataLoaderFactory extends DefaultDataLoaderFactory {
-
     public TiberoBulkDataLoaderFactory(ISymmetricEngine engine) {
         super(engine);
     }
@@ -50,29 +49,25 @@ public class TiberoBulkDataLoaderFactory extends DefaultDataLoaderFactory {
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-                TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
+            TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-        
         IParameterService parmService = engine.getParameterService();
         String dbUrl = parmService.getString(BasicDataSourcePropertyConstants.DB_POOL_URL);
         String dbUser = parmService.getString(BasicDataSourcePropertyConstants.DB_POOL_USER);
         if (dbUser != null && dbUser.startsWith(SecurityConstants.PREFIX_ENC)) {
             dbUser = engine.getSecurityService().decrypt(dbUser.substring(SecurityConstants.PREFIX_ENC.length()));
         }
-
         String dbPassword = parmService.getString(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
         if (dbPassword != null && dbPassword.startsWith(SecurityConstants.PREFIX_ENC)) {
             dbPassword = engine.getSecurityService().decrypt(dbPassword.substring(SecurityConstants.PREFIX_ENC.length()));
         }
-
         String tbLoaderCommand = parmService.getString(ParameterConstants.DBDIALECT_TIBERO_BULK_LOAD_TBLOADER_CMD);
         String tbLoaderOptions = parmService.getString(ParameterConstants.DBDIALECT_TIBERO_BULK_LOAD_TBLOADER_OPTIONS);
         String dbName = parmService.getString(ParameterConstants.DBDIALECT_TIBERO_BULK_LOAD_DBNAME);
         String lineTerminator = parmService.getString(ParameterConstants.DBDIALECT_TIBERO_BULK_LINE_TERMINATOR);
         String fieldTerminator = parmService.getString(ParameterConstants.DBDIALECT_TIBERO_BULK_FIELD_TERMINATOR);
         boolean delimitTokens = parmService.is(ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE, true);
-
         return new TiberoBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                 engine.getStagingManager(), engine.getTablePrefix(), tbLoaderCommand, tbLoaderOptions,
                 dbUser, dbPassword, dbUrl, dbName, null, fieldTerminator, lineTerminator,
@@ -83,5 +78,4 @@ public class TiberoBulkDataLoaderFactory extends DefaultDataLoaderFactory {
     public boolean isPlatformSupported(IDatabasePlatform platform) {
         return DatabaseNamesConstants.TIBERO.equals(platform.getName());
     }
-
 }

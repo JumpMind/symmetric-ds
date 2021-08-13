@@ -28,13 +28,9 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymmetricDialect {
-
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
-
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
-    
     String syncTriggersDisabledUserVariable;
-    
     String syncTriggersDisabledNodeVariable;
 
     public Db2v9SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
@@ -42,7 +38,7 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
         syncTriggersDisabledUserVariable = this.parameterService.getTablePrefix() + "_" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE;
         syncTriggersDisabledNodeVariable = this.parameterService.getTablePrefix() + "_" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE;
     }
-    
+
     @Override
     public void createRequiredDatabaseObjects() {
         ISqlTransaction transaction = null;
@@ -55,28 +51,27 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
                 log.info("Creating environment variables {} and {}", syncTriggersDisabledUserVariable,
                         syncTriggersDisabledNodeVariable);
                 ISqlTemplate template = getPlatform().getSqlTemplate();
-                template.update("CREATE VARIABLE "+syncTriggersDisabledNodeVariable+" VARCHAR(50)");
-                template.update("GRANT READ on VARIABLE "+syncTriggersDisabledNodeVariable+" TO PUBLIC");
-                template.update("GRANT WRITE on VARIABLE "+syncTriggersDisabledNodeVariable+" TO PUBLIC");
-                template.update("CREATE VARIABLE "+syncTriggersDisabledUserVariable+" INTEGER");
-                template.update("GRANT READ on VARIABLE "+syncTriggersDisabledUserVariable+" TO PUBLIC");
-                template.update("GRANT WRITE on VARIABLE "+syncTriggersDisabledUserVariable+" TO PUBLIC");
+                template.update("CREATE VARIABLE " + syncTriggersDisabledNodeVariable + " VARCHAR(50)");
+                template.update("GRANT READ on VARIABLE " + syncTriggersDisabledNodeVariable + " TO PUBLIC");
+                template.update("GRANT WRITE on VARIABLE " + syncTriggersDisabledNodeVariable + " TO PUBLIC");
+                template.update("CREATE VARIABLE " + syncTriggersDisabledUserVariable + " INTEGER");
+                template.update("GRANT READ on VARIABLE " + syncTriggersDisabledUserVariable + " TO PUBLIC");
+                template.update("GRANT WRITE on VARIABLE " + syncTriggersDisabledUserVariable + " TO PUBLIC");
             } catch (Exception ex) {
                 log.error("Error while initializing DB2 dialect", ex);
             }
         } finally {
             close(transaction);
         }
-
         super.createRequiredDatabaseObjects();
     }
-    
+
     @Override
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-       transaction.execute("set " + syncTriggersDisabledUserVariable + "=1");
-       if (StringUtils.isNotBlank(nodeId)) {
-           transaction.execute("set " + syncTriggersDisabledNodeVariable + "='" + nodeId + "'");
-       }
+        transaction.execute("set " + syncTriggersDisabledUserVariable + "=1");
+        if (StringUtils.isNotBlank(nodeId)) {
+            transaction.execute("set " + syncTriggersDisabledNodeVariable + "='" + nodeId + "'");
+        }
     }
 
     @Override
@@ -88,10 +83,9 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
     public String getSyncTriggersExpression() {
         return syncTriggersDisabledUserVariable + " is null";
     }
-    
+
     @Override
     public String getSourceNodeExpression() {
         return syncTriggersDisabledNodeVariable;
     }
-    
 }

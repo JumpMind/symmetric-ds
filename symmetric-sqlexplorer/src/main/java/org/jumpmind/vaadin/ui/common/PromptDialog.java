@@ -37,7 +37,6 @@ import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
 public class PromptDialog extends Window {
-
     private static final long serialVersionUID = 1L;
 
     public PromptDialog(String caption, String text, final IPromptListener iPromptListener) {
@@ -51,16 +50,13 @@ public class PromptDialog extends Window {
         setResizable(false);
         setSizeUndefined();
         setClosable(false);
-
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(true);
         layout.setMargin(true);
         setContent(layout);
-
         if (isNotBlank(text)) {
             layout.addComponent(new Label(text));
         }
-
         final TextField field = new TextField();
         field.setWidth(100, Unit.PERCENTAGE);
         field.setValue(defaultValue);
@@ -68,16 +64,13 @@ public class PromptDialog extends Window {
             field.setSelection(0, defaultValue.length());
         }
         layout.addComponent(field);
-
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
         buttonLayout.setWidth(100, Unit.PERCENTAGE);
-
         Label spacer = new Label(" ");
         buttonLayout.addComponent(spacer);
         buttonLayout.setExpandRatio(spacer, 1);
-
         Button cancelButton = new Button("Cancel");
         cancelButton.setClickShortcut(KeyCode.ESCAPE);
         cancelButton.addClickListener(new ClickListener() {
@@ -89,7 +82,6 @@ public class PromptDialog extends Window {
             }
         });
         buttonLayout.addComponent(cancelButton);
-
         Button okButton = new Button("Ok");
         okButton.setStyleName(ValoTheme.BUTTON_PRIMARY);
         okButton.setClickShortcut(KeyCode.ENTER);
@@ -104,11 +96,8 @@ public class PromptDialog extends Window {
             }
         });
         buttonLayout.addComponent(okButton);
-
         layout.addComponent(buttonLayout);
-
         field.focus();
-
     }
 
     public static void prompt(String caption, String message, IPromptListener listener) {
@@ -119,5 +108,4 @@ public class PromptDialog extends Window {
     public static interface IPromptListener extends Serializable {
         public boolean onOk(String content);
     }
-
 }

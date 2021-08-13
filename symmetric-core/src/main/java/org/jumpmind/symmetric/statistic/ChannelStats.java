@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.statistic;
 import java.util.Date;
 
 public class ChannelStats extends AbstractNodeHostStats {
-
     private String channelId;
     private long dataRouted;
     private long dataUnRouted;
@@ -40,15 +39,16 @@ public class ChannelStats extends AbstractNodeHostStats {
     private long dataLoadedOutgoing;
     private long dataBytesLoadedOutgoing;
     private long dataLoadedOutgoingErrors;
-    
-    public ChannelStats() {}
-    
+
+    public ChannelStats() {
+    }
+
     public ChannelStats(String nodeId, String hostName, Date startTime, Date endTime,
             String channelId) {
         super(nodeId, hostName, startTime, endTime);
         this.channelId = channelId;
     }
-    
+
     public void add(ChannelStats stats) {
         dataRouted += stats.getDataRouted();
         dataUnRouted += stats.getDataUnRouted();
@@ -82,7 +82,7 @@ public class ChannelStats extends AbstractNodeHostStats {
     public void setDataRouted(long dataRouted) {
         this.dataRouted = dataRouted;
     }
-    
+
     public void incrementDataRouted(long count) {
         this.dataRouted += count;
     }
@@ -94,7 +94,7 @@ public class ChannelStats extends AbstractNodeHostStats {
     public void setDataUnRouted(long dataUnRouted) {
         this.dataUnRouted = dataUnRouted;
     }
-    
+
     public void incrementDataUnRouted(long count) {
         this.dataUnRouted += count;
     }
@@ -106,7 +106,7 @@ public class ChannelStats extends AbstractNodeHostStats {
     public void setDataBytesExtracted(long dataExtracted) {
         this.dataBytesExtracted = dataExtracted;
     }
-    
+
     public void incrementDataBytesExtracted(long count) {
         this.dataBytesExtracted += count;
     }
@@ -118,7 +118,7 @@ public class ChannelStats extends AbstractNodeHostStats {
     public void setDataExtractedErrors(long dataExtractedErrors) {
         this.dataExtractedErrors = dataExtractedErrors;
     }
-    
+
     public void incrementDataExtractedErrors(long count) {
         this.dataExtractedErrors += count;
     }
@@ -130,7 +130,7 @@ public class ChannelStats extends AbstractNodeHostStats {
     public void setDataEventInserted(long dataEventInserted) {
         this.dataEventInserted = dataEventInserted;
     }
-    
+
     public void incrementDataEventInserted(long count) {
         this.dataEventInserted += count;
     }
@@ -142,7 +142,7 @@ public class ChannelStats extends AbstractNodeHostStats {
     public void setDataBytesSent(long dataTransmitted) {
         this.dataBytesSent = dataTransmitted;
     }
-    
+
     public void incrementDataBytesSent(long count) {
         this.dataBytesSent += count;
     }
@@ -150,15 +150,15 @@ public class ChannelStats extends AbstractNodeHostStats {
     public void setDataSentErrors(long dataTransmittedErrors) {
         this.dataSentErrors = dataTransmittedErrors;
     }
-    
+
     public long getDataSentErrors() {
         return dataSentErrors;
     }
-    
+
     public void incrementDataSentErrors(long count) {
-        this.dataSentErrors += count;    
+        this.dataSentErrors += count;
     }
-    
+
     public long getDataBytesLoaded() {
         return dataBytesLoaded;
     }
@@ -166,7 +166,7 @@ public class ChannelStats extends AbstractNodeHostStats {
     public void setDataBytesLoaded(long dataLoaded) {
         this.dataBytesLoaded = dataLoaded;
     }
-    
+
     public void incrementDataBytesLoaded(long count) {
         this.dataBytesLoaded += count;
     }
@@ -178,43 +178,43 @@ public class ChannelStats extends AbstractNodeHostStats {
     public void setDataLoadedErrors(long dataLoadedErrors) {
         this.dataLoadedErrors = dataLoadedErrors;
     }
-    
+
     public void incrementDataLoadedErrors(long count) {
         this.dataLoadedErrors += count;
     }
-    
+
     public void setDataExtracted(long dataExtracted) {
         this.dataExtracted = dataExtracted;
     }
-    
+
     public long getDataExtracted() {
         return dataExtracted;
     }
-    
+
     public void incrementDataExtracted(long count) {
         this.dataExtracted += count;
     }
-    
+
     public void setDataLoaded(long dataLoaded) {
         this.dataLoaded = dataLoaded;
     }
-    
+
     public long getDataLoaded() {
         return dataLoaded;
     }
-    
+
     public void incrementDataLoaded(long count) {
         this.dataLoaded += count;
     }
-    
+
     public void setDataSent(long dataTransmitted) {
         this.dataSent = dataTransmitted;
     }
-    
+
     public long getDataSent() {
         return dataSent;
     }
-    
+
     public void incrementDataSent(long count) {
         this.dataSent += count;
     }
@@ -230,7 +230,7 @@ public class ChannelStats extends AbstractNodeHostStats {
     public void incrementDataLoadedOutgoing(long dataLoadedOutgoing) {
         this.dataLoadedOutgoing += dataLoadedOutgoing;
     }
-    
+
     public long getDataBytesLoadedOutgoing() {
         return dataBytesLoadedOutgoing;
     }
@@ -238,7 +238,7 @@ public class ChannelStats extends AbstractNodeHostStats {
     public void setDataBytesLoadedOutgoing(long dataBytesLoadedOutgoing) {
         this.dataBytesLoadedOutgoing = dataBytesLoadedOutgoing;
     }
-    
+
     public void incrementDataBytesLoadedOutgoing(long dataBytesLoadedOutgoing) {
         this.dataBytesLoadedOutgoing += dataBytesLoadedOutgoing;
     }
@@ -254,5 +254,4 @@ public class ChannelStats extends AbstractNodeHostStats {
     public void incrementDataLoadedOutgoingErrors(long dataLoadedOutgoingErrors) {
         this.dataLoadedOutgoingErrors += dataLoadedOutgoingErrors;
     }
-
 }

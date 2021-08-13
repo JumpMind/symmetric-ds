@@ -116,5 +116,4 @@ public class TableRow {
     public String getFkName() {
         return fkName;
     }
-
 }

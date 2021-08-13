@@ -24,13 +24,11 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 
 /**
- * An adapter for the trigger listener interface so you need only implement the
- * methods you are interested in.
+ * An adapter for the trigger listener interface so you need only implement the methods you are interested in.
  *
  * 
  */
 public class TriggerCreationAdapter implements ITriggerCreationListener {
-
     public void syncTriggersStarted() {
     }
 
@@ -39,7 +37,7 @@ public class TriggerCreationAdapter implements ITriggerCreationListener {
 
     public void triggerCreated(int triggersToSync, int triggersSynced, Trigger trigger, TriggerHistory history) {
     }
-    
+
     public void triggerChecked(int triggersToSync, int triggersSynced) {
     }
 
@@ -51,5 +49,4 @@ public class TriggerCreationAdapter implements ITriggerCreationListener {
 
     public void syncTriggersEnded() {
     }
-    
 }

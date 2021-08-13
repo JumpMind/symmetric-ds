@@ -26,14 +26,11 @@ import java.sql.SQLException;
 import org.jumpmind.symmetric.db.AbstractEmbeddedTrigger;
 
 public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Trigger {
-
     static String startupTime = Long.toString(System.currentTimeMillis());
-    
     public static final String TRANSACTION_FUNCTION = "TRANSACTION_ID()";
-    
+
     /**
-     * This method is called by the database engine once when initializing the
-     * trigger.
+     * This method is called by the database engine once when initializing the trigger.
      * 
      * @param conn
      *            a connection to the database
@@ -44,8 +41,7 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
      * @param tableName
      *            the name of the table
      * @param before
-     *            whether the fire method is called before or after the
-     *            operation is performed
+     *            whether the fire method is called before or after the operation is performed
      * @param type
      *            the operation type: INSERT, UPDATE, or DELETE
      */
@@ -53,18 +49,17 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
             throws SQLException {
         this.init(conn, triggerName, schemaName, tableName);
     }
-    
+
     public void close() throws SQLException {
     }
-    
+
     public void remove() throws SQLException {
     }
-    
+
     @Override
     protected String fillVirtualTableSql(String sql, Object[] oldRow, Object[] newRow)
             throws SQLException {
         sql = sql.replace(TRANSACTION_FUNCTION, TRANSACTION_FUNCTION + " || '-" + startupTime + "'");
         return super.fillVirtualTableSql(sql, oldRow, newRow);
     }
-
 }

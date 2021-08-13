@@ -24,11 +24,10 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDdlBuilder;
 
 public class GreenplumDdlBuilder extends PostgreSqlDdlBuilder {
-
     public GreenplumDdlBuilder() {
         databaseInfo.setTriggersSupported(false);
     }
-    
+
     @Override
     protected void writeCascadeAttributesForForeignKey(ForeignKey key, StringBuilder ddl) {
         // Greenplum does not support cascade actions

@@ -18,21 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.model;
 
 /**
  * {@link TriggerHistory}
  */
 public enum TriggerReBuildReason {
-
-    NEW_TRIGGERS("N"),
-    TABLE_SCHEMA_CHANGED("S"),
-    TABLE_SYNC_CONFIGURATION_CHANGED("C"),
-    FORCED("F"),
-    TRIGGERS_MISSING("T"),
-    TRIGGER_TEMPLATE_CHANGED("E"),
-    TRIGGER_HIST_MISSING("H");
+    NEW_TRIGGERS("N"), TABLE_SCHEMA_CHANGED("S"), TABLE_SYNC_CONFIGURATION_CHANGED("C"), FORCED("F"), TRIGGERS_MISSING("T"), TRIGGER_TEMPLATE_CHANGED(
+            "E"), TRIGGER_HIST_MISSING("H");
 
     private String code;
 
@@ -64,5 +57,4 @@ public enum TriggerReBuildReason {
         }
         return null;
     }
-
 }

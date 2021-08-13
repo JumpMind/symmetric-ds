@@ -30,20 +30,18 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.h2.tools.Shell;
 
 public class DbSqlCommand extends AbstractCommandLauncher {
-    
     private static final String OPTION_SQL = "sql";
     private static final String OPTION_SQLFILE = "sqlfile";
-    
     private Options localOptions;
-    
+
     public DbSqlCommand() {
         super("dbsql", "", "DbSql.Option.");
     }
-    
+
     public static void main(String[] args) {
         new DbSqlCommand().execute(args);
-    }    
-    
+    }
+
     @Override
     protected void printHelp(CommandLine cmd, Options options) {
         System.out.println(app + " version " + Version.version());
@@ -58,7 +56,7 @@ public class DbSqlCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_SQLFILE, true);
         // Need reference to it for later, if errors
         localOptions = options;
-    }    
+    }
 
     @Override
     protected boolean printHelpIfNoOptionsAreProvided() {
@@ -78,23 +76,22 @@ public class DbSqlCommand extends AbstractCommandLauncher {
         String password = basicDataSource.getPassword();
         String driver = basicDataSource.getDriverClassName();
         Shell shell = new Shell();
-        
         if (line.hasOption(OPTION_SQL)) {
             String sql = line.getOptionValue(OPTION_SQL);
             shell.runTool("-url", url, "-user", user, "-password", password, "-driver", driver, "-sql", sql);
-        } else if(line.hasOption(OPTION_SQLFILE)) {
+        } else if (line.hasOption(OPTION_SQLFILE)) {
             File file = new File(line.getOptionValue(OPTION_SQLFILE));
-            if(file.exists()) {
+            if (file.exists()) {
                 BufferedReader br = null;
                 try {
                     br = new BufferedReader(new FileReader(file));
                     String sql = null;
-                    while((sql = br.readLine()) != null) {
+                    while ((sql = br.readLine()) != null) {
                         sql = sql.trim();
-                        if(sql.endsWith(";")) {
-                            sql = sql.substring(0,sql.length()-1);
+                        if (sql.endsWith(";")) {
+                            sql = sql.substring(0, sql.length() - 1);
                         }
-                        if(sql.length() > 0) {
+                        if (sql.length() > 0) {
                             // Output the sql so the user knows the result of each sql statement
                             // The H2 shell tool outputs the result of the statement execution
                             System.out.println(sql);
@@ -102,7 +99,7 @@ public class DbSqlCommand extends AbstractCommandLauncher {
                         }
                     }
                 } finally {
-                    if(br != null) {
+                    if (br != null) {
                         br.close();
                     }
                 }
@@ -113,11 +110,9 @@ public class DbSqlCommand extends AbstractCommandLauncher {
                 System.err.println("-------------------------------------------------------------------------------");
                 printHelp(line, localOptions);
             }
-        } else {        
+        } else {
             shell.runTool("-url", url, "-user", user, "-password", password, "-driver", driver);
         }
         return true;
     }
-
-
 }

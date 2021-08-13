@@ -24,10 +24,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CustomizableThreadFactory implements ThreadFactory {
-
     AtomicInteger threadNumber = new AtomicInteger(1);
     String namePrefix;
-           
+
     public CustomizableThreadFactory(String name) {
         this.namePrefix = name;
     }
@@ -43,5 +42,4 @@ public class CustomizableThreadFactory implements ThreadFactory {
         }
         return thread;
     }
-
 }

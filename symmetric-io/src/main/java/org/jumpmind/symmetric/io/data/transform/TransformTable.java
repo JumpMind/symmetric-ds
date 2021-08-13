@@ -31,16 +31,12 @@ import org.jumpmind.util.Context;
 import org.slf4j.*;
 
 public class TransformTable implements Cloneable {
-
     final String INTERPRETER_KEY = String.format("%s.BshInterpreter", getClass().getName());
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     /*
      * Static context object used to maintain objects in memory for reference between BSH transforms.
-    */
+     */
     private static Map<String, Object> bshContext = new HashMap<String, Object>();
-
     protected String transformId;
     protected String sourceCatalogName;
     protected String sourceSchemaName;
@@ -78,7 +74,6 @@ public class TransformTable implements Cloneable {
     }
 
     public TransformTable() {
-
     }
 
     public String getFullyQualifiedSourceTableName() {
@@ -209,11 +204,11 @@ public class TransformTable implements Cloneable {
             primaryKeyColumns.add(column);
         }
     }
-    
+
     public void setUpdateAction(String updateAction) {
         this.updateAction = updateAction;
     }
-    
+
     public String getUpdateAction() {
         return updateAction;
     }
@@ -223,12 +218,10 @@ public class TransformTable implements Cloneable {
         try {
             action = TargetDmlAction.valueOf(updateAction);
         } catch (Exception ex) {
-            
         }
         if (action == null) {
             Interpreter interpreter = getInterpreter(dataContext);
             Map<String, String> sourceValues = transformedData.getSourceValues();
-
             try {
                 interpreter.set("sourceDmlType", transformedData.getSourceDmlType());
                 interpreter.set("sourceDmlTypeString", transformedData.getSourceDmlType().toString());
@@ -236,8 +229,7 @@ public class TransformTable implements Cloneable {
                 CsvData csvData = dataContext.getData();
                 if (csvData != null) {
                     interpreter.set("externalData", csvData.getAttribute("externalData"));
-                }
-                else {
+                } else {
                     interpreter.set("externalData", null);
                 }
                 for (String columnName : sourceValues.keySet()) {
@@ -253,18 +245,17 @@ public class TransformTable implements Cloneable {
                 String transformExpression = updateAction;
                 String methodName = String.format("transform_%d()", Math.abs((long) transformExpression.hashCode()));
                 if (dataContext.get(methodName) == null) {
-                    //create  BSH-Method if not exists in Context
+                    // create BSH-Method if not exists in Context
                     interpreter.set("context", dataContext);
                     interpreter.set("bshContext", bshContext);
                     interpreter.eval(String.format("%s {\n%s\n}", methodName, transformExpression));
                     dataContext.put(methodName, Boolean.TRUE);
                 }
-                //call BSH-Method
+                // call BSH-Method
                 Object result = interpreter.eval(methodName);
-                //evaluate Result of BSH-Script
+                // evaluate Result of BSH-Script
                 action = TargetDmlAction.valueOf((String) result);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -279,7 +270,6 @@ public class TransformTable implements Cloneable {
         }
         return interpreter;
     }
-
 
     public void setDeleteAction(TargetDmlAction deleteAction) {
         this.deleteAction = deleteAction;
@@ -345,7 +335,6 @@ public class TransformTable implements Cloneable {
     }
 
     public TransformTable enhanceWithImpliedColumns(String[] keyNames, String[] columnNames) {
-
         TransformTable copiedVersion;
         try {
             copiedVersion = (TransformTable) this.clone();
@@ -359,14 +348,12 @@ public class TransformTable implements Cloneable {
             } else {
                 copiedVersion.primaryKeyColumns = new ArrayList<TransformColumn>();
             }
-
             if (columnPolicy == ColumnPolicy.IMPLIED) {
                 for (String column : keyNames) {
                     boolean hasInsert = false;
                     boolean hasUpdate = false;
                     boolean hasDelete = false;
                     String columnLowerCase = column.toLowerCase();
-
                     if (primaryKeyColumns != null) {
                         for (TransformColumn xCol : transformColumns) {
                             if ((StringUtils.isNotBlank(xCol.getSourceColumnName()) && columnLowerCase.equals(xCol.getSourceColumnNameLowerCase())) ||
@@ -384,7 +371,6 @@ public class TransformTable implements Cloneable {
                             }
                         }
                     }
-
                     if (!hasInsert && !hasUpdate && !hasDelete) {
                         TransformColumn newCol = createImplicitTransformColumn(column, IncludeOnType.ALL, true);
                         copiedVersion.primaryKeyColumns.add(newCol);
@@ -406,15 +392,12 @@ public class TransformTable implements Cloneable {
                             copiedVersion.transformColumns.add(newCol);
                         }
                     }
-
                 }
-
                 for (String column : columnNames) {
                     boolean hasInsert = false;
                     boolean hasUpdate = false;
                     boolean hasDelete = false;
                     String columnLowerCase = column.toLowerCase();
-
                     for (TransformColumn xCol : copiedVersion.transformColumns) {
                         if ((StringUtils.isNotBlank(xCol.getSourceColumnName()) && columnLowerCase.equals(xCol.getSourceColumnNameLowerCase())) ||
                                 (StringUtils.isNotBlank(xCol.getTargetColumnName()) && columnLowerCase.equals(xCol.getTargetColumnNameLowerCase()))) {
@@ -430,7 +413,6 @@ public class TransformTable implements Cloneable {
                             }
                         }
                     }
-
                     if (!hasInsert && !hasUpdate && !hasDelete) {
                         TransformColumn newCol = createImplicitTransformColumn(column, IncludeOnType.ALL, false);
                         copiedVersion.transformColumns.add(newCol);
@@ -450,7 +432,6 @@ public class TransformTable implements Cloneable {
                     }
                 }
             }
-
             return copiedVersion;
         } catch (CloneNotSupportedException e) {
             throw new IllegalStateException(e);
@@ -491,5 +472,4 @@ public class TransformTable implements Cloneable {
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
-
 }

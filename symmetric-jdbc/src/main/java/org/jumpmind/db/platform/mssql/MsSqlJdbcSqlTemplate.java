@@ -32,39 +32,37 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class MsSqlJdbcSqlTemplate extends JdbcSqlTemplate {
-
     public MsSqlJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings, DatabaseInfo databaseInfo) {
         super(dataSource, settings, null, databaseInfo);
-        primaryKeyViolationCodes = new int[] {2627, 2601};
+        primaryKeyViolationCodes = new int[] { 2627, 2601 };
         uniqueKeyViolationNameRegex = new String[] { "with unique index '(.*)'" };
-        foreignKeyViolationCodes = new int[] {547};
-        foreignKeyChildExistsViolationMessageParts = new String[] { 
+        foreignKeyViolationCodes = new int[] { 547 };
+        foreignKeyChildExistsViolationMessageParts = new String[] {
                 "DELETE statement conflicted with the SAME TABLE REFERENCE constraint",
                 "DELETE statement conflicted with the REFERENCE constraint",
                 "UPDATE statement conflicted with the SAME TABLE REFERENCE constraint",
                 "UPDATE statement conflicted with the REFERENCE constraint" };
-        deadlockCodes = new int[] {1205};
+        deadlockCodes = new int[] { 1205 };
     }
-    
+
     @Override
     public ISqlTransaction startSqlTransaction() {
         return new MsSqlJdbcSqlTransaction(this);
     }
-    
+
     @Override
     public ISqlTransaction startSqlTransaction(boolean autoCommit) {
         return new MsSqlJdbcSqlTransaction(this, autoCommit);
     }
-   
+
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
-    
+
     @Override
     protected void setTinyIntValue(PreparedStatement ps, int i, Object arg, int argType)
             throws SQLException {
         super.setTinyIntValue(ps, i, arg, Types.SMALLINT);
     }
-    
 }

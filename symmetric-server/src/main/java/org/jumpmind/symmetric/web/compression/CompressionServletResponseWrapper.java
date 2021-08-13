@@ -33,30 +33,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implementation of <b>HttpServletResponseWrapper</b> that works with the
- * CompressionServletResponseStream implementation..
+ * Implementation of <b>HttpServletResponseWrapper</b> that works with the CompressionServletResponseStream implementation..
  * 
- * This package is derived from the Jakarta <a
- * href="http://jakarta.apache.org/tomcat">Tomcat</a> examples compression
- * filter and is distributed in SymmetricDS for convenience.
+ * This package is derived from the Jakarta <a href="http://jakarta.apache.org/tomcat">Tomcat</a> examples compression filter and is distributed in SymmetricDS
+ * for convenience.
  * 
  * @author Amy Roh
  * @author Dmitri Valdin
- * @version $Revision: 496190 $, $Date: 2007-01-14 16:21:45 -0700 (Sun, 14 Jan
- *          2007) $
+ * @version $Revision: 496190 $, $Date: 2007-01-14 16:21:45 -0700 (Sun, 14 Jan 2007) $
  */
-
 public class CompressionServletResponseWrapper extends HttpServletResponseWrapper {
-
-	private static final Logger log = LoggerFactory.getLogger(CompressionServletResponseWrapper.class);
-
+    private static final Logger log = LoggerFactory.getLogger(CompressionServletResponseWrapper.class);
     int compressionLevel = Deflater.DEFAULT_COMPRESSION;
-
     int compressionStrategy = Deflater.DEFAULT_STRATEGY;
 
     /**
-     * Calls the parent constructor which creates a ServletResponse adaptor
-     * wrapping the given response object.
+     * Calls the parent constructor which creates a ServletResponse adaptor wrapping the given response object.
      */
     public CompressionServletResponseWrapper(HttpServletResponse response, int compressionLevel, int compressionStrategy) {
         super(response);
@@ -69,34 +61,23 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
     /**
      * Original response
      */
-
     protected HttpServletResponse origResponse = null;
-
     /**
      * Descriptive information about this Response implementation.
      */
-
     protected static final String info = "CompressionServletResponseWrapper";
-
     /**
-     * The ServletOutputStream that has been returned by
-     * <code>getOutputStream()</code>, if any.
+     * The ServletOutputStream that has been returned by <code>getOutputStream()</code>, if any.
      */
-
     protected ServletOutputStream stream = null;
-
     /**
-     * The PrintWriter that has been returned by <code>getWriter()</code>, if
-     * any.
+     * The PrintWriter that has been returned by <code>getWriter()</code>, if any.
      */
-
     protected PrintWriter writer = null;
-
     /**
      * Content type
      */
     protected String contentType = null;
-
     // --------------------------------------------------------- Public Methods
 
     /**
@@ -109,8 +90,7 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
     }
 
     /**
-     * Create and return a ServletOutputStream to write the content associated
-     * with this Response.
+     * Create and return a ServletOutputStream to write the content associated with this Response.
      * 
      * @exception IOException
      *                if an input/output error occurs
@@ -120,7 +100,6 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
         CompressionResponseStream stream = new CompressionResponseStream(origResponse, compressionLevel,
                 compressionStrategy);
         return stream;
-
     }
 
     /**
@@ -137,7 +116,6 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
         } catch (IOException e) {
         }
     }
-
     // ------------------------------------------------ ServletResponse Methods
 
     /**
@@ -155,16 +133,13 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
      * Return the servlet output stream associated with this Response.
      * 
      * @exception IllegalStateException
-     *                if <code>getWriter</code> has already been called for this
-     *                response
+     *                if <code>getWriter</code> has already been called for this response
      * @exception IOException
      *                if an input/output error occurs
      */
     public ServletOutputStream getOutputStream() throws IOException {
-
         if (writer != null)
             throw new IllegalStateException("getWriter() has already been called for this response");
-
         if (stream == null)
             stream = createOutputStream();
         log.debug("stream is set to {} in getOutputStream", stream);
@@ -175,19 +150,15 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
      * Return the writer associated with this Response.
      * 
      * @exception IllegalStateException
-     *                if <code>getOutputStream</code> has already been called
-     *                for this response
+     *                if <code>getOutputStream</code> has already been called for this response
      * @exception IOException
      *                if an input/output error occurs
      */
     public PrintWriter getWriter() throws IOException {
-
         if (writer != null)
             return (writer);
-
         if (stream != null)
             throw new IllegalStateException("getOutputStream() has already been called for this response");
-
         stream = createOutputStream();
         log.debug("stream is set to {} in getWriter", stream);
         // String charset = getCharsetFromContentType(contentType);
@@ -200,12 +171,9 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
         } else {
             writer = new PrintWriter(stream);
         }
-
         return (writer);
-
     }
 
     public void setContentLength(int length) {
     }
-
 }

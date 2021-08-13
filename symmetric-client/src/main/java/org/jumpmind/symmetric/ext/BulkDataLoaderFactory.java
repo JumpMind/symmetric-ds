@@ -41,7 +41,6 @@ import org.jumpmind.symmetric.load.AbstractDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 
 public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngineAware, IBuiltInExtensionPoint {
-
     ISymmetricEngine engine;
     Map<String, IDataLoaderFactory> dataLoaderFactories = new HashMap<String, IDataLoaderFactory>();
 
@@ -54,16 +53,13 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect, TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-
         for (IDataLoaderFactory factory : engine.getExtensionService().getExtensionPointList(IDataLoaderFactory.class)) {
             dataLoaderFactories.put(factory.getTypeName(), factory);
         }
-
         IDatabasePlatform platform = engine.getTargetDialect().getPlatform();
         String platformName = platform.getName();
-
         if (engine.getParameterService().is(ParameterConstants.JDBC_EXECUTE_BULK_BATCH_OVERRIDE, false)) {
-            return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), platform, 
+            return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), platform,
                     symmetricDialect.getTablePrefix(), buildParameterDatabaseWritterSettings());
         } else if (DatabaseNamesConstants.MYSQL.equals(platformName)) {
             return new MySqlBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
@@ -95,10 +91,10 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
             return new SnowflakeBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
         } else if (DatabaseNamesConstants.BIGQUERY.equals(engine.getSymmetricDialect().getTargetPlatform().getName())) {
-            return new BigQueryDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter, 
+            return new BigQueryDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
         } else {
-            return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), platform, 
+            return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), platform,
                     symmetricDialect.getTablePrefix(), buildParameterDatabaseWritterSettings());
         }
     }
@@ -113,5 +109,4 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
         this.engine = engine;
         this.parameterService = engine.getParameterService();
     }
-
 }

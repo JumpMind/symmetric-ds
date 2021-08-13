@@ -21,7 +21,5 @@
 package org.jumpmind.extension;
 
 public interface IProgressListener {
-    
     public void checkpoint(String engineName, int stepNumber, int totalSteps);
-
 }

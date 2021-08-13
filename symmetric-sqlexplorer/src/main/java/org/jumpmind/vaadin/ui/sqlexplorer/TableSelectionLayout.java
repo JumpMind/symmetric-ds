@@ -44,35 +44,24 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.TextField;
 
 public class TableSelectionLayout extends VerticalLayout {
-
     private Set<org.jumpmind.db.model.Table> selectedTablesSet;
-    
     private final Set<org.jumpmind.db.model.Table> originalSelectedTablesSet;
-
     private static final long serialVersionUID = 1L;
-    
     public Grid<String> listOfTablesGrid;
-
     public ComboBox<String> catalogSelect;
-
     public ComboBox<String> schemaSelect;
-
     @SuppressWarnings("unused")
     private String filterCriteria = null;
-
     private TextField filterField;
-
     private IDatabasePlatform databasePlatform;
-    
     private List<String> excludedTables;
-
     private String excludeTablesRegex;
-    
+
     public TableSelectionLayout(IDatabasePlatform databasePlatform,
             Set<org.jumpmind.db.model.Table> selectedSet, String excludeTablesRegex) {
         this("Please select from the following tables", databasePlatform, selectedSet, null, excludeTablesRegex);
     }
-    
+
     public TableSelectionLayout(String titleKey, IDatabasePlatform databasePlatform,
             Set<org.jumpmind.db.model.Table> selectedSet) {
         this(titleKey, databasePlatform, selectedSet, null, null);
@@ -84,25 +73,20 @@ public class TableSelectionLayout extends VerticalLayout {
         this.setSizeFull();
         this.setMargin(true);
         this.setSpacing(true);
-
         this.selectedTablesSet = selectedSet;
         this.originalSelectedTablesSet = selectedSet;
         this.databasePlatform = databasePlatform;
         this.excludedTables = excludedTables;
         this.excludeTablesRegex = excludeTablesRegex;
-
         createTableSelectionLayout(titleKey);
     }
 
     protected void createTableSelectionLayout(String titleKey) {
-
         this.addComponent(new Label(titleKey));
-
         HorizontalLayout schemaChooserLayout = new HorizontalLayout();
         schemaChooserLayout.setWidth(100, Unit.PERCENTAGE);
         schemaChooserLayout.setSpacing(true);
         this.addComponent(schemaChooserLayout);
-
         catalogSelect = new ComboBox<String>("Catalog", getCatalogs());
         schemaChooserLayout.addComponent(catalogSelect);
         if (selectedTablesSet.iterator().hasNext()) {
@@ -117,11 +101,9 @@ public class TableSelectionLayout extends VerticalLayout {
         } else {
             schemaSelect.setSelectedItem(databasePlatform.getDefaultSchema());
         }
-
         Label spacer = new Label();
         schemaChooserLayout.addComponent(spacer);
         schemaChooserLayout.setExpandRatio(spacer, 1);
-
         filterField = new TextField();
         filterField.addStyleName(ValoTheme.TEXTFIELD_INLINE_ICON);
         filterField.setIcon(VaadinIcons.SEARCH);
@@ -131,10 +113,8 @@ public class TableSelectionLayout extends VerticalLayout {
             filterField.setValue(event.getValue());
             refreshTableOfTables();
         });
-
         schemaChooserLayout.addComponent(filterField);
         schemaChooserLayout.setComponentAlignment(filterField, Alignment.BOTTOM_RIGHT);
-        
         listOfTablesGrid = new Grid<String>();
         listOfTablesGrid.setSizeFull();
         listOfTablesGrid.setSelectionMode(SelectionMode.MULTI);
@@ -147,42 +127,30 @@ public class TableSelectionLayout extends VerticalLayout {
         listOfTablesGrid.addSelectionListener(event -> {
             selectedTablesSet.clear();
             selectedTablesSet.addAll(originalSelectedTablesSet);
-            for (String table : listOfTablesGrid.getSelectedItems()){
+            for (String table : listOfTablesGrid.getSelectedItems()) {
                 selectedTablesSet.add(new org.jumpmind.db.model.Table(table));
             }
             selectionChanged();
         });
-        
         listOfTablesGrid.addColumn(table -> table);
-        
         this.addComponent(listOfTablesGrid);
         this.setExpandRatio(listOfTablesGrid, 1);
-
         schemaSelect.addValueChangeListener(event -> refreshTableOfTables());
-
         catalogSelect.addValueChangeListener(event -> refreshTableOfTables());
-
         Button selectAllLink = new Button("Select All");
         selectAllLink.addStyleName(ValoTheme.BUTTON_LINK);
         selectAllLink.addClickListener((event) -> selectAll());
-
         Button selectNoneLink = new Button("Select None");
         selectNoneLink.addStyleName(ValoTheme.BUTTON_LINK);
         selectNoneLink.addClickListener((event) -> selectNone());
-        
         HorizontalLayout selectAllFooter = new HorizontalLayout();
-
         selectAllFooter.setWidth("100%");
         selectAllFooter.setSpacing(true);
         selectAllFooter.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
-
         selectAllFooter.addComponent(selectAllLink);
         selectAllFooter.addComponent(selectNoneLink);
-        
         this.addComponent(selectAllFooter);
-        
         refreshTableOfTables();
-
     }
 
     public String getSelectedSchema() {
@@ -205,7 +173,6 @@ public class TableSelectionLayout extends VerticalLayout {
         List<String> tables = getTables();
         String filter = filterField.getValue();
         List<String> filteredTables = new ArrayList<String>();
-
         for (String table : tables) {
             if ((excludedTables == null || !excludedTables.contains(table.toLowerCase())) && display(getSelectedCatalog(), getSelectedSchema(), table)) {
                 if (!filter.equals("")) {
@@ -221,7 +188,6 @@ public class TableSelectionLayout extends VerticalLayout {
     }
 
     protected void selectionChanged() {
-
     }
 
     public List<String> getSelectedTables() {
@@ -262,11 +228,11 @@ public class TableSelectionLayout extends VerticalLayout {
         }
         return tableNames;
     }
-    
+
     public List<String> getExcludedTables() {
         return excludedTables;
     }
-    
+
     public void setExcludedTables(List<String> excludedTables) {
         this.excludedTables = excludedTables;
     }
@@ -283,5 +249,4 @@ public class TableSelectionLayout extends VerticalLayout {
         }
         return false;
     }
-
 }

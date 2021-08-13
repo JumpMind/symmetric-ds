@@ -19,6 +19,7 @@
  * under the License.
  */
 package org.jumpmind.db.platform.nuodb;
+
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,13 +36,11 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * The platform implementation for MySQL.
  */
 public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     /* The standard NuoDB jdbc driver. */
     public static final String JDBC_DRIVER = "com.nuodb.jdbc.Driver";
-
     /* The subprotocol used by the standard MySQL driver. */
     public static final String JDBC_SUBPROTOCOL = "nuodb";
-    
+
     /*
      * Creates a new platform instance.
      */
@@ -68,13 +67,13 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     protected ISqlTemplate createSqlTemplateDirty() {
         return sqlTemplate;
     }
-    
+
     public String getName() {
         return DatabaseNamesConstants.NUODB;
     }
 
     public String getDefaultSchema() {
-        if(StringUtils.isBlank(defaultSchema)){
+        if (StringUtils.isBlank(defaultSchema)) {
             defaultSchema = getSqlTemplate().queryForObject("select current_schema from system.dual", String.class);
         }
         return defaultSchema;
@@ -83,20 +82,16 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public String getDefaultCatalog() {
         return null;
     }
-    
+
     @Override
     public PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-
-        String triggerSql = "CREATE TRIGGER TEST_TRIGGER FOR"+ delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
-                + " AFTER UPDATE FOR EACH ROW AS INSERT INTO " +  delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " VALUES(NULL,NULL); END_TRIGGER";
-
+        String triggerSql = "CREATE TRIGGER TEST_TRIGGER FOR" + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
+                + " AFTER UPDATE FOR EACH ROW AS INSERT INTO " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " VALUES(NULL,NULL); END_TRIGGER";
         String dropTriggerSql = "DROP TRIGGER IF EXISTS TEST_TRIGGER";
-
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, 
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER,
                 dropTriggerSql + "\r\n" + triggerSql + "\r\n" + dropTriggerSql);
-
         try {
             getSqlTemplate().update(dropTriggerSql);
             getSqlTemplate().update(triggerSql);
@@ -106,7 +101,6 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
         }
-
         return result;
     }
 
@@ -114,10 +108,8 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public PermissionResult getCreateSymRoutinePermission() {
         String routineSql = "CREATE PROCEDURE TEST_PROC() AS VAR myVar = 1; END_PROCEDURE";
         String dropSql = "DROP PROCEDURE IF EXISTS TEST_PROC";
-
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_ROUTINE, 
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_ROUTINE,
                 dropSql + "\r\n" + routineSql + "\r\n" + dropSql);
-
         try {
             getSqlTemplate().update(dropSql);
             getSqlTemplate().update(routineSql);
@@ -129,12 +121,11 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return result;
     }
-    
+
     @Override
     protected PermissionResult getDropSymTriggerPermission() {
         String dropTriggerSql = "DROP TRIGGER IF EXISTS TEST_TRIGGER";
         PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, dropTriggerSql);
-
         try {
             getSqlTemplate().update(dropTriggerSql);
             result.setStatus(Status.PASS);
@@ -142,15 +133,14 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant DROP TRIGGER permission or TRIGGER permission");
         }
-
         return result;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return true;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         if (sql.endsWith(";")) {

@@ -24,7 +24,6 @@ import org.jumpmind.db.AbstractDdlTypesTest;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class PostgreSqlDdlTypesTest extends AbstractDdlTypesTest {
-
     @Override
     protected String getName() {
         return DatabaseNamesConstants.POSTGRESQL;
@@ -34,5 +33,4 @@ public class PostgreSqlDdlTypesTest extends AbstractDdlTypesTest {
     protected String[] getDdlTypes() {
         return new String[] { "serial", "bigserial", "decimal", "numeric" };
     }
-
 }

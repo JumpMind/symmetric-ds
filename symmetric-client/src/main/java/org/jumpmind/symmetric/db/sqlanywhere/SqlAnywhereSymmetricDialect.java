@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.db.sqlanywhere;
 
 import java.sql.Connection;
@@ -46,12 +45,9 @@ import org.jumpmind.symmetric.util.SymmetricUtils;
  * Sybase dialect was tested with jconn4 JDBC driver.
  */
 public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-
     static final String SQL_DROP_FUNCTION = "drop function $(defaultSchema).$(functionName)";
-    static final String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))" ;
-
+    static final String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))";
     static final String SYNC_TRIGGERS_DISABLED = "sync_triggers_disabled";
-
     static final String SYNC_NODE_DISABLED = "sync_node_disabled";
 
     public SqlAnywhereSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
@@ -61,51 +57,60 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
 
     @Override
     public void createRequiredDatabaseObjects() {
-
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-            String sql = "create function $(defaultSchema).$(functionName)(@unused smallint) returns smallint as                                                                                                                              " +
-                    "                                begin                                                                                                                                                                  " +
+            String sql = "create function $(defaultSchema).$(functionName)(@unused smallint) returns smallint as                                                                                                                              "
+                    +
+                    "                                begin                                                                                                                                                                  "
+                    +
                     "                                   declare @ret smallint" +
                     "                                   select @ret=0 " +
                     "                                   begin   " +
                     "                                       if varexists('" + SYNC_TRIGGERS_DISABLED + "') = 1     " +
                     "                                          select " + SYNC_TRIGGERS_DISABLED + " into @ret    " +
                     "                                   end   " +
-                    "                                   return @ret                                                                                                                                " +
+                    "                                   return @ret                                                                                                                                "
+                    +
                     "                                end                                                                                                                                                                    ";
             System.out.println("install triggers_disabled: " + sql);
             install(sql, triggersDisabled);
         }
-
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-            String sql = "create function $(defaultSchema).$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           " +
-                    "                                begin                                                                                                                                                                  " +
+            String sql = "create function $(defaultSchema).$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           "
+                    +
+                    "                                begin                                                                                                                                                                  "
+                    +
                     "                                    declare @ret varchar(50)    " +
                     "                                    begin      " +
                     "                                        if varexists('" + SYNC_NODE_DISABLED + "') = 1       " +
                     "                                            select " + SYNC_NODE_DISABLED + " into @ret      " +
                     "                                    end   " +
-                    "                                    return @ret                                                                                                                                                 " +
+                    "                                    return @ret                                                                                                                                                 "
+                    +
                     "                                end                                                                                                                                                                    ";
             install(sql, nodeDisabled);
         }
-
         String txId = this.parameterService.getTablePrefix() + "_" + "txid";
         if (!installed(SQL_FUNCTION_INSTALLED, txId)) {
-            String sql = "create function $(defaultSchema).$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           " +
-                    "                                begin                                                                                                                                                                  " +
-                    "                                    declare @txid varchar(50)                                                                                                                                          " +
+            String sql = "create function $(defaultSchema).$(functionName)(@unused smallint) returns varchar(50) as                                                                                                                           "
+                    +
+                    "                                begin                                                                                                                                                                  "
+                    +
+                    "                                    declare @txid varchar(50)                                                                                                                                          "
+                    +
                     "                                    if (connection_property ('TransactionStartTime') is not null and " +
-                    "                                      connection_property ('TransactionStartTime') <> '' ) begin                                                                                                                                         " +
-                    "                                        select @txid = connection_property ('TransactionStartTime') + ' ' + CONNECTION_PROPERTY( 'number' )                                                            " +
-                    "                                    end                                                                                                                                                                " +
-                    "                                    return @txid                                                                                                                                                       " +
+                    "                                      connection_property ('TransactionStartTime') <> '' ) begin                                                                                                                                         "
+                    +
+                    "                                        select @txid = connection_property ('TransactionStartTime') + ' ' + CONNECTION_PROPERTY( 'number' )                                                            "
+                    +
+                    "                                    end                                                                                                                                                                "
+                    +
+                    "                                    return @txid                                                                                                                                                       "
+                    +
                     "                                end                                                                                                                                                                    ";
             install(sql, txId);
         }
-
     }
 
     @Override
@@ -114,7 +119,6 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
         if (installed(SQL_FUNCTION_INSTALLED, encode)) {
             uninstall(SQL_DROP_FUNCTION, encode);
         }
-
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
             uninstall(SQL_DROP_FUNCTION, triggersDisabled);
@@ -127,7 +131,6 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
         if (installed(SQL_FUNCTION_INSTALLED, txId)) {
             uninstall(SQL_DROP_FUNCTION, txId);
         }
-
     }
 
     @Override
@@ -139,31 +142,31 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             ((JdbcSqlTransaction) transaction)
-            .executeCallback(new IConnectionCallback<Boolean>() {
-                public Boolean execute(Connection con) throws SQLException {
-                    String previousCatalog = con.getCatalog();
-                    Statement stmt = null;
-                    try {
-                        if (catalogName != null) {
-                            con.setCatalog(catalogName);
+                    .executeCallback(new IConnectionCallback<Boolean>() {
+                        public Boolean execute(Connection con) throws SQLException {
+                            String previousCatalog = con.getCatalog();
+                            Statement stmt = null;
+                            try {
+                                if (catalogName != null) {
+                                    con.setCatalog(catalogName);
+                                }
+                                stmt = con.createStatement();
+                                stmt.execute(sql);
+                            } catch (Exception e) {
+                                log.warn("Error removing {}: {}", triggerName, e.getMessage());
+                                throw e;
+                            } finally {
+                                if (catalogName != null) {
+                                    con.setCatalog(previousCatalog);
+                                }
+                                try {
+                                    stmt.close();
+                                } catch (Exception e) {
+                                }
+                            }
+                            return Boolean.FALSE;
                         }
-                        stmt = con.createStatement();
-                        stmt.execute(sql);
-                    } catch (Exception e) {
-                        log.warn("Error removing {}: {}", triggerName, e.getMessage());
-                        throw e;
-                    } finally {
-                        if (catalogName != null) {
-                            con.setCatalog(previousCatalog);
-                        }
-                        try {
-                            stmt.close();
-                        } catch (Exception e) {
-                        }
-                    }
-                    return Boolean.FALSE;
-                }
-            });
+                    });
         }
     }
 
@@ -193,44 +196,42 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
     protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema, String tableName,
             final String triggerName) {
         return ((JdbcSqlTemplate) platform.getSqlTemplate())
-        .execute(new IConnectionCallback<Boolean>() {
-            public Boolean execute(Connection con) throws SQLException {
-                String previousCatalog = con.getCatalog();
-                PreparedStatement stmt = con
-                        .prepareStatement("select count(*) from dbo.sysobjects where type = 'TR' AND name = ?");
-                try {
-                    if (catalogName != null) {
-                        con.setCatalog(catalogName);
+                .execute(new IConnectionCallback<Boolean>() {
+                    public Boolean execute(Connection con) throws SQLException {
+                        String previousCatalog = con.getCatalog();
+                        PreparedStatement stmt = con
+                                .prepareStatement("select count(*) from dbo.sysobjects where type = 'TR' AND name = ?");
+                        try {
+                            if (catalogName != null) {
+                                con.setCatalog(catalogName);
+                            }
+                            stmt.setString(1, triggerName);
+                            ResultSet rs = stmt.executeQuery();
+                            if (rs.next()) {
+                                int count = rs.getInt(1);
+                                return count > 0;
+                            }
+                        } finally {
+                            if (catalogName != null) {
+                                con.setCatalog(previousCatalog);
+                            }
+                            stmt.close();
+                        }
+                        return Boolean.FALSE;
                     }
-                    stmt.setString(1, triggerName);
-                    ResultSet rs = stmt.executeQuery();
-                    if (rs.next()) {
-                        int count = rs.getInt(1);
-                        return count > 0;
-                    }
-                } finally {
-                    if (catalogName != null) {
-                        con.setCatalog(previousCatalog);
-                    }
-                    stmt.close();
-                }
-                return Boolean.FALSE;
-            }
-        });
+                });
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-
         transaction.prepareAndExecute("IF VAREXISTS('" + SYNC_TRIGGERS_DISABLED + "')=1 " +
-                                        "THEN drop variable " + SYNC_TRIGGERS_DISABLED + " " +
-                                        "END IF;" +
-                                        "create variable " + SYNC_TRIGGERS_DISABLED + " smallint;" +
-                                        "set " + SYNC_TRIGGERS_DISABLED + "=1;");
-
+                "THEN drop variable " + SYNC_TRIGGERS_DISABLED + " " +
+                "END IF;" +
+                "create variable " + SYNC_TRIGGERS_DISABLED + " smallint;" +
+                "set " + SYNC_TRIGGERS_DISABLED + "=1;");
         transaction.prepareAndExecute("IF VAREXISTS('" + SYNC_NODE_DISABLED + "')=1 " +
-                                        "THEN drop variable " + SYNC_NODE_DISABLED + " " +
-                                        "END IF;" +
-                                        "create variable " + SYNC_NODE_DISABLED + " varchar(50);");
+                "THEN drop variable " + SYNC_NODE_DISABLED + " " +
+                "END IF;" +
+                "create variable " + SYNC_NODE_DISABLED + " varchar(50);");
         if (nodeId != null) {
             transaction.prepareAndExecute("set " + SYNC_NODE_DISABLED + " = '" + nodeId + "'");
         }
@@ -238,11 +239,10 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
         transaction.prepareAndExecute("IF VAREXISTS('" + SYNC_TRIGGERS_DISABLED + "')=1 " +
-                                        "THEN drop variable " + SYNC_TRIGGERS_DISABLED + " " +
-                                        "END IF;" +
-                                        "create variable " + SYNC_TRIGGERS_DISABLED + " smallint;" +
-                                        "set " + SYNC_TRIGGERS_DISABLED + "= 0;");
-
+                "THEN drop variable " + SYNC_TRIGGERS_DISABLED + " " +
+                "END IF;" +
+                "create variable " + SYNC_TRIGGERS_DISABLED + " smallint;" +
+                "set " + SYNC_TRIGGERS_DISABLED + "= 0;");
         transaction.prepareAndExecute("IF VAREXISTS('" + SYNC_NODE_DISABLED + "')=1 " +
                 "THEN drop variable " + SYNC_NODE_DISABLED + " " +
                 "END IF;" +
@@ -251,15 +251,15 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
 
     public String getSyncTriggersExpression() {
         return SymmetricUtils.quote(this, platform.getDefaultCatalog()) +
-                ".$(defaultSchema)"+
-                parameterService.getTablePrefix()+"_triggers_disabled(0) = 0";
+                ".$(defaultSchema)" +
+                parameterService.getTablePrefix() + "_triggers_disabled(0) = 0";
     }
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         return SymmetricUtils.quote(this, platform.getDefaultCatalog()) +
-                ".$(defaultSchema)"+
-                parameterService.getTablePrefix()+"_txid(0)";
+                ".$(defaultSchema)" +
+                parameterService.getTablePrefix() + "_txid(0)";
     }
 
     @Override
@@ -278,5 +278,4 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
     public boolean needsToSelectLobData() {
         return true;
     }
-
 }

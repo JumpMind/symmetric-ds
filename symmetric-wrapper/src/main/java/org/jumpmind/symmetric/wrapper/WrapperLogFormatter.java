@@ -26,9 +26,7 @@ import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 public class WrapperLogFormatter extends Formatter {
-
     protected final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
     protected static final String NEWLINE = System.getProperty("line.separator");
 
     @Override
@@ -42,5 +40,4 @@ public class WrapperLogFormatter extends Formatter {
                 + String.format("%-7s", record.getLevel().getName()) + "] [" + String.format("%-7s", source) + "] "
                 + record.getMessage() + NEWLINE;
     }
-
 }

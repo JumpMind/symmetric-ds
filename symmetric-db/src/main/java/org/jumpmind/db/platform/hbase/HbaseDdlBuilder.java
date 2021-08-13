@@ -30,12 +30,10 @@ import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class HbaseDdlBuilder extends AbstractDdlBuilder {
-
     public HbaseDdlBuilder() {
-        
         super(DatabaseNamesConstants.HBASE);
     }
-    
+
     @Override
     protected void writePrimaryKeyStmt(Table table, Column[] primaryKeyColumns, StringBuilder ddl) {
         ddl.append("CONSTRAINT NAME PRIMARY KEY (");
@@ -47,7 +45,7 @@ public class HbaseDdlBuilder extends AbstractDdlBuilder {
         }
         ddl.append(")");
     }
-      
+
     @Override
     public void writeCopyDataStatement(Table sourceTable, Table targetTable, LinkedHashMap<Column, Column> columnMap, StringBuilder ddl) {
         ddl.append("UPSERT INTO ");
@@ -62,7 +60,6 @@ public class HbaseDdlBuilder extends AbstractDdlBuilder {
         ddl.append(") SELECT ");
         for (Iterator<Map.Entry<Column, Column>> columnsIt = columnMap.entrySet().iterator(); columnsIt.hasNext();) {
             Map.Entry<Column, Column> entry = columnsIt.next();
-
             writeCastExpression((Column) entry.getKey(), (Column) entry.getValue(), ddl);
             if (columnsIt.hasNext()) {
                 ddl.append(",");
@@ -72,5 +69,4 @@ public class HbaseDdlBuilder extends AbstractDdlBuilder {
         ddl.append(getFullyQualifiedTableNameShorten(sourceTable));
         printEndOfStatement(ddl);
     }
-    
 }

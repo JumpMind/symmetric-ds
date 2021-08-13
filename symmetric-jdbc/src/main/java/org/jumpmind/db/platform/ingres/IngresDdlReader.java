@@ -46,7 +46,6 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 
 public class IngresDdlReader extends AbstractJdbcDdlReader {
-
     public IngresDdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
@@ -54,7 +53,7 @@ public class IngresDdlReader extends AbstractJdbcDdlReader {
         setDefaultTablePattern(null);
         setDefaultColumnPattern(null);
     }
-    
+
     @Override
     protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
@@ -78,14 +77,14 @@ public class IngresDdlReader extends AbstractJdbcDdlReader {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
     }
-    
+
     @Override
     public Database readTables(final String catalog, final String schema, final String[] tableTypes) {
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
         ISqlTransaction transaction = sqlTemplate.startSqlTransaction();
         Database database = null;
         try {
-            database = postprocessModelFromDatabase(((JdbcSqlTransaction)transaction)
+            database = postprocessModelFromDatabase(((JdbcSqlTransaction) transaction)
                     .executeCallback(new IConnectionCallback<Database>() {
                         public Database execute(Connection connection) throws SQLException {
                             Database db = new Database();
@@ -98,21 +97,20 @@ public class IngresDdlReader extends AbstractJdbcDdlReader {
                         }
                     }));
             transaction.commit();
-        } catch(Throwable e) {
-            if(transaction != null) {
+        } catch (Throwable e) {
+            if (transaction != null) {
                 transaction.rollback();
             }
-            if(e instanceof RuntimeException) {
+            if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             } else {
                 throw new RuntimeException(e);
             }
         } finally {
-            if(transaction != null) {
+            if (transaction != null) {
                 transaction.close();
             }
         }
-        
         return database;
     }
 
@@ -124,14 +122,13 @@ public class IngresDdlReader extends AbstractJdbcDdlReader {
             JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
             ISqlTransaction transaction = sqlTemplate.startSqlTransaction();
             try {
-                tableObject = postprocessTableFromDatabase(((JdbcSqlTransaction)transaction).executeCallback(new IConnectionCallback<Table>() {
+                tableObject = postprocessTableFromDatabase(((JdbcSqlTransaction) transaction).executeCallback(new IConnectionCallback<Table>() {
                     public Table execute(Connection connection) throws SQLException {
                         DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
                         metaData.setMetaData(connection.getMetaData());
                         metaData.setCatalog(catalog);
                         metaData.setSchemaPattern(schema);
                         metaData.setTableTypes(null);
-        
                         ResultSet tableData = null;
                         try {
                             log.debug("getting table metadata for {}", table);
@@ -155,22 +152,22 @@ public class IngresDdlReader extends AbstractJdbcDdlReader {
                         }
                     }
                 }));
-            } catch(Throwable e) {
-                if(transaction != null) {
+            } catch (Throwable e) {
+                if (transaction != null) {
                     transaction.rollback();
                 }
-                if(e instanceof RuntimeException) {
+                if (e instanceof RuntimeException) {
                     throw (RuntimeException) e;
                 } else {
                     throw new RuntimeException(e);
                 }
             } finally {
-                if(transaction != null) {
+                if (transaction != null) {
                     transaction.close();
                 }
             }
         } catch (SqlException e) {
-            if (e.getMessage()!=null && StringUtils.containsIgnoreCase(e.getMessage(), "does not exist")) {
+            if (e.getMessage() != null && StringUtils.containsIgnoreCase(e.getMessage(), "does not exist")) {
                 return null;
             } else {
                 log.error("Failed to get metadata for {}", Table.getFullyQualifiedTableName(catalog, schema, table));
@@ -179,11 +176,10 @@ public class IngresDdlReader extends AbstractJdbcDdlReader {
         }
         return tableObject;
     }
-    
+
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
-            Map<String, Object> values) throws SQLException
-    {
+            Map<String, Object> values) throws SQLException {
         Table table = super.readTable(connection, metaData, values);
         String schema = table.getSchema();
         // select column_name, column_always_ident, column_bydefault_ident
@@ -191,25 +187,22 @@ public class IngresDdlReader extends AbstractJdbcDdlReader {
         // where table_name='test_uppercase_table' and (column_always_ident='Y' OR column_bydefault_ident='Y')
         // column types that can have identity generators are int and bigint
         // only one column per table can have identity generator
-        
         boolean setTableOwner = schema != null && schema.length() > 0 ? true : false;
         StringBuilder sql = new StringBuilder("select column_name,  column_always_ident, column_bydefault_ident, column_default_val ")
                 .append("from iicolumns ")
                 .append("where table_name=? ")
                 .append(schema != null && schema.length() > 0 ? " and table_owner=? " : "");
-        Object[] args = new Object[] {table.getName()};
+        Object[] args = new Object[] { table.getName() };
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
             ps = connection.prepareStatement(sql.toString());
             ps.setString(1, table.getName());
-            if(setTableOwner) {
+            if (setTableOwner) {
                 ps.setString(2, schema);
             }
             ps.setQueryTimeout(((IngresDatabasePlatform) platform).getSettings().getQueryTimeout());
-
             rs = ps.executeQuery();
-
             processAdditionalColumnInformation(table, rs);
         } catch (SQLException e) {
             log.error(sql.toString(), args, e);
@@ -220,11 +213,10 @@ public class IngresDdlReader extends AbstractJdbcDdlReader {
         }
         return table;
     }
-    
+
     @Override
     protected void readIndex(DatabaseMetaDataWrapper metaData, Map<String, Object> values,
-            Map<String, IIndex> knownIndices) throws SQLException
-    {
+            Map<String, IIndex> knownIndices) throws SQLException {
         super.readIndex(metaData, values, knownIndices);
         // remove system generated indexes
         // NON_UNIQUE=false, non_unique=false,
@@ -236,34 +228,31 @@ public class IngresDdlReader extends AbstractJdbcDdlReader {
         // filter_condition=null, pages=0, table_schem=ingres,
         // ORDINAL_POSITION=1, ordinal_position=1, table_cat=null,
         // index_qualifier=ingres
-        
         // select count(*) from iiindexes
         // where base_name='sym_channel' and index_owner='ingres' and system_use='G';
-        
         StringBuilder sql = new StringBuilder("select count(*) from iiindexes ")
                 .append("where index_name=? ")
                 .append("and index_owner=? and system_use=? ");
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-        Object[] args = new Object[] {values.get("INDEX_NAME"), values.get("index_qualifier"), "G"};
+        Object[] args = new Object[] { values.get("INDEX_NAME"), values.get("index_qualifier"), "G" };
         int count = sqlTemplate.queryForInt(sql.toString(), args);
-        if(count > 0) {
+        if (count > 0) {
             knownIndices.remove(values.get("INDEX_NAME"));
         }
     }
-    
+
     private void processAdditionalColumnInformation(Table table, ResultSet rs) throws SQLException {
-        while(rs.next()) {
+        while (rs.next()) {
             String columnName = StringUtils.trim(rs.getString("COLUMN_NAME"));
             String columnAlwaysIdent = StringUtils.trim(rs.getString("COLUMN_ALWAYS_IDENT"));
             String columnBydefaultIdent = StringUtils.trim(rs.getString("COLUMN_BYDEFAULT_IDENT"));
             String columnDefaultVal = StringUtils.trim(rs.getString("COLUMN_DEFAULT_VAL"));
-            for(Column column : table.getColumnsAsList()) {
-                if(column.getName().equalsIgnoreCase(columnName)) {
-                    if((columnAlwaysIdent != null && columnAlwaysIdent.equalsIgnoreCase("Y")) ||
-                            columnBydefaultIdent  != null && columnBydefaultIdent.equalsIgnoreCase("Y"))
-                    {
+            for (Column column : table.getColumnsAsList()) {
+                if (column.getName().equalsIgnoreCase(columnName)) {
+                    if ((columnAlwaysIdent != null && columnAlwaysIdent.equalsIgnoreCase("Y")) ||
+                            columnBydefaultIdent != null && columnBydefaultIdent.equalsIgnoreCase("Y")) {
                         column.setAutoIncrement(true);
-                    } else if(columnDefaultVal != null) {
+                    } else if (columnDefaultVal != null) {
                         column.setDefaultValue(columnDefaultVal);
                     }
                     break;
@@ -271,84 +260,83 @@ public class IngresDdlReader extends AbstractJdbcDdlReader {
             }
         }
     }
-    
+
     @Override
     protected void readForeignKeyUpdateRule(Map<String, Object> values, ForeignKey fk) {
         StringBuilder result = new StringBuilder();
         getForeignKeyRule(values, result);
         String findInString = " ON UPDATE ";
-        if(result.length() > 0) {
+        if (result.length() > 0) {
             int i = result.indexOf(" ON UPDATE ");
-            if(i > -1) {
+            if (i > -1) {
                 i += findInString.length();
                 setForeignKeyAction(result.substring(i).trim().toUpperCase(), fk, true);
             }
         }
     }
-    
+
     @Override
     protected void readForeignKeyDeleteRule(Map<String, Object> values, ForeignKey fk) {
         StringBuilder result = new StringBuilder();
         getForeignKeyRule(values, result);
         String findInString = " ON DELETE ";
         int i = result.indexOf(" ON DELETE ");
-        if(i > -1) {
+        if (i > -1) {
             i += findInString.length();
             setForeignKeyAction(result.substring(i).trim().toUpperCase(), fk, true);
         }
     }
-    
+
     private void getForeignKeyRule(Map<String, Object> values, StringBuilder result) {
         StringBuilder sql = new StringBuilder("select text_segment from iiconstraints ")
                 .append("where constraint_type='R' and constraint_name=? ")
                 .append("and schema_name=? and table_name=? ")
                 .append("order by text_sequence");
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-        Object[] args = new Object[] {values.get("FK_NAME"), values.get("PKTABLE_SCHEM"), values.get("PKTABLE_NAME")};
+        Object[] args = new Object[] { values.get("FK_NAME"), values.get("PKTABLE_SCHEM"), values.get("PKTABLE_NAME") };
         List<Row> rows = sqlTemplate.query(sql.toString(), args);
-        for(Row row : rows) {
+        for (Row row : rows) {
             result.append(row.getString("TEXT_SEGMENT"));
         }
     }
-    
+
     private void setForeignKeyAction(String s, ForeignKey fk, boolean onUpdate) {
-        if(s.startsWith(ForeignKeyAction.CASCADE.getForeignKeyActionName())) {
-            if(onUpdate) {
+        if (s.startsWith(ForeignKeyAction.CASCADE.getForeignKeyActionName())) {
+            if (onUpdate) {
                 fk.setOnUpdateAction(ForeignKeyAction.CASCADE);
             } else {
                 fk.setOnDeleteAction(ForeignKeyAction.CASCADE);
             }
-        } else if(s.startsWith(ForeignKeyAction.RESTRICT.getForeignKeyActionName())) {
-            if(onUpdate) {
+        } else if (s.startsWith(ForeignKeyAction.RESTRICT.getForeignKeyActionName())) {
+            if (onUpdate) {
                 fk.setOnUpdateAction(ForeignKeyAction.RESTRICT);
             } else {
                 fk.setOnDeleteAction(ForeignKeyAction.RESTRICT);
             }
-        } else if(s.startsWith(ForeignKeyAction.SETNULL.getForeignKeyActionName())) {
-            if(onUpdate) {
+        } else if (s.startsWith(ForeignKeyAction.SETNULL.getForeignKeyActionName())) {
+            if (onUpdate) {
                 fk.setOnUpdateAction(ForeignKeyAction.SETNULL);
             } else {
                 fk.setOnDeleteAction(ForeignKeyAction.SETNULL);
             }
-        } else if(s.startsWith(ForeignKeyAction.SETDEFAULT.getForeignKeyActionName())) {
-            if(onUpdate) {
+        } else if (s.startsWith(ForeignKeyAction.SETDEFAULT.getForeignKeyActionName())) {
+            if (onUpdate) {
                 fk.setOnUpdateAction(ForeignKeyAction.SETDEFAULT);
             } else {
                 fk.setOnDeleteAction(ForeignKeyAction.SETDEFAULT);
             }
-        } else if(s.startsWith(ForeignKeyAction.NOACTION.getForeignKeyActionName())) {
-            if(onUpdate) {
+        } else if (s.startsWith(ForeignKeyAction.NOACTION.getForeignKeyActionName())) {
+            if (onUpdate) {
                 fk.setOnUpdateAction(ForeignKeyAction.NOACTION);
             } else {
                 fk.setOnDeleteAction(ForeignKeyAction.NOACTION);
             }
         } else {
-            if(onUpdate) {
+            if (onUpdate) {
                 fk.setOnUpdateAction(ForeignKeyAction.NOACTION);
             } else {
                 fk.setOnDeleteAction(ForeignKeyAction.NOACTION);
             }
         }
-        
     }
 }

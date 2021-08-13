@@ -63,7 +63,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DataGapRouteReaderTest {
-    
     final static String ENGINE_NAME = "testengine";
     final static String CHANNEL_ID = "testchannel";
     final static String NODE_ID = "00000";
@@ -72,7 +71,6 @@ public class DataGapRouteReaderTest {
     final static String TABLE2 = "table2";
     final static String TRAN1 = "1";
     final static String TRAN2 = "2";
-
     DataService dataService;
     ISqlTemplate sqlTemplate;
     IParameterService parameterService;
@@ -93,20 +91,15 @@ public class DataGapRouteReaderTest {
         when(parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)).thenReturn(true);
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_MEMORY_THRESHOLD))
                 .thenReturn(peekAheadMemoryThreshold);
-
         IStatisticManager statisticManager = mock(StatisticManager.class);
         when(statisticManager.newProcessInfo((ProcessInfoKey) any())).thenReturn(new ProcessInfo());
-
         INodeService nodeService = mock(NodeService.class);
         IDatabasePlatform platform = mock(IDatabasePlatform.class);
         when(platform.getSqlTemplate()).thenReturn(sqlTemplate);
-
         ISymmetricDialect symmetricDialect = mock(AbstractSymmetricDialect.class);
         when(symmetricDialect.supportsTransactionId()).thenReturn(true);
         when(symmetricDialect.getPlatform()).thenReturn(platform);
-
         IExtensionService extensionService = mock(ExtensionService.class);
-
         ISymmetricEngine engine = mock(AbstractSymmetricEngine.class);
         when(engine.getParameterService()).thenReturn(parameterService);
         when(engine.getStatisticManager()).thenReturn(statisticManager);
@@ -116,40 +109,31 @@ public class DataGapRouteReaderTest {
         when(engine.getExtensionService()).thenReturn(extensionService);
         IRouterService routerService = new RouterService(engine);
         when(engine.getRouterService()).thenReturn(routerService);
-
         ChannelRouterContext context = new ChannelRouterContext(NODE_ID, nodeChannel,
                 mock(ISqlTransaction.class), null);
         context.setDataGaps(dataGaps);
-
         return new DataGapRouteReader(context, engine);
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testTransactionalOrderingWithGaps() throws Exception {
-
         nodeChannel.setBatchAlgorithm(DefaultBatchAlgorithm.NAME);
         nodeChannel.setMaxDataToRoute(100);
-
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(2);
-
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, 3));
         dataGaps.add(new DataGap(4, Long.MAX_VALUE));
-
         List<Data> data = new ArrayList<Data>();
         data.add(new Data(1, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(2, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(3, null, null, null, TABLE1, null, null, null, TRAN2, null));
         data.add(new Data(4, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(5, null, null, null, TABLE1, null, null, null, TRAN2, null));
-
         when(sqlTemplate.queryForCursor((String) any(), (ISqlRowMapper<Data>) any(),
-            (Object[]) any(), (int[]) any())).thenReturn(new ListReadCursor(data));
-
+                (Object[]) any(), (int[]) any())).thenReturn(new ListReadCursor(data));
         DataGapRouteReader dataGapRouteReader = buildReader(50, dataGaps);
         dataGapRouteReader.execute();
-
         BlockingQueue<Data> queue = dataGapRouteReader.getDataQueue();
         assertEquals(6, queue.size());
         Iterator<Data> iter = queue.iterator();
@@ -160,20 +144,15 @@ public class DataGapRouteReaderTest {
             assertEquals(ids[index], d.getDataId());
             index++;
         }
-
     }
 
     @Test
     public void testTransactionalChannelMaxDataToRoute() throws Exception {
-
         nodeChannel.setBatchAlgorithm(TransactionalBatchAlgorithm.NAME);
         nodeChannel.setMaxDataToRoute(3);
-
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(100);
-
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
-
         List<Data> data = new ArrayList<Data>();
         data.add(new Data(1, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(2, null, null, null, TABLE1, null, null, null, TRAN1, null));
@@ -181,14 +160,11 @@ public class DataGapRouteReaderTest {
         data.add(new Data(4, null, null, null, TABLE1, null, null, null, TRAN2, null));
         data.add(new Data(5, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(6, null, null, null, TABLE1, null, null, null, TRAN1, null));
-
         ISqlRowMapper<Data> mapper = any();
         when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any()))
                 .thenReturn(new ListReadCursor(data));
-
         DataGapRouteReader dataGapRouteReader = buildReader(50, dataGaps);
         dataGapRouteReader.execute();
-
         BlockingQueue<Data> queue = dataGapRouteReader.getDataQueue();
         assertEquals(5, queue.size());
         Iterator<Data> iter = queue.iterator();
@@ -199,20 +175,15 @@ public class DataGapRouteReaderTest {
             assertEquals(ids[index], d.getDataId());
             index++;
         }
-
     }
 
     @Test
     public void testTransactionalChannelTwoTransactionsRouted() throws Exception {
-
         nodeChannel.setBatchAlgorithm(TransactionalBatchAlgorithm.NAME);
         nodeChannel.setMaxDataToRoute(100);
-
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(100);
-
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
-
         List<Data> data = new ArrayList<Data>();
         data.add(new Data(1, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(2, null, null, null, TABLE1, null, null, null, TRAN1, null));
@@ -220,14 +191,11 @@ public class DataGapRouteReaderTest {
         data.add(new Data(4, null, null, null, TABLE1, null, null, null, TRAN2, null));
         data.add(new Data(5, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(6, null, null, null, TABLE1, null, null, null, TRAN1, null));
-
         ISqlRowMapper<Data> mapper = any();
         when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any()))
                 .thenReturn(new ListReadCursor(data));
-
         DataGapRouteReader dataGapRouteReader = buildReader(50, dataGaps);
         dataGapRouteReader.execute();
-
         BlockingQueue<Data> queue = dataGapRouteReader.getDataQueue();
         assertEquals(7, queue.size());
         Iterator<Data> iter = queue.iterator();
@@ -238,20 +206,15 @@ public class DataGapRouteReaderTest {
             assertEquals(ids[index], d.getDataId());
             index++;
         }
-
     }
 
     @Test
     public void testTransactionalChannelReachMaxPeekAheadSizeThreshold() throws Exception {
-
         nodeChannel.setBatchAlgorithm(TransactionalBatchAlgorithm.NAME);
         nodeChannel.setMaxDataToRoute(100);
-
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(100);
-
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
-
         List<Data> data = new ArrayList<Data>();
         data.add(new Data(1, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(2, null, null, null, TABLE1, null, null, null, TRAN1, null));
@@ -260,15 +223,11 @@ public class DataGapRouteReaderTest {
         data.add(new Data(5, null, null, null, TABLE1, null, null, null, TRAN2, null));
         data.add(new Data(6, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(7, null, null, null, TABLE1, null, null, null, TRAN2, null));
-
         ISqlRowMapper<Data> mapper = any();
-
         when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any()))
                 .thenReturn(new ListReadCursor(data));
-
         DataGapRouteReader dataGapRouteReader = buildReader(0, dataGaps);
         dataGapRouteReader.execute();
-
         BlockingQueue<Data> queue = dataGapRouteReader.getDataQueue();
         assertEquals(5, queue.size());
         Iterator<Data> iter = queue.iterator();
@@ -283,35 +242,26 @@ public class DataGapRouteReaderTest {
 
     @Test
     public void testDontPeekAheadWhenPeekAheadQueueIsAlreadyFull() throws Exception {
-
         nodeChannel.setBatchAlgorithm(TransactionalBatchAlgorithm.NAME);
         nodeChannel.setMaxDataToRoute(100);
-
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(5);
-
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
-
         List<Data> data = new ArrayList<Data>();
         for (int i = 0; i < 100; i++) {
-            data.add(new Data(i, null, null, null, TABLE1, null, null, null, Integer.toString(i%2 == 0 ? i : i-1),
+            data.add(new Data(i, null, null, null, TABLE1, null, null, null, Integer.toString(i % 2 == 0 ? i : i - 1),
                     null));
         }
-
         ISqlRowMapper<Data> mapper = any();
-
         when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any()))
                 .thenReturn(new ListReadCursor(data));
-
         DataGapRouteReader dataGapRouteReader = buildReader(100, dataGaps);
         dataGapRouteReader.execute();
-        
         /*
          * Test that the peek ahead queue size doesn't get bigger than twice the peek ahead size
          */
-        assertEquals(10,dataGapRouteReader.context.getMaxPeekAheadQueueSize());
-        assertEquals(21,dataGapRouteReader.context.getPeekAheadFillCount());
-
+        assertEquals(10, dataGapRouteReader.context.getMaxPeekAheadQueueSize());
+        assertEquals(21, dataGapRouteReader.context.getPeekAheadFillCount());
         BlockingQueue<Data> queue = dataGapRouteReader.getDataQueue();
         assertEquals(101, queue.size());
         Iterator<Data> iter = queue.iterator();
@@ -321,34 +271,26 @@ public class DataGapRouteReaderTest {
             assertEquals(index < 100 ? index : -1, d.getDataId());
             index++;
         }
-
     }
 
     @Test
     public void testNonTransactionalChannelMaxDataToRoute() throws Exception {
-
         nodeChannel.setBatchAlgorithm(NonTransactionalBatchAlgorithm.NAME);
         nodeChannel.setMaxDataToRoute(3);
-
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(2);
-
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
-
         List<Data> data = new ArrayList<Data>();
         data.add(new Data(1, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(2, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(3, null, null, null, TABLE1, null, null, null, TRAN2, null));
         data.add(new Data(4, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(5, null, null, null, TABLE1, null, null, null, TRAN2, null));
-
         ISqlRowMapper<Data> mapper = any();
         when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any()))
                 .thenReturn(new ListReadCursor(data));
-
         DataGapRouteReader dataGapRouteReader = buildReader(50, dataGaps);
         dataGapRouteReader.execute();
-
         BlockingQueue<Data> queue = dataGapRouteReader.getDataQueue();
         assertEquals(4, queue.size());
         Iterator<Data> iter = queue.iterator();
@@ -360,11 +302,9 @@ public class DataGapRouteReaderTest {
             assertEquals(ids[index], d.getDataId());
             index++;
         }
-
     }
 
     static class ListReadCursor implements ISqlReadCursor<Data> {
-
         Iterator<Data> iterator;
 
         public ListReadCursor(List<Data> list) {

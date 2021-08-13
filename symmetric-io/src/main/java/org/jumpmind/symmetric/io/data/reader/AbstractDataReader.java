@@ -38,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractDataReader {
-
     protected Logger log = LoggerFactory.getLogger(getClass());
 
     protected long logDebugAndCountBytes(String[] tokens) {
@@ -63,7 +62,6 @@ public abstract class AbstractDataReader {
         }
         return bytesRead;
     }
-    
 
     protected static Batch toBatch(BinaryEncoding binaryEncoding) {
         return new Batch(BatchType.LOAD, Batch.UNKNOWN_BATCH_ID, "default", binaryEncoding, null,

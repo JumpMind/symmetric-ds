@@ -29,13 +29,11 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import com.google.cloud.bigquery.BigQuery;
 
 public class BigQueryPlatform extends AbstractDatabasePlatform {
-
     ISqlTemplate sqlTemplate;
     BigQuery bigquery;
-    
+
     public BigQueryPlatform(SqlTemplateSettings settings, BigQuery bigquery) {
         super(settings);
-        
         this.bigquery = bigquery;
         sqlTemplate = new BigQuerySqlTemplate(bigquery);
         this.ddlBuilder = new BigQueryDdlBuilder(bigquery);
@@ -71,12 +69,12 @@ public class BigQueryPlatform extends AbstractDatabasePlatform {
     public ISqlTemplate getSqlTemplateDirty() {
         return null;
     }
-    
+
     @Override
     public IDdlBuilder getDdlBuilder() {
         return this.ddlBuilder;
     }
-    
+
     @Override
     public IDdlReader getDdlReader() {
         return new BigQueryDdlReader(this.bigquery);
@@ -85,12 +83,12 @@ public class BigQueryPlatform extends AbstractDatabasePlatform {
     public BigQuery getBigQuery() {
         return bigquery;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return true;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         if (sql.endsWith(";")) {
@@ -98,5 +96,4 @@ public class BigQueryPlatform extends AbstractDatabasePlatform {
         }
         return sql + " limit " + limit + " offset " + offset + ";";
     }
-
 }

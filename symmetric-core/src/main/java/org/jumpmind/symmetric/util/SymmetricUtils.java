@@ -43,14 +43,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final public class SymmetricUtils {
-
-	private static final Logger log = LoggerFactory.getLogger(SymmetricUtils.class);
-    
+    private static final Logger log = LoggerFactory.getLogger(SymmetricUtils.class);
     protected static boolean isNoticeLogged;
 
     private SymmetricUtils() {
     }
-    
+
     public static String quote(ISymmetricDialect symmetricDialect, String name) {
         String quote = symmetricDialect.getPlatform().getDatabaseInfo().getDelimiterToken();
         if (StringUtils.isNotBlank(quote)) {
@@ -59,13 +57,13 @@ final public class SymmetricUtils {
             return name;
         }
     }
-    
+
     public static final void replaceSystemAndEnvironmentVariables(Properties properties) {
         Set<Object> keys = new HashSet<Object>(properties.keySet());
         Map<String, String> env = System.getenv();
         Map<String, String> systemProperties = CollectionUtils.toMap(System.getProperties());
         for (Object object : keys) {
-            String value = properties.getProperty((String)object);
+            String value = properties.getProperty((String) object);
             if (isNotBlank(value)) {
                 value = FormatUtils.replaceTokens(value, env, true);
                 value = FormatUtils.replaceTokens(value, systemProperties, true);
@@ -97,10 +95,10 @@ final public class SymmetricUtils {
                     value = FormatUtils.replace("registrationUrl", properties.getProperty(ParameterConstants.REGISTRATION_URL, ""), value);
                 }
                 properties.put(object, value);
-            }                        
-        }        
+            }
+        }
     }
-    
+
     public static void logNotices() {
         synchronized (SymmetricUtils.class) {
             if (isNoticeLogged) {
@@ -108,15 +106,14 @@ final public class SymmetricUtils {
             }
             isNoticeLogged = true;
         }
-
         String notices = null;
-        try {            
-            notices = String.format("%n%s%n", IOUtils.toString(Thread.currentThread().getContextClassLoader().getResource("symmetricds.asciiart"), Charset.defaultCharset()));
+        try {
+            notices = String.format("%n%s%n", IOUtils.toString(Thread.currentThread().getContextClassLoader().getResource("symmetricds.asciiart"), Charset
+                    .defaultCharset()));
             notices = notices.replaceAll("\n", String.format("%n"));
         } catch (Exception ex) {
             notices = String.format("SymmetricDS Start%n");
         }
-
         String buildTime = Long.toString(Version.getBuildTime());
         String year = null;
         if (buildTime.length() >= 4) {
@@ -124,13 +121,11 @@ final public class SymmetricUtils {
         } else {
             year = new SimpleDateFormat("yyyy").format(new Date());
         }
-
         int pad = 65;
         notices += String.format(
-                "+" + StringUtils.repeat("-",  pad) + "+%n" +
-                "|" + StringUtils.rightPad(" Copyright (C) 2007-" + year + " JumpMind, Inc.", pad) + "|%n" +
-                "|" + StringUtils.repeat(" ", pad) + "|%n");
-        
+                "+" + StringUtils.repeat("-", pad) + "+%n" +
+                        "|" + StringUtils.rightPad(" Copyright (C) 2007-" + year + " JumpMind, Inc.", pad) + "|%n" +
+                        "|" + StringUtils.repeat(" ", pad) + "|%n");
         InputStream in = null;
         try {
             in = AppUtils.class.getResourceAsStream("/symmetric-console-default.properties");
@@ -139,20 +134,17 @@ final public class SymmetricUtils {
             }
         } catch (Exception e) {
         }
-
         if (in != null) {
             notices += String.format(
                     "|" + StringUtils.rightPad(" Licensed under one or more agreements from JumpMind, Inc.", pad) + "|%n" +
-                    "|" + StringUtils.rightPad(" See doc/license.html", pad) + "|%n");
+                            "|" + StringUtils.rightPad(" See doc/license.html", pad) + "|%n");
         } else {
             notices += String.format(
                     "|" + StringUtils.rightPad(" Licensed under the GNU General Public License version 3.", pad) + "|%n" +
-                    "|" + StringUtils.rightPad(" This software comes with ABSOLUTELY NO WARRANTY.", pad) + "|%n" +
-                    "|" + StringUtils.rightPad(" See http://www.gnu.org/licenses/gpl.html", pad) + "|%n");
+                            "|" + StringUtils.rightPad(" This software comes with ABSOLUTELY NO WARRANTY.", pad) + "|%n" +
+                            "|" + StringUtils.rightPad(" See http://www.gnu.org/licenses/gpl.html", pad) + "|%n");
         }
-
-        notices += "+" + StringUtils.repeat("-",  pad) + "+";
+        notices += "+" + StringUtils.repeat("-", pad) + "+";
         log.info(notices);
     }
-
 }

@@ -27,7 +27,6 @@ import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class GenericSymmetricDialect extends AbstractSymmetricDialect {
-
     public GenericSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new GenericTriggerTemplate(this);
@@ -69,5 +68,4 @@ public class GenericSymmetricDialect extends AbstractSymmetricDialect {
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return false;
     }
-
 }

@@ -44,7 +44,6 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class PostgreSql95DatabasePlatform extends PostgreSqlDatabasePlatform {
-
     public PostgreSql95DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
     }
@@ -57,5 +56,4 @@ public class PostgreSql95DatabasePlatform extends PostgreSqlDatabasePlatform {
     public String getName() {
         return DatabaseNamesConstants.POSTGRESQL95;
     }
-
 }

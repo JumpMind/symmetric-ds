@@ -37,13 +37,10 @@ import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
 
 /**
- * This is an {@link IDataRouter} that can be configured as an extension point.
- * Instead of routing data to other nodes, it publishes data to the
- * {@link IPublisher} interface. The most common implementation of the
- * {@link IPublisher} is the {@link SimpleJmsPublisher}.
+ * This is an {@link IDataRouter} that can be configured as an extension point. Instead of routing data to other nodes, it publishes data to the
+ * {@link IPublisher} interface. The most common implementation of the {@link IPublisher} is the {@link SimpleJmsPublisher}.
  */
 public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint implements IDataRouter, ISymmetricEngineAware {
-
     boolean onePerBatch = false;
 
     public void contextCommitted(SimpleRouterContext context) {
@@ -61,10 +58,8 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
             Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
         Data data = dataMetaData.getData();
-
         if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(data.getTableName())) {
             String[] rowData = data.getParsedData(CsvData.ROW_DATA);
-
             if (data.getDataEventType() == DataEventType.DELETE) {
                 rowData = data.getParsedData(CsvData.OLD_DATA);
             }
@@ -72,7 +67,6 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
             Element xml = getXmlFromCache(context, engine.getSymmetricDialect().getBinaryEncoding(),
                     triggerHistory.getParsedColumnNames(), rowData, triggerHistory.getParsedPkColumnNames(),
                     data.toParsedPkData());
-
             if (xml != null) {
                 toXmlElement(data.getDataEventType(), xml, triggerHistory.getSourceCatalogName(),
                         triggerHistory.getSourceSchemaName(), data.getTableName(),
@@ -86,10 +80,8 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
     }
 
     /**
-     * Indicates that one message should be published per batch. If this is set
-     * to false, then only one message will be published once for each set of
-     * data that is routed (even though it may have been routed to several nodes
-     * across several different batches).
+     * Indicates that one message should be published per batch. If this is set to false, then only one message will be published once for each set of data that
+     * is routed (even though it may have been routed to several nodes across several different batches).
      *
      * @param onePerBatch
      */
@@ -100,5 +92,4 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
     public boolean isConfigurable() {
         return true;
     }
-
 }

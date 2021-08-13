@@ -58,68 +58,51 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Represents the database model, ie. the tables in the database. It also
- * contains the corresponding dyna classes for creating dyna beans for the
- * objects stored in the tables.
+ * Represents the database model, ie. the tables in the database. It also contains the corresponding dyna classes for creating dyna beans for the objects stored
+ * in the tables.
  */
 public class Database implements Serializable, Cloneable {
-
     private static final Logger log = LoggerFactory.getLogger(Database.class);
-
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = 1L;
-
     /** The name of the database model. */
     private String name;
-
     private String catalog;
-    
     private String schema;
-    
     /** The method for generating primary keys (currently ignored). */
     private String idMethod;
-
     /** The version of the model. */
     private String version;
-
     /** The tables. */
     private ArrayList<Table> tables = new ArrayList<Table>();
-
     private Map<String, Integer> tableIndexCache = new HashMap<String, Integer>();
 
     /**
-     * Implements modified topological sort of tables (@see <a
-     * href="http://en.wikipedia.org/wiki/Topological_sorting">topological
-     * sorting</a>). The 'depth-first search' is implemented in order to detect
-     * and ignore cycles.
+     * Implements modified topological sort of tables (@see <a href="http://en.wikipedia.org/wiki/Topological_sorting">topological sorting</a>). The
+     * 'depth-first search' is implemented in order to detect and ignore cycles.
      * 
      * @param tables
-     *          List of tables to sort.
+     *            List of tables to sort.
      * @param allTables
-     *          List of tables in database, if null the tables param will be used.
+     *            List of tables in database, if null the tables param will be used.
      * @param tablePrefix
-     *          The SymmetricDS runtime table prefix.
+     *            The SymmetricDS runtime table prefix.
      * @param dependencyMap
-     *          Map to separate dependent tables into groups.  The key will be an integer based counter (1,2...) to identify the grouping.  
-     *          The value will contain all the tables that are dependent on each other but independent for other tables in other groups.
-     *          Used to identify which tables could be placed in a specific group.
-     *          This should be passed in empty so that it can be used by reference after the method finishes.
+     *            Map to separate dependent tables into groups. The key will be an integer based counter (1,2...) to identify the grouping. The value will
+     *            contain all the tables that are dependent on each other but independent for other tables in other groups. Used to identify which tables could
+     *            be placed in a specific group. This should be passed in empty so that it can be used by reference after the method finishes.
      * @param missingDependencyMap
-     *          This is a used for any tables that are missing from the tables param that should be included in synchronization to avoid FK issues.                    
-     * @return List of tables in their dependency order - if table A has a
-     *         foreign key for table B then table B will precede table A in the
-     *         list.
+     *            This is a used for any tables that are missing from the tables param that should be included in synchronization to avoid FK issues.
+     * @return List of tables in their dependency order - if table A has a foreign key for table B then table B will precede table A in the list.
      */
     public static List<Table> sortByForeignKeys(List<Table> tables, Map<String, Table> allTables,
             Map<Integer, Set<Table>> dependencyMap, Map<Table, Set<String>> missingDependencyMap) {
-        
         if (allTables == null) {
             allTables = new HashMap<String, Table>();
             for (Table t : tables) {
                 allTables.put(t.getName(), t);
             }
         }
-        
         if (dependencyMap == null) {
             dependencyMap = new HashMap<Integer, Set<Table>>();
         }
@@ -129,22 +112,18 @@ public class Database implements Serializable, Cloneable {
         Set<Table> resolved = new HashSet<Table>();
         Set<Table> temporary = new HashSet<Table>();
         List<Table> finalList = new ArrayList<Table>();
-        
         MutableInt depth = new MutableInt(1);
         MutableInt position = new MutableInt(1);
         MutableInt parentPosition = new MutableInt(-1);
-        
         Map<Table, Integer> resolvedPosition = new HashMap<Table, Integer>();
-        
-        for(Table t : tables) {
+        for (Table t : tables) {
             if (t != null) {
                 depth.setValue(1);
                 parentPosition.setValue(-1);
-                resolveForeignKeyOrder(t, allTables, resolved, temporary, finalList, null, missingDependencyMap, 
+                resolveForeignKeyOrder(t, allTables, resolved, temporary, finalList, null, missingDependencyMap,
                         dependencyMap, depth, position, resolvedPosition, parentPosition);
             }
         }
-    
         Collections.reverse(finalList);
         return finalList;
     }
@@ -160,17 +139,17 @@ public class Database implements Serializable, Cloneable {
                 }
                 dependentTables.append(missingTableName);
             }
-            log.info("Unable to resolve foreign keys for table " + childTableName + " because the following dependent tables were not included [" + dependentTables.toString() + "].");
+            log.info("Unable to resolve foreign keys for table " + childTableName + " because the following dependent tables were not included ["
+                    + dependentTables.toString() + "].");
         }
     }
-    
+
     public static Map<String, List<String>> findMissingDependentTableNames(List<Table> tables) {
         Map<String, List<String>> missingTablesByChildTable = new HashMap<String, List<String>>();
         Map<String, Table> allTables = new HashMap<String, Table>();
         for (Table t : tables) {
             allTables.put(t.getName(), t);
         }
-
         for (Table table : tables) {
             List<String> missingTables = missingTablesByChildTable.get(table.getName());
             for (ForeignKey fk : table.getForeignKeys()) {
@@ -186,16 +165,14 @@ public class Database implements Serializable, Cloneable {
         return missingTablesByChildTable;
     }
 
-    public static void resolveForeignKeyOrder(Table t, Map<String, Table> allTables, Set<Table> resolved, Set<Table> temporary, 
+    public static void resolveForeignKeyOrder(Table t, Map<String, Table> allTables, Set<Table> resolved, Set<Table> temporary,
             List<Table> finalList, Table parentTable, Map<Table, Set<String>> missingDependencyMap,
-            Map<Integer, Set<Table>> dependencyMap, MutableInt depth, MutableInt position, 
+            Map<Integer, Set<Table>> dependencyMap, MutableInt depth, MutableInt position,
             Map<Table, Integer> resolvedPosition, MutableInt parentPosition) {
-        
-        if (resolved.contains(t)) { 
+        if (resolved.contains(t)) {
             parentPosition.setValue(resolvedPosition.get(t));
-            return; 
+            return;
         }
-
         if (!temporary.contains(t) && !resolved.contains(t)) {
             Set<Integer> parentTablesChannels = new HashSet<Integer>();
             if (t == null) {
@@ -211,62 +188,50 @@ public class Database implements Serializable, Cloneable {
                 }
             } else {
                 temporary.add(t);
-                
                 for (ForeignKey fk : t.getForeignKeys()) {
                     Table fkTable = allTables.get(fk.getForeignTableName());
                     if (fkTable != t) {
-                        depth.increment(); 
-                        resolveForeignKeyOrder(fkTable, allTables, resolved, temporary, finalList, t, missingDependencyMap, 
+                        depth.increment();
+                        resolveForeignKeyOrder(fkTable, allTables, resolved, temporary, finalList, t, missingDependencyMap,
                                 dependencyMap, depth, position, resolvedPosition, parentPosition);
                         Integer resolvedParentTableChannel = resolvedPosition.get(fkTable);
                         if (resolvedParentTableChannel != null) {
                             parentTablesChannels.add(resolvedParentTableChannel);
                         }
-                        
-                   }
-                 }
+                    }
+                }
             }
-                
-            
             if (t != null) {
                 if (parentPosition.intValue() > 0) {
-                    if (dependencyMap.get(parentPosition.intValue()) == null) { 
+                    if (dependencyMap.get(parentPosition.intValue()) == null) {
                         dependencyMap.put(parentPosition.intValue(), new HashSet<Table>());
                     }
-                    
                     if (parentTablesChannels.size() > 1) {
                         parentPosition.setValue(mergeChannels(parentTablesChannels, dependencyMap, resolvedPosition));
-                    } 
+                    }
                     dependencyMap.get(parentPosition.intValue()).add(t);
-                }
-                else {
+                } else {
                     if (dependencyMap.get(position.intValue()) == null) {
                         dependencyMap.put(position.intValue(), new HashSet<Table>());
                     }
-                    
                     dependencyMap.get(position.intValue()).add(t);
                 }
-                
                 resolved.add(t);
                 resolvedPosition.put(t, parentPosition.intValue() > 0 ? parentPosition.intValue() : position.intValue());
                 finalList.add(0, t);
-                
                 if (depth.intValue() == 1) {
                     if (parentPosition.intValue() < 0) {
                         position.increment();
                     }
-                }
-                else {
+                } else {
                     depth.decrement();
-                    
                 }
             }
         }
     }
-    
-    protected static Integer mergeChannels(Set<Integer> parentTablesChannels, Map<Integer, Set<Table>> dependencyMap, 
+
+    protected static Integer mergeChannels(Set<Integer> parentTablesChannels, Map<Integer, Set<Table>> dependencyMap,
             Map<Table, Integer> resolvedPosition) {
-        
         Iterator<Integer> i = parentTablesChannels.iterator();
         Set<Table> mergedTables = new HashSet<Table>();
         Integer minChannelId = null;
@@ -275,8 +240,7 @@ public class Database implements Serializable, Cloneable {
             Integer channelToMerge = (Integer) i.next();
             if (dependencyMap.get(channelToMerge) != null) {
                 mergedTables.addAll(dependencyMap.get(channelToMerge));
-                
-                if (minChannelId == null) { 
+                if (minChannelId == null) {
                     minChannelId = channelToMerge;
                 } else if (channelToMerge < minChannelId) {
                     unusedChannels.add(minChannelId);
@@ -295,15 +259,15 @@ public class Database implements Serializable, Cloneable {
         }
         return minChannelId;
     }
-    
+
     public static String printTables(List<Table> tables) {
-    	StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         for (Table t : tables) {
             sb.append(t.getName() + ",");
         }
         return sb.toString();
     }
-    
+
     public static Table[] sortByForeignKeys(Table... tables) {
         if (tables != null) {
             List<Table> list = new ArrayList<Table>(tables.length);
@@ -319,10 +283,9 @@ public class Database implements Serializable, Cloneable {
     public static List<Table> sortByForeignKeys(List<Table> tables) {
         return sortByForeignKeys(tables, null, null, null);
     }
-    
+
     /**
-     * Adds all tables from the other database to this database. Note that the
-     * other database is not changed.
+     * Adds all tables from the other database to this database. Note that the other database is not changed.
      * 
      * @param otherDb
      *            The other database model
@@ -330,7 +293,6 @@ public class Database implements Serializable, Cloneable {
     public void mergeWith(Database otherDb) throws ModelException {
         for (Iterator<Table> it = otherDb.tables.iterator(); it.hasNext();) {
             Table table = (Table) it.next();
-
             if (findTable(table.getName()) != null) {
                 // TODO: It might make more sense to log a warning and overwrite
                 // the table (or merge them) ?
@@ -367,15 +329,15 @@ public class Database implements Serializable, Cloneable {
     public String getCatalog() {
         return catalog;
     }
-    
+
     public void setCatalog(String catalog) {
         this.catalog = catalog;
     }
-    
+
     public String getSchema() {
         return schema;
     }
-    
+
     public void setSchema(String schema) {
         this.schema = schema;
     }
@@ -409,8 +371,7 @@ public class Database implements Serializable, Cloneable {
     }
 
     /**
-     * Sets the method for generating primary key values. Note that this value
-     * is ignored by DdlUtils and only for compatibility with Torque.
+     * Sets the method for generating primary key values. Note that this value is ignored by DdlUtils and only for compatibility with Torque.
      * 
      * @param idMethod
      *            The method
@@ -513,14 +474,11 @@ public class Database implements Serializable, Cloneable {
     public void removeTable(int idx) {
         tables.remove(idx);
     }
-
     // Helper methods
 
     /**
-     * Initializes the model by establishing the relationships between elements
-     * in this model encoded eg. in foreign keys etc. Also checks that the model
-     * elements are valid (table and columns have a name, foreign keys rference
-     * existing tables etc.)
+     * Initializes the model by establishing the relationships between elements in this model encoded eg. in foreign keys etc. Also checks that the model
+     * elements are valid (table and columns have a name, foreign keys rference existing tables etc.)
      */
     public void initialize() throws ModelException {
         // we have to setup
@@ -533,10 +491,8 @@ public class Database implements Serializable, Cloneable {
         HashSet<String> namesOfProcessedFks = new HashSet<String>();
         HashSet<String> namesOfProcessedIndices = new HashSet<String>();
         int tableIdx = 0;
-
         for (Iterator<Table> tableIt = tables.iterator(); tableIt.hasNext(); tableIdx++) {
             Table curTable = tableIt.next();
-
             if ((curTable.getName() == null) || (curTable.getName().length() == 0)) {
                 throw new ModelException("The table nr. " + tableIdx + " has no name");
             }
@@ -545,14 +501,11 @@ public class Database implements Serializable, Cloneable {
                         + curTable.getName());
             }
             namesOfProcessedTables.add(curTable.getFullyQualifiedTableName());
-
             namesOfProcessedColumns.clear();
             namesOfProcessedFks.clear();
             namesOfProcessedIndices.clear();
-
             for (int idx = 0; idx < curTable.getColumnCount(); idx++) {
                 Column column = curTable.getColumn(idx);
-
                 if ((column.getName() == null) || (column.getName().length() == 0)) {
                     throw new ModelException("The column nr. " + idx + " in table "
                             + curTable.getName() + " has no name");
@@ -562,7 +515,6 @@ public class Database implements Serializable, Cloneable {
                             + column.getName() + " in the table " + curTable.getName());
                 }
                 namesOfProcessedColumns.add(column.getName());
-
                 if ((column.getMappedType() == null) || (column.getMappedType().length() == 0)) {
                     throw new ModelException("The column nr. " + idx + " in table "
                             + curTable.getName() + " has no type");
@@ -574,12 +526,10 @@ public class Database implements Serializable, Cloneable {
                 }
                 namesOfProcessedColumns.add(column.getName());
             }
-
             for (int idx = 0; idx < curTable.getForeignKeyCount(); idx++) {
                 ForeignKey fk = curTable.getForeignKey(idx);
                 String fkName = (fk.getName() == null ? "" : fk.getName());
                 String fkDesc = (fkName.length() == 0 ? "nr. " + idx : fkName);
-
                 if (fkName.length() > 0) {
                     if (namesOfProcessedFks.contains(fkName)) {
                         throw new ModelException("There are multiple foreign keys in table "
@@ -587,10 +537,8 @@ public class Database implements Serializable, Cloneable {
                     }
                     namesOfProcessedFks.add(fkName);
                 }
-
                 if (fk.getForeignTable() == null) {
                     Table targetTable = findTable(fk.getForeignTableName(), true);
-
                     if (targetTable != null) {
                         fk.setForeignTable(targetTable);
                         fk.setForeignTableCatalog(targetTable.getCatalog());
@@ -608,11 +556,9 @@ public class Database implements Serializable, Cloneable {
                 if (fk.getForeignTable() != null) {
                     for (int refIdx = 0; refIdx < fk.getReferenceCount(); refIdx++) {
                         Reference ref = fk.getReference(refIdx);
-
                         if (ref.getLocalColumn() == null) {
                             Column localColumn = curTable
                                     .findColumn(ref.getLocalColumnName(), true);
-
                             if (localColumn == null) {
                                 throw new ModelException("The foreignkey " + fkDesc + " in table "
                                         + curTable.getName()
@@ -625,7 +571,6 @@ public class Database implements Serializable, Cloneable {
                         if (ref.getForeignColumn() == null) {
                             Column foreignColumn = fk.getForeignTable().findColumn(
                                     ref.getForeignColumnName(), true);
-
                             if (foreignColumn == null) {
                                 throw new ModelException("The foreignkey " + fkDesc + " in table "
                                         + curTable.getName()
@@ -639,11 +584,9 @@ public class Database implements Serializable, Cloneable {
                     }
                 }
             }
-
             for (int idx = 0; idx < curTable.getIndexCount(); idx++) {
                 IIndex index = curTable.getIndex(idx);
                 String indexName = (index.getName() == null ? "" : index.getName());
-
                 if (indexName.length() > 0) {
                     if (namesOfProcessedIndices.contains(indexName)) {
                         throw new ModelException("There are multiple indices in table "
@@ -651,7 +594,6 @@ public class Database implements Serializable, Cloneable {
                     }
                     namesOfProcessedIndices.add(indexName);
                 }
-
                 for (int indexColumnIdx = 0; indexColumnIdx < index.getColumnCount(); indexColumnIdx++) {
                     IndexColumn indexColumn = index.getColumn(indexColumnIdx);
                     Column column = curTable.findColumn(indexColumn.getName(), true);
@@ -662,9 +604,7 @@ public class Database implements Serializable, Cloneable {
     }
 
     /**
-     * Finds the table with the specified name, using case insensitive matching.
-     * Note that this method is not called getTable to avoid introspection
-     * problems.
+     * Finds the table with the specified name, using case insensitive matching. Note that this method is not called getTable to avoid introspection problems.
      * 
      * @param name
      *            The name of the table to find
@@ -675,9 +615,7 @@ public class Database implements Serializable, Cloneable {
     }
 
     /**
-     * Finds the table with the specified name, using case insensitive matching.
-     * Note that this method is not called getTable) to avoid introspection
-     * problems.
+     * Finds the table with the specified name, using case insensitive matching. Note that this method is not called getTable) to avoid introspection problems.
      * 
      * @param name
      *            The name of the table to find
@@ -688,7 +626,6 @@ public class Database implements Serializable, Cloneable {
     public Table findTable(String name, boolean caseSensitive) {
         for (Iterator<Table> iter = tables.iterator(); iter.hasNext();) {
             Table table = (Table) iter.next();
-
             if (caseSensitive) {
                 if (table.getName().equals(name)) {
                     return table;
@@ -724,7 +661,6 @@ public class Database implements Serializable, Cloneable {
                 }
             }
         }
-
         Table[] tables = getTables();
         for (int i = 0; i < tables.length; i++) {
             Table table = tables[i];
@@ -748,7 +684,7 @@ public class Database implements Serializable, Cloneable {
                     .equalsIgnoreCase(table.getCatalog())))
                     && (schemaName == null || (schemaName != null && schemaName
                             .equalsIgnoreCase(table.getSchema()))) && table.getName()
-                    .equalsIgnoreCase(tableName));
+                                    .equalsIgnoreCase(tableName));
         }
     }
 
@@ -759,10 +695,10 @@ public class Database implements Serializable, Cloneable {
     public void resetTableIndexCache() {
         tableIndexCache.clear();
     }
-    
+
     public void removeAllTablesExcept(String... tableNames) {
         Iterator<Table> tableIterator = this.tables.iterator();
-        while(tableIterator.hasNext()) {
+        while (tableIterator.hasNext()) {
             Table table = tableIterator.next();
             boolean foundTable = false;
             for (String tableName : tableNames) {
@@ -771,13 +707,12 @@ public class Database implements Serializable, Cloneable {
                     break;
                 }
             }
-            
             if (!foundTable) {
                 tableIterator.remove();
             }
         }
     }
-    
+
     public Database copy() {
         try {
             return (Database) this.clone();
@@ -798,9 +733,8 @@ public class Database implements Serializable, Cloneable {
         result.version = version;
         result.tables = new ArrayList<Table>(tables.size());
         for (Table table : tables) {
-            result.tables.add((Table)table.clone());
+            result.tables.add((Table) table.clone());
         }
-
         return result;
     }
 
@@ -810,7 +744,6 @@ public class Database implements Serializable, Cloneable {
     public boolean equals(Object obj) {
         if (obj instanceof Database) {
             Database other = (Database) obj;
-
             // Note that this compares case sensitive
             return new EqualsBuilder().append(name, other.name).append(catalog, other.catalog)
                     .append(schema, other.schema).append(tables, other.tables).isEquals();
@@ -830,14 +763,12 @@ public class Database implements Serializable, Cloneable {
      * {@inheritDoc}
      */
     public String toString() {
-    	StringBuilder result = new StringBuilder();
-
+        StringBuilder result = new StringBuilder();
         result.append("Database [name=").append(name);
         result.append("; catalog=").append(catalog);
         result.append("; schema=").append(schema);
         result.append("; tableCount=").append(getTableCount());
         result.append("]");
-
         return result.toString();
     }
 
@@ -847,8 +778,7 @@ public class Database implements Serializable, Cloneable {
      * @return The string representation
      */
     public String toVerboseString() {
-    	StringBuilder result = new StringBuilder();
-
+        StringBuilder result = new StringBuilder();
         result.append("Database [");
         result.append(getName());
         result.append("] tables:");
@@ -856,7 +786,6 @@ public class Database implements Serializable, Cloneable {
             result.append(" ");
             result.append(getTable(idx).toVerboseString());
         }
-
         return result.toString();
     }
 }

@@ -33,14 +33,13 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class InformixSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-    
     static final String SQL_DROP_FUNCTION = "drop function $(defaultSchema).$(functionName)";
-    static final String SQL_FUNCTION_INSTALLED = "select count(*) from sysprocedures where procname = '$(functionName)' and owner = (select trim(user) from sysmaster:sysdual)" ;
+    static final String SQL_FUNCTION_INSTALLED = "select count(*) from sysprocedures where procname = '$(functionName)' and owner = (select trim(user) from sysmaster:sysdual)";
     static final String SQL_PAGE_SIZE = "select pagesize from systables where tabname = 'systables'";
     private int pageSize = 2048;
 
     public InformixSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
-        super(parameterService, platform);       
+        super(parameterService, platform);
         this.triggerTemplate = new InformixTriggerTemplate(this);
         try {
             pageSize = platform.getSqlTemplate().queryForInt(SQL_PAGE_SIZE);
@@ -48,7 +47,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
         } catch (Exception e) {
             log.debug("Unable to query page size", e);
         }
-    }    
+    }
 
     @Override
     public Database readSymmetricSchemaFromXml() {
@@ -66,7 +65,6 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
                     column.setSize("55");
                 }
             }
-            
             table = database.findTable(prefix + TableConstants.SYM_REGISTRATION_REQUEST);
             if (table != null) {
                 table.removeIndex(0);
@@ -97,71 +95,77 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
     public String getSyncTriggersExpression() {
         return "not $(defaultSchema)" + parameterService.getTablePrefix() + "_triggers_disabled()";
     }
-    
+
     @Override
     public void createRequiredDatabaseObjects() {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-            String sql = "create function $(defaultSchema).$(functionName)() returning boolean;                                                                                                                                   " + 
-                    "                                   define global symmetric_triggers_disabled boolean default 'f';                                                                                                      " + 
-                    "                                   return symmetric_triggers_disabled;                                                                                                                                 " + 
+            String sql = "create function $(defaultSchema).$(functionName)() returning boolean;                                                                                                                                   "
+                    +
+                    "                                   define global symmetric_triggers_disabled boolean default 'f';                                                                                                      "
+                    +
+                    "                                   return symmetric_triggers_disabled;                                                                                                                                 "
+                    +
                     "                                end function;                                                                                                                                                          ";
             install(sql, triggersDisabled);
         }
-        
         String triggersSetDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_set_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersSetDisabled)) {
-            String sql = "create function $(defaultSchema).$(functionName)(is_disabled boolean) returning boolean;                                                                                                                " + 
-                    "                                   define global symmetric_triggers_disabled boolean default 'f';                                                                                                      " + 
-                    "                                   let symmetric_triggers_disabled = is_disabled;                                                                                                                      " + 
-                    "                                   return symmetric_triggers_disabled;                                                                                                                                 " + 
+            String sql = "create function $(defaultSchema).$(functionName)(is_disabled boolean) returning boolean;                                                                                                                "
+                    +
+                    "                                   define global symmetric_triggers_disabled boolean default 'f';                                                                                                      "
+                    +
+                    "                                   let symmetric_triggers_disabled = is_disabled;                                                                                                                      "
+                    +
+                    "                                   return symmetric_triggers_disabled;                                                                                                                                 "
+                    +
                     "                                end function;                                                                                                                                                          ";
             install(sql, triggersSetDisabled);
         }
-
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-            String sql = "create function $(defaultSchema).$(functionName)() returning varchar(50);                                                                                                                               " + 
-                    "                                   define global symmetric_node_disabled varchar(50) default null;                                                                                                     " + 
-                    "                                   return symmetric_node_disabled;                                                                                                                                     " + 
+            String sql = "create function $(defaultSchema).$(functionName)() returning varchar(50);                                                                                                                               "
+                    +
+                    "                                   define global symmetric_node_disabled varchar(50) default null;                                                                                                     "
+                    +
+                    "                                   return symmetric_node_disabled;                                                                                                                                     "
+                    +
                     "                                end function;                                                                                                                                                          ";
             install(sql, nodeDisabled);
         }
-
         String nodeSetDisabled = this.parameterService.getTablePrefix() + "_" + "node_set_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeSetDisabled)) {
-            String sql = "create function $(defaultSchema).$(functionName)(node_id varchar(50)) returning integer;                                                                                                                " + 
-                    "                                   define global symmetric_node_disabled varchar(50) default null;                                                                                                     " + 
-                    "                                   let symmetric_node_disabled = node_id;                                                                                                                              " + 
-                    "                                   return 1;                                                                                                                                                           " + 
+            String sql = "create function $(defaultSchema).$(functionName)(node_id varchar(50)) returning integer;                                                                                                                "
+                    +
+                    "                                   define global symmetric_node_disabled varchar(50) default null;                                                                                                     "
+                    +
+                    "                                   let symmetric_node_disabled = node_id;                                                                                                                              "
+                    +
+                    "                                   return 1;                                                                                                                                                           "
+                    +
                     "                                end function;                                                                                                                                                          ";
             install(sql, nodeSetDisabled);
-        }       
-        
+        }
     }
-    
+
     @Override
     public void dropRequiredDatabaseObjects() {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
             uninstall(SQL_DROP_FUNCTION, triggersDisabled);
         }
-
         String triggersSetDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_set_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, triggersSetDisabled)) {
             uninstall(SQL_DROP_FUNCTION, triggersSetDisabled);
         }
-
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
             uninstall(SQL_DROP_FUNCTION, nodeDisabled);
         }
-
         String nodeSetDisabled = this.parameterService.getTablePrefix() + "_" + "node_set_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, nodeSetDisabled)) {
             uninstall(SQL_DROP_FUNCTION, nodeSetDisabled);
         }
-
     }
 
     @Override
@@ -199,5 +203,4 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
     }
-    
 }

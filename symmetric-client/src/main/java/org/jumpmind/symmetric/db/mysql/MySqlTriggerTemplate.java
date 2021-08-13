@@ -27,9 +27,10 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 
 public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
-
     public MySqlTriggerTemplate(ISymmetricDialect symmetricDialect, boolean isConvertZeroDateToNull, String characterSet) {
         super(symmetricDialect);
+        // @formatter:off
+
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "cast(if($(tableAlias).`$(columnName)` is null,'',concat('\"',replace(replace($(tableAlias).`$(columnName)`,'\\\\','\\\\\\\\'),'\"','\\\\\"'),'\"')) as char)\n" ;                               
         geometryColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',replace(replace(astext($(tableAlias).`$(columnName)`),'\\\\','\\\\\\\\'),'\"','\\\\\"'),'\"'))\n" ;
@@ -156,13 +157,11 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                  $(custom_on_delete_text)                                                                                                                                                \n" +
 "                                end                                                                                                                                                                    " );
 
-        sqlTemplates.put("initialLoadSqlTemplate" ,
-"select concat($(columns)) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                        " );
+        sqlTemplates.put("initialLoadSqlTemplate", "select concat($(columns)) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                        " );
     }
 
     @Override
     protected String castDatetimeColumnToString(String columnName) {
         return "cast(\n" + SymmetricUtils.quote(symmetricDialect, columnName) + " as char) as \n" + columnName;
     }
-
 }

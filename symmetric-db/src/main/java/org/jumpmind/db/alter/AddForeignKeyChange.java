@@ -45,25 +45,24 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DdlException;
 
 /**
- * Represents the addition of a foreign key to a table. Note that for
- * simplicity and because it fits the model, this change actually implements
- * table change for the table that the new foreign key will originate.
+ * Represents the addition of a foreign key to a table. Note that for simplicity and because it fits the model, this change actually implements table change for
+ * the table that the new foreign key will originate.
  * 
  * @version $Revision: $
  */
-public class AddForeignKeyChange extends TableChangeImplBase
-{
+public class AddForeignKeyChange extends TableChangeImplBase {
     /** The new foreign key. */
     private ForeignKey _newForeignKey;
 
     /**
      * Creates a new change object.
      * 
-     * @param table         The table to add the foreign key to
-     * @param newForeignKey The new foreign key
+     * @param table
+     *            The table to add the foreign key to
+     * @param newForeignKey
+     *            The new foreign key
      */
-    public AddForeignKeyChange(Table table, ForeignKey newForeignKey)
-    {
+    public AddForeignKeyChange(Table table, ForeignKey newForeignKey) {
         super(table);
         _newForeignKey = newForeignKey;
     }
@@ -73,33 +72,26 @@ public class AddForeignKeyChange extends TableChangeImplBase
      *
      * @return The new foreign key
      */
-    public ForeignKey getNewForeignKey()
-    {
+    public ForeignKey getNewForeignKey() {
         return _newForeignKey;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void apply(Database database, boolean caseSensitive)
-    {
+    public void apply(Database database, boolean caseSensitive) {
         ForeignKey newFK = null;
-
-        try
-        {
-            newFK = (ForeignKey)_newForeignKey.clone();
+        try {
+            newFK = (ForeignKey) _newForeignKey.clone();
             Table foreignTable = database.findTable(_newForeignKey.getForeignTableName(), caseSensitive);
             newFK.setForeignTable(foreignTable);
             if (foreignTable != null) {
-                    newFK.setForeignTableCatalog(foreignTable.getCatalog());
-                    newFK.setForeignTableSchema(foreignTable.getSchema());
+                newFK.setForeignTableCatalog(foreignTable.getCatalog());
+                newFK.setForeignTableSchema(foreignTable.getSchema());
             }
-        }
-        catch (CloneNotSupportedException ex)
-        {
+        } catch (CloneNotSupportedException ex) {
             throw new DdlException(ex);
         }
         database.findTable(getChangedTable().getName()).addForeignKey(newFK);
     }
-
 }

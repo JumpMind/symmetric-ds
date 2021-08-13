@@ -26,7 +26,6 @@ import org.jumpmind.symmetric.model.JobDefinition;
 import org.jumpmind.symmetric.model.JobDefinition.JobType;
 
 public class JobMapper implements ISqlRowMapper<JobDefinition> {
-
     @Override
     public JobDefinition mapRow(Row row) {
         JobDefinition jobDefinition = new JobDefinition();
@@ -45,5 +44,4 @@ public class JobMapper implements ISqlRowMapper<JobDefinition> {
         jobDefinition.setLastUpdateTime(row.getDateTime("last_update_time"));
         return jobDefinition;
     }
-
 }

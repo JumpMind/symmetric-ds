@@ -26,18 +26,17 @@ import java.util.Map;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class SQLiteOpenHelperRegistry {
-    
     static private Map<String, SQLiteOpenHelper> sqliteOpenHelpers = new HashMap<String, SQLiteOpenHelper>();
-    
+
     public static void register(String name, SQLiteOpenHelper helper) {
         sqliteOpenHelpers.put(name, helper);
     }
-    
+
     public static SQLiteOpenHelper lookup(String name) {
         return sqliteOpenHelpers.get(name);
     }
 
     public static void clear() {
-    	sqliteOpenHelpers.clear();
+        sqliteOpenHelpers.clear();
     }
 }

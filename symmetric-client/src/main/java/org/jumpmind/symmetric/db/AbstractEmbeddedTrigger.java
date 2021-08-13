@@ -39,8 +39,7 @@ import org.jumpmind.symmetric.db.h2.H2Trigger;
 import org.jumpmind.symmetric.db.hsqldb.HsqlDbTrigger;
 
 /**
- * An implementation of logic that can be used in Java database triggers to
- * capture data for SymmetricDS.
+ * An implementation of logic that can be used in Java database triggers to capture data for SymmetricDS.
  * 
  * @see H2Trigger
  * @see HsqlDbTrigger
@@ -48,7 +47,6 @@ import org.jumpmind.symmetric.db.hsqldb.HsqlDbTrigger;
  * 
  */
 abstract public class AbstractEmbeddedTrigger {
-
     protected static final char[] HEX = "0123456789abcdef".toCharArray();
     protected static final FastDateFormat DATE_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
     protected static final String KEY_CONDITION_SQL = "CONDITION_SQL";
@@ -59,14 +57,14 @@ abstract public class AbstractEmbeddedTrigger {
     protected Map<String, String> templates = null;
 
     /**
-     * This method should be called by the database engine once when
-     * initializing the trigger.
+     * This method should be called by the database engine once when initializing the trigger.
      * 
      * @param conn
      *            a connection to the database
      * @param triggerName
      *            the name of the trigger used in the CREATE TRIGGER statement
-     * @param schemaName TODO
+     * @param schemaName
+     *            TODO
      * @param tableName
      *            the name of the table
      */
@@ -175,7 +173,7 @@ abstract public class AbstractEmbeddedTrigger {
             out.append("'");
             value = convertBytesToString((byte[]) value, ((byte[]) value).length);
             out.append(escapeString(value));
-            out.append("'");            
+            out.append("'");
         } else {
             throw new IllegalStateException(String.format("Type not supported: %s", value.getClass().getName()));
         }
@@ -200,7 +198,6 @@ abstract public class AbstractEmbeddedTrigger {
                 paramInt -= j;
             }
             String str = localStringWriter.toString();
-
             return str;
         } finally {
             paramReader.close();
@@ -225,7 +222,6 @@ abstract public class AbstractEmbeddedTrigger {
                 paramInt -= j;
             }
             byte[] arrayOfByte2 = localByteArrayOutputStream.toByteArray();
-
             return arrayOfByte2;
         } finally {
             paramInputStream.close();
@@ -254,7 +250,7 @@ abstract public class AbstractEmbeddedTrigger {
     protected Map<String, String> getTemplates(Connection conn) throws SQLException {
         Map<String, String> templates = new HashMap<String, String>();
         Statement stmt = conn.createStatement();
-        String schemaPrefix = schemaName != null && schemaName.length() > 0 ? "\"" + schemaName+"\"." : "";
+        String schemaPrefix = schemaName != null && schemaName.length() > 0 ? "\"" + schemaName + "\"." : "";
         ResultSet rs = stmt.executeQuery(String.format("select * from %s%s%s", schemaPrefix, triggerName, TEMPLATE_TABLE_SUFFIX));
         if (rs.next()) {
             ResultSetMetaData metaData = rs.getMetaData();
@@ -268,5 +264,4 @@ abstract public class AbstractEmbeddedTrigger {
                     triggerName, TEMPLATE_TABLE_SUFFIX));
         }
     }
-
 }

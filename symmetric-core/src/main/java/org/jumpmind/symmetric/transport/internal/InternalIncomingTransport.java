@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.transport.internal;
 
 import java.io.BufferedReader;
@@ -33,32 +32,31 @@ import org.jumpmind.symmetric.transport.TransportUtils;
  * Wraps an incoming stream that comes from memory
  */
 public class InternalIncomingTransport implements IIncomingTransport {
-
     BufferedReader reader = null;
-    
     InputStream is;
 
-    public InternalIncomingTransport(InputStream is)  {
+    public InternalIncomingTransport(InputStream is) {
         this.is = is;
         this.reader = TransportUtils.toReader(is);
     }
-    
-    public InternalIncomingTransport(BufferedReader reader)  {
+
+    public InternalIncomingTransport(BufferedReader reader) {
         this.reader = reader;
-    }    
+    }
 
     public void close() {
         if (reader != null) {
             try {
                 reader.close();
-            } catch(IOException e) { }
+            } catch (IOException e) {
+            }
             reader = null;
         }
-
         if (is != null) {
             try {
                 is.close();
-            } catch(IOException e) { }
+            } catch (IOException e) {
+            }
             is = null;
         }
     }
@@ -70,22 +68,21 @@ public class InternalIncomingTransport implements IIncomingTransport {
     public BufferedReader openReader() throws IOException {
         return reader;
     }
-    
+
     public InputStream openStream() throws IOException {
         return is;
     }
-    
+
     public String getRedirectionUrl() {
         return null;
     }
-    
+
     public String getUrl() {
         return "";
     }
-    
+
     @Override
     public Map<String, String> getHeaders() {
         return null;
     }
-
 }

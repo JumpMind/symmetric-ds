@@ -28,34 +28,22 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
-    
     protected Connection c;
-
     protected ResultSet rs;
-
     protected Statement st;
-
     protected boolean autoCommitFlag;
-
     protected ISqlRowMapper<T> mapper;
-
     protected JdbcSqlTemplate sqlTemplate;
-
     protected int rowNumber;
-    
     protected int originalIsolationLevel;
-    
     protected ResultSetMetaData rsMetaData = null;
-    
     protected int rsColumnCount;
-
     protected IConnectionHandler connectionHandler;
-    
     protected boolean returnLobObjects;
-    
+
     public JdbcSqlReadCursor() {
     }
-    
+
     public JdbcSqlReadCursor(JdbcSqlTemplate sqlTemplate, ISqlRowMapper<T> mapper, String sql,
             Object[] values, int[] types) {
         this(sqlTemplate, mapper, sql, values, types, null, false);
@@ -67,13 +55,12 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
         this.mapper = mapper;
         this.connectionHandler = connectionHandler;
         this.returnLobObjects = returnLobObjects;
-        
         try {
             c = sqlTemplate.getDataSource().getConnection();
             if (this.connectionHandler != null) {
                 this.connectionHandler.before(c);
             }
-            originalIsolationLevel = c.getTransactionIsolation();            
+            originalIsolationLevel = c.getTransactionIsolation();
             autoCommitFlag = c.getAutoCommit();
             if (c.getTransactionIsolation() != sqlTemplate.getIsolationLevel()) {
                 c.setTransactionIsolation(sqlTemplate.getIsolationLevel());
@@ -81,7 +68,6 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
             if (sqlTemplate.isRequiresAutoCommitFalseToSetFetchSize()) {
                 c.setAutoCommit(false);
             }
-
             try {
                 if (values != null) {
                     PreparedStatement pstmt = c.prepareStatement(sql,
@@ -89,11 +75,10 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                             ResultSet.CONCUR_READ_ONLY);
                     sqlTemplate.setValues(pstmt, values, types, sqlTemplate.getLobHandler()
                             .getDefaultHandler());
-                    st = pstmt;                    
+                    st = pstmt;
                     st.setQueryTimeout(sqlTemplate.getSettings().getQueryTimeout());
                     st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
                     rs = pstmt.executeQuery();
-
                 } else {
                     st = c.createStatement(sqlTemplate.getSettings().getResultSetType(),
                             ResultSet.CONCUR_READ_ONLY);
@@ -103,8 +88,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                 }
             } catch (SQLException e) {
                 /*
-                 * The Xerial SQLite JDBC driver throws an exception if a query
-                 * returns an empty set This gets around that
+                 * The Xerial SQLite JDBC driver throws an exception if a query returns an empty set This gets around that
                  */
                 if (e.getMessage() == null
                         || !e.getMessage().equalsIgnoreCase("query does not return results")) {
@@ -112,7 +96,6 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                 }
             }
             SqlUtils.addSqlReadCursor(this);
-            
         } catch (SQLException ex) {
             close();
             throw sqlTemplate.translate("Failed to execute sql: " + sql, ex);
@@ -124,12 +107,11 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
 
     public T next() {
         try {
-            while (rs!=null && rs.next()) {
+            while (rs != null && rs.next()) {
                 if (rsMetaData == null) {
                     rsMetaData = rs.getMetaData();
                     rsColumnCount = rsMetaData.getColumnCount();
                 }
-                
                 Row row = getMapForRow(rs, rsMetaData, rsColumnCount, sqlTemplate.getSettings().isReadStringsAsBytes(), returnLobObjects);
                 T value = mapper.mapRow(row);
                 if (value != null) {
@@ -144,7 +126,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
         }
     }
 
-    protected static Row getMapForRow(ResultSet rs, ResultSetMetaData argResultSetMetaData, 
+    protected static Row getMapForRow(ResultSet rs, ResultSetMetaData argResultSetMetaData,
             int columnCount, boolean readStringsAsBytes, boolean returnLobObjects) throws SQLException {
         Row mapOfColValues = new Row(columnCount);
         for (int i = 1; i <= columnCount; i++) {

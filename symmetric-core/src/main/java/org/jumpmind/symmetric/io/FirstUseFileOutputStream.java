@@ -25,14 +25,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * A FileOutputStream that delays creating the physical file until the first write operation, to 
- * avoid empty files.
+ * A FileOutputStream that delays creating the physical file until the first write operation, to avoid empty files.
  */
 public class FirstUseFileOutputStream extends OutputStream {
-    
     private String fileName;
     private FileOutputStream fileOutputStream;
-    
+
     public FirstUseFileOutputStream(String fileName) {
         this.fileName = fileName;
     }

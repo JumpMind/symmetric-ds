@@ -51,33 +51,19 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 
 public class SettingsDialog extends ResizableWindow {
-
     private static final long serialVersionUID = 1L;
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     private TextField rowsToFetchField;
-    
     private Binder<Integer> binder;
-
     private CheckBox autoCommitBox;
-
     private CheckBox autoCompleteBox;
-
     private TextField delimiterField;
-
     private TextField excludeTablesWithPrefixField;
-
     private CheckBox resultAsTextBox;
-
     private CheckBox ignoreErrorsWhenRunningScript;
-
     private CheckBox showRowNumbersBox;
-
     private CheckBox showResultsInNewTabsBox;
-
     ISettingsProvider settingsProvider;
-
     SqlExplorer explorer;
 
     public SettingsDialog(SqlExplorer explorer) {
@@ -94,10 +80,8 @@ public class SettingsDialog extends ResizableWindow {
         layout.setWidth(700, Unit.PIXELS);
         layout.setMargin(new MarginInfo(false, true, false, true));
         FormLayout settingsLayout = new FormLayout();
-
         Settings settings = settingsProvider.get();
         TypedProperties properties = settings.getProperties();
-
         rowsToFetchField = new TextField("Max Results");
         rowsToFetchField.setWidth(6, Unit.EM);
         Label rowsToFetchLabel = new Label();
@@ -114,15 +98,12 @@ public class SettingsDialog extends ResizableWindow {
                 }).bind(integer -> integer, (integer, value) -> integer = value);
         rowsToFetchField.setValue(properties.getProperty(SQL_EXPLORER_MAX_RESULTS, "100"));
         settingsLayout.addComponent(rowsToFetchField);
-
         delimiterField = new TextField("Delimiter");
         delimiterField.setValue(properties.getProperty(SQL_EXPLORER_DELIMITER, ";"));
         settingsLayout.addComponent(delimiterField);
-
         excludeTablesWithPrefixField = new TextField("Hide Tables (regex)");
         excludeTablesWithPrefixField.setValue(properties.getProperty(SQL_EXPLORER_EXCLUDE_TABLES_REGEX));
         settingsLayout.addComponent(excludeTablesWithPrefixField);
-
         resultAsTextBox = new CheckBox("Result As Text");
         String resultAsTextValue = (properties.getProperty(SQL_EXPLORER_RESULT_AS_TEXT, "false"));
         if (resultAsTextValue.equals("true")) {
@@ -131,7 +112,6 @@ public class SettingsDialog extends ResizableWindow {
             resultAsTextBox.setValue(false);
         }
         settingsLayout.addComponent(resultAsTextBox);
-
         ignoreErrorsWhenRunningScript = new CheckBox("Ignore Errors When Running Scripts");
         String ignoreErrorsWhenRunningScriptTextValue = (properties.getProperty(SQL_EXPLORER_IGNORE_ERRORS_WHEN_RUNNING_SCRIPTS, "false"));
         if (ignoreErrorsWhenRunningScriptTextValue.equals("true")) {
@@ -140,7 +120,6 @@ public class SettingsDialog extends ResizableWindow {
             ignoreErrorsWhenRunningScript.setValue(false);
         }
         settingsLayout.addComponent(ignoreErrorsWhenRunningScript);
-
         autoCommitBox = new CheckBox("Auto Commit");
         String autoCommitValue = (properties.getProperty(SQL_EXPLORER_AUTO_COMMIT, "true"));
         if (autoCommitValue.equals("true")) {
@@ -149,7 +128,6 @@ public class SettingsDialog extends ResizableWindow {
             autoCommitBox.setValue(false);
         }
         settingsLayout.addComponent(autoCommitBox);
-
         autoCompleteBox = new CheckBox("Auto Complete");
         String autoCompleteValue = (properties.getProperty(SQL_EXPLORER_AUTO_COMPLETE, "true"));
         if (autoCompleteValue.equals("true")) {
@@ -158,7 +136,6 @@ public class SettingsDialog extends ResizableWindow {
             autoCompleteBox.setValue(false);
         }
         settingsLayout.addComponent(autoCompleteBox);
-
         showRowNumbersBox = new CheckBox("Show Row Numbers");
         String showRowNumbersValue = (properties.getProperty(SQL_EXPLORER_SHOW_ROW_NUMBERS, "true"));
         if (showRowNumbersValue.equals("true")) {
@@ -167,7 +144,6 @@ public class SettingsDialog extends ResizableWindow {
             showRowNumbersBox.setValue(false);
         }
         settingsLayout.addComponent(showRowNumbersBox);
-
         showResultsInNewTabsBox = new CheckBox("Always Put Results In New Tabs");
         String showResultsInNewTabsValue = (properties.getProperty(SQL_EXPLORER_SHOW_RESULTS_IN_NEW_TABS, "false"));
         if (showResultsInNewTabsValue.equals("true")) {
@@ -176,13 +152,10 @@ public class SettingsDialog extends ResizableWindow {
             showResultsInNewTabsBox.setValue(false);
         }
         settingsLayout.addComponent(showResultsInNewTabsBox);
-
         layout.addComponent(settingsLayout, 0, 0, 0, 8);
         layout.addComponent(rowsToFetchLabel, 1, 0);
         layout.setComponentAlignment(rowsToFetchLabel, Alignment.MIDDLE_LEFT);
-        
         return layout;
-
     }
 
     protected AbstractLayout createButtonLayout() {
@@ -195,7 +168,6 @@ public class SettingsDialog extends ResizableWindow {
                 }
             }
         });
-
         return buildButtonFooter(new Button("Cancel", new CloseButtonListener()), saveButton);
     }
 
@@ -203,7 +175,6 @@ public class SettingsDialog extends ResizableWindow {
         if (binder.validate().isOk()) {
             Settings settings = settingsProvider.get();
             TypedProperties properties = settings.getProperties();
-            
             try {
                 properties.setProperty(SQL_EXPLORER_MAX_RESULTS, new DecimalFormat().parse(rowsToFetchField.getValue()).intValue());
                 properties.setProperty(SQL_EXPLORER_AUTO_COMMIT, String.valueOf(autoCommitBox.getValue()));

@@ -26,22 +26,20 @@ import java.io.IOException;
  * Wraps an {@link IOException} with a runtime version
  */
 public class IoException extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
 
-    public IoException() {     
+    public IoException() {
     }
-    
+
     public IoException(Exception e) {
         super(e);
     }
-    
+
     public IoException(String message, Throwable cause) {
         super(message, cause);
-    }    
-    
+    }
+
     public IoException(String msg, Object... args) {
         super(String.format(msg, args));
     }
-
 }

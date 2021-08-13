@@ -30,10 +30,9 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class RedshiftSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-
     public RedshiftSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        triggerTemplate = new RedshiftTriggerTemplate(this); 
+        triggerTemplate = new RedshiftTriggerTemplate(this);
     }
 
     @Override
@@ -80,5 +79,4 @@ public class RedshiftSymmetricDialect extends AbstractSymmetricDialect implement
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return false;
     }
-
 }

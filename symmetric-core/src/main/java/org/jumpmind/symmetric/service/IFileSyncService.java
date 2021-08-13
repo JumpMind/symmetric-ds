@@ -36,7 +36,6 @@ import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public interface IFileSyncService {
-    
     public void trackChanges(boolean force);
 
     public List<FileTrigger> getFileTriggers();
@@ -46,15 +45,15 @@ public interface IFileSyncService {
     public void saveFileTrigger(FileTrigger fileTrigger);
 
     public void saveFileTriggerRouter(FileTriggerRouter fileTriggerRouter);
-    
+
     public void deleteFileTriggerRouter(String triggerId, String routerId);
 
     public void deleteFileTriggerRouter(FileTriggerRouter fileTriggerRouter);
-    
+
     public void deleteAllFileTriggerRouters();
 
     public void deleteFileTrigger(FileTrigger fileTrigger);
-    
+
     public void clearCache();
 
     public DirectorySnapshot getDirectorySnapshot(FileTriggerRouter fileTriggerRouter);
@@ -74,13 +73,12 @@ public interface IFileSyncService {
     public RemoteNodeStatuses pushFilesToNodes(boolean force);
 
     public List<OutgoingBatch> sendFiles(ProcessInfo processInfo, Node node, IOutgoingTransport outgoingTransport);
-    
-    public void acknowledgeFiles(OutgoingBatch outgoingBatch);
-    
-    public boolean refreshFromDatabase();
-    
-    public File getControleFile(File file);
-    
-    public Object[] getStagingPathComponents(OutgoingBatch fileSyncBatch);
 
+    public void acknowledgeFiles(OutgoingBatch outgoingBatch);
+
+    public boolean refreshFromDatabase();
+
+    public File getControleFile(File file);
+
+    public Object[] getStagingPathComponents(OutgoingBatch fileSyncBatch);
 }

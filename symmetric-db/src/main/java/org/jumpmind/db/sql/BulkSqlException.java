@@ -23,9 +23,7 @@ package org.jumpmind.db.sql;
 import java.util.Arrays;
 
 public class BulkSqlException extends SqlException {
-
     private static final long serialVersionUID = 1L;
-
     private int[] failedRows;
 
     public BulkSqlException(int[] failedRows, String bulkOperation, String sql) {
@@ -40,5 +38,4 @@ public class BulkSqlException extends SqlException {
     public int[] getFailedRows() {
         return failedRows;
     }
-
 }

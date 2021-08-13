@@ -68,18 +68,14 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
  * The SQL Builder for PostgresSql.
  */
 public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
-
     public PostgreSqlDdlBuilder() {
         super(DatabaseNamesConstants.POSTGRESQL);
-        
         // this is the default length though it might be changed when building
         // PostgreSQL
         // in file src/include/postgres_ext.h
         databaseInfo.setMaxIdentifierLength(63);
-
         databaseInfo.setRequiresSavePointsInTransaction(true);
         databaseInfo.setRequiresAutoCommitForDdl(false);
-
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "BYTEA", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.BINARY, "BYTEA", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.BIT, "BOOLEAN");
@@ -103,22 +99,18 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(ColumnTypes.NVARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(ColumnTypes.LONGNVARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(ColumnTypes.NCHAR, "CHAR", Types.CHAR);
-        
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
-
         // no support for specifying the size for these types (because they are
         // mapped to BYTEA which back-maps to BLOB)
         databaseInfo.setHasSize(Types.BINARY, false);
         databaseInfo.setHasSize(Types.VARBINARY, false);
-
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setBinaryQuoteStart("0x");
         databaseInfo.setBinaryQuoteEnd("");
-
         // we need to handle the backslash first otherwise the other
         // already escaped sequences would be affected
         addEscapedCharSequence("\\", "\\\\");
@@ -133,7 +125,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         return "true".equalsIgnoreCase(System.getProperty(
                 "org.jumpmind.symmetric.ddl.use.table.seq", "false"));
     }
-    
+
     public static boolean isMapCharToJson() {
         return "true".equalsIgnoreCase(System.getProperty(
                 "org.jumpmind.symmetric.ddl.use.postgres.map.json", "true"));
@@ -147,7 +139,6 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         printEndOfStatement(ddl);
         if (!temporary && !recreate) {
             Column[] columns = table.getAutoIncrementColumns();
-
             for (int idx = 0; idx < columns.length; idx++) {
                 dropAutoIncrementSequence(table, columns[idx], ddl);
             }
@@ -179,7 +170,6 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         if (!temporary && !recreate) {
             for (int idx = 0; idx < table.getColumnCount(); idx++) {
                 Column column = table.getColumn(idx);
-
                 if (column.isAutoIncrement()) {
                     createAutoIncrementSequence(table, column, ddl);
                 }
@@ -201,7 +191,6 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             ddl.append(getConstraintName(null, table, column.getName(), "tbl"));
             ddl.append("(SEQ_ID int8)");
             printEndOfStatement(ddl);
-
             ddl.append("CREATE FUNCTION ");
             ddl.append(getConstraintName(null, table, column.getName(), "seq"));
             ddl.append("() ");
@@ -227,8 +216,8 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         } else {
             ddl.append("CREATE SEQUENCE ");
             if (StringUtils.isNotBlank(table.getSchema())) {
-                    printIdentifier(table.getSchema(), ddl);
-                    ddl.append(".");
+                printIdentifier(table.getSchema(), ddl);
+                ddl.append(".");
             }
             printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
             printEndOfStatement(ddl);
@@ -247,7 +236,6 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             ddl.append("DROP TABLE ");
             ddl.append(getConstraintName(null, table, column.getName(), "tbl"));
             printEndOfStatement(ddl);
-
             ddl.append("DROP FUNCTION ");
             ddl.append(getConstraintName(null, table, column.getName(), "seq"));
             ddl.append("()");
@@ -255,8 +243,8 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         } else {
             ddl.append("DROP SEQUENCE ");
             if (StringUtils.isNotBlank(table.getSchema())) {
-                    printIdentifier(table.getSchema(), ddl);
-                    ddl.append(".");
+                printIdentifier(table.getSchema(), ddl);
+                ddl.append(".");
             }
             printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
             printEndOfStatement(ddl);
@@ -272,8 +260,8 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         } else {
             ddl.append(" DEFAULT nextval('");
             if (StringUtils.isNotBlank(table.getSchema())) {
-                    printIdentifier(table.getSchema(), ddl);
-                    ddl.append(".");
+                printIdentifier(table.getSchema(), ddl);
+                ddl.append(".");
             }
             printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
             ddl.append("')");
@@ -283,12 +271,10 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     @Override
     public String getSelectLastIdentityValues(Table table) {
         Column[] columns = table.getAutoIncrementColumns();
-
         if (columns.length == 0) {
             return null;
         } else {
-        	StringBuilder result = new StringBuilder();
-
+            StringBuilder result = new StringBuilder();
             result.append("SELECT ");
             for (int idx = 0; idx < columns.length; idx++) {
                 if (idx > 0) {
@@ -303,17 +289,17 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             return result.toString();
         }
     }
-    
+
     @Override
     protected void writeCastExpression(Column sourceColumn, Column targetColumn, StringBuilder ddl) {
-    	if (sourceColumn != null && targetColumn != null) {
-	        if (sourceColumn.getMappedTypeCode() == Types.TIME && targetColumn.getMappedTypeCode() == Types.TIMESTAMP) {
-	            ddl.append("date_trunc('DAY', localtimestamp) + ");
-	            printIdentifier(getColumnName(sourceColumn), ddl);
-	        } else {
-	            super.writeCastExpression(sourceColumn, targetColumn, ddl);
-	        }
-    	}
+        if (sourceColumn != null && targetColumn != null) {
+            if (sourceColumn.getMappedTypeCode() == Types.TIME && targetColumn.getMappedTypeCode() == Types.TIMESTAMP) {
+                ddl.append("date_trunc('DAY', localtimestamp) + ");
+                printIdentifier(getColumnName(sourceColumn), ddl);
+            } else {
+                super.writeCastExpression(sourceColumn, targetColumn, ddl);
+            }
+        }
     }
 
     @Override
@@ -321,7 +307,6 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof AddColumnChange) {
                 AddColumnChange addColumnChange = (AddColumnChange) change;
                 processChange(currentModel, desiredModel, addColumnChange, ddl);
@@ -330,9 +315,9 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
                 processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
+                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange) change;
                 processChange(currentModel, desiredModel, copyColumnChange, ddl);
-                changeIt.remove();                           
+                changeIt.remove();
             } else if (change instanceof ColumnDefaultValueChange) {
                 processChange(currentModel, desiredModel, (ColumnDefaultValueChange) change, ddl);
                 changeIt.remove();
@@ -363,13 +348,11 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         ddl.append(" DROP CONSTRAINT ");
         printIdentifier(change.getChangedTable().getPrimaryKeyConstraintName(), ddl);
         printEndOfStatement(ddl);
-
         writeTableAlterStmt(change.getChangedTable(), ddl);
         printIndent(ddl);
         ddl.append(" ADD ");
         writePrimaryKeyStmt(change.getChangedTable(), change.getNewPrimaryKeyColumns(), ddl);
         printEndOfStatement(ddl);
-
     }
 
     /*
@@ -464,45 +447,43 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             return false;
         }
     }
-    
+
     @Override
     protected void printDefaultValue(String defaultValue, int typeCode, StringBuilder ddl) {
-        if (defaultValue != null && 
+        if (defaultValue != null &&
                 ((defaultValue.endsWith("::uuid") && Types.OTHER == typeCode) ||
-                 (defaultValue.contains("::") && Types.ARRAY == typeCode))) {
+                        (defaultValue.contains("::") && Types.ARRAY == typeCode))) {
             ddl.append(defaultValue);
         } else if (Types.BOOLEAN == typeCode || Types.BIT == typeCode) {
             boolean isNull = false;
-            if (defaultValue==null || defaultValue.equalsIgnoreCase("null")) {
+            if (defaultValue == null || defaultValue.equalsIgnoreCase("null")) {
                 isNull = true;
             }
             if (!isNull) {
-                    ddl.append(databaseInfo.getValueQuoteToken());
+                ddl.append(databaseInfo.getValueQuoteToken());
                 ddl.append(escapeStringValue(defaultValue));
                 ddl.append(databaseInfo.getValueQuoteToken());
             } else {
                 ddl.append(defaultValue);
             }
         } else {
-                super.printDefaultValue(defaultValue, typeCode, ddl);
+            super.printDefaultValue(defaultValue, typeCode, ddl);
         }
     }
-    
-    
+
     @Override
     protected String getSqlType(Column column) {
-            
-            String type = super.getSqlType(column);
-            if (type.startsWith("CHAR") && column.getPlatformColumns() != null) {
-                if (isMapCharToJson()) {
-                    for (Map.Entry<String, PlatformColumn> platformColumn : column.getPlatformColumns().entrySet()) {
-                        if (platformColumn.getValue() != null && platformColumn.getValue().getType() != null &&
-                                platformColumn.getValue().getType().equals("JSON")) {
-                            type = "JSONB";
-                        }
+        String type = super.getSqlType(column);
+        if (type.startsWith("CHAR") && column.getPlatformColumns() != null) {
+            if (isMapCharToJson()) {
+                for (Map.Entry<String, PlatformColumn> platformColumn : column.getPlatformColumns().entrySet()) {
+                    if (platformColumn.getValue() != null && platformColumn.getValue().getType() != null &&
+                            platformColumn.getValue().getType().equals("JSON")) {
+                        type = "JSONB";
                     }
                 }
             }
-            return type;
+        }
+        return type;
     }
 }

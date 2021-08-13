@@ -47,7 +47,6 @@ import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 public class XmlDataReader extends AbstractDataReader implements IDataReader {
-
     protected Reader reader;
     protected DataContext context;
     protected Batch batch;
@@ -95,10 +94,8 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                             columnName = null;
                         }
                         break;
-
                     case XmlPullParser.START_TAG:
                         String name = parser.getName();
-
                         if ("row".equalsIgnoreCase(name)) {
                             data = new CsvData();
                             if (table != null) {
@@ -116,7 +113,6 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                                     nullValue = true;
                                 }
                             }
-                            
                             if (nullValue) {
                                 rowData.put(columnName, null);
                                 columnName = null;
@@ -161,7 +157,6 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                             }
                         }
                         break;
-
                     case XmlPullParser.END_TAG:
                         name = parser.getName();
                         if ("row".equalsIgnoreCase(name)) {
@@ -185,12 +180,10 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                         } else if ("field".equalsIgnoreCase(name)) {
                             columnName = null;
                         }
-
                         break;
                 }
                 eventType = parser.next();
             }
-
         } catch (IOException ex) {
             throw new IoException(ex);
         } catch (XmlPullParserException ex) {
@@ -224,11 +217,9 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                 }
             }
         } while (next.size() > 0);
-
         if (this.table == null && batch != null) {
             batch.setComplete(true);
         }
-
         return this.table;
     }
 
@@ -237,16 +228,16 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
         if (next.size() > 0 && next.get(0) instanceof CsvData) {
             return (CsvData) next.remove(0);
         }
-
         return null;
     }
 
     public void close() {
         try {
-            if(reader != null) {
+            if (reader != null) {
                 reader.close();
             }
-        } catch(IOException e) { }
+        } catch (IOException e) {
+        }
     }
 
     public Map<Batch, Statistics> getStatistics() {

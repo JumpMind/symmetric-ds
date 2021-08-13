@@ -29,7 +29,6 @@ import org.jumpmind.symmetric.db.EmbeddedDbFunctions;
  * 
  */
 public class HsqlDbFunctions extends EmbeddedDbFunctions {
-
     private static Map<String, ThreadLocal<String>> sessionVariables = new HashMap<String, ThreadLocal<String>>();
 
     public static void setSession(String key, String value) {
@@ -53,5 +52,4 @@ public class HsqlDbFunctions extends EmbeddedDbFunctions {
             return null;
         }
     }
-
 }

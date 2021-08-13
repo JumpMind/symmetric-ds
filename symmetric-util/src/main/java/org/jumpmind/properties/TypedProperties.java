@@ -35,9 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TypedProperties extends Properties {
-
     private static final long serialVersionUID = 1L;
-
     private static Logger log = LoggerFactory.getLogger(TypedProperties.class);
 
     public TypedProperties(InputStream is) {
@@ -47,16 +45,17 @@ public class TypedProperties extends Properties {
             throw new IoException(ex);
         } finally {
             try {
-                if(is != null) {
+                if (is != null) {
                     is.close();
                 }
-            } catch(IOException e) { }
+            } catch (IOException e) {
+            }
         }
     }
-    
+
     public TypedProperties() {
     }
-    
+
     @Override
     public synchronized Object put(Object key, Object value) {
         if (value != null) {
@@ -65,7 +64,7 @@ public class TypedProperties extends Properties {
             return null;
         }
     }
-    
+
     public TypedProperties(File file) {
         FileInputStream fis = null;
         try {
@@ -93,7 +92,7 @@ public class TypedProperties extends Properties {
             put((String) key, properties.getProperty((String) key));
         }
     }
-    
+
     public long getLong(String key) {
         return getLong(key, -1);
     }
@@ -110,7 +109,7 @@ public class TypedProperties extends Properties {
         }
         return returnValue;
     }
-    
+
     public int getInt(String key) {
         return getInt(key, 0);
     }
@@ -127,7 +126,7 @@ public class TypedProperties extends Properties {
         }
         return returnValue;
     }
-    
+
     public boolean is(String key) {
         return is(key, false);
     }
@@ -140,7 +139,7 @@ public class TypedProperties extends Properties {
         }
         return returnValue;
     }
-    
+
     public String get(String key) {
         return get(key, null);
     }
@@ -153,15 +152,15 @@ public class TypedProperties extends Properties {
         }
         return returnValue;
     }
-    
+
     public void setProperty(String key, int value) {
         setProperty(key, Integer.toString(value));
     }
-    
+
     public void setProperty(String key, long value) {
         setProperty(key, Long.toString(value));
     }
-    
+
     public String[] getArray(String key, String[] defaultValue) {
         String value = getProperty(key);
         String[] retValue = defaultValue;
@@ -188,7 +187,7 @@ public class TypedProperties extends Properties {
             return objects;
         }
     }
-    
+
     public void merge(Properties properties) {
         Set<Object> keys = properties.keySet();
         for (Object key : keys) {
@@ -197,15 +196,14 @@ public class TypedProperties extends Properties {
             }
         }
     }
-    
+
     public TypedProperties copy() {
         return new TypedProperties(this);
     }
-    
+
     public static void logPropertiesException(Logger logger, String key, String val) {
         if (StringUtils.isNotBlank(val)) {
             logger.error("Could not parse integer from parameter \"" + key + "\"=\"" + val + "\"");
         }
     }
-
 }

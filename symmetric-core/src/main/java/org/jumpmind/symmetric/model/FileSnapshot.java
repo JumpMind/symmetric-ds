@@ -31,11 +31,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.exception.IoException;
 
 public class FileSnapshot implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     public enum LastEventType {
         CREATE("C"), MODIFY("M"), DELETE("D");
+
         private LastEventType(String code) {
             this.code = code;
         }
@@ -53,7 +53,6 @@ public class FileSnapshot implements Serializable {
                 return MODIFY;
             } else if ("D".equals(code)) {
                 return DELETE;
-
             } else {
                 return null;
             }
@@ -97,7 +96,7 @@ public class FileSnapshot implements Serializable {
     public FileSnapshot(FileTriggerRouter fileTriggerRouter, File file, LastEventType lastEventType) {
         this(fileTriggerRouter, file, lastEventType, false);
     }
-    
+
     public FileSnapshot(FileTriggerRouter fileTriggerRouter, File file, LastEventType lastEventType, boolean useCrc) {
         boolean isDelete = lastEventType == LastEventType.DELETE;
         this.triggerId = fileTriggerRouter.getFileTrigger().getTriggerId();
@@ -112,26 +111,20 @@ public class FileSnapshot implements Serializable {
         if (this.relativeDir.startsWith(baseDir)) {
             this.relativeDir = this.relativeDir.substring(baseDir.length());
         }
-
         if (this.relativeDir.endsWith(fileName)) {
             this.relativeDir = this.relativeDir.substring(0, this.relativeDir.lastIndexOf(fileName));
         }
-
         if (this.relativeDir.startsWith("/")) {
             this.relativeDir = this.relativeDir.substring(1);
         }
-
         if (this.relativeDir.endsWith("/")) {
-            this.relativeDir = this.relativeDir.substring(0, this.relativeDir.length()-1);
+            this.relativeDir = this.relativeDir.substring(0, this.relativeDir.length() - 1);
         }
-
         if (StringUtils.isBlank(relativeDir)) {
             this.relativeDir = ".";
         }
-
         this.fileSize = isDelete ? 0 : file.length();
         this.fileModifiedTime = isDelete ? 0 : file.lastModified();
-
         if (useCrc && file.isFile() && !isDelete) {
             try {
                 this.crc32Checksum = FileUtils.checksumCRC32(file);
@@ -145,9 +138,8 @@ public class FileSnapshot implements Serializable {
         } else {
             this.crc32Checksum = -1;
         }
-
     }
-    
+
     public String getTriggerId() {
         return triggerId;
     }
@@ -163,19 +155,19 @@ public class FileSnapshot implements Serializable {
     public void setRouterId(String routerId) {
         this.routerId = routerId;
     }
-    
+
     public void setChannelId(String channelId) {
         this.channelId = channelId;
     }
-    
+
     public String getChannelId() {
         return channelId;
     }
-    
+
     public void setReloadChannelId(String reloadChannelId) {
         this.reloadChannelId = reloadChannelId;
     }
-    
+
     public String getReloadChannelId() {
         return reloadChannelId;
     }
@@ -215,11 +207,11 @@ public class FileSnapshot implements Serializable {
     public void setCrc32Checksum(long crc32Checksum) {
         this.crc32Checksum = crc32Checksum;
     }
-    
+
     public long getOldCrc32Checksum() {
         return oldCrc32Checksum;
     }
-    
+
     public void setOldCrc32Checksum(long oldCrc32Checksum) {
         this.oldCrc32Checksum = oldCrc32Checksum;
     }
@@ -294,7 +286,7 @@ public class FileSnapshot implements Serializable {
         FileSnapshot other = (FileSnapshot) obj;
         if (crc32Checksum != other.crc32Checksum)
             return false;
-        if (fileModifiedTime!=other.fileModifiedTime) {
+        if (fileModifiedTime != other.fileModifiedTime) {
             return false;
         }
         if (fileName == null) {
@@ -329,5 +321,4 @@ public class FileSnapshot implements Serializable {
         sb.append(", fileSize: ").append(fileSize).append(" fileModifiedTime: ").append(new Date(fileModifiedTime));
         return sb.toString();
     }
-
 }

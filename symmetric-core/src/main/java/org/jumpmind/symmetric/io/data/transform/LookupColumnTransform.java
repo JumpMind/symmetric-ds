@@ -40,11 +40,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LookupColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     public static final String NAME = "lookup";
-
     protected static final StringMapper lookupColumnRowMapper = new StringMapper();
 
     public String getName() {
@@ -63,11 +60,8 @@ public class LookupColumnTransform implements ISingleNewAndOldValueColumnTransfo
             DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
-        
         String sql = doTokenReplacementOnSql(context, column.getTransformExpression());
-        
         String lookupValue = null;
-
         if (StringUtils.isNotBlank(sql)) {
             ISqlTransaction transaction = context.findTransaction();
             List<String> values = null;
@@ -87,9 +81,7 @@ public class LookupColumnTransform implements ISingleNewAndOldValueColumnTransfo
             } else {
                 values = platform.getSqlTemplate().query(sql, lookupColumnRowMapper, namedParams);
             }
-
             int rowCount = values.size();
-
             if (rowCount == 1) {
                 lookupValue = values.get(0);
             } else if (rowCount > 1) {
@@ -107,23 +99,20 @@ public class LookupColumnTransform implements ISingleNewAndOldValueColumnTransfo
                     "Expected SQL expression for lookup transform, but no expression was found for target column {} on transform {}",
                     column.getTargetColumnName(), column.getTransformId());
         }
-        
         if (data.getTargetDmlType().equals(DataEventType.DELETE) && data.getOldSourceValues() != null) {
             return new NewAndOldValue(null, lookupValue);
         } else {
             return new NewAndOldValue(lookupValue, null);
         }
     }
-    
+
     protected String doTokenReplacementOnSql(DataContext context, String sql) {
         if (isNotBlank(sql)) {
             Data csvData = (Data) context.get(Constants.DATA_CONTEXT_CURRENT_CSV_DATA);
-
             if (csvData != null && csvData.getTriggerHistory() != null) {
                 sql = FormatUtils.replaceToken(sql, "sourceCatalogName", csvData
                         .getTriggerHistory().getSourceCatalogName(), true);
             }
-
             if (csvData != null && csvData.getTriggerHistory() != null) {
                 sql = FormatUtils.replaceToken(sql, "sourceSchemaName", csvData.getTriggerHistory()
                         .getSourceSchemaName(), true);
@@ -131,5 +120,4 @@ public class LookupColumnTransform implements ISingleNewAndOldValueColumnTransfo
         }
         return sql;
     }
-
 }

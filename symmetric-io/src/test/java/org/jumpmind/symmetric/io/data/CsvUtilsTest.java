@@ -25,21 +25,21 @@ import static org.junit.Assert.*;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.junit.Test;
 
-public class CsvUtilsTest {    
-
+public class CsvUtilsTest {
     @Test
     public void testLastElementIsNull() {
-        String[] tokens = CsvUtils.tokenizeCsvData("\"01493931\",\"0\",\"01493931\",,\"UktNQzIxMAD/////AAAABXV1aWQAAAAAEG3jUZmt5UvpiUdFsbLEkJT/////AAAAA2l2AAAAABClDAHak0h0ENSr3PGH8qIU/////wAAAAVjc3VtAAAAACBjkvrLppvDkY1EbaURqm2kpvmcg/j9eUxztrCe4JHXpH0suPSRvgP6LtpJMaH1HZc=\",\"Trevor Lewis\",\"Lewis\",\"Trevorr\",,\"02\",,\"1\",\"16\",,\"0\",,\"0\",\"30683\",\"0\",\"2010-05-18 15:43:21\",\"0\",\"1987-09-24 00:00:00\",\"0\",,\"PS\",\"2009-11-14 21:49:35\",\"2009-11-14 21:49:35\",\"0023\",,\"1\",");
-        String expectedNull = tokens[tokens.length-1];
+        String[] tokens = CsvUtils.tokenizeCsvData(
+                "\"01493931\",\"0\",\"01493931\",,\"UktNQzIxMAD/////AAAABXV1aWQAAAAAEG3jUZmt5UvpiUdFsbLEkJT/////AAAAA2l2AAAAABClDAHak0h0ENSr3PGH8qIU/////wAAAAVjc3VtAAAAACBjkvrLppvDkY1EbaURqm2kpvmcg/j9eUxztrCe4JHXpH0suPSRvgP6LtpJMaH1HZc=\",\"Trevor Lewis\",\"Lewis\",\"Trevorr\",,\"02\",,\"1\",\"16\",,\"0\",,\"0\",\"30683\",\"0\",\"2010-05-18 15:43:21\",\"0\",\"1987-09-24 00:00:00\",\"0\",,\"PS\",\"2009-11-14 21:49:35\",\"2009-11-14 21:49:35\",\"0023\",,\"1\",");
+        String expectedNull = tokens[tokens.length - 1];
         assertNull("Expected null.  Instead received: " + expectedNull, expectedNull);
     }
-    
+
     @Test
     public void testEscapeDoubledSingleQuote() {
-        assertEquals("'L\\'' Hospitalet',,'277000043'\n", CsvUtils.escapeCsvData(new String[] {"L\\' Hospitalet",null,"277000043"}, '\n', '\'', CsvWriter.ESCAPE_MODE_DOUBLED));
-        
+        assertEquals("'L\\'' Hospitalet',,'277000043'\n", CsvUtils.escapeCsvData(new String[] { "L\\' Hospitalet", null, "277000043" }, '\n', '\'',
+                CsvWriter.ESCAPE_MODE_DOUBLED));
     }
-    
+
     @Test
     public void testLineFeedsInCsv() {
         String line = "\"test\",\"line\nfeed\"";
@@ -47,14 +47,13 @@ public class CsvUtilsTest {
         assertEquals("test", tokens[0]);
         assertEquals("line\nfeed", tokens[1]);
     }
-    
+
     @Test
     public void testEscapingLineFeedsInCsv() {
-        String[] tokens = new String[] {"test", "line\nfeed"};
+        String[] tokens = new String[] { "test", "line\nfeed" };
         String line = CsvUtils.escapeCsvData(tokens);
         String[] newTokens = CsvUtils.tokenizeCsvData(line);
         assertEquals(tokens[0], newTokens[0]);
         assertEquals(tokens[1], newTokens[1]);
     }
-    
 }

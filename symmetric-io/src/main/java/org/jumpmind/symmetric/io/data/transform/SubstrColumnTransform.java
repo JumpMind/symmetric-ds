@@ -29,18 +29,16 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class SubstrColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
-
     public static final String NAME = "substr";
 
     public String getName() {
         return NAME;
     }
-    
-    
+
     public boolean isExtractColumnTransform() {
         return true;
     }
-    
+
     public boolean isLoadColumnTransform() {
         return true;
     }
@@ -49,7 +47,6 @@ public class SubstrColumnTransform implements ISingleNewAndOldValueColumnTransfo
             DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
-
         if (StringUtils.isNotBlank(newValue)) {
             String expression = column.getTransformExpression();
             if (StringUtils.isNotBlank(expression)) {
@@ -74,7 +71,6 @@ public class SubstrColumnTransform implements ISingleNewAndOldValueColumnTransfo
                 }
             }
         }
-        
         if (data.getTargetDmlType() == DataEventType.DELETE && data.getOldSourceValues() != null) {
             return new NewAndOldValue(null, newValue);
         } else {
@@ -90,5 +86,4 @@ public class SubstrColumnTransform implements ISingleNewAndOldValueColumnTransfo
         }
         return dest;
     }
-
 }

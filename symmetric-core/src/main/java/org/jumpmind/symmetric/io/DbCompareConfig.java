@@ -31,12 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DbCompareConfig {
-    
     final Logger log = LoggerFactory.getLogger(getClass());
-    
     public final static String WHERE_CLAUSE = "where_clause";
     public final static String EXCLUDED_COLUMN = "exclude_columns";
-    
     private List<String> sourceTableNames;
     private List<String> targetTableNames;
     private List<String> excludedTableNames;
@@ -47,9 +44,8 @@ public class DbCompareConfig {
     private Map<String, List<String>> tablesToExcludedColumns = new LinkedHashMap<String, List<String>>();
     private String outputSql;
     private boolean continueAfterError = false;
-    
     private Map<String, String> configSources = new HashMap<String, String>();
-    
+
     public DbCompareConfig() {
         configSources.put("sourceTableNames", "default");
         configSources.put("includedTableNames", "default");
@@ -63,7 +59,7 @@ public class DbCompareConfig {
         configSources.put("outputSql", "default");
         configSources.put("continueAfterError", "default");
     }
-    
+
     public String getSourceWhereClause(String tableName) {
         String whereClause = getWhereClause(tableName, "source");
         if (StringUtils.isEmpty(whereClause)) {
@@ -71,7 +67,7 @@ public class DbCompareConfig {
         }
         return whereClause;
     }
-    
+
     public String getTargetWhereClause(String tableName) {
         String whereClause = getWhereClause(tableName, "target");
         if (StringUtils.isEmpty(whereClause)) {
@@ -80,7 +76,7 @@ public class DbCompareConfig {
         }
         if (StringUtils.isEmpty(whereClause)) {
             whereClause = "1=1";
-        }        
+        }
         return whereClause;
     }
 
@@ -91,16 +87,14 @@ public class DbCompareConfig {
                 tableNameLower + "." + WHERE_CLAUSE,
                 WHERE_CLAUSE
         };
-        
         for (String key : keys) {
             if (whereClauses.containsKey(key)) {
                 return whereClauses.get(key);
-            }            
+            }
         }
-        
         return null;
     }
-    
+
     protected boolean shouldIncludeColumn(String tableName, String columnName) {
         String tableNameLower = tableName.toLowerCase();
         String columnNameLower = columnName.toLowerCase();
@@ -108,45 +102,51 @@ public class DbCompareConfig {
                 tableNameLower + "." + EXCLUDED_COLUMN,
                 EXCLUDED_COLUMN
         };
-        
         for (String key : keys) {
             if (tablesToExcludedColumns.containsKey(key)) {
                 List<String> exludedColumnNames = tablesToExcludedColumns.get(key);
                 return !exludedColumnNames.contains(columnNameLower);
-            }            
+            }
         }
-        
         return true;
     }
-    
 
     public List<String> getExcludedTableNames() {
         return excludedTableNames;
     }
+
     public void setExcludedTableNames(List<String> excludedTableNames) {
         this.excludedTableNames = excludedTableNames;
     }
+
     public boolean isUseSymmetricConfig() {
         return useSymmetricConfig;
     }
+
     public void setUseSymmetricConfig(boolean useSymmetricConfig) {
         this.useSymmetricConfig = useSymmetricConfig;
     }
+
     public int getNumericScale() {
         return numericScale;
     }
+
     public void setNumericScale(int numericScale) {
         this.numericScale = numericScale;
     }
+
     public String getDateTimeFormat() {
         return dateTimeFormat;
     }
+
     public void setDateTimeFormat(String format) {
-        this.dateTimeFormat= format;
+        this.dateTimeFormat = format;
     }
+
     public Map<String, String> getWhereClauses() {
         return whereClauses;
     }
+
     public void setConfigSource(String configName, String configSource) {
         configSources.put(configName, configSource);
     }
@@ -154,6 +154,7 @@ public class DbCompareConfig {
     public void setWhereClauses(Map<String, String> whereClauses) {
         this.whereClauses = new CaseInsensitiveMap<String, String>(whereClauses);
     }
+
     public List<String> getSourceTableNames() {
         return sourceTableNames;
     }
@@ -161,6 +162,7 @@ public class DbCompareConfig {
     public void setSourceTableNames(List<String> sourceTableNames) {
         this.sourceTableNames = sourceTableNames;
     }
+
     public List<String> getTargetTableNames() {
         return targetTableNames;
     }
@@ -176,7 +178,7 @@ public class DbCompareConfig {
     public void setTablesToExcludedColumns(Map<String, List<String>> tablesToExcludedColumns) {
         this.tablesToExcludedColumns = tablesToExcludedColumns;
     }
-    
+
     public String getOutputSql() {
         return outputSql;
     }
@@ -184,28 +186,27 @@ public class DbCompareConfig {
     public void setOutputSql(String outputSql) {
         this.outputSql = outputSql;
     }
-    
+
     public void setContinueAfterError(boolean continueAfterError) {
         this.continueAfterError = continueAfterError;
     }
-    
+
     public boolean isContinueAfterError() {
         return continueAfterError;
     }
 
     public String report() {
         StringBuilder buff = new StringBuilder(128);
-        
         buff.append("\tsourceTableNames=").append(sourceTableNames).append(" @").append(configSources.get("sourceTableNames")).append("\n");
         buff.append("\ttargetTableNames=").append(targetTableNames).append(" @").append(configSources.get("targetTableNames")).append("\n");
         buff.append("\texcludedTableNames=").append(excludedTableNames).append(" @").append(configSources.get("excludedTableNames")).append("\n");
         buff.append("\tuseSymmetricConfig=").append(useSymmetricConfig).append(" @").append(configSources.get("useSymmetricConfig")).append("\n");
         buff.append("\tnumericScale=").append(numericScale).append(" @").append(configSources.get("numericScale")).append("\n");
         buff.append("\twhereClauses=").append(whereClauses).append("@").append(configSources.get("whereClauses")).append("\n");
-        buff.append("\ttablesToExcludedColumns=").append(tablesToExcludedColumns).append(" @").append(configSources.get("tablesToExcludedColumns")).append("\n");
+        buff.append("\ttablesToExcludedColumns=").append(tablesToExcludedColumns).append(" @").append(configSources.get("tablesToExcludedColumns")).append(
+                "\n");
         buff.append("\toutputSql=").append(outputSql).append(" @").append(configSources.get("outputSql")).append("\n");
         buff.append("\tcontinueAfterError=").append(continueAfterError).append(" @").append(configSources.get("continueAfterError")).append("\n");
-        
         return buff.toString();
     }
 }

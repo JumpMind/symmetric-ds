@@ -43,34 +43,23 @@ import com.vaadin.ui.Tree;
 import com.vaadin.ui.StyleGenerator;
 
 public class DbTree extends Tree<DbTreeNode> {
-
     public static final String PROPERTY_SCHEMA_NAME = "schemaName";
     public static final String PROPERTY_CATALOG_NAME = "catalogName";
-
     private static final long serialVersionUID = 1L;
-
     final Logger log = LoggerFactory.getLogger(getClass());
-
     public final static String[] TABLE_TYPES = new String[] { "TABLE",
             "SYSTEM TABLE", "SYSTEM VIEW" };
-
     public static final String NODE_TYPE_DATABASE = "Database";
     public static final String NODE_TYPE_CATALOG = "Catalog";
     public static final String NODE_TYPE_SCHEMA = "Schema";
     public static final String NODE_TYPE_TABLE = "Table";
     public static final String NODE_TYPE_TRIGGER = "Trigger";
     public static final String NODE_TYPE_PLACEHOLDER = "Placeholder";
-
     IDbProvider databaseProvider;
-
     ISettingsProvider settingsProvider;
-    
     TreeData<DbTreeNode> treeData;
-    
     TreeDataProvider<DbTreeNode> treeDataProvider;
-    
     Set<DbTreeNode> rootNodes;
-    
     Set<DbTreeNode> expandedNodes;
 
     public DbTree(IDbProvider databaseProvider, ISettingsProvider settingsProvider) {
@@ -80,18 +69,13 @@ public class DbTree extends Tree<DbTreeNode> {
         setStyleGenerator(getStyleGenerator());
         setStyleGenerator(new DbTreeStyleGenerator());
         setItemIconGenerator(node -> node.getIcon());
-        
         expandedNodes = new LinkedHashSet<DbTreeNode>();
-        
         addExpandListener(event -> {
             DbTreeNode node = event.getExpandedItem();
-            
             expandedNodes.add(node);
-            
             if (!node.getType().equals(NODE_TYPE_TRIGGER) && !node.hasChildren()) {
                 loadChildren(node);
             }
-            
             DbTreeNode firstChild = treeData.getChildren(node).get(0);
             if (node.hasChildren() && firstChild.getType().equals(NODE_TYPE_PLACEHOLDER)) {
                 treeData.removeItem(firstChild);
@@ -101,18 +85,14 @@ public class DbTree extends Tree<DbTreeNode> {
                         treeData.addItem(child, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, child));
                     }
                 }
-                
                 if (event.isUserOriginated()) {
                     refresh(false);
                 }
             }
         });
-        
         addCollapseListener(event -> {
             DbTreeNode node = event.getCollapsedItem();
-            
             expandedNodes.remove(node);
-            
             for (DbTreeNode child : new ArrayList<DbTreeNode>(treeData.getChildren(node))) {
                 if (expandedNodes.contains(child)) {
                     collapse(child);
@@ -120,9 +100,7 @@ public class DbTree extends Tree<DbTreeNode> {
                 deselect(child);
                 treeData.removeItem(child);
             }
-            
             treeData.addItem(node, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, node));
-            
             if (event.isUserOriginated()) {
                 refresh(false);
             }
@@ -146,7 +124,6 @@ public class DbTree extends Tree<DbTreeNode> {
                 treeData.addItem(null, databaseNode);
                 treeData.addItem(databaseNode, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, databaseNode));
                 rootNodes.add(databaseNode);
-
                 if (firstNode == null) {
                     firstNode = databaseNode;
                 }
@@ -158,25 +135,19 @@ public class DbTree extends Tree<DbTreeNode> {
                 treeData.addItem(databaseNode, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, databaseNode));
             }
         }
-        
         treeDataProvider = new TreeDataProvider<DbTreeNode>(treeData);
         setDataProvider(treeDataProvider);
-        
         expand(expandedNodes);
-
         if (selected == null || selected.size() == 0) {
             selected = new HashSet<DbTreeNode>();
             selected.add(firstNode);
         }
-        
         for (DbTreeNode node : selected) {
             if (node != null) {
                 select(node);
             }
         }
-
         focus();
-
     }
 
     public Set<DbTreeNode> getSelected(String type) {
@@ -214,32 +185,28 @@ public class DbTree extends Tree<DbTreeNode> {
         }
         return null;
     }
-    
+
     protected void loadChildren(DbTreeNode treeNode) {
         try {
             IDatabasePlatform platform = getDbForNode(treeNode).getPlatform();
             IDdlReader reader = platform.getDdlReader();
-
             if (treeNode.getType().equals(NODE_TYPE_DATABASE)) {
                 List<String> catalogs = reader.getCatalogNames();
                 if (catalogs.size() > 0) {
-                    addCatalogNodes(reader,treeNode,platform,catalogs);
+                    addCatalogNodes(reader, treeNode, platform, catalogs);
                 } else {
                     List<String> schemas = reader.getSchemaNames(null);
-                    addSchemaNodes(reader,treeNode,platform,schemas);
+                    addSchemaNodes(reader, treeNode, platform, schemas);
                 }
-
                 if (treeNode.getChildren().size() == 0) {
-                    addTableNodes(reader,treeNode,null,null);
+                    addTableNodes(reader, treeNode, null, null);
                 }
             } else if (treeNode.getType().equals(NODE_TYPE_CATALOG)) {
                 List<String> schemas = reader.getSchemaNames(treeNode.getName());
-                addSchemaNodes(reader,treeNode,platform,schemas);
-                
-                if(treeNode.getChildren().size() == 0){
+                addSchemaNodes(reader, treeNode, platform, schemas);
+                if (treeNode.getChildren().size() == 0) {
                     addTableNodes(reader, treeNode, treeNode.getName(), null);
                 }
-
             } else if (treeNode.getType().equals(NODE_TYPE_SCHEMA)) {
                 String catalogName = null;
                 DbTreeNode parent = treeNode.getParent();
@@ -271,20 +238,18 @@ public class DbTree extends Tree<DbTreeNode> {
     protected List<DbTreeNode> getTableTreeNodes(IDdlReader reader,
             DbTreeNode parent, String catalogName, String schemaName) {
         List<DbTreeNode> list = new ArrayList<DbTreeNode>();
-        List<String> tables = reader.getTableNames(catalogName, schemaName, TABLE_TYPES);        
+        List<String> tables = reader.getTableNames(catalogName, schemaName, TABLE_TYPES);
         Collections.sort(tables, new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
                 return o1.toUpperCase().compareTo(o2.toUpperCase());
             }
         });
-        
         for (String tableName : tables) {
             String excludeRegex = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
             if (!tableName.matches(excludeRegex)
                     && !tableName.toUpperCase().matches(excludeRegex)
                     && !tableName.toLowerCase().matches(excludeRegex)) {
-
                 DbTreeNode treeNode = new DbTreeNode(this, tableName,
                         NODE_TYPE_TABLE, VaadinIcons.TABLE, parent);
                 if (catalogName != null) {
@@ -293,7 +258,6 @@ public class DbTree extends Tree<DbTreeNode> {
                 if (schemaName != null) {
                     treeNode.getProperties().setProperty(PROPERTY_SCHEMA_NAME, schemaName);
                 }
-
                 list.add(treeNode);
             }
         }
@@ -336,8 +300,8 @@ public class DbTree extends Tree<DbTreeNode> {
             parent.getChildren().add(treeNode);
         }
     }
-    
-    protected void addCatalogNodes(IDdlReader reader, DbTreeNode parent, IDatabasePlatform platform, List<String> catalogs){
+
+    protected void addCatalogNodes(IDdlReader reader, DbTreeNode parent, IDatabasePlatform platform, List<String> catalogs) {
         Collections.sort(catalogs);
         if (catalogs.remove(platform.getDefaultCatalog())) {
             catalogs.add(0, platform.getDefaultCatalog());
@@ -347,8 +311,8 @@ public class DbTree extends Tree<DbTreeNode> {
             parent.getChildren().add(catalogNode);
         }
     }
-    
-    protected void addSchemaNodes(IDdlReader reader, DbTreeNode parent, IDatabasePlatform platform,List<String> schemas){
+
+    protected void addSchemaNodes(IDdlReader reader, DbTreeNode parent, IDatabasePlatform platform, List<String> schemas) {
         Collections.sort(schemas);
         if (schemas.remove(platform.getDefaultSchema())) {
             schemas.add(0, platform.getDefaultSchema());
@@ -384,5 +348,4 @@ public class DbTree extends Tree<DbTreeNode> {
             return null;
         }
     }
-
 }

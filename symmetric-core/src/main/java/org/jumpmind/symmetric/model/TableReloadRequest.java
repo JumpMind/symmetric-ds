@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 
 public class TableReloadRequest {
-
     protected String targetNodeId;
     protected String sourceNodeId;
     protected String triggerId;
@@ -42,7 +41,7 @@ public class TableReloadRequest {
     protected String lastUpdateBy;
     protected long loadId;
     protected boolean processed;
-    
+
     public TableReloadRequest(TableReloadRequestKey key) {
         this.targetNodeId = key.getTargetNodeId();
         this.sourceNodeId = key.getSourceNodeId();
@@ -50,7 +49,7 @@ public class TableReloadRequest {
         this.routerId = key.getRouterId();
         this.createTime = key.getCreateTime();
     }
-    
+
     public TableReloadRequest() {
     }
 
@@ -141,7 +140,7 @@ public class TableReloadRequest {
     public void setChannelId(String channelId) {
         this.channelId = channelId;
     }
-    
+
     public boolean isCreateTable() {
         return createTable;
     }
@@ -161,7 +160,7 @@ public class TableReloadRequest {
     public boolean isFullLoadRequest() {
         return ParameterConstants.ALL.equals(getTriggerId()) && ParameterConstants.ALL.equals(getRouterId()) && getChannelId() == null;
     }
-    
+
     public boolean isChannelRequest() {
         return getChannelId() != null;
     }
@@ -169,7 +168,7 @@ public class TableReloadRequest {
     public String getIdentifier() {
         return getTriggerId() + getRouterId();
     }
-    
+
     public long getLoadId() {
         return loadId;
     }
@@ -189,9 +188,8 @@ public class TableReloadRequest {
     public TableReloadRequestKey getTableReloadRequestKey() {
         return new TableReloadRequestKey(this.targetNodeId, this.sourceNodeId, this.triggerId, this.routerId, this.createTime);
     }
-    
+
     public boolean hasSetupBatches() {
         return isCreateTable() || isDeleteFirst() || !StringUtils.isBlank(getBeforeCustomSql());
     }
-    
 }

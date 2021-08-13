@@ -26,12 +26,10 @@ import org.bson.Document;
 import org.jumpmind.db.model.Table;
 
 public interface IDBObjectMapper {
-
     public String mapToCollection(Table table);
 
     public String mapToDatabase(Table table);
-    
+
     public Document mapToDocument(Table table, Map<String, String> newData, Map<String, String> oldData,
             Map<String, String> pkData, boolean mapKeyOnly);
-
 }

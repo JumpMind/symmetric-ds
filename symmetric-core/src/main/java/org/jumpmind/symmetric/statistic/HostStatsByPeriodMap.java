@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.List;
 
 public class HostStatsByPeriodMap extends AbstractStatsByPeriodMap<HostStats, HostStats> {
-
     private static final long serialVersionUID = 1L;
 
     public HostStatsByPeriodMap(Date start, Date end, List<HostStats> list, int periodSizeInMinutes) {

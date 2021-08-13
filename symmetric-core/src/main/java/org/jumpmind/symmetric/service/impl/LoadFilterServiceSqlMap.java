@@ -25,10 +25,8 @@ import java.util.Map;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class LoadFilterServiceSqlMap extends AbstractSqlMap {
-
     public LoadFilterServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
-
         // @formatter:off
         putSql("selectLoadFilterTable" ,"" + 
 "select                                                               " + 
@@ -104,7 +102,5 @@ public class LoadFilterServiceSqlMap extends AbstractSqlMap {
 "select max(last_update_time) from $(load_filter) where last_update_time is not null" );     
         
         // @formatter:on
-
     }
-
 }

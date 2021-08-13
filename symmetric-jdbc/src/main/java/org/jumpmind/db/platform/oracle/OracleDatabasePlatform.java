@@ -64,19 +64,14 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * Provides support for the Oracle platform.
  */
 public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     /* The standard Oracle jdbc driver. */
     public static final String JDBC_DRIVER = "oracle.jdbc.driver.OracleDriver";
-
     /* The old Oracle jdbc driver. */
     public static final String JDBC_DRIVER_OLD = "oracle.jdbc.dnlddriver.OracleDriver";
-
     /* The thin subprotocol used by the standard Oracle driver. */
     public static final String JDBC_SUBPROTOCOL_THIN = "oracle:thin";
-
     /* The thin subprotocol used by the standard Oracle driver. */
     public static final String JDBC_SUBPROTOCOL_OCI8 = "oracle:oci8";
-
     /* The old thin subprotocol used by the standard Oracle driver. */
     public static final String JDBC_SUBPROTOCOL_THIN_OLD = "oracle:dnldthin";
 
@@ -127,11 +122,10 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public boolean canColumnBeUsedInWhereClause(Column column) {
         return !(isLob(column.getJdbcTypeCode()) || isGeometry(column));
     }
-    
+
     private boolean isGeometry(Column column) {
         String name = column.getJdbcTypeName();
-        if (name != null && (
-                name.toUpperCase().contains(TypeMap.GEOMETRY) || 
+        if (name != null && (name.toUpperCase().contains(TypeMap.GEOMETRY) ||
                 name.toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             return true;
         } else {
@@ -143,12 +137,9 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-
         String triggerSql = "CREATE OR REPLACE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter
                 + PERMISSION_TEST_TABLE_NAME + delimiter + " BEGIN END";
-
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-
         try {
             getSqlTemplate().update(triggerSql);
             result.setStatus(Status.PASS);
@@ -156,16 +147,13 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
         }
-
         return result;
     }
 
     @Override
     public PermissionResult getExecuteSymPermission() {
         String executeSql = "SELECT DBMS_LOB.GETLENGTH('TEST'), UTL_RAW.CAST_TO_RAW('TEST') FROM DUAL";
-
         PermissionResult result = new PermissionResult(PermissionType.EXECUTE, executeSql);
-
         try {
             getSqlTemplate().update(executeSql);
             result.setStatus(Status.PASS);
@@ -173,14 +161,12 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant EXECUTE on DBMS_LOB and UTL_RAW");
         }
-
         return result;
     }
 
     @Override
     protected PermissionResult getLogMinePermission() {
         final PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "Use LogMiner");
-
         try {
             StringBuilder missingGrants = new StringBuilder();
             for (String name : new String[] { "EXECUTE_CATALOG_ROLE" }) {
@@ -191,7 +177,6 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
                     missingGrants.append(name);
                 }
             }
-
             String[] systemPrivs = new String[] { "SELECT ANY DICTIONARY", "ALTER SESSION" };
             if (sqlTemplate.getDatabaseMajorVersion() >= 12) {
                 systemPrivs = ArrayUtils.add(systemPrivs, "LOGMINING");
@@ -204,7 +189,6 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
                     missingGrants.append(name);
                 }
             }
-        
             if (missingGrants.length() > 0) {
                 log.error("Missing privileges: {}", missingGrants.toString());
                 result.setSolution("Grant " + missingGrants.toString());
@@ -235,21 +219,21 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
                 "select nvl(num_rows, -1) from all_tables where table_name = ? and owner = ?", table.getName(),
                 table.getSchema());
     }
-    
+
     @Override
     public List<Transaction> getTransactions() {
         ISqlTemplate template = getSqlTemplate();
         List<Transaction> transactions = new ArrayList<Transaction>();
         if (template.getDatabaseMajorVersion() >= 10) {
-            String sql = "select" + 
-                    "  blocked.sid," + 
-                    "  blocked.username," + 
-                    "  blocked.status," + 
-                    "  blocked.blocking_session," + 
-                    "  sql.last_load_time," + 
-                    "  sql.sql_text " + 
-                    "from v$session blocked " + 
-                    "left join v$sqlarea sql" + 
+            String sql = "select" +
+                    "  blocked.sid," +
+                    "  blocked.username," +
+                    "  blocked.status," +
+                    "  blocked.blocking_session," +
+                    "  sql.last_load_time," +
+                    "  sql.sql_text " +
+                    "from v$session blocked " +
+                    "left join v$sqlarea sql" +
                     "  on blocked.sql_id = sql.sql_id";
             for (Row row : template.query(sql)) {
                 Transaction transaction = new Transaction(row.getString("sid"), row.getString("username"),
@@ -260,34 +244,32 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return transactions;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return true;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         if (sql.endsWith(";")) {
             sql = sql.substring(0, sql.length() - 1);
         }
-        
         int orderIndex = StringUtils.lastIndexOfIgnoreCase(sql, "order by");
         String order = sql.substring(orderIndex);
         String innerSql = sql.substring(0, orderIndex - 1);
         innerSql = StringUtils.replaceIgnoreCase(innerSql, " from", ", ROW_NUMBER() over (" + order + ") as row_num from");
         return "select * from (" + innerSql + ") " +
-               "where row_num between " + (offset + 1) + " and " + (offset + limit);
+                "where row_num between " + (offset + 1) + " and " + (offset + limit);
     }
 
     @Override
     public boolean supportsSliceTables() {
         return true;
     }
-    
+
     @Override
     public String getSliceTableSql(String columnName, int sliceNum, int totalSlices) {
         return "mod(ora_hash(rowid), " + totalSlices + ") = " + sliceNum;
     }
-
 }

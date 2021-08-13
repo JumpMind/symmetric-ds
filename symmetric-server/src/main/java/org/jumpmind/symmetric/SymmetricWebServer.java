@@ -75,15 +75,10 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * @see SymmetricLauncher#main(String[])
  */
 public class SymmetricWebServer {
-
-	private static final Logger log = LoggerFactory.getLogger(SymmetricWebServer.class);
-
+    private static final Logger log = LoggerFactory.getLogger(SymmetricWebServer.class);
     protected static final String DEFAULT_WEBAPP_DIR = System.getProperty(SystemConstants.SYSPROP_WEB_DIR, AppUtils.getSymHome() + "/web");
-
     public static final String DEFAULT_HTTP_PORT = System.getProperty(SystemConstants.SYSPROP_DEFAULT_HTTP_PORT, "31415");
-
     public static final String DEFAULT_HTTPS_PORT = System.getProperty(SystemConstants.SYSPROP_DEFAULT_HTTPS_PORT, "31417");
-
     public static final int DEFAULT_MAX_IDLE_TIME = 90000;
 
     /**
@@ -94,55 +89,31 @@ public class SymmetricWebServer {
     }
 
     private Server server;
-
     private WebAppContext webapp;
-
     protected boolean join = true;
-
     protected String webHome = "/";
-
     protected int maxIdleTime = DEFAULT_MAX_IDLE_TIME;
-
     protected boolean httpEnabled = true;
-
     protected int httpPort = Integer.parseInt(DEFAULT_HTTP_PORT);
-
     protected boolean httpsEnabled = false;
-
     protected boolean https2Enabled = false;
-    
     protected int httpsPort = -1;
-
     protected String propertiesFile = null;
-
     protected String host = null;
-
     protected boolean noNio = false;
-
     protected boolean noDirectBuffer = false;
-
     protected String webAppDir = DEFAULT_WEBAPP_DIR;
-
     protected String name = "SymmetricDS";
-
     protected String httpSslVerifiedServerNames = "all";
-    
     protected boolean httpsNeedClientAuth = false;
-    
     protected boolean httpsWantClientAuth = false;
-
     protected String allowDirListing = "false";
-    
     protected String disallowedMethods = "OPTIONS";
-    
     protected String allowedMethods = "";
-
     protected boolean allowSelfSignedCerts = true;
-
     protected boolean accessLogEnabled = false;
-
     protected String accessLogFile;
-    
+
     public SymmetricWebServer() {
         this(null, DEFAULT_WEBAPP_DIR);
     }
@@ -171,12 +142,10 @@ public class SymmetricWebServer {
     }
 
     protected final void initFromProperties() {
-
         try {
             Class.forName(AbstractCommandLauncher.class.getName());
         } catch (ClassNotFoundException e) {
         }
-
         TypedProperties serverProperties = new TypedProperties(System.getProperties());
         httpEnabled = serverProperties.is(ServerConstants.HTTP_ENABLE,
                 Boolean.parseBoolean(System.getProperty(ServerConstants.HTTP_ENABLE, "true")));
@@ -200,7 +169,6 @@ public class SymmetricWebServer {
         httpsWantClientAuth = serverProperties.is(ServerConstants.HTTPS_WANT_CLIENT_AUTH, false);
         accessLogEnabled = serverProperties.is(ServerConstants.SERVER_ACCESS_LOG_ENABLED, false);
         accessLogFile = serverProperties.get(ServerConstants.SERVER_ACCESS_LOG_FILE);
-        
         if (serverProperties.is(ServerConstants.SERVER_HTTP_COOKIES_ENABLED, false)) {
             if (CookieHandler.getDefault() == null) {
                 CookieHandler.setDefault(new CookieManager());
@@ -223,7 +191,7 @@ public class SymmetricWebServer {
     public SymmetricWebServer start(int httpPort) throws Exception {
         return start(httpPort, 0, Mode.HTTP);
     }
-    
+
     public SymmetricWebServer startSecure(int httpsPort) throws Exception {
         return start(0, httpsPort, Mode.HTTPS);
     }
@@ -233,37 +201,26 @@ public class SymmetricWebServer {
     }
 
     public SymmetricWebServer start(int httpPort, int securePort, Mode mode) throws Exception {
-        
         SymmetricUtils.logNotices();
-
         TransportManagerFactory.initHttps(httpSslVerifiedServerNames, allowSelfSignedCerts, https2Enabled);
-
         // indicate to the app that we are in stand alone mode
         System.setProperty(SystemConstants.SYSPROP_STANDALONE_WEB, "true");
-
         server = new Server();
-
         server.setConnectors(getConnectors(server, httpPort, securePort, mode));
-        
         webapp = new WebAppContext();
         webapp.setParentLoaderPriority(true);
         webapp.setConfigurationDiscovered(true);
-        
         if (System.getProperty("symmetric.server.web.home") != null) {
             webHome = System.getProperty("symmetric.server.web.home");
-        }        
-        
+        }
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
         webapp.setResourceBase(webAppDir);
-        
         webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", allowDirListing);
-
         FilterHolder filterHolder = new FilterHolder(HttpMethodFilter.class);
         filterHolder.setInitParameter("server.allow.http.methods", allowedMethods);
         filterHolder.setInitParameter("server.disallow.http.methods", disallowedMethods);
         webapp.addFilter(filterHolder, "/*", EnumSet.of(DispatcherType.REQUEST));
-        
         webapp.getServletContext().getContextHandler()
                 .setMaxFormContentSize(Integer.parseInt(System.getProperty("org.eclipse.jetty.server.Request.maxFormContentSize", "800000")));
         webapp.getServletContext().getContextHandler()
@@ -276,13 +233,12 @@ public class SymmetricWebServer {
             webapp.getServletContext().getContextHandler()
                     .setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE, Boolean.toString(true));
         }
-        
-        webapp.getSessionHandler().getSessionCookieConfig().setName(WebConstants.SESSION_PREFIX + (httpsPort > 0 && httpsEnabled ? httpsPort : "") + (httpEnabled && httpPort > 0 ? "_" + httpPort : ""));        
+        webapp.getSessionHandler().getSessionCookieConfig().setName(WebConstants.SESSION_PREFIX + (httpsPort > 0 && httpsEnabled ? httpsPort : "")
+                + (httpEnabled && httpPort > 0 ? "_" + httpPort : ""));
         webapp.getSessionHandler().getSessionCookieConfig().setHttpOnly(true);
-        if (httpsEnabled && !httpEnabled) { 
+        if (httpsEnabled && !httpEnabled) {
             webapp.getSessionHandler().getSessionCookieConfig().setSecure(true);
         }
-        
         if (accessLogEnabled) {
             RequestLogWriter writer = new RequestLogWriter();
             if (StringUtils.isNotBlank(accessLogFile)) {
@@ -290,12 +246,9 @@ public class SymmetricWebServer {
             }
             server.setRequestLog(new CustomRequestLog(writer, CustomRequestLog.EXTENDED_NCSA_FORMAT));
         }
-        
         server.setHandler(webapp);
-
-
         Class<?> remoteStatusEndpoint = loadRemoteStatusEndpoint();
-        if (remoteStatusEndpoint != null) {            
+        if (remoteStatusEndpoint != null) {
             ServerContainer container = WebSocketServerContainerInitializer.initialize(webapp);
             container.setDefaultMaxBinaryMessageBufferSize(Integer.MAX_VALUE);
             container.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
@@ -305,14 +258,11 @@ public class SymmetricWebServer {
                 System.setProperty("org.eclipse.jetty.websocket.jsr356.ssl-trust-all", "true");
             }
         }
-
         server.start();
-
         if (join) {
             log.info("Joining the web server main thread");
             server.join();
         }
-
         return this;
     }
 
@@ -325,7 +275,7 @@ public class SymmetricWebServer {
         WebApplicationContext rootContext = WebApplicationContextUtils.getWebApplicationContext(servletContext);
         RestService restService = null;
         if (rootContext != null) {
-        	restService = rootContext.getBean(RestService.class);
+            restService = rootContext.getBean(RestService.class);
         }
         return restService;
     }
@@ -375,16 +325,13 @@ public class SymmetricWebServer {
 
     protected Connector[] getConnectors(Server server, int port, int securePort, Mode mode) {
         ArrayList<Connector> connectors = new ArrayList<Connector>();
-
         HttpConfiguration httpConfig = new HttpConfiguration();
         if (mode == Mode.HTTPS || mode == Mode.MIXED) {
             httpConfig.setSecureScheme("https");
             httpConfig.setSecurePort(securePort);
         }
-
         httpConfig.setSendServerVersion(false);
         httpConfig.setOutputBufferSize(32768);
-
         if (mode == Mode.HTTP || mode == Mode.MIXED) {
             ServerConnector http = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
             http.setPort(port);
@@ -399,7 +346,6 @@ public class SymmetricWebServer {
             securityService.installDefaultSslCert(host);
             String keyStorePassword = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
             keyStorePassword = (keyStorePassword != null) ? keyStorePassword : SecurityConstants.KEYSTORE_PASSWORD;
-
             SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
             sslContextFactory.setKeyStore(securityService.getKeyStore());
             sslContextFactory.setTrustStore(securityService.getTrustStore());
@@ -408,7 +354,6 @@ public class SymmetricWebServer {
                     SecurityConstants.ALIAS_SYM_PRIVATE_KEY));
             sslContextFactory.setNeedClientAuth(httpsNeedClientAuth);
             sslContextFactory.setWantClientAuth(httpsWantClientAuth);
-
             String ignoredProtocols = System.getProperty(SecurityConstants.SYSPROP_SSL_IGNORE_PROTOCOLS);
             if (ignoredProtocols != null && ignoredProtocols.length() > 0) {
                 String[] protocols = ignoredProtocols.split(",");
@@ -416,18 +361,15 @@ public class SymmetricWebServer {
             } else {
                 sslContextFactory.addExcludeProtocols("SSLv3");
             }
-
             String ignoredCiphers = System.getProperty(SecurityConstants.SYSPROP_SSL_IGNORE_CIPHERS);
             if (ignoredCiphers != null && ignoredCiphers.length() > 0) {
                 String[] ciphers = ignoredCiphers.split(",");
                 sslContextFactory.addExcludeCipherSuites(ciphers);
             }
-            
             HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
             httpsConfig.addCustomizer(new SecureRequestCustomizer());
             String protocolName = null;
             ServerConnector https = null;
-
             if (https2Enabled) {
                 sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
                 sslContextFactory.setProvider("Conscrypt");
@@ -442,7 +384,6 @@ public class SymmetricWebServer {
                 https = new ServerConnector(server, ssl, new HttpConnectionFactory(httpsConfig));
                 protocolName = "HTTPS/1.1";
             }
-
             https.setPort(securePort);
             https.setIdleTimeout(maxIdleTime);
             https.setHost(host);
@@ -578,7 +519,7 @@ public class SymmetricWebServer {
     }
 
     protected Class<?> loadRemoteStatusEndpoint() {
-        try {            
+        try {
             Class<?> clazz = ClassUtils.getClass("com.jumpmind.symmetric.console.remote.ServerEndpoint");
             return clazz;
         } catch (ClassNotFoundException ex) {
@@ -588,5 +529,4 @@ public class SymmetricWebServer {
         }
         return null;
     }
-
 }

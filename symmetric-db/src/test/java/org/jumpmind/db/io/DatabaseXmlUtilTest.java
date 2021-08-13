@@ -29,26 +29,23 @@ import org.jumpmind.db.model.Table;
 import org.junit.Test;
 
 public class DatabaseXmlUtilTest {
-    
     @Test
     public void testReadXml() {
         Database database = DatabaseXmlUtil.read(getClass().getResourceAsStream("/testDatabaseIO.xml"));
         assertNotNull(database);
         assertEquals(2, database.getTableCount());
         assertEquals("test", database.getName());
-        
         Table table = database.getTable(0);
         assertEquals("test_simple_table", table.getName());
         assertEquals(8, table.getColumnCount());
         assertEquals(1, table.getPrimaryKeyColumnCount());
-        assertEquals("id", table.getPrimaryKeyColumnNames()[0]);       
-        
+        assertEquals("id", table.getPrimaryKeyColumnNames()[0]);
         Table tableWithAmp = database.getTable(1);
         assertEquals("testColumnWith&", tableWithAmp.getName());
         assertEquals("&Amp", tableWithAmp.getColumn(0).getName());
     }
-    
-    @Test 
+
+    @Test
     public void testWriteXml() {
         Database database = DatabaseXmlUtil.read(getClass().getResourceAsStream("/testDatabaseIO.xml"));
         Table tableWithAmp = database.getTable(1);
@@ -58,5 +55,4 @@ public class DatabaseXmlUtilTest {
         assertTrue(xml.contains("\"testColumnWith&amp;\""));
         assertTrue(xml.contains("\"&amp;Amp\""));
     }
-
 }

@@ -21,9 +21,7 @@
 package org.jumpmind.db.sql;
 
 public interface ISqlTransactionListener {
-    
     public void transactionCommitted();
-    
-    public void transactionRolledBack();
 
+    public void transactionRolledBack();
 }

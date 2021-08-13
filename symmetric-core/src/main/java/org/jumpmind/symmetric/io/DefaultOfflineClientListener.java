@@ -28,15 +28,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Default implementation of an {@link IOfflineClientListener}.  When the listener detects
- * that sync has been disabled or registration is required, the local node identity is removed.
+ * Default implementation of an {@link IOfflineClientListener}. When the listener detects that sync has been disabled or registration is required, the local
+ * node identity is removed.
  */
 public class DefaultOfflineClientListener implements IOfflineClientListener, IBuiltInExtensionPoint {
-    
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected IParameterService parameterService;
     protected INodeService nodeService;
-    
+
     public DefaultOfflineClientListener(IParameterService parameterService,
             INodeService nodeService) {
         this.parameterService = parameterService;
@@ -48,7 +47,7 @@ public class DefaultOfflineClientListener implements IOfflineClientListener, IBu
 
     public void notAuthenticated(Node remoteNode) {
     }
-    
+
     public void unknownError(Node remoteNode, Exception ex) {
     }
 
@@ -63,11 +62,10 @@ public class DefaultOfflineClientListener implements IOfflineClientListener, IBu
             nodeService.deleteIdentity();
         }
     }
-    
+
     public void registrationRequired(Node remoteNode) {
     }
 
     public void online(Node remoteNode) {
     }
-
 }

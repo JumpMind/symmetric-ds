@@ -29,21 +29,19 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class IngresSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-    
     static final String SYNC_TRIGGERS_DISABLED_VARIABLE = "synctriggersdisabled";
-
     static final String SYNC_NODE_DISABLED_VARIABLE = "sourcenode";
-    
+
     public IngresSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new IngresSqlTriggerTemplate(this);
     }
-    
+
     @Override
     public boolean supportsTransactionId() {
         return true;
     }
-    
+
     @Override
     public void cleanDatabase() {
     }
@@ -55,7 +53,7 @@ public class IngresSymmetricDialect extends AbstractSymmetricDialect implements 
         deleteSyncNodeDisabled(transaction);
         insertSyncNodeDisabled(transaction, nodeId);
     }
-    
+
     @Override
     public void enableSyncTriggers(ISqlTransaction transaction) {
         deleteSyncTriggersDisabled(transaction);
@@ -65,24 +63,24 @@ public class IngresSymmetricDialect extends AbstractSymmetricDialect implements 
     private void deleteSyncTriggersDisabled(ISqlTransaction transaction) {
         deleteSymContextRecord(transaction, SYNC_TRIGGERS_DISABLED_VARIABLE);
     }
-    
+
     private void insertSyncTriggersDisabled(ISqlTransaction transaction) {
         insertSymContextRecord(transaction, SYNC_TRIGGERS_DISABLED_VARIABLE, "1");
     }
-    
+
     private void deleteSyncNodeDisabled(ISqlTransaction transaction) {
         deleteSymContextRecord(transaction, SYNC_NODE_DISABLED_VARIABLE);
     }
-    
+
     private void insertSyncNodeDisabled(ISqlTransaction transaction, String nodeId) {
         insertSymContextRecord(transaction, SYNC_NODE_DISABLED_VARIABLE, nodeId);
     }
-    
+
     private void deleteSymContextRecord(ISqlTransaction transaction, String variableName) {
         transaction.prepareAndExecute("delete from " + parameterService.getTablePrefix() + "_" + TableConstants.SYM_CONTEXT +
                 " where name = DBMSINFO('session_id') || ':" + variableName + "'");
     }
-    
+
     private void insertSymContextRecord(ISqlTransaction transaction, String variableName, String contextValue) {
         transaction.prepareAndExecute("insert into " + parameterService.getTablePrefix() + "_" + TableConstants.SYM_CONTEXT +
                 " (name, context_value, create_time, last_update_time) " +
@@ -110,28 +108,27 @@ public class IngresSymmetricDialect extends AbstractSymmetricDialect implements 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return platform.getSqlTemplate().queryForInt(
-                    "select count(*) from iirule where rule_name = ? ",
-                    new Object[] { triggerName.toLowerCase() }) > 0;
+                "select count(*) from iirule where rule_name = ? ",
+                new Object[] { triggerName.toLowerCase() }) > 0;
     }
-    
+
     @Override
     public boolean requiresAutoCommitFalseToSetFetchSize() {
         return true;
     }
-    
+
     @Override
     public boolean needsToSelectLobData() {
         return true;
     }
-    
+
     @Override
     public void truncateTable(String tableName) {
         platform.getSqlTemplate().update("modify " + tableName + " to truncated");
     }
-    
+
     @Override
     public boolean isTransactionIdOverrideSupported() {
         return false;
     }
-
 }

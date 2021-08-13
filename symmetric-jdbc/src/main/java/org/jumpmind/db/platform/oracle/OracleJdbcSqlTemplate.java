@@ -28,20 +28,18 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class OracleJdbcSqlTemplate extends JdbcSqlTemplate {
-
     public OracleJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
-        super(dataSource, settings, lobHandler, databaseInfo);        
-        primaryKeyViolationCodes = new int[] {1};
+        super(dataSource, settings, lobHandler, databaseInfo);
+        primaryKeyViolationCodes = new int[] { 1 };
         uniqueKeyViolationNameRegex = new String[] { "unique constraint \\(.*\\.(.*)\\) violated" };
-        foreignKeyViolationCodes = new int[] {2291};
-        foreignKeyChildExistsViolationCodes = new int[] {2292};
-        deadlockCodes = new int[] {60};
+        foreignKeyViolationCodes = new int[] { 2291 };
+        foreignKeyChildExistsViolationCodes = new int[] { 2292 };
+        deadlockCodes = new int[] { 60 };
     }
-    
+
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select " + sequenceName + ".currval from dual";
     }
-
 }

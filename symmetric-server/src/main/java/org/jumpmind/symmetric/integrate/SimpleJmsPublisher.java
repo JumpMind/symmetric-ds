@@ -34,19 +34,15 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for an jms publisher")
 public class SimpleJmsPublisher implements IPublisher, BeanFactoryAware {
-
-	private static final Logger log = LoggerFactory.getLogger(SimpleJmsPublisher.class);
-
+    private static final Logger log = LoggerFactory.getLogger(SimpleJmsPublisher.class);
     private BeanFactory beanFactory;
-
     private String jmsTemplateBeanName;
-
     public boolean enabled = true;
 
     public void publish(Context context, String text) {
         publish(text);
     }
-    
+
     public boolean isEnabled() {
         return enabled;
     }

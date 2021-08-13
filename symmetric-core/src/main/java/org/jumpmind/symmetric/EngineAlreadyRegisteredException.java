@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric;
 
 public class EngineAlreadyRegisteredException extends SymmetricException {
-
     private static final long serialVersionUID = 1L;
 
     public EngineAlreadyRegisteredException() {
@@ -40,6 +39,6 @@ public class EngineAlreadyRegisteredException extends SymmetricException {
     }
 
     public EngineAlreadyRegisteredException(String message, Throwable cause, Object... args) {
-        super(message, cause, args);    }
-
+        super(message, cause, args);
+    }
 }

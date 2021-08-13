@@ -36,7 +36,6 @@ import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class FileSyncPullUriHandler extends AbstractUriHandler {
-
     private ISymmetricEngine engine;
 
     public FileSyncPullUriHandler(ISymmetricEngine engine, IInterceptor... interceptors) {
@@ -47,7 +46,6 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
-
         if (StringUtils.isBlank(nodeId)) {
             ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST,
                     "Node must be specified");
@@ -55,26 +53,23 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
         } else {
             log.debug("File sync pull request received from {}", nodeId);
         }
-
-        IOutgoingTransport outgoingTransport = createOutgoingTransport(res.getOutputStream(), 
+        IOutgoingTransport outgoingTransport = createOutgoingTransport(res.getOutputStream(),
                 req.getHeader(WebConstants.HEADER_ACCEPT_CHARSET),
                 engine.getConfigurationService().getSuspendIgnoreChannelLists(nodeId));
         ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                 new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), nodeId,
                         ProcessType.FILE_SYNC_PULL_HANDLER));
-        try {            
+        try {
             engine.getFileSyncService().sendFiles(processInfo,
                     engine.getNodeService().findNode(nodeId, true), outgoingTransport);
             Node targetNode = engine.getNodeService().findNode(nodeId, true);
-            
-            if (processInfo.getTotalBatchCount() == 0 && targetNode.isVersionGreaterThanOrEqualTo(3,8,0)) {
+            if (processInfo.getTotalBatchCount() == 0 && targetNode.isVersionGreaterThanOrEqualTo(3, 8, 0)) {
                 ServletUtils.sendError(res, HttpServletResponse.SC_NO_CONTENT,
-                        "No files to pull.");                
-            } else {                
+                        "No files to pull.");
+            } else {
                 res.setContentType("application/zip");
                 res.addHeader("Content-Disposition", "attachment; filename=\"file-sync.zip\"");
             }
-            
             processInfo.setStatus(ProcessStatus.OK);
         } catch (RuntimeException ex) {
             processInfo.setStatus(ProcessStatus.ERROR);
@@ -84,7 +79,5 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
                 outgoingTransport.close();
             }
         }
-
     }
-
 }

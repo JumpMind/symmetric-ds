@@ -21,7 +21,6 @@
 package org.jumpmind.db.sql;
 
 public class UniqueKeyException extends SqlException {
-
     private static final long serialVersionUID = 1L;
 
     public UniqueKeyException() {
@@ -39,6 +38,4 @@ public class UniqueKeyException extends SqlException {
     public UniqueKeyException(Throwable cause) {
         super(cause);
     }
-
-    
 }

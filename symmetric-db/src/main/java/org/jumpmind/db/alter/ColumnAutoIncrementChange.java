@@ -44,24 +44,23 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 
 /**
- * Represents the change of the auto-increment constraint of a column. Since it is a boolean value,
- * this means the required constraint will simply be toggled.
+ * Represents the change of the auto-increment constraint of a column. Since it is a boolean value, this means the required constraint will simply be toggled.
  * 
  * @version $Revision: $
  */
-public class ColumnAutoIncrementChange extends TableChangeImplBase
-{
+public class ColumnAutoIncrementChange extends TableChangeImplBase {
     /** The column. */
     private Column _column;
 
     /**
      * Creates a new change object.
      * 
-     * @param table  The table of the column
-     * @param column The column
+     * @param table
+     *            The table of the column
+     * @param column
+     *            The column
      */
-    public ColumnAutoIncrementChange(Table table, Column column)
-    {
+    public ColumnAutoIncrementChange(Table table, Column column) {
         super(table);
         _column = column;
     }
@@ -71,19 +70,16 @@ public class ColumnAutoIncrementChange extends TableChangeImplBase
      *
      * @return The column
      */
-    public Column getColumn()
-    {
+    public Column getColumn() {
         return _column;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void apply(Database database, boolean caseSensitive)
-    {
-        Table  table  = database.findTable(getChangedTable().getName(), caseSensitive);
+    public void apply(Database database, boolean caseSensitive) {
+        Table table = database.findTable(getChangedTable().getName(), caseSensitive);
         Column column = table.findColumn(_column.getName(), caseSensitive);
-
         column.setAutoIncrement(!_column.isAutoIncrement());
     }
 }

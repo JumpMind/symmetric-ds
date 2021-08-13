@@ -28,11 +28,8 @@ import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Node;
 
 public class RunSqlReloadListener implements IReloadListener, ISymmetricEngineAware {
-
     private ISymmetricEngine engine;
-
     private String sqlToRunAtTargetBeforeReload;
-
     private String sqlToRunAtTargetAfterReload;
 
     public void afterReload(ISqlTransaction transaction, Node node, long loadId) {
@@ -56,7 +53,6 @@ public class RunSqlReloadListener implements IReloadListener, ISymmetricEngineAw
     }
 
     public void setSymmetricEngine(ISymmetricEngine engine) {
-       this.engine=engine;        
+        this.engine = engine;
     }
-
 }

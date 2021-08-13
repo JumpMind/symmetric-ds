@@ -32,9 +32,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
 public class ClientExtensionService extends ExtensionService {
-
     private final static Logger log = LoggerFactory.getLogger(ClientExtensionService.class);
-    
     protected ApplicationContext springContext;
 
     public ClientExtensionService(ISymmetricEngine engine, ApplicationContext springContext) {
@@ -45,16 +43,14 @@ public class ClientExtensionService extends ExtensionService {
     @Override
     public synchronized void refresh() {
         super.refresh();
-
         if (springContext != null) {
             Map<String, IExtensionPoint> extensionPointMap = new TreeMap<String, IExtensionPoint>();
             extensionPointMap.putAll(springContext.getBeansOfType(IExtensionPoint.class));
             BeanFactory factory = springContext.getParentBeanFactory();
             if (factory instanceof ListableBeanFactory) {
-            	ListableBeanFactory beanFactory = (ListableBeanFactory) factory;
-            	extensionPointMap.putAll(beanFactory.getBeansOfType(IExtensionPoint.class));
+                ListableBeanFactory beanFactory = (ListableBeanFactory) factory;
+                extensionPointMap.putAll(beanFactory.getBeansOfType(IExtensionPoint.class));
             }
-            
             log.info("Found {} extension points from spring that will be registered", extensionPointMap.size());
             for (String name : extensionPointMap.keySet()) {
                 registerExtension(name, extensionPointMap.get(name), true);
@@ -65,5 +61,4 @@ public class ClientExtensionService extends ExtensionService {
     public void setSpringContext(ApplicationContext springContext) {
         this.springContext = springContext;
     }
-
 }

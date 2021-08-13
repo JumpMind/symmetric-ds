@@ -21,7 +21,5 @@
 package org.jumpmind.symmetric.service;
 
 public class RegistrationPendingException extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
-
 }

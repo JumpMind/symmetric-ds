@@ -48,34 +48,33 @@ import org.jumpmind.db.alter.IModelChange;
  * @version $Revision: $
  */
 public class MultiInstanceofPredicate implements Predicate<IModelChange> {
-	/** The types to check. */
-	private Class<?>[] _typesToCheck;
+    /** The types to check. */
+    private Class<?>[] _typesToCheck;
 
-	/**
-	 * Creates a new predicate.
-	 * 
-	 * @param typesToCheck The types to check
-	 */
-	public MultiInstanceofPredicate(Class<?>[] typesToCheck) {
-		_typesToCheck = typesToCheck;
-	}
+    /**
+     * Creates a new predicate.
+     * 
+     * @param typesToCheck
+     *            The types to check
+     */
+    public MultiInstanceofPredicate(Class<?>[] typesToCheck) {
+        _typesToCheck = typesToCheck;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public boolean evaluate(IModelChange obj) {
-		if (_typesToCheck == null || _typesToCheck.length == 0) {
-			return true;
-		} else {
-			Class<?> typeOfObj = obj.getClass();
-
-			for (int idx = 0; idx < _typesToCheck.length; idx++) {
-				if (_typesToCheck[idx].isAssignableFrom(typeOfObj)) {
-					return true;
-				}
-			}
-			return false;
-		}
-	}
-
+    /**
+     * {@inheritDoc}
+     */
+    public boolean evaluate(IModelChange obj) {
+        if (_typesToCheck == null || _typesToCheck.length == 0) {
+            return true;
+        } else {
+            Class<?> typeOfObj = obj.getClass();
+            for (int idx = 0; idx < _typesToCheck.length; idx++) {
+                if (_typesToCheck[idx].isAssignableFrom(typeOfObj)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 }

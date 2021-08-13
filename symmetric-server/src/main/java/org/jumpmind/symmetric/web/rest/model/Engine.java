@@ -24,11 +24,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class Engine {
-
     private String name;
 
     public Engine(String name) {
-    	this.name = name;
+        this.name = name;
     }
 
     public Engine() {
@@ -41,5 +40,4 @@ public class Engine {
     public void setName(String name) {
         this.name = name;
     }
-
 }

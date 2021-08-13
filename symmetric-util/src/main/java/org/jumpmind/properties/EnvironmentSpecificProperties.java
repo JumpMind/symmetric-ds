@@ -33,19 +33,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.exception.IoException;
 
 /**
- * This extension to {@link Properties} reads in a properties file and looks for
- * any properties whose prefix matches any combination of supplied environment
- * tokens. Any matches it finds, it removes the prefix and keeps a reference to
- * the new property.
+ * This extension to {@link Properties} reads in a properties file and looks for any properties whose prefix matches any combination of supplied environment
+ * tokens. Any matches it finds, it removes the prefix and keeps a reference to the new property.
  */
 public class EnvironmentSpecificProperties extends TypedProperties {
-
     private static final long serialVersionUID = 1L;
-
     protected Set<String> propertiesForEnvironment;
-
     protected String systemPropertyName;
-
     protected Properties original;
 
     public EnvironmentSpecificProperties(URL fileUrl, String systemPropertyName,
@@ -64,7 +58,6 @@ public class EnvironmentSpecificProperties extends TypedProperties {
                 }
             }
         }
-
         try {
             this.original = new Properties();
             for (URL fileUrl : fileUrls) {
@@ -95,7 +88,6 @@ public class EnvironmentSpecificProperties extends TypedProperties {
                 if (StringUtils.isBlank(additionalActivationKeys)) {
                     additionalActivationKeys = this.original.getProperty(systemPropertyName);
                 }
-
                 if (StringUtils.isNotBlank(additionalActivationKeys)) {
                     String[] tokens = additionalActivationKeys.split(",");
                     for (String token : tokens) {
@@ -103,7 +95,6 @@ public class EnvironmentSpecificProperties extends TypedProperties {
                     }
                 }
             }
-
             Set<Object> keys = original.keySet();
             for (Object originalKey : keys) {
                 String keyName = originalKey.toString();
@@ -117,10 +108,8 @@ public class EnvironmentSpecificProperties extends TypedProperties {
                         }
                     }
                 }
-
                 setProperty(keyName, original.getProperty(originalKey.toString()));
             }
-
         }
     }
 
@@ -134,5 +123,4 @@ public class EnvironmentSpecificProperties extends TypedProperties {
         }
         return set;
     }
-
 }

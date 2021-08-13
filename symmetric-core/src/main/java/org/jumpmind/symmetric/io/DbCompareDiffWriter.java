@@ -35,14 +35,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DbCompareDiffWriter {
-    
-	private final static Logger log = LoggerFactory.getLogger(DbCompareDiffWriter.class);
-    
+    private final static Logger log = LoggerFactory.getLogger(DbCompareDiffWriter.class);
     // Continue after parsing errors
     private boolean continueAfterError = false;
     private boolean error = false;
     private Throwable throwable = null;
-    
+
     public DbCompareDiffWriter(ISymmetricEngine targetEngine, DbCompareTables tables, OutputStream stream) {
         super();
         this.targetEngine = targetEngine;
@@ -53,99 +51,76 @@ public class DbCompareDiffWriter {
     private ISymmetricEngine targetEngine;
     private DbCompareTables tables;
     private OutputStream stream;
-    
+
     public void writeDelete(DbCompareRow targetCompareRow) {
         if (stream == null) {
             return;
         }
-        
         try {
-
             Table table = targetCompareRow.getTable();
-    
-            DmlStatement statement =  targetEngine.getDatabasePlatform().createDmlStatement(DmlType.DELETE,
+            DmlStatement statement = targetEngine.getDatabasePlatform().createDmlStatement(DmlType.DELETE,
                     table.getCatalog(), table.getSchema(), table.getName(),
                     table.getPrimaryKeyColumns(), null,
                     null, null);
-    
             Row row = new Row(targetCompareRow.getTable().getPrimaryKeyColumnCount());
-    
             for (int i = 0; i < targetCompareRow.getTable().getPrimaryKeyColumnCount(); i++) {
-                row.put(table.getColumn(i).getName(), 
+                row.put(table.getColumn(i).getName(),
                         targetCompareRow.getRowValues().get(targetCompareRow.getTable().getColumn(i).getName()));
             }
-    
             String sql = statement.buildDynamicDeleteSql(BinaryEncoding.HEX, row, false, true);
-    
             writeLine(sql);
-        
-        } catch(RuntimeException e) {
+        } catch (RuntimeException e) {
             error = true;
             throwable = e;
-            log.error(e.getMessage(),e);
-            if(! isContinueAfterError()) {
+            log.error(e.getMessage(), e);
+            if (!isContinueAfterError()) {
                 throw e;
             }
         }
     }
 
-    public void writeInsert(DbCompareRow sourceCompareRow) { 
+    public void writeInsert(DbCompareRow sourceCompareRow) {
         if (stream == null) {
             return;
         }
-        
         try {
-
             Table targetTable = tables.getTargetTable();
-    
-            DmlStatement statement =  targetEngine.getDatabasePlatform().createDmlStatement(DmlType.INSERT,
+            DmlStatement statement = targetEngine.getDatabasePlatform().createDmlStatement(DmlType.INSERT,
                     targetTable.getCatalog(), targetTable.getSchema(), targetTable.getName(),
                     targetTable.getPrimaryKeyColumns(), targetTable.getColumns(),
                     null, null);
-    
             Row row = new Row(targetTable.getColumnCount());
-    
             for (Column sourceColumn : tables.getSourceTable().getColumns()) {
                 Column targetColumn = tables.getColumnMapping().get(sourceColumn);
                 if (targetColumn == null) {
                     continue;
                 }
-    
-                row.put(targetColumn.getName(), sourceCompareRow.getRowValues().
-                        get(sourceColumn.getName()));
+                row.put(targetColumn.getName(), sourceCompareRow.getRowValues().get(sourceColumn.getName()));
             }
-    
             String sql = statement.buildDynamicSql(BinaryEncoding.HEX, row, false, false);
-    
             writeLine(sql);
-        
-        } catch(RuntimeException e) {
+        } catch (RuntimeException e) {
             error = true;
             throwable = e;
-            log.error(e.getMessage(),e);
-            if(! isContinueAfterError()) {
+            log.error(e.getMessage(), e);
+            if (!isContinueAfterError()) {
                 throw e;
             }
         }
     }
 
-    public void writeUpdate(DbCompareRow targetCompareRow, Map<Column, String> deltas) { 
+    public void writeUpdate(DbCompareRow targetCompareRow, Map<Column, String> deltas) {
         if (stream == null) {
             return;
         }
-        
         try {
-
             Table table = targetCompareRow.getTable();
-    
             Column[] changedColumns = deltas.keySet().toArray(new Column[deltas.keySet().size()]);
-    
             DmlStatement statement = targetEngine.getDatabasePlatform().createDmlStatement(DmlType.UPDATE,
                     table.getCatalog(), table.getSchema(), table.getName(),
                     table.getPrimaryKeyColumns(), changedColumns,
                     null, null);
-    
-            Row row = new Row(changedColumns.length+table.getPrimaryKeyColumnCount());
+            Row row = new Row(changedColumns.length + table.getPrimaryKeyColumnCount());
             for (Column changedColumn : deltas.keySet()) {
                 String value = deltas.get(changedColumn);
                 row.put(changedColumn.getName(), value);
@@ -155,19 +130,17 @@ public class DbCompareDiffWriter {
                 row.put(pkColumnName, value);
             }
             String sql = statement.buildDynamicSql(BinaryEncoding.HEX, row, false, true);
-    
             writeLine(sql);
-        
-        } catch(RuntimeException e) {
+        } catch (RuntimeException e) {
             error = true;
             throwable = e;
-            log.error(e.getMessage(),e);
-            if(! isContinueAfterError()) {
+            log.error(e.getMessage(), e);
+            if (!isContinueAfterError()) {
                 throw e;
             }
         }
     }
-    
+
     public void close() {
         if (stream != null) {
             try {
@@ -181,33 +154,33 @@ public class DbCompareDiffWriter {
 
     protected void writeLine(String line) {
         try {
-            stream.write(line.getBytes()); 
+            stream.write(line.getBytes());
             stream.write("\r\n".getBytes());
         } catch (Exception ex) {
             throw new RuntimeException("failed to write to stream '" + line + "'", ex);
         }
     }
-    
+
     public void setContinueAfterError(boolean continueAfterError) {
         this.continueAfterError = continueAfterError;
     }
-    
+
     public boolean isContinueAfterError() {
         return continueAfterError;
     }
-    
+
     public void setError(boolean error) {
         this.error = error;
     }
-    
+
     public boolean isError() {
         return error;
     }
-    
+
     public void setThrowable(Throwable throwable) {
         this.throwable = throwable;
     }
-    
+
     public Throwable getThrowable() {
         return throwable;
     }

@@ -50,7 +50,6 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * which sql dialect mode is being used, in order to get the right IDatabasePlatform.
  */
 public class FirebirdDialect1DatabasePlatform extends FirebirdDatabasePlatform {
-
     public FirebirdDialect1DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
     }
@@ -64,5 +63,4 @@ public class FirebirdDialect1DatabasePlatform extends FirebirdDatabasePlatform {
     public String getName() {
         return DatabaseNamesConstants.FIREBIRD_DIALECT1;
     }
-
 }

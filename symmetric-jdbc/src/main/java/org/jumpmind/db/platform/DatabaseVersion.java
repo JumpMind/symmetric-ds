@@ -21,39 +21,35 @@
 package org.jumpmind.db.platform;
 
 public class DatabaseVersion {
+    private String name;
+    private int version;
+    private String protocol;
 
-	private String name;
-	
-	private int version;
-	
-	private String protocol;
+    public String getName() {
+        return name;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public int getVersion() {
+        return version;
+    }
 
-	public int getVersion() {
-		return version;
-	}
+    public String getVersionAsString() {
+        return Integer.toString(version);
+    }
 
-	public String getVersionAsString() {
-		return Integer.toString(version);
-	}
+    public void setVersion(int version) {
+        this.version = version;
+    }
 
-	public void setVersion(int version) {
-		this.version = version;
-	}
+    public String getProtocol() {
+        return protocol;
+    }
 
-	public String getProtocol() {
-		return protocol;
-	}
-
-	public void setProtocol(String protocol) {
-		this.protocol = protocol;
-	}
-
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
 }

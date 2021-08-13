@@ -63,23 +63,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class AbstractService implements IService {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected IParameterService parameterService;
-
     protected ISymmetricDialect symmetricDialect;
-
     protected ISqlTemplate sqlTemplate;
-    
     protected ISqlTemplate sqlTemplateDirty;
-
     protected IDatabasePlatform platform;
-
     protected String tablePrefix;
-
     private ISqlMap sqlMap;
-    
     private Set<String> logOnce = new HashSet<String>();
 
     public AbstractService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
@@ -90,7 +81,7 @@ abstract public class AbstractService implements IService {
         this.sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
         this.sqlTemplateDirty = symmetricDialect.getPlatform().getSqlTemplateDirty();
     }
-    
+
     private static final Comparator<BatchAck> BATCH_ID_COMPARATOR = new Comparator<BatchAck>() {
         public int compare(BatchAck batchInfo1, BatchAck batchInfo2) {
             Long batchId1 = batchInfo1.getBatchId();
@@ -110,7 +101,6 @@ abstract public class AbstractService implements IService {
                 }
             }
         }
-        
         return date;
     }
 
@@ -135,7 +125,7 @@ abstract public class AbstractService implements IService {
     }
 
     protected Map<String, String> createSqlReplacementTokens() {
-    	return AbstractSqlMap.mergeSqlReplacementTokens(symmetricDialect.getSqlReplacementTokens(), tablePrefix);
+        return AbstractSqlMap.mergeSqlReplacementTokens(symmetricDialect.getSqlReplacementTokens(), tablePrefix);
     }
 
     public String getSql(String... keys) {
@@ -163,11 +153,11 @@ abstract public class AbstractService implements IService {
             transaction.close();
         }
     }
-    
+
     protected Set<String> toNodeIds(Set<Node> nodes) {
         return toNodeIds(nodes, null);
     }
-    
+
     protected Set<String> toNodeIds(Set<Node> nodes, Set<String> nodeIds) {
         nodeIds = nodeIds == null ? new HashSet<String>(nodes.size()) : nodeIds;
         for (Node node : nodes) {
@@ -185,19 +175,17 @@ abstract public class AbstractService implements IService {
         }
         return adminTool;
     }
-    
+
     protected String buildBatchWhere(List<String> nodeIds, List<String> channels,
             List<?> statuses, List<Long> loads) {
         boolean containsErrorStatus = statuses.contains(AbstractBatch.Status.ER);
         boolean containsIgnoreStatus = statuses.contains(AbstractBatch.Status.IG);
-
         StringBuilder where = new StringBuilder();
         boolean needsAnd = false;
         if (nodeIds != null && nodeIds.size() > 0) {
             where.append("node_id in (:NODES)");
             needsAnd = true;
         }
-        
         if (channels != null && channels.size() > 0) {
             if (needsAnd) {
                 where.append(" and ");
@@ -217,38 +205,31 @@ abstract public class AbstractService implements IService {
                 where.append(" and ");
             }
             where.append("(status in (:STATUSES)");
-            
             if (containsErrorStatus) {
-                where.append(" or error_flag = 1 ");   
+                where.append(" or error_flag = 1 ");
             }
-            
             if (containsIgnoreStatus) {
-                where.append(" or ignore_count > 0 ");   
+                where.append(" or ignore_count > 0 ");
             }
-            
             where.append(")");
-
             needsAnd = true;
         }
-        
         if (where.length() > 0) {
             where.insert(0, " where ");
         }
         return where.toString();
     }
-    
+
     protected String buildBatchWhereFromFilter(List<FilterCriterion> filter) {
         StringBuilder where = new StringBuilder();
         boolean needsAnd = false;
         int id = 0;
-        
         for (FilterCriterion criterion : filter) {
             if (needsAnd) {
                 where.append(" and ");
             } else {
                 needsAnd = true;
             }
-            
             FilterOption option = criterion.getOption();
             String optionSql = option.toSql();
             String prefix = null;
@@ -266,7 +247,7 @@ abstract public class AbstractService implements IService {
                     prefix = "channel_id " + optionSql;
                     break;
                 case "createTime":
-                    prefix = "create_time "+ optionSql;
+                    prefix = "create_time " + optionSql;
                     break;
                 case "loadId":
                     prefix = "load_id " + optionSql;
@@ -285,16 +266,14 @@ abstract public class AbstractService implements IService {
                 }
             }
         }
-        
         if (where.length() > 0) {
             where.insert(0, " where ");
         }
         return where.toString();
     }
-    
+
     protected Map<String, Object> buildBatchParams(List<FilterCriterion> filter) {
         Map<String, Object> params = new HashMap<String, Object>();
-        
         int id = 0;
         for (FilterCriterion criterion : filter) {
             FilterOption option = criterion.getOption();
@@ -331,10 +310,9 @@ abstract public class AbstractService implements IService {
                     }
             }
         }
-        
         return params;
     }
-    
+
     protected String buildBatchOrderBy(String orderColumn, String orderDirection) {
         String orderBy = " order by ";
         if (orderColumn == null) {
@@ -358,7 +336,7 @@ abstract public class AbstractService implements IService {
         }
         return orderBy;
     }
-    
+
     /**
      * Try a configured number of times to get the ACK through.
      */
@@ -367,11 +345,9 @@ abstract public class AbstractService implements IService {
         assertNotNull(remote, "Node remote cannot be null. Maybe there is a missing sym_node row.");
         assertNotNull(local, "Node local cannot be null. Maybe there is a missing sym_node row.");
         assertNotNull(localSecurity, "NodeSecurity localSecurity cannot be null. Maybe there is a missing sym_node_security row.");
-        
         Exception exception = null;
         int statusCode = -1;
         int numberOfStatusSendRetries = parameterService.getInt(ParameterConstants.DATA_LOADER_NUM_OF_ACK_RETRIES);
-
         for (int i = 0; i < numberOfStatusSendRetries && statusCode != WebConstants.SC_OK; i++) {
             try {
                 Map<String, String> requestProperties = null;
@@ -386,7 +362,7 @@ abstract public class AbstractService implements IService {
                 exception = e;
             }
             if (statusCode != WebConstants.SC_OK) {
-                String message = String.format("Ack was not sent successfully on try number %s of %s.", i+1, numberOfStatusSendRetries);
+                String message = String.format("Ack was not sent successfully on try number %s of %s.", i + 1, numberOfStatusSendRetries);
                 if (statusCode > 0) {
                     message += String.format(" statusCode=%s", statusCode);
                 }
@@ -395,7 +371,6 @@ abstract public class AbstractService implements IService {
                 } else {
                     log.info(message);
                 }
-                
                 if (i < numberOfStatusSendRetries - 1) {
                     AppUtils.sleep(parameterService.getLong(ParameterConstants.DATA_LOADER_TIME_BETWEEN_ACK_RETRIES));
                 } else {
@@ -403,26 +378,22 @@ abstract public class AbstractService implements IService {
                 }
             }
         }
-    }    
-    
+    }
+
     protected List<BatchAck> readAcks(List<OutgoingBatch> batches, IOutgoingWithResponseTransport transport,
             ITransportManager transportManager, IAcknowledgeService acknowledgeService, IDataExtractorService dataExtratorService)
             throws IOException {
-
         Set<Long> batchIds = new HashSet<Long>(batches.size());
         for (OutgoingBatch outgoingBatch : batches) {
             if (outgoingBatch.getStatus() == OutgoingBatch.Status.LD) {
                 batchIds.add(outgoingBatch.getBatchId());
             }
         }
-
         BufferedReader reader = transport.readResponse();
         String ackString = reader.readLine();
         String ackExtendedString = reader.readLine();
-
         log.debug("Reading ack: {}", ackString);
         log.debug("Reading extend ack: {}", ackExtendedString);
-
         String line = null;
         do {
             line = reader.readLine();
@@ -430,12 +401,9 @@ abstract public class AbstractService implements IService {
                 log.info("Read another unexpected line {}", line);
             }
         } while (line != null);
-
         List<BatchAck> batchAcks = transportManager.readAcknowledgement(ackString,
                 ackExtendedString);
-      
         Collections.sort(batchAcks, BATCH_ID_COMPARATOR);
-
         long batchIdInError = Long.MAX_VALUE;
         for (BatchAck batchInfo : batchAcks) {
             batchIds.remove(batchInfo.getBatchId());
@@ -446,22 +414,21 @@ abstract public class AbstractService implements IService {
                     (batchInfo.isOk() ? "OK" : "ER"));
             acknowledgeService.ack(batchInfo);
         }
-
         for (Long batchId : batchIds) {
-            if (batchId < batchIdInError) {                
+            if (batchId < batchIdInError) {
                 for (OutgoingBatch outgoingBatch : batches) {
                     if (outgoingBatch.getBatchId() == batchId) {
                         StringBuilder message = new StringBuilder(128);
                         message.append("Expected but did not receive an ack for batch ");
                         message.append(outgoingBatch.getNodeBatchId()).append(". ");
-                        
                         if (dataExtratorService != null) {
                             if (!outgoingBatch.isLoadFlag()) {
                                 message.append("This could be because the batch is corrupt - removing the batch from staging.");
                                 log.warn(message.toString());
                                 dataExtratorService.removeBatchFromStaging(outgoingBatch);
                             } else {
-                                message.append("This could be because the batch is corrupt. Not removing the batch because it was a load batch, but you may need to clear the batch from staging manually.");
+                                message.append(
+                                        "This could be because the batch is corrupt. Not removing the batch because it was a load batch, but you may need to clear the batch from staging manually.");
                                 log.warn(message.toString());
                             }
                         } else {
@@ -471,16 +438,15 @@ abstract public class AbstractService implements IService {
                 }
             }
         }
-
         return batchAcks;
     }
-    
+
     protected void logOnce(String message) {
         if (!logOnce.add(message)) {
             log.info(message);
         }
     }
-    
+
     protected boolean isStreamClosedByClient(Exception ex) {
         if (ExceptionUtils.indexOfType(ex, EOFException.class) >= 0) {
             return true;
@@ -488,7 +454,7 @@ abstract public class AbstractService implements IService {
             return false;
         }
     }
-    
+
     protected void assertNotNull(Object o, String message) {
         if (o == null) {
             throw new SymmetricException(message);
@@ -502,13 +468,12 @@ abstract public class AbstractService implements IService {
     protected boolean isSymmetricTable(String tableName) {
         return tableName.toUpperCase().startsWith(this.tablePrefix.toUpperCase());
     }
-    
+
     protected IDatabasePlatform getTargetPlatform(String tableName) {
         return isSymmetricTable(tableName) ? symmetricDialect.getPlatform() : symmetricDialect.getTargetDialect().getPlatform();
     }
-    
+
     protected IDatabasePlatform getTargetPlatform() {
         return symmetricDialect.getTargetDialect().getPlatform();
     }
-
 }

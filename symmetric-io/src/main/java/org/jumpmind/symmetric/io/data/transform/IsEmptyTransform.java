@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 public class IsEmptyTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     public static final String NAME = "isEmpty";
 
     public String getName() {
@@ -50,14 +49,13 @@ public class IsEmptyTransform implements ISingleNewAndOldValueColumnTransform, I
     public NewAndOldValue transform(IDatabasePlatform platform, DataContext context, TransformColumn column,
             TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
             throws IgnoreColumnException, IgnoreRowException {
-        
         NewAndOldValue result = new NewAndOldValue(newValue, oldValue);
-        if(StringUtils.isEmpty(newValue)) { 
+        if (StringUtils.isEmpty(newValue)) {
             String expression = column.getTransformExpression();
             if (StringUtils.isEmpty(expression)) {
                 expression = null;
             }
-            result = new NewAndOldValue(expression, oldValue); 
+            result = new NewAndOldValue(expression, oldValue);
         }
         return result;
     }

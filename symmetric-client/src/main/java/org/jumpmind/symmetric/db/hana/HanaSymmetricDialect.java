@@ -30,13 +30,9 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class HanaSymmetricDialect extends AbstractSymmetricDialect {
-
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
-
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
-    
     static final String SQL_DROP_FUNCTION = "DROP FUNCTION $(functionName)";
-    
     static final String SQL_FUNCTION_INSTALLED = "select count(*) from functions where function_name = '$(functionName)';";
 
     public HanaSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
@@ -45,15 +41,14 @@ public class HanaSymmetricDialect extends AbstractSymmetricDialect {
         this.parameterService = parameterService;
     }
 
-    
     @Override
     public void cleanDatabase() {
     }
-    
+
     @Override
     public boolean supportsTransactionId() {
         return true;
-    }  
+    }
 
     @Override
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
@@ -69,24 +64,23 @@ public class HanaSymmetricDialect extends AbstractSymmetricDialect {
         transaction.prepareAndExecute("set '" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "'=''");
         transaction.prepareAndExecute("set '" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "'=''");
     }
- 
+
     @Override
     public String getSyncTriggersExpression() {
         return "SESSION_CONTEXT('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "')  is null";
     }
-    
+
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         return parameterService.getTablePrefix() + "_" + "transaction_id()";
     }
-    
 
     @Override
     public void dropRequiredDatabaseObjects() {
         String function = this.parameterService.getTablePrefix() + "_" + "transaction_id";
         if (installed(SQL_FUNCTION_INSTALLED, function)) {
             uninstall(SQL_DROP_FUNCTION, function);
-        }     
+        }
     }
 
     @Override
@@ -110,9 +104,9 @@ public class HanaSymmetricDialect extends AbstractSymmetricDialect {
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return platform.getSqlTemplate().queryForInt("select count(*) from triggers where trigger_name like ? and subject_table_name like ?",
-        		new Object[] { triggerName, tableName.toUpperCase() }) > 0;
+                new Object[] { triggerName, tableName.toUpperCase() }) > 0;
     }
-    
+
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
             String triggerName, String tableName, ISqlTransaction transaction) {
@@ -124,5 +118,4 @@ public class HanaSymmetricDialect extends AbstractSymmetricDialect {
             transaction.execute(sql);
         }
     }
-
 }

@@ -18,11 +18,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.db;
 
 public class DbNotSupportedException extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
-
 }

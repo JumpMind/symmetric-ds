@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.model;
 
 public class BatchAckResult {
-    
     private long batchId;
     private boolean isOk;
 
@@ -29,7 +28,7 @@ public class BatchAckResult {
         this.batchId = result.getBatchId();
         this.isOk = true;
     }
-    
+
     public long getBatchId() {
         return batchId;
     }
@@ -41,8 +40,8 @@ public class BatchAckResult {
     public boolean isOk() {
         return isOk;
     }
+
     public void setOk(boolean isOk) {
         this.isOk = isOk;
     }
-    
 }

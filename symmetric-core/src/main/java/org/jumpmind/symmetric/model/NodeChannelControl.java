@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
@@ -28,19 +27,13 @@ import java.util.Date;
  * 
  */
 public class NodeChannelControl implements Serializable {
-    
     private static final long serialVersionUID = 1L;
-
     private String nodeId = null;
-    
     private String channelId = null;
-
     private boolean ignoreEnabled = false;
-
     private boolean suspendEnabled = false;
-
     private Date lastExtractTime = null;
-    
+
     public String getNodeId() {
         return nodeId;
     }
@@ -48,7 +41,7 @@ public class NodeChannelControl implements Serializable {
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
     }
-    
+
     public String getChannelId() {
         return channelId;
     }
@@ -80,5 +73,4 @@ public class NodeChannelControl implements Serializable {
     public void setLastExtractTime(Date lastExtractedTime) {
         this.lastExtractTime = lastExtractedTime;
     }
-
 }

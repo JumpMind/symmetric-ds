@@ -25,8 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NodeStatsByPeriodMap extends AbstractStatsByPeriodMap<Map<String,ChannelStats>,ChannelStats> {
-
+public class NodeStatsByPeriodMap extends AbstractStatsByPeriodMap<Map<String, ChannelStats>, ChannelStats> {
     private static final long serialVersionUID = 1L;
 
     public NodeStatsByPeriodMap(Date start, Date end, List<ChannelStats> list,
@@ -46,12 +45,11 @@ public class NodeStatsByPeriodMap extends AbstractStatsByPeriodMap<Map<String,Ch
             map.put(stat.getNodeId(), stat);
         } else {
             existing.add(stat);
-        }        
+        }
     }
-    
+
     @Override
     protected void addBlank(Date periodStart) {
         put(periodStart, new HashMap<String, ChannelStats>());
-        
     }
 }

@@ -42,7 +42,6 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.slf4j.Logger;
 
 public class ChannelRouterContext extends SimpleRouterContext {
-
     public static final String STAT_INSERT_DATA_EVENTS_MS = "data.events.insert.time.ms";
     public static final String STAT_DATA_ROUTER_MS = "data.router.time.ms";
     public static final String STAT_QUERY_TIME_MS = "data.read.query.time.ms";
@@ -58,7 +57,6 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public static final String STAT_BATCHES_NONCOMMON = "batches.noncommon.count";
     public static final String STAT_UPDATE_BATCHES_MS = "batches.update.time.ms";
     public static final String STAT_ROUTE_TOTAL_TIME = "total.time.ms";
-
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
     private Map<Integer, Map<String, OutgoingBatch>> batchesByGroups = new HashMap<Integer, Map<String, OutgoingBatch>>();
     private Map<TriggerRouter, Set<Node>> availableNodes = new HashMap<TriggerRouter, Set<Node>>();
@@ -76,7 +74,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private boolean onlyDefaultRoutersAssigned = false;
     private boolean overrideContainsBigLob = false;
     private long lastLoadId = -1;
-    private long startDataId;   
+    private long startDataId;
     private long endDataId;
     private long dataReadCount;
     private long peekAheadFillCount;
@@ -122,7 +120,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
             lastDataId = dataId;
         }
     }
-    
+
     public void removeLastData() {
         uncommittedDataIds.remove(lastDataId);
         ListIterator<DataEvent> iter = dataEventsToSend.listIterator();
@@ -130,14 +128,14 @@ public class ChannelRouterContext extends SimpleRouterContext {
             DataEvent dataEvent = iter.next();
             if (dataEvent.getDataId() == lastDataId) {
                 iter.remove();
-            }            
+            }
         }
     }
-    
+
     public void addConfigDataMetaData(DataMetaData dataMetaData) {
         configDataIdsProcessed.put(dataMetaData.getData().getDataId(), dataMetaData);
     }
-    
+
     public DataMetaData getConfigDataMetaData(Long dataId) {
         return configDataIdsProcessed.get(dataId);
     }
@@ -208,9 +206,9 @@ public class ChannelRouterContext extends SimpleRouterContext {
     synchronized public void logStats(Logger log, long totalTimeInMs) {
         super.logStats(log, totalTimeInMs);
         if (log.isDebugEnabled()) {
-            log.debug(channel.getChannelId() + ", startDataId=" + startDataId + ", endDataId=" + endDataId + 
+            log.debug(channel.getChannelId() + ", startDataId=" + startDataId + ", endDataId=" + endDataId +
                     ", lastDataId=" + lastDataId + ", dataReadCount=" + dataReadCount + ", peekAheadFillCount=" + peekAheadFillCount +
-                    ", dataGaps=" + dataGaps.size()); 
+                    ", dataGaps=" + dataGaps.size());
         }
     }
 
@@ -231,13 +229,13 @@ public class ChannelRouterContext extends SimpleRouterContext {
     }
 
     public Map<String, Long> getTimesByRouter() {
-        return timesByRouter; 
+        return timesByRouter;
     }
 
     public void addTimesByRouter(String routerId, long millis) {
         Long totalMillis = timesByRouter.get(routerId);
         if (totalMillis == null) {
-            timesByRouter.put(routerId, millis);    
+            timesByRouter.put(routerId, millis);
         } else {
             timesByRouter.put(routerId, totalMillis + millis);
         }
@@ -254,7 +252,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public void setLastDataProcessed(Data lastDataProcessed) {
         this.lastDataProcessed = lastDataProcessed;
     }
-    
+
     public Data getLastDataProcessed() {
         return lastDataProcessed;
     }
@@ -269,7 +267,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
 
     public boolean isProduceCommonBatches() {
         return produceCommonBatches;
-    }    
+    }
 
     public boolean isNonCommonForIncoming() {
         return nonCommonForIncoming;
@@ -293,12 +291,12 @@ public class ChannelRouterContext extends SimpleRouterContext {
 
     public boolean isProduceGroupBatches() {
         return produceGroupBatches;
-    }    
+    }
 
     public void setLastLoadId(long lastLoadId) {
         this.lastLoadId = lastLoadId;
     }
-    
+
     public long getLastLoadId() {
         return lastLoadId;
     }
@@ -326,11 +324,11 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public void incrementDataReadCount(long dataReadCount) {
         this.dataReadCount += dataReadCount;
     }
-    
+
     public long getDataRereadCount() {
         return dataRereadCount;
     }
-    
+
     public void incrementDataRereadCount() {
         this.dataRereadCount++;
     }
@@ -338,11 +336,11 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public long getPeekAheadFillCount() {
         return peekAheadFillCount;
     }
-    
+
     public long getMaxPeekAheadQueueSize() {
         return maxPeekAheadQueueSize;
     }
-    
+
     public void setMaxPeekAheadQueueSize(long maxPeekAheadQueueSize) {
         this.maxPeekAheadQueueSize = maxPeekAheadQueueSize;
     }
@@ -358,11 +356,11 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public void setDataGaps(List<DataGap> dataGaps) {
         this.dataGaps = dataGaps;
     }
-    
+
     public void setOnlyDefaultRoutersAssigned(boolean onlyDefaultRoutersAssigned) {
         this.onlyDefaultRoutersAssigned = onlyDefaultRoutersAssigned;
     }
-    
+
     public boolean isOnlyDefaultRoutersAssigned() {
         return onlyDefaultRoutersAssigned;
     }
@@ -378,7 +376,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public void setOverrideContainsBigLob(boolean overrideContainsBigLob) {
         this.overrideContainsBigLob = overrideContainsBigLob;
     }
-    
+
     public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData) {
         return batchAlgorithm.isBatchComplete(batch, dataMetaData, this);
     }

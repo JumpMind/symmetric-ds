@@ -27,7 +27,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class SqlScriptReaderTest {
-        
     @Test
     public void testReadScript2() throws Exception {
         SqlScriptReader reader = new SqlScriptReader(new InputStreamReader(getClass().getResourceAsStream("/test-script-2.sql")));
@@ -41,58 +40,43 @@ public class SqlScriptReaderTest {
     @Test
     public void testReadScript1() throws Exception {
         SqlScriptReader reader = new SqlScriptReader(new InputStreamReader(getClass().getResourceAsStream("/test-script-1.sql")));
-        
         String nextStatement = reader.readSqlStatement();
         assertEquals("select * from \n  TEST where\n  \n  id = 'someid'", nextStatement);
-        
         assertEquals("select * from test", reader.readSqlStatement());
         assertEquals("insert into test (one, two, three) values('1','1','2')", reader.readSqlStatement());
-        for (int i = 0; i < 4; i++) {            
-           assertEquals("delete from test where one='1'", reader.readSqlStatement());
+        for (int i = 0; i < 4; i++) {
+            assertEquals("delete from test where one='1'", reader.readSqlStatement());
         }
-        
         nextStatement = reader.readSqlStatement();
         assertEquals("update sym_node set sync_url='http://localhost:8080/test' where node_id='test'", nextStatement);
-        
         nextStatement = reader.readSqlStatement();
         assertEquals("update something set oops=';' where whoops='test'", nextStatement);
-        
         nextStatement = reader.readSqlStatement();
         assertEquals("update test set one = '''', two='\\\\##--''' where one is null", nextStatement);
-        
         assertEquals("update test\n  set one = '1', two = '2'\n  where one = 'one'", reader.readSqlStatement());
         assertEquals("create table \"TE--ST\" (\"ID##2\" VARCHAR(100))", reader.readSqlStatement());
-        
         nextStatement = reader.readSqlStatement();
-        assertEquals("insert into test (col) values('import org.x.Test;\n" + 
-                "import com.y.Testy;\n" + 
-                "\n" + 
-                "class A {\n" + 
-                "  int x, y = 0;\n" + 
-                "}\n" + 
-                "')",nextStatement);
-        
-        assertEquals("insert into test (col) values('<!--\n" + 
-                "<test></test>\n" + 
+        assertEquals("insert into test (col) values('import org.x.Test;\n" +
+                "import com.y.Testy;\n" +
+                "\n" +
+                "class A {\n" +
+                "  int x, y = 0;\n" +
+                "}\n" +
+                "')", nextStatement);
+        assertEquals("insert into test (col) values('<!--\n" +
+                "<test></test>\n" +
                 "-->')", reader.readSqlStatement());
-        
-        assertEquals("insert into test (col1,col2) values('<!--', \n" + 
-        "'<test></test>')", reader.readSqlStatement());
-        
+        assertEquals("insert into test (col1,col2) values('<!--', \n" +
+                "'<test></test>')", reader.readSqlStatement());
         assertEquals("select col1 /* test */, col2 /* col2 */ from rubixcube", reader.readSqlStatement());
-        
-        reader.setStripOutBlockComments(true);        
+        reader.setStripOutBlockComments(true);
         nextStatement = reader.readSqlStatement();
         assertEquals("select col1 , col2  from rubixcube", nextStatement);
-        
         nextStatement = reader.readSqlStatement();
-        
-        assertEquals("insert into test (col1, col2) ('test', '\n" + 
-        "''test'';\n" + 
-        "')", nextStatement);
-        
+        assertEquals("insert into test (col1, col2) ('test', '\n" +
+                "''test'';\n" +
+                "')", nextStatement);
         assertNull(reader.readSqlStatement());
-        
         reader.close();
     }
 }

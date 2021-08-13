@@ -34,36 +34,27 @@ import org.jumpmind.symmetric.common.SystemConstants;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 public class SymmetricContextListener implements ServletContextListener {
-
     public void contextInitialized(ServletContextEvent sce) {
         SymmetricEngineHolder engineHolder = new SymmetricEngineHolder();
         ServletContext ctx = sce.getServletContext();
-        
-        String autoStart = ctx.getInitParameter(WebConstants.INIT_PARAM_AUTO_START); 
+        String autoStart = ctx.getInitParameter(WebConstants.INIT_PARAM_AUTO_START);
         engineHolder.setAutoStart(autoStart == null ? true : autoStart.equalsIgnoreCase("true"));
-        
-        String autoCreate = ctx.getInitParameter(WebConstants.INIT_PARAM_AUTO_CREATE); 
+        String autoCreate = ctx.getInitParameter(WebConstants.INIT_PARAM_AUTO_CREATE);
         engineHolder.setAutoCreate(autoCreate == null ? true : autoCreate.equalsIgnoreCase("true"));
-        
         String multiServerMode = ctx.getInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE);
         engineHolder.setMultiServerMode((multiServerMode != null && multiServerMode.equalsIgnoreCase("true")) ||
                 StringUtils.isNotBlank(System.getProperty(SystemConstants.SYSPROP_ENGINES_DIR)));
-        
         engineHolder.setSingleServerPropertiesFile(ctx
                 .getInitParameter(WebConstants.INIT_SINGLE_SERVER_PROPERTIES_FILE));
-        
         String staticEnginesMode = ctx.getInitParameter(WebConstants.INIT_PARAM_STATIC_ENGINES_MODE);
         engineHolder.setStaticEnginesMode(staticEnginesMode != null
                 && staticEnginesMode.equalsIgnoreCase("true"));
-        
         engineHolder.setDeploymentType(ctx.getInitParameter(WebConstants.INIT_PARAM_DEPLOYMENT_TYPE));
         ctx.setAttribute(WebConstants.ATTR_ENGINE_HOLDER, engineHolder);
-        
         String useWebApplicationContext = ctx.getInitParameter(WebConstants.INIT_SINGLE_USE_WEBAPP_CONTEXT);
         if ("true".equals(useWebApplicationContext)) {
             engineHolder.setSpringContext(WebApplicationContextUtils.getWebApplicationContext(sce.getServletContext()));
         }
-        
         if (!"true".equals(System.getProperty(SystemConstants.SYSPROP_LAUNCHER))) {
             URL serverPropertiesURL = getClass().getClassLoader().getResource("/symmetric-server.properties");
             if (serverPropertiesURL != null) {
@@ -76,7 +67,6 @@ public class SymmetricContextListener implements ServletContextListener {
                 }
             }
         }
-
         engineHolder.start();
     }
 
@@ -89,5 +79,4 @@ public class SymmetricContextListener implements ServletContextListener {
             ctx.removeAttribute(WebConstants.ATTR_ENGINE_HOLDER);
         }
     }
-
 }

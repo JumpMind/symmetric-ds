@@ -40,16 +40,11 @@ import org.apache.derby.iapi.sql.conn.LanguageConnectionContext;
 import org.apache.derby.impl.jdbc.EmbedConnection;
 
 public class DerbyFunctions {
-
     private static final String CURRENT_CONNECTION_URL = "jdbc:default:connection";
-
     private static final int MAX_STRING_LENGTH = 32672;
-
     // Base64 will output roughly 1.37% size of input
     private static final int MAX_BINARY_LENGTH = 23700;
-
     private static Hashtable<String, Boolean> syncDisabledTable = new Hashtable<String, Boolean>();
-
     private static Hashtable<String, String> syncNodeDisabledTable = new Hashtable<String, String>();
 
     public static String getTransactionId() throws SQLException {
@@ -147,25 +142,22 @@ public class DerbyFunctions {
                         context.getNewRow(), dataBuilder);
                 rowData = dataBuilder.substring(0, dataBuilder.length() - 1);
             }
-
             if (dmlType.equals("U") || dmlType.equals("D")) {
                 StringBuilder dataBuilder = new StringBuilder();
                 appendCsvString(tableName, parsedColumnNames, parsedPkColumnNames,
                         context.getOldRow(), dataBuilder);
                 oldData = dataBuilder.substring(0, dataBuilder.length() - 1);
-
                 dataBuilder = new StringBuilder();
                 appendCsvString(tableName, parsedPkColumnNames, parsedPkColumnNames,
                         context.getOldRow(), dataBuilder);
                 pkData = dataBuilder.substring(0, dataBuilder.length() - 1);
-
             }
-
             Connection conn = DriverManager.getConnection(CURRENT_CONNECTION_URL);
             StringBuilder sql = new StringBuilder("insert into ");
             sql.append(schemaName);
             sql.append(prefixName);
-            sql.append("_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) ");
+            sql.append(
+                    "_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) ");
             sql.append(" values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)");
             PreparedStatement ps = conn.prepareStatement(sql.toString());
             ps.setString(1, tableName);
@@ -194,7 +186,8 @@ public class DerbyFunctions {
             StringBuilder sql = new StringBuilder("insert into ");
             sql.append(schemaName);
             sql.append(prefixName);
-            sql.append("_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) ");
+            sql.append(
+                    "_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) ");
             sql.append(" values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)");
             PreparedStatement ps = conn.prepareStatement(sql.toString());
             ps.setString(1, tableName);
@@ -205,14 +198,13 @@ public class DerbyFunctions {
             ps.setString(6, oldRowData);
             ps.setString(7, channelName);
             ps.setString(8, transactionId);
-            ps.setString(9, getSyncNodeDisabled());  
+            ps.setString(9, getSyncNodeDisabled());
             ps.setString(10, externalData);
             ps.executeUpdate();
             ps.close();
             conn.close();
         }
     }
-    
 
     public static String escape(String str) {
         if (str != null) {

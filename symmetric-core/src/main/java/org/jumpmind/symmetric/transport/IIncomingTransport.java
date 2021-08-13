@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.transport;
 
 import java.io.BufferedReader;
@@ -27,19 +26,17 @@ import java.io.InputStream;
 import java.util.Map;
 
 public interface IIncomingTransport {
-
     public BufferedReader openReader() throws IOException;
-    
+
     public InputStream openStream() throws IOException;
 
     public void close();
 
     public boolean isOpen();
-    
+
     public String getRedirectionUrl();
-    
+
     public String getUrl();
-    
+
     public Map<String, String> getHeaders();
-    
 }

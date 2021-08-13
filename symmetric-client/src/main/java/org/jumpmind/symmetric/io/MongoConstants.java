@@ -21,17 +21,12 @@
 package org.jumpmind.symmetric.io;
 
 final public class MongoConstants {
-    
-    private MongoConstants () {}
+    private MongoConstants() {
+    }
 
     public static final String HOST = ".host";
-    
     public static final String PORT = ".port";
-    
     public static final String URL = ".url";
-    
     public static final String USERNAME = ".username";
-    
     public static final String PASSWORD = ".password";
-
 }

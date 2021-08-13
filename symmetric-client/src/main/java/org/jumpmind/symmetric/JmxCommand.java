@@ -47,7 +47,6 @@ import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.util.AppUtils;
 
 public class JmxCommand extends AbstractCommandLauncher {
-
     private static final String OPTION_LISTBEANS = "listbeans";
     private static final String OPTION_LISTMETHODS = "listmethods";
     private static final String OPTION_BEAN = "bean";
@@ -80,7 +79,6 @@ public class JmxCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_METHOD, true);
         addOption(options, null, OPTION_ARGS, true);
         addOption(options, null, OPTION_ARGS_DELIM, true);
-
     }
 
     @Override
@@ -112,7 +110,6 @@ public class JmxCommand extends AbstractCommandLauncher {
             });
         } else if (line.hasOption(OPTION_LISTMETHODS) || line.hasOption(OPTION_METHOD)) {
             if (line.hasOption(OPTION_BEAN)) {
-
                 execute(new IJmxTemplate<Object>() {
                     @Override
                     public Object execute(String engineName, MBeanServerConnection mbeanConn)
@@ -127,8 +124,8 @@ public class JmxCommand extends AbstractCommandLauncher {
                                     orderedMap.put(methodInfo.getName(), methodInfo);
                                 }
                                 for (MBeanOperationInfo methodInfo : orderedMap.values()) {
-                                    System.out.print(methodInfo.getName() + "(" );
-                                    MBeanParameterInfo[] params =  methodInfo.getSignature();
+                                    System.out.print(methodInfo.getName() + "(");
+                                    MBeanParameterInfo[] params = methodInfo.getSignature();
                                     int index = 0;
                                     for (MBeanParameterInfo p : params) {
                                         if (index > 0) {
@@ -141,7 +138,7 @@ public class JmxCommand extends AbstractCommandLauncher {
                                     if (methodInfo.getReturnType() != null && !methodInfo.getReturnType().equals("void")) {
                                         System.out.print(" : " + methodInfo.getReturnType());
                                     }
-                                    System.out.println();                                                                        
+                                    System.out.println();
                                 }
                             } else if (line.hasOption(OPTION_METHOD)) {
                                 String argsDelimiter = line.getOptionValue(OPTION_ARGS_DELIM);
@@ -154,12 +151,11 @@ public class JmxCommand extends AbstractCommandLauncher {
                                 String[] args = null;
                                 if (line.hasOption(OPTION_ARGS)) {
                                     String argLine = line.getOptionValue(OPTION_ARGS);
-                                    args = argsDelimiter == "," ? CsvUtils.tokenizeCsvData(argLine) : 
-                                        argLine.split(argsDelimiter);;
+                                    args = argsDelimiter == "," ? CsvUtils.tokenizeCsvData(argLine) : argLine.split(argsDelimiter);
+                                    ;
                                 } else {
                                     args = new String[0];
                                 }
-
                                 MBeanOperationInfo[] operations = info.getOperations();
                                 for (MBeanOperationInfo methodInfo : operations) {
                                     MBeanParameterInfo[] paramInfos = methodInfo.getSignature();
@@ -190,13 +186,10 @@ public class JmxCommand extends AbstractCommandLauncher {
                                         System.exit(0);
                                     }
                                 }
-
                                 System.out.println("ERROR: Could not locate a JMX method named: "
                                         + methodName + " with " + args.length + " arguments on bean: " + beanName);
                                 System.exit(1);
-
                                 return null;
-
                             }
                         } else {
                             System.out
@@ -214,7 +207,6 @@ public class JmxCommand extends AbstractCommandLauncher {
         } else {
             return false;
         }
-
         return true;
     }
 
@@ -223,7 +215,6 @@ public class JmxCommand extends AbstractCommandLauncher {
         String url = "service:jmx:rmi:///jndi/rmi://" + host + ":"
                 + System.getProperty("jmx.agent.port", "31418") + "/jmxrmi";
         JMXServiceURL serviceUrl = new JMXServiceURL(url);
-
         HashMap<String, Object> env = new HashMap<String, Object>();
         File jmxPassFile = new File(AppUtils.getSymHome() + "/security/jmxremote.password");
         if (jmxPassFile.canRead()) {
@@ -233,14 +224,13 @@ public class JmxCommand extends AbstractCommandLauncher {
                 if (jmxPassProp.size() > 0) {
                     String user = "admin";
                     if (!jmxPassProp.containsKey(user)) {
-                        user = (String) jmxPassProp.keySet().iterator().next();    
-                    }                    
+                        user = (String) jmxPassProp.keySet().iterator().next();
+                    }
                     String[] credentials = new String[] { user, jmxPassProp.get(user) };
                     env.put(JMXConnector.CREDENTIALS, credentials);
                 }
             }
         }
-
         JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceUrl, env);
         TypedProperties properties = getTypedProperties();
         String engineName = properties.get(ParameterConstants.ENGINE_NAME, "unknown");
@@ -255,5 +245,4 @@ public class JmxCommand extends AbstractCommandLauncher {
     interface IJmxTemplate<T> {
         public T execute(String engineName, MBeanServerConnection mbeanConn) throws Exception;
     }
-
 }

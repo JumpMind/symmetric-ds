@@ -37,7 +37,6 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class HanaDatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     public HanaDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
     }
@@ -46,7 +45,7 @@ public class HanaDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public ISqlTemplate getSqlTemplate() {
         return new HanaSqlJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
-    
+
     @Override
     public String getName() {
         return DatabaseNamesConstants.HANA;
@@ -71,7 +70,7 @@ public class HanaDatabasePlatform extends AbstractJdbcDatabasePlatform {
     protected IDdlReader createDdlReader() {
         return new HanaDdlReader(this);
     }
-    
+
     protected ISqlTemplate createSqlTemplateDirty() {
         JdbcSqlTemplate template = (JdbcSqlTemplate) super.createSqlTemplateDirty();
         template.setIsolationLevel(Connection.TRANSACTION_READ_COMMITTED);
@@ -82,13 +81,10 @@ public class HanaDatabasePlatform extends AbstractJdbcDatabasePlatform {
     protected PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-           
-        String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + 
-                " BEGIN DECLARE PERMISSION_COUNT INT; " + 
-                "     SELECT COUNT(*) INTO PERMISSION_COUNT FROM SYM_PERMISSION_TEST; END";  
-        
+        String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter +
+                " BEGIN DECLARE PERMISSION_COUNT INT; " +
+                "     SELECT COUNT(*) INTO PERMISSION_COUNT FROM SYM_PERMISSION_TEST; END";
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-        
         try {
             getSqlTemplate().update(triggerSql);
             result.setStatus(Status.PASS);
@@ -96,15 +92,14 @@ public class HanaDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
         }
-        
         return result;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return true;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         if (sql.endsWith(";")) {
@@ -112,5 +107,4 @@ public class HanaDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return sql + " limit " + limit + " offset " + offset;
     }
-    
 }

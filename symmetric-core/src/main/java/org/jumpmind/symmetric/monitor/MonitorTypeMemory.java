@@ -34,9 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MonitorTypeMemory extends AbstractMonitorType implements IBuiltInExtensionPoint {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected MemoryPoolMXBean tenuredPool;
 
     @Override
@@ -61,7 +59,7 @@ public class MonitorTypeMemory extends AbstractMonitorType implements IBuiltInEx
         MonitorEvent event = new MonitorEvent();
         long usage = 0;
         if (tenuredPool != null) {
-            usage = (long) ((double)tenuredPool.getUsage().getUsed() / (double)tenuredPool.getUsage().getMax() * 100);
+            usage = (long) ((double) tenuredPool.getUsage().getUsed() / (double) tenuredPool.getUsage().getMax() * 100);
         }
         event.setValue(usage);
         event.setDetails(getMessage(0l, 0l, 0l));
@@ -73,7 +71,6 @@ public class MonitorTypeMemory extends AbstractMonitorType implements IBuiltInEx
         long usedMemory = tenuredPool.getUsage().getUsed();
         StringBuilder text = new StringBuilder("Memory threshold exceeded, " + usedMemory + " of " + maxMemory);
         text.append(System.lineSeparator()).append(System.lineSeparator());
-
         ThreadInfo infos[] = new ThreadInfo[TOP_THREADS];
         long byteUsages[] = new long[TOP_THREADS];
         ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
@@ -85,15 +82,14 @@ public class MonitorTypeMemory extends AbstractMonitorType implements IBuiltInEx
                 }
             }
         }
-
         for (int i = 0; i < infos.length; i++) {
             if (infos[i] != null) {
                 text.append("Top #").append((i + 1)).append(" memory thread ").append(infos[i].getThreadName())
-                    .append(" (ID ").append(infos[i].getThreadId()).append(")")
-                    .append(" is using ").append(String.format("%.1f", ((double) byteUsages[i] / 1048576f))).append("MB")
-                    .append(System.lineSeparator());
+                        .append(" (ID ").append(infos[i].getThreadId()).append(")")
+                        .append(" is using ").append(String.format("%.1f", ((double) byteUsages[i] / 1048576f))).append("MB")
+                        .append(System.lineSeparator());
                 text.append(logStackTrace(threadBean.getThreadInfo(infos[i].getThreadId(), MAX_STACK_DEPTH)))
-                    .append(System.lineSeparator()).append(System.lineSeparator());
+                        .append(System.lineSeparator()).append(System.lineSeparator());
             }
         }
         return text.toString();
@@ -114,5 +110,4 @@ public class MonitorTypeMemory extends AbstractMonitorType implements IBuiltInEx
     public boolean requiresClusterLock() {
         return false;
     }
-
 }

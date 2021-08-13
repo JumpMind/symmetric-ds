@@ -29,13 +29,9 @@ import java.util.TreeSet;
 import org.apache.commons.lang3.StringUtils;
 
 public class NetworkedNode implements Comparable<NetworkedNode> {
-
     private Node node;
-
     private NetworkedNode parent;
-
     private TreeMap<String, NetworkedNode> children;
-
     private Map<String, NetworkedNode> allNetworkedNodes;
 
     public NetworkedNode(Node node) {
@@ -172,13 +168,11 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
                     leaves.put(parentNodeId, parentNetworkedNode);
                 }
             }
-
             if (parentNetworkedNode != null) {
                 parentNetworkedNode.addChild(this);
             }
             this.parent = parentNetworkedNode;
         }
-
     }
 
     public NetworkedNode getRoot() {
@@ -219,5 +213,4 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
         }
         return string.toString();
     }
-
 }

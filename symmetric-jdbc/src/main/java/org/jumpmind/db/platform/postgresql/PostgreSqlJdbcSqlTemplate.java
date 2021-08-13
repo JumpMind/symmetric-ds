@@ -33,15 +33,14 @@ import org.jumpmind.db.sql.SymmetricLobHandler;
 import org.springframework.jdbc.core.StatementCreatorUtils;
 
 public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
-
     public PostgreSqlJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings, SymmetricLobHandler lobHandler,
             DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
         this.requiresAutoCommitFalseToSetFetchSize = true;
         primaryKeyViolationSqlStates = new String[] { "23000", "23505" };
-        primaryKeyViolationMessageParts = new String[] {"duplicate key value violates", "duplicar valor da chave viola a restrição de unicidade"};
+        primaryKeyViolationMessageParts = new String[] { "duplicate key value violates", "duplicar valor da chave viola a restrição de unicidade" };
         uniqueKeyViolationNameRegex = new String[] { "violates unique constraint \"(.*)\"" };
-        foreignKeyViolationMessageParts = new String[] {"violates foreign key constraint"};
+        foreignKeyViolationMessageParts = new String[] { "violates foreign key constraint" };
         foreignKeyViolationSqlStates = new String[] { "23503" };
         foreignKeyChildExistsViolationMessageParts = new String[] { "is still referenced from table" };
         deadlockSqlStates = new String[] { "40P01" };
@@ -60,23 +59,22 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
-    
+
     @Override
     protected void setNanOrNull(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
         StatementCreatorUtils.setParameterValue(ps, i, Types.FLOAT, Float.NaN);
     }
-    
+
     @Override
     public boolean isDataTruncationViolation(Throwable ex) {
-            boolean dataTruncationViolation = false;
-            SQLException sqlEx = findSQLException(ex);
-            if (sqlEx != null) {
-                String sqlState = sqlEx.getSQLState();
-                if (sqlState != null && sqlState.equals("22001")) {
-                    dataTruncationViolation = true;
-                }
+        boolean dataTruncationViolation = false;
+        SQLException sqlEx = findSQLException(ex);
+        if (sqlEx != null) {
+            String sqlState = sqlEx.getSQLState();
+            if (sqlState != null && sqlState.equals("22001")) {
+                dataTruncationViolation = true;
             }
+        }
         return dataTruncationViolation;
     }
-
 }

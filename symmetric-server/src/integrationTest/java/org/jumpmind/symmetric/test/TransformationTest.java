@@ -30,9 +30,7 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.symmetric.ISymmetricEngine;
 
 public class TransformationTest extends AbstractTest {
-
     Table srcTableA;
-
     Table tgtTableA;
 
     @Override
@@ -40,11 +38,9 @@ public class TransformationTest extends AbstractTest {
         srcTableA = new Table("TRANSFORM_TABLE_A_SRC");
         srcTableA.addColumn(new Column("SRC_ID", true, Types.VARCHAR, 255, 0));
         srcTableA.addColumn(new Column("COL1", false, Types.INTEGER, -1, -1));
-
         tgtTableA = new Table("TRANSFORM_TABLE_A_TGT");
         tgtTableA.addColumn(new Column("TGT_ID", true, Types.VARCHAR, 255, 0));
         tgtTableA.addColumn(new Column("COL1", false, Types.INTEGER, -1, -1));
-
         return new Table[] { srcTableA, tgtTableA };
     }
 
@@ -62,20 +58,17 @@ public class TransformationTest extends AbstractTest {
 
     protected void testDeletesWithTransformedIdWork(ISymmetricEngine rootServer,
             ISymmetricEngine clientServer) throws Exception {
-        
         String rootTableName = rootServer.getDatabasePlatform().getTableFromCache("TRANSFORM_TABLE_A_SRC", false).getName();
         String clientTableName = clientServer.getDatabasePlatform().getTableFromCache("TRANSFORM_TABLE_A_TGT", false).getName();
-        
         ISqlTemplate rootTemplate = rootServer.getDatabasePlatform().getSqlTemplate();
         ISqlTemplate clientTemplate = clientServer.getDatabasePlatform().getSqlTemplate();
-        
         rootTemplate.update(String.format("insert into %s values(?,?)", rootTableName), "1", 1);
-        assertEquals(0, clientTemplate.queryForInt(String.format("select count(*) from %s",clientTableName)));
+        assertEquals(0, clientTemplate.queryForInt(String.format("select count(*) from %s", clientTableName)));
         pull("client");
-        assertEquals(1, clientTemplate.queryForInt(String.format("select count(*) from %s",clientTableName)));
+        assertEquals(1, clientTemplate.queryForInt(String.format("select count(*) from %s", clientTableName)));
         rootTemplate.update(String.format("delete from %s", rootTableName));
-        assertEquals(1, clientTemplate.queryForInt(String.format("select count(*) from %s",clientTableName)));
+        assertEquals(1, clientTemplate.queryForInt(String.format("select count(*) from %s", clientTableName)));
         pull("client");
-        assertEquals(0, clientTemplate.queryForInt(String.format("select count(*) from %s",clientTableName)));
+        assertEquals(0, clientTemplate.queryForInt(String.format("select count(*) from %s", clientTableName)));
     }
 }

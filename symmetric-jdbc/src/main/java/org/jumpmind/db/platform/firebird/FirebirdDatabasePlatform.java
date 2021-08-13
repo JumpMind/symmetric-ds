@@ -60,10 +60,8 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * It is assumed that the database is configured with sql dialect 3!
  */
 public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     /* The standard Firebird jdbc driver. */
     public static final String JDBC_DRIVER = "org.firebirdsql.jdbc.FBDriver";
-
     /* The subprotocol used by the standard Firebird driver. */
     public static final String JDBC_SUBPROTOCOL = "firebirdsql";
 
@@ -83,34 +81,31 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     protected FirebirdDdlReader createDdlReader() {
         return new FirebirdDdlReader(this);
-    }    
-    
+    }
+
     @Override
     protected FirebirdJdbcSqlTemplate createSqlTemplate() {
-        return new FirebirdJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());   
+        return new FirebirdJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
 
     public String getName() {
         return DatabaseNamesConstants.FIREBIRD;
     }
-    
+
     public String getDefaultCatalog() {
         return null;
     }
-    
+
     public String getDefaultSchema() {
         return null;
     }
-    
+
     @Override
     public PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-        
-        String triggerSql = "CREATE TRIGGER TEST_TRIGGER FOR " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " AFTER UPDATE AS BEGIN END";    
-
-           PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-        
+        String triggerSql = "CREATE TRIGGER TEST_TRIGGER FOR " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " AFTER UPDATE AS BEGIN END";
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
         try {
             getSqlTemplate().update(triggerSql);
             result.setStatus(Status.PASS);
@@ -118,15 +113,14 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
         }
-        
         return result;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return true;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         return StringUtils.replaceIgnoreCase(sql, "select", "select first " + limit + " skip " + offset);
@@ -142,15 +136,15 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
                 "left join mon$statements s on s.mon$attachment_id = t.mon$attachment_id and (s.mon$transaction_id = t.mon$transaction_id " +
                 "or s.mon$transaction_id is null)" +
                 "where t.mon$transaction_id is not null " +
-                "and ((s.mon$state = 0 and t.mon$timestamp < dateadd(? minute to current_timestamp)) or " + 
-                "(s.mon$state = 1 and (upper(s.mon$sql_text) like 'INSERT %' or upper(s.mon$sql_text) like 'UPDATE %'or upper(s.mon$sql_text) like 'DELETE %') " +
+                "and ((s.mon$state = 0 and t.mon$timestamp < dateadd(? minute to current_timestamp)) or " +
+                "(s.mon$state = 1 and (upper(s.mon$sql_text) like 'INSERT %' or upper(s.mon$sql_text) like 'UPDATE %'or upper(s.mon$sql_text) like 'DELETE %') "
+                +
                 "and s.mon$timestamp < dateadd(? minute to current_timestamp)))";
         List<Transaction> transactions = new ArrayList<Transaction>();
         List<Transaction> blockedTransactions = new ArrayList<Transaction>();
         List<Row> rows = getSqlTemplate().query(tranSql, new Object[] { minutesOld, minutesOld }, new int[] { Types.INTEGER, Types.INTEGER });
-
         for (Row row : rows) {
-             Transaction tran = new Transaction(row.getString("mon$transaction_id"), StringUtils.trimToEmpty(row.getString("mon$user")),
+            Transaction tran = new Transaction(row.getString("mon$transaction_id"), StringUtils.trimToEmpty(row.getString("mon$user")),
                     null, row.getDateTime("mon$timestamp"), row.getString("mon$sql_text"));
             tran.setRemoteIp(row.getString("mon$remote_address"));
             tran.setStatus(row.getString("mon$state"));
@@ -160,7 +154,6 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
                 blockedTransactions.add(tran);
             }
         }
-        
         for (Transaction blockedTran : blockedTransactions) {
             for (Transaction tran : transactions) {
                 if (tran.getStartTime() != null && tran.getStartTime().before(blockedTran.getStartTime())) {
@@ -171,5 +164,4 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return transactions;
     }
-
 }

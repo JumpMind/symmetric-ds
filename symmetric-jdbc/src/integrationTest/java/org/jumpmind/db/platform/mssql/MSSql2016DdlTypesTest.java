@@ -24,7 +24,6 @@ import org.jumpmind.db.AbstractDdlTypesTest;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class MSSql2016DdlTypesTest extends AbstractDdlTypesTest {
-
     @Override
     protected String getName() {
         return DatabaseNamesConstants.MSSQL2016;
@@ -32,15 +31,14 @@ public class MSSql2016DdlTypesTest extends AbstractDdlTypesTest {
 
     @Override
     protected String[] getDdlTypes() {
-        return new String[] { 
+        return new String[] {
                 "bigint", "bit", "numeric", "smallint", "decimal", "smallmoney", "int", "tinyint", "money",
                 "float", "real",
                 "smalldatetime", "datetime", "date", "time", "datetime2",
-                "char", "varchar", "text", 
-                "nchar", "nvarchar", "ntext", 
+                "char", "varchar", "text",
+                "nchar", "nvarchar", "ntext",
                 "binary", "varbinary", "image",
-                "timestamp", "uniqueidentifier", "xml"//, "sql_variant"
+                "timestamp", "uniqueidentifier", "xml"// , "sql_variant"
         };
     }
-
 }

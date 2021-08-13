@@ -37,21 +37,13 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 
 public class FileIncomingTransport implements IIncomingTransport {
-
     Node remoteNode;
-    
     String incomingDir;
-    
     String archiveDir;
-    
     String errorDir;
-    
     File incomingFile;
-    
     BufferedReader reader;
-    
     InputStream in;
-    
     boolean open = true;
 
     public FileIncomingTransport(Node remoteNode, Node localNode, String incomingDir, String archiveDir, String errorDir) {
@@ -100,15 +92,17 @@ public class FileIncomingTransport implements IIncomingTransport {
     @Override
     public void close() {
         try {
-            if(reader != null) {
+            if (reader != null) {
                 reader.close();
             }
-        } catch(IOException e) { }
+        } catch (IOException e) {
+        }
         try {
-            if(in != null) {
+            if (in != null) {
                 in.close();
             }
-        } catch(IOException e) { }
+        } catch (IOException e) {
+        }
         open = false;
     }
 
@@ -126,7 +120,7 @@ public class FileIncomingTransport implements IIncomingTransport {
     public String getUrl() {
         return "";
     }
-    
+
     public void complete(boolean success) {
         if (incomingFile != null) {
             if (success) {
@@ -140,13 +134,13 @@ public class FileIncomingTransport implements IIncomingTransport {
             }
         }
     }
-    
+
     public static class FileIncomingFilter implements FilenameFilter {
         String startFilter;
         String endFilter;
 
         public FileIncomingFilter(Node remoteNode, String fileExtension) {
-            startFilter = remoteNode.getNodeGroupId() + "-" + remoteNode.getNodeId(); 
+            startFilter = remoteNode.getNodeGroupId() + "-" + remoteNode.getNodeId();
             endFilter = "." + fileExtension;
         }
 

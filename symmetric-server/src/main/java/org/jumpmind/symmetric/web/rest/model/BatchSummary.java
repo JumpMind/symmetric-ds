@@ -27,9 +27,7 @@ import java.util.Date;
  * Holder class for summary information about outgoing batches
  */
 public class BatchSummary implements Serializable {
-
     private static final long serialVersionUID = 1L;
-    
     private int batchCount;
     private int dataCount;
     private String status;
@@ -66,5 +64,4 @@ public class BatchSummary implements Serializable {
     public void setOldestBatchCreateTime(Date oldestBatchCreateTime) {
         this.oldestBatchCreateTime = oldestBatchCreateTime;
     }
-
 }

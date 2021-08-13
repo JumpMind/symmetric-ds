@@ -38,9 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BatchStagingManager extends StagingManager {
-
-	private static final Logger log = LoggerFactory.getLogger(BatchStagingManager.class);
-
+    private static final Logger log = LoggerFactory.getLogger(BatchStagingManager.class);
     ISymmetricEngine engine;
 
     public BatchStagingManager(ISymmetricEngine engine, String directory) {
@@ -48,17 +46,17 @@ public class BatchStagingManager extends StagingManager {
                 engine.getParameterService().getLong(ParameterConstants.STAGING_LOW_SPACE_THRESHOLD_MEGABYTES, 0));
         this.engine = engine;
     }
-    
+
     protected Map<String, Long> getBiggestBatchIds(Set<BatchId> batches) {
-        Map<String,Long> biggest = new HashMap<String,Long>();
+        Map<String, Long> biggest = new HashMap<String, Long>();
         for (BatchId batchId : batches) {
             Long batchNumber = biggest.get(batchId.getNodeId());
             if (batchNumber == null || batchNumber < batchId.getBatchId()) {
                 biggest.put(batchId.getNodeId(), batchId.getBatchId());
             }
-        }        
+        }
         return biggest;
-    }    
+    }
 
     @Override
     public long clean(long ttlInMs) {
@@ -80,11 +78,10 @@ public class BatchStagingManager extends StagingManager {
             long startTime = System.currentTimeMillis();
             boolean purgeBasedOnTTL = engine.getParameterService().is(ParameterConstants.STREAM_TO_FILE_PURGE_ON_TTL_ENABLED, false);
             boolean recordIncomingBatchesEnabled = engine.getIncomingBatchService().isRecordOkBatchesEnabled();
-            long minTtlInMs = engine.getParameterService().getLong(ParameterConstants.STREAM_TO_FILE_MIN_TIME_TO_LIVE_MS,600000);
+            long minTtlInMs = engine.getParameterService().getLong(ParameterConstants.STREAM_TO_FILE_MIN_TIME_TO_LIVE_MS, 600000);
             Set<Long> outgoingBatches = ttlInMs == 0 ? new HashSet<Long>() : new HashSet<Long>(engine.getOutgoingBatchService().getAllBatches());
-            Set<BatchId> incomingBatches =  ttlInMs == 0 ? new HashSet<BatchId>() : new HashSet<BatchId>(engine.getIncomingBatchService().getAllBatches());
+            Set<BatchId> incomingBatches = ttlInMs == 0 ? new HashSet<BatchId>() : new HashSet<BatchId>(engine.getIncomingBatchService().getAllBatches());
             Map<String, Long> biggestIncomingByNode = getBiggestBatchIds(incomingBatches);
-            
             StagingPurgeContext context = new StagingPurgeContext();
             context.putContextValue("startTime", startTime);
             context.putContextValue("purgeBasedOnTTL", purgeBasedOnTTL);
@@ -93,9 +90,8 @@ public class BatchStagingManager extends StagingManager {
             context.putContextValue("outgoingBatches", outgoingBatches);
             context.putContextValue("incomingBatches", incomingBatches);
             context.putContextValue("biggestIncomingByNode", biggestIncomingByNode);
-            
-            return super.clean(ttlInMs, context);            
-        } finally {            
+            return super.clean(ttlInMs, context);
+        } finally {
             if (isLockAcquired) {
                 try {
                     engine.getClusterService().unlock(ClusterConstants.STAGE_MANAGEMENT);
@@ -104,22 +100,19 @@ public class BatchStagingManager extends StagingManager {
             }
         }
     }
-    
+
     @Override
     protected boolean shouldCleanPath(IStagedResource resource, long ttlInMs, StagingPurgeContext context) {
         if (context.getBoolean("purgeBasedOnTTL")) {
             return super.shouldCleanPath(resource, ttlInMs, context);
         }
-        
         String[] path = resource.getPath().split("/");
-        
         boolean resourceIsOld = (System.currentTimeMillis() - resource.getLastUpdateTime()) > ttlInMs;
         boolean resourceClearsMinTimeHurdle = resource.getLastUpdateTime() < context.getLong("startTime")
                 && (System.currentTimeMillis() - resource.getLastUpdateTime()) > context.getLong("minTtlInMs");
-        
         if (path[0].equals(STAGING_CATEGORY_OUTGOING)) {
             return shouldCleanOutgoingPath(resource, ttlInMs, context, path, resourceIsOld, resourceClearsMinTimeHurdle);
-        }  else if (path[0].equals(STAGING_CATEGORY_INCOMING)) {
+        } else if (path[0].equals(STAGING_CATEGORY_INCOMING)) {
             return shouldCleanIncomingPath(resource, ttlInMs, context, path, resourceIsOld, resourceClearsMinTimeHurdle);
         } else if (path[0].equals(STAGING_CATEGORY_LOG_MINER)) {
             return false;
@@ -127,10 +120,10 @@ public class BatchStagingManager extends StagingManager {
             return false;
         } else {
             log.warn("Unrecognized path: " + resource.getPath());
-        }        
+        }
         return false;
     }
-    
+
     protected boolean shouldCleanOutgoingPath(IStagedResource resource, long ttlInMs, StagingPurgeContext context, String[] path,
             boolean resourceIsOld, boolean resourceClearsMinTimeHurdle) {
         @SuppressWarnings("unchecked")
@@ -145,10 +138,9 @@ public class BatchStagingManager extends StagingManager {
                 return true;
             }
         }
-        
         return false;
     }
-    
+
     protected boolean shouldCleanIncomingPath(IStagedResource resource, long ttlInMs, StagingPurgeContext context, String[] path, boolean resourceIsOld,
             boolean resourceClearsMinTimeHurdle) {
         @SuppressWarnings("unchecked")
@@ -159,7 +151,7 @@ public class BatchStagingManager extends StagingManager {
         try {
             BatchId batchId = new BatchId(Long.valueOf(path[path.length - 1]), path[1]);
             Long biggestBatchId = biggestIncomingByNode.get(batchId.getNodeId());
-            if ((recordIncomingBatchesEnabled && resourceClearsMinTimeHurdle && biggestBatchId != null 
+            if ((recordIncomingBatchesEnabled && resourceClearsMinTimeHurdle && biggestBatchId != null
                     && biggestBatchId > batchId.getBatchId() && !incomingBatches.contains(batchId))
                     || (!recordIncomingBatchesEnabled && resourceIsOld) || ttlInMs == 0) {
                 return true;
@@ -169,8 +161,6 @@ public class BatchStagingManager extends StagingManager {
                 return true;
             }
         }
-        
         return false;
     }
-
 }

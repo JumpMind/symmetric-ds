@@ -42,16 +42,14 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 
 public class Db2zOsDdlReader extends Db2DdlReader {
-
     public Db2zOsDdlReader(IDatabasePlatform platform) {
         super(platform);
     }
-    
+
     @Override
     protected void enhanceTableMetaData(Connection connection, DatabaseMetaDataWrapper metaData, Table table) throws SQLException {
         setAutoIncrementMetaData(connection, metaData, table);
         setIsAccessControlledMetaData(connection, metaData, table);
-        
     }
 
     /**
@@ -59,14 +57,12 @@ public class Db2zOsDdlReader extends Db2DdlReader {
      * @param metaData
      * @param table
      */
-    protected void setIsAccessControlledMetaData(Connection connection, DatabaseMetaDataWrapper metaData, Table table)  throws SQLException {
+    protected void setIsAccessControlledMetaData(Connection connection, DatabaseMetaDataWrapper metaData, Table table) throws SQLException {
         log.debug("about to read access control meta data.");
-
         String sql = "SELECT COUNT(*) AS ACCESS_CONTROLS FROM SYSIBM.SYSCONTROLS WHERE TBNAME = ?";
         if (StringUtils.isNotBlank(table.getSchema())) {
             sql = sql + " AND TBSCHEMA=?";
         }
-
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {
@@ -75,7 +71,6 @@ public class Db2zOsDdlReader extends Db2DdlReader {
             if (StringUtils.isNotBlank(table.getSchema())) {
                 pstmt.setString(2, table.getSchema());
             }
-
             rs = pstmt.executeQuery();
             if (rs.next()) {
                 int accessControlCount = rs.getInt(1);
@@ -88,7 +83,7 @@ public class Db2zOsDdlReader extends Db2DdlReader {
             JdbcSqlTemplate.close(rs);
             JdbcSqlTemplate.close(pstmt);
         }
-        log.debug("done reading access control meta data."); 
+        log.debug("done reading access control meta data.");
     }
 
     /**
@@ -99,13 +94,13 @@ public class Db2zOsDdlReader extends Db2DdlReader {
      */
     protected void setAutoIncrementMetaData(Connection connection, DatabaseMetaDataWrapper metaData, Table table) throws SQLException {
         log.debug("about to read additional column data");
-        /* DB2 does not return the auto-increment status via the database
-         metadata */
+        /*
+         * DB2 does not return the auto-increment status via the database metadata
+         */
         String sql = "SELECT NAME, DEFAULT FROM SYSIBM.SYSCOLUMNS WHERE TBNAME=?";
         if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
             sql = sql + " AND TBCREATOR=?";
         }
-
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {
@@ -114,14 +109,13 @@ public class Db2zOsDdlReader extends Db2DdlReader {
             if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
                 pstmt.setString(2, metaData.getSchemaPattern());
             }
-
             rs = pstmt.executeQuery();
             while (rs.next()) {
                 String columnName = rs.getString(1);
                 Column column = table.getColumnWithName(columnName);
                 if (column != null) {
                     String isIdentity = rs.getString(2);
-                    if (isIdentity != null && 
+                    if (isIdentity != null &&
                             (isIdentity.startsWith("I") || isIdentity.startsWith("J"))) {
                         column.setAutoIncrement(true);
                         log.debug("Found identity column {} on {}", columnName, table.getName());
@@ -134,16 +128,13 @@ public class Db2zOsDdlReader extends Db2DdlReader {
         }
         log.debug("done reading additional column data");
     }
-    
+
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) throws SqlException {
-        
         List<Trigger> triggers = new ArrayList<Trigger>();
-
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
-        
         String sql = "SELECT * FROM SYSCAT.TRIGGERS "
                 + "WHERE TABNAME=? and TABSCHEMA=?";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
@@ -155,25 +146,33 @@ public class Db2zOsDdlReader extends Db2DdlReader {
                 trigger.setEnabled(true);
                 trigger.setSource(row.getString("TEXT"));
                 row.remove("TEXT");
-                switch(row.getString("TRIGEVENT").charAt(0)) {
-                    case('I'): row.put("TRIGEVENT", "INSERT"); break;
-                    case('U'): row.put("TRIGEVENT", "UPDATE"); break;
-                    case('D'): row.put("TRIGEVENT", "DELETE");
+                switch (row.getString("TRIGEVENT").charAt(0)) {
+                    case ('I'):
+                        row.put("TRIGEVENT", "INSERT");
+                        break;
+                    case ('U'):
+                        row.put("TRIGEVENT", "UPDATE");
+                        break;
+                    case ('D'):
+                        row.put("TRIGEVENT", "DELETE");
                 }
-                trigger.setTriggerType(TriggerType.valueOf(row.getString("TRIGEVENT")));                
-                switch(row.getString("TRIGTIME").charAt(0)) {
-                    case ('A'): row.put("TRIGTIME", "AFTER"); break;
-                    case ('B'): row.put("TRIGTIME", "BEFORE"); break;
-                    case ('I'): row.put("TRIGTIME", "INSTEAD OF");
+                trigger.setTriggerType(TriggerType.valueOf(row.getString("TRIGEVENT")));
+                switch (row.getString("TRIGTIME").charAt(0)) {
+                    case ('A'):
+                        row.put("TRIGTIME", "AFTER");
+                        break;
+                    case ('B'):
+                        row.put("TRIGTIME", "BEFORE");
+                        break;
+                    case ('I'):
+                        row.put("TRIGTIME", "INSTEAD OF");
                 }
                 trigger.setMetaData(row);
                 return trigger;
             }
         }, tableName, schema);
-        
         return triggers;
     }
-
 
     @Override
     protected void removeGeneratedColumns(Connection connection, DatabaseMetaDataWrapper metaData, Table table) throws SQLException {

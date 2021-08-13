@@ -26,7 +26,6 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 
 public class SelectFromTableEvent {
-
     private TriggerRouter triggerRouter;
     private TriggerHistory triggerHistory;
     private Node node;
@@ -69,5 +68,4 @@ public class SelectFromTableEvent {
     public String getInitialLoadSelect() {
         return initialLoadSelect;
     }
-    
 }

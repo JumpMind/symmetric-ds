@@ -30,11 +30,9 @@ import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 
 /**
- * Read CSV formatted data for a single table. Requires that the column names be
- * the header of the CSV.
+ * Read CSV formatted data for a single table. Requires that the column names be the header of the CSV.
  */
 public class CsvDquoteDataReader extends CsvTableDataReader {
-
     public CsvDquoteDataReader(BinaryEncoding binaryEncoding, String catalogName, String schemaName,
             String tableName, InputStream is) {
         super(binaryEncoding, catalogName, schemaName, tableName, is);
@@ -59,5 +57,4 @@ public class CsvDquoteDataReader extends CsvTableDataReader {
             throw new IoException(e);
         }
     }
-
 }

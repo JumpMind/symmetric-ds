@@ -57,13 +57,10 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * The platform implementation for Derby.
  */
 public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     /* The derby jdbc driver for use as a client for a normal server. */
     public static final String JDBC_DRIVER = "org.apache.derby.jdbc.ClientDriver";
-
     /* The derby jdbc driver for use as an embedded database. */
     public static final String JDBC_DRIVER_EMBEDDED = "org.apache.derby.jdbc.EmbeddedDriver";
-
     /* The subprotocol used by the derby drivers. */
     public static final String JDBC_SUBPROTOCOL = "derby";
 
@@ -71,7 +68,7 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
      * Creates a new Derby platform instance.
      */
     public DerbyDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
-        super(dataSource, settings);        
+        super(dataSource, settings);
     }
 
     @Override
@@ -92,23 +89,23 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public String getName() {
         return DatabaseNamesConstants.DERBY;
     }
-    
+
     public String getDefaultSchema() {
         if (StringUtils.isBlank(defaultSchema)) {
             defaultSchema = (String) getSqlTemplate().queryForObject("values CURRENT SCHEMA", String.class);
         }
         return defaultSchema;
     }
-    
+
     public String getDefaultCatalog() {
         return "";
     }
-    
+
     @Override
     public boolean isClob(int type) {
         return type == Types.CLOB;
     }
-    
+
     @Override
     public boolean canColumnBeUsedInWhereClause(Column column) {
         return (!column.isOfBinaryType()) &&
@@ -118,38 +115,33 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     @Override
-       public PermissionResult getCreateSymTriggerPermission() {
-           String delimiter = getDatabaseInfo().getDelimiterToken();
+    public PermissionResult getCreateSymTriggerPermission() {
+        String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-           
-           String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter 
-                   + " FOR EACH ROW MODE DB2SQL INSERT INTO " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " VALUES(NULL,NULL)";
-           
-           PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-           
-           try {
-               getSqlTemplate().update(triggerSql);
-               result.setStatus(Status.PASS);
-           } catch (SqlException e) {
-               result.setException(e);
-               result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
-           }
-           
-           return result;
+        String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
+                + " FOR EACH ROW MODE DB2SQL INSERT INTO " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " VALUES(NULL,NULL)";
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
+        try {
+            getSqlTemplate().update(triggerSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
+        }
+        return result;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return sqlTemplate.getDatabaseMinorVersion() >= 4;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         if (supportsLimitOffset()) {
             if (sql.endsWith(";")) {
                 sql = sql.substring(0, sql.length() - 1);
             }
-            
             int minorVersion = sqlTemplate.getDatabaseMinorVersion();
             if (minorVersion >= 7) {
                 if (minorVersion >= 9) {
@@ -157,15 +149,13 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
                 }
                 return sql + " offset " + offset + " rows fetch next " + limit + " rows only;";
             }
-            
             int orderIndex = StringUtils.lastIndexOfIgnoreCase(sql, "order by");
             String order = sql.substring(orderIndex);
             String innerSql = sql.substring(0, orderIndex - 1);
             innerSql = StringUtils.replaceIgnoreCase(innerSql, " from", ", ROW_NUMBER() over (" + order + ") as RowNum from");
             return "select * from (" + innerSql + ") " +
-                   "where RowNum between " + (offset + 1) + " and " + (offset + limit);
+                    "where RowNum between " + (offset + 1) + " and " + (offset + limit);
         }
         return sql;
     }
-    
 }

@@ -24,11 +24,9 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
 public interface IMongoClientManager {
-
     public MongoClient getClient(String databaseName);
-    
+
     public MongoDatabase getDB(String name);
-    
+
     public String getName();
-    
 }

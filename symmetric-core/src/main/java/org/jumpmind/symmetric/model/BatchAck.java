@@ -25,59 +25,34 @@ import java.io.Serializable;
 /**
  * Status of a batch acknowledgment
  */
-public class BatchAck  implements Serializable {
-    
+public class BatchAck implements Serializable {
     private static final long serialVersionUID = 1L;
-
     private long batchId;
-
     /**
      * The node id of the node that successfully loaded the batch.
      */
     private String nodeId;
-
     private boolean isOk;
-
     private boolean isResend;
-
     private long errorLine;
-
     private long networkMillis;
-
     private long filterMillis;
-
     private long loadMillis;
-
     private long startTime;
-    
     private long byteCount;
-
     private String sqlState;
-
     private int sqlCode;
-    
     private boolean ignored = false;
-
     private String sqlMessage;
-    
     private long loadRowCount;
-    
     private long loadInsertRowCount;
-    
     private long loadUpdateRowCount;
-    
     private long loadDeleteRowCount;
-    
     private long fallbackInsertCount;
-    
     private long fallbackUpdateCount;
-    
     private long ignoreRowCount;
-    
     private long missingDeleteCount;
-    
     private long skipCount;
-    
     private long transformLoadMillis;
 
     public BatchAck(long batchId) {
@@ -186,11 +161,11 @@ public class BatchAck  implements Serializable {
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
     }
-    
+
     public void setIgnored(boolean ignored) {
         this.ignored = ignored;
     }
-    
+
     public boolean isIgnored() {
         return ignored;
     }
@@ -274,15 +249,12 @@ public class BatchAck  implements Serializable {
     public void setSkipCount(long skipCount) {
         this.skipCount = skipCount;
     }
-    
+
     public void setTransformLoadMillis(long transformLoadMillis) {
         this.transformLoadMillis = transformLoadMillis;
     }
-    
+
     public long getTransformLoadMillis() {
         return transformLoadMillis;
     }
-    
-    
-
 }

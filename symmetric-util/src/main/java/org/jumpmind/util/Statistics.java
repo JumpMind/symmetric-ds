@@ -24,15 +24,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Statistics {
-
     Map<String, Long> stats = new HashMap<String, Long>();
-
     Map<String, Long> timers = new HashMap<String, Long>();
 
     public void increment(String category) {
         increment(category, 1);
     }
-    
+
     public long get(String category) {
         Long value = stats.get(category);
         if (value != null) {
@@ -40,12 +38,12 @@ public class Statistics {
         } else {
             return 0l;
         }
-    } 
-    
+    }
+
     public void set(String category, long value) {
         stats.put(category, value);
     }
-    
+
     public boolean contains(String category) {
         return stats.containsKey(category);
     }
@@ -74,10 +72,9 @@ public class Statistics {
         timers.remove(category);
         return time;
     }
-    
+
     @Override
     public String toString() {
         return stats.toString();
     }
-
 }

@@ -23,15 +23,13 @@ package org.jumpmind.security;
 import java.util.List;
 
 public class KeystoreAliasException extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
-
     private List<String> aliases;
-    
+
     public KeystoreAliasException(String message) {
         super(message);
     }
-    
+
     public KeystoreAliasException(String message, List<String> aliases) {
         super(message);
         this.aliases = aliases;
@@ -44,5 +42,4 @@ public class KeystoreAliasException extends RuntimeException {
     public void setAliases(List<String> aliases) {
         this.aliases = aliases;
     }
-
 }

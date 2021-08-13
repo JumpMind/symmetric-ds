@@ -27,7 +27,5 @@ import org.jumpmind.extension.IExtensionPoint;
  * 
  */
 public interface INodeRegistrationAuthenticator extends IExtensionPoint {
-
     public boolean authenticate(String userId, String password);
-
 }

@@ -29,32 +29,32 @@ import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractBulkDatabaseWriter extends DynamicDefaultDatabaseWriter{
-    
-	private static final Logger log = LoggerFactory.getLogger(AbstractBulkDatabaseWriter.class);
+public abstract class AbstractBulkDatabaseWriter extends DynamicDefaultDatabaseWriter {
+    private static final Logger log = LoggerFactory.getLogger(AbstractBulkDatabaseWriter.class);
 
-    public AbstractBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, String tablePrefix){
+    public AbstractBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, String tablePrefix) {
         super(symmetricPlatform, targetPlatform, tablePrefix);
     }
-    
-    public AbstractBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, 
+
+    public AbstractBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
             String tablePrefix, DatabaseWriterSettings settings) {
         super(symmetricPlatform, targetPlatform, tablePrefix, settings);
     }
-    
+
     @Override
     public void start(Batch batch) {
         super.start(batch);
         if (isFallBackToDefault()) {
             getTransaction().setInBatchMode(false);
             getTransaction().clearBatch();
-            
-            log.debug("Writing batch " + batch.getBatchId() + " on channel " + batch.getChannelId() + " to node " + batch.getTargetNodeId() + " using DEFAULT loader");
+            log.debug("Writing batch " + batch.getBatchId() + " on channel " + batch.getChannelId() + " to node " + batch.getTargetNodeId()
+                    + " using DEFAULT loader");
         } else {
-            log.debug("Writing batch " + batch.getBatchId() + " on channel " + batch.getChannelId() + " to node " + batch.getTargetNodeId() + " using BULK loader");
+            log.debug("Writing batch " + batch.getBatchId() + " on channel " + batch.getChannelId() + " to node " + batch.getTargetNodeId()
+                    + " using BULK loader");
         }
     }
-    
+
     public final void write(CsvData data) {
         if (isFallBackToDefault()) {
             writeDefault(data);
@@ -63,7 +63,7 @@ public abstract class AbstractBulkDatabaseWriter extends DynamicDefaultDatabaseW
             bulkWrite(data);
         }
     }
-    
+
     @Override
     public void end(Batch batch, boolean inError) {
         super.end(batch, inError);
@@ -71,15 +71,14 @@ public abstract class AbstractBulkDatabaseWriter extends DynamicDefaultDatabaseW
             context.put(ContextConstants.CONTEXT_BULK_WRITER_TO_USE, null);
         }
     }
-    
+
     public boolean isFallBackToDefault() {
         return context.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE) != null && context.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE).equals("default");
     }
-    
+
     protected final void writeDefault(CsvData data) {
         super.write(data);
     }
-    
-    protected abstract void bulkWrite(CsvData data);
 
+    protected abstract void bulkWrite(CsvData data);
 }

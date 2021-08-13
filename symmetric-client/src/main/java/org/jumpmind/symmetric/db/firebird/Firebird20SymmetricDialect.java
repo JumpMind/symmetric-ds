@@ -28,12 +28,11 @@ import org.jumpmind.symmetric.service.IParameterService;
  * Database dialect for Firebird version 2.0.
  */
 public class Firebird20SymmetricDialect extends FirebirdSymmetricDialect {
-
     public Firebird20SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new Firebird20TriggerTemplate(this);
     }
-    
+
     @Override
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         transaction.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
@@ -54,5 +53,4 @@ public class Firebird20SymmetricDialect extends FirebirdSymmetricDialect {
     public String getSyncTriggersExpression() {
         return "rdb$get_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "') is null";
     }
-
 }

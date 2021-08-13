@@ -25,7 +25,6 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 
 public class DatabaseWriterFilterAdapter implements IDatabaseWriterFilter {
-
     public boolean beforeWrite(DataContext context, Table table, CsvData data) {
         return true;
     }
@@ -48,5 +47,4 @@ public class DatabaseWriterFilterAdapter implements IDatabaseWriterFilter {
 
     public void batchRolledback(DataContext context) {
     }
-
 }

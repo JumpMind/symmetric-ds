@@ -53,10 +53,8 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * The platform implementation for the HsqlDb database.
  */
 public class HsqlDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     /* The standard Hsqldb jdbc driver. */
     public static final String JDBC_DRIVER = "org.hsqldb.jdbcDriver";
-
     /* The subprotocol used by the standard Hsqldb driver. */
     public static final String JDBC_SUBPROTOCOL = "hsqldb";
 
@@ -66,7 +64,7 @@ public class HsqlDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public HsqlDbDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
     }
-    
+
     @Override
     protected HsqlDbDdlBuilder createDdlBuilder() {
         return new HsqlDbDdlBuilder();
@@ -75,8 +73,8 @@ public class HsqlDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     protected HsqlDbDdlReader createDdlReader() {
         return new HsqlDbDdlReader(this);
-    }            
-    
+    }
+
     @Override
     protected HsqlDbJdbcSqlTemplate createSqlTemplate() {
         return new HsqlDbJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
@@ -85,7 +83,7 @@ public class HsqlDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public String getName() {
         return DatabaseNamesConstants.HSQLDB;
     }
-    
+
     public String getDefaultCatalog() {
         return null;
     }
@@ -93,26 +91,22 @@ public class HsqlDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public String getDefaultSchema() {
         return null;
     }
-    
+
     @Override
     public PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-           
-           String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter 
-                   + " FOR EACH ROW INSERT INTO " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " VALUES(NULL,NULL)";
-           
-           PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-           
-           try {
-               getSqlTemplate().update(triggerSql);
-               result.setStatus(Status.PASS);
-           } catch (SqlException e) {
-               result.setException(e);
-               result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
-           }
-           
-           return result;
+        String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
+                + " FOR EACH ROW INSERT INTO " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " VALUES(NULL,NULL)";
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
+        try {
+            getSqlTemplate().update(triggerSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
+        }
+        return result;
     }
 
     @Override
@@ -124,7 +118,7 @@ public class HsqlDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public boolean supportsLimitOffset() {
         return true;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         if (sql.endsWith(";")) {

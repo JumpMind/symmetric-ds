@@ -29,27 +29,24 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class StageManagementJob extends AbstractJob {
-
     public StageManagementJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(ClusterConstants.STAGE_MANAGEMENT, engine, taskScheduler);
     }
-    
+
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
                 .schedule(EVERY_FIFTEEN_MINUTES)
                 .description("Purges the staging area");
-    } 
-    
+    }
+
     @Override
     public void doJob(boolean force) throws Exception {
         IStagingManager stagingManager = engine.getStagingManager();
         if (stagingManager != null) {
             long processed = stagingManager.clean(engine.getParameterService()
                     .getLong(ParameterConstants.STREAM_TO_FILE_TIME_TO_LIVE_MS));
-
             setProcessedCount(processed);
         }
     }
-
 }

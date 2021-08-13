@@ -26,7 +26,6 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 
 public class RegistrationRequest implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     public static enum RegistrationStatus {
@@ -44,10 +43,10 @@ public class RegistrationRequest implements Serializable {
     private Date createTime = new Date();
     private String lastUpdateBy = "engine";
     private Date lastUpdateTime = new Date();
-    
+
     public RegistrationRequest() {
     }
-    
+
     public RegistrationRequest(Node node, RegistrationStatus status,
             String hostName, String ipAddress) {
         this.nodeGroupId = node.getNodeGroupId();
@@ -138,13 +137,12 @@ public class RegistrationRequest implements Serializable {
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
-    
+
     public void setErrorMessage(String message) {
         this.errorMessage = message;
     }
-    
+
     public String getErrorMessage() {
         return errorMessage;
     }
-
 }

@@ -28,7 +28,6 @@ import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
 public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
-
     public PostgreSqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         //@formatter:off        

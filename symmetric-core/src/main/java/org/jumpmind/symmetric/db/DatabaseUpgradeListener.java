@@ -59,11 +59,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymmetricEngineAware, IBuiltInExtensionPoint {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected ISymmetricEngine engine;
-
     protected boolean isUpgradeFromPre38;
     protected boolean isUpgradeFrom38;
     protected boolean isUpgradeFromPre3125;
@@ -72,38 +69,31 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
     public String beforeUpgrade(ISymmetricDialect symmetricDialect, String tablePrefix, Database currentModel, Database desiredModel)
             throws IOException {
         StringBuilder sb = new StringBuilder();
-
         isUpgradeFromPre38 = isUpgradeFromPre38(tablePrefix, currentModel, desiredModel);
-
         if (isUpgradeFromPre38) {
             Table transformTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRANSFORM_TABLE);
             if (transformTable != null && transformTable.findColumn("update_action") != null) {
                 engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_TRANSFORM_TABLE
                         + " set update_action = 'UPD_ROW' where update_action is null");
             }
-
             String dataGapTableName = tablePrefix + "_" + TableConstants.SYM_DATA_GAP;
             if (currentModel.findTable(dataGapTableName) != null) {
                 engine.getSqlTemplate().update("delete from " + dataGapTableName);
             }
-
             String nodeCommunicationTable = tablePrefix + "_" + TableConstants.SYM_NODE_COMMUNICATION;
             if (currentModel.findTable(nodeCommunicationTable) != null) {
                 engine.getSqlTemplate().update("delete from " + tablePrefix + "_" + TableConstants.SYM_NODE_COMMUNICATION);
             }
         }
-
         if (isUpgradeFromPre311(tablePrefix, currentModel, desiredModel) && shouldFixDataEvent311(tablePrefix)) {
             fixDataEvent311(tablePrefix);
         }
-        
         if (isUpgradeFromPre312(tablePrefix, currentModel, desiredModel)) {
             if (engine.getParameterService().isRegistrationServer()) {
                 log.info("Before upgrade, fixing router_type");
                 engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_ROUTER
                         + " set router_type = 'default' where router_type is null");
             }
-            
             /*
              * Workarounds for missing features (bugs) in ddl-utils
              */
@@ -136,11 +126,9 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                 }
             }
         }
-        
         if (isUpgradeFromPre3125(tablePrefix, currentModel, desiredModel)) {
             isUpgradeFromPre3125 = true;
         }
-
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.INFORMIX)) {
             Table triggerTable = desiredModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRIGGER);
             if (triggerTable != null) {
@@ -154,13 +142,11 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                 }
             }
         }
-
         // Leave this last in the sequence of steps to make sure to capture any DML changes done before this
-        if (engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS) && 
+        if (engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS) &&
                 currentModel.getTableCount() > 0 && currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRIGGER_HIST) != null) {
-        	dropSymTriggersIfNecessary(currentModel, desiredModel);
+            dropSymTriggersIfNecessary(currentModel, desiredModel);
         }
-
         return sb.toString();
     }
 
@@ -169,28 +155,25 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                 .getExtensionPointList(IAlterDatabaseInterceptor.class);
         List<IModelChange> modelChanges = engine.getDatabasePlatform().getDdlBuilder().getDetectedChanges(currentModel, desiredModel,
                 alterDatabaseInterceptors.toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]));
-
         MultiInstanceofPredicate predicate = new MultiInstanceofPredicate(
                 new Class<?>[] { RemovePrimaryKeyChange.class, AddPrimaryKeyChange.class, PrimaryKeyChange.class, RemoveColumnChange.class,
                         AddColumnChange.class, ColumnDataTypeChange.class, ColumnSizeChange.class, CopyColumnValueChange.class });
         Collection<IModelChange> modelChangesAffectingTriggers = CollectionUtils.select(modelChanges, predicate);
         Set<String> setOfTableNamesToDropTriggersFor = new HashSet<String>();
         for (IModelChange change : modelChangesAffectingTriggers) {
-        	if (change instanceof TableChange) {
-        		setOfTableNamesToDropTriggersFor.add(((TableChange)change).getChangedTable().getName());
-        	}
+            if (change instanceof TableChange) {
+                setOfTableNamesToDropTriggersFor.add(((TableChange) change).getChangedTable().getName());
+            }
         }
         engine.getTriggerRouterService().dropTriggers(setOfTableNamesToDropTriggersFor);
     }
 
     @Override
     public String afterUpgrade(ISymmetricDialect symmetricDialect, String tablePrefix, Database model) throws IOException {
-
         // Leave this first so triggers are put back in place before any DML is
         // done against SymmetricDS tables
         // Reinstall triggers on sym tables
         engine.getTriggerRouterService().syncTriggers();
-
         StringBuilder sb = new StringBuilder();
         if (isUpgradeFromPre38) {
             engine.getSqlTemplate().update(
@@ -199,15 +182,12 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             engine.getSqlTemplate().update(
                     "update  " + tablePrefix + "_" + TableConstants.SYM_CHANNEL + " set max_batch_size = 10000 where reload_flag = 1 ");
         }
-
         if (isUpgradeFromPre3125 && engine.getParameterService().isRegistrationServer()) {
             log.info("After upgrade, fixing initial_load_end_time");
             engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_NODE_SECURITY
-                    + " set initial_load_end_time = initial_load_time where initial_load_time is not null");                
+                    + " set initial_load_end_time = initial_load_time where initial_load_time is not null");
         }
-
         engine.getPullService().pullConfigData(false);
-
         return sb.toString();
     }
 
@@ -264,8 +244,8 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         if (!shouldFix && !engine.getParameterService().is("upgrade.skip.fix.data.event")) {
             HashSet<String> set = new HashSet<String>();
             String sql = "select t.trigger_id, r.target_node_group_id from " + tablePrefix + "_trigger t inner join " + tablePrefix +
-                "_trigger_router tr on tr.trigger_id = t.trigger_id inner join " + tablePrefix + 
-                "_router r on r.router_id = tr.router_id where r.source_node_group_id = ?";
+                    "_trigger_router tr on tr.trigger_id = t.trigger_id inner join " + tablePrefix +
+                    "_router r on r.router_id = tr.router_id where r.source_node_group_id = ?";
             List<Row> rows = engine.getSqlTemplate().query(sql, new Object[] { engine.getParameterService().getNodeGroupId() });
             for (Row row : rows) {
                 String key = row.getString("trigger_id") + "-" + row.getString("target_node_group_id");
@@ -281,12 +261,9 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
 
     protected void fixDataEvent311(String tablePrefix) {
         log.info("Checking data_event for upgrade");
-        
-        List<Row> rows = engine.getDatabasePlatform().getSqlTemplateDirty().query("select batch_id, data_id, max(router_id) router_id " + 
+        List<Row> rows = engine.getDatabasePlatform().getSqlTemplateDirty().query("select batch_id, data_id, max(router_id) router_id " +
                 "from " + tablePrefix + "_data_event group by batch_id, data_id having count(*) > 1");
-        
         log.info("Found {} rows in data_event with duplicates", rows.size());
-
         if (rows.size() > 0) {
             long ts = System.currentTimeMillis();
             int commitSize = engine.getParameterService().getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
@@ -328,10 +305,9 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                 }
             }
         }
-
         log.info("Done preparing data_event for upgrade");
     }
-    
+
     protected boolean isUpgradeFromPre312(String tablePrefix, Database currentModel, Database desiredModel) {
         Table eventTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_NODE_SECURITY);
         if (eventTable != null && eventTable.findColumn("failed_logins") == null) {
@@ -356,5 +332,4 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.engine = engine;
     }
-
 }

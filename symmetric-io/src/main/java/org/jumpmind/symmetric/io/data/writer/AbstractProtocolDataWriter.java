@@ -40,37 +40,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class AbstractProtocolDataWriter implements IDataWriter {
-    
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected DataContext context;
-
     protected Batch batch;
-
     protected Table table;
-
-    protected Map<String, String> processedTables = new HashMap<String, String>();    
-
+    protected Map<String, String> processedTables = new HashMap<String, String>();
     protected String delimiter = ",";
-
     protected boolean flushNodeId = true;
-
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
-
     protected List<IProtocolDataWriterListener> listeners;
-
     protected String sourceNodeId;
-    
     protected boolean noBinaryOldData = false;
-    
     protected boolean backwardsCompatible = false;
-    
     protected boolean sendCaptureTime = false;
-    
     protected boolean sendRowCaptureTime = false;
-    
     protected long baseTime;
-    
     protected long lastTime;
 
     public AbstractProtocolDataWriter(String sourceNodeId,
@@ -94,17 +78,14 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
         this.batch = batch;
         this.baseTime = 0;
         this.lastTime = 0;
-
         if (listeners != null) {
             for (IProtocolDataWriterListener listener : listeners) {
                 listener.start(context, batch);
             }
         }
-        
         if (StringUtils.isBlank(sourceNodeId)) {
             sourceNodeId = batch.getSourceNodeId();
         }
-
         if (flushNodeId) {
             if (StringUtils.isNotBlank(sourceNodeId)) {
                 println(CsvConstants.NODEID, sourceNodeId);
@@ -114,18 +95,15 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
             }
             flushNodeId = false;
         }
-        
         if (!backwardsCompatible && StringUtils.isNotBlank(batch.getChannelId())) {
             println(CsvConstants.CHANNEL, batch.getChannelId());
         }
-        
         println(CsvConstants.BATCH, Long.toString(batch.getBatchId()));
-        
         if (backwardsCompatible) {
             printBinary();
         }
     }
-    
+
     private void printBinary() {
         BinaryEncoding binaryEncoding = batch.getBinaryEncoding();
         if (binaryEncoding != null) {
@@ -136,7 +114,6 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     public boolean start(Table table) {
         if (!batch.isIgnored()) {
             this.table = table;
-            
             if (!backwardsCompatible) {
                 String catalogName = table.getCatalog();
                 println(CsvConstants.CATALOG, StringUtils.isNotBlank(catalogName) ? catalogName
@@ -144,7 +121,6 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                 String schemaName = table.getSchema();
                 println(CsvConstants.SCHEMA, StringUtils.isNotBlank(schemaName) ? schemaName : "");
             }
-            
             String tableKey = table.getTableKey();
             String fullyQualifiedTableName = table.getFullyQualifiedTableName();
             String previousTableKey = processedTables.get(fullyQualifiedTableName);
@@ -162,12 +138,10 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
 
     public void write(CsvData data) {
         if (!batch.isIgnored()) {
-            
             if (noBinaryOldData != data.isNoBinaryOldData() && !backwardsCompatible) {
                 noBinaryOldData = data.isNoBinaryOldData();
                 println(CsvConstants.NO_BINARY_OLD_DATA, Boolean.toString(noBinaryOldData));
             }
-            
             statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
             statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
             switch (data.getDataEventType()) {
@@ -176,7 +150,6 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                     println(CsvConstants.INSERT, data.getCsvData(CsvData.ROW_DATA));
                     statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT);
                     break;
-
                 case UPDATE:
                     printTime(data);
                     if (!backwardsCompatible) {
@@ -189,7 +162,6 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                             data.getCsvData(CsvData.PK_DATA));
                     statistics.get(batch).increment(DataWriterStatisticConstants.UPDATECOUNT);
                     break;
-
                 case DELETE:
                     printTime(data);
                     if (!backwardsCompatible) {
@@ -201,22 +173,18 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                     println(CsvConstants.DELETE, data.getCsvData(CsvData.PK_DATA));
                     statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT);
                     break;
-
                 case CREATE:
                     println(CsvConstants.CREATE, data.getCsvData(CsvData.ROW_DATA));
                     break;
-
                 case BSH:
                     println(CsvConstants.BSH, data.getCsvData(CsvData.ROW_DATA));
                     break;
-
                 case SQL:
                     println(CsvConstants.SQL, data.getCsvData(CsvData.ROW_DATA));
                     break;
-                    
                 case RELOAD:
                 default:
-                    break;                      
+                    break;
             }
         }
     }
@@ -225,7 +193,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
         Date createTime = (Date) data.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME);
         if (sendCaptureTime && baseTime == 0 && createTime != null) {
             baseTime = createTime.getTime();
-            println(CsvConstants.BASETIME, String.valueOf(baseTime));            
+            println(CsvConstants.BASETIME, String.valueOf(baseTime));
         }
         if (sendCaptureTime && sendRowCaptureTime && createTime != null) {
             long thisTime = createTime.getTime() - baseTime;
@@ -240,16 +208,13 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     }
 
     final public void end(Batch batch, boolean inError) {
-        
         if (batch.isIgnored() && !backwardsCompatible) {
             println(CsvConstants.IGNORE);
         }
-        
         if (!inError) {
             println(CsvConstants.COMMIT, Long.toString(batch.getBatchId()));
             endBatch(batch);
         }
-
         if (listeners != null && !inError) {
             for (IProtocolDataWriterListener listener : listeners) {
                 notifyEndBatch(batch, listener);
@@ -307,5 +272,4 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     public Map<Batch, Statistics> getStatistics() {
         return statistics;
     }
-
 }

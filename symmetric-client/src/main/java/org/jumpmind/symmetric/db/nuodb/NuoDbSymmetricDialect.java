@@ -35,27 +35,22 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-
     static final String SQL_DROP_FUNCTION = "drop function $(functionName)";
-    
-    static final String SQL_FUNCTION_INSTALLED = "select count(*) from system.functions where functionname='$(functionName)' and schema in (select current_schema from system.dual)" ;
-    
+    static final String SQL_FUNCTION_INSTALLED = "select count(*) from system.functions where functionname='$(functionName)' and schema in (select current_schema from system.dual)";
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
-
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
     public NuoDbSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new NuoDbTriggerTemplate(this);
         this.parameterService = parameterService;
-                     
     }
 
     @Override
     public boolean supportsTransactionId() {
         return true;
     }
-    
+
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
             Trigger trigger) {
         return "(select transid from system.connections where connid = getconnectionid())";
@@ -65,46 +60,45 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     public void createRequiredDatabaseObjects() {
         String function = parameterService.getTablePrefix() + "_get_session_variable";
         if (!installed(SQL_FUNCTION_INSTALLED, function)) {
-            String sql = "create function $(functionName)(akey string) returns string as\n" + 
-                    "VAR l_out string = NULL;\n" + 
-                    "try\n" + 
-                    "l_out = (SELECT context_value from " + parameterService.getTablePrefix() + "_session_cache where name = akey);\n" + 
-                    "catch(error)\n" + 
+            String sql = "create function $(functionName)(akey string) returns string as\n" +
+                    "VAR l_out string = NULL;\n" +
+                    "try\n" +
+                    "l_out = (SELECT context_value from " + parameterService.getTablePrefix() + "_session_cache where name = akey);\n" +
+                    "catch(error)\n" +
                     "create temp table if not exists " + parameterService.getTablePrefix() + "_session_cache\n" +
-                    "(name string primary key, context_value string) on commit preserve rows;\n" + 
-                    "end_try;\n" + 
-                    "return l_out;\n" + 
+                    "(name string primary key, context_value string) on commit preserve rows;\n" +
+                    "end_try;\n" +
+                    "return l_out;\n" +
                     "END_FUNCTION;";
             install(sql, function);
         }
         function = parameterService.getTablePrefix() + "_set_session_variable";
         if (!installed(SQL_FUNCTION_INSTALLED, function)) {
             String sql = "create function $(functionName)(akey string, avalue string) returns string as\n" +
-                    "VAR l_new string = NULL;\n" + 
-                    "try\n" + 
+                    "VAR l_new string = NULL;\n" +
+                    "try\n" +
                     "INSERT INTO " + parameterService.getTablePrefix() + "_session_cache (name, context_value) \n" +
-                    "values (akey, avalue) ON DUPLICATE KEY UPDATE context_value = avalue;\n" + 
-                    "catch(error)\n" + 
+                    "values (akey, avalue) ON DUPLICATE KEY UPDATE context_value = avalue;\n" +
+                    "catch(error)\n" +
                     "create temp table if not exists " + parameterService.getTablePrefix() + "_session_cache\n" +
-                    "(name string primary key, context_value string) on commit preserve rows;\n" + 
+                    "(name string primary key, context_value string) on commit preserve rows;\n" +
                     "INSERT INTO " + parameterService.getTablePrefix() + "_session_cache VALUES (akey, avalue);\n" +
-                    "l_new = error;\n"+
-                    "end_try;\n" + 
-                    "return l_new;\n" + 
+                    "l_new = error;\n" +
+                    "end_try;\n" +
+                    "return l_new;\n" +
                     "END_FUNCTION;";
             install(sql, function);
         }
     }
-    
+
     @Override
     public void dropRequiredDatabaseObjects() {
         String function = this.parameterService.getTablePrefix() + "_get_session_variable";
         if (installed(SQL_FUNCTION_INSTALLED, function)) {
             uninstall(SQL_DROP_FUNCTION, function);
         }
-        
         function = this.parameterService.getTablePrefix() + "_set_session_variable";
-        if (installed(SQL_FUNCTION_INSTALLED, function)){
+        if (installed(SQL_FUNCTION_INSTALLED, function)) {
             uninstall(SQL_DROP_FUNCTION, function);
         }
     }
@@ -112,8 +106,9 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
             String triggerName) {
-        schema = schema == null ? (platform.getDefaultSchema() == null ? null : platform
-                .getDefaultSchema()) : schema;
+        schema = schema == null ? (platform.getDefaultSchema() == null ? null
+                : platform
+                        .getDefaultSchema()) : schema;
         String checkSchemaSql = (schema != null && schema.length() > 0) ? " and schema='"
                 + schema + "'"
                 : "";
@@ -128,16 +123,17 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
             String triggerName, String tableName, ISqlTransaction transaction) {
         final String sql = "drop trigger " + triggerName;
-        logSql(sql, sqlBuffer); 
+        logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             transaction.execute(sql);
         }
     }
-    
+
     @Override
-    public void cleanupTriggers() {        
-        List<String> names = platform.getSqlTemplate().query("select triggername from system.triggers where triggername like '"+parameterService.getTablePrefix().toUpperCase()+"_%'", new StringMapper());
+    public void cleanupTriggers() {
+        List<String> names = platform.getSqlTemplate().query("select triggername from system.triggers where triggername like '" + parameterService
+                .getTablePrefix().toUpperCase() + "_%'", new StringMapper());
         int count = 0;
         for (String name : names) {
             count += platform.getSqlTemplate().update("drop trigger " + name + " if exists");
@@ -148,20 +144,24 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.prepareAndExecute("select " + this.parameterService.getTablePrefix() + "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', '1') from dual");
+        transaction.prepareAndExecute("select " + this.parameterService.getTablePrefix() + "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
+                + "', '1') from dual");
         if (nodeId != null) {
             transaction
-                    .prepareAndExecute("select " + this.parameterService.getTablePrefix()+ "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "','" + nodeId + "') from dual");
+                    .prepareAndExecute("select " + this.parameterService.getTablePrefix() + "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE
+                            + "','" + nodeId + "') from dual");
         }
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.prepareAndExecute("select " + this.parameterService.getTablePrefix() + "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', null) from dual");
-        transaction.prepareAndExecute("select " + this.parameterService.getTablePrefix() + "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "', null) from dual");
+        transaction.prepareAndExecute("select " + this.parameterService.getTablePrefix() + "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
+                + "', null) from dual");
+        transaction.prepareAndExecute("select " + this.parameterService.getTablePrefix() + "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE
+                + "', null) from dual");
     }
 
     public String getSyncTriggersExpression() {
-        return "$(defaultSchema)" + parameterService.getTablePrefix()+ "_get_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "') is null";
+        return "$(defaultSchema)" + parameterService.getTablePrefix() + "_get_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "') is null";
     }
 
     public void cleanDatabase() {
@@ -181,11 +181,10 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.NONE;
     }
-    
+
     @Override
     public PermissionType[] getSymTablePermissions() {
-        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER};
+        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER };
         return permissions;
     }
 }
-

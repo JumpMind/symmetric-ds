@@ -22,7 +22,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.jumpmind.db.platform.h2;
 
 /*
@@ -70,11 +69,8 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
  * The SQL Builder for the H2 database. 
  */
 public class H2DdlBuilder extends AbstractDdlBuilder {
-
     public H2DdlBuilder() {
-        
         super(DatabaseNamesConstants.H2);
-        
         databaseInfo.setNonPKIdentityColumnsSupported(false);
         databaseInfo.setIdentityOverrideAllowed(false);
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
@@ -90,57 +86,53 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.BINARY, "BINARY", Types.BINARY);
         databaseInfo.addNativeTypeMapping(Types.BLOB, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.CLOB, "CLOB", Types.CLOB);
-        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR("+Integer.MAX_VALUE+")", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR(" + Integer.MAX_VALUE + ")", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
         databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "OTHER");
-
         databaseInfo.setDefaultSize(Types.CHAR, Integer.MAX_VALUE);
         databaseInfo.setDefaultSize(Types.VARCHAR, Integer.MAX_VALUE);
         databaseInfo.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
         databaseInfo.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
-        
         databaseInfo.setNonBlankCharColumnSpacePadded(false);
         databaseInfo.setBlankCharColumnSpacePadded(false);
         databaseInfo.setCharColumnSpaceTrimmed(true);
-        databaseInfo.setEmptyStringNulled(false);                
+        databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setNullAsDefaultValueRequired(true);
-                
     }
-    
+
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof AddColumnChange) {
                 AddColumnChange addColumnChange = (AddColumnChange) change;
                 processChange(currentModel, desiredModel, addColumnChange, ddl);
                 changeIt.remove();
             } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
+                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange) change;
                 processChange(currentModel, desiredModel, copyColumnChange, ddl);
                 changeIt.remove();
             } else if (change instanceof RemoveColumnChange) {
                 processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof ColumnDefaultValueChange) {
-                ColumnDefaultValueChange defaultChange = (ColumnDefaultValueChange)change;
+                ColumnDefaultValueChange defaultChange = (ColumnDefaultValueChange) change;
                 defaultChange.getChangedColumn().setDefaultValue(defaultChange.getNewDefaultValue());
                 writeAlterColumn(change.getChangedTable(), defaultChange.getChangedColumn(), ddl);
                 changeIt.remove();
             } else if (change instanceof ColumnRequiredChange) {
-                ColumnRequiredChange defaultChange = (ColumnRequiredChange)change;
+                ColumnRequiredChange defaultChange = (ColumnRequiredChange) change;
                 defaultChange.getChangedColumn().setRequired(!defaultChange.getChangedColumn().isRequired());
                 writeAlterColumn(change.getChangedTable(), defaultChange.getChangedColumn(), ddl);
                 changeIt.remove();
             } else if (change instanceof ColumnSizeChange) {
-                ColumnSizeChange sizeChange = (ColumnSizeChange)change;
-                sizeChange.getChangedColumn().setSizeAndScale(sizeChange.getNewSize(), sizeChange.getNewScale());                
+                ColumnSizeChange sizeChange = (ColumnSizeChange) change;
+                sizeChange.getChangedColumn().setSizeAndScale(sizeChange.getNewSize(), sizeChange.getNewScale());
                 writeAlterColumn(change.getChangedTable(), sizeChange.getChangedColumn(), ddl);
                 changeIt.remove();
             } else if (change instanceof ColumnAutoIncrementChange) {
-                ColumnAutoIncrementChange defaultChange = (ColumnAutoIncrementChange)change;
+                ColumnAutoIncrementChange defaultChange = (ColumnAutoIncrementChange) change;
                 defaultChange.getColumn().setAutoIncrement(!defaultChange.getColumn().isAutoIncrement());
                 writeAlterColumn(change.getChangedTable(), defaultChange.getColumn(), ddl);
                 changeIt.remove();
@@ -148,7 +140,7 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         }
         super.processTableStructureChanges(currentModel, desiredModel, sourceTable, targetTable,
                 changes, ddl);
-    }    
+    }
 
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
@@ -178,7 +170,6 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void writeColumnDefaultValueStmt(Table table, Column column, StringBuilder ddl) {
         Object parsedDefault = column.getParsedDefaultValue();
-
         if (parsedDefault != null) {
             if (!databaseInfo.isDefaultValuesForLongTypesSupported()
                     && ((column.getMappedTypeCode() == Types.LONGVARBINARY) || (column.getMappedTypeCode() == Types.LONGVARCHAR))) {
@@ -207,22 +198,22 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);
     }
-    
+
     @Override
     protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
         ddl.append("AUTO_INCREMENT");
     }
-    
+
     @Override
     protected boolean writeAlterColumnDataTypeToBigInt(ColumnDataTypeChange change, StringBuilder ddl) {
         change.getChangedColumn().setTypeCode(change.getNewTypeCode());
         writeAlterColumn(change.getChangedTable(), change.getChangedColumn(), ddl);
         return true;
-    }   
-    
+    }
+
     protected void writeAlterColumn(Table table, Column column, StringBuilder ddl) {
         writeTableAlterStmt(table, ddl);
-        ddl.append("ALTER COLUMN ");  
+        ddl.append("ALTER COLUMN ");
         writeColumn(table, column, ddl);
         printEndOfStatement(ddl);
     }

@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class AbstractDatabaseWriterConflictResolver implements IDatabaseWriterConflictResolver {
-
     protected Logger log = LoggerFactory.getLogger(AbstractDatabaseWriterConflictResolver.class);
 
     public void needsResolved(AbstractDatabaseWriter writer, CsvData data, LoadStatus loadStatus) {
@@ -41,9 +40,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
         long statementCount = statistics.get(DataWriterStatisticConstants.ROWCOUNT);
         long lineNumber = statistics.get(DataWriterStatisticConstants.LINENUMBER);
         ResolvedData resolvedData = writerSettings.getResolvedData(statementCount);
-
         logConflictHappened(conflict, data, writer, resolvedData, lineNumber);
-        
         switch (originalEventType) {
             case INSERT:
                 if (resolvedData != null) {
@@ -62,11 +59,10 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                             } else {
                                 isWinner = isCaptureTimeNewer(conflict, writer, data);
                             }
-                            
                             if (isWinner) {
                                 performChainedFallbackForInsert(writer, data, conflict);
                             } else if (!conflict.isResolveRowOnly()) {
-                                throw new IgnoreBatchException();                              
+                                throw new IgnoreBatchException();
                             } else {
                                 ignoreRow(writer);
                             }
@@ -81,7 +77,6 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                     }
                 }
                 break;
-
             case UPDATE:
                 if (resolvedData != null) {
                     attemptToResolve(resolvedData, data, writer, conflict);
@@ -99,11 +94,10 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                             } else {
                                 isWinner = isCaptureTimeNewer(conflict, writer, data);
                             }
-                            
                             if (isWinner) {
                                 performChainedFallbackForUpdate(writer, data, conflict);
                             } else if (!conflict.isResolveRowOnly()) {
-                                throw new IgnoreBatchException();                              
+                                throw new IgnoreBatchException();
                             } else {
                                 ignoreRow(writer);
                             }
@@ -118,12 +112,10 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                     }
                 }
                 break;
-
             case DELETE:
                 switch (conflict.getResolveType()) {
                     case FALLBACK:
                         LoadStatus status = LoadStatus.CONFLICT;
-
                         if (conflict.getDetectType() == DetectConflict.USE_PK_DATA) {
                             status = performChainedFallbackForDelete(writer, data, conflict);
                         } else {
@@ -132,7 +124,6 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                                 status = performChainedFallbackForDelete(writer, data, conflict);
                             }
                         }
-
                         if (status == LoadStatus.CONFLICT) {
                             writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
                         }
@@ -148,7 +139,6 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                         } else {
                             isWinner = isCaptureTimeNewer(conflict, writer, data);
                         }
-                        
                         if (isWinner) {
                             if (writer.getContext().getLastError() == null) {
                                 status = writer.delete(data, false);
@@ -159,7 +149,6 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                         } else {
                             ignoreRow(writer);
                         }
-
                         if (status == LoadStatus.CONFLICT) {
                             writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
                         }
@@ -179,14 +168,11 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                                     (Exception) writer.getContext().get(AbstractDatabaseWriter.CONFLICT_ERROR));
                         }
                         break;
-
                 }
                 break;
-
             default:
                 break;
         }
-
         writer.getContext().setLastError(null);
         logConflictResolution(conflict, data, writer, resolvedData, lineNumber);
         checkIfTransactionAborted(writer, data, conflict);
@@ -245,7 +231,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
             }
         } else {
             if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError(), true)) {
-                performFallbackToUpdate(writer, data, conflict, true);                            
+                performFallbackToUpdate(writer, data, conflict, true);
             } else {
                 throw new ConflictException(data, writer.getTargetTable(), false, conflict,
                         (Exception) writer.getContext().get(AbstractDatabaseWriter.CONFLICT_ERROR));
@@ -266,7 +252,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
     }
 
     protected LoadStatus performChainedFallbackForDelete(AbstractDatabaseWriter writer, CsvData data, Conflict conflict) {
-        LoadStatus status = LoadStatus.CONFLICT; 
+        LoadStatus status = LoadStatus.CONFLICT;
         if (checkForForeignKeyChildExistsViolation(writer, data, conflict, writer.getContext().getLastError())) {
             // foreign key child exists violation, we remove blocking rows, and try again
             checkIfTransactionAborted(writer, data, conflict);
@@ -291,19 +277,17 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
             if (StringUtils.isNotBlank(csvData)) {
                 log.debug("Row data: {}", csvData);
             }
-
             csvData = data.getCsvData(CsvData.OLD_DATA);
             if (StringUtils.isNotBlank(csvData)) {
                 log.debug("Old data: {}", csvData);
             }
-
             csvData = resolvedData != null ? resolvedData.getResolvedData() : null;
             if (StringUtils.isNotBlank(csvData)) {
                 log.debug("Resolve data: {}", csvData);
             }
         }
     }
-    
+
     protected void logConflictResolution(Conflict conflict, CsvData data, AbstractDatabaseWriter writer, ResolvedData resolvedData,
             long lineNumber) {
         if (writer.getWriterSettings().isLogConflictResolution()) {
@@ -314,12 +298,10 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
             if (StringUtils.isNotBlank(csvData)) {
                 log.info("Row data: {}", csvData);
             }
-
             csvData = data.getCsvData(CsvData.OLD_DATA);
             if (StringUtils.isNotBlank(csvData)) {
                 log.info("Old data: {}", csvData);
             }
-
             csvData = resolvedData != null ? resolvedData.getResolvedData() : null;
             if (StringUtils.isNotBlank(csvData)) {
                 log.info("Resolve data: {}", csvData);
@@ -353,7 +335,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
     }
 
     abstract protected boolean isTimestampNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data);
-    
+
     abstract protected boolean isCaptureTimeNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data);
 
     abstract protected boolean isVersionNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data);
@@ -404,22 +386,20 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
     }
 
     abstract protected boolean checkForUniqueKeyViolation(AbstractDatabaseWriter writer, CsvData csvData, Conflict conflict, Throwable ex, boolean isFallback);
-    
+
     abstract protected boolean checkForForeignKeyChildExistsViolation(AbstractDatabaseWriter writer, CsvData data, Conflict conflict, Throwable ex);
 
     abstract protected boolean isConflictingLosingParentRow(AbstractDatabaseWriter writer, CsvData data);
-    
+
     @Override
     public boolean isIgnoreRow(AbstractDatabaseWriter writer, CsvData data) {
-       DatabaseWriterSettings writerSettings = writer.getWriterSettings();
-       Statistics statistics = writer.getStatistics().get(writer.getBatch());
-       long statementCount = statistics.get(DataWriterStatisticConstants.ROWCOUNT);
-       ResolvedData resolvedData = writerSettings.getResolvedData(statementCount);
-
-       if (resolvedData != null) {
-           return resolvedData.isIgnoreRow();
-       }
-       return isConflictingLosingParentRow(writer, data);
-    } 
-
+        DatabaseWriterSettings writerSettings = writer.getWriterSettings();
+        Statistics statistics = writer.getStatistics().get(writer.getBatch());
+        long statementCount = statistics.get(DataWriterStatisticConstants.ROWCOUNT);
+        ResolvedData resolvedData = writerSettings.getResolvedData(statementCount);
+        if (resolvedData != null) {
+            return resolvedData.isIgnoreRow();
+        }
+        return isConflictingLosingParentRow(writer, data);
+    }
 }

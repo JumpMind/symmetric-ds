@@ -73,39 +73,22 @@ import com.vaadin.ui.themes.ValoTheme;
 
 @StyleSheet({ "sqlexplorer.css" })
 public class SqlExplorer extends HorizontalSplitPanel {
-
     private static final long serialVersionUID = 1L;
-
     final Logger log = LoggerFactory.getLogger(getClass());
-
     final static VaadinIcons QUERY_ICON = VaadinIcons.FILE_O;
-
     final static float DEFAULT_SPLIT_POS = 225;
-
     IDbProvider databaseProvider;
-
     ISettingsProvider settingsProvider;
-
     MenuItem showButton;
-
     DbTree dbTree;
-    
     SelectionListener<DbTreeNode> listener;
-    
     Registration listenerRegistration;
-
     SqlExplorerTabPanel contentTabs;
-
     MenuBar contentMenuBar;
-
     IContentTab selected;
-
     float savedSplitPosition = DEFAULT_SPLIT_POS;
-
     String user = "nouser";
-
     IDbMenuItem[] additionalMenuItems;
-
     Set<IInfoPanel> infoTabs = new HashSet<IInfoPanel>();
 
     public SqlExplorer(String configDir, IDbProvider databaseProvider, ISettingsProvider settingsProvider, String user) {
@@ -126,32 +109,24 @@ public class SqlExplorer extends HorizontalSplitPanel {
         this.settingsProvider = settingsProvider;
         this.savedSplitPosition = leftSplitSize;
         this.additionalMenuItems = additionalMenuItems;
-
         setSizeFull();
         addStyleName("sqlexplorer");
-
         VerticalLayout leftLayout = new VerticalLayout();
         leftLayout.setMargin(false);
         leftLayout.setSpacing(false);
         leftLayout.setSizeFull();
         leftLayout.addStyleName(ValoTheme.MENU_ROOT);
-
         leftLayout.addComponent(buildLeftMenu());
-
         Panel scrollable = new Panel();
         scrollable.setSizeFull();
-
         dbTree = buildDbTree();
         scrollable.setContent(dbTree);
-
         leftLayout.addComponent(scrollable);
         leftLayout.setExpandRatio(scrollable, 1);
-
         VerticalLayout rightLayout = new VerticalLayout();
         rightLayout.setMargin(false);
         rightLayout.setSpacing(false);
         rightLayout.setSizeFull();
-
         VerticalLayout rightMenuWrapper = new VerticalLayout();
         rightMenuWrapper.setMargin(false);
         rightMenuWrapper.setWidth(100, Unit.PERCENTAGE);
@@ -160,10 +135,8 @@ public class SqlExplorer extends HorizontalSplitPanel {
         contentMenuBar.addStyleName(ValoTheme.MENUBAR_BORDERLESS);
         contentMenuBar.setWidth(100, Unit.PERCENTAGE);
         addShowButton(contentMenuBar);
-
         rightMenuWrapper.addComponent(contentMenuBar);
         rightLayout.addComponent(rightMenuWrapper);
-
         contentTabs = new SqlExplorerTabPanel();
         contentTabs.addSelectedTabChangeListener(new SelectedTabChangeListener() {
             private static final long serialVersionUID = 1L;
@@ -175,9 +148,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
         });
         rightLayout.addComponent(contentTabs);
         rightLayout.setExpandRatio(contentTabs, 1);
-
         addComponents(leftLayout, rightLayout);
-
         setSplitPosition(savedSplitPosition, Unit.PIXELS);
     }
 
@@ -198,7 +169,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
         });
         hideButton.setDescription("Hide the database explorer");
         hideButton.setIcon(VaadinIcons.MENU);
-
         MenuItem refreshButton = leftMenu.addItem("", new Command() {
             private static final long serialVersionUID = 1L;
 
@@ -215,11 +185,10 @@ public class SqlExplorer extends HorizontalSplitPanel {
         });
         refreshButton.setIcon(VaadinIcons.REFRESH);
         refreshButton.setDescription("Refresh the database explorer");
-
         MenuItem selectionMode = leftMenu.addItem("");
-        selectionMode.setCommand(new Command () {
+        selectionMode.setCommand(new Command() {
             private static final long serialVersionUID = 1L;
-            
+
             @Override
             public void menuSelected(MenuItem selectedItem) {
                 if (dbTree.getSelectionModel() instanceof TreeMultiSelectionModel) {
@@ -237,7 +206,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
         });
         selectionMode.setIcon(VaadinIcons.GRID_BIG_O);
         selectionMode.setDescription("Switch to multi-select mode");
-        
         MenuItem openQueryTab = leftMenu.addItem("", new Command() {
             private static final long serialVersionUID = 1L;
 
@@ -248,7 +216,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
         });
         openQueryTab.setIcon(QUERY_ICON);
         openQueryTab.setDescription("Open a query tab");
-
         MenuItem settings = leftMenu.addItem("", new Command() {
             private static final long serialVersionUID = 1L;
 
@@ -260,7 +227,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
         });
         settings.setIcon(VaadinIcons.COG);
         settings.setDescription("Modify sql explorer settings");
-        
         return leftMenu;
     }
 
@@ -327,7 +293,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
         for (Component panel : contentTabs) {
             if (panel instanceof QueryPanel) {
                 QueryPanel queryPanel = ((QueryPanel) panel);
-
                 if (settingsProvider.get().getProperties().is(SQL_EXPLORER_SHOW_RESULTS_IN_NEW_TABS)) {
                     queryPanel.removeGeneralResultsTab();
                 } else if (!settingsProvider.get().getProperties().is(SQL_EXPLORER_SHOW_RESULTS_IN_NEW_TABS)) {
@@ -349,7 +314,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
                     panel = prospectiveQueryPanel;
                 }
             }
-
             if (panel == null) {
                 Iterator<Component> i = contentTabs.iterator();
                 while (i.hasNext()) {
@@ -363,12 +327,10 @@ public class SqlExplorer extends HorizontalSplitPanel {
                     }
                 }
             }
-
             if (panel == null) {
                 panel = openQueryWindow(db);
             }
         }
-
         return panel;
     }
 
@@ -403,7 +365,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
                     value = column.getParsedDefaultValue().toString();
                 }
                 row.put(column.getName(), value);
-
             }
             String sql = dmlStatement.buildDynamicSql(BinaryEncoding.HEX, row, false, true);
             panel.appendSql(sql);
@@ -420,7 +381,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
             tables.add(table);
             tableToTreeNode.put(table, treeNode);
         }
-
         tables = Database.sortByForeignKeys(tables);
         Collections.reverse(tables);
         dropTables(tables, tableToTreeNode);
@@ -456,13 +416,11 @@ public class SqlExplorer extends HorizontalSplitPanel {
                 infoTabs.clear();
                 dbTree.refresh(true);
                 return true;
-
             }
         });
     }
 
     protected DbTree buildDbTree() {
-
         final DbTree tree = new DbTree(databaseProvider, settingsProvider);
         listener = event -> {
             MultiSelectionEvent<DbTreeNode> multiSelectEvent = null;
@@ -481,14 +439,12 @@ public class SqlExplorer extends HorizontalSplitPanel {
                         selectContentTab(getQueryPanelForDb(db));
                     }
                 }
-
                 String selectedTabCaption = null;
                 for (IInfoPanel panel : infoTabs) {
                     selectedTabCaption = panel.getSelectedTabCaption();
                     contentTabs.removeComponent(panel);
                 }
                 infoTabs.clear();
-
                 if (nodes.size() > 0) {
                     DbTreeNode treeNode;
                     if (multiSelectEvent != null) {
@@ -532,7 +488,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
             }
         };
         listenerRegistration = tree.addSelectionListener(listener);
-
         TreeContextMenu<DbTreeNode> contextMenu = new TreeContextMenu<DbTreeNode>(tree);
         contextMenu.addTreeContextMenuListener(event -> {
             contextMenu.removeItems();
@@ -576,7 +531,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
                             final String quote = dbInfo.getDelimiterToken();
                             final String catalogSeparator = dbInfo.getCatalogSeparator();
                             final String schemaSeparator = dbInfo.getSchemaSeparator();
-
                             Table table = treeNode.getTableFor();
                             if (table != null) {
                                 QueryPanel panel = findQueryPanelForDb(db);
@@ -603,9 +557,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
                     });
             }
         });
-        
         return tree;
-
     }
 
     protected QueryPanel getQueryPanelForDb(IDb db) {
@@ -634,7 +586,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
                 for (int i = 0; i < tabs; i++) {
                     Tab tab = contentTabs.getTab(i);
                     String currentTabName = tab.getCaption();
-
                     if (j > 0) {
                         suffix = "-" + j;
                     }
@@ -642,7 +593,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
                         alreadyUsed = true;
                     }
                 }
-
                 if (!alreadyUsed) {
                     tabName = name + suffix;
                     break;
@@ -678,5 +628,4 @@ public class SqlExplorer extends HorizontalSplitPanel {
     public void putResultsInQueryTab(String value, IDb db) {
         openQueryWindow(db).appendSql(value);
     }
-
 }

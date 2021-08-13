@@ -40,13 +40,10 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
  * Handles data pushes from nodes.
  */
 public class PushUriHandler extends AbstractUriHandler {
-
     private IDataLoaderService dataLoaderService;
-
     private IStatisticManager statisticManager;
-    
     private INodeService nodeService;
-    
+
     public PushUriHandler(IParameterService parameterService, IDataLoaderService dataLoaderService,
             IStatisticManager statisticManager, INodeService nodeService,
             IInterceptor... interceptors) {
@@ -58,25 +55,19 @@ public class PushUriHandler extends AbstractUriHandler {
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {
-
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
         log.debug("Push requested from node {} at remote address {}", nodeId, req.getRemoteAddr());
-
         InputStream inputStream = createInputStream(req);
         OutputStream outputStream = res.getOutputStream();
-
         String threadChannel = req.getHeader(WebConstants.CHANNEL_QUEUE);
-        
         int rc = push(nodeId, threadChannel, inputStream, outputStream);
-        
         if (rc != WebConstants.SC_OK) {
             res.sendError(rc);
         }
-
         res.flushBuffer();
         log.debug("Push completed for {} at remote address {}", nodeId, req.getRemoteAddr());
     }
-    
+
     protected int push(String sourceNodeId, String channelId, InputStream inputStream, OutputStream outputStream) throws IOException {
         long ts = System.currentTimeMillis();
         try {
@@ -102,5 +93,4 @@ public class PushUriHandler extends AbstractUriHandler {
         }
         return is;
     }
-    
 }

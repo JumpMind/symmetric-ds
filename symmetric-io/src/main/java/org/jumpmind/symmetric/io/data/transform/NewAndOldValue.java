@@ -21,13 +21,12 @@
 package org.jumpmind.symmetric.io.data.transform;
 
 public class NewAndOldValue {
-
     protected String newValue;
     protected String oldValue;
-    
+
     public NewAndOldValue() {
     }
-        
+
     public NewAndOldValue(String newValue, String oldValue) {
         this.newValue = newValue;
         this.oldValue = oldValue;
@@ -36,15 +35,15 @@ public class NewAndOldValue {
     public void setNewValue(String newValue) {
         this.newValue = newValue;
     }
-    
+
     public String getNewValue() {
         return newValue;
     }
-    
+
     public void setOldValue(String oldValue) {
         this.oldValue = oldValue;
     }
-    
+
     public String getOldValue() {
         return oldValue;
     }

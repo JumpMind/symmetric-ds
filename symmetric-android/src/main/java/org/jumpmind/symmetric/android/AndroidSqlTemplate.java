@@ -44,7 +44,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class AndroidSqlTemplate extends AbstractSqlTemplate {
-
     protected SQLiteOpenHelper databaseHelper;
     protected Context androidContext;
 
@@ -56,7 +55,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
     public SQLiteOpenHelper getDatabaseHelper() {
         return databaseHelper;
     }
-    
+
     public byte[] queryForBlob(String sql, int jdbcTypeCode, String jdbcTypeName, Object... params) {
         return queryForBlob(sql, params);
     }
@@ -64,11 +63,10 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
     public byte[] queryForBlob(String sql, Object... params) {
         return queryForObject(sql, byte[].class, params);
     }
-    
-//    @Override
-//    public String queryForClob(String sql, Object... args) {
-//        return queryForClob(sql, Types.CLOB, TypeMap.CLOB, args);
-//    }
+    // @Override
+    // public String queryForClob(String sql, Object... args) {
+    // return queryForClob(sql, Types.CLOB, TypeMap.CLOB, args);
+    // }
 
     public String queryForClob(String sql, int jdbcTypeCode, String jdbcTypeName, Object... params) {
         return queryForString(sql, params);
@@ -104,7 +102,6 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
 
     public Map<String, Object> queryForMap(final String sql, final Object... args) {
         return queryForObject(sql, new ISqlRowMapper<Map<String, Object>>() {
-
             public Map<String, Object> mapRow(Row rs) {
                 return rs;
             }
@@ -131,7 +128,6 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
             if (!autoCommit) {
                 database.beginTransaction();
             }
-
             for (String statement = source.readSqlStatement(); statement != null; statement = source
                     .readSqlStatement()) {
                 currentStatement = statement;
@@ -142,12 +138,10 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
                     database.endTransaction();
                     database.beginTransaction();
                 }
-
                 if (resultsListener != null) {
                     resultsListener.sqlApplied(statement, row, 0, row);
                 }
             }
-
             if (!autoCommit) {
                 database.setTransactionSuccessful();
             }
@@ -160,10 +154,8 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
             if (!autoCommit) {
                 database.endTransaction();
             }
-
             close(database);
         }
-
         return row;
     }
 
@@ -194,9 +186,8 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
     }
 
     /**
-     * Translate an array of {@link Object} to an array of {@link String} by
-     * creating a new array of {@link String} and putting each of the objects
-     * into the array by calling {@link Object#toString()}
+     * Translate an array of {@link Object} to an array of {@link String} by creating a new array of {@link String} and putting each of the objects into the
+     * array by calling {@link Object#toString()}
      * 
      * @param orig
      *            the original array
@@ -236,7 +227,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
     public ISqlTransaction startSqlTransaction(boolean autoCommit) {
         return new AndroidSqlTransaction(this, autoCommit);
     }
-    
+
     public ISqlTransaction startSqlTransaction() {
         return startSqlTransaction(false);
     }
@@ -288,7 +279,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
     public boolean isStoresUpperCaseIdentifiers() {
         return false;
     }
-    
+
     public boolean isStoresLowerCaseIdentifiers() {
         return true;
     }
@@ -360,7 +351,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
         return (T) result;
     }
 
-   @Override
+    @Override
     public boolean isDataTruncationViolation(Throwable ex) {
         return false;
     }

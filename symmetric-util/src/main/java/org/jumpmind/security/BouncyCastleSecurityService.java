@@ -65,7 +65,6 @@ import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 import org.jumpmind.util.AppUtils;
 
 public class BouncyCastleSecurityService extends SecurityService {
-
     protected KeyPair generateRSAKeyPair() throws Exception {
         KeyPairGenerator kpGen = KeyPairGenerator.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
         kpGen.initialize(2048, new SecureRandom());
@@ -73,22 +72,19 @@ public class BouncyCastleSecurityService extends SecurityService {
     }
 
     /**
-     * Bouncy Castle library is needed for signing a public key to generate a certificate 
+     * Bouncy Castle library is needed for signing a public key to generate a certificate
      */
     protected X509Certificate generateV1Certificate(String host, KeyPair pair) throws Exception {
         host = host == null ? AppUtils.getHostName() : host;
         String certString = String.format("CN=%s, OU=SymmetricDS, O=JumpMind", host);
-
         SubjectPublicKeyInfo publicKeyInfo = new BouncyCastleHelper().getInstance(pair.getPublic());
         X509v1CertificateBuilder builder = new X509v1CertificateBuilder(new X500Name(certString), BigInteger.valueOf(System.currentTimeMillis()),
                 new Date(System.currentTimeMillis() - 86400000), new Date(System.currentTimeMillis() + 788400000000l), new X500Name(certString),
                 publicKeyInfo);
-
-        AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA256WithRSAEncryption"); 
-        AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId); 
+        AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA256WithRSAEncryption");
+        AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId);
         ContentSigner signer = new BcRSAContentSignerBuilder(sigAlgId, digAlgId)
                 .build(new BouncyCastleHelper().createKey(pair.getPrivate()));
-
         X509CertificateHolder holder = builder.build(signer);
         return new JcaX509CertificateConverter().getCertificate(holder);
     }
@@ -103,7 +99,7 @@ public class BouncyCastleSecurityService extends SecurityService {
             if (entry == null) {
                 new BouncyCastleHelper().checkProviderInstalled();
                 PrivateKeyEntry privateEntry = createDefaultSslCert(host);
-                log.info("Installing a default SSL certificate: {}", 
+                log.info("Installing a default SSL certificate: {}",
                         ((X509Certificate) privateEntry.getCertificate()).getSubjectX500Principal().getName());
                 keyStore.setEntry(alias, privateEntry, param);
                 saveKeyStore(keyStore, getKeyStorePassword());
@@ -165,7 +161,6 @@ public class BouncyCastleSecurityService extends SecurityService {
             ByteArrayInputStream is = new ByteArrayInputStream(content);
             PrivateKey key = null;
             Certificate[] chain = null;
-
             if (fileType.equalsIgnoreCase("pfx") || fileType.equalsIgnoreCase("p12")) {
                 KeyStore store = KeyStore.getInstance("PKCS12");
                 char[] passchar = password != null ? password.toCharArray() : null;
@@ -183,7 +178,6 @@ public class BouncyCastleSecurityService extends SecurityService {
                     if (chain == null) {
                         throw new UnrecoverableKeyException();
                     }
-
                     key = (PrivateKey) store.getKey(alias, passchar);
                 } else {
                     chain = new Certificate[1];
@@ -211,14 +205,12 @@ public class BouncyCastleSecurityService extends SecurityService {
             } else {
                 throw new RuntimeException("Unknown TLS certificate format");
             }
-            
             if (chain == null || chain.length == 0) {
                 throw new RuntimeException("Missing TLS certificate");
             }
             if (isKeyEntry && key == null) {
                 throw new RuntimeException("Missing TLS private key");
             }
-
             if (isKeyEntry) {
                 entry = new PrivateKeyEntry(key, chain);
             } else {
@@ -264,7 +256,7 @@ public class BouncyCastleSecurityService extends SecurityService {
         }
         return cert;
     }
-    
+
     @Override
     public synchronized String exportCurrentSslCert(boolean includePrivateKey) {
         String pem = null;
@@ -275,13 +267,11 @@ public class BouncyCastleSecurityService extends SecurityService {
             Entry entry = keyStore.getEntry(alias, param);
             if (entry instanceof PrivateKeyEntry) {
                 X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-
                 String nl = System.getProperty("line.separator");
                 StringWriter writer = new StringWriter();
                 writer.write("-----BEGIN CERTIFICATE-----" + nl);
                 writer.write(new String(Base64.encodeBase64(cert.getEncoded(), true), Charset.defaultCharset()));
                 writer.write("-----END CERTIFICATE-----" + nl);
-
                 if (includePrivateKey) {
                     PrivateKeyEntry key = (PrivateKeyEntry) entry;
                     writer.write("-----BEGIN PRIVATE KEY-----" + nl);
@@ -297,7 +287,7 @@ public class BouncyCastleSecurityService extends SecurityService {
         }
         return pem;
     }
-    
+
     @Override
     public String exportTrustedCert(String alias) {
         String pem = null;
@@ -306,13 +296,11 @@ public class BouncyCastleSecurityService extends SecurityService {
             Entry entry = keyStore.getEntry(alias, null);
             if (entry instanceof TrustedCertificateEntry) {
                 X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-
                 String nl = System.getProperty("line.separator");
                 StringWriter writer = new StringWriter();
                 writer.write("-----BEGIN CERTIFICATE-----" + nl);
                 writer.write(new String(Base64.encodeBase64(cert.getEncoded(), true), Charset.defaultCharset()));
                 writer.write("-----END CERTIFICATE-----" + nl);
-
                 pem = writer.toString();
             }
         } catch (RuntimeException e) {
@@ -322,5 +310,4 @@ public class BouncyCastleSecurityService extends SecurityService {
         }
         return pem;
     }
-
 }

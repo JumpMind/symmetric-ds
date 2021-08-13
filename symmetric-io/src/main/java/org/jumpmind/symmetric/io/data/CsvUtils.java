@@ -34,11 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CsvUtils {
-
-	private static final Logger log = LoggerFactory.getLogger(CsvUtils.class);
-
+    private static final Logger log = LoggerFactory.getLogger(CsvUtils.class);
     public static final String DELIMITER = ", ";
-
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     public static CsvReader getCsvReader(Reader reader) {
@@ -48,7 +45,7 @@ public class CsvUtils {
         csvReader.setCaptureRawRecord(false);
         return csvReader;
     }
-    
+
     public static CsvReader getCsvReaderDquote(Reader reader) {
         CsvReader csvReader = new CsvReader(reader);
         csvReader.setEscapeMode(CsvWriter.ESCAPE_MODE_DOUBLED);
@@ -105,7 +102,6 @@ public class CsvUtils {
 
     public static String escapeCsvData(String[] data) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        
         CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
         writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
         writer.setTextQualifier('\"');
@@ -121,15 +117,15 @@ public class CsvUtils {
         writer.close();
         return out.toString();
     }
-    
+
     public static String escapeCsvData(String[] data, char recordDelimiter, char textQualifier) {
         return escapeCsvData(data, recordDelimiter, textQualifier, CsvWriter.ESCAPE_MODE_BACKSLASH);
     }
-    
+
     public static String escapeCsvData(String[] data, char recordDelimiter, char textQualifier, int escapeMode) {
         return escapeCsvData(data, recordDelimiter, textQualifier, escapeMode, null);
     }
-    
+
     public static String escapeCsvData(String[] data, char recordDelimiter, char textQualifier, int escapeMode, String nullString) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
@@ -152,7 +148,7 @@ public class CsvUtils {
         }
         writer.close();
         return out.toString();
-    }    
+    }
 
     public static int write(Writer writer, String... data) {
         try {
@@ -160,7 +156,6 @@ public class CsvUtils {
             for (String string : data) {
                 buffer.append(string);
             }
-
             writer.write(buffer.toString());
             if (log.isDebugEnabled()) {
                 log.debug(buffer.toString());
@@ -187,7 +182,5 @@ public class CsvUtils {
         } catch (IOException ex) {
             throw new IoException(ex);
         }
-
     }
-
 }

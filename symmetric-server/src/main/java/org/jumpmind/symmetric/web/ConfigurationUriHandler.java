@@ -34,14 +34,12 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
- * Allow a node to pull the configuration.
- * The symmetricVersion parameter is the version number of the software, which is used to filter configuration that is sent.
- * The configVersion parameter is the current version number of the configuration that will be upgraded.
+ * Allow a node to pull the configuration. The symmetricVersion parameter is the version number of the software, which is used to filter configuration that is
+ * sent. The configVersion parameter is the current version number of the configuration that will be upgraded.
  */
 public class ConfigurationUriHandler extends AbstractUriHandler {
-    
     private IDataExtractorService dataExtractorService;
-    
+
     public ConfigurationUriHandler(IParameterService parameterService,
             IDataExtractorService dataExtractorService, IInterceptor... interceptors) {
         super("/config/*", parameterService, interceptors);
@@ -55,14 +53,12 @@ public class ConfigurationUriHandler extends AbstractUriHandler {
         remoteNode.setNodeId(ServletUtils.getParameter(req, WebConstants.NODE_ID));
         remoteNode.setSymmetricVersion(symVersion);
         remoteNode.setConfigVersion(configVersion);
-        log.info("Configuration request from node ID " + remoteNode.getNodeId() + " {symmetricVersion={}, configVersion={}}", 
+        log.info("Configuration request from node ID " + remoteNode.getNodeId() + " {symmetricVersion={}, configVersion={}}",
                 symVersion, configVersion);
-
         if (StringUtils.isBlank(configVersion) || Version.isOlderMinorVersion(configVersion, Version.version())) {
             log.info("Sending configuration to node ID " + remoteNode.getNodeId());
             OutputStream outputStream = res.getOutputStream();
-            dataExtractorService.extractConfigurationOnly(remoteNode, outputStream);   
+            dataExtractorService.extractConfigurationOnly(remoteNode, outputStream);
         }
     }
-    
 }

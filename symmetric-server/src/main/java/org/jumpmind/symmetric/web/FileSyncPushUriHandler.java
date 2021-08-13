@@ -34,7 +34,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 
 public class FileSyncPushUriHandler extends AbstractUriHandler {
-
     private ISymmetricEngine engine;
 
     public FileSyncPushUriHandler(ISymmetricEngine engine, IInterceptor... interceptors) {
@@ -45,7 +44,6 @@ public class FileSyncPushUriHandler extends AbstractUriHandler {
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException, FileUploadException {
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
-
         if (StringUtils.isBlank(nodeId)) {
             ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST,
                     "Node must be specified");
@@ -57,9 +55,7 @@ public class FileSyncPushUriHandler extends AbstractUriHandler {
         } else {
             log.debug("File sync push request received from {}", nodeId);
         }
-
         ServletFileUpload upload = new ServletFileUpload();
-
         // Parse the request
         FileItemIterator iter = upload.getItemIterator(req);
         while (iter.hasNext()) {
@@ -67,15 +63,11 @@ public class FileSyncPushUriHandler extends AbstractUriHandler {
             String name = item.getFieldName();
             if (!item.isFormField()) {
                 log.debug("Processing upload file field " + name + " with file name " + item.getName()
-                        + " detected.");                
+                        + " detected.");
                 engine.getFileSyncService().loadFilesFromPush(nodeId, item.openStream(),
                         res.getOutputStream());
-
             }
         }
-        
         res.flushBuffer();
-
     }
-
 }

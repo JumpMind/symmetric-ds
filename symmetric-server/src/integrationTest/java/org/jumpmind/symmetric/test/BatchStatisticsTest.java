@@ -42,7 +42,6 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.junit.Test;
 
 public class BatchStatisticsTest extends AbstractIntegrationTest {
-
     static {
         System.setProperty("h2.baseDir", "./");
     }
@@ -53,7 +52,6 @@ public class BatchStatisticsTest extends AbstractIntegrationTest {
         assertNotNull(server);
         server.getParameterService().saveParameter(ParameterConstants.FILE_SYNC_ENABLE, false, "unit_test");
         checkForFailedTriggers(true, false);
-
     }
 
     @Test(timeout = 240000)
@@ -72,52 +70,38 @@ public class BatchStatisticsTest extends AbstractIntegrationTest {
                 rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isRegistrationEnabled());
         IStatisticManager statMgr = getClient().getStatisticManager();
         statMgr.flush();
-
         checkForFailedTriggers(true, true);
     }
 
     @Test(timeout = 120000)
     public void testSyncStatistics() throws Exception {
         logTestRunning();
-
         String channelId = "testchannel";
-
         ISymmetricEngine client = getClient();
         ISymmetricEngine server = getServer();
-
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         Order order = new Order("101", 100, null, date);
         order.getOrderDetails().add(new OrderDetail("101", 1, "STK", "110000065", 3, new BigDecimal("3.33")));
-
         assertNull(serverTestService.getOrder(order.getOrderId()));
-
         clientTestService.insertOrder(order);
-
         List<OutgoingBatch> outgoingBatches = client.getOutgoingBatchService().getOutgoingBatches(server.getNodeId(), channelId, true)
                 .getBatches();
         System.out.println("Ougoing Batches Size = " + outgoingBatches.size());
-
         boolean pushedData = clientPush();
-
         assertTrue("Client data was not batched and pushed", pushedData);
-
         assertNotNull(serverTestService.getOrder(order.getOrderId()));
-
         IIncomingBatchService serverIncomingBatchService = server.getIncomingBatchService();
         for (OutgoingBatch outgoingBatch : outgoingBatches) {
             IncomingBatch incomingBatch = serverIncomingBatchService.findIncomingBatch(outgoingBatch.getBatchId(), client.getNodeId());
             assertOutgoingStatisticsEqual(outgoingBatch, incomingBatch);
         }
-
         List<OutgoingBatch> ackedOutgoingBatches = getClient().getOutgoingBatchService()
                 .getOutgoingBatches(server.getNodeId(), channelId, true).getBatches();
         System.out.println("Ougoing Batches Size = " + ackedOutgoingBatches.size());
-        
         for (OutgoingBatch ackedOutgoingBatch : ackedOutgoingBatches) {
             IncomingBatch incomingBatch = serverIncomingBatchService.findIncomingBatch(ackedOutgoingBatch.getBatchId(), client.getNodeId());
             assertIncomingStatisticsEqual(ackedOutgoingBatch, incomingBatch);
         }
-
     }
 
     private void assertOutgoingStatisticsEqual(OutgoingBatch outgoingBatch, IncomingBatch incomingBatch) {
@@ -157,5 +141,4 @@ public class BatchStatisticsTest extends AbstractIntegrationTest {
         assertEquals(outgoingBatch.getMissingDeleteCount(), incomingBatch.getMissingDeleteCount());
         assertEquals(outgoingBatch.getSkipCount(), incomingBatch.getSkipCount());
     }
-
 }

@@ -48,9 +48,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
-
     private static final String API_KEY_NAME = "SymmetricDS REST";
-    
     public static final String API_KEY_HEADER = "X-REST-API-KEY";
 
     @Bean
@@ -64,11 +62,11 @@ public class SwaggerConfig {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder().title("SymmetricDS").version(Version.version()).build();
     }
-    
+
     private ApiKey apiKey() {
         return new ApiKey(API_KEY_NAME, API_KEY_HEADER, "header");
     }
-    
+
     private SecurityContext securityContext() {
         return SecurityContext.builder().securityReferences(defaultAuth()).forPaths(PathSelectors.regex("/.*")).build();
     }

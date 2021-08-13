@@ -24,7 +24,6 @@ import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 
 public class SuperClassExclusion implements ExclusionStrategy {
-
     public boolean shouldSkipClass(Class<?> clazz) {
         return false;
     }
@@ -46,5 +45,4 @@ public class SuperClassExclusion implements ExclusionStrategy {
         }
         return false;
     }
-
 }

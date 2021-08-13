@@ -33,7 +33,6 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class MockOutgoingTransport implements IOutgoingTransport {
-
     private ByteArrayOutputStream bos = new ByteArrayOutputStream();
     private StringWriter writer = new StringWriter();
     private BufferedWriter bWriter;
@@ -57,7 +56,7 @@ public class MockOutgoingTransport implements IOutgoingTransport {
         bWriter = new BufferedWriter(writer);
         return bWriter;
     }
-    
+
     @Override
     public BufferedWriter getWriter() {
         return bWriter;
@@ -79,5 +78,4 @@ public class MockOutgoingTransport implements IOutgoingTransport {
     public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, String queue, Node targetNode) {
         return new ChannelMap();
     }
-
 }

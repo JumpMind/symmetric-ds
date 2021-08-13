@@ -33,34 +33,31 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Write to an internal buffer up until the threshold. When the threshold is
- * reached, flush the buffer to the file and write to the file from that point
+ * Write to an internal buffer up until the threshold. When the threshold is reached, flush the buffer to the file and write to the file from that point
  * forward.
  */
 public class ThresholdFileWriter extends Writer {
-
-    protected File file;    
-
+    protected File file;
     protected BufferedWriter fileWriter;
-
     protected StringBuilder buffer;
-
     protected long threshhold;
 
     /**
-     * @param threshold The number of bytes at which to start writing to a file
-     * @param file The file to write to after the threshold has been reached
+     * @param threshold
+     *            The number of bytes at which to start writing to a file
+     * @param file
+     *            The file to write to after the threshold has been reached
      */
     public ThresholdFileWriter(long threshold, StringBuilder buffer, File file) {
         this.file = file;
         this.buffer = buffer;
         this.threshhold = threshold;
     }
-    
+
     public File getFile() {
         return file;
     }
-    
+
     public void setFile(File file) {
         this.file = file;
     }
@@ -69,7 +66,7 @@ public class ThresholdFileWriter extends Writer {
     public void close() throws IOException {
         if (fileWriter != null) {
             fileWriter.close();
-            fileWriter = null;            
+            fileWriter = null;
         }
     }
 
@@ -93,14 +90,14 @@ public class ThresholdFileWriter extends Writer {
                 buffer = null;
             }
             fileWriter.write(cbuf, off, len);
-            fileWriter.flush();            
+            fileWriter.flush();
         } else {
             buffer.append(new String(cbuf), off, len);
         }
     }
-    
+
     protected BufferedWriter getWriter() throws IOException {
-         return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8.name()));
+        return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8.name()));
     }
 
     public BufferedReader getReader() throws IOException {
@@ -110,7 +107,7 @@ public class ThresholdFileWriter extends Writer {
             return new BufferedReader(new StringReader(buffer.toString()));
         }
     }
-    
+
     public void delete() {
         if (file != null && file.exists()) {
             file.delete();
@@ -121,5 +118,4 @@ public class ThresholdFileWriter extends Writer {
             buffer.trimToSize();
         }
     }
-
 }

@@ -29,10 +29,8 @@ import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class RedshiftDdlBuilder extends AbstractDdlBuilder {
-
     public RedshiftDdlBuilder() {
         super(DatabaseNamesConstants.REDSHIFT);
-
         databaseInfo.setTriggersSupported(false);
         databaseInfo.setIndicesSupported(false);
         databaseInfo.setIndicesEmbedded(false);
@@ -40,7 +38,6 @@ public class RedshiftDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setRequiresSavePointsInTransaction(true);
         databaseInfo.setRequiresAutoCommitForDdl(true);
         databaseInfo.setMaxIdentifierLength(127);
-        
         databaseInfo.addNativeTypeMapping(Types.BIT, "BOOLEAN");
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION", Types.DOUBLE);
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE PRECISION");
@@ -48,15 +45,12 @@ public class RedshiftDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
         databaseInfo.addNativeTypeMapping(Types.TIME, "TIMESTAMP", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.CLOB, "VARCHAR(65535)");
-        
         databaseInfo.setDefaultSize(Types.CHAR, 256);
         databaseInfo.setDefaultSize(Types.VARCHAR, 256);
-
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
-        
         addEscapedCharSequence("\\", "\\\\");
         addEscapedCharSequence("\b", "\\b");
         addEscapedCharSequence("\f", "\\f");
@@ -67,11 +61,10 @@ public class RedshiftDdlBuilder extends AbstractDdlBuilder {
 
     protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
     }
-    
+
     @Override
     protected void writeCascadeAttributesForForeignKey(ForeignKey key, StringBuilder ddl) {
         // Redshift does not support cascade actions
         return;
     }
-
 }

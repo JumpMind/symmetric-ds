@@ -32,20 +32,14 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 
 /**
- * This is an optional {@link IDatabaseWriterFilter} that
- * is capable of translating table data to XML and publishing it for consumption
- * by the enterprise. It uses JDOM internally to create an XML representation of
- * SymmetricDS data.
+ * This is an optional {@link IDatabaseWriterFilter} that is capable of translating table data to XML and publishing it for consumption by the enterprise. It
+ * uses JDOM internally to create an XML representation of SymmetricDS data.
  * <p>
- * This filter is typically configured as a Spring bean. The table names that
- * should be published are identified by
- * {@link #setTableNamesToPublishAsGroup(Set)}. Rows from tables can be grouped
- * together (which get synchronized in the same batch) by identifying columns
- * that are the same that act as a 'key' by setting
+ * This filter is typically configured as a Spring bean. The table names that should be published are identified by {@link #setTableNamesToPublishAsGroup(Set)}.
+ * Rows from tables can be grouped together (which get synchronized in the same batch) by identifying columns that are the same that act as a 'key' by setting
  * {@link #setGroupByColumnNames(List)}
  * <p>
- * The {@link IPublisher} is typically configured and injected onto this bean as
- * well. Provided is a {@link SimpleJmsPublisher}.
+ * The {@link IPublisher} is typically configured and injected onto this bean as well. Provided is a {@link SimpleJmsPublisher}.
  * <p>
  * An example of the XML that is published is as follows:
  * 
@@ -63,13 +57,9 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
  */
 public class XmlPublisherDatabaseWriterFilter extends AbstractXmlPublisherExtensionPoint implements
         IPublisherFilter, INodeGroupExtensionPoint {
-    
     public static final String PUBLISH_ON_COMPLETE = "COMPLETE";
-    
     public static final String PUBLISH_ON_COMMIT = "COMMIT";
-
     protected boolean loadDataInTargetDatabase = true;
-    
     protected String publishOn = PUBLISH_ON_COMPLETE;
 
     public boolean beforeWrite(
@@ -80,7 +70,7 @@ public class XmlPublisherDatabaseWriterFilter extends AbstractXmlPublisherExtens
             if (data.getDataEventType() == DataEventType.DELETE) {
                 rowData = data.getParsedData(CsvData.OLD_DATA);
             }
-            Element xml = getXmlFromCache(context, context.getBatch().getBinaryEncoding(), 
+            Element xml = getXmlFromCache(context, context.getBatch().getBinaryEncoding(),
                     table.getColumnNames(),
                     rowData, table.getPrimaryKeyColumnNames(),
                     data.getParsedData(CsvData.PK_DATA));
@@ -89,14 +79,14 @@ public class XmlPublisherDatabaseWriterFilter extends AbstractXmlPublisherExtens
                         table.getName(), table.getColumnNames(),
                         rowData, table.getPrimaryKeyColumnNames(), data.getParsedData(CsvData.PK_DATA));
             }
-        } 
+        }
         return loadDataInTargetDatabase;
     }
 
     public void setLoadDataInTargetDatabase(boolean loadDataInTargetDatabase) {
         this.loadDataInTargetDatabase = loadDataInTargetDatabase;
     }
-    
+
     public void setPublishOn(String publishOn) {
         this.publishOn = publishOn;
     }
@@ -127,15 +117,14 @@ public class XmlPublisherDatabaseWriterFilter extends AbstractXmlPublisherExtens
             publish(context);
         }
     }
-    
+
     private void publish(DataContext context) {
         if (doesXmlExistToPublish(context)) {
             finalizeXmlAndPublish(context);
-        }                
+        }
     }
 
     public void batchRolledback(
             DataContext context) {
     }
-
 }

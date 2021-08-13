@@ -40,7 +40,6 @@ import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
-
     public OracleBulkDataLoaderFactory(ISymmetricEngine engine) {
         super(engine);
     }
@@ -50,10 +49,9 @@ public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-                TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
+            TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-        
         IParameterService parmService = engine.getParameterService();
         String prefix = "";
         if (parmService.is(ParameterConstants.NODE_LOAD_ONLY)) {
@@ -64,12 +62,10 @@ public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
         if (dbUser != null && dbUser.startsWith(SecurityConstants.PREFIX_ENC)) {
             dbUser = engine.getSecurityService().decrypt(dbUser.substring(SecurityConstants.PREFIX_ENC.length()));
         }
-
         String dbPassword = parmService.getString(prefix + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
         if (dbPassword != null && dbPassword.startsWith(SecurityConstants.PREFIX_ENC)) {
             dbPassword = engine.getSecurityService().decrypt(dbPassword.substring(SecurityConstants.PREFIX_ENC.length()));
         }
-
         String sqlLoaderCommand = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD);
         String sqlLoaderOptions = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_OPTIONS);
         String sqlLoaderInfileCharset = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_INFILE_CHARSET);
@@ -77,8 +73,6 @@ public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
         String lineTerminator = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LINE_TERMINATOR);
         String fieldTerminator = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_FIELD_TERMINATOR);
         boolean delimitTokens = parmService.is(ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE, true);
-        
-
         return new OracleBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                 engine.getStagingManager(), engine.getTablePrefix(), sqlLoaderCommand, sqlLoaderOptions,
                 dbUser, dbPassword, dbUrl, ezConnectString, sqlLoaderInfileCharset,
@@ -90,5 +84,4 @@ public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
     public boolean isPlatformSupported(IDatabasePlatform platform) {
         return DatabaseNamesConstants.ORACLE.equals(platform.getName()) || DatabaseNamesConstants.ORACLE122.equals(platform.getName());
     }
-
 }

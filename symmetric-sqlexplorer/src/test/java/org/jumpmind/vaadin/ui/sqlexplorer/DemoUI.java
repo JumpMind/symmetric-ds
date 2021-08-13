@@ -54,13 +54,10 @@ import com.vaadin.ui.UI;
 @Title("SQL Explorer Demo")
 @Theme("sqlexplorer")
 @PreserveOnRefresh
-@Push(value=PushMode.AUTOMATIC)
+@Push(value = PushMode.AUTOMATIC)
 public class DemoUI extends UI implements IDbProvider {
-
-	private static final Logger log = LoggerFactory.getLogger(DemoUI.class);
-
+    private static final Logger log = LoggerFactory.getLogger(DemoUI.class);
     private static final long serialVersionUID = 1L;
-
     List<IDb> dbList;
 
     @Override
@@ -85,9 +82,7 @@ public class DemoUI extends UI implements IDbProvider {
     }
 
     public static class DB implements IDb {
-
         private static final long serialVersionUID = 1L;
-
         String name;
         IDatabasePlatform databasePlatform;
 
@@ -127,16 +122,15 @@ public class DemoUI extends UI implements IDbProvider {
         webapp.setConfigurationDiscovered(true);
         webapp.setContextPath("/");
         webapp.setResourceBase("src/main/webapp");
-        webapp.setWar("src/main/webapp");       
+        webapp.setWar("src/main/webapp");
         ServletHolder servletHolder = webapp.addServlet(DemoUIServlet.class, "/*");
         servletHolder.setAsyncSupported(true);
         servletHolder.setInitParameter("org.atmosphere.cpr.asyncSupport", JSR356AsyncSupport.class.getName());
         server.setHandler(webapp);
         ServerContainer webSocketServer = WebSocketServerContainerInitializer.initialize(webapp);
-        webSocketServer.setDefaultMaxSessionIdleTimeout(10000000);        
+        webSocketServer.setDefaultMaxSessionIdleTimeout(10000000);
         server.start();
         log.info("Browse http://localhost:9090 to see the demo");
         server.join();
     }
-
 }

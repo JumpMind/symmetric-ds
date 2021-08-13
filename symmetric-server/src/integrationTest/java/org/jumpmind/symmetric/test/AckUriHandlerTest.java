@@ -60,21 +60,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class AckUriHandlerTest {
-
     static final long BATCH_ID = 100;
-    
     static final String NODE_ID = "NODE1";
-    
     static final String CHANNEL_ID = "default";
-    
     ISymmetricEngine engine;
-    
     OutgoingBatch batch;
-
     HttpServletRequest request;
-
     HttpServletResponse response;
-    
     Map<String, String[]> paramMap;
 
     @Before
@@ -82,7 +74,7 @@ public class AckUriHandlerTest {
         engine = mock(ISymmetricEngine.class);
         IParameterService parameterService = mock(IParameterService.class);
         ISymmetricDialect symmetricDialect = mock(ISymmetricDialect.class);
-        IDatabasePlatform databasePlatform = mock(IDatabasePlatform.class);        
+        IDatabasePlatform databasePlatform = mock(IDatabasePlatform.class);
         IExtensionService extensionService = mock(IExtensionService.class);
         IRegistrationService registrationService = mock(IRegistrationService.class);
         IOutgoingBatchService outgoingBatchService = mock(IOutgoingBatchService.class);
@@ -93,7 +85,6 @@ public class AckUriHandlerTest {
         batch = new OutgoingBatch(NODE_ID, CHANNEL_ID, Status.LD);
         batch.setBatchId(BATCH_ID);
         when(outgoingBatchService.findOutgoingBatch(BATCH_ID, NODE_ID)).thenReturn(batch);
-        
         when(databasePlatform.getDatabaseInfo()).thenReturn(new DatabaseInfo());
         when(symmetricDialect.getPlatform()).thenReturn(databasePlatform);
         when(engine.getDatabasePlatform()).thenReturn(databasePlatform);
@@ -106,11 +97,10 @@ public class AckUriHandlerTest {
         when(engine.getStatisticManager()).thenReturn(statMan);
         when(symmetricDialect.getPlatform().getSqlTemplate()).thenReturn(sqlTemplate);
         when(sqlTemplate.startSqlTransaction()).thenReturn(sqlTransaction);
-
         paramMap = new HashMap<String, String[]>();
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
-        when(request.getParameterMap()).thenReturn(paramMap);        
+        when(request.getParameterMap()).thenReturn(paramMap);
         when(response.getWriter()).thenReturn(new PrintWriter(new StringWriter()));
     }
 
@@ -145,7 +135,6 @@ public class AckUriHandlerTest {
         paramMap.put(WebConstants.ACK_SQL_STATE + BATCH_ID, new String[] { "LOCKWAIT" });
         paramMap.put(WebConstants.ACK_SQL_CODE + BATCH_ID, new String[] { "-911" });
         paramMap.put(WebConstants.ACK_SQL_MESSAGE + BATCH_ID, new String[] { "Lock timeout" });
-
         IAcknowledgeService ackService = new AcknowledgeService(engine) {
             public BatchAckResult ack(BatchAck batch) {
                 assertEquals(BATCH_ID, batch.getBatchId());
@@ -160,7 +149,6 @@ public class AckUriHandlerTest {
                 return null;
             }
         };
-
         AckUriHandler uriHandler = new AckUriHandler(engine.getParameterService(), ackService);
         uriHandler.handle(request, response);
     }
@@ -172,15 +160,12 @@ public class AckUriHandlerTest {
     public void testOutgoingBatchResend() throws Exception {
         paramMap.put(WebConstants.ACK_BATCH_NAME + BATCH_ID, new String[] { WebConstants.ACK_BATCH_RESEND });
         paramMap.put(WebConstants.ACK_NODE_ID + BATCH_ID, new String[] { NODE_ID });
-
         IAcknowledgeService ackService = new AcknowledgeService(engine);
         AckUriHandler uriHandler = new AckUriHandler(engine.getParameterService(), ackService);
         uriHandler.handle(request, response);
-
         assertEquals(BATCH_ID, batch.getBatchId());
         assertEquals(NODE_ID, batch.getNodeId());
         assertEquals(Status.RS, batch.getStatus());
         assertFalse(batch.isErrorFlag());
     }
-
 }

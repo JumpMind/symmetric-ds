@@ -73,24 +73,16 @@ import org.slf4j.LoggerFactory;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest {
-
-	private static final Logger logger = LoggerFactory.getLogger(AbstractDataLoaderServiceTest.class);
-
+    private static final Logger logger = LoggerFactory.getLogger(AbstractDataLoaderServiceTest.class);
     protected final static String TEST_TABLE = "test_dataloader_table";
-
     protected final static String[] TEST_KEYS = { "id" };
-
     protected final static String[] TEST_COLUMNS = { "id", "string_value", "string_required_value",
             "char_value", "char_required_value", "date_value", "time_value", "boolean_value",
             "integer_value", "decimal_value", "double_value" };
-
     protected static int batchId = 10000;
-
     protected static int sequenceId = 10000;
-
     protected Node client = new Node(TestConstants.TEST_CLIENT_EXTERNAL_ID, null, null);
     protected Node root = new Node(TestConstants.TEST_ROOT_EXTERNAL_ID, null, null);
-
     private MockTransportManager transportManager;
 
     protected synchronized String getNextBatchId() {
@@ -113,25 +105,21 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     public void test01IncomingBatch() throws Exception {
         String[] insertValues = new String[TEST_COLUMNS.length];
         insertValues[2] = insertValues[4] = "incoming test";
-
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
         writer.writeRecord(new String[] { CsvConstants.CHANNEL,
-                TestConstants.TEST_CHANNEL_ID });                
+                TestConstants.TEST_CHANNEL_ID });
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
-
         insertValues[0] = getNextId();
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(insertValues, true);
-
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId });
         writer.close();
         load(out);
-
         IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         assertEquals(batch.getStatus(), IncomingBatch.Status.OK, "Wrong status. " + printDatabase());
@@ -146,50 +134,41 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         updateValues[2] = updateValues[4] = "required string";
         String[] insertValues = (String[]) ArrayUtils.subarray(updateValues, 0,
                 updateValues.length - 1);
-
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
         writer.writeRecord(new String[] { CsvConstants.CHANNEL,
-                TestConstants.TEST_CHANNEL_ID });        
+                TestConstants.TEST_CHANNEL_ID });
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
-
         // Update becomes fallback insert
         writer.write(CsvConstants.UPDATE);
         writer.writeRecord(updateValues, true);
-
         // Insert becomes fallback update
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(insertValues, true);
-
         // Insert becomes fallback update
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(insertValues, true);
-
         // Clean insert
         insertValues[0] = getNextId();
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(insertValues, true);
-
         // Delete affects no rows
         writer.writeRecord(new String[] { CsvConstants.DELETE, getNextId() }, true);
         writer.writeRecord(new String[] { CsvConstants.DELETE, getNextId() }, true);
         writer.writeRecord(new String[] { CsvConstants.DELETE, getNextId() }, true);
-
         // Failing statement
         insertValues[0] = getNextId();
         insertValues[5] = "i am an invalid date";
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(insertValues, true);
-
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId });
         writer.close();
         logger.error(out.toString());
         load(out);
-
         IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         assertNotNull(batch);
@@ -212,48 +191,37 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         String[] insertValues = new String[TEST_COLUMNS.length];
         insertValues[0] = getNextId();
         insertValues[2] = insertValues[4] = "inserted row for testUpdateCollision";
-
         String[] updateValues = new String[TEST_COLUMNS.length + 1];
         updateValues[0] = getId();
         updateValues[TEST_COLUMNS.length] = getNextId();
         updateValues[2] = updateValues[4] = "update will become an insert that violates PK";
-
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
         writer.writeRecord(new String[] { CsvConstants.CHANNEL,
-                TestConstants.TEST_CHANNEL_ID });        
+                TestConstants.TEST_CHANNEL_ID });
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
-
         // This insert will be OK
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(insertValues, true);
-
         // Update becomes fallback insert, and then violate the primary key
         writer.write(CsvConstants.UPDATE);
         writer.writeRecord(updateValues, true);
-
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId });
         writer.close();
         load(out);
-
         IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         assertNotNull(batch);
-
         load(out);
-
         assertEquals(batch.getStatus(), IncomingBatch.Status.OK, "Wrong status");
-
         batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         assertNotNull(batch);
-
         assertEquals(batch.getStatus(), IncomingBatch.Status.OK, "Wrong status");
-
         setLoggingLevelForTest(old);
     }
 
@@ -262,40 +230,34 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] insertValues = new String[TEST_COLUMNS.length];
         insertValues[2] = insertValues[4] = "sql stat test";
-
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
         writer.writeRecord(new String[] { CsvConstants.CHANNEL,
-                TestConstants.TEST_CHANNEL_ID });                
+                TestConstants.TEST_CHANNEL_ID });
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
-
         // Clean insert
         String firstId = getNextId();
         insertValues[0] = firstId;
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(insertValues, true);
-
         // Clean insert
         String secondId = getNextId();
         insertValues[0] = secondId;
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(insertValues, true);
-
         String thirdId = getNextId();
         insertValues[0] = thirdId;
         // date column ...
         insertValues[5] = "This is a very long string that will fail upon insert into the database.";
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(insertValues, true);
-
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId });
         writer.close();
         load(out);
-
         IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         assertNotNull(batch);
@@ -340,14 +302,16 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
             Thread.sleep(10);
         }
     }
-    
+
     private String[] massageExpectectedResultsForDialect(String[] values) {
-        if(values[5] != null && (getSymmetricEngine().getDatabasePlatform() instanceof MsSql2008DatabasePlatform || getSymmetricEngine().getDatabasePlatform() instanceof MsSql2016DatabasePlatform)) {
+        if (values[5] != null && (getSymmetricEngine().getDatabasePlatform() instanceof MsSql2008DatabasePlatform || getSymmetricEngine()
+                .getDatabasePlatform() instanceof MsSql2016DatabasePlatform)) {
             // No time portion for a date field
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.000", "");
         }
-        if(values[6] != null && (getSymmetricEngine().getDatabasePlatform() instanceof MsSql2008DatabasePlatform || getSymmetricEngine().getDatabasePlatform() instanceof MsSql2016DatabasePlatform)) {
-            if(values[6].length() == 23) {
+        if (values[6] != null && (getSymmetricEngine().getDatabasePlatform() instanceof MsSql2008DatabasePlatform || getSymmetricEngine()
+                .getDatabasePlatform() instanceof MsSql2016DatabasePlatform)) {
+            if (values[6].length() == 23) {
                 values[6] = values[6] + "0000";
             }
         }
@@ -359,7 +323,6 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "string2", "string not null2", "char2", "char not null2",
                 "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "0.474" };
-
         testSimple(CsvConstants.INSERT, values, massageExpectectedResultsForDialect(values));
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.OK, "Wrong status");
@@ -369,13 +332,12 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         assertEquals(batch.getStatus(), IncomingBatch.Status.OK, "Wrong status");
         assertEquals(batch.getFailedRowNumber(), 0l, "Wrong failed row number");
         assertEquals(batch.getLoadRowCount(), 1l, "Wrong statement count");
-
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
         writer.writeRecord(new String[] { CsvConstants.CHANNEL,
-                TestConstants.TEST_CHANNEL_ID });        
+                TestConstants.TEST_CHANNEL_ID });
         writer.writeRecord(new String[] { CsvConstants.BATCH, getBatchId() });
         writer.write(CsvConstants.KEYS);
         writer.writeRecord(TEST_KEYS);
@@ -394,19 +356,17 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "string3", "string not null3", "char3", "char not null3",
                 "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "0.474" };
-        
         ConflictNodeGroupLink conflictSettings = new ConflictNodeGroupLink();
         conflictSettings.setNodeGroupLink(TestConstants.TEST_2_ROOT);
         conflictSettings.setConflictId("dont_fallback");
         conflictSettings.setResolveType(ResolveConflict.MANUAL);
         getSymmetricEngine().getDataLoaderService().save(conflictSettings);
-
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
         writer.writeRecord(new String[] { CsvConstants.CHANNEL,
-                TestConstants.TEST_CHANNEL_ID });        
+                TestConstants.TEST_CHANNEL_ID });
         writer.writeRecord(new String[] { CsvConstants.BATCH, getNextBatchId() });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
         writer.write(CsvConstants.INSERT);
@@ -416,7 +376,6 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         writer.writeRecord(new String[] { CsvConstants.COMMIT, getBatchId() });
         writer.close();
         load(out);
-
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.ER, "Wrong status");
         IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
@@ -425,7 +384,6 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status");
         assertEquals(batch.getFailedRowNumber(), 2l, "Wrong failed row number");
         assertEquals(batch.getLoadRowCount(), 2l, "Wrong statement count");
-
         load(out);
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.ER, "Wrong status");
@@ -435,7 +393,6 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status");
         assertEquals(batch.getFailedRowNumber(), 2l, "Wrong failed row number");
         assertEquals(batch.getLoadRowCount(), 2l, "Wrong statement count");
-
         getSymmetricEngine().getDataLoaderService().delete(conflictSettings);
         setLoggingLevelForTest(old);
     }
@@ -445,15 +402,14 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "should not reach database", "string not null", "char",
                 "char not null", "2007-01-02", "2007-02-03 04:05:06.000", "0", "47", "67.89", "0.474" };
-
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
         writer.writeRecord(new String[] { CsvConstants.CHANNEL,
-                TestConstants.TEST_CHANNEL_ID });                
+                TestConstants.TEST_CHANNEL_ID });
         String nextBatchId = getNextBatchId();
-        writer.write("UnknownTokenOutsideBatch");                
+        writer.write("UnknownTokenOutsideBatch");
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writer.writeRecord(new String[] { CsvConstants.TABLE, TEST_TABLE });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
@@ -497,7 +453,6 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
             // batch batch
             Thread.sleep(10);
         }
-
         batchId--;
         values[1] = "A smaller string that will succeed";
         values[5] = "2007-01-02 00:00:00.000";
@@ -523,32 +478,28 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
                 "This string is too large and will cause the statement to fail",
                 "string not null2", "char2", "char not null2", "Not a date",
                 "2007-02-03 04:05:06.000", "0", "47", "123456789.00", "0.474" };
-
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
         writer.writeRecord(new String[] { CsvConstants.CHANNEL,
-                TestConstants.TEST_CHANNEL_ID });                
+                TestConstants.TEST_CHANNEL_ID });
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(values, true);
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId });
-
         String nextBatchId2 = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId2 });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(values2, true);
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId2 });
-
         writer.close();
         load(out);
         assertTestTableEquals(values[0], massageExpectectedResultsForDialect(values));
         assertTestTableEquals(values2[0], null);
-
         assertEquals(
                 findIncomingBatchStatus(Integer.parseInt(nextBatchId),
                         TestConstants.TEST_CLIENT_EXTERNAL_ID), IncomingBatch.Status.OK,
@@ -567,7 +518,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
         writer.writeRecord(new String[] { CsvConstants.CHANNEL,
-                TestConstants.TEST_CHANNEL_ID });                
+                TestConstants.TEST_CHANNEL_ID });
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
@@ -600,36 +551,31 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         TestDataWriterFilter registeredFilter = (TestDataWriterFilter) getSymmetricEngine().getExtensionService()
                 .getExtensionPointMap(IDatabaseWriterFilter.class).get("registeredDataFilter");
         assertTrue(registeredFilter.getNumberOfTimesCalled() > 0);
-
         NodeGroupTestDataWriterFilter registeredNodeGroupFilter = (NodeGroupTestDataWriterFilter) getSymmetricEngine()
                 .getExtensionService().getExtensionPointMap(IDatabaseWriterFilter.class).get("registeredNodeGroupTestDataFilter");
         assertTrue(registeredNodeGroupFilter.getNumberOfTimesCalled() > 0);
     }
-    
+
     @Test
     public void test13NanValue() throws Exception {
         String[] insertValues = new String[TEST_COLUMNS.length];
         insertValues[2] = insertValues[4] = "incoming test";
         insertValues[9] = "NaN";
-        
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID });
         writer.writeRecord(new String[] { CsvConstants.CHANNEL,
-                TestConstants.TEST_CHANNEL_ID });                
+                TestConstants.TEST_CHANNEL_ID });
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
-
         insertValues[0] = getNextId();
         writer.write(CsvConstants.INSERT);
         writer.writeRecord(insertValues, true);
-
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId });
         writer.close();
         load(out);
-
         IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         assertEquals(batch.getStatus(), IncomingBatch.Status.OK, "Wrong status. " + printDatabase());
@@ -746,7 +692,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         if (value != null
                 && ((StringUtils.isBlank(value) && getDbDialect().getPlatform().getDatabaseInfo()
                         .isBlankCharColumnSpacePadded()) || (StringUtils.isNotBlank(value) && getDbDialect()
-                        .getPlatform().getDatabaseInfo().isNonBlankCharColumnSpacePadded()))) {
+                                .getPlatform().getDatabaseInfo().isNonBlankCharColumnSpacePadded()))) {
             return StringUtils.rightPad(value, size);
         } else if (value != null
                 && getDbDialect().getPlatform().getDatabaseInfo().isCharColumnSpaceTrimmed()) {
@@ -779,11 +725,10 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         dataLoaderService.setTransportManager(transportManager);
         return dataLoaderService;
     }
-    
+
     @After
     public void cleanup() {
         getSymmetricEngine().getStagingManager().clean(getSymmetricEngine().getParameterService()
                 .getLong(ParameterConstants.STREAM_TO_FILE_TIME_TO_LIVE_MS));
     }
-
 }

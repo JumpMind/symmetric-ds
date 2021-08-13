@@ -33,27 +33,26 @@ import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 
 public class MockStatisticManager implements IStatisticManager {
-
     public List<ProcessInfo> getProcessInfos() {
         return null;
     }
-    
+
     @Override
     public List<ProcessInfo> getProcessInfosThatHaveDoneWork() {
         return null;
     }
-    
+
     public void removeProcessInfo(ProcessInfoKey key) {
     }
-    
+
     public ProcessInfo newProcessInfo(ProcessInfoKey key) {
         return null;
     }
-    
+
     public Set<String> getNodesWithProcessesInError() {
         return null;
     }
-    
+
     public void flush() {
     }
 
@@ -120,45 +119,36 @@ public class MockStatisticManager implements IStatisticManager {
     public Map<String, ChannelStats> getWorkingChannelStats() {
         return null;
     }
-    
+
     public HostStats getWorkingHostStats() {
         return null;
     }
 
     public void incrementNodesLoaded(long count) {
-
     }
 
     public void incrementNodesDisabled(long count) {
-
     }
 
     public void incrementPurgedBatchIncomingRows(long count) {
-
     }
 
     public void incrementPurgedBatchOutgoingRows(long count) {
-
     }
 
     public void incrementPurgedDataRows(long count) {
-
     }
 
     public void incrementPurgedDataEventRows(long count) {
-
     }
 
     public void incrementTriggersRemovedCount(long count) {
-
     }
 
     public void incrementTriggersRebuiltCount(long count) {
-
     }
 
     public void incrementTriggersCreatedCount(long count) {
-
     }
 
     public void addRouterStats(long startDataId, long endDataId, long dataReadCount,
@@ -172,13 +162,10 @@ public class MockStatisticManager implements IStatisticManager {
 
     public void removeRouterStatsByBatch(Long batchId) {
     }
-    
-    
 
     @Override
     public void addJobStats(String targetNodeId, int targetNodeCount, String jobName, long startTime, long endTime, long processedCount) {
         // TODO Auto-generated method stub
-        
     }
 
     @Override
@@ -190,19 +177,15 @@ public class MockStatisticManager implements IStatisticManager {
     @Override
     public void incrementDataLoadedOutgoingErrors(String channelId, long count) {
         // TODO Auto-generated method stub
-        
     }
 
     @Override
     public void incrementDataBytesLoadedOutgoing(String channelId, long count) {
         // TODO Auto-generated method stub
-        
     }
 
     @Override
     public void incrementDataLoadedOutgoing(String channelId, long count) {
         // TODO Auto-generated method stub
-        
     }
-    
 }

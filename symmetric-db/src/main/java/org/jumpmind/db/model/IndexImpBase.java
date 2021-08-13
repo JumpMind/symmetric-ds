@@ -47,15 +47,11 @@ import java.util.Map;
  * Base class for indices.
  */
 public abstract class IndexImpBase implements IIndex {
-
     private static final long serialVersionUID = 1L;
-
     /** The name of the index. */
     protected String name;
-
     /** The columns making up the index. */
     protected ArrayList<IndexColumn> columns = new ArrayList<IndexColumn>();
-    
     protected Map<String, PlatformIndex> platformIndexes;
 
     public String getName() {
@@ -81,7 +77,6 @@ public abstract class IndexImpBase implements IIndex {
     public boolean hasColumn(Column column) {
         for (int idx = 0; idx < columns.size(); idx++) {
             IndexColumn curColumn = getColumn(idx);
-
             if (column.getName().equals(curColumn.getName())) {
                 return true;
             }
@@ -93,7 +88,6 @@ public abstract class IndexImpBase implements IIndex {
         if (column != null) {
             for (int idx = 0; idx < columns.size(); idx++) {
                 IndexColumn curColumn = getColumn(idx);
-
                 if (curColumn.getOrdinalPosition() > column.getOrdinalPosition()) {
                     columns.add(idx, column);
                     return;
@@ -112,7 +106,7 @@ public abstract class IndexImpBase implements IIndex {
     }
 
     public abstract Object clone() throws CloneNotSupportedException;
-    
+
     public boolean hasAllPrimaryKeys() {
         boolean hasAllPrimaryKeys = true;
         for (IndexColumn col : columns) {
@@ -120,39 +114,39 @@ public abstract class IndexImpBase implements IIndex {
         }
         return hasAllPrimaryKeys;
     }
-    
+
     @Override
     public void removePlatformIndex(PlatformIndex platformIndex) {
-        if(platformIndexes != null) {
+        if (platformIndexes != null) {
             platformIndexes.remove(platformIndex.getName());
         }
     }
-    
+
     @Override
     public void addPlatformIndex(PlatformIndex platformIndex) {
-        if(platformIndexes == null) {
+        if (platformIndexes == null) {
             platformIndexes = new HashMap<String, PlatformIndex>();
         }
         platformIndexes.put(platformIndex.getName(), platformIndex);
     }
-    
+
     @Override
     public Map<String, PlatformIndex> getPlatformIndexes() {
         return platformIndexes;
     }
-    
+
     @Override
     public PlatformIndex findPlatformIndex(PlatformIndex platformIndex) {
         PlatformIndex ret = null;
-        if(platformIndexes != null) {
+        if (platformIndexes != null) {
             ret = platformIndexes.get(platformIndex.getName());
         }
         return ret;
     }
-    
+
     protected void clonePlatformIndexes(IndexImpBase indexImpBase) throws CloneNotSupportedException {
-        if(platformIndexes != null) {
-            for(String key : platformIndexes.keySet()) {
+        if (platformIndexes != null) {
+            for (String key : platformIndexes.keySet()) {
                 PlatformIndex platformIndex = platformIndexes.get(key);
                 indexImpBase.addPlatformIndex(platformIndex.clone());
             }

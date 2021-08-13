@@ -27,7 +27,5 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
 public interface IOutgoingBatchFilter extends IExtensionPoint {
-
     public List<OutgoingBatch> filter(NodeChannel channel, List<OutgoingBatch> batches);
-    
 }

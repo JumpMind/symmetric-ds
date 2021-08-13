@@ -47,9 +47,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class StagingDataWriterTest {
-
     static final File DIR = new File("target/tmp");
-
     List<String> batchesWritten = new ArrayList<String>();
 
     @BeforeClass
@@ -73,20 +71,16 @@ public class StagingDataWriterTest {
     }
 
     public void readThenWrite(long threshold) throws Exception {
-
         InputStreamReader is = new InputStreamReader(getClass().getResourceAsStream("FileCsvDataWriterTest.1.csv"));
         String origCsv = IOUtils.toString(is);
         is.close();
-
-        StagingManager stagingManager = new StagingManager(DIR.getAbsolutePath(),false);
+        StagingManager stagingManager = new StagingManager(DIR.getAbsolutePath(), false);
         ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, "test", origCsv);
         StagingDataWriter writer = new StagingDataWriter(threshold, false, "aaa", "test", stagingManager, false, false, new BatchListener());
         DataProcessor processor = new DataProcessor(reader, writer, "test");
         processor.process(new DataContext());
-
         assertEquals(1, batchesWritten.size());
         assertEquals(convertEol(origCsv), convertEol(batchesWritten.get(0)));
-
         IStagedResource resource = (IStagedResource) stagingManager.find("test", "aaa", 1);
         assertNotNull(resource);
         if (threshold > origCsv.length()) {
@@ -94,12 +88,10 @@ public class StagingDataWriterTest {
         } else {
             assertTrue(resource.getFile().exists());
         }
-        
         resource.delete();
         assertFalse(resource.getFile().exists());
-
     }
-    
+
     private String convertEol(String str) {
         return str.replaceAll("\\r\\n", "\n").replaceAll("\\r", "\n");
     }
@@ -118,5 +110,4 @@ public class StagingDataWriterTest {
             }
         }
     }
-
 }

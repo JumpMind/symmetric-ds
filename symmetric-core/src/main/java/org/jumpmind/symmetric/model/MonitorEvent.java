@@ -23,33 +23,20 @@ package org.jumpmind.symmetric.model;
 import java.util.Date;
 
 public class MonitorEvent {
-
     protected String monitorId;
-    
     protected String nodeId;
-        
     protected Date eventTime;
-
     protected String hostName;
-
     protected String type;
-    
     protected long threshold;
-
     protected long value;
-    
     protected int count = 0;
-
     protected int severityLevel;
-    
     protected boolean isResolved;
-
     protected boolean isNotified;
-    
     protected Date lastUpdateTime;
-
     protected String details;
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -190,5 +177,4 @@ public class MonitorEvent {
     public void setDetails(String details) {
         this.details = details;
     }
-
 }

@@ -27,7 +27,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class NodeGroupChannelWindowTest {
-
     @Test
     public void testInWindowEnabled() {
         NodeGroupChannelWindow window = new NodeGroupChannelWindow();
@@ -43,7 +42,7 @@ public class NodeGroupChannelWindowTest {
         cal.add(Calendar.DATE, -100);
         assertTrue(window.inTimeWindow(cal.getTime()));
     }
-    
+
     @Test
     public void testInWindowEnabledCrossDayBoundary() {
         NodeGroupChannelWindow window = new NodeGroupChannelWindow();
@@ -57,9 +56,9 @@ public class NodeGroupChannelWindowTest {
         cal.set(Calendar.HOUR_OF_DAY, 22);
         assertTrue(window.inTimeWindow(cal.getTime()));
         cal.set(Calendar.HOUR_OF_DAY, 2);
-        assertTrue(window.inTimeWindow(cal.getTime()));        
-    }    
-    
+        assertTrue(window.inTimeWindow(cal.getTime()));
+    }
+
     @Test
     public void testInWindowDisabled() {
         NodeGroupChannelWindow window = new NodeGroupChannelWindow();
@@ -75,7 +74,7 @@ public class NodeGroupChannelWindowTest {
         cal.add(Calendar.DATE, -100);
         assertTrue(window.inTimeWindow(cal.getTime()));
     }
-    
+
     @Test
     public void testOutOfWindowDisabled() {
         NodeGroupChannelWindow window = new NodeGroupChannelWindow();
@@ -91,7 +90,7 @@ public class NodeGroupChannelWindowTest {
         cal.add(Calendar.DATE, -100);
         assertTrue(window.inTimeWindow(cal.getTime()));
     }
-    
+
     @Test
     public void testOutOfWindowEnabled() {
         NodeGroupChannelWindow window = new NodeGroupChannelWindow();
@@ -108,7 +107,4 @@ public class NodeGroupChannelWindowTest {
         cal.add(Calendar.DATE, -1);
         assertFalse(window.inTimeWindow(cal.getTime()));
     }
-    
-    
-    
 }

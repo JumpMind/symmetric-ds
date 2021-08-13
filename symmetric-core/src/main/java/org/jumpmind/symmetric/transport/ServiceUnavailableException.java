@@ -20,9 +20,6 @@
  */
 package org.jumpmind.symmetric.transport;
 
-
 public class ServiceUnavailableException extends OfflineException {
-
     private static final long serialVersionUID = 1L;
-
 }

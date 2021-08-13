@@ -66,35 +66,20 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 @ManagedResource(description = "The management interface for an xml publisher")
 abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint,
         INodeGroupExtensionPoint, ISymmetricEngineAware, BeanNameAware {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected final String XML_CACHE = "XML_CACHE_" + this.hashCode();
-
     private String[] nodeGroups;
-
     protected IPublisher publisher;
-
     protected Set<String> tableNamesToPublishAsGroup;
-
     protected String xmlTagNameToUseForGroup = "batch";
-
     protected List<String> groupByColumnNames;
-
     protected Format xmlFormat;
-
     protected String name;
-
     protected ISymmetricEngine engine;
-
     protected long timeBetweenStatisticsPrintTime = 300000;
-
     protected transient long lastStatisticsPrintTime = System.currentTimeMillis();
-
     protected transient long numberOfMessagesPublishedSinceLastPrintTime = 0;
-
     protected transient long amountOfTimeToPublishMessagesSinceLastPrintTime = 0;
-
     protected ITimeGenerator timeStringGenerator = new ITimeGenerator() {
         public String getTime() {
             return Long.toString(System.currentTimeMillis());
@@ -112,7 +97,9 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
     }
 
     @ManagedOperation(description = "Looks up rows in the database and resends them to the publisher")
-    @ManagedOperationParameters({ @ManagedOperationParameter(name = "args", description = "A pipe deliminated list of key values to use to look up the tables to resend") })
+    @ManagedOperationParameters({ @ManagedOperationParameter(
+            name = "args",
+            description = "A pipe deliminated list of key values to use to look up the tables to resend") })
     public boolean resend(String args) {
         try {
             String[] argArray = args != null ? args.split("\\|") : new String[0];
@@ -128,7 +115,6 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                     context.setBatch(batch);
                     CsvData data = new CsvData(DataEventType.INSERT);
                     data.putParsedData(CsvData.ROW_DATA, values);
-
                     Element xml = getXmlFromCache(context, context.getBatch().getBinaryEncoding(),
                             table.getColumnNames(), data.getParsedData(CsvData.ROW_DATA),
                             table.getPrimaryKeyColumnNames(), data.getParsedData(CsvData.PK_DATA));
@@ -141,7 +127,6 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                     }
                 }
             }
-
             if (doesXmlExistToPublish(context)) {
                 finalizeXmlAndPublish(context);
                 return true;
@@ -154,7 +139,6 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                     "Failed to resend message for tables %s, columns %s, and args %s",
                     tableNamesToPublishAsGroup, groupByColumnNames, args), ex);
         }
-
         return false;
     }
 
@@ -182,7 +166,6 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                 builder.append(columnName);
             }
             builder.append(" from ").append(table.getName()).append(" where ");
-
             for (int i = 0; i < groupByColumnNames.size(); i++) {
                 String columnName = groupByColumnNames.get(i);
                 if (i > 0 && i < groupByColumnNames.size()) {
@@ -190,11 +173,10 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                 }
                 builder.append(columnName).append("=?");
             }
-
             ISqlTemplate template = platform.getSqlTemplate();
             Object[] argObjs = platform.getObjectValues(engine.getSymmetricDialect()
                     .getBinaryEncoding(), args, table.getColumnsWithName(groupByColumnNames
-                    .toArray(new String[groupByColumnNames.size()])));
+                            .toArray(new String[groupByColumnNames.size()])));
             rows = template.query(builder.toString(), new ISqlRowMapper<String[]>() {
                 @Override
                 public String[] mapRow(Row row) {
@@ -238,7 +220,6 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
             amountOfTimeToPublishMessagesSinceLastPrintTime += (System.currentTimeMillis() - ts);
             numberOfMessagesPublishedSinceLastPrintTime++;
         }
-
         if ((System.currentTimeMillis() - lastStatisticsPrintTime) > timeBetweenStatisticsPrintTime) {
             synchronized (this) {
                 if ((System.currentTimeMillis() - lastStatisticsPrintTime) > timeBetweenStatisticsPrintTime) {
@@ -247,7 +228,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                             + numberOfMessagesPublishedSinceLastPrintTime
                             + " messages in the last "
                             + (System.currentTimeMillis() - lastStatisticsPrintTime)
-                            / 1000
+                                    / 1000
                             + " seconds.  Spent "
                             + (amountOfTimeToPublishMessagesSinceLastPrintTime / numberOfMessagesPublishedSinceLastPrintTime)
                             + "ms of publishing time per message");
@@ -272,16 +253,13 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
         }
         row.setAttribute("entity", tableName);
         row.setAttribute("dml", dml.getCode());
-
         String[] colNames = null;
-
         if (data == null) {
             colNames = keyNames;
             data = keys;
         } else {
             colNames = columnNames;
         }
-
         for (int i = 0; i < data.length; i++) {
             String col = colNames[i];
             Element dataElement = new Element("data");
@@ -299,14 +277,13 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
         if (in == null || in.equals("")) {
             return "";
         }
-        
         StringBuilder out = new StringBuilder();
         char current;
         for (int i = 0; i < in.length(); i++) {
             current = in.charAt(i);
             if ((current == 0x9) || (current == 0xA) || (current == 0xD) ||
-                ((current >= 0x20) && (current <= 0xD7FF)) ||
-                ((current >= 0xE000) && (current <= 0xFFFD))) {
+                    ((current >= 0x20) && (current <= 0xD7FF)) ||
+                    ((current >= 0xE000) && (current <= 0xFFFD))) {
                 out.append(current);
             }
         }
@@ -314,8 +291,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
     }
 
     /**
-     * Give the opportunity for the user of this publisher to add in additional
-     * attributes. The default implementation adds in the nodeId from the
+     * Give the opportunity for the user of this publisher to add in additional attributes. The default implementation adds in the nodeId from the
      * {@link Context}.
      * 
      * @param context
@@ -356,7 +332,6 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
             String[] keys) {
         if (groupByColumnNames != null) {
             StringBuilder id = new StringBuilder();
-
             if (keys != null) {
                 String[] columns = keyNames;
                 for (String col : groupByColumnNames) {
@@ -369,7 +344,6 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                     }
                 }
             }
-
             if (id.length() == 0) {
                 String[] columns = columnNames;
                 for (String col : groupByColumnNames) {
@@ -381,12 +355,12 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                     }
                 }
             }
-
             if (id.length() > 0) {
                 return id.toString();
             }
         } else {
-            log.warn("You did not specify 'groupByColumnNames'.  We cannot find any matches in the data to publish as XML if you don't.  You might as well turn off this filter!");
+            log.warn(
+                    "You did not specify 'groupByColumnNames'.  We cannot find any matches in the data to publish as XML if you don't.  You might as well turn off this filter!");
         }
         return null;
     }
@@ -436,9 +410,8 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
     }
 
     /**
-     * This attribute is required. It needs to identify the columns that will be
-     * used to key on rows in the specified tables that need to be grouped
-     * together in an 'XML batch.'
+     * This attribute is required. It needs to identify the columns that will be used to key on rows in the specified tables that need to be grouped together in
+     * an 'XML batch.'
      */
     public void setGroupByColumnNames(List<String> groupByColumnNames) {
         this.groupByColumnNames = groupByColumnNames;
@@ -452,5 +425,4 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.engine = engine;
     }
-
 }

@@ -31,24 +31,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DataProcessor {
-
     private static final String STAT_WRITE_DATA = "statWriteData";
     private static final String STAT_READ_DATA = "statReadData";
-
     private static final Logger log = LoggerFactory.getLogger(DataProcessor.class);
-
     protected IDataReader dataReader;
-
     protected IDataWriter defaultDataWriter;
-
     protected IDataProcessorListener listener;
-
     protected Table currentTable;
-
     protected CsvData currentData;
-
     protected Batch currentBatch;
-    
     protected String name;
 
     public DataProcessor() {
@@ -67,8 +58,7 @@ public class DataProcessor {
     }
 
     /**
-     * This method may be overridden in order to choose different
-     * {@link IDataWriter} based on the batch that is being written.
+     * This method may be overridden in order to choose different {@link IDataWriter} based on the batch that is being written.
      * 
      * @param batch
      *            The batch that is about to be written
@@ -77,7 +67,7 @@ public class DataProcessor {
     protected IDataWriter chooseDataWriter(Batch batch) {
         return this.defaultDataWriter;
     }
-    
+
     public void process() {
         process(new DataContext());
     }
@@ -90,19 +80,16 @@ public class DataProcessor {
                 currentBatch = dataReader.nextBatch();
                 if (currentBatch != null) {
                     context.setBatch(currentBatch);
-                    
                     boolean endBatchCalled = false;
                     IDataWriter dataWriter = null;
                     try {
-                        
-                        boolean processBatch = listener == null ? true : listener
-                                .beforeBatchStarted(context);
-                        
+                        boolean processBatch = listener == null ? true
+                                : listener
+                                        .beforeBatchStarted(context);
                         if (processBatch) {
                             dataWriter = chooseDataWriter(currentBatch);
                             processBatch &= dataWriter != null;
                         }
-
                         if (processBatch) {
                             context.setWriter(dataWriter);
                             dataWriter.open(context);
@@ -111,18 +98,14 @@ public class DataProcessor {
                                 listener.afterBatchStarted(context);
                             }
                         }
-                        
                         if (currentBatch.isInvalidRetry()) {
                             throw new InvalidRetryException();
                         }
-
                         // pull and process any data events that are not wrapped
                         // in a table
                         forEachDataInTable(context, processBatch, true, currentBatch);
-
                         // pull and process all data events wrapped in tables
                         forEachTableInBatch(context, processBatch, currentBatch);
-                        
                         if (currentBatch != null && !currentBatch.isComplete()) {
                             String msg = "The batch %s was not complete";
                             if (currentBatch.getBatchType() == BatchType.EXTRACT) {
@@ -130,7 +113,6 @@ public class DataProcessor {
                             }
                             throw new ProtocolException(msg, currentBatch.getNodeBatchId());
                         }
-
                         if (processBatch) {
                             if (listener != null) {
                                 listener.beforeBatchEnd(context);
@@ -218,10 +200,9 @@ public class DataProcessor {
                     }
                 }
             }
-            
             if (System.currentTimeMillis() - ts > 60000 && context.getWriter() != null) {
                 Statistics stats = context.getWriter().getStatistics().get(batch);
-                if(listener != null) {
+                if (listener != null) {
                     listener.batchProgressUpdate(context);
                 }
                 if (stats != null) {
@@ -233,12 +214,10 @@ public class DataProcessor {
                 }
                 ts = System.currentTimeMillis();
             }
-            
             if (Thread.currentThread().isInterrupted()) {
                 throw new CancellationException("This thread was interrupted");
             }
         } while (currentData != null);
-
         if (ignore != null) {
             throw ignore;
         }
@@ -274,5 +253,4 @@ public class DataProcessor {
     public void setDefaultDataWriter(IDataWriter dataWriter) {
         this.defaultDataWriter = dataWriter;
     }
-
 }

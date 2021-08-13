@@ -50,45 +50,26 @@ import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
-
     static final String CRLF = "\r\n";
-
     private String boundary;
-
     private HttpTransportManager httpTransportManager;
-
     private URL url;
-
     private OutputStream os;
-
     private BufferedWriter writer;
-
     private BufferedReader reader;
-
     private HttpConnection connection;
-
     private int httpTimeout;
-    
     private int httpConnectTimeout;
-
     private boolean useCompression;
-
     private int compressionStrategy;
-
     private int compressionLevel;
-
     private String nodeId;
-
     private String securityToken;
-
     private boolean streamOutputEnabled = false;
-
     private int streamOutputChunkSize = 30720;
-
     private boolean fileUpload = false;
-
     private Map<String, String> requestProperties;
-    
+
     public HttpOutgoingTransport(HttpTransportManager httpTransportManager, URL url, int httpTimeout, int httpConnectTimeout, boolean useCompression,
             int compressionStrategy, int compressionLevel, String nodeId,
             String securityToken, boolean streamOutputEnabled, int streamOutputSize,
@@ -106,7 +87,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         this.streamOutputEnabled = streamOutputEnabled;
         this.fileUpload = fileUpload;
     }
-    
+
     public HttpOutgoingTransport(HttpTransportManager httpTransportManager, URL url, int httpTimeout, int httpConnectTimeout, boolean useCompression,
             int compressionStrategy, int compressionLevel, String nodeId,
             String securityToken, boolean streamOutputEnabled, int streamOutputSize,
@@ -192,13 +173,13 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     }
 
     /**
-     * Before streaming data to the remote node, make sure it is ok to. We have
-     * found that we can be more efficient on a push by relying on HTTP
-     * keep-alive.
+     * Before streaming data to the remote node, make sure it is ok to. We have found that we can be more efficient on a push by relying on HTTP keep-alive.
      *
      * @throws IOException
-     * @throws {@link ConnectionRejectedException}
-     * @throws {@link AuthenticationException}
+     * @throws {@link
+     *             ConnectionRejectedException}
+     * @throws {@link
+     *             AuthenticationException}
      */
     private HttpConnection requestReservation(String queue) {
         try {
@@ -208,7 +189,6 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             connection.setReadTimeout(httpTimeout);
             connection.setRequestMethod("HEAD");
             connection.setRequestProperty(WebConstants.CHANNEL_QUEUE, queue);
-
             analyzeResponseCode(connection.getResponseCode());
             httpTransportManager.updateSession(connection);
         } catch (IOException ex) {
@@ -228,13 +208,11 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             connection.setUseCaches(false);
             connection.setConnectTimeout(httpConnectTimeout);
             connection.setReadTimeout(httpTimeout);
-            
             if (requestProperties != null) {
                 for (Map.Entry<String, String> requestProperty : requestProperties.entrySet()) {
                     connection.setRequestProperty(requestProperty.getKey(), requestProperty.getValue());
                 }
             }
-            
             if (!fileUpload) {
                 connection.setRequestMethod("PUT");
                 connection.setRequestProperty("Accept-Encoding", "gzip");
@@ -246,9 +224,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
                 boundary = Long.toHexString(System.currentTimeMillis());
                 connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
             }
-
             os = connection.getOutputStream();
-
             if (!fileUpload && useCompression) {
                 os = new GZIPOutputStream(os, 128, true) {
                     {
@@ -257,7 +233,6 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
                     }
                 };
             }
-
             if (fileUpload) {
                 final String fileName = "file.zip";
                 IOUtils.write("--" + boundary + CRLF, os, Charset.defaultCharset());
@@ -267,7 +242,6 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
                         + CRLF, os, Charset.defaultCharset());
                 IOUtils.write("Content-Transfer-Encoding: binary" + CRLF + CRLF, os, Charset.defaultCharset());
                 os.flush();
-
             }
             return os;
         } catch (IOException ex) {
@@ -280,15 +254,17 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         writer = new BufferedWriter(wout);
         return writer;
     }
-    
+
     @Override
     public BufferedWriter getWriter() {
         return writer;
     }
 
     /**
-     * @throws {@link ConnectionRejectedException}
-     * @throws {@link AuthenticationException}
+     * @throws {@link
+     *             ConnectionRejectedException}
+     * @throws {@link
+     *             AuthenticationException}
      */
     private void analyzeResponseCode(int code) {
         if (WebConstants.SC_SERVICE_BUSY == code) {
@@ -331,27 +307,21 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, String queue, Node targetNode) {
         ChannelMap suspendIgnoreChannelsList = new ChannelMap();
-
         try (HttpConnection connection = requestReservation(queue)) {
             // Connection contains remote suspend/ignore channels list if
             // reservation was successful.
-    
             String suspends = connection.getHeaderField(WebConstants.SUSPENDED_CHANNELS);
             String ignores = connection.getHeaderField(WebConstants.IGNORED_CHANNELS);
-    
             suspendIgnoreChannelsList.addSuspendChannels(suspends);
             suspendIgnoreChannelsList.addIgnoreChannels(ignores);
-    
             ChannelMap localSuspendIgnoreChannelsList = configurationService.getSuspendIgnoreChannelLists(targetNode.getNodeId());
             suspendIgnoreChannelsList.addSuspendChannels(localSuspendIgnoreChannelsList.getSuspendChannels());
             suspendIgnoreChannelsList.addIgnoreChannels(localSuspendIgnoreChannelsList.getIgnoreChannels());
-        }        
-
+        }
         return suspendIgnoreChannelsList;
     }
-    
+
     public HttpConnection getConnection() {
         return connection;
     }
-
 }

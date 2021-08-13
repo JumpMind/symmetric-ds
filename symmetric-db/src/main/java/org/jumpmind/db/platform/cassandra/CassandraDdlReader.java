@@ -36,11 +36,11 @@ import org.jumpmind.db.util.TableRow;
 
 public class CassandraDdlReader implements IDdlReader {
     protected CassandraPlatform platform;
-    
+
     public CassandraDdlReader(CassandraPlatform platform) {
         this.platform = platform;
     }
-    
+
     @Override
     public Database readTables(String catalog, String schema, String[] tableTypes) {
         return null;
@@ -97,10 +97,9 @@ public class CassandraDdlReader implements IDdlReader {
     public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding) {
         return null;
     }
-    
+
     @Override
     public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding) {
         return null;
     }
-
 }

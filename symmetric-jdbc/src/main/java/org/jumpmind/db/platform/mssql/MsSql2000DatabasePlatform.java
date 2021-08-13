@@ -39,10 +39,8 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * The platform implementation for the Microsoft SQL Server 2000 database.
  */
 public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     /* The standard SQLServer jdbc driver. */
     public static final String JDBC_DRIVER = "net.sourceforge.jtds.jdbc.Driver";
-
     /* The sub protocol used by the standard SQL Server driver. */
     public static final String JDBC_SUBPROTOCOL = "jtds";
 
@@ -111,12 +109,9 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
     public PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-
         String triggerSql = "CREATE TRIGGER TEST_TRIGGER ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
                 + " AFTER UPDATE AS SELECT 1 GO";
-
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-
         try {
             getSqlTemplate().update(triggerSql);
             result.setStatus(Status.PASS);
@@ -124,7 +119,6 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
         }
-
         return result;
     }
 
@@ -132,10 +126,8 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
     public PermissionResult getCreateSymFunctionPermission() {
         String routineSql = "CREATE FUNCTION TEST_FUNC() RETURNS INTEGER BEGIN RETURN 1; END";
         String dropSql = "IF OBJECT_ID('TEST_FUNC') IS NOT NULL DROP FUNCTION TEST_FUNC";
-
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_FUNCTION, 
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_FUNCTION,
                 dropSql + "\r\n" + routineSql + "\r\n" + dropSql);
-
         try {
             getSqlTemplate().update(dropSql);
             getSqlTemplate().update(routineSql);
@@ -149,7 +141,7 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return result;
     }
-    
+
     @Override
     protected PermissionResult getLogMinePermission() {
         final PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "");
@@ -157,5 +149,4 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
         result.setStatus(Status.FAIL);
         return result;
     }
-
 }

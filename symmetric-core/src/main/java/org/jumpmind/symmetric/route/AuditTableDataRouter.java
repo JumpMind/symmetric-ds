@@ -44,15 +44,10 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltInExtensionPoint {
-
     private static final String COLUMN_AUDIT_EVENT = "AUDIT_EVENT";
-
     private static final String COLUMN_AUDIT_TIME = "AUDIT_TIME";
-
     private static final String COLUMN_AUDIT_ID = "AUDIT_ID";
-
     private ISymmetricEngine engine;
-
     private Map<String, Table> auditTables = new HashMap<String, Table>();
 
     public AuditTableDataRouter(ISymmetricEngine engine) {
@@ -61,7 +56,6 @@ public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltIn
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
             Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
-        
         if (initialLoad) { // loads are not audited; this is for CDC.
             return null;
         }
@@ -85,15 +79,13 @@ public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltIn
                 auditTables.put(tableName, auditTable);
             }
             DatabaseInfo dbInfo = platform.getDatabaseInfo();
-            String auditTableName = auditTable.getQualifiedTableName(dbInfo.getDelimiterToken(), 
+            String auditTableName = auditTable.getQualifiedTableName(dbInfo.getDelimiterToken(),
                     dbInfo.getCatalogSeparator(), dbInfo.getSchemaSeparator());
-
             ISqlTemplate template = platform.getSqlTemplate();
-            
             Map<String, Object> values = null;
             if (eventType != DataEventType.DELETE) {
                 values = new HashMap<String, Object>(getNewDataAsObject(null,
-                    dataMetaData, engine.getSymmetricDialect(), false));
+                        dataMetaData, engine.getSymmetricDialect(), false));
             } else {
                 values = new HashMap<String, Object>(getOldDataAsObject(null,
                         dataMetaData, engine.getSymmetricDialect(), false));
@@ -101,10 +93,10 @@ public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltIn
             Long sequence = (Long) context.get(auditTableName);
             if (sequence == null) {
                 sequence = 1l + template.queryForLong(String.format("select max(%s) from %s",
-                        auditTable.getColumnWithName(COLUMN_AUDIT_ID).getName(), auditTableName));                           
+                        auditTable.getColumnWithName(COLUMN_AUDIT_ID).getName(), auditTableName));
             } else {
                 sequence = 1l + sequence;
-            }            
+            }
             context.put(auditTable.getName(), sequence);
             values.put(auditTable.getColumnWithName(COLUMN_AUDIT_ID).getName(), sequence);
             values.put(auditTable.getColumnWithName(COLUMN_AUDIT_TIME).getName(), new Date());
@@ -132,11 +124,10 @@ public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltIn
             column.setPrimaryKey(false);
             column.setAutoIncrement(false);
             auditTable.addColumn(column);
-        }        
+        }
         auditTable.removeAllForeignKeys();
         auditTable.removeAllIndices();
         platform.alterCaseToMatchDatabaseDefaultCase(auditTable);
         return auditTable;
     }
-
 }

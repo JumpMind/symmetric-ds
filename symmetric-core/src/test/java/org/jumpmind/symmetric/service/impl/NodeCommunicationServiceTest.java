@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-
 import static org.junit.Assert.assertTrue;
 
 import org.jumpmind.symmetric.model.NodeCommunication;
@@ -28,13 +27,11 @@ import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.junit.Test;
 
 public class NodeCommunicationServiceTest {
-
     @Test
     public void testNodeCommunicationTypeLengths() {
         final int MAX_LENGTH_IN_DB = 10;
-        
         for (CommunicationType communicationType : NodeCommunication.CommunicationType.values()) {
-            String msg = communicationType.name() + " is too long for DB. " +  communicationType.name().length() + " <= " + MAX_LENGTH_IN_DB;
+            String msg = communicationType.name() + " is too long for DB. " + communicationType.name().length() + " <= " + MAX_LENGTH_IN_DB;
             assertTrue(msg, communicationType.name().length() <= MAX_LENGTH_IN_DB);
         }
     }

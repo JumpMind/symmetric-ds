@@ -25,9 +25,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 
 public class CopyColumnValueChange extends TableChangeImplBase {
-    
     private Column sourceColumn;
-    
     private Column targetColumn;
 
     public CopyColumnValueChange(Table table, Column sourceColumn, Column targetColumn) {
@@ -37,15 +35,14 @@ public class CopyColumnValueChange extends TableChangeImplBase {
     }
 
     public void apply(Database database, boolean caseSensitive) {
-        // nothing to do.  structure hasn't changed.
+        // nothing to do. structure hasn't changed.
     }
-    
+
     public Column getSourceColumn() {
         return sourceColumn;
     }
-    
+
     public Column getTargetColumn() {
         return targetColumn;
     }
-
 }

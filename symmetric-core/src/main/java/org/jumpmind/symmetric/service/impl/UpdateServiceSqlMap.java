@@ -25,10 +25,8 @@ import java.util.Map;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class UpdateServiceSqlMap extends AbstractSqlMap {
-
     public UpdateServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
-
         // @formatter:off
 
         putSql("countOutgoing",

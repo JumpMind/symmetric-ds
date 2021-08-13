@@ -21,9 +21,7 @@
 package org.jumpmind.symmetric.util;
 
 public class ModuleException extends Exception {
-
     private static final long serialVersionUID = 1L;
-    
     private boolean isLogged;
 
     public ModuleException(String message) {
@@ -42,5 +40,4 @@ public class ModuleException extends Exception {
     public boolean isLogged() {
         return isLogged;
     }
-
 }

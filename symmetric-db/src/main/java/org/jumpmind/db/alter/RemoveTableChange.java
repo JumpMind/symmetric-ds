@@ -47,25 +47,22 @@ import org.jumpmind.db.model.Table;
  * 
  * @version $Revision: $
  */
-public class RemoveTableChange extends TableChangeImplBase implements IModelChange
-{
+public class RemoveTableChange extends TableChangeImplBase implements IModelChange {
     /**
      * Creates a new change object.
      * 
-     * @param table The table
+     * @param table
+     *            The table
      */
-    public RemoveTableChange(Table table)
-    {
+    public RemoveTableChange(Table table) {
         super(table);
     }
 
     /**
      * {@inheritDoc}
      */
-    public void apply(Database database, boolean caseSensitive)
-    {
+    public void apply(Database database, boolean caseSensitive) {
         Table table = database.findTable(getChangedTable().getName(), caseSensitive);
-
         database.removeTable(table);
     }
 }

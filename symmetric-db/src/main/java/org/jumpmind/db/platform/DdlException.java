@@ -19,7 +19,6 @@
  * under the License.
  */
 package org.jumpmind.db.platform;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -39,52 +38,49 @@ package org.jumpmind.db.platform;
  * under the License.
  */
 
-
 /**
  * Base class for DdlUtils exceptions.
  */
-public class DdlException extends RuntimeException 
-{
+public class DdlException extends RuntimeException {
     /** Constant for serializing instances of this class. */
     private static final long serialVersionUID = 1L;
 
     /**
      * Creates a new empty exception object.
      */
-    public DdlException()
-    {
+    public DdlException() {
         super();
     }
 
     /**
      * Creates a new exception object.
      * 
-     * @param msg The exception message
+     * @param msg
+     *            The exception message
      */
-    public DdlException(String msg)
-    {
+    public DdlException(String msg) {
         super(msg);
     }
 
     /**
      * Creates a new exception object.
      * 
-     * @param baseEx The base exception
+     * @param baseEx
+     *            The base exception
      */
-    public DdlException(Throwable baseEx)
-    {
+    public DdlException(Throwable baseEx) {
         super(baseEx);
     }
 
     /**
      * Creates a new exception object.
      * 
-     * @param msg    The exception message
-     * @param baseEx The base exception
+     * @param msg
+     *            The exception message
+     * @param baseEx
+     *            The base exception
      */
-    public DdlException(String msg, Throwable baseEx)
-    {
+    public DdlException(String msg, Throwable baseEx) {
         super(msg, baseEx);
     }
-
 }

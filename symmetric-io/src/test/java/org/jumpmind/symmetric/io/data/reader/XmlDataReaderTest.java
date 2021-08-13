@@ -31,7 +31,6 @@ import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.junit.Test;
 
 public class XmlDataReaderTest {
-
     @Test
     public void testNilDataElement() {
         XmlDataReader reader = new XmlDataReader(getClass().getResourceAsStream("xmldatareadertest1.xml"));
@@ -43,10 +42,8 @@ public class XmlDataReaderTest {
         Map<String, String> data1 = dataRead.get(1).toColumnNameValuePairs(writer.getLastTableRead().getColumnNames(), CsvData.ROW_DATA);
         assertEquals("1", data1.get("id"));
         assertEquals("A", data1.get("my_value"));
-
         Map<String, String> data2 = dataRead.get(2).toColumnNameValuePairs(writer.getLastTableRead().getColumnNames(), CsvData.ROW_DATA);
         assertEquals("2", data2.get("id"));
         assertNull(data2.get("my_value"));
-
     }
 }

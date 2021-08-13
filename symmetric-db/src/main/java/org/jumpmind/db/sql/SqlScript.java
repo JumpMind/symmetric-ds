@@ -32,25 +32,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class parses and runs SQL from an input file or buffer using the
- * designed {@link ISqlTemplate}.
+ * This class parses and runs SQL from an input file or buffer using the designed {@link ISqlTemplate}.
  */
 public class SqlScript {
-    
-	private final static Logger log = LoggerFactory.getLogger(SqlScript.class);
-
+    private final static Logger log = LoggerFactory.getLogger(SqlScript.class);
     private ISqlTemplate sqlTemplate;
-
     private int commitRate = 10000;
-
     private boolean failOnError = true;
-    
     private boolean failOnDrop = true;
-    
     private boolean failOnSequenceCreate = true;
-
     private ISqlResultsListener resultsListener;
-
     private SqlScriptReader scriptReader;
 
     public SqlScript(URL url, ISqlTemplate sqlTemplate) {
@@ -70,7 +61,7 @@ public class SqlScript {
         try {
             String fileName = url.getFile();
             fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
-            init(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8.name()), sqlTemplate, failOnError, true, true, 
+            init(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8.name()), sqlTemplate, failOnError, true, true,
                     delimiter, replacementTokens);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -80,7 +71,7 @@ public class SqlScript {
     public SqlScript(String sqlScript, ISqlTemplate sqlTemplate, boolean failOnError, Map<String, String> replacementTokens) {
         this(sqlScript, sqlTemplate, failOnError, true, true, SqlScriptReader.QUERY_ENDS, replacementTokens);
     }
-    
+
     public SqlScript(String sqlScript, ISqlTemplate sqlTemplate, boolean failOnError, boolean failOnDrop, boolean failOnSequenceCreate,
             String delimiter, Map<String, String> replacementTokens) {
         init(new StringReader(sqlScript), sqlTemplate, failOnError, failOnDrop, failOnSequenceCreate, delimiter, replacementTokens);
@@ -109,7 +100,9 @@ public class SqlScript {
     public long execute(boolean autoCommit) {
         try {
             if (!autoCommit && (!failOnDrop || !failOnError || !failOnSequenceCreate)) {
-                log.debug("Autocommit was set to false, however either failOnDrop({}) or failOnError({}) or failOnSequenceCreate({}) were set to false which means that autoCommit needs to be enabled.  We are setting it to true", failOnDrop, failOnError, failOnSequenceCreate);
+                log.debug(
+                        "Autocommit was set to false, however either failOnDrop({}) or failOnError({}) or failOnSequenceCreate({}) were set to false which means that autoCommit needs to be enabled.  We are setting it to true",
+                        failOnDrop, failOnError, failOnSequenceCreate);
                 autoCommit = true;
             }
             long count = this.sqlTemplate.update(autoCommit, failOnError, failOnDrop, failOnSequenceCreate,
@@ -117,12 +110,12 @@ public class SqlScript {
             return count;
         } finally {
             try {
-                if(scriptReader != null) {
+                if (scriptReader != null) {
                     scriptReader.close();
                 }
-            } catch(IOException e) { }
+            } catch (IOException e) {
+            }
         }
-
     }
 
     public static int calculateTotalStatements(String sqlScript, String delimiter) {
@@ -136,7 +129,7 @@ public class SqlScript {
         }
         return count;
     }
-    
+
     public int getCommitRate() {
         return commitRate;
     }
@@ -152,29 +145,28 @@ public class SqlScript {
     public void setListener(ISqlResultsListener listener) {
         this.resultsListener = listener;
     }
-    
+
     public void setFailOnDrop(boolean failOnDrop) {
         this.failOnDrop = failOnDrop;
     }
-    
+
     public void setFailOnSequenceCreate(boolean failOnSequenceCreate) {
         this.failOnSequenceCreate = failOnSequenceCreate;
     }
-    
+
     public boolean isFailOnDrop() {
         return failOnDrop;
     }
-    
+
     public void setFailOnError(boolean failOnError) {
         this.failOnError = failOnError;
     }
-    
+
     public boolean isFailOnError() {
         return failOnError;
     }
-    
+
     public boolean isFailOnSequenceCreate() {
         return failOnSequenceCreate;
     }
-
 }

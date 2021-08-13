@@ -36,7 +36,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 
 public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest {
-
     protected static IStagingManager stagingManager;
 
     @BeforeClass
@@ -45,7 +44,7 @@ public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
                 .equals("com.mysql.jdbc.Driver")) {
             platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
             platform.createDatabase(platform.readDatabaseFromXml("/testBulkWriter.xml", true), true, false);
-            stagingManager = new StagingManager("tmp",false);
+            stagingManager = new StagingManager("tmp", false);
         }
     }
 
@@ -60,26 +59,25 @@ public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
 
     @Override
     public void testDuplicateRow() {
-        //  mysql already handles duplidates. no need to test the special functionality we added to handle dupes
+        // mysql already handles duplidates. no need to test the special functionality we added to handle dupes
     }
-    
-    protected AbstractDatabaseWriter create(){
+
+    protected AbstractDatabaseWriter create() {
         return new MySqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
-                10, 1000,true, true, null);
+                10, 1000, true, true, null);
     }
-    
+
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
         return writeData(new MySqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
                 10, 1000,
                 true, true, null), new TableCsvData(table, data));
     }
-    
+
     protected long writeData(BinaryEncoding encoding, List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
         return writeData(new MySqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
                 10, 1000,
                 true, true, null), encoding, new TableCsvData(table, data));
     }
-
 }

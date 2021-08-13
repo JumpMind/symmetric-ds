@@ -34,7 +34,6 @@ import org.jumpmind.symmetric.service.impl.MockNodeService;
 import org.junit.Test;
 
 public class HttpBandwidthBalancerTest {
-
     @Test
     public void testUriParsing() throws Exception {
         URI uri = new URI(
@@ -84,18 +83,19 @@ public class HttpBandwidthBalancerTest {
                             long maxTestDuration) {
                         return sampleSize / Double.parseDouble(url);
                     }
+
                     public double getUploadKbpsFor(Node remoteNode, Node localNode, long sampleSize, long maxTestDuration) {
                         return -1.0d;
                     }
+
                     public List<BandwidthService.BandwidthResults> diagnoseDownloadBandwidth(Node localNode, Node remoteNode) {
                         return null;
                     }
-                    
+
                     public List<BandwidthService.BandwidthResults> diagnoseUploadBandwidth(Node localNode, Node remoteNode) {
                         return null;
                     }
                 });
         return ext;
     }
-
 }

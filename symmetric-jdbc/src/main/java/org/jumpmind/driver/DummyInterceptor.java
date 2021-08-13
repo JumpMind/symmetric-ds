@@ -20,9 +20,7 @@
  */
 package org.jumpmind.driver;
 
-
 public class DummyInterceptor extends WrapperInterceptor {
-
     public DummyInterceptor(Object wrapped) {
         super(wrapped);
     }

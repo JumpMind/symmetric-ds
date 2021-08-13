@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.service;
 
 import java.math.BigDecimal;
@@ -34,25 +33,24 @@ import org.jumpmind.symmetric.model.Node;
  * Get and set application wide configuration information.
  */
 public interface IParameterService {
-
     public BigDecimal getDecimal(String key);
-    
+
     public BigDecimal getDecimal(String key, BigDecimal defaulVal);
 
     public boolean is(String key);
-    
+
     public boolean is(String key, boolean defaultVal);
 
     public int getInt(String key);
-    
+
     public int getInt(String key, int defaultVal);
 
     public long getLong(String key);
-    
+
     public long getLong(String key, long defaultVal);
 
     public String getString(String key);
-    
+
     public String getString(String key, String defaultVal);
 
     public void saveParameter(String key, Object paramValue, String lastUpdateBy);
@@ -60,29 +58,29 @@ public interface IParameterService {
     public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue, String lastUpdateBy);
 
     public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters, String lastUpdateBy);
-    
+
     public void deleteParameter(String key);
-    
+
     public void deleteParameter(String externalId, String nodeGroupId, String key);
-    
+
     public void deleteParameterWithUpdate(String externalId, String nodeGroupId, String key);
 
     public void rereadParameters();
 
     public Date getLastTimeParameterWereCached();
-    
+
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey);
-    
+
     public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId);
 
     public List<DatabaseParameter> getOfflineNodeParameters();
-    
+
     public TypedProperties getAllParameters();
 
     public boolean isRegistrationServer();
-    
+
     public boolean isRemoteNodeRegistrationServer(Node remoteNode);
-    
+
     public boolean refreshFromDatabase();
 
     /**
@@ -94,12 +92,11 @@ public interface IParameterService {
      * Get the external id for this instance
      */
     public String getExternalId();
-    
-    public Map<String,String> getReplacementValues();
+
+    public Map<String, String> getReplacementValues();
 
     /**
-     * Provide the url used to register at to get initial configuration
-     * information
+     * Provide the url used to register at to get initial configuration information
      */
     public String getRegistrationUrl();
 
@@ -109,9 +106,8 @@ public interface IParameterService {
     public String getSyncUrl();
 
     public String getTablePrefix();
-    
+
     public String getEngineName();
-    
+
     public String getTempDirectory();
-    
 }

@@ -27,38 +27,35 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
-    
     public MsSql2005DdlBuilder() {
         super();
         this.databaseName = DatabaseNamesConstants.MSSQL2005;
-        
         databaseInfo.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.SQLXML, "XML", Types.SQLXML);
-            }
+    }
 
-    protected void dropDefaultConstraint(String tableName, String columnName, StringBuilder ddl) {         
-        println(              "BEGIN                                                                                        ", ddl);
-        println(              "DECLARE @sql NVARCHAR(2000)                                                                  ", ddl);        
+    protected void dropDefaultConstraint(String tableName, String columnName, StringBuilder ddl) {
+        println("BEGIN                                                                                        ", ddl);
+        println("DECLARE @sql NVARCHAR(2000)                                                                  ", ddl);
         println(String.format("SELECT TOP 1 @sql = N'alter table \"%s\" drop constraint ['+dc.NAME+N']'                     ", tableName), ddl);
-        println(              "FROM sys.default_constraints dc                                                              ", ddl);
-        println(              "JOIN sys.columns c                                                                           ", ddl);
-        println(              "    ON c.default_object_id = dc.object_id                                                    ", ddl);
-        println(              "WHERE                                                                                        ", ddl);
+        println("FROM sys.default_constraints dc                                                              ", ddl);
+        println("JOIN sys.columns c                                                                           ", ddl);
+        println("    ON c.default_object_id = dc.object_id                                                    ", ddl);
+        println("WHERE                                                                                        ", ddl);
         println(String.format("    dc.parent_object_id = OBJECT_ID('%s')                                                    ", tableName), ddl);
         println(String.format("AND c.name = N'%s'                                                                           ", columnName), ddl);
-        println(              "IF @@ROWCOUNT > 0                                                                            ", ddl);
-        println(              "  EXEC (@sql)                                                                                ", ddl);
-        println(              "END                                                                                          ", ddl);
-        printEndOfStatement(ddl);        
+        println("IF @@ROWCOUNT > 0                                                                            ", ddl);
+        println("  EXEC (@sql)                                                                                ", ddl);
+        println("END                                                                                          ", ddl);
+        printEndOfStatement(ddl);
     }
-    
+
     protected void dropColumnChangeDefaults(Table sourceTable, Column sourceColumn, StringBuilder ddl) {
         // we're dropping the old default
         String tableName = getTableName(sourceTable.getName());
         String columnName = getColumnName(sourceColumn);
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
-    
         println("BEGIN", ddl);
         println("  DECLARE @" + tableNameVar + " nvarchar(256), @" + constraintNameVar
                 + " nvarchar(256)", ddl);
@@ -91,7 +88,6 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
     @Override
     protected String getSqlType(Column column) {
         String sqlType = super.getSqlType(column);
-
         if (column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() > 8000) {
             sqlType = "VARBINARY(MAX)";
         }

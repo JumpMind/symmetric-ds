@@ -23,14 +23,13 @@ package org.jumpmind.symmetric.util;
 import java.util.Comparator;
 
 public class CounterStatComparator implements Comparator<CounterStat> {
-
     protected boolean sortAscending = true;
 
     public CounterStatComparator() {
     }
-    
+
     public CounterStatComparator(boolean sortAscending) {
-       this.sortAscending = sortAscending; 
+        this.sortAscending = sortAscending;
     }
 
     @Override
@@ -49,5 +48,4 @@ public class CounterStatComparator implements Comparator<CounterStat> {
         }
         return sortAscending ? compare : compare * -1;
     }
-
 }

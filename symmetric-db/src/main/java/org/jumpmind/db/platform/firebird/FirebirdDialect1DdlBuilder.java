@@ -35,7 +35,6 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
  * The SQL builder for Firebird running in SQL dialect 1 mode
  */
 public class FirebirdDialect1DdlBuilder extends FirebirdDdlBuilder {
-
     public FirebirdDialect1DdlBuilder() {
         databaseInfo.addNativeTypeMapping(Types.BIGINT, "NUMERIC(18)", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.TIME, "TIMESTAMP", Types.TIMESTAMP);
@@ -48,13 +47,13 @@ public class FirebirdDialect1DdlBuilder extends FirebirdDdlBuilder {
             Collection<IModelChange> changes, StringBuilder ddl) {
         Iterator<IModelChange> iter = changes.iterator();
         while (iter.hasNext()) {
-        	IModelChange change = iter.next();
+            IModelChange change = iter.next();
             if (change instanceof ColumnDataTypeChange) {
                 ColumnDataTypeChange dataTypeChange = (ColumnDataTypeChange) change;
                 if (dataTypeChange.getNewTypeCode() == Types.BIGINT &&
                         dataTypeChange.getChangedColumn().getMappedTypeCode() == Types.DOUBLE) {
                     iter.remove();
-                } 
+                }
             } else if (change instanceof ColumnDefaultValueChange) {
                 ColumnDefaultValueChange defaultValueChange = (ColumnDefaultValueChange) change;
                 if (defaultValueChange.getChangedColumn().getMappedTypeCode() == Types.DOUBLE &&

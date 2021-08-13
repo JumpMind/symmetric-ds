@@ -56,9 +56,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for a node")
 public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetricEngineAware {
-
     final Logger log = LoggerFactory.getLogger(getClass());
-
     protected ISymmetricEngine engine;
 
     public NodeManagementService() {
@@ -129,9 +127,10 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         engine.getTriggerRouterService().syncTriggers();
     }
 
-    @ManagedAttribute(description = "Get the number of current connections allowed to this "
-            + "instance of the node via HTTP.  If this value is 20, then 20 concurrent push"
-            + " clients and 20 concurrent pull clients will be allowed")
+    @ManagedAttribute(
+            description = "Get the number of current connections allowed to this "
+                    + "instance of the node via HTTP.  If this value is 20, then 20 concurrent push"
+                    + " clients and 20 concurrent pull clients will be allowed")
     public int getConcurrentWorkersMax() {
         return engine.getParameterService().getInt(ParameterConstants.CONCURRENT_WORKERS);
     }
@@ -145,7 +144,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         }
         return 0;
     }
-    
+
     @ManagedOperation(description = "Get connection statistics about indivdual nodes")
     public String showNodeConcurrencyStatisticsAsText() {
         String lineFeed = "\n";
@@ -188,12 +187,15 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
     }
 
     @ManagedOperation(description = "Clean up both incoming and outgoing resources that are older than the passed in number of milliseconds")
-    @ManagedOperationParameters({ @ManagedOperationParameter(name = "timeToLiveInMS", description = "The number of milliseconds old a resource should be before it is cleaned up") })
+    @ManagedOperationParameters({ @ManagedOperationParameter(
+            name = "timeToLiveInMS",
+            description = "The number of milliseconds old a resource should be before it is cleaned up") })
     public long cleanStaging(long timeToLiveInMS) {
         return engine.getStagingManager().clean(timeToLiveInMS);
     }
 
-    @ManagedAttribute(description = "Get a list of nodes that have been added to the white list, a list of node ids that always get through the concurrency manager.")
+    @ManagedAttribute(
+            description = "Get a list of nodes that have been added to the white list, a list of node ids that always get through the concurrency manager.")
     public String getNodesInWhiteList() {
         StringBuilder ret = new StringBuilder();
         String[] list = engine.getConcurrentConnectionManager().getWhiteList();
@@ -216,9 +218,10 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         engine.getConcurrentConnectionManager().removeFromWhiteList(nodeId);
     }
 
-    @ManagedAttribute(description = "Configure the number of connections allowed to this node."
-            + "  If the value is set to zero you are effectively disabling your transport"
-            + " (wihch can be useful for maintainance")
+    @ManagedAttribute(
+            description = "Configure the number of connections allowed to this node."
+                    + "  If the value is set to zero you are effectively disabling your transport"
+                    + " (wihch can be useful for maintainance")
     public void setConcurrentWorkersMax(int value) {
         engine.getParameterService().saveParameter(ParameterConstants.CONCURRENT_WORKERS, value, "jmx");
     }
@@ -282,7 +285,8 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         engine.getClusterService().clearAllLocks();
     }
 
-    @ManagedOperation(description = "Check to see if the initial load for a node id is complete.  This method will throw an exception if the load error'd out or was never started.")
+    @ManagedOperation(
+            description = "Check to see if the initial load for a node id is complete.  This method will throw an exception if the load error'd out or was never started.")
     @ManagedOperationParameters({ @ManagedOperationParameter(name = "nodeId", description = "The node id") })
     public boolean areAllLoadBatchesComplete(String nodeId) {
         return engine.getOutgoingBatchService().areAllLoadBatchesComplete(nodeId);
@@ -302,7 +306,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
             return false;
         }
     }
-    
+
     @ManagedOperation(description = "Extract multiple batches to a file for a time range")
     @ManagedOperationParameters({
             @ManagedOperationParameter(name = "fileName", description = "The file to write the batch output to"),
@@ -318,7 +322,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         Date endBatchTime = FormatUtils.parseDate(endTime, FormatUtils.TIMESTAMP_PATTERNS);
         String[] channelIds = channelIdList.split(",");
         IDataExtractorService dataExtractorService = engine.getDataExtractorService();
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             dataExtractorService.extractBatchRange(writer, nodeId, startBatchTime, endBatchTime,
                     channelIds);
             return true;
@@ -326,7 +330,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
             log.error("Failed to write batch range to file", ex);
             return false;
         }
-    }   
+    }
 
     @ManagedOperation(description = "Enable or disable a channel for a specific external id")
     @ManagedOperationParameters({
@@ -347,14 +351,13 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
     public void openRegistration(String nodeGroupId, String externalId) {
         engine.getRegistrationService().openRegistration(nodeGroupId, externalId);
     }
-    
+
     @ManagedOperation(description = "Re-open the registration for a node with the specified external id")
     @ManagedOperationParameters({
-            @ManagedOperationParameter(name = "nodeId", description = "The node id to reopen registration for")})
+            @ManagedOperationParameter(name = "nodeId", description = "The node id to reopen registration for") })
     public void reopenRegistration(String nodeId) {
         engine.getRegistrationService().reOpenRegistration(nodeId);
     }
-
 
     @ManagedOperation(description = "Send an initial load of data to a node.")
     @ManagedOperationParameters({ @ManagedOperationParameter(name = "nodeId", description = "The node id to reload.") })
@@ -410,7 +413,8 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
                 Long.valueOf(startBatchId), Long.valueOf(endBatchId));
         try {
             writer.close();
-        } catch(IOException e) { }
+        } catch (IOException e) {
+        }
     }
 
     @ManagedOperation(description = "Encrypts plain text for use with db.user and db.password properties")
@@ -459,10 +463,9 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
             return null;
         }
     }
-    
+
     @ManagedAttribute(description = "Version")
     public String getVersion() {
         return Version.version();
-    }    
-
+    }
 }

@@ -26,13 +26,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class Node {
-
     private String nodeId;
     private String externalId;
     private boolean registrationServer;
     private String syncUrl;
     private String registrationUrl;
-    private int batchToSendCount;    
+    private int batchToSendCount;
     private int batchInErrorCount;
     private Date lastHeartbeat;
     private int heartbeatInterval;
@@ -40,7 +39,7 @@ public class Node {
     private boolean initialLoaded;
     private boolean reverseInitialLoaded;
     private String createdAtNodeId;
-    
+
     public String getCreatedAtNodeId() {
         return createdAtNodeId;
     }
@@ -127,7 +126,7 @@ public class Node {
     public void setLastHeartbeat(Date lastHeartbeat) {
         this.lastHeartbeat = lastHeartbeat;
     }
-    
+
     public String getExternalId() {
         return externalId;
     }
@@ -150,6 +149,5 @@ public class Node {
 
     public void setHeartbeatInterval(int heartbeatInterval) {
         this.heartbeatInterval = heartbeatInterval;
-    }    
-        
+    }
 }

@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.service;
 
 public interface IUpdateService {
-
     public void init();
 
     public void checkForUpdates();
@@ -33,5 +32,4 @@ public interface IUpdateService {
     public String getDownloadUrl();
 
     public void stop();
-
 }

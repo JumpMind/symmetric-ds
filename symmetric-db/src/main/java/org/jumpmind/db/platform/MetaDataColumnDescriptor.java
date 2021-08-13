@@ -63,8 +63,7 @@ public class MetaDataColumnDescriptor {
      * @param columnName
      *            The name of the column
      * @param jdbcType
-     *            The jdbc type for reading from the result set, one of VARCHAR,
-     *            INTEGER, TINYINT, BIT
+     *            The jdbc type for reading from the result set, one of VARCHAR, INTEGER, TINYINT, BIT
      */
     public MetaDataColumnDescriptor(String columnName, int jdbcType) {
         this(columnName, jdbcType, null);
@@ -76,11 +75,9 @@ public class MetaDataColumnDescriptor {
      * @param columnName
      *            The name of the column
      * @param jdbcType
-     *            The jdbc type for reading from the result set, one of VARCHAR,
-     *            INTEGER, TINYINT, BIT
+     *            The jdbc type for reading from the result set, one of VARCHAR, INTEGER, TINYINT, BIT
      * @param defaultValue
-     *            The default value if the column is not present in the result
-     *            set
+     *            The default value if the column is not present in the result set
      */
     public MetaDataColumnDescriptor(String columnName, int jdbcType, Object defaultValue) {
         _columnName = columnName.toUpperCase();
@@ -120,13 +117,11 @@ public class MetaDataColumnDescriptor {
      * 
      * @param resultSet
      *            The result set
-     * @return The column value or the default value if the column is not
-     *         present in the result set
+     * @return The column value or the default value if the column is not present in the result set
      */
     public Object readColumn(ResultSet resultSet) throws SQLException {
         ResultSetMetaData metaData = resultSet.getMetaData();
         int foundIdx = -1;
-
         for (int idx = 1; (foundIdx < 0) && (idx <= metaData.getColumnCount()); idx++) {
             if (_columnName.equals(metaData.getColumnName(idx).toUpperCase())) {
                 foundIdx = idx;
@@ -134,14 +129,14 @@ public class MetaDataColumnDescriptor {
         }
         if (foundIdx > 0) {
             switch (_jdbcType) {
-            case Types.BIT:
-                return Boolean.valueOf(resultSet.getBoolean(foundIdx));
-            case Types.INTEGER:
-                return Integer.valueOf(resultSet.getInt(foundIdx));
-            case Types.TINYINT:
-                return Short.valueOf(resultSet.getShort(foundIdx));
-            default:
-                return resultSet.getString(foundIdx);
+                case Types.BIT:
+                    return Boolean.valueOf(resultSet.getBoolean(foundIdx));
+                case Types.INTEGER:
+                    return Integer.valueOf(resultSet.getInt(foundIdx));
+                case Types.TINYINT:
+                    return Short.valueOf(resultSet.getShort(foundIdx));
+                default:
+                    return resultSet.getString(foundIdx);
             }
         } else {
             return _defaultValue;

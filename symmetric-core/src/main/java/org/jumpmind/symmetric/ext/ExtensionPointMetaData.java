@@ -29,7 +29,6 @@ import org.jumpmind.extension.IExtensionPoint;
  * Wrapper class for installed extension points.
  */
 public class ExtensionPointMetaData implements Serializable {
-
     private static final long serialVersionUID = 1L;
     private IExtensionPoint extensionPoint;
     private String name;
@@ -56,7 +55,7 @@ public class ExtensionPointMetaData implements Serializable {
         assignExtensionPointInterface();
         this.installed |= this.type != null
                 && (this.type.getSimpleName().equals("IServletExtension") ||
-                        this.type.getSimpleName().equals("IServletFilterExtension")  );
+                        this.type.getSimpleName().equals("IServletFilterExtension"));
     }
 
     public String getTypeText() {
@@ -91,11 +90,11 @@ public class ExtensionPointMetaData implements Serializable {
     protected Class<? extends IExtensionPoint> findExtensionPoint(Class<?>[] types) {
         for (Class<?> ifc : types) {
             if (ifc.equals(IExtensionPoint.class)) {
-                return (Class<? extends IExtensionPoint>) ifc;        
+                return (Class<? extends IExtensionPoint>) ifc;
             } else {
                 Class<? extends IExtensionPoint> searchValue = findExtensionPoint(ifc.getInterfaces());
                 if (searchValue != null) {
-                    return (Class<? extends IExtensionPoint>)ifc;
+                    return (Class<? extends IExtensionPoint>) ifc;
                 }
             }
         }
@@ -145,5 +144,4 @@ public class ExtensionPointMetaData implements Serializable {
     public boolean isBuiltIn() {
         return extensionPoint instanceof IBuiltInExtensionPoint;
     }
-
 }

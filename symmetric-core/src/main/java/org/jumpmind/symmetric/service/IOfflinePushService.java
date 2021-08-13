@@ -25,11 +25,8 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 
 /**
- * Service API that is responsible for pushing data to the list of configured
- * {@link Node}s that are configured to {@link NodeGroupLinkAction#P}
+ * Service API that is responsible for pushing data to the list of configured {@link Node}s that are configured to {@link NodeGroupLinkAction#P}
  */
 public interface IOfflinePushService extends IOfflineDetectorService {
-
     public RemoteNodeStatuses pushData(boolean force);
-
 }

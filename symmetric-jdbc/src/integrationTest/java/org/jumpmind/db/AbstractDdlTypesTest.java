@@ -40,11 +40,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class AbstractDdlTypesTest {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     private static IDatabasePlatform platform;
-
     protected Level originalLevel;
 
     @BeforeClass
@@ -63,39 +60,27 @@ abstract public class AbstractDdlTypesTest {
 
     @Test
     public void testPlatformSpecificDdl() throws Exception {
-
         dropTable();
-
         createTable();
-
         Table fromDb1 = platform.readTableFromDatabase(null, null, tableName());
         assertNotNull(fromDb1);
-
         dropTable();
-
         Column[] columns1 = fromDb1.getColumns();
         for (Column column : columns1) {
             assertNotNull(column.findPlatformColumn(getName()));
         }
-
         String xml = DatabaseXmlUtil.toXml(fromDb1);
-        
-        log.info("XML generated for table:\n"+xml);
-
+        log.info("XML generated for table:\n" + xml);
         StringReader reader = new StringReader(xml);
         Table fromXml = DatabaseXmlUtil.read(reader, false).getTable(0);
         for (Column column : fromXml.getColumns()) {
             assertNotNull("Expected " + getName() + " platform specific column information for "
                     + column.getName(), column.findPlatformColumn(getName()));
         }
-
         assertNotNull(fromXml);
-
         platform.alterTables(false, fromXml);
-
         Table fromDb2 = platform.readTableFromDatabase(null, null, tableName());
         assertNotNull("Could not find " + tableName() + " in the database", fromDb2);
-
         for (Column column1 : columns1) {
             PlatformColumn pColumn1 = column1.findPlatformColumn(getName());
             Column column2 = fromDb2.findColumn(column1.getName());
@@ -106,7 +91,6 @@ abstract public class AbstractDdlTypesTest {
             assertEquals(pColumn1.getSize(), pColumn2.getSize());
             assertEquals(pColumn1.getDecimalDigits(), pColumn2.getDecimalDigits());
         }
-
     }
 
     protected void createTable() {

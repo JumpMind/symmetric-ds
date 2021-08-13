@@ -25,23 +25,15 @@ import java.util.Date;
 import org.jumpmind.symmetric.io.data.Batch;
 
 /**
- * Used for tracking the sending a collection of data to a node in the system. A
- * new outgoing_batch is created and given a status of 'NE'. After sending the
- * outgoing_batch to its target node, the status becomes 'SE'. The node responds
- * with either a success status of 'OK' or an error status of 'ER'. An error
- * while sending to the node also results in an error status of 'ER' regardless
- * of whether the node sends that acknowledgement.
+ * Used for tracking the sending a collection of data to a node in the system. A new outgoing_batch is created and given a status of 'NE'. After sending the
+ * outgoing_batch to its target node, the status becomes 'SE'. The node responds with either a success status of 'OK' or an error status of 'ER'. An error while
+ * sending to the node also results in an error status of 'ER' regardless of whether the node sends that acknowledgement.
  */
 public class OutgoingBatch extends AbstractBatch {
-
     private static final long serialVersionUID = 1L;
-
     private boolean extractJobFlag;
-
     private Date extractStartTime;
-
     private Date transferStartTime;
-
     private Date loadStartTime;
 
     public OutgoingBatch() {

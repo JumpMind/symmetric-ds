@@ -34,20 +34,19 @@ public class ExportFileDownloader extends StreamResource {
     protected String fileName;
 
     public ExportFileDownloader(final String fileName, final String contentType, final File file) throws FileNotFoundException {
-        super(new FileStreamSource(file),fileName);
+        super(new FileStreamSource(file), fileName);
         this.contentType = contentType;
         this.fileName = fileName;
     }
-    
+
     @Override
     public DownloadStream getStream() {
-        DownloadStream download = new DownloadStream(super.getStreamSource().getStream(),contentType,fileName);
+        DownloadStream download = new DownloadStream(super.getStreamSource().getStream(), contentType, fileName);
         download.setCacheTime(2000);
         return download;
     }
 
     public static class FileStreamSource implements StreamResource.StreamSource {
-
         private static final long serialVersionUID = 1L;
         private FileInputStream stream;
 
@@ -59,6 +58,5 @@ public class ExportFileDownloader extends StreamResource {
         public InputStream getStream() {
             return stream;
         }
-
     }
 }

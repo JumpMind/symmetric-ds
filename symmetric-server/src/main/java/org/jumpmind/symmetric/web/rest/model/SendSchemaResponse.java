@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class SendSchemaResponse {
-   
     protected Map<String, List<TableName>> nodeIdsSentTo = new HashMap<String, List<TableName>>();
 
     public Map<String, List<TableName>> getNodeIdsSentTo() {
@@ -37,6 +36,5 @@ public class SendSchemaResponse {
 
     public void setNodeIdsSentTo(Map<String, List<TableName>> nodeIdsSentTo) {
         this.nodeIdsSentTo = nodeIdsSentTo;
-    }    
-
+    }
 }

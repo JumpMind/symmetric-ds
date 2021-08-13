@@ -28,24 +28,22 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class HsqlDb2JdbcSqlTemplate extends JdbcSqlTemplate {
-
     public HsqlDb2JdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
-        super(dataSource, settings, lobHandler, databaseInfo);        
-        primaryKeyViolationSqlStates = new String[] {"23505"};
+        super(dataSource, settings, lobHandler, databaseInfo);
+        primaryKeyViolationSqlStates = new String[] { "23505" };
         uniqueKeyViolationNameRegex = new String[] { "unique constraint or index violation: \"(.*)\"" };
         foreignKeyViolationSqlStates = new String[] { "23503" };
         foreignKeyChildExistsViolationSqlStates = new String[] { "23504" };
     }
-    
+
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
-    
+
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "call IDENTITY()";
     }
-    
 }

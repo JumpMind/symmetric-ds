@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.model;
 import org.jumpmind.db.model.Table;
 
 public class DataMetaData {
-
     private Data data;
     private Table table;
     private Router router;
@@ -51,11 +50,11 @@ public class DataMetaData {
     public void setTable(Table table) {
         this.table = table;
     }
-    
+
     public Router getRouter() {
         return router;
     }
-    
+
     public void setRouter(Router router) {
         this.router = router;
     }
@@ -71,5 +70,4 @@ public class DataMetaData {
     public TriggerHistory getTriggerHistory() {
         return data != null ? data.getTriggerHistory() : null;
     }
-
 }

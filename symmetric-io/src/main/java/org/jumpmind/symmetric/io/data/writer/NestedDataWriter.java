@@ -30,11 +30,9 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
 
 public class NestedDataWriter implements IDataWriter {
-    
     protected IDataWriter nestedWriter;
-    
     protected DataContext context;
-    
+
     public NestedDataWriter(IDataWriter nestedWriter) {
         this.nestedWriter = nestedWriter;
     }
@@ -71,28 +69,25 @@ public class NestedDataWriter implements IDataWriter {
     public void end(Batch batch, boolean inError) {
         this.nestedWriter.end(batch, inError);
     }
-    
+
     public void setNestedWriter(IDataWriter nestedWriter) {
         this.nestedWriter = nestedWriter;
     }
-    
+
     public IDataWriter getNestedWriter() {
         return nestedWriter;
     }
-    
+
     @SuppressWarnings("unchecked")
     public <T extends IDataWriter> T getNestedWriterOfType(Class<?> clazz) {
         IDataWriter writer = this;
         while (writer != null && !clazz.isInstance(writer) && writer instanceof NestedDataWriter) {
-            writer = ((NestedDataWriter)writer).getNestedWriter();
+            writer = ((NestedDataWriter) writer).getNestedWriter();
         }
-        
         if (writer != null && clazz.isInstance(writer)) {
-            return (T)writer;
+            return (T) writer;
         } else {
             return null;
         }
     }
-
-
 }

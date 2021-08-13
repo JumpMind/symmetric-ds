@@ -27,13 +27,10 @@ import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.util.AppUtils;
 
 public abstract class AbstractMonitorType implements IMonitorType, ISymmetricEngineAware {
-
     protected final int TOP_THREADS = 3;
-
     protected final int MAX_STACK_DEPTH = 30;
-
     protected ISymmetricEngine engine;
-    
+
     @Override
     public boolean requiresClusterLock() {
         return true;
@@ -64,5 +61,4 @@ public abstract class AbstractMonitorType implements IMonitorType, ISymmetricEng
         sb.append(AppUtils.formatStackTrace(info.getStackTrace()));
         return sb.toString();
     }
-
 }

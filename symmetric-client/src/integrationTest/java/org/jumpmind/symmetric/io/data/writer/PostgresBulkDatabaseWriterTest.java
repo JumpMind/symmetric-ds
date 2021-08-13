@@ -35,7 +35,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class PostgresBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest {
-
     @BeforeClass
     public static void setup() throws Exception {
         if (DbTestUtils.getEnvironmentSpecificProperties(DbTestUtils.ROOT).get(BasicDataSourcePropertyConstants.DB_POOL_DRIVER)
@@ -59,7 +58,7 @@ public class PostgresBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTe
         return platform instanceof PostgreSqlDatabasePlatform;
     }
 
-    protected AbstractDatabaseWriter create(){
+    protected AbstractDatabaseWriter create() {
         return new PostgresBulkDatabaseWriter(platform, platform, "sym_", new DatabaseWriterSettings(),
                 1000);
     }
@@ -67,16 +66,14 @@ public class PostgresBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTe
     @Override
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
-        return writeData(new PostgresBulkDatabaseWriter(platform, platform, "sym_", new DatabaseWriterSettings(), 
+        return writeData(new PostgresBulkDatabaseWriter(platform, platform, "sym_", new DatabaseWriterSettings(),
                 1000), new TableCsvData(table, data));
     }
-    
+
     @Override
     protected long writeData(BinaryEncoding encoding, List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
-        return writeData(new PostgresBulkDatabaseWriter(platform, platform, "sym_", new DatabaseWriterSettings(), 
+        return writeData(new PostgresBulkDatabaseWriter(platform, platform, "sym_", new DatabaseWriterSettings(),
                 1000), encoding, new TableCsvData(table, data));
     }
-   
-
 }

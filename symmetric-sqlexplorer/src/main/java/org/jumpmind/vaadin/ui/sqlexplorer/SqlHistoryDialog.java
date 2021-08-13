@@ -42,53 +42,38 @@ import com.vaadin.ui.components.grid.HeaderRow;
 import com.vaadin.ui.themes.ValoTheme;
 
 public class SqlHistoryDialog extends ResizableWindow {
-
     private static final long serialVersionUID = 1L;
-
     private final Grid<SqlHistory> grid;
-
     private QueryPanel queryPanel;
-
     private ISettingsProvider settingsProvider;
 
     public SqlHistoryDialog(ISettingsProvider settingsProvider, QueryPanel queryPanel) {
         super("Sql History");
         this.settingsProvider = settingsProvider;
         this.queryPanel = queryPanel;
-
         VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.setSizeFull();
         mainLayout.setMargin(false);
         mainLayout.setSpacing(true);
         addComponent(mainLayout, 1);
-
         final Set<SqlHistory> sqlHistories = new TreeSet<SqlHistory>(settingsProvider.get().getSqlHistory());
-
         grid = new Grid<SqlHistory>();
         grid.setSelectionMode(SelectionMode.MULTI);
-
         grid.addColumn(history -> StringUtils.abbreviate(history.getSqlStatement(), 50)).setId("sqlStatement").setCaption("SQL");
-
         grid.addColumn(history -> String.format("%1$tY-%1$tm-%1$td %1$tk:%1$tM:%1$tS", history.getLastExecuteTime()))
                 .setCaption("Time").setWidth(150).setMaximumWidth(200);
-
         grid.addColumn(history -> CommonUiUtils.formatDuration(history.getLastExecuteDuration())).setCaption("Duration").setWidth(120);
-
         grid.addColumn(history -> history.getExecuteCount()).setCaption("Count").setWidth(120);
-        
         grid.setDescriptionGenerator(history -> history.getSqlStatement());
-
         HeaderRow filteringHeader = grid.appendHeaderRow();
         HeaderCell logTextFilterCell = filteringHeader.getCell("sqlStatement");
         TextField filterField = new TextField();
         filterField.setPlaceholder("Filter");
         filterField.addStyleName(ValoTheme.TEXTFIELD_TINY);
         filterField.setWidth("100%");
-
         // Update filter When the filter input is changed
         filterField.addValueChangeListener(event -> filter(event.getValue()));
         logTextFilterCell.setComponent(filterField);
-
         grid.addItemClickListener(event -> {
             if (event.getColumn() != null) {
                 grid.deselectAll();
@@ -98,14 +83,10 @@ public class SqlHistoryDialog extends ResizableWindow {
                 select();
             }
         });
-
         grid.setSizeFull();
-
         mainLayout.addComponent(grid);
         mainLayout.setExpandRatio(grid, 1);
-        
         grid.setItems(sqlHistories);
-
         Button cancelButton = new Button("Cancel");
         cancelButton.addClickListener(new Button.ClickListener() {
             private static final long serialVersionUID = 1L;
@@ -114,7 +95,6 @@ public class SqlHistoryDialog extends ResizableWindow {
                 close();
             }
         });
-
         Button applyButton = CommonUiUtils.createPrimaryButton("Select");
         applyButton.setClickShortcut(KeyCode.ENTER);
         applyButton.addClickListener(new Button.ClickListener() {
@@ -124,11 +104,9 @@ public class SqlHistoryDialog extends ResizableWindow {
                 select();
             }
         });
-
         addComponent(buildButtonFooter(cancelButton, applyButton));
-
     }
-    
+
     private void filter(String filter) {
         final Set<SqlHistory> histories = new TreeSet<SqlHistory>(settingsProvider.get().getSqlHistory());
         List<SqlHistory> filteredHistories = new ArrayList<SqlHistory>();

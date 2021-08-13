@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.transport;
 
 import java.io.IOException;
@@ -31,49 +30,51 @@ import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 
 public interface ITransportManager {
-
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, String registrationUrl) throws IOException;
-    
-    public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException;
+
+    public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, Map<String, String> requestProperties,
+            String registrationUrl) throws IOException;
 
     public void writeAcknowledgement(OutputStream out, Node remote, List<IncomingBatch> list, Node local, String securityToken) throws IOException;
 
     public List<BatchAck> readAcknowledgement(String parameterString1, String parameterString2) throws IOException;
-    
+
     public IIncomingTransport getFilePullTransport(Node remote, Node local, String securityToken,
-            Map<String, String> requestProperties, String registrationUrl) throws IOException;   
-    
+            Map<String, String> requestProperties, String registrationUrl) throws IOException;
+
     public IOutgoingWithResponseTransport getFilePushTransport(Node remote, Node local,
             String securityToken, String registrationUrl) throws IOException;
 
-    public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException;
+    public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken, Map<String, String> requestProperties, String registrationUrl)
+            throws IOException;
 
     public IIncomingTransport getPingTransport(Node remote, Node local, String registrationUrl) throws IOException;
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, String registrationUrl) throws IOException;
 
-    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException;
+    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, Map<String, String> requestProperties,
+            String registrationUrl) throws IOException;
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException;
-    
+
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl, Map<String, String> requestProperties) throws IOException;
 
-    public IIncomingTransport getConfigTransport(Node remote, Node local, String securityToken, 
+    public IIncomingTransport getConfigTransport(Node remote, Node local, String securityToken,
             String symmetricVersion, String configVersion, String registrationUrl) throws IOException;
-    
-    public IOutgoingWithResponseTransport getBandwidthPushTransport(Node remote, Node local, String securityToken, 
+
+    public IOutgoingWithResponseTransport getBandwidthPushTransport(Node remote, Node local, String securityToken,
             Map<String, String> requestProperties, String registrationUrl) throws IOException;
 
     /**
-     * This is the proper way to determine the URL for a node.  It delegates to configured 
-     * extension points when necessary to take in to account custom load balancing and
-     * url selection schemes.
-     * @param url This is the url configured in sync_url of the node table
+     * This is the proper way to determine the URL for a node. It delegates to configured extension points when necessary to take in to account custom load
+     * balancing and url selection schemes.
+     * 
+     * @param url
+     *            This is the url configured in sync_url of the node table
      */
     public String resolveURL(String url, String registrationUrl);
-    
-    public int sendCopyRequest(Node local) throws IOException;
-    
-    public int sendStatusRequest(Node local, Map<String, String> statuses) throws IOException;
 
+    public int sendCopyRequest(Node local) throws IOException;
+
+    public int sendStatusRequest(Node local, Map<String, String> statuses) throws IOException;
 }

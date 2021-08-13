@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "enginelist")
 public class EngineList {
-
     List<Engine> engines;
 
     public EngineList(Engine... engines) {
@@ -48,7 +47,7 @@ public class EngineList {
     public Engine[] getEngines() {
         return engines.toArray(new Engine[engines.size()]);
     }
-    
+
     public void addEngine(Engine engine) {
         this.engines.add(engine);
     }

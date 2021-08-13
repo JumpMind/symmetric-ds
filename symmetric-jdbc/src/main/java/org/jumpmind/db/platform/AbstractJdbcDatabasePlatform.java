@@ -31,11 +31,8 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatform {
-
     protected DataSource dataSource;
-
     protected ISqlTemplate sqlTemplate;
-    
     protected ISqlTemplate sqlTemplateDirty;
 
     public AbstractJdbcDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
@@ -48,11 +45,11 @@ abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatf
     }
 
     protected abstract IDdlBuilder createDdlBuilder();
-    
+
     protected abstract IDdlReader createDdlReader();
-    
+
     protected ISqlTemplate createSqlTemplate() {
-        return new JdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo()); 
+        return new JdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
 
     protected ISqlTemplate createSqlTemplateDirty() {
@@ -86,5 +83,4 @@ abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatf
             }
         }
     }
-
 }

@@ -21,10 +21,8 @@
 package org.jumpmind.symmetric.io;
 
 final public class IoConstants {
-    
     public static final long IGNORE_TABLES_BATCH = -9999;
 
     private IoConstants() {
     }
-
 }

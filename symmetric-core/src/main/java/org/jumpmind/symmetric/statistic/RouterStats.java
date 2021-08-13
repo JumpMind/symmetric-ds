@@ -26,21 +26,16 @@ import java.util.Set;
 import org.jumpmind.symmetric.model.DataGap;
 
 public class RouterStats {
-
     private long startDataId;
-    
     private long endDataId;
-
     private long dataReadCount;
-        
     private long peekAheadFillCount;
-
     private List<DataGap> dataGaps;
-    
+
     public RouterStats() {
     }
-    
-    public RouterStats(long startDataId, long endDataId, long dataReadCount, long peekAheadFillCount, 
+
+    public RouterStats(long startDataId, long endDataId, long dataReadCount, long peekAheadFillCount,
             List<DataGap> dataGaps, Set<String> transactions) {
         this.startDataId = startDataId;
         this.endDataId = endDataId;
@@ -48,7 +43,7 @@ public class RouterStats {
         this.peekAheadFillCount = peekAheadFillCount;
         this.dataGaps = dataGaps;
     }
-    
+
     @Override
     public String toString() {
         return "{ startDataId: " + startDataId + ", endDataId: " + endDataId + ", dataReadCount: " + dataReadCount +

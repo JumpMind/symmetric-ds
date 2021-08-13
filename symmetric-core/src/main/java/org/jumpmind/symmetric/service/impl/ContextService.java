@@ -26,7 +26,6 @@ import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class ContextService extends AbstractService implements IContextService {
-
     public ContextService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);
         setSqlMap(new ContextServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
@@ -75,7 +74,7 @@ public class ContextService extends AbstractService implements IContextService {
     public int delete(ISqlTransaction transaction, String name) {
         return transaction.prepareAndExecute(getSql("deleteSql"), name);
     }
-    
+
     public int delete(String name) {
         return sqlTemplate.update(getSql("deleteSql"), name);
     }
@@ -83,10 +82,10 @@ public class ContextService extends AbstractService implements IContextService {
     public void save(String name, String value) {
         save(null, name, value);
     }
-    
+
     @Override
     public void save(ISqlTransaction transaction, String name, String value) {
-        if (transaction != null) {            
+        if (transaction != null) {
             if (update(transaction, name, value) <= 0) {
                 insert(transaction, name, value);
             }
@@ -94,8 +93,7 @@ public class ContextService extends AbstractService implements IContextService {
             int count = sqlTemplate.update(getSql("updateSql"), value, name);
             if (count <= 0) {
                 sqlTemplate.update(getSql("insertSql"), name, value);
-            }            
+            }
         }
-    }    
-
+    }
 }

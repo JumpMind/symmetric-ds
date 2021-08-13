@@ -29,11 +29,10 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class H2JdbcSqlTemplate extends JdbcSqlTemplate {
-
     public H2JdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
-        primaryKeyViolationSqlStates = new String[] {"23001", "23505"};
+        primaryKeyViolationSqlStates = new String[] { "23001", "23505" };
         uniqueKeyViolationNameRegex = new String[] { "key violation: \"(.*) ON .* VALUES .*" };
         foreignKeyViolationCodes = new int[] { 23506 };
         foreignKeyChildExistsViolationCodes = new int[] { 23503 };
@@ -53,7 +52,7 @@ public class H2JdbcSqlTemplate extends JdbcSqlTemplate {
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "call IDENTITY()";
     }
-    
+
     @Override
     public ISqlTransaction startSqlTransaction(boolean autoCommit) {
         return new H2JdbcSqlTransaction(this, autoCommit);
@@ -63,5 +62,4 @@ public class H2JdbcSqlTemplate extends JdbcSqlTemplate {
     public ISqlTransaction startSqlTransaction() {
         return new H2JdbcSqlTransaction(this);
     }
-
 }

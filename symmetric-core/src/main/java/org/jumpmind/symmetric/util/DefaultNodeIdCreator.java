@@ -38,24 +38,19 @@ import bsh.Interpreter;
 import bsh.TargetError;
 
 public class DefaultNodeIdCreator implements INodeIdCreator, IBuiltInExtensionPoint {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected IParameterService parameterService;
-    
     protected INodeService nodeService;
-    
     protected ISecurityService securityService;
 
     public DefaultNodeIdCreator(IParameterService parameterService, INodeService nodeService, ISecurityService securityService) {
         this.parameterService = parameterService;
         this.nodeService = nodeService;
         this.securityService = securityService;
-    }        
-    
+    }
+
     /**
-     * Determine the node ID to use, given the node that is requesting to register, by trying to find its
-     * record with an open registration.
+     * Determine the node ID to use, given the node that is requesting to register, by trying to find its record with an open registration.
      */
     public String selectNodeId(Node node, String remoteHost, String remoteAddress) {
         String nodeId = node.getNodeId();
@@ -83,8 +78,7 @@ public class DefaultNodeIdCreator implements INodeIdCreator, IBuiltInExtensionPo
     }
 
     /**
-     * Determine node ID for the node that is about to be created and opened for registration.
-     * Return an existing node to re-open its registration.
+     * Determine node ID for the node that is about to be created and opened for registration. Return an existing node to re-open its registration.
      */
     public String generateNodeId(Node node, String remoteHost, String remoteAddress) {
         String nodeId = node.getNodeId();
@@ -118,11 +112,11 @@ public class DefaultNodeIdCreator implements INodeIdCreator, IBuiltInExtensionPo
     protected String buildNodeId(INodeService nodeService, Node node) {
         return StringUtils.isBlank(node.getExternalId()) ? "0" : node.getExternalId();
     }
-    
+
     public String generatePassword(Node node) {
         return securityService.nextSecureHexString(30);
     }
- 
+
     protected String evaluateScript(Node node, String remoteHost, String remoteAddress) {
         String script = parameterService.getString(ParameterConstants.NODE_ID_CREATOR_SCRIPT);
         if (StringUtils.isNotBlank(script)) {
@@ -139,7 +133,7 @@ public class DefaultNodeIdCreator implements INodeIdCreator, IBuiltInExtensionPo
                 }
             } catch (TargetError e) {
                 if (e.getTarget() instanceof RuntimeException) {
-                    throw (RuntimeException)e.getTarget();
+                    throw (RuntimeException) e.getTarget();
                 } else {
                     throw new RuntimeException(e.getTarget() != null ? e.getTarget() : e);
                 }

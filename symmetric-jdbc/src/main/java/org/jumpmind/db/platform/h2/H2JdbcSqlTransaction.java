@@ -24,11 +24,10 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 
 public class H2JdbcSqlTransaction extends JdbcSqlTransaction {
-
     public H2JdbcSqlTransaction(JdbcSqlTemplate jdbcSqlTemplate) {
         this(jdbcSqlTemplate, false);
     }
-    
+
     public H2JdbcSqlTransaction(JdbcSqlTemplate jdbcSqlTemplate, boolean autoCommit) {
         super(jdbcSqlTemplate, autoCommit);
     }
@@ -38,5 +37,4 @@ public class H2JdbcSqlTransaction extends JdbcSqlTransaction {
         super.commit();
         execute("checkpoint sync");
     }
-
 }
