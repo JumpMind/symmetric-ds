@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -446,7 +447,7 @@ public class DbExport {
         public WriterWrapper(OutputStream os) {
             if (StringUtils.isBlank(dir) && os != null) {
                 try {
-                    writer = new OutputStreamWriter(os, StandardCharsets.UTF_8.name());
+                    writer = new OutputStreamWriter(os, Charset.defaultCharset().name());
                 } catch (UnsupportedEncodingException e) {
                     throw new IoException(e);
                 }
@@ -473,7 +474,7 @@ public class DbExport {
                 }
                 if (!startedWriting) {
                     if (format == Format.SYM_XML) {
-                        write("<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n");
+                        write("<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" encoding=\"" + Charset.defaultCharset().name() + "\">\n");
                     } else if (format == Format.XML) {
                         write("<database xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" name=\"dbexport\"");
                         if (catalog != null && !catalog.equals(platform.getDefaultCatalog())) {
@@ -482,7 +483,7 @@ public class DbExport {
                         if (schema != null && !schema.equals(platform.getDefaultSchema())) {
                             write(" schema=\"" + schema + "\"");
                         }
-                        write(">\n");
+                        write(" encoding=\"" + Charset.defaultCharset().name() + "\">\n");
                     }
                     startedWriting = true;
                 }
