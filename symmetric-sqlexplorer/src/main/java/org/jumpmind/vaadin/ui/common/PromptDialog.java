@@ -25,6 +25,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import java.io.Serializable;
 
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -66,7 +67,7 @@ public class PromptDialog extends Dialog {
         field.setWidthFull();
         field.setValue(defaultValue);
         if (defaultValue != null) {
-            //field.setSelection(0, defaultValue.length());
+            UI.getCurrent().getPage().executeJs("$0.select();", field.getElement());
             field.focus();
         }
         layout.add(field);
