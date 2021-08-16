@@ -22,7 +22,6 @@ package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.Shortcuts;
-import com.vaadin.flow.component.grid.editor.Editor;
 
 import de.f0rce.ace.AceEditor;
 
