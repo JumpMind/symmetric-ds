@@ -79,7 +79,8 @@ public class SettingsDialog extends ResizableDialog {
         super("Settings");
         this.explorer = explorer;
         this.settingsProvider = explorer.getSettingsProvider();
-        setWidth("700px");
+        setWidth("800px");
+        content.setHeight("91%");
         add(createSettingsLayout(), 1);
         add(createButtonLayout());
     }
