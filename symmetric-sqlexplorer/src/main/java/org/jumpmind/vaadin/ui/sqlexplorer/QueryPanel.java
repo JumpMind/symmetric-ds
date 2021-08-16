@@ -205,8 +205,8 @@ public class QueryPanel extends CustomSplitLayout implements IContentTab {
             }
         });
 
-        /*boolean autoSuggestEnabled = settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMPLETE);
-        setAutoCompleteEnabled(autoSuggestEnabled);*/
+        boolean autoSuggestEnabled = settingsProvider.get().getProperties().is(Settings.SQL_EXPLORER_AUTO_COMPLETE);
+        setAutoCompleteEnabled(autoSuggestEnabled);
 
         selectionChangeListener = new DummyChangeListener();
         return editor;
@@ -623,18 +623,12 @@ public class QueryPanel extends CustomSplitLayout implements IContentTab {
         return sql;
     }
 
-    /*public void setAutoCompleteEnabled(boolean enabled) {
-        if (enabled) {
-            suggester = new SqlSuggester(db);
-            suggestionExtension = new SuggestionExtension(suggester);
-            suggestionExtension.extend(editor);
-        } else if (suggestionExtension != null) {
-            suggestionExtension.remove();
-            BlankSuggester blank = new BlankSuggester();
-            suggestionExtension = new SuggestionExtension(blank);
-            suggestionExtension.extend(editor);
+    public void setAutoCompleteEnabled(boolean enabled) {
+        if (suggester == null) {
+            suggester = new SqlSuggester(db, editor);
         }
-    }*/
+        suggester.setEnabled(enabled);
+    }
 
     static class DummyChangeListener implements ComponentEventListener<AceSelectionChanged>, Serializable {
         private static final long serialVersionUID = 1L;
@@ -643,18 +637,5 @@ public class QueryPanel extends CustomSplitLayout implements IContentTab {
         public void onComponentEvent(AceSelectionChanged event) {
         }
     }
-    
-    /*static class BlankSuggester implements Suggester {
-
-        @Override
-        public List<Suggestion> getSuggestions(String text, int cursor) {
-            return new ArrayList<Suggestion>();
-        }
-
-        @Override
-        public String applySuggestion(Suggestion sugg, String text, int cursor) {
-            return null;
-        }
-    }*/
 
 }

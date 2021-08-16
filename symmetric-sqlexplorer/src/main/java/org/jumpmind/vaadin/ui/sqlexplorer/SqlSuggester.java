@@ -31,7 +31,13 @@ import org.jumpmind.db.platform.IDdlReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SqlSuggester /*implements Suggester*/ {
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.Shortcuts;
+import com.vaadin.flow.component.grid.editor.Editor;
+
+import de.f0rce.ace.AceEditor;
+
+public class SqlSuggester {
     
     static final protected Logger logger = LoggerFactory.getLogger(SqlSuggester.class);
 
@@ -46,58 +52,112 @@ public class SqlSuggester /*implements Suggester*/ {
     private List<String> catalogNameCache;
     
     private IDdlReader reader;
+    private AceEditor editor;
     
     private String text;
     private int cursor;
     private String currentWord;
+    private boolean addPeriod;
+    private boolean enabled;
     private List<String> referencedTableNames;
     private Map<String, String> aliases;
     
-    public SqlSuggester(IDb db) {
+    public SqlSuggester(IDb db, AceEditor editor) {
         super();
         this.reader = db.getPlatform().getDdlReader();
+        this.editor = editor;
+        this.enabled = true;
         this.tableNameCache = new HashMap<String, List<String>>();
         this.columnNameCache = new HashMap<String, List<String>>();
         this.schemaNameCache = new HashMap<String, List<String>>();
         this.catalogNameCache = new ArrayList<String>();
+        
+        this.editor.setAutoComplete(true);
+        
+        this.editor.addSyncCompletedListener(event -> {
+            if (addPeriod) {
+                this.editor.addTextAtCurrentPosition(".");
+                addPeriod = false;
+                this.editor.sync();
+            }
+        });
+        
+        this.editor.addValueChangeListener(event -> updateSuggestions(event.getValue(), getCursorPosition()));
+        
+        Shortcuts.addShortcutListener(this.editor, () -> {
+            addPeriod = true;
+            this.editor.sync();
+        }, Key.PERIOD);
     }
     
-    /*@Override
-    public List<Suggestion> getSuggestions(String text, int cursor) {
-        try {            
-            this.text = text;
-            this.cursor = cursor;
-            this.currentWord = getCurrentWord();
-            this.referencedTableNames = getReferencedTableNames();
-            this.aliases = getAliases();
-            
-            List<Suggestion> suggestions = new ArrayList<Suggestion>();
-            
-            int lastDeliminatorIndex = getLastDeliminatorIndex();
-            if (lastDeliminatorIndex > 0
-                    && text.charAt(lastDeliminatorIndex) == '.'
-                    && isSqlIdentifier(text.charAt(lastDeliminatorIndex-1))) {
-                suggestions.addAll(getHierarchySuggestions());
-            }
-            else if (lastDeliminatorIndex > 0 && text.charAt(lastDeliminatorIndex-1) != '.'
-                    || (lastDeliminatorIndex <= 0)) {
-                suggestions.addAll(getAliasSuggestions());
-                for (String fullTableName : referencedTableNames) {
-                    String[] fullNameParts = parseFullName(fullTableName);
-                    suggestions.addAll(getColumnNameSuggestions(fullNameParts[2],
-                            fullNameParts[1], fullNameParts[0]));
+    public void updateSuggestions(String text, int cursor) {
+        this.editor.setCustomAutoCompletion(new String[] {});
+        if (enabled) {
+            try {            
+                this.text = text;
+                this.cursor = cursor;
+                this.currentWord = getCurrentWord();
+                this.referencedTableNames = getReferencedTableNames();
+                this.aliases = getAliases();
+                
+                List<String> suggestions = new ArrayList<String>();
+                
+                int lastDeliminatorIndex = getLastDeliminatorIndex();
+                if (lastDeliminatorIndex > 0
+                        && text.charAt(lastDeliminatorIndex) == '.'
+                        && isSqlIdentifier(text.charAt(lastDeliminatorIndex-1))) {
+                    suggestions.addAll(getHierarchySuggestions());
                 }
-                suggestions.addAll(getCatalogNameSuggestions());
-                suggestions.addAll(getSchemaNameSuggestions(null));
-                suggestions.addAll(getTableNameSuggestions(null, null));
+                else if (lastDeliminatorIndex > 0 && text.charAt(lastDeliminatorIndex-1) != '.'
+                        || (lastDeliminatorIndex <= 0)) {
+                    suggestions.addAll(getAliasSuggestions());
+                    for (String fullTableName : referencedTableNames) {
+                        String[] fullNameParts = parseFullName(fullTableName);
+                        suggestions.addAll(getColumnNameSuggestions(fullNameParts[2],
+                                fullNameParts[1], fullNameParts[0]));
+                    }
+                    suggestions.addAll(getCatalogNameSuggestions());
+                    suggestions.addAll(getSchemaNameSuggestions(null));
+                    suggestions.addAll(getTableNameSuggestions(null, null));
+                }
+                
+                removeRepeats(suggestions);
+                this.editor.setCustomAutoCompletion(suggestions.toArray(new String[suggestions.size()]));
+            } catch (Exception ex) {
+                logger.debug("Failed to generate suggestions. cursor=" + cursor + " text=" + text, ex);
+            }
+        }
+    }
+    
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+    
+    private int getCursorPosition() {
+        String value = editor.getValue();
+        int[] cursorCoordinates = editor.getCursorPosition();
+        int row = 0;
+        int column = 0;
+        int index = 0;
+        for (char c : value.toCharArray()) {
+            if (row == cursorCoordinates[0] && column == cursorCoordinates[1]) {
+                return index;
             }
             
-            return removeRepeats(suggestions);
-        } catch (Exception ex) {
-            logger.debug("Failed to generate suggestions. cursor=" + cursor + " text=" + text, ex);
-            return new ArrayList<Suggestion>();
+            if (c == '\n') {
+                row++;
+                column = 0;
+            } else {
+                column++;
+            }
+            index++;
         }
-    }*/
+        
+        if (row == cursorCoordinates[0] && column == cursorCoordinates[1]) {
+            return index;
+        }
+        return -1;
+    }
     
     private boolean isSqlIdentifier(char c) {
         return Character.isLetterOrDigit(c)
@@ -138,17 +198,16 @@ public class SqlSuggester /*implements Suggester*/ {
         return text.substring(index-lookBack, endIndex);
     }
     
-    /*private List<Suggestion> getAliasSuggestions() {
-        List<Suggestion> suggestions = new ArrayList<Suggestion>();
+    private List<String> getAliasSuggestions() {
+        List<String> suggestions = new ArrayList<String>();
         for (String alias : aliases.keySet()) {
             if (alias.toLowerCase().startsWith(currentWord.toLowerCase())) {
-                suggestions.add(new SqlSuggestion(alias, "<b>Alias</b> of "
-                        + aliases.get(alias), currentWord.length()));
+                suggestions.add(alias);
             }
         }
-        Collections.sort(suggestions, new SuggestionComparitor());
+        Collections.sort(suggestions);
         return suggestions;
-    }*/
+    }
     
     private Map<String, String> getAliases() {
         Map<String, String> aliases = new HashMap<String, String>();
@@ -313,8 +372,8 @@ public class SqlSuggester /*implements Suggester*/ {
     }
     
     /* Returns list of suggestions for the catalog.schema.table.column format */
-    /*private List<Suggestion> getHierarchySuggestions() {
-        List<Suggestion> suggestions = new ArrayList<Suggestion>();
+    private List<String> getHierarchySuggestions() {
+        List<String> suggestions = new ArrayList<String>();
         
         String prevWord = getPrevWord(cursor), prevWord2 = null, prevWord3 = null;
         
@@ -341,18 +400,17 @@ public class SqlSuggester /*implements Suggester*/ {
         return suggestions;
     }
     
-    private List<Suggestion> getCatalogNameSuggestions() {
-        List<Suggestion> suggestions = new ArrayList<Suggestion>();
+    private List<String> getCatalogNameSuggestions() {
+        List<String> suggestions = new ArrayList<String>();
         List<String> catalogs = getCatalogNamesFromCache();
         for (String catalog : catalogs) {
             if (catalog.toLowerCase().startsWith(currentWord.toLowerCase())) {
-                suggestions.add(new SqlSuggestion(catalog, "<b>Catalog</b> " + catalog,
-                        currentWord.length()));
+                suggestions.add(catalog);
             }
         }
-        Collections.sort(suggestions, new SuggestionComparitor());
+        Collections.sort(suggestions);
         return suggestions;
-    }*/
+    }
     
     private List<String> getCatalogNamesFromCache() {
         List<String> catalogs = catalogNameCache;
@@ -366,18 +424,17 @@ public class SqlSuggester /*implements Suggester*/ {
         catalogNameCache = new ArrayList<String>();
     }
     
-    /*private List<Suggestion> getSchemaNameSuggestions(String catalog) {
-        List<Suggestion> suggestions = new ArrayList<Suggestion>();
+    private List<String> getSchemaNameSuggestions(String catalog) {
+        List<String> suggestions = new ArrayList<String>();
         List<String> schemaNames = getSchemaNamesFromCache(catalog);
         for (String schemaName : schemaNames) {
             if (schemaName.toLowerCase().startsWith(currentWord.toLowerCase())) {
-                suggestions.add(new SqlSuggestion(schemaName, "<b>Schema</b> <i>" + schemaName
-                        + "</i>", currentWord.length()));
+                suggestions.add(schemaName);
             }
         }
-        Collections.sort(suggestions, new SuggestionComparitor());
+        Collections.sort(suggestions);
         return suggestions;
-    }*/
+    }
     
     private List<String> getSchemaNamesFromCache(String catalog) {
         List<String> schemaNames = schemaNameCache.get(catalog);
@@ -392,18 +449,17 @@ public class SqlSuggester /*implements Suggester*/ {
         schemaNameCache = new HashMap<String, List<String>>();
     }
     
-    /*private List<Suggestion> getTableNameSuggestions(String catalog, String schema) {
-        List<Suggestion> suggestions = new ArrayList<Suggestion>();
+    private List<String> getTableNameSuggestions(String catalog, String schema) {
+        List<String> suggestions = new ArrayList<String>();
         List<String> tableNames = getTableNamesFromCache(catalog, schema);
         for (String tableName : tableNames) {
             if (tableName.toLowerCase().startsWith(currentWord.toLowerCase())) {
-                suggestions.add(new SqlSuggestion(tableName, "<b>Table</b> <i>" + tableName
-                        + "</i>", currentWord.length()));
+                suggestions.add(tableName);
             }
         }
-        Collections.sort(suggestions, new SuggestionComparitor());
+        Collections.sort(suggestions);
         return suggestions;
-    }*/
+    }
     
     private List<String> getTableNamesFromCache(String catalog, String schema) {
         String key = getFullName(catalog, schema, null);
@@ -419,8 +475,8 @@ public class SqlSuggester /*implements Suggester*/ {
         tableNameCache = new HashMap<String, List<String>>();
     }
     
-    /*private List<Suggestion> getColumnNameSuggestions(String catalog, String schema, String tableName) {
-        List<Suggestion> suggestions = new ArrayList<Suggestion>();
+    private List<String> getColumnNameSuggestions(String catalog, String schema, String tableName) {
+        List<String> suggestions = new ArrayList<String>();
         if (aliases.get(tableName) != null) {
             String[] parsedName = parseFullName(aliases.get(tableName));
             tableName = parsedName[0];
@@ -430,15 +486,12 @@ public class SqlSuggester /*implements Suggester*/ {
         List<String> columnNames = getColumnNamesFromCache(catalog, schema, tableName);
         for (String columnName : columnNames) {
             if (columnName.toLowerCase().startsWith(currentWord.toLowerCase())) {
-                String fullName = getFullName(catalog, schema, tableName);
-                suggestions.add(new SqlSuggestion(columnName, "<b>Column</b> <i>" + columnName
-                        + "</i>" + (fullName.isEmpty() ? "" : " from " + fullName),
-                        currentWord.length()));
+                suggestions.add(columnName);
             }
         }
-        Collections.sort(suggestions, new SuggestionComparitor());
+        Collections.sort(suggestions);
         return suggestions;
-    }*/
+    }
     
     private List<String> getColumnNamesFromCache(String catalog, String schema, String tableName) {
         String key = getFullName(catalog, schema, tableName);
@@ -477,57 +530,14 @@ public class SqlSuggester /*implements Suggester*/ {
                 + (tableName==null ? "" : tableName);
     }
     
-    /*private List<Suggestion> removeRepeats(List<Suggestion> longList) {
-        List<Suggestion> shortList = new ArrayList<Suggestion>();
-        for (Suggestion suggestion : longList) {
+    private List<String> removeRepeats(List<String> longList) {
+        List<String> shortList = new ArrayList<String>();
+        for (String suggestion : longList) {
             if (!shortList.contains(suggestion)) {
                 shortList.add(suggestion);
             }
         }
         return shortList;
     }
-    
-    @Override
-    public String applySuggestion(Suggestion sugg, String text, int cursor) {
-        return text.substring(0, cursor-((SqlSuggestion)sugg).getReplaceCharCount())
-                + sugg.getSuggestionText()
-                + text.substring(cursor);
-    }
-    
-    private static class SqlSuggestion extends Suggestion {
-        
-        private int replaceCharCount;
-        
-        public SqlSuggestion(String displayText, String descriptionText,
-                String suggestionText, int replaceCharCount) {
-            super(displayText, descriptionText, suggestionText);
-            this.replaceCharCount = replaceCharCount;
-        }
-        
-        public SqlSuggestion(String suggestionText, String descriptionText,
-                int replaceCharCount) {
-            this(suggestionText, descriptionText, suggestionText, replaceCharCount);
-        }
-        
-        public int getReplaceCharCount() {
-            return replaceCharCount;
-        }
-        
-        public boolean equals(Object that) {
-            if (!(that instanceof SqlSuggestion)) return false;
-            return this.getSuggestionText().equals(((SqlSuggestion)that).getSuggestionText())
-                    && this.getDescriptionText().equals(((SqlSuggestion)that).getDescriptionText());
-        }
-    }
-    
-    private static class SuggestionComparitor implements Comparator<Suggestion> {
-        @Override
-        public int compare(Suggestion o1, Suggestion o2) {
-            int comparedSuggestions = o1.getSuggestionText().toLowerCase()
-                    .compareTo(o2.getSuggestionText().toLowerCase());
-            return comparedSuggestions==0 ? o1.getDescriptionText().toLowerCase()
-                    .compareTo(o2.getDescriptionText().toLowerCase()) : comparedSuggestions;
-        }
-    }*/
     
 }
