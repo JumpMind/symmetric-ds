@@ -41,7 +41,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
 
@@ -97,18 +96,10 @@ public class SettingsDialog extends ResizableDialog {
 
         rowsToFetchField = new TextField("Max Results");
         rowsToFetchField.setWidth("6em");
-        Span rowsToFetchSpan = new Span();
-        rowsToFetchSpan.addClassName("v-label-marked");
         binder = new Binder<Integer>();
         binder.forField(rowsToFetchField).withConverter(new StringToIntegerConverter("Could not convert value to Integer"))
-                .withValidator(value -> value != null, "Invalid value").withValidationStatusHandler(event -> {
-                    rowsToFetchSpan.setText(event.getMessage().orElse(""));
-                    if (event.isError()) {
-                        rowsToFetchField.addClassName("v-textfield-error");
-                    } else {
-                        rowsToFetchField.removeClassName("v-textfield-error");
-                    }
-                }).bind(integer -> integer, (integer, value) -> integer = value);
+                .withValidator(value -> value != null, "Invalid value")
+                .bind(integer -> integer, (integer, value) -> integer = value);
         rowsToFetchField.setValue(properties.getProperty(SQL_EXPLORER_MAX_RESULTS, "100"));
         settingsLayout.add(rowsToFetchField);
 
@@ -175,7 +166,6 @@ public class SettingsDialog extends ResizableDialog {
         settingsLayout.add(showResultsInNewTabsBox);
 
         layout.add(settingsLayout);
-        layout.add(rowsToFetchSpan);
         
         return layout;
 
