@@ -117,6 +117,8 @@ public class DbImportDialog extends ResizableDialog {
 
         this.selectedTablesSet = selectedTableSet;
         this.databasePlatform = databasePlatform;
+        
+        setCloseOnOutsideClick(false);
 
         createImportLayout();
     }

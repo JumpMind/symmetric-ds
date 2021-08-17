@@ -132,6 +132,8 @@ public class DbExportDialog extends ResizableDialog {
 
         this.databasePlatform = databasePlatform;
         this.queryPanel = queryPanel;
+        
+        setCloseOnOutsideClick(false);
 
         tableSelectionLayout = new TableSelectionLayout(databasePlatform, selectedTableSet, excludeTablesRegex) {
             private static final long serialVersionUID = 1L;
