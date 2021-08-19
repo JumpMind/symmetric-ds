@@ -69,7 +69,6 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -77,11 +76,13 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.Shortcuts;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.editor.Editor;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -139,6 +140,8 @@ public class TabularResultLayout extends VerticalLayout {
     boolean showSql = true;
 
     boolean isInQueryGeneralResults;
+    
+    boolean generateNewExport = true;
 
     MenuItem followToMenu;
 
@@ -362,16 +365,31 @@ public class TabularResultLayout extends VerticalLayout {
         MenuItem refreshButton = rightBar.addItem(new Icon(VaadinIcon.REFRESH), event -> listener.reExecute(sql));
         refreshButton.getElement().setAttribute("title", "Refresh");
         
-        MenuItem exportButton = rightBar.addItem(new Icon(VaadinIcon.UPLOAD), event -> {
-            IDataProvider<List<Object>> target = new GridDataProvider<List<Object>>(grid, valueProviderMap);
-            CsvExport csvExport = null;
-            if (target instanceof IDataProvider) {
-                csvExport = new CsvExport(target);
-                csvExport.setFileName(db.getName() + "-export.csv");
-                csvExport.setTitle(sql);
-                csvExport.export();
+        Anchor downloadAnchor = new Anchor();
+        downloadAnchor.setTarget("_blank");
+        downloadAnchor.getElement().setAttribute("download", true);
+        Icon downloadIcon = new Icon(VaadinIcon.UPLOAD);
+        downloadIcon.setSize("16px");
+        downloadIcon.addClickListener(event -> {
+            if (generateNewExport) {
+                IDataProvider<List<Object>> target = new GridDataProvider<List<Object>>(grid, valueProviderMap);
+                CsvExport csvExport = null;
+                if (target instanceof IDataProvider) {
+                    csvExport = new CsvExport(target);
+                    csvExport.setFileName(db.getName() + "-export.csv");
+                    csvExport.setTitle(sql);
+                    downloadAnchor.setHref(csvExport.getFileDownloader());
+                }
+                generateNewExport = false;
+                UI.getCurrent().getPage().executeJs("$0.click();", downloadAnchor.getElement());
+            } else {
+                downloadAnchor.removeHref();
+                generateNewExport = true;
             }
         });
+        downloadAnchor.add(downloadIcon);
+        
+        MenuItem exportButton = rightBar.addItem(downloadAnchor);
         exportButton.getElement().setAttribute("title", "Export Results");
 
         if (isInQueryGeneralResults) {

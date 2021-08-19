@@ -53,7 +53,7 @@ public class GridDataProvider<T> implements IDataProvider<T> {
 
     @Override
     public Object getCellValue(T item, Object column) {
-       if (column instanceof Column) {
+       if (column instanceof Column && valueProviderMap.get(column) != null) {
            return valueProviderMap.get(column).apply(item);
        }
        return null;
