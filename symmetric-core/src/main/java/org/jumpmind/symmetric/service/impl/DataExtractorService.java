@@ -2547,7 +2547,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     } else {
                         triggerRouter = triggerRoutersByTriggerHist.get(triggerHistory.getTriggerHistoryId());
                     }
-                    if (triggerRouter == null && !isFileParserRouter) {
+                    if (triggerRouter == null) {
                         CounterStat counterStat = missingTriggerRoutersByTriggerHist.get(triggerHistory.getTriggerHistoryId());
                         if (counterStat == null) {
                             triggerRouter = triggerRouterService.getTriggerRouterByTriggerHist(targetNode.getNodeGroupId(), 
@@ -2600,7 +2600,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         initialLoadSelect.length() - platform.getDatabaseInfo().getSqlCommandDelimiter().length());
                             }
                         }
-
                         SelectFromTableEvent event = new SelectFromTableEvent(targetNode,
                                 triggerRouter, triggerHistory, initialLoadSelect);
                         this.reloadSource = new SelectFromTableSource(outgoingBatch, batch,
