@@ -2542,7 +2542,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         triggerRouter = new TriggerRouter();
                         triggerRouter.setTriggerId(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER);
                         String routerId = AbstractFileParsingRouter.getRouterIdFromExternalData(data.getExternalData());
-                        triggerRouter.setRouter(engine.getTriggerRouterService().getRouterById(routerId));
+                        triggerRouter.setRouter(triggerRouterService.getRouterById(routerId));
                         triggerRouter.setTrigger(new Trigger());
                     } else {
                         triggerRouter = triggerRoutersByTriggerHist.get(triggerHistory.getTriggerHistoryId());
