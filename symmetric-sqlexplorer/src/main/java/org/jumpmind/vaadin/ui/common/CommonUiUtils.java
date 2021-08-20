@@ -147,6 +147,7 @@ public final class CommonUiUtils {
         Page page = UI.getCurrent().getPage();
         if (page != null) {
             HorizontalLayout layout = new HorizontalLayout();
+            layout.setWidth("400px");
             Notification notification = new Notification(layout);
             
             Label label = new Label(caption + "\n" + contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
@@ -154,7 +155,8 @@ public final class CommonUiUtils {
             layout.setVerticalComponentAlignment(Alignment.CENTER, label);
             
             Icon closeIcon = new Icon(VaadinIcon.CLOSE_CIRCLE_O);
-            closeIcon.setSize("8ex");
+            closeIcon.setSize("36px");
+            closeIcon.getStyle().set("min-width", "36px");
             closeIcon.addClickListener(event -> notification.close());
             closeIcon.addClickShortcut(Key.ESCAPE);
             layout.add(closeIcon);

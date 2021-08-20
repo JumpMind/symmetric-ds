@@ -43,6 +43,8 @@ public class ResizableDialog extends Dialog {
     protected final Logger log = LoggerFactory.getLogger(getClass());
     
     protected VerticalLayout content;
+    
+    protected Label captionLabel;
 
     public ResizableDialog() {
         this("");
@@ -53,7 +55,8 @@ public class ResizableDialog extends Dialog {
         setResizable(true);
         
         if (caption != null) {
-            super.add(new Label(caption + "<hr>"));
+            captionLabel = new Label(caption + "<hr>");
+            super.add(captionLabel);
         }
         
         content = new VerticalLayout();

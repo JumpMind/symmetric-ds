@@ -25,10 +25,9 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.UI;
 
 public class NotifyDialog extends ResizableDialog {
 
@@ -43,24 +42,23 @@ public class NotifyDialog extends ResizableDialog {
     public NotifyDialog(String caption, String text, final Throwable ex, NotificationVariant type) {
         super(caption);
         setWidth("400px");
-        setHeight("300px");
+        setHeight("320px");
+        
+        content.setHeight("86%");
 
-        final HorizontalLayout messageArea = new HorizontalLayout();
-        messageArea.addClassName("v-scrollable");
-        messageArea.setMargin(true);
-        messageArea.setSpacing(true);
+        final Scroller messageArea = new Scroller();
         messageArea.setSizeFull();
         
         text = isNotBlank(text) ? text : (ex != null ? ex.getMessage()
                 : "");
         if (type == NotificationVariant.LUMO_ERROR) {
-            //setIcon(VaadinIcon.BAN);
+            captionLabel.setLeftIcon(VaadinIcon.BAN);
         }
         
         final String message = text;
         
         final Label textLabel = new Label(message);
-        messageArea.addAndExpand(textLabel);
+        messageArea.setContent(textLabel);
         
         content.add(messageArea);
         content.expand(messageArea);
@@ -80,9 +78,8 @@ public class NotifyDialog extends ResizableDialog {
             } else {
                 textLabel.setText(message);
                 detailsButton.setText("Details");
-                messageArea.setMargin(true);
                 setWidth("400px");
-                setHeight("300px");
+                setHeight("320px");
             }
         });
 
