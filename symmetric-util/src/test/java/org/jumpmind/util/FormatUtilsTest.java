@@ -76,8 +76,9 @@ public class FormatUtilsTest {
     
     @Test
     public void parseDate_precisionAboveMillisIsIgnored_timeStillCorrect() {
-        Date parsedPreciseDate = FormatUtils.parseDate("2021-08-20 17:50:53.820838", FormatUtils.TIME_PATTERNS);
-        Date impreciseDate = FormatUtils.parseDate("2021-08-20 17:50:53.820", FormatUtils.TIME_PATTERNS);
-        assertTrue(parsedPreciseDate.equals(impreciseDate));
+        Date parsedPreciseDate = FormatUtils.parseDate("2021-08-20 17:50:53.820838", FormatUtils.TIMESTAMP_PATTERNS);
+        assertEquals(parsedPreciseDate.getHours(), 17);
+        assertEquals(parsedPreciseDate.getMinutes(), 50);
+        assertEquals(parsedPreciseDate.getSeconds(), 53);
     }
 }
