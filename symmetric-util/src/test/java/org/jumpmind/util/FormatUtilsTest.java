@@ -20,6 +20,7 @@
  */
 package org.jumpmind.util;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,5 +72,12 @@ public class FormatUtilsTest {
         assertTrue(FormatUtils.isWildCardMatch("A_B", "*A*B"));        
         assertFalse(FormatUtils.isWildCardMatch("TEST_NO_MATCH", "TEST_*,!TEST_NO_MATCH"));
         assertTrue(FormatUtils.isWildCardMatch("A_B", "A*B"));
+    }
+    
+    @Test
+    public void parseDate_precisionAboveMillisIsIgnored_timeStillCorrect() {
+        Date parsedPreciseDate = FormatUtils.parseDate("2021-08-20 17:50:53.820838", FormatUtils.TIME_PATTERNS);
+        Date impreciseDate = FormatUtils.parseDate("2021-08-20 17:50:53.820", FormatUtils.TIME_PATTERNS);
+        assertTrue(parsedPreciseDate.equals(impreciseDate));
     }
 }

@@ -23,9 +23,11 @@ package org.jumpmind.util;
 import java.sql.Timestamp;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -49,7 +51,7 @@ public final class FormatUtils {
             "HH:mm:ss.S", "HH:mm:ss" };
 
     public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss",
-            "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
+            "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss"};
     
     public static final String[] TIMESTAMP_WITH_TIMEZONE_PATTERNS = {
             "yyyy-MM-dd HH:mm:ss.n xxx"
@@ -400,6 +402,12 @@ public final class FormatUtils {
             throw new IllegalArgumentException("Date and Patterns must not be null");
         }
         
+        // handle accuracy beyond milliseconds. soon we should switch to java.time for nanosecond accuracy
+        // note that im just truncating here and NOT rounding up
+        int periodIndex = str.indexOf(".");
+        if (str.length() - periodIndex > 3) { 
+            str = str.substring(0, periodIndex+4);
+        }
         SimpleDateFormat parser = null;
         ParsePosition pos = new ParsePosition(0);
         for (int i = 0; i < parsePatterns.length; i++) {
