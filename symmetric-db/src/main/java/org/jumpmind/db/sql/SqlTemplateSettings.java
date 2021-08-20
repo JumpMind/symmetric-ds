@@ -20,6 +20,8 @@
  */
 package org.jumpmind.db.sql;
 
+import org.jumpmind.properties.TypedProperties;
+
 public class SqlTemplateSettings {
     public enum JdbcLobHandling {
         PLAIN, CREATETEMPORARYLOB, STREAMLOB
@@ -38,6 +40,7 @@ public class SqlTemplateSettings {
     protected boolean allowUpdatesWithResults = false;
     protected boolean allowTriggerCreateOrReplace;
     protected JdbcLobHandling jdbcLobHandling;
+    protected TypedProperties properties = new TypedProperties();
 
     public SqlTemplateSettings() {
     }
@@ -144,5 +147,12 @@ public class SqlTemplateSettings {
 
     public void setJdbcLobHandling(JdbcLobHandling jdbcLobHandling) {
         this.jdbcLobHandling = jdbcLobHandling;
+    }
+    public TypedProperties getProperties() {
+        return properties;
+    }
+
+    public void setProperties(TypedProperties properties) {
+        this.properties = properties;
     }
 }

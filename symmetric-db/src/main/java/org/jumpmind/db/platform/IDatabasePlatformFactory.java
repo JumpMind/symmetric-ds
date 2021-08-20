@@ -18,14 +18,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.persist;
+package org.jumpmind.db.platform;
 
-abstract public class AbstractPersistenceManager implements IPersistenceManager {
-    protected RuntimeException toRuntimeException(Exception e) {
-        if (e instanceof RuntimeException) {
-            return (RuntimeException) e;
-        } else {
-            return new RuntimeException(e);
-        }
-    }
+import javax.sql.DataSource;
+
+import org.jumpmind.db.sql.SqlTemplateSettings;
+
+public interface IDatabasePlatformFactory {
+    public IDatabasePlatform create(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode,
+            boolean caseSensitive) throws DdlException;
+
+    public IDatabasePlatform create(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode,
+            boolean caseSensitive, boolean isLoadOnly, boolean isLogBased) throws DdlException;
+
+    public DatabaseVersion determineDatabaseNameVersionSubprotocol(DataSource dataSource);
 }

@@ -40,7 +40,11 @@ public class BasicDataSourceFactory {
     protected static Map<String, String> requiredConnectionProperties = new HashMap<String, String>();
 
     public static void prepareDriver(String clazzName) throws Exception {
-        Driver driver = (Driver) Class.forName(clazzName).getDeclaredConstructor().newInstance();
+        Class<?> clazz = Class.forName(clazzName);
+        if (!Driver.class.isAssignableFrom(clazz)) {
+            throw new NotJdbcDriverException(clazzName + " is not a JDBC driver");
+        }
+        Driver driver = (Driver) clazz.getDeclaredConstructor().newInstance();
         synchronized (DriverManager.class) {
             Enumeration<Driver> drivers = DriverManager.getDrivers();
             while (drivers.hasMoreElements()) {
@@ -78,6 +82,9 @@ public class BasicDataSourceFactory {
             if (e instanceof ClassNotFoundException) {
                 throw new IllegalStateException("Missing JDBC driver for '" + dataSource.getDriverClassName()
                         + "'.  Either provide the JAR or use 'symadmin module convert' command to find and install missing driver.", e);
+            }
+            if (e instanceof NotJdbcDriverException) {
+                throw (NotJdbcDriverException) e;
             }
             throw new IllegalStateException("Had trouble registering the JDBC driver: " + dataSource.getDriverClassName(), e);
         }

@@ -49,7 +49,7 @@ abstract public class DbTestUtils {
         FileUtils.deleteDirectory(f);
         f.mkdir();
         EnvironmentSpecificProperties properties = getEnvironmentSpecificProperties(name);
-        return JdbcDatabasePlatformFactory.createNewPlatformInstance(
+        return JdbcDatabasePlatformFactory.getInstance().create(
                 BasicDataSourceFactory.create(properties, SecurityServiceFactory.create()),
                 new SqlTemplateSettings(), true, false);
     }

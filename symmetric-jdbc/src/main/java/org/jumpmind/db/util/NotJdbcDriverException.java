@@ -20,7 +20,14 @@
  */
 package org.jumpmind.db.util;
 
-public class DatabaseConstants {
-    public static final String IS_CONFLICT_WINNER = "isConflictWinner";
-    public final static String DATABASE_PLATFORM_FACTORY_CLASS = "database.platform.factory.class";
+public class NotJdbcDriverException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+
+    public NotJdbcDriverException() {
+        super();
+    }
+
+    public NotJdbcDriverException(String message) {
+        super(message);
+    }
 }

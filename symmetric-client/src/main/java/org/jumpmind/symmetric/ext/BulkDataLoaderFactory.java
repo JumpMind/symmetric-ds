@@ -20,9 +20,7 @@
  */
 package org.jumpmind.symmetric.ext;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -41,8 +39,7 @@ import org.jumpmind.symmetric.load.AbstractDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 
 public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngineAware, IBuiltInExtensionPoint {
-    ISymmetricEngine engine;
-    Map<String, IDataLoaderFactory> dataLoaderFactories = new HashMap<String, IDataLoaderFactory>();
+    protected ISymmetricEngine engine;
 
     @Override
     public String getTypeName() {
@@ -53,9 +50,6 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect, TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-        for (IDataLoaderFactory factory : engine.getExtensionService().getExtensionPointList(IDataLoaderFactory.class)) {
-            dataLoaderFactories.put(factory.getTypeName(), factory);
-        }
         IDatabasePlatform platform = engine.getTargetDialect().getPlatform();
         String platformName = platform.getName();
         if (engine.getParameterService().is(ParameterConstants.JDBC_EXECUTE_BULK_BATCH_OVERRIDE, false)) {
@@ -89,9 +83,6 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
                     filters, errorHandlers, conflictSettings, resolvedData);
         } else if (platformName != null && platformName.startsWith(DatabaseNamesConstants.SNOWFLAKE)) {
             return new SnowflakeBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
-                    filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.BIGQUERY.equals(engine.getSymmetricDialect().getTargetPlatform().getName())) {
-            return new BigQueryDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
         } else {
             return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), platform,

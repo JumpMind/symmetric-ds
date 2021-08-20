@@ -38,7 +38,7 @@ public class GenericJdbcDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public GenericJdbcDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         try {
-            DatabaseVersion nameVersion = JdbcDatabasePlatformFactory.determineDatabaseNameVersionSubprotocol(dataSource);
+            DatabaseVersion nameVersion = JdbcDatabasePlatformFactory.getInstance().determineDatabaseNameVersionSubprotocol(dataSource);
             name = String.format("%s%s", nameVersion.getName(), nameVersion.getVersionAsString()).toLowerCase();
         } catch (Exception e) {
             name = DatabaseNamesConstants.GENERIC;

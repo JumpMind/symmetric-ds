@@ -55,6 +55,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
+import org.jumpmind.db.platform.cassandra.CassandraPlatform;
 import org.jumpmind.db.platform.db2.Db2As400DatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2zOsDatabasePlatform;
@@ -71,6 +72,7 @@ import org.jumpmind.db.platform.hsqldb2.HsqlDb2DatabasePlatform;
 import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
 import org.jumpmind.db.platform.ingres.IngresDatabasePlatform;
 import org.jumpmind.db.platform.interbase.InterbaseDatabasePlatform;
+import org.jumpmind.db.platform.kafka.KafkaPlatform;
 import org.jumpmind.db.platform.mariadb.MariaDBDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
@@ -90,6 +92,9 @@ import org.jumpmind.db.platform.tibero.TiberoDatabasePlatform;
 import org.jumpmind.db.platform.voltdb.VoltDbDatabasePlatform;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
+import org.jumpmind.db.util.DatabaseConstants;
+import org.jumpmind.properties.TypedProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,15 +103,18 @@ import org.slf4j.LoggerFactory;
  * insensitive database name. Note that this is a convenience class as the platforms
  * can also simply be created via their constructors.
  */
-public class JdbcDatabasePlatformFactory {
+public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
+    public static final String JDBC_PREFIX = "jdbc:";
     /* The database name -> platform map. */
-    private static Map<String, Class<? extends IDatabasePlatform>> platforms = new HashMap<String, Class<? extends IDatabasePlatform>>();
+    private Map<String, Class<? extends IDatabasePlatform>> platforms = new HashMap<String, Class<? extends IDatabasePlatform>>();
     /*
      * Maps the sub-protocl part of a jdbc connection url to a OJB platform name.
      */
-    private static Map<String, Class<? extends IDatabasePlatform>> jdbcSubProtocolToPlatform = new HashMap<String, Class<? extends IDatabasePlatform>>();
+    private Map<String, Class<? extends IDatabasePlatform>> jdbcSubProtocolToPlatform = new HashMap<String, Class<? extends IDatabasePlatform>>();
+    private static IDatabasePlatformFactory instance;
     private static final Logger log = LoggerFactory.getLogger(JdbcDatabasePlatformFactory.class);
-    static {
+
+    protected JdbcDatabasePlatformFactory() {
         addPlatform(platforms, "H2", H2DatabasePlatform.class);
         addPlatform(platforms, "H21", H2DatabasePlatform.class);
         addPlatform(platforms, "Informix Dynamic Server11", InformixDatabasePlatform.class);
@@ -174,10 +182,35 @@ public class JdbcDatabasePlatformFactory {
         jdbcSubProtocolToPlatform.put(RaimaDatabasePlatform.JDBC_SUBPROTOCOL, RaimaDatabasePlatform.class);
     }
 
-    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode,
+    public synchronized static IDatabasePlatformFactory getInstance() {
+        return getInstance(null);
+    }
+
+    public synchronized static IDatabasePlatformFactory getInstance(TypedProperties properties) {
+        if (instance == null) {
+            if (properties == null) {
+                properties = new TypedProperties(System.getProperties());
+            }
+
+            String platformFactoryClassName = properties.get(DatabaseConstants.DATABASE_PLATFORM_FACTORY_CLASS);
+            if (platformFactoryClassName != null) {
+                try {
+                    Constructor<?> cons = Class.forName(platformFactoryClassName).getConstructor();
+                    instance = (IDatabasePlatformFactory) cons.newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                instance = new JdbcDatabasePlatformFactory();
+            }
+        }
+        return instance;
+    }
+
+    public synchronized IDatabasePlatform create(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode,
             boolean caseSensitive)
             throws DdlException {
-        return createNewPlatformInstance(dataSource, settings, delimitedIdentifierMode, caseSensitive, false, false);
+        return create(dataSource, settings, delimitedIdentifierMode, caseSensitive, false, false);
     }
 
     /*
@@ -189,9 +222,19 @@ public class JdbcDatabasePlatformFactory {
      *
      * @return The platform or <code>null</code> if the database is not supported
      */
-    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode,
+    public synchronized IDatabasePlatform create(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode,
             boolean caseSensitive, boolean isLoadOnly, boolean isLogBased)
             throws DdlException {
+        if (isLoadOnly) {
+            TypedProperties properties = settings.getProperties();
+            String dbUrl = properties.get(BasicDataSourcePropertyConstants.DB_POOL_URL);
+            String dbDriver = properties.get(BasicDataSourcePropertyConstants.DB_POOL_DRIVER);
+            if (dbUrl != null && dbUrl.startsWith("cassandra://")) {
+                return new CassandraPlatform(settings, dbUrl.substring(12));
+            } else if (dbDriver != null && dbDriver.contains("kafka")) {
+                return new KafkaPlatform(settings);
+            }
+        }
         // connects to the database and uses actual metadata info to get db name
         // and version to determine platform
         DatabaseVersion nameVersion = determineDatabaseNameVersionSubprotocol(dataSource, isLoadOnly);
@@ -210,7 +253,7 @@ public class JdbcDatabasePlatformFactory {
         }
     }
 
-    protected static synchronized Class<? extends IDatabasePlatform> findPlatformClass(DatabaseVersion nameVersion) {
+    protected synchronized Class<? extends IDatabasePlatform> findPlatformClass(DatabaseVersion nameVersion) {
         Class<? extends IDatabasePlatform> platformClass = platforms.get(String.format("%s%s",
                 nameVersion.getName(), nameVersion.getVersionAsString()).toLowerCase());
         if (platformClass == null) {
@@ -225,11 +268,11 @@ public class JdbcDatabasePlatformFactory {
         return platformClass;
     }
 
-    public static DatabaseVersion determineDatabaseNameVersionSubprotocol(DataSource dataSource) {
+    public DatabaseVersion determineDatabaseNameVersionSubprotocol(DataSource dataSource) {
         return determineDatabaseNameVersionSubprotocol(dataSource, false);
     }
 
-    public static DatabaseVersion determineDatabaseNameVersionSubprotocol(DataSource dataSource, boolean isLoadOnly) {
+    public DatabaseVersion determineDatabaseNameVersionSubprotocol(DataSource dataSource, boolean isLoadOnly) {
         Connection connection = null;
         DatabaseVersion nameVersion = new DatabaseVersion();
         try {
@@ -237,10 +280,9 @@ public class JdbcDatabasePlatformFactory {
             DatabaseMetaData metaData = connection.getMetaData();
             nameVersion.setName(metaData.getDatabaseProductName());
             nameVersion.setVersion(metaData.getDatabaseMajorVersion());
-            final String PREFIX = "jdbc:";
             String url = metaData.getURL();
-            if (StringUtils.isNotBlank(url) && url.length() > PREFIX.length()) {
-                url = url.substring(PREFIX.length());
+            if (StringUtils.isNotBlank(url) && url.length() > JDBC_PREFIX.length()) {
+                url = url.substring(JDBC_PREFIX.length());
                 if (url.indexOf(":") > 0) {
                     url = url.substring(0, url.indexOf(":"));
                 }
@@ -319,7 +361,7 @@ public class JdbcDatabasePlatformFactory {
         }
     }
 
-    private static boolean isGreenplumDatabase(Connection connection) {
+    private boolean isGreenplumDatabase(Connection connection) {
         Statement stmt = null;
         ResultSet rs = null;
         int greenplumCount = 0;
@@ -345,7 +387,7 @@ public class JdbcDatabasePlatformFactory {
         return greenplumCount > 0;
     }
 
-    private static boolean isRedshiftDatabase(Connection connection) {
+    private boolean isRedshiftDatabase(Connection connection) {
         boolean isRedshift = false;
         try {
             DatabaseMetaData dmd = connection.getMetaData();
@@ -361,7 +403,7 @@ public class JdbcDatabasePlatformFactory {
         return isRedshift;
     }
 
-    private static boolean isFirebirdDialect1(Connection connection) {
+    private boolean isFirebirdDialect1(Connection connection) {
         boolean isDialect1 = false;
         try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("select current_time from rdb$database")) {
             rs.next();
@@ -379,7 +421,7 @@ public class JdbcDatabasePlatformFactory {
         return isDialect1;
     }
 
-    private static boolean isMariaDBDatabase(Connection connection) {
+    private boolean isMariaDBDatabase(Connection connection) {
         Statement stmt = null;
         ResultSet rs = null;
         String productName = null;
@@ -410,7 +452,7 @@ public class JdbcDatabasePlatformFactory {
         return isMariaDB;
     }
 
-    private static int getGreenplumVersion(Connection connection) {
+    private int getGreenplumVersion(Connection connection) {
         Statement stmt = null;
         ResultSet rs = null;
         String versionName = null;
@@ -448,7 +490,7 @@ public class JdbcDatabasePlatformFactory {
         return productVersion;
     }
 
-    private static boolean isOracle122Compatible(Connection connection) {
+    private boolean isOracle122Compatible(Connection connection) {
         boolean isOracle122 = false;
         String compatible = null;
         try (Statement s = connection.createStatement()) {
@@ -489,7 +531,7 @@ public class JdbcDatabasePlatformFactory {
         return isOracle122;
     }
 
-    public static String getDatabaseProductVersion(DataSource dataSource) {
+    public String getDatabaseProductVersion(DataSource dataSource) {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -509,7 +551,7 @@ public class JdbcDatabasePlatformFactory {
         }
     }
 
-    public static int getDatabaseMajorVersion(DataSource dataSource) {
+    public int getDatabaseMajorVersion(DataSource dataSource) {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -529,7 +571,7 @@ public class JdbcDatabasePlatformFactory {
         }
     }
 
-    public static int getDatabaseMinorVersion(DataSource dataSource) {
+    public int getDatabaseMinorVersion(DataSource dataSource) {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -549,7 +591,7 @@ public class JdbcDatabasePlatformFactory {
         }
     }
 
-    private static synchronized void addPlatform(
+    private synchronized void addPlatform(
             Map<String, Class<? extends IDatabasePlatform>> platformMap, String platformName,
             Class<? extends IDatabasePlatform> platformClass) {
         if (!IDatabasePlatform.class.isAssignableFrom(platformClass)) {
@@ -558,5 +600,9 @@ public class JdbcDatabasePlatformFactory {
                     + " interface");
         }
         platformMap.put(platformName.toLowerCase(), platformClass);
+    }
+
+    public static boolean isJdbcUrl(String dbUrl) {
+        return dbUrl != null && dbUrl.startsWith(JDBC_PREFIX);
     }
 }

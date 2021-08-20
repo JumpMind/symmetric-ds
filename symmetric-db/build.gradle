@@ -14,11 +14,6 @@ apply from: symAssembleDir + '/common.gradle'
             exclude group: 'org.slf4j'
             exclude group: 'com.google.guava'
         }
-        
-        compileOnly ('com.google.cloud:google-cloud-bigquery:1.99.0') {
-            exclude group: 'com.google.protobuf'
-            exclude group: 'com.fasterxml.jackson.core'
-        }
 
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
     }

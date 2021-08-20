@@ -18,9 +18,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.db.util;
+package org.jumpmind.symmetric.db;
 
-public class DatabaseConstants {
-    public static final String IS_CONFLICT_WINNER = "isConflictWinner";
-    public final static String DATABASE_PLATFORM_FACTORY_CLASS = "database.platform.factory.class";
+public interface ISymmetricDialectFactory {
+    public ISymmetricDialect create();
 }

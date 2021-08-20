@@ -46,10 +46,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
-import org.jumpmind.db.platform.bigquery.BigQueryPlatformFactory;
-import org.jumpmind.db.platform.cassandra.CassandraPlatform;
 import org.jumpmind.db.platform.generic.GenericJdbcDatabasePlatform;
-import org.jumpmind.db.platform.kafka.KafkaPlatform;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.LogSqlBuilder;
 import org.jumpmind.db.sql.SqlTemplateSettings;
@@ -292,7 +289,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected ISymmetricDialect createSymmetricDialect() {
-        return new JdbcSymmetricDialectFactory(parameterService, platform).create();
+        return JdbcSymmetricDialectFactory.getInstance(parameterService, platform).create();
     }
 
     @Override
@@ -310,7 +307,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 targetPlatform.getDatabaseInfo().setNotNullColumnsSupported(parameterService.is(prefix +
                         ParameterConstants.CREATE_TABLE_NOT_NULL_COLUMNS, true));
             }
-            return new JdbcSymmetricDialectFactory(parameterService, targetPlatform).create();
+            return JdbcSymmetricDialectFactory.getInstance(parameterService, targetPlatform).create();
         } else {
             return getSymmetricDialect();
         }
@@ -339,20 +336,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             DataSource dataSource, boolean waitOnAvailableDatabase, boolean isLoadOnly, boolean isLogBased) {
         log.info("Initializing connection to database");
         if (dataSource == null) {
-            if (isLoadOnly) {
-                String dbUrl = properties.get(BasicDataSourcePropertyConstants.DB_POOL_URL);
-                String dbDriver = properties.get(BasicDataSourcePropertyConstants.DB_POOL_DRIVER);
-                if (dbUrl != null && dbUrl.startsWith("cassandra://")) {
-                    return new CassandraPlatform(createSqlTemplateSettings(properties), dbUrl.substring(12));
-                } else if (dbDriver != null && dbDriver.contains("kafka")) {
-                    return new KafkaPlatform(createSqlTemplateSettings(properties));
-                } else if (dbUrl != null && dbUrl.startsWith("bigquery://")) {
-                    return new BigQueryPlatformFactory().createDatabasePlatform(createSqlTemplateSettings(properties),
-                            properties.get(ParameterConstants.GOOGLE_BIG_QUERY_PROJECT_ID),
-                            properties.get(ParameterConstants.GOOGLE_BIG_QUERY_LOCATION, "US"),
-                            properties.get(ParameterConstants.GOOGLE_BIG_QUERY_SECURITY_CREDENTIALS_PATH));
-                }
-            }
             String jndiName = properties.getProperty(ParameterConstants.DB_JNDI_NAME);
             if (StringUtils.isNotBlank(jndiName)) {
                 try {
@@ -375,17 +358,18 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 log.info("Using datasource from spring.  The spring bean name is {}", springBeanName);
                 dataSource = (DataSource) springContext.getBean(springBeanName);
             }
-            if (dataSource == null) {
+            String dbUrl = properties.get(BasicDataSourcePropertyConstants.DB_POOL_URL);
+            if (dataSource == null && JdbcDatabasePlatformFactory.isJdbcUrl(dbUrl)) {
                 dataSource = BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
             }
         }
-        if (waitOnAvailableDatabase) {
+        if (waitOnAvailableDatabase && dataSource != null) {
             waitForAvailableDatabase(dataSource);
         }
         boolean delimitedIdentifierMode = properties.is(
                 ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE, true);
         boolean caseSensitive = !properties.is(ParameterConstants.DB_METADATA_IGNORE_CASE, true);
-        return JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource,
+        return JdbcDatabasePlatformFactory.getInstance(properties).create(dataSource,
                 createSqlTemplateSettings(properties), delimitedIdentifierMode, caseSensitive, isLoadOnly, isLogBased);
     }
 
@@ -412,6 +396,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 SqlTemplateSettings.JdbcLobHandling.valueOf(
                         properties.get(ParameterConstants.DBDIALECT_ORACLE_JDBC_LOB_HANDLING,
                                 SqlTemplateSettings.JdbcLobHandling.PLAIN.name()).toUpperCase()));
+        settings.setProperties(properties);
         return settings;
     }
 

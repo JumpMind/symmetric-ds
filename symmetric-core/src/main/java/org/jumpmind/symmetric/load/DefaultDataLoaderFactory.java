@@ -31,6 +31,8 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.cassandra.CassandraPlatform;
+import org.jumpmind.db.platform.kafka.KafkaPlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.DatabaseConstants;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
@@ -44,7 +46,6 @@ import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.AbstractDatabaseWriter;
-import org.jumpmind.symmetric.io.data.writer.BigQueryDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.CassandraDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
@@ -84,42 +85,14 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
             TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers, List<? extends Conflict> conflictSettings,
             List<ResolvedData> resolvedData) {
-        if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("CassandraPlatform")) {
-            try {
+        IDatabasePlatform targetPlatform = symmetricDialect.getTargetPlatform();
+        try {
+            if (targetPlatform instanceof CassandraPlatform) {
                 // TODO: Evaluate if ConflictResolver will work for Cassandra and if so remove duplicate code.
                 return new CassandraDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                         symmetricDialect.getTablePrefix(), new DefaultTransformWriterConflictResolver(transformWriter),
                         buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
-            } catch (Exception e) {
-                log.warn(
-                        "Failed to create the cassandra database writer.  Check to see if all of the required jars have been added",
-                        e);
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException) e;
-                } else {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-        if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("BigQueryPlatform")) {
-            try {
-                return new BigQueryDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
-                        symmetricDialect.getTablePrefix(), new DefaultTransformWriterConflictResolver(transformWriter),
-                        buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData),
-                        parameterService.getInt(ParameterConstants.GOOGLE_BIG_QUERY_MAX_ROWS_PER_RPC, 100));
-            } catch (Exception e) {
-                log.warn(
-                        "Failed to create the big query database writer.",
-                        e);
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException) e;
-                } else {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-        if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("KafkaPlatform")) {
-            try {
+            } else if (targetPlatform instanceof KafkaPlatform) {
                 if (filters == null) {
                     filters = new ArrayList<IDatabaseWriterFilter>();
                 }
@@ -127,15 +100,16 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                 return new KafkaWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                         symmetricDialect.getTablePrefix(), new DefaultTransformWriterConflictResolver(transformWriter),
                         buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
-            } catch (Exception e) {
-                log.warn("Failed to create the kafka writer.", e);
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException) e;
-                } else {
-                    throw new RuntimeException(e);
-                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to create writer for platform " + targetPlatform.getClass().getSimpleName(), e);
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            } else {
+                throw new RuntimeException(e);
             }
         }
+
         DynamicDefaultDatabaseWriter writer = new DynamicDefaultDatabaseWriter(symmetricDialect.getPlatform(),
                 symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
                 new DefaultTransformWriterConflictResolver(transformWriter) {
