@@ -22,6 +22,8 @@ package org.jumpmind.symmetric.db;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.util.ModuleException;
@@ -46,6 +48,10 @@ public class SoftwareUpgradeListener implements ISoftwareUpgradeListener, ISymme
                     + "_" + TableConstants.SYM_CHANNEL +
                     " set max_batch_size = 10000 where reload_flag = 1 and max_batch_size = 1";
             engine.getSqlTemplate().update(sql);
+        }
+        if (Version.isOlderThanVersion(databaseVersion, "3.13.0") &&
+                engine.getParameterService().is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+            engine.getNodeService().deleteNodeHost(engine.getNodeService().findIdentityNodeId());
         }
         try {
             ModuleManager.getInstance().upgradeAll();

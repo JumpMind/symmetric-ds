@@ -79,8 +79,8 @@ import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
-import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.IInitialLoadService;
+import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.IMailService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -110,8 +110,8 @@ import org.jumpmind.symmetric.service.impl.FileSyncExtractorService;
 import org.jumpmind.symmetric.service.impl.FileSyncService;
 import org.jumpmind.symmetric.service.impl.GroupletService;
 import org.jumpmind.symmetric.service.impl.IncomingBatchService;
-import org.jumpmind.symmetric.service.impl.LoadFilterService;
 import org.jumpmind.symmetric.service.impl.InitialLoadService;
+import org.jumpmind.symmetric.service.impl.LoadFilterService;
 import org.jumpmind.symmetric.service.impl.MailService;
 import org.jumpmind.symmetric.service.impl.NodeCommunicationService;
 import org.jumpmind.symmetric.service.impl.NodeService;
@@ -365,6 +365,16 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     protected IClusterService createClusterService() {
+        String className = parameterService.getString(ParameterConstants.CLUSTER_SERVICE_CLASS);
+        if (className != null) {
+            try {
+                Constructor<?> cons = Class.forName(className).getConstructor(IParameterService.class, ISymmetricDialect.class,
+                        INodeService.class, IExtensionService.class);
+                return (IClusterService) cons.newInstance(parameterService, symmetricDialect, nodeService, extensionService);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
         return new ClusterService(parameterService, symmetricDialect, nodeService, extensionService);
     }
 

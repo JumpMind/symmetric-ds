@@ -36,9 +36,6 @@ means every 15 seconds, not every 15 minutes. See
 http://static.springsource.org/spring/docs/3.0.x/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html"[Spring's
 documentation]
 for more details.
-
-Some jobs cannot be run in parallel against a single node. These jobs use the <<LOCK>> table to get an exclusive semaphore to run the job. 
-This table is only used if the `cluster.lock.enabled` is set to true.
         
 ==== Route Job
 
@@ -157,7 +154,7 @@ The Stage Management Job purges the staging area according to the `stream.to.fil
 ==== Refresh Cache Job
 
 The Refresh Cache Job checks the `last_update_time` on each cached configuration resource and determines if it needs to refresh the cached items.  
-This job is mostly relevant when a cluster is deployed.
+This job is mostly relevant when using <<Clustering>>.
 
 ==== File Sync Tracker Job
 

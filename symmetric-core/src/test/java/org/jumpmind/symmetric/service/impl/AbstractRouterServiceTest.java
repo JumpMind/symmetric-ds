@@ -636,6 +636,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
     public void testGapWithGapAtEnd() {
         if (getDbDialect().canGapsOccurInCapturedDataIds()) {
+            engine.getParameterService().saveParameter(ParameterConstants.CLUSTER_LOCKING_ENABLED, true, "test");
             setUpDefaultTriggerRouterForTable1();
             resetBatches();
             Assert.assertEquals(1, getDataService().findDataGaps().size());
