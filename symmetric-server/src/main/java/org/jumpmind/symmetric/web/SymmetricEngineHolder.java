@@ -333,16 +333,15 @@ public class SymmetricEngineHolder {
                             "Please set the engine.name property in the properties file to a unique name.";
                     log.error(message);
                     enginesFailed.put(engineName, new FailedEngineInfo(engineName, propertiesFile, message));
-                    enginesStartingNames.remove(engineName);
                     engine = null;
                 }
             }
         } catch (Exception e) {
             log.error("Failed to initialize engine", e);
             enginesFailed.put(engineName, new FailedEngineInfo(engineName, propertiesFile, e));
-            enginesStartingNames.remove(engineName);
             engine = null;
         }
+        enginesStartingNames.remove(engineName);
         return engine;
     }
 
