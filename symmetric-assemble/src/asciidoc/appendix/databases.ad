@@ -22,7 +22,7 @@ by database.
 |Transactional DDL
 |Load Only
 
-|Big Query
+|BigQuery *
 |All
 |N
 |N
@@ -55,7 +55,7 @@ by database.
 |Y                   
 |N
 
-|DB2 for IBM i
+|DB2 for IBM i *
 |6
 |N
 |Y
@@ -66,7 +66,7 @@ by database.
 |N                    
 |N
 
-|DB2 for IBM z/OS
+|DB2 for IBM z/OS *
 |10
 |N
 |Y
@@ -321,6 +321,7 @@ by database.
                    
 |====
 
+Database *:: Asterisk (*) next to database indicates the database support is available in https://www.jumpmind.com/products/symmetricds/symmetricds-overview[SymmetricDS Pro] only.
 
 Transaction Identifier:: A transaction identifier is recorded in the SYM_DATA table along with changes, which allows changes in the same transaction to be grouped
 together for commit within a batch.

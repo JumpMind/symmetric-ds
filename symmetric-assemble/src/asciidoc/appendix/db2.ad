@@ -59,6 +59,10 @@ db2.capture.transaction.id=false
   
 === DB2 for IBM i
 
+ifndef::pro[]
+NOTE: Support for DB2 for IBM i is available in https://www.jumpmind.com/products/symmetricds/symmetricds-overview[SymmetricDS Pro].
+endif::pro[]
+
 Use `symadmin module install db2` to install driver files, or copy your own files into the `lib` sub-directory.
 
 The DB2 for IBM i dialect can connect to a database on IBM iSeries (AS/400) machines.  It was tested with the
@@ -146,3 +150,15 @@ STRJRNPF FILE(sym/SYM_C00001 sym/SYM_C00002 sym/SYM_C00003 sym/SYM_C00004 sym/SY
 |DecFloat|No
 |Binary, VarBinary|No
 |===    
+
+=== DB2 for IBM z/OS
+
+ifndef::pro[]
+NOTE: Support for DB2 for IBM z/OS is available in https://www.jumpmind.com/products/symmetricds/symmetricds-overview[SymmetricDS Pro].
+endif::pro[]
+
+Use `symadmin module install db2` to install driver files, or copy your own files into the `lib` sub-directory.
+
+To access DB2 z/OS, you will need the respective DB2 Connect license activated on the mainframe.
+
+

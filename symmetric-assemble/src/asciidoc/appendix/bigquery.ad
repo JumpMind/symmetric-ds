@@ -1,15 +1,19 @@
-=== Google Big Query
+=== Google BigQuery
+
+ifndef::pro[]
+NOTE: Support for Google BigQuery is available in https://www.jumpmind.com/products/symmetricds/symmetricds-overview[SymmetricDS Pro].
+endif::pro[]
 
 Use `symadmin module install bigquery` to install driver files, or copy your own files into the `lib` sub-directory.
 
-Send changes from your relational database to Google's Big Query.  
+Send changes from your relational database to Google's BigQuery.  
 
 ==== Setup
 
-Big Query is only supported as a load only node in SymmetricDS.  See <<Load Only Node >> for details on setting up a load only node in SymmetricDS.
+BigQuery is only supported as a load only node in SymmetricDS.  See <<Load Only Node >> for details on setting up a load only node in SymmetricDS.
 
 ifdef::pro[]
-Setup the Big Query node by using the <<Add Node>> wizard and selecting Big Query as the type.  
+Setup the BigQuery node by using the <<Add Node>> wizard and selecting BigQuery as the type.  
 
 image::appendix/bigquery-database-settings.png[]
 
@@ -19,7 +23,7 @@ endif::pro[]
 
 ifndef::pro[] 
 
-.Example properties to setup a Google Big Query load only node
+.Example properties to setup a Google BigQuery load only node
 ----
 load.only=true
 
@@ -31,14 +35,14 @@ target.db.driver=google
 
 endif::pro[]
 
-==== Loading Data Into Big Query
+==== Loading Data Into BigQuery
 
 
 
 ifndef::pro[] 
 ===== Setup reload channels for bulk loading.
 
-Update any reload channels that will be used on the table triggers that will capture changes and send them to Big Query by setting the column data_loader_type to 'bulk'.  It is also recommended to increase the batch size so that larger CSV files will be processed instead of the default size on reloads of 10,000 rows.
+Update any reload channels that will be used on the table triggers that will capture changes and send them to BigQuery by setting the column data_loader_type to 'bulk'.  It is also recommended to increase the batch size so that larger CSV files will be processed instead of the default size on reloads of 10,000 rows.
 
 
 .Example SQL to setup the main reload channel to use bulk and also update the batch sizes.
@@ -48,19 +52,19 @@ update sym_channel set data_loader_type='bulk', max_batch_size=500000 where chan
 ----
 endif::pro[]
 
-===== Big Query Authentication
+===== BigQuery Authentication
 
-Create a JSON credentials file through your Big Query account
+Create a JSON credentials file through your BigQuery account
 
 https://cloud.google.com/docs/authentication/getting-started
 
       
 ifdef::pro[]
 
-Provide this file path on the advanced settings while setting up a Big Query node.  The advanced settings also requires that you provide a project ID and location for your Big Query project.
+Provide this file path on the advanced settings while setting up a BigQuery node.  The advanced settings also requires that you provide a project ID and location for your BigQuery project.
 
 ====
-NOTE: You will need to use your Google Big Query dataset name in the target schema of the router that is used to route data to Big Query.
+NOTE: You will need to use your Google BigQuery dataset name in the target schema of the router that is used to route data to BigQuery.
 ====
 
 image::appendix/bigquery-advanced-settings-snowflake-managed.png[]
@@ -68,9 +72,9 @@ endif::pro[]
 ifndef::pro[] 
 [source, properties]
 ----
-google.bigquery.project.id=<Google Big Query Project ID>
+google.bigquery.project.id=<Google BigQuery Project ID>
 google.bigquery.security.credentials.path=<Local Path to JSON Credentials File>
-google.bigquery.location=<Google Big Query Location: defaults to US>
+google.bigquery.location=<Google BigQuery Location: defaults to US>
 
 ----
 endif::pro[]
