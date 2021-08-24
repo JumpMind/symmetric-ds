@@ -24,300 +24,300 @@ by database.
 
 |BigQuery *
 |All
-|N
-|N
-|N
-|Y
-|N
-|N
-|N
-|Y
+|
+|
+|
+|✔
+|
+|
+|
+|✔
 
 |DB2
 |9.5
-|N
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y  
-|N
+|
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔  
+|
 
 |DB2
 |10,11
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y 
-|Y                   
-|N
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔ 
+|✔                   
+|
 
 |DB2 for IBM i *
 |6
-|N
-|Y
-|Y
-|N
-|Y
-|Y
-|N                    
-|N
+|
+|✔
+|✔
+|
+|✔
+|✔
+|                    
+|
 
 |DB2 for IBM z/OS *
 |10
-|N
-|Y
-|Y
-|N
-|Y
-|Y
-|N                    
-|N
+|
+|✔
+|✔
+|
+|✔
+|✔
+|                    
+|
 
 |Derby
 |10.3.2.1
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
-|N
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔
+|
+|
 
 |Firebird
 |2.0
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
-|N
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔
+|
+|
 
 |Greenplum
 |8.2.15 and above
-|N
-|N
-|N
-|Y
-|N
-|N
-|N
-|N
+|
+|
+|
+|✔
+|
+|
+|
+|
 
 |H2
 |1.x
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
-|N
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔
+|
+|
 
 |HSQLDB
 |1.8
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
-|N
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔
+|
+|
  
 |HSQLDB
 |2.0
-|N
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
-|N
+|
+|✔
+|✔
+|✔
+|✔
+|✔
+|
+|
 
 |Informix
 |11
-|N
-|Y
-|Y
-|Y
-|N
-|N
-|N                    
-|N                    
+|
+|✔
+|✔
+|✔
+|
+|
+|                    
+|                    
 
 |Ingres
 |11 and above
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
-|N
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔
+|
+|
 
 |Interbase
 |9.0
-|N
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
-|N
+|
+|✔
+|✔
+|✔
+|✔
+|✔
+|
+|
 
 |MySQL
 |5.0.2 and above
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
-|N
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔
+|
+|
 
 |MariaDB
 |5.1 and above
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
-|N
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔
+|
+|
 
-|NuoDB
+|uoDB
 |2.6 and above
-|Y
-|Y
-|Y
-|Y
-|N
-|Y
-|N
-|N
+|✔
+|✔
+|✔
+|✔
+|
+|✔
+|
+|
                     
 |Oracle
 |10g and above
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
-|N
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔
+|
+|
  
 |PostgreSQL
 |8.2.5 and above
-|Y (8.3 and above only)
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
+|✔ (8.3 and above only)
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔
+|
 
 |Redshift
 |1.0
-|N
-|N
-|N
-|Y
-|N
-|N
-|N
-|N
+|
+|
+|
+|✔
+|
+|
+|
+|
 
 |SQL Anywhere
 |9
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
-|N
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔
+|
+|
 
 |SQL Server
 |2005 and above
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔
+|
  
 |SQL Server Azure
 |Tested on 11.00.2065
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
-|N                    
-|N
+|✔
+|✔
+|✔
+|✔
+|✔
+|
+|                    
+|
  
 |SQLite
 |3.x
-|N
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
-|N
+|
+|✔
+|✔
+|✔
+|✔
+|✔
+|
+|
  
 |Sybase ASE
 |12.5
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y
-|N
-|N
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔
+|
+|
  
 |Teradata
 |15.10 and above
-|Y
-|Y
-|Y
-|N
-|N
-|N
-|N  
-|Y
+|✔
+|✔
+|✔
+|
+|
+|
+|  
+|✔
    
 |Tibero
 |6 and above
-|Y
-|Y
-|Y
-|Y
-|Y
-|Y
-|N 
-|N
+|✔
+|✔
+|✔
+|✔
+|✔
+|✔
+| 
+|
                    
 |====
 
@@ -348,172 +348,172 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 
 |DB2
 |
-|N
 |
-|Y
+|
+|✔
 |values current schema
 
 |Derby
 |
-|N
 |
-|Y
+|
+|✔
 |values current schema   
  
 |Firebird
 |
-|N
 |
-|N
+|
+|
 |
 
 |Greenplum
 |
-|N
 |
-|Y
+|
+|✔
 |select current_schema()                   
 
 |H2
 |
-|Y
+|✔
 |select database()
-|Y
+|✔
 |select schema()
 
 |HSQLDB
 |1.0
-|N
 |
-|N
+|
+|
 |
  
 |HSQLDB
 |2.0
-|Y
+|✔
 |select value from information_schema.system_sessioninfo where key = 'CURRENT SCHEMA'
-|Y
+|✔
 |select value from information_schema.system_sessioninfo where key = 'CURRENT SCHEMA'
 
 |Informix
 |
-|N
 |
-|Y
+|
+|✔
 |select trim(user) from sysmaster:sysdual
 
 |Ingres
 |
-|N
 |
-|Y
+|
+|✔
 |select dbmsinfo('username')
 
  
 |Interbase
 |
-|N
 |
-|N
+|
+|
 |
 
 |MySQL
 | 
-|Y
+|✔
 |select database()
-|N
+|
 | 
  
 |MariaDB
 |
-|Y
+|✔
 |select database()
-|N
+|
 |
 
-|NuoDB
+|uoDB
 |
-|N
 |
-|Y
+|
+|✔
 |select current_schema from system.dual
 
 |Oracle
 | 
-|N
+|
 | 
-|Y
+|✔
 |select sys_context('USERENV', 'CURRENT_SCHEMA') from dual
 
 |PostgreSQL
 |
-|N
 |
-|Y
+|
+|✔
 |select current_schema()                   
 
 |SQL Anywhere
 |
-|Y
+|✔
 |select db_name()
-|Y
+|✔
 |select user_name()
  
 |SQL Server
 |2000
-|Y
+|✔
 |select db_name()
-|Y
+|✔
 |select 'dbo'
 
 |SQL Server
 |2005+
-|Y
+|✔
 |select db_name()
-|Y
+|✔
 |select schema_name()
 
 |SQL Server
 |
-|Y
+|✔
 |select db_name()
-|Y
+|✔
 |select schema_name()
  
 |SQL Server Azure
 |
-|Y
+|✔
 |select db_name()
-|Y
+|✔
 |select schema_name()
  
 |SQLite
 |
-|N
 |
-|N
+|
+|
 |      
 
 |Sybase ASE
 |
-|Y
+|✔
 |select db_name()
-|Y
+|✔
 |select user_name()
  
 |Redshift
 |
-|N
 |
-|Y
+|
+|✔
 |select current_schema()
 
 
 |Tibero
 | 
-|N
+|
 | 
-|Y
+|✔
 |select sys_context('USERENV', 'CURRENT_SCHEMA') from dual
 
 |===
