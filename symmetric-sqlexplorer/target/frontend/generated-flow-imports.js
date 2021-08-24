@@ -13,8 +13,10 @@ import $css_1 from 'Frontend/themes/symmetric/styles.css';
 addCssBlock(`<custom-style><style>${$css_1}</style></custom-style>`);
 import $css_2 from 'Frontend/bootstrap.min.css';
 addCssBlock(`<custom-style><style>${$css_2}</style></custom-style>`);
-import $css_3 from 'Frontend/diagram.css';
-addCssBlock(`<custom-style><style>${$css_3}</style></custom-style>`);
+import $css_3 from 'Frontend/grid.css';
+addCssBlock(`<dom-module id="flow_css_mod_3" theme-for="vaadin-grid"><template><style>${$css_3}</style></template></dom-module>`);
+import $css_4 from 'Frontend/diagram.css';
+addCssBlock(`<custom-style><style>${$css_4}</style></custom-style>`);
 
 import '@polymer/paper-slider/paper-slider.js';
 import '@vaadin/flow-frontend/@f0rce/lit-ace/lit-ace.js';
