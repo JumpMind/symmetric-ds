@@ -32,7 +32,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -52,47 +51,33 @@ import org.jumpmind.symmetric.transport.http.ConscryptHelper;
 import org.jumpmind.symmetric.transport.http.Http2Connection;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.http.SelfSignedX509TrustManager;
+import org.jumpmind.symmetric.transport.http.SimpleHostnameVerifier;
 import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TransportManagerFactory {
     private static final Logger log = LoggerFactory.getLogger(TransportManagerFactory.class);
+    private static boolean isStaticInitialized;
     private ISymmetricEngine symmetricEngine;
 
     public TransportManagerFactory(ISymmetricEngine symmetricEngine) {
         this.symmetricEngine = symmetricEngine;
     }
 
-    public static void initHttps(final String httpSslVerifiedServerNames,
+    public static synchronized void initHttps(final String httpSslVerifiedServerNames,
             boolean allowSelfSignedCerts, boolean enableHttps2) {
         try {
-            if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
-                HostnameVerifier hostnameVerifier = new HostnameVerifier() {
-                    public boolean verify(String s, SSLSession sslsession) {
-                        boolean verified = false;
-                        if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
-                            if (httpSslVerifiedServerNames
-                                    .equalsIgnoreCase(Constants.TRANSPORT_HTTPS_VERIFIED_SERVERS_ALL)) {
-                                verified = true;
-                            } else {
-                                String[] names = httpSslVerifiedServerNames.split(",");
-                                for (String string : names) {
-                                    if (s != null && s.equals(string.trim())) {
-                                        verified = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        return verified;
-                    }
-                };
-                HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
-                Http2Connection.setHostnameVerifier(hostnameVerifier);
-            }
-            if (allowSelfSignedCerts) {
-                initSelfSignedSocketFactory(enableHttps2);
+            if (!isStaticInitialized) {
+                if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
+                    HostnameVerifier hostnameVerifier = new SimpleHostnameVerifier(httpSslVerifiedServerNames);
+                    HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
+                    Http2Connection.setHostnameVerifier(hostnameVerifier);
+                }
+                if (allowSelfSignedCerts) {
+                    initSelfSignedSocketFactory(enableHttps2);
+                }
+                isStaticInitialized = true;
             }
         } catch (GeneralSecurityException ex) {
             throw new SecurityException(ex);
