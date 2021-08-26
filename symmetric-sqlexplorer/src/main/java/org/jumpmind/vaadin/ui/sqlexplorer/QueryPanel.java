@@ -117,8 +117,6 @@ public class QueryPanel extends CustomSplitLayout implements IContentTab {
 
     EnhancedTab generalResultsTab;
 
-    //private SuggestionExtension suggestionExtension;
-
     private AceEditor editor;
 
     transient Set<SqlRunner> runnersInProgress = new HashSet<SqlRunner>();
@@ -144,7 +142,6 @@ public class QueryPanel extends CustomSplitLayout implements IContentTab {
 
         HorizontalLayout statusBar = new HorizontalLayout();
         statusBar.setMargin(false);
-        //statusBar.addClassName(ValoTheme.PANEL_WELL);
         statusBar.setWidthFull();
 
         status = new Span("No Results");

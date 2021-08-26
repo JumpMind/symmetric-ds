@@ -110,7 +110,6 @@ public class ResizableDialog extends Dialog {
         HorizontalLayout footer = new HorizontalLayout();
 
         footer.setSpacing(true);
-        //footer.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
 
         if (toTheLeftButtons != null) {
             footer.add(toTheLeftButtons);

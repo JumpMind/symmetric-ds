@@ -76,11 +76,6 @@ public class CsvExport {
     public void setTitle(String title) {
         this.title = title;
     }
-
-    public void export() {
-        convertToCsv();
-        sendCsvToUser();
-    }
     
     public ExportFileDownloader getFileDownloader() {
         convertToCsv();
@@ -144,30 +139,6 @@ public class CsvExport {
                 cellData.append(value + ",");
             } else {
                 cellData.append(value + "\n");
-            }
-        }
-    }
-
-    @SuppressWarnings("deprecation")
-    public void sendCsvToUser() {
-        FileOutputStream outStream = null;
-        File file = null;
-        try {
-            String prefix = fileName.substring(0, fileName.length() - 4);
-            file = File.createTempFile(prefix, ".csv");
-            outStream = new FileOutputStream(file);
-            outStream.write(cellData.toString().getBytes());
-
-            ExportFileDownloader downloader = new ExportFileDownloader(fileName, csvMimeContentType, file);
-            //UI.getCurrent().getPage().open(downloader, "Download", false);
-        } catch (Exception e) {
-            log.error("", e);
-        } finally {
-            try {
-                file.delete();
-                outStream.close();
-            } catch (IOException e) {
-                log.error("Problem closing File Stream", e);
             }
         }
     }

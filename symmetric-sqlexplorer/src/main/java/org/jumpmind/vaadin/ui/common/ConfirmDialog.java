@@ -58,7 +58,6 @@ public class ConfirmDialog extends Dialog {
         if (isNotBlank(text)) {
             TextArea textLabel = new TextArea();
             textLabel.setSizeFull();
-            //textLabel.setClassName(ValoTheme.TEXTAREA_BORDERLESS);
             textLabel.setValue(text);
             textLabel.setReadOnly(true);
             layout.addAndExpand(textLabel);
@@ -68,7 +67,6 @@ public class ConfirmDialog extends Dialog {
         }
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        //buttonLayout.setClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
 
         buttonLayout.addAndExpand(new Span());

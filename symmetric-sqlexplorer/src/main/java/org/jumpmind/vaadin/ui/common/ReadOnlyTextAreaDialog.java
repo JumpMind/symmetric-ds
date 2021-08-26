@@ -31,8 +31,6 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -97,12 +95,10 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
         textField = new TextArea();
         textField.getStyle().set("max-height", "480px");
         textField.setSizeFull();
-        //textField.setWordWrap(false);
         wrapper.add(textField);
         add(wrapper, 1);
 
         buttonLayout = new HorizontalLayout();
-        //buttonLayout.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
         buttonLayout.setWidthFull();
         add(buttonLayout);

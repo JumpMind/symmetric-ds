@@ -111,16 +111,6 @@ public final class CommonUiUtils {
     public static AceEditor createAceEditor() {
         AceEditor editor = new AceEditor();
         editor.setSizeFull();
-        /*ServletContext context = VaadinServlet.getCurrent().getServletContext();
-        if (context.getRealPath("/VAADIN/ace") != null) {
-            String acePath = context.getContextPath() + "/VAADIN/ace";
-            editor.setThemePath(acePath);
-            editor.setModePath(acePath);
-            editor.setWorkerPath(acePath);
-        } else {
-            log.warn("Could not find a local version of the ace editor.  " + "You might want to consider installing the ace web artifacts at "
-                    + context.getRealPath(""));
-        }*/
         editor.setHighlightActiveLine(false);
         editor.setHighlightSelectedWord(false);
         editor.setShowPrintMargin(false);
