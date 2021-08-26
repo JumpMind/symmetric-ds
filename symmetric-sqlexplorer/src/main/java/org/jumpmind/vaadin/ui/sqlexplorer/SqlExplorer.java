@@ -138,7 +138,6 @@ public class SqlExplorer extends CustomSplitLayout {
         leftLayout.setSpacing(false);
         leftLayout.setPadding(false);
         leftLayout.setSizeFull();
-        //leftLayout.addClassName(ValoTheme.MENU_ROOT);
 
         leftLayout.add(buildLeftMenu());
 
@@ -162,7 +161,6 @@ public class SqlExplorer extends CustomSplitLayout {
         rightMenuWrapper.setSpacing(false);
         rightMenuWrapper.setPadding(false);
         rightMenuWrapper.setWidthFull();
-        //rightMenuWrapper.addClassName(ValoTheme.MENU_ROOT);
         contentMenuBar = new MenuBar();
         contentMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY);
         contentMenuBar.setWidthFull();
@@ -186,7 +184,6 @@ public class SqlExplorer extends CustomSplitLayout {
         addToPrimary(leftLayout);
         addToSecondary(rightLayout);
 
-        //setSplitterPosition(savedSplitPosition, Unit.PIXELS);
         setSplitterPosition(savedSplitPosition);
     }
 
@@ -310,7 +307,7 @@ public class SqlExplorer extends CustomSplitLayout {
                     queryPanel.createGeneralResultsTab();
                 }
                 boolean autoCompleteEnabled = settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMPLETE);
-                //queryPanel.setAutoCompleteEnabled(autoCompleteEnabled);
+                queryPanel.setAutoCompleteEnabled(autoCompleteEnabled);
             }
         }
     }

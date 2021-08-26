@@ -12,6 +12,11 @@
 	background-color: var(--lumo-contrast-10pct) !important;
 }
 
+:host-context(.compact-header) [part="row"]:only-child [part~="header-cell"] {
+	min-height: 31px;
+	max-height: 31px;
+}
+
 .italics { 
 	font-style: italic;
 }

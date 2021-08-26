@@ -367,7 +367,7 @@ public class DbExportDialog extends ResizableDialog {
         String script;
         try {
             script = dbExport.exportTables(array);
-            //queryPanel.appendSql(script);
+            queryPanel.appendSql(script);
         } catch (IOException e) {
             String msg = "Failed to export to the sql editor";
             log.error(msg, e);

@@ -171,7 +171,6 @@ public class TableSelectionLayout extends VerticalLayout {
 
         selectAllFooter.setWidth("100%");
         selectAllFooter.setSpacing(true);
-        //selectAllFooter.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
 
         selectAllFooter.add(selectAllLink, selectNoneLink);
         

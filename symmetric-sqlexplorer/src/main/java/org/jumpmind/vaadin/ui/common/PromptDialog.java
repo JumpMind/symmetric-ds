@@ -73,7 +73,6 @@ public class PromptDialog extends Dialog {
         layout.add(field);
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        //buttonLayout.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
 
         buttonLayout.addAndExpand(new Span());
