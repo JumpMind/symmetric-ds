@@ -37,7 +37,7 @@ public class TiberoBulkDatabaseWriter extends OracleBulkDatabaseWriter {
             DatabaseWriterSettings settings, boolean delimitTokens) {
         super(symmetricPlatform, targetPlatform, stagingManager, tablePrefix, tbLoaderCommand, tbLoaderOptions,
                 dbUser, dbPassword, dbUrl, dbName, sqlLoaderInfileCharset, fieldTerminator, lineTerminator, settings,
-                delimitTokens);
+                false);
         logger = LoggerFactory.getLogger(getClass());
     }
 
