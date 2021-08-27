@@ -405,7 +405,7 @@ public class SqlRunner extends Thread {
     protected Scroller wrapTextInComponent(String text, String style) {
         Scroller panel = new Scroller();
         VerticalLayout content = new VerticalLayout();        
-        content.setMargin(true);
+        content.setMargin(false);
         panel.setContent(content);
         Label label = new Label("<pre>" + text.toString() + "</pre>");
         if (StringUtils.isNotBlank(style)) {

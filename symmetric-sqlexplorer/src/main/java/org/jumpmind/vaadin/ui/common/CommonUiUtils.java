@@ -140,7 +140,12 @@ public final class CommonUiUtils {
             layout.setWidth("400px");
             Notification notification = new Notification(layout);
             
-            Label label = new Label(caption + "\n" + contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
+            Label label;
+            if (caption != null) {
+                label = new Label(caption + "\n" + contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
+            } else {
+                label = new Label(contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
+            }
             layout.add(label);
             layout.setVerticalComponentAlignment(Alignment.CENTER, label);
             
