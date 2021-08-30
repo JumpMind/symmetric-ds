@@ -118,7 +118,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         
         refreshData(table, user, db, settings, true);
         
-        AceEditor editor = new AceEditor();
+        AceEditor editor = CommonUiUtils.createAceEditor();
         ComponentUtil.setData(editor, "data", true);
         tabSheet.add(editor, "Source");
         

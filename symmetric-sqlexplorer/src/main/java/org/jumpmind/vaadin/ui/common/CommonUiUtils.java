@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -68,8 +69,10 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.tabs.TabsVariant;
+import com.vaadin.flow.theme.lumo.Lumo;
 
 import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceTheme;
 
 public final class CommonUiUtils {
 
@@ -114,6 +117,24 @@ public final class CommonUiUtils {
         editor.setHighlightActiveLine(false);
         editor.setHighlightSelectedWord(false);
         editor.setShowPrintMargin(false);
+        editor.setBaseUrl("../ace-builds/src-min-noconflict/");
+        
+        UI ui = UI.getCurrent();
+        
+        if (ui.getElement().getThemeList().contains(Lumo.DARK)) {
+            editor.setTheme(AceTheme.nord_dark);
+        } else {
+            editor.setTheme(AceTheme.eclipse);
+        }
+        
+        ComponentUtil.addListener(ui, ThemeChangedEvent.class, (event) -> {
+            if (event.getTheme().equals(Lumo.DARK)) {
+                editor.setTheme(AceTheme.nord_dark);
+            } else {
+                editor.setTheme(AceTheme.eclipse);
+            }
+        });
+        
         return editor;
     }
 
