@@ -47,8 +47,8 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
-import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.platform.PermissionResult.Status;
+import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
@@ -141,23 +141,16 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
-        if (supportsLimitOffset()) {
-            if (sql.endsWith(";")) {
-                sql = sql.substring(0, sql.length() - 1);
-            }
-            int majorVersion = sqlTemplate.getDatabaseMajorVersion();
-            int minorVersion = sqlTemplate.getDatabaseMinorVersion();
-            if ((this instanceof Db2As400DatabasePlatform && (majorVersion >= 8 || (majorVersion == 7 && minorVersion >= 1)))
-                    || (majorVersion >= 12 || (majorVersion == 11 && minorVersion >= 1))) {
-                return sql + " limit " + limit + " offset " + offset + ";";
-            }
-            int orderIndex = StringUtils.lastIndexOfIgnoreCase(sql, "order by");
-            String order = sql.substring(orderIndex);
-            String innerSql = sql.substring(0, orderIndex - 1);
-            innerSql = StringUtils.replaceIgnoreCase(innerSql, " from", ", ROW_NUMBER() over (" + order + ") as RowNum from");
-            return "select * from (" + innerSql + ") " +
-                    "where RowNum between " + (offset + 1) + " and " + (offset + limit);
+        if (sql.endsWith(";")) {
+            sql = sql.substring(0, sql.length() - 1);
         }
-        return sql;
+        if (majorVersion >= 12 || (majorVersion == 11 && minorVersion >= 1)) {
+            return sql + " limit " + limit + " offset " + offset + ";";
+        }
+        int orderIndex = StringUtils.lastIndexOfIgnoreCase(sql, "order by");
+        String order = sql.substring(orderIndex);
+        String innerSql = sql.substring(0, orderIndex - 1);
+        innerSql = StringUtils.replaceIgnoreCase(innerSql, " from", ", ROW_NUMBER() over (" + order + ") as RowNum from");
+        return "select * from (" + innerSql + ") " + "where RowNum between " + (offset + 1) + " and " + (offset + limit);
     }
 }

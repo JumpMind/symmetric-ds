@@ -33,6 +33,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.sql.DmlStatementOptions;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -132,7 +133,7 @@ public class StructureDataWriter implements IDataWriter {
                 sql = data.getParsedData(CsvData.ROW_DATA)[0];
                 break;
             case CREATE:
-                IDdlBuilder builder = DdlBuilderFactory.createDdlBuilder(targetDatabaseName);
+                IDdlBuilder builder = DdlBuilderFactory.getInstance().create(targetDatabaseName);
                 sql = builder.createTable(currentTable);
                 break;
             default:
@@ -146,8 +147,8 @@ public class StructureDataWriter implements IDataWriter {
     protected String buildSql(DmlType dmlType, String[] values, Column[] columns) {
         // TODO we should try to reuse statements
         // TODO support primary key updates
-        DmlStatement statement = DmlStatementFactory.createDmlStatement(targetDatabaseName,
-                dmlType, currentTable, useQuotedIdentifiers);
+        DmlStatementOptions options = new DmlStatementOptions(dmlType, currentTable).quotedIdentifiers(useQuotedIdentifiers);
+        DmlStatement statement = DmlStatementFactory.getInstance().create(targetDatabaseName, options);
         Object[] objects = platform.getObjectValues(binaryEncoding, values, columns, false, false);
         Row row = new Row(columns.length);
         for (int i = 0; i < columns.length; i++) {

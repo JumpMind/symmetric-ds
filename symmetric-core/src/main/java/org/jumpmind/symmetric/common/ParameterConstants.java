@@ -387,12 +387,10 @@ final public class ParameterConstants {
     public final static String SEND_USAGE_STATS = "send.usage.stats";
     public final static String LOG_CONFLICT_RESOLUTION = "log.conflict.resolution";
     public final static String UPDATE_SERVICE_CLASS = "update.service.class";
-    public final static String CLUSTER_SERVICE_CLASS = "cluster.service.class";
     public final static String STAGING_MANAGER_CLASS = "staging.manager.class";
     public final static String STAGING_DIR = "staging.dir";
     public final static String STAGING_LOW_SPACE_THRESHOLD_MEGABYTES = "staging.low.space.threshold.megabytes";
     public final static String STATISTIC_MANAGER_CLASS = "statistic.manager.class";
-    public final static String SYMMETRIC_DIALECT_FACTORY_CLASS = "symmetric.dialect.factory.class";
     public final static String DB2_CAPTURE_TRANSACTION_ID = "db2.capture.transaction.id";
     public final static String TREAT_BINARY_AS_LOB_ENABLED = "treat.binary.as.lob.enabled";
     public final static String RIGHT_TRIM_CHAR_VALUES = "right.trim.char.values";

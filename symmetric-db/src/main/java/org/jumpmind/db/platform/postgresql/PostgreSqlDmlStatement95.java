@@ -23,16 +23,13 @@ package org.jumpmind.db.platform.postgresql;
 import java.util.Map;
 
 import org.jumpmind.db.model.Column;
-import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.sql.DmlStatementOptions;
 
 public class PostgreSqlDmlStatement95 extends PostgreSqlDmlStatement {
     public static final String ON_CONFLICT_DO_NOTHING = "on conflict do nothing";
 
-    public PostgreSqlDmlStatement95(DmlType type, String catalogName, String schemaName, String tableName,
-            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, DatabaseInfo databaseInfo,
-            boolean useQuotedIdentifiers, String textColumnExpression) {
-        super(type, catalogName, schemaName, tableName, keysColumns, columns, nullKeyValues, databaseInfo, useQuotedIdentifiers,
-                textColumnExpression);
+    public PostgreSqlDmlStatement95(DmlStatementOptions options) {
+        super(options);
     }
 
     @Override

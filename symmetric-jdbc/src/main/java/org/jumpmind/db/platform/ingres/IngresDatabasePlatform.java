@@ -40,6 +40,7 @@ import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class IngresDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public static final String JDBC_DRIVER = "com.ingres.jdbc.IngresDriver";
+    public static final String JDBC_SUBPROTOCOL = "ingres";
 
     public IngresDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);

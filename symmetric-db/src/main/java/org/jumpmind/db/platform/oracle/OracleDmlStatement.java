@@ -25,15 +25,12 @@ import java.sql.Types;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatementOptions;
 
 public class OracleDmlStatement extends DmlStatement {
-    public OracleDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
-            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues,
-            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
-        super(type, catalogName, schemaName, tableName, keysColumns, columns,
-                nullKeyValues, databaseInfo, useQuotedIdentifiers, textColumnExpression);
+    public OracleDmlStatement(DmlStatementOptions options) {
+        super(options);
     }
 
     @Override

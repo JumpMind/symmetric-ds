@@ -20,6 +20,9 @@
  */
 package org.jumpmind.symmetric.db;
 
+import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.symmetric.service.IParameterService;
+
 public interface ISymmetricDialectFactory {
-    public ISymmetricDialect create();
+    public ISymmetricDialect create(IParameterService parameterService, IDatabasePlatform platform);
 }

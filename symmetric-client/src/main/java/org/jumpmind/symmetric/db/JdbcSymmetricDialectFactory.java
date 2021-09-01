@@ -20,13 +20,9 @@
  */
 package org.jumpmind.symmetric.db;
 
-import java.lang.reflect.Constructor;
-
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
-import org.jumpmind.db.platform.db2.Db2As400DatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
-import org.jumpmind.db.platform.db2.Db2zOsDatabasePlatform;
 import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
 import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
 import org.jumpmind.db.platform.greenplum.GreenplumPlatform;
@@ -52,12 +48,9 @@ import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.db.platform.tibero.TiberoDatabasePlatform;
 import org.jumpmind.db.platform.voltdb.VoltDbDatabasePlatform;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ase.AseSymmetricDialect;
-import org.jumpmind.symmetric.db.db2.Db2As400SymmetricDialect;
 import org.jumpmind.symmetric.db.db2.Db2SymmetricDialect;
 import org.jumpmind.symmetric.db.db2.Db2v9SymmetricDialect;
-import org.jumpmind.symmetric.db.db2.Db2zOsSymmetricDialect;
 import org.jumpmind.symmetric.db.derby.DerbySymmetricDialect;
 import org.jumpmind.symmetric.db.firebird.Firebird20SymmetricDialect;
 import org.jumpmind.symmetric.db.firebird.Firebird21SymmetricDialect;
@@ -87,39 +80,25 @@ import org.jumpmind.symmetric.db.sqlite.SqliteJdbcSymmetricDialect;
 import org.jumpmind.symmetric.db.tibero.TiberoSymmetricDialect;
 import org.jumpmind.symmetric.db.voltdb.VoltDbSymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jumpmind.util.AppUtils;
 
 /**
  * Factory class that is responsible for creating the appropriate {@link ISymmetricDialect} for the configured database.
  */
 public class JdbcSymmetricDialectFactory implements ISymmetricDialectFactory {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
-    private IParameterService parameterService;
-    private IDatabasePlatform platform;
+    protected static ISymmetricDialectFactory instance;
 
-    public JdbcSymmetricDialectFactory(IParameterService parameterService, IDatabasePlatform platform) {
-        this.parameterService = parameterService;
-        this.platform = platform;
+    protected JdbcSymmetricDialectFactory() {
     }
 
-    public static ISymmetricDialectFactory getInstance(IParameterService parameterService, IDatabasePlatform platform) {
-        ISymmetricDialectFactory instance = null;
-        String dialectFactoryClassName = parameterService.getString(ParameterConstants.SYMMETRIC_DIALECT_FACTORY_CLASS);
-        if (dialectFactoryClassName != null) {
-            try {
-                Constructor<?> cons = Class.forName(dialectFactoryClassName).getConstructor(IParameterService.class, IDatabasePlatform.class);
-                instance = (ISymmetricDialectFactory) cons.newInstance(parameterService, platform);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            instance = new JdbcSymmetricDialectFactory(parameterService, platform);
+    public static synchronized ISymmetricDialectFactory getInstance() {
+        if (instance == null) {
+            instance = AppUtils.newInstance(ISymmetricDialectFactory.class, JdbcSymmetricDialectFactory.class);
         }
         return instance;
     }
 
-    public ISymmetricDialect create() {
+    public ISymmetricDialect create(IParameterService parameterService, IDatabasePlatform platform) {
         AbstractSymmetricDialect dialect = null;
         if (platform instanceof MariaDBDatabasePlatform) {
             dialect = new MariaDBSymmetricDialect(parameterService, platform);
@@ -151,10 +130,6 @@ public class JdbcSymmetricDialectFactory implements ISymmetricDialectFactory {
             dialect = new HsqlDb2SymmetricDialect(parameterService, platform);
         } else if (platform instanceof InformixDatabasePlatform) {
             dialect = new InformixSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof Db2zOsDatabasePlatform) {
-            dialect = new Db2zOsSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof Db2As400DatabasePlatform) {
-            dialect = new Db2As400SymmetricDialect(parameterService, platform);
         } else if (platform instanceof Db2DatabasePlatform) {
             int dbMajorVersion = platform.getSqlTemplate().getDatabaseMajorVersion();
             int dbMinorVersion = platform.getSqlTemplate().getDatabaseMinorVersion();

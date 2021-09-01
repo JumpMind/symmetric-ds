@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DmlStatement {
     private static final Logger log = LoggerFactory.getLogger(DmlStatement.class);
+    protected static final String QUESTION_MARK = "<!QUESTION_MARK!>";
 
     public enum DmlType {
         INSERT, UPDATE, DELETE, UPSERT, COUNT, FROM, WHERE, SELECT, SELECT_ALL, UNKNOWN
@@ -60,7 +61,7 @@ public class DmlStatement {
     protected String tableName;
     protected DmlType dmlType;
     protected String sql;
-    protected boolean namedParameters = false;
+    protected boolean namedParameters;
     protected int[] types;
     protected String quote;
     protected DatabaseInfo databaseInfo;
@@ -68,21 +69,11 @@ public class DmlStatement {
     protected Column[] columns;
     protected boolean[] nullKeyValues;
     protected String textColumnExpression;
-    protected static final String QUESTION_MARK = "<!QUESTION_MARK!>";
 
-    public DmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
-            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues,
-            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
-        init(type, catalogName, schemaName, tableName, keysColumns, columns, nullKeyValues,
-                databaseInfo, useQuotedIdentifiers, textColumnExpression, false);
-    }
-
-    public DmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
-            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues,
-            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression,
-            boolean namedParameters) {
-        init(type, catalogName, schemaName, tableName, keysColumns, columns, nullKeyValues,
-                databaseInfo, useQuotedIdentifiers, textColumnExpression, namedParameters);
+    public DmlStatement(DmlStatementOptions options) {
+        init(options.getDmlType(), options.getCatalogName(), options.getSchemaName(), options.getTableName(), options.getKeys(),
+                options.getColumns(), options.getNullKeyValues(), options.getDatabaseInfo(), options.useQuotedIdentifiers(),
+                options.getTextColumnExpression(), options.isNamedParameters());
     }
 
     protected final void init(DmlType type, String catalogName, String schemaName, String tableName,

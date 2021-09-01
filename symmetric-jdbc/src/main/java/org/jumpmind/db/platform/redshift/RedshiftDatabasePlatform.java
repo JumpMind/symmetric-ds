@@ -31,11 +31,13 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
-import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.platform.PermissionResult.Status;
+import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class RedshiftDatabasePlatform extends AbstractJdbcDatabasePlatform {
+    public static final String JDBC_DRIVER = "com.amazon.redshift.jdbc42.Driver";
+    public static final String JDBC_SUBPROTOCOL = "redshift";
     private Map<String, String> sqlScriptReplacementTokens;
 
     public RedshiftDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {

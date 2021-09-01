@@ -37,6 +37,9 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class HanaDatabasePlatform extends AbstractJdbcDatabasePlatform {
+    public static final String JDBC_DRIVER = "com.sap.db.jdbc.Driver";
+    public static final String JDBC_SUBPROTOCOL = "sap";
+
     public HanaDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
     }

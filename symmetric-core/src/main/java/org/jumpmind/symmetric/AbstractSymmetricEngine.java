@@ -134,6 +134,7 @@ import org.jumpmind.symmetric.transport.ConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
+import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -365,17 +366,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     protected IClusterService createClusterService() {
-        String className = parameterService.getString(ParameterConstants.CLUSTER_SERVICE_CLASS);
-        if (className != null) {
-            try {
-                Constructor<?> cons = Class.forName(className).getConstructor(IParameterService.class, ISymmetricDialect.class,
-                        INodeService.class, IExtensionService.class);
-                return (IClusterService) cons.newInstance(parameterService, symmetricDialect, nodeService, extensionService);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return new ClusterService(parameterService, symmetricDialect, nodeService, extensionService);
+        return AppUtils.newInstance(IClusterService.class, ClusterService.class, new Object[] { parameterService, symmetricDialect, nodeService,
+                extensionService }, new Class<?>[] { IParameterService.class, ISymmetricDialect.class, INodeService.class, IExtensionService.class });
     }
 
     protected IRouterService buildRouterService() {

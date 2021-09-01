@@ -24,6 +24,12 @@ import java.util.List;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
+import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
+import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
+import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
+import org.jumpmind.db.platform.redshift.RedshiftDatabasePlatform;
+import org.jumpmind.db.platform.tibero.TiberoDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -55,27 +61,22 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
         if (engine.getParameterService().is(ParameterConstants.JDBC_EXECUTE_BULK_BATCH_OVERRIDE, false)) {
             return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), platform,
                     symmetricDialect.getTablePrefix(), buildParameterDatabaseWritterSettings());
-        } else if (DatabaseNamesConstants.MYSQL.equals(platformName)) {
+        } else if (platform instanceof MySqlDatabasePlatform) {
             return new MySqlBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.MSSQL2000.equals(platformName)
-                || DatabaseNamesConstants.MSSQL2005.equals(platformName)
-                || DatabaseNamesConstants.MSSQL2008.equals(platformName)
-                || DatabaseNamesConstants.MSSQL2016.equals(platformName)) {
+        } else if (platform instanceof MsSql2000DatabasePlatform) {
             return new MsSqlBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.ORACLE.equals(platformName) || DatabaseNamesConstants.ORACLE122.equals(platformName)) {
+        } else if (platform instanceof OracleDatabasePlatform) {
             return new OracleBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.TIBERO.equals(platformName)) {
+        } else if (platform instanceof TiberoDatabasePlatform) {
             return new TiberoBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.POSTGRESQL.equals(platformName)
-                || DatabaseNamesConstants.POSTGRESQL95.equals(platformName)
-                || DatabaseNamesConstants.GREENPLUM.equals(platformName)) {
+        } else if (platform instanceof PostgreSqlDatabasePlatform) {
             return new PostgresBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.REDSHIFT.equals(platformName)) {
+        } else if (platform instanceof RedshiftDatabasePlatform) {
             return new RedshiftBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
         } else if (platformName != null && platformName.startsWith(DatabaseNamesConstants.TERADATA)) {

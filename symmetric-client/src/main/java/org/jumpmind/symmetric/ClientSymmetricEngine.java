@@ -289,7 +289,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected ISymmetricDialect createSymmetricDialect() {
-        return JdbcSymmetricDialectFactory.getInstance(parameterService, platform).create();
+        return JdbcSymmetricDialectFactory.getInstance().create(parameterService, platform);
     }
 
     @Override
@@ -307,7 +307,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 targetPlatform.getDatabaseInfo().setNotNullColumnsSupported(parameterService.is(prefix +
                         ParameterConstants.CREATE_TABLE_NOT_NULL_COLUMNS, true));
             }
-            return JdbcSymmetricDialectFactory.getInstance(parameterService, targetPlatform).create();
+            return JdbcSymmetricDialectFactory.getInstance().create(parameterService, targetPlatform);
         } else {
             return getSymmetricDialect();
         }
@@ -369,7 +369,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         boolean delimitedIdentifierMode = properties.is(
                 ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE, true);
         boolean caseSensitive = !properties.is(ParameterConstants.DB_METADATA_IGNORE_CASE, true);
-        return JdbcDatabasePlatformFactory.getInstance(properties).create(dataSource,
+        return JdbcDatabasePlatformFactory.getInstance().create(dataSource,
                 createSqlTemplateSettings(properties), delimitedIdentifierMode, caseSensitive, isLoadOnly, isLogBased);
     }
 

@@ -18,25 +18,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.db.platform.sqlanywhere;
+package org.jumpmind.db.platform;
 
-import java.sql.Types;
-
-import org.jumpmind.db.model.Column;
-import org.jumpmind.db.sql.DmlStatement;
-import org.jumpmind.db.sql.DmlStatementOptions;
-
-public class SqlAnywhereDmlStatement extends DmlStatement {
-    public SqlAnywhereDmlStatement(DmlStatementOptions options) {
-        super(options);
-    }
-
-    @Override
-    protected int getTypeCode(Column column, boolean isDateOverrideToTimestamp) {
-        int type = column.getMappedTypeCode();
-        if (type == Types.DATE && isDateOverrideToTimestamp) {
-            type = Types.TIMESTAMP;
-        }
-        return type;
-    }
+public interface IDdlBuilderFactory {
+    public IDdlBuilder create(String databaseName);
 }

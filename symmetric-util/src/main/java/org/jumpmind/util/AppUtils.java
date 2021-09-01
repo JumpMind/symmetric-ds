@@ -27,14 +27,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.DatagramSocket;
+import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.ServerSocket;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Properties;
 import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -56,6 +57,21 @@ public class AppUtils {
     private static String UNKNOWN = "unknown";
     private static Logger log = LoggerFactory.getLogger(AppUtils.class);
     private static FastDateFormat timezoneFormatter = FastDateFormat.getInstance("Z");
+    private static Properties implProp = new Properties();
+
+    static {
+        loadProperties(implProp, "symmetric-impl.properties");
+    }
+
+    private static void loadProperties(Properties prop, String resourceName) {
+        URL url = ClassLoader.getSystemResource(resourceName);
+        if (url != null) {
+            try (InputStream fis = url.openStream()) {
+                prop.load(fis);
+            } catch (IOException ex) {
+            }
+        }
+    }
 
     public static String getSymHome() {
         String home = System.getenv("SYM_HOME");
@@ -254,5 +270,24 @@ public class AppUtils {
             buff.append("\r\n");
         }
         return buff.toString();
+    }
+
+    public static <T> T newInstance(Class<T> clazz, Class<?> defaultClass) {
+        return newInstance(clazz, defaultClass, new Object[0], new Class[0]);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T newInstance(Class<T> clazz, Class<?> defaultClass, Object[] args, Class<?>[] argTypes) {
+        T instance = null;
+        String propertyName = clazz.getSimpleName();
+        String className = implProp.getProperty(propertyName, defaultClass.getName());
+        try {
+            Constructor<T> cons = (Constructor<T>) Class.forName(className).getDeclaredConstructor(argTypes);
+            cons.setAccessible(true);
+            instance = (T) cons.newInstance(args);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return instance;
     }
 }

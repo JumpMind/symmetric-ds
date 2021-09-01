@@ -451,8 +451,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     .getNodeId());
             List<OutgoingBatch> activeBatches = filterBatchesForExtraction(batches, channelMap);
             if (activeBatches.size() > 0) {
-                IDdlBuilder builder = DdlBuilderFactory.createDdlBuilder(targetNode
-                        .getDatabaseType());
+                IDdlBuilder builder = DdlBuilderFactory.getInstance().create(targetNode.getDatabaseType());
                 if (builder == null) {
                     throw new IllegalStateException(
                             "Could not find a ddl builder registered for the database type of "
