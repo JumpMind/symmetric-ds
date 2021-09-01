@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io;
 import java.io.File;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -47,6 +48,22 @@ public class TiberoBulkDatabaseWriter extends OracleBulkDatabaseWriter {
                 sqlLoaderCommand = "tbloader";
             }
         }
+    }
+    
+    @Override
+    protected String getValueEscapedBy() {
+        return "    ESCAPED BY '\\\\'";
+    }
+    
+    @Override
+    protected String getValueEnclosedBy() {
+        return "    OPTIONALLY ENCLOSED BY '\"'";
+    }
+    
+    @Override
+    protected String getTargetTableName(Table targetTable, String delimiterToken) {
+        // Tibero does not allow quoted table names
+        return targetTable.getQualifiedTableName("", ".", ".") + "\n";
     }
 
     @Override

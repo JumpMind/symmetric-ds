@@ -135,14 +135,23 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 out.write(("CHARACTERSET " + sqlLoaderInfileCharset + "\n").getBytes(Charset.defaultCharset()));
             }
             out.write(getInfileControl().getBytes(Charset.defaultCharset()));
-            out.write(("APPEND INTO TABLE " + targetTable.getQualifiedTableName("\"", ".", ".") + "\n").getBytes(Charset.defaultCharset()));
-            out.write(("FIELDS TERMINATED BY '" + fieldTerminator + "'\n").getBytes(Charset.defaultCharset()));
-            out.write(getLineTerminatedByControl().getBytes(Charset.defaultCharset()));
-            out.write("TRAILING NULLCOLS\n".getBytes(Charset.defaultCharset()));
+            
             String quote = "";
             if (delimitTokens) {
                 quote = targetPlatform.getDdlBuilder().getDatabaseInfo().getDelimiterToken();
             }
+            out.write(("APPEND INTO TABLE " + getTargetTableName(targetTable, quote) + "\n").getBytes(Charset.defaultCharset()));
+            out.write(("FIELDS TERMINATED BY '" + fieldTerminator + "'\n").getBytes(Charset.defaultCharset()));
+            String valueEnclosedBy = getValueEnclosedBy();
+            if (StringUtils.isNotBlank(valueEnclosedBy)) {
+                out.write((valueEnclosedBy + "\n").getBytes());
+            }
+            String valueEscapedBy = getValueEscapedBy();
+            if (StringUtils.isNotBlank(valueEscapedBy)) {
+                out.write((valueEscapedBy + "\n").getBytes());
+            }
+            out.write(getLineTerminatedByControl().getBytes(Charset.defaultCharset()));
+            out.write("TRAILING NULLCOLS\n".getBytes(Charset.defaultCharset()));
             StringBuilder columns = new StringBuilder("(");
             int index = 0;
             for (Column column : targetTable.getColumns()) {
@@ -170,6 +179,18 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    protected String getValueEscapedBy() {
+        return "";
+    }
+    
+    protected String getValueEnclosedBy() {
+        return "";
+    }
+    
+    protected String getTargetTableName(Table targetTable, String delimiterToken) {
+        return targetTable.getQualifiedTableName(delimiterToken, ".", ".") + "\n";
     }
 
     protected String getInfileControl() {
