@@ -68,7 +68,7 @@ public class MsSqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
         return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
                 stagingManager,
                 maxRowsBeforeFlush,
-                fireTriggers, uncPath, fieldTerminator, rowTerminator, buildParameterDatabaseWritterSettings());
+                fireTriggers, uncPath, fieldTerminator, rowTerminator, buildParameterDatabaseWriterSettings(conflictSettings));
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

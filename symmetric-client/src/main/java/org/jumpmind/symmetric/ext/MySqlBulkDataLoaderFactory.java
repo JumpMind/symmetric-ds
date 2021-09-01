@@ -64,7 +64,7 @@ public class MySqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
         return new MySqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
                 stagingManager,
                 maxRowsBeforeFlush,
-                maxBytesBeforeFlush, isLocal, isReplace, buildParameterDatabaseWritterSettings());
+                maxBytesBeforeFlush, isLocal, isReplace, buildParameterDatabaseWriterSettings(conflictSettings));
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

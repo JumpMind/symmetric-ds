@@ -52,7 +52,7 @@ public class BigQueryDataLoaderFactory extends AbstractDataLoaderFactory impleme
         try {
             return new BigQueryBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), 
                     symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService, securityService, 
-                    buildParameterDatabaseWritterSettings(), this.bigquery);
+                    buildParameterDatabaseWriterSettings(conflictSettings), this.bigquery);
             
         } catch (Exception e) {
             log.warn(

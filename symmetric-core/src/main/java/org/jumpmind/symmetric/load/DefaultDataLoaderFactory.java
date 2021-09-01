@@ -22,13 +22,11 @@ package org.jumpmind.symmetric.load;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -60,12 +58,8 @@ import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory, IBuiltInExtensionPoint, ISymmetricEngineAware {
-
-    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected ISymmetricEngine engine;
 
@@ -256,37 +250,10 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
     protected DatabaseWriterSettings buildDatabaseWriterSettings(List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers, List<? extends Conflict> conflictSettings,
             List<ResolvedData> resolvedDatas) {
-        DatabaseWriterSettings settings = buildParameterDatabaseWritterSettings();
+        DatabaseWriterSettings settings = buildParameterDatabaseWriterSettings(conflictSettings);
         settings.setLoadOnlyNode(engine.getParameterService().is(ParameterConstants.NODE_LOAD_ONLY));
         settings.setDatabaseWriterFilters(filters);
         settings.setDatabaseWriterErrorHandlers(errorHandlers);
-        
-        
-        Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
-        Map<String, Conflict> byTable = new HashMap<String, Conflict>();
-        boolean multipleDefaultSettingsFound = false;
-        if (conflictSettings != null) {
-            for (Conflict conflictSetting : conflictSettings) {
-                String qualifiedTableName = conflictSetting.toQualifiedTableName();
-                if (StringUtils.isNotBlank(qualifiedTableName)) {
-                    byTable.put(qualifiedTableName, conflictSetting);
-                } else if (StringUtils.isNotBlank(conflictSetting.getTargetChannelId())) {
-                    byChannel.put(conflictSetting.getTargetChannelId(), conflictSetting);
-                } else {
-                    if (settings.getDefaultConflictSetting() != null) {
-                        multipleDefaultSettingsFound = true;
-                    }
-                    settings.setDefaultConflictSetting(conflictSetting);
-                }
-            }
-        }
-
-        if (multipleDefaultSettingsFound) {
-            log.warn("There were multiple default conflict settings found.  Using '{}' as the default",
-                    settings.getDefaultConflictSetting().getConflictId());
-        }
-        settings.setConflictSettingsByChannel(byChannel);
-        settings.setConflictSettingsByTable(byTable);
         settings.setResolvedData(resolvedDatas);
         settings.setConflictLosingParentRows(conflictLosingParentRows);
         
