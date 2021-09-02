@@ -52,8 +52,7 @@ public class MsSqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-            TransformWriter transformWriter,
-            List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
+            TransformWriter transformWriter, List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
         int maxRowsBeforeFlush = parameterService.getInt(ParameterConstants.MSSQL_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH, 100000);
         boolean fireTriggers = parameterService.is(ParameterConstants.MSSQL_BULK_LOAD_FIRE_TRIGGERS, false);
@@ -63,15 +62,12 @@ public class MsSqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
         String fieldTerminator = StringEscapeUtils.unescapeJava(parameterService.getString(ParameterConstants.MSSQL_BULK_LOAD_FIELD_TERMINATOR,
                 "||"));
         return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
-                stagingManager,
-                maxRowsBeforeFlush,
-                fireTriggers, uncPath, fieldTerminator, rowTerminator, buildParameterDatabaseWritterSettings());
+                stagingManager, maxRowsBeforeFlush, fireTriggers, uncPath, fieldTerminator, rowTerminator, buildParameterDatabaseWriterSettings(
+                        conflictSettings));
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
-        return (DatabaseNamesConstants.MSSQL2000.equals(platform.getName())
-                || DatabaseNamesConstants.MSSQL2005.equals(platform.getName()) || DatabaseNamesConstants.MSSQL2008
-                        .equals(platform.getName())
-                || DatabaseNamesConstants.MSSQL2016.equals(platform.getName()));
+        return (DatabaseNamesConstants.MSSQL2000.equals(platform.getName()) || DatabaseNamesConstants.MSSQL2005.equals(platform.getName())
+                || DatabaseNamesConstants.MSSQL2008.equals(platform.getName()) || DatabaseNamesConstants.MSSQL2016.equals(platform.getName()));
     }
 }

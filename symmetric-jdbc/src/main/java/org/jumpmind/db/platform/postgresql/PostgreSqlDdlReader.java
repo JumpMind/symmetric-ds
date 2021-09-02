@@ -178,6 +178,9 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                         column.setMappedTypeCode(Types.LONGVARCHAR);
                         column.setSize(null);
                     }
+                    if (platformColumn != null) {
+                        platformColumn.setSize(-1);
+                    }
                 } else if (column.getMappedTypeCode() == Types.BINARY) {
                     column.setMappedTypeCode(Types.LONGVARBINARY);
                     column.setSize(null);

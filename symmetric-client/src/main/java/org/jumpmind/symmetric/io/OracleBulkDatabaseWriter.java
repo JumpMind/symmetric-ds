@@ -140,18 +140,22 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             if (delimitTokens) {
                 quote = targetPlatform.getDdlBuilder().getDatabaseInfo().getDelimiterToken();
             }
+
             out.write(("APPEND INTO TABLE " + getTargetTableName(targetTable, quote) + "\n").getBytes(Charset.defaultCharset()));
+
             out.write(("FIELDS TERMINATED BY '" + fieldTerminator + "'\n").getBytes(Charset.defaultCharset()));
             String valueEnclosedBy = getValueEnclosedBy();
             if (StringUtils.isNotBlank(valueEnclosedBy)) {
-                out.write((valueEnclosedBy + "\n").getBytes());
+                out.write((valueEnclosedBy + "\n").getBytes(Charset.defaultCharset()));
             }
             String valueEscapedBy = getValueEscapedBy();
             if (StringUtils.isNotBlank(valueEscapedBy)) {
-                out.write((valueEscapedBy + "\n").getBytes());
+                out.write((valueEscapedBy + "\n").getBytes(Charset.defaultCharset()));
             }
             out.write(getLineTerminatedByControl().getBytes(Charset.defaultCharset()));
+            
             out.write("TRAILING NULLCOLS\n".getBytes(Charset.defaultCharset()));
+
             StringBuilder columns = new StringBuilder("(");
             int index = 0;
             for (Column column : targetTable.getColumns()) {

@@ -58,7 +58,7 @@ public class SnowflakeBulkDataLoaderFactory extends AbstractDataLoaderFactory im
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
         return new SnowflakeBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                 symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService, securityService,
-                buildParameterDatabaseWritterSettings());
+                buildParameterDatabaseWriterSettings(conflictSettings));
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

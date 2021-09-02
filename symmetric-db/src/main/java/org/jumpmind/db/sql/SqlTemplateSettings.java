@@ -148,6 +148,7 @@ public class SqlTemplateSettings {
     public void setJdbcLobHandling(JdbcLobHandling jdbcLobHandling) {
         this.jdbcLobHandling = jdbcLobHandling;
     }
+
     public TypedProperties getProperties() {
         return properties;
     }

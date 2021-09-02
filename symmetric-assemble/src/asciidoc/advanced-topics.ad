@@ -82,16 +82,15 @@ The first option is to pass the text as an argument:
 
 [source, cli]
 ----
-symadmin -e {engine name} encrypt-text 'text-to-encrypt'
+symadmin -e {engine name} encrypt-text "text-to-encrypt"
 ----
 
 [source, cli]
 ----
-symadmin -p {properties file} encrypt-text 'text-to-encrypt'
+symadmin -p {properties file} encrypt-text "text-to-encrypt"
 ----
 ====
-NOTE: The text-to-encrypt should be surrounded with ' ' as shown above in order to avoid 
-erroneous encryption due to special characters.
+NOTE: The text-to-encrypt should be surrounded with double quotes if spaces or symbols are used.
 
 The second option is without an argument. In this case, it will prompt you to enter text:
 ====

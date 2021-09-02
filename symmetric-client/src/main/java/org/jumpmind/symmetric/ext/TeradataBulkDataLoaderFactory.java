@@ -48,12 +48,11 @@ public class TeradataBulkDataLoaderFactory extends AbstractDataLoaderFactory imp
         return "teradata_bulk";
     }
 
-    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-            TransformWriter transformWriter,
-            List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
-            List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
+    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect, TransformWriter transformWriter,
+            List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers, List<? extends Conflict> conflictSettings,
+            List<ResolvedData> resolvedData) {
         return new TeradataBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
-                stagingManager, buildParameterDatabaseWritterSettings());
+                stagingManager, buildParameterDatabaseWriterSettings(conflictSettings));
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

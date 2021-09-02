@@ -41,10 +41,13 @@ import org.jumpmind.util.FormatUtils;
 
 public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
     boolean castToNVARCHAR;
+    String delimiter;
 
     public MsSqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         castToNVARCHAR = symmetricDialect.getParameterService().is(ParameterConstants.MSSQL_USE_NTYPES_FOR_SYNC);
+        delimiter = symmetricDialect.getParameterService().getString(ParameterConstants.TRIGGER_CAPTURE_DDL_DELIMITER, "$");
+        
         String triggerExecuteAs = symmetricDialect.getParameterService().getString(ParameterConstants.MSSQL_TRIGGER_EXECUTE_AS, "self");
         String defaultCatalog = symmetricDialect.getParameterService().is(ParameterConstants.MSSQL_INCLUDE_CATALOG_IN_TRIGGERS, true) ? "$(defaultCatalog)"
                 : "";
@@ -361,10 +364,9 @@ getCreateTriggerString() + " $(triggerName) on database\n" +
 "  insert into " + defaultCatalog + "$(defaultSchema)$(prefixName)_data\n" +
 "  (table_name, event_type, trigger_hist_id, row_data, channel_id, source_node_id, create_time)\n" +
 "  values ('$(prefixName)_node', '" + DataEventType.SQL.getCode() + "', @histId,\n" +
-"  '\"' + replace(replace(@data.value('(/EVENT_INSTANCE/TSQLCommand/CommandText)[1]', 'nvarchar(max)'),'\\','\\\\'),'\"','\\\"') + '\",ddl',\n" +
+" '\"delimiter " + delimiter + ";' + CHAR(13) + char(10) + replace(replace(@data.value('(/EVENT_INSTANCE/TSQLCommand/CommandText)[1]', 'nvarchar(max)'),'\\','\\\\'),'\"','\\\"') + '\",ddl',\n" +
 "  'config', dbo.$(prefixName)_node_disabled(), current_timestamp)\n" +
-"end\n" +
-"---- go");
+"end\n" + "---- go");
         
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause) " );

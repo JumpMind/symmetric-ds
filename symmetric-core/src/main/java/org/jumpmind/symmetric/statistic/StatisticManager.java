@@ -71,6 +71,7 @@ public class StatisticManager implements IStatisticManager {
     protected Semaphore channelStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
     protected Semaphore hostStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
     protected Semaphore jobStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
+    protected Semaphore tableStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
     protected Map<ProcessInfoKey, ProcessInfo> processInfos = new ConcurrentHashMap<ProcessInfoKey, ProcessInfo>();
     protected Map<ProcessInfoKey, ProcessInfo> processInfosThatHaveDoneWork = new ConcurrentHashMap<ProcessInfoKey, ProcessInfo>();
     private Map<Date, Map<String, ChannelStats>> baseChannelStatsInMemory = new LinkedHashMap<Date, Map<String, ChannelStats>>();
@@ -636,4 +637,8 @@ public class StatisticManager implements IStatisticManager {
         }
         return hostStats;
     }
+
+	@Override
+	public void incrementTableRows(Map<String, Map<String, Long>> tableCounts, boolean loaded) {
+	}
 }

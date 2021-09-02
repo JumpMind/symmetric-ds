@@ -145,7 +145,7 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
             sql = sql.substring(0, sql.length() - 1);
         }
         if (majorVersion >= 12 || (majorVersion == 11 && minorVersion >= 1)) {
-            return sql + " limit " + limit + " offset " + offset + ";";
+            return sql + " limit " + limit + " offset " + offset;
         }
         int orderIndex = StringUtils.lastIndexOfIgnoreCase(sql, "order by");
         String order = sql.substring(orderIndex);

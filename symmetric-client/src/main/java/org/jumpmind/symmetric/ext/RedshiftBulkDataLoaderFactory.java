@@ -55,13 +55,12 @@ public class RedshiftBulkDataLoaderFactory extends AbstractDataLoaderFactory imp
         return "redshift_bulk";
     }
 
-    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-            TransformWriter transformWriter,
-            List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
-            List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
+    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect, TransformWriter transformWriter,
+            List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers, List<? extends Conflict> conflictSettings,
+            List<ResolvedData> resolvedData) {
         return new RedshiftBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                 symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService,
-                securityService, buildParameterDatabaseWritterSettings());
+                securityService, buildParameterDatabaseWriterSettings(conflictSettings));
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

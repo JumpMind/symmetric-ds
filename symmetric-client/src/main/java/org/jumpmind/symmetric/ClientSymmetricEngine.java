@@ -392,11 +392,9 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         if (settings.getOverrideIsolationLevel() >= 0) {
             log.info("Overriding isolation level to " + settings.getOverrideIsolationLevel());
         }
-        settings.setJdbcLobHandling(
-                SqlTemplateSettings.JdbcLobHandling.valueOf(
-                        properties.get(ParameterConstants.DBDIALECT_ORACLE_JDBC_LOB_HANDLING,
-                                SqlTemplateSettings.JdbcLobHandling.PLAIN.name()).toUpperCase()));
-        settings.setProperties(properties);
+        
+        settings.setJdbcLobHandling(SqlTemplateSettings.JdbcLobHandling.valueOf(properties.get(ParameterConstants.DBDIALECT_ORACLE_JDBC_LOB_HANDLING,
+                SqlTemplateSettings.JdbcLobHandling.PLAIN.name()).toUpperCase()));
         return settings;
     }
 
