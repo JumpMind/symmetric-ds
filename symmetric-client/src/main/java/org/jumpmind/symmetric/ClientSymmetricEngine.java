@@ -395,6 +395,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         
         settings.setJdbcLobHandling(SqlTemplateSettings.JdbcLobHandling.valueOf(properties.get(ParameterConstants.DBDIALECT_ORACLE_JDBC_LOB_HANDLING,
                 SqlTemplateSettings.JdbcLobHandling.PLAIN.name()).toUpperCase()));
+        settings.setProperties(properties);
         return settings;
     }
 
