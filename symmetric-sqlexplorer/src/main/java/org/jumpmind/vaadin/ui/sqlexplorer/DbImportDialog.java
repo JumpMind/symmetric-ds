@@ -253,12 +253,12 @@ public class DbImportDialog extends ResizableDialog {
             try {
                 doDbImport();
                 close();
-                Notification successNotification = new Notification("Successful Import");
+                Notification successNotification = new Notification("Successful Import", 10000);
                 successNotification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 successNotification.open();
             } catch (Exception e) {
                 log.warn(e.getMessage(), e);
-                Notification errorNotification = new Notification(e.getMessage());
+                Notification errorNotification = new Notification(e.getMessage(), 10000);
                 errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                 errorNotification.open();
             } finally {
