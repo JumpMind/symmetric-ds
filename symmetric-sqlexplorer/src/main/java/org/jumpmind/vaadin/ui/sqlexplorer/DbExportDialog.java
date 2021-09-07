@@ -42,6 +42,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ShortcutRegistration;
+import com.vaadin.flow.component.Shortcuts;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -151,7 +153,6 @@ public class DbExportDialog extends ResizableDialog {
         addButtons();
         
         nextShortcutRegistration = nextButton.addClickShortcut(Key.ENTER);
-        nextButton.focus();
     }
 
     protected void addButtons() {
@@ -174,9 +175,13 @@ public class DbExportDialog extends ResizableDialog {
         doneButton.setVisible(false);
         
         exportFileButton = CommonUiUtils.createPrimaryButton("Export", event -> {
-            exportFileShortcutRegistration.remove();
-            doneShortcutRegistration = doneButton.addClickShortcut(Key.ENTER);
-            doneButton.focus();
+            if (exportFileShortcutRegistration != null) {
+                exportFileShortcutRegistration.remove();
+                exportFileShortcutRegistration = null;
+            }
+            if (doneShortcutRegistration == null) {
+                doneShortcutRegistration = doneButton.addClickShortcut(Key.ENTER);
+            }
         });
         buildFileDownloader();
         fileDownloader.setVisible(false);
@@ -289,13 +294,33 @@ public class DbExportDialog extends ResizableDialog {
         if (exportFormatOptionGroup.getValue().equals(EXPORT_AS_A_FILE)) {
             exportEditorButton.setVisible(false);
             fileDownloader.setVisible(true);
-            exportFileShortcutRegistration = exportFileButton.addClickShortcut(Key.ENTER);
-            exportFileButton.focus();
+            if (exportEditorShortcutRegistration != null) {
+                exportEditorShortcutRegistration.remove();
+                exportEditorShortcutRegistration = null;
+            }
+            if (exportFileShortcutRegistration == null) {
+                exportFileShortcutRegistration = Shortcuts.addShortcutListener(exportFileButton, () -> {
+                    UI.getCurrent().getPage().executeJs("$0.click();", fileDownloader.getElement());
+                    
+                    if (exportFileShortcutRegistration != null) {
+                        exportFileShortcutRegistration.remove();
+                        exportFileShortcutRegistration = null;
+                    }
+                    if (doneShortcutRegistration == null) {
+                        doneShortcutRegistration = doneButton.addClickShortcut(Key.ENTER);
+                    }
+                }, Key.ENTER);
+            }
         } else {
             fileDownloader.setVisible(false);
             exportEditorButton.setVisible(true);
-            exportEditorShortcutRegistration = exportEditorButton.addClickShortcut(Key.ENTER);
-            exportEditorButton.focus();
+            if (exportFileShortcutRegistration != null) {
+                exportFileShortcutRegistration.remove();
+                exportFileShortcutRegistration = null;
+            }
+            if (exportEditorShortcutRegistration == null) {
+                exportEditorShortcutRegistration = exportEditorButton.addClickShortcut(Key.ENTER);
+            }
         }
         doneButton.setVisible(true);
         cancelButton.setVisible(false);
@@ -309,18 +334,20 @@ public class DbExportDialog extends ResizableDialog {
         exportEditorButton.setVisible(false);
         if (exportEditorShortcutRegistration != null) {
             exportEditorShortcutRegistration.remove();
+            exportEditorShortcutRegistration = null;
         }
         fileDownloader.setVisible(false);
         if (exportFileShortcutRegistration != null) {
             exportFileShortcutRegistration.remove();
+            exportFileShortcutRegistration = null;
         }
         doneButton.setVisible(false);
         if (doneShortcutRegistration != null) {
             doneShortcutRegistration.remove();
+            doneShortcutRegistration = null;
         }
         nextButton.setVisible(true);
-        nextButton.addClickShortcut(Key.ENTER);
-        nextButton.focus();
+        nextShortcutRegistration = nextButton.addClickShortcut(Key.ENTER);
         cancelButton.setVisible(true);
     }
 
@@ -329,7 +356,10 @@ public class DbExportDialog extends ResizableDialog {
         content.addComponentAtIndex(0, optionLayout);
         content.expand(optionLayout);
         nextButton.setVisible(false);
-        nextShortcutRegistration.remove();
+        if (nextShortcutRegistration != null) {
+            nextShortcutRegistration.remove();
+            nextShortcutRegistration = null;
+        }
         previousButton.setVisible(true);
         setExportButtonsEnabled();
     }

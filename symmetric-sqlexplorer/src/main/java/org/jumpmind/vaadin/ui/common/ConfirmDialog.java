@@ -23,6 +23,7 @@ package org.jumpmind.vaadin.ui.common;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.Serializable;
+import java.util.function.Consumer;
 
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
@@ -37,13 +38,17 @@ public class ConfirmDialog extends Dialog {
 
     private static final long serialVersionUID = 1L;
 
-    public ConfirmDialog(String caption, String text, final IConfirmListener confirmListener) {
+    public ConfirmDialog(String caption, String text, final IConfirmListener confirmListener, Consumer<Boolean> shortcutToggler) {
         setModal(true);
         setResizable(true);
         setWidth("400px");
         setHeight("300px");
         setCloseOnEsc(false);
         setCloseOnOutsideClick(false);
+        
+        if (shortcutToggler != null) {
+            addOpenedChangeListener(event -> shortcutToggler.accept(event.isOpened()));
+        }
         
         if (caption != null) {
             add(new Label(caption + "<hr>"));
@@ -93,7 +98,11 @@ public class ConfirmDialog extends Dialog {
     }
 
     public static void show(String caption, String text, IConfirmListener listener) {
-        ConfirmDialog dialog = new ConfirmDialog(caption, text, listener);
+        show(caption, text, listener, null);
+    }
+    
+    public static void show(String caption, String text, IConfirmListener listener, Consumer<Boolean> shortcutToggler) {
+        ConfirmDialog dialog = new ConfirmDialog(caption, text, listener, shortcutToggler);
         dialog.open();
     }
 

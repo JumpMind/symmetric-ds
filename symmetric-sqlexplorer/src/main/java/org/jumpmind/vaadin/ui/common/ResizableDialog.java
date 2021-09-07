@@ -28,6 +28,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -45,12 +46,18 @@ public class ResizableDialog extends Dialog {
     protected VerticalLayout content;
     
     protected Label captionLabel;
+    
+    protected ShortcutRegistration escapeShortcutRegistration;
 
     public ResizableDialog() {
         this("");
     }
     
     public ResizableDialog(String caption) {
+        this(caption, true);
+    }
+    
+    public ResizableDialog(String caption, boolean addEscapeShortcut) {
         setModal(true);
         setResizable(true);
         
@@ -76,7 +83,9 @@ public class ResizableDialog extends Dialog {
             }
         }, Key.KEY_M, KeyModifier.CONTROL);
         
-        UI.getCurrent().addShortcutListener(() -> close(), Key.ESCAPE);
+        if (addEscapeShortcut) {
+            escapeShortcutRegistration = UI.getCurrent().addShortcutListener(() -> close(), Key.ESCAPE);
+        }
     }
     
     protected void add(Component component, int expandRatio) {
@@ -147,6 +156,15 @@ public class ResizableDialog extends Dialog {
     public void bringToFront() {
         if (getElement().getNode().isAttached()) {
            super.getElement().executeJs("$0._bringOverlayToFront()");
+        }
+    }
+    
+    protected void enableEscapeShortcut(boolean enable) {
+        if (enable && escapeShortcutRegistration == null) {
+            escapeShortcutRegistration = UI.getCurrent().addShortcutListener(() -> close(), Key.ESCAPE);
+        } else if (!enable && escapeShortcutRegistration != null) {
+            escapeShortcutRegistration.remove();
+            escapeShortcutRegistration = null;
         }
     }
     

@@ -49,6 +49,8 @@ public class DbFillDialog extends ResizableDialog {
     private static final long serialVersionUID = 1L;
 
     private Button cancelButton;
+    
+    private ShortcutRegistration cancelShortcutRegistration;
 
     private Button nextButton;
     
@@ -98,7 +100,7 @@ public class DbFillDialog extends ResizableDialog {
 
     public DbFillDialog(IDatabasePlatform databasePlatform, Set<Table> selectedTableSet,
             QueryPanel queryPanel, String excludeTablesRegex) {
-        super("Database Fill");
+        super("Database Fill", false);
         setModal(true);
         setHeight("500px");
         setWidth("605px");
@@ -119,7 +121,6 @@ public class DbFillDialog extends ResizableDialog {
         add(tableSelectionLayout, 1);
         addButtons();
         nextShortcutRegistration = nextButton.addClickShortcut(Key.ENTER);
-        nextButton.focus();
     }
 
     protected void addButtons() {
@@ -127,6 +128,7 @@ public class DbFillDialog extends ResizableDialog {
         nextButton.setEnabled(tableSelectionLayout.getSelectedTables().size() > 0);
 
         cancelButton = new Button("Close", event -> close());
+        cancelShortcutRegistration = cancelButton.addClickShortcut(Key.ESCAPE);
 
         previousButton = new Button("Previous", event -> previous());
         previousButton.setVisible(false);
@@ -239,19 +241,28 @@ public class DbFillDialog extends ResizableDialog {
     }
 
     protected void confirm() {
-        ConfirmDialog
-                .show("Confirm",
-                        "Are you sure?  Please note that this will effect data in the selected tables.  Make sure you have a backup of your data.",
-                        new IConfirmListener() {
-                            private static final long serialVersionUID = 1L;
+        ConfirmDialog.show("Confirm",
+                "Are you sure?  Please note that this will affect data in the selected tables.  Make sure you have a backup of your data.",
+                new IConfirmListener() {
+                    private static final long serialVersionUID = 1L;
 
-                            @Override
-                            public boolean onOk() {
-                                fill();
-                                close();
-                                return true;
-                            }
-                        });
+                    @Override
+                    public boolean onOk() {
+                        fill();
+                        close();
+                        return true;
+                    }
+                }, opened -> {
+                    if (!opened && cancelShortcutRegistration == null && fillShortcutRegistration == null) {
+                        cancelShortcutRegistration = cancelButton.addClickShortcut(Key.ESCAPE);
+                        fillShortcutRegistration = fillButton.addClickShortcut(Key.ENTER);
+                    } else if (opened && cancelShortcutRegistration != null && fillShortcutRegistration != null) {
+                        cancelShortcutRegistration.remove();
+                        cancelShortcutRegistration = null;
+                        fillShortcutRegistration.remove();
+                        fillShortcutRegistration = null;
+                    }
+                });
 
     }
 
@@ -294,11 +305,13 @@ public class DbFillDialog extends ResizableDialog {
         fillButton.setVisible(false);
         if (fillShortcutRegistration != null) {
             fillShortcutRegistration.remove();
+            fillShortcutRegistration = null;
         }
         previousButton.setVisible(false);
         nextButton.setVisible(true);
-        nextButton.addClickShortcut(Key.ENTER);
-        nextButton.focus();
+        if (nextShortcutRegistration == null) {
+            nextShortcutRegistration = nextButton.addClickShortcut(Key.ENTER);
+        }
     }
 
     protected void next() {
@@ -306,11 +319,15 @@ public class DbFillDialog extends ResizableDialog {
         content.addComponentAtIndex(0, optionLayout);
         content.expand(optionLayout);
         nextButton.setVisible(false);
-        nextShortcutRegistration.remove();
+        if (nextShortcutRegistration != null) {
+            nextShortcutRegistration.remove();
+            nextShortcutRegistration = null;
+        }
         previousButton.setVisible(true);
         fillButton.setVisible(true);
-        fillShortcutRegistration = fillButton.addClickShortcut(Key.ENTER);
-        fillButton.focus();
+        if (fillShortcutRegistration == null) {
+            fillShortcutRegistration = fillButton.addClickShortcut(Key.ENTER);
+        }
     }
 
     protected boolean enableFillButton() {

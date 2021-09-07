@@ -31,6 +31,7 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.function.Consumer;
 
 import javax.sql.DataSource;
 
@@ -76,16 +77,24 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
     protected IDatabasePlatform platform;
 
     public ReadOnlyTextAreaDialog(final String title, final String value, boolean isEncodedInHex) {
-        this(title, value, null, null, null, isEncodedInHex, false);
+        this(title, value, isEncodedInHex, null);
+    }
+    
+    public ReadOnlyTextAreaDialog(final String title, final String value, boolean isEncodedInHex, Consumer<Boolean> shortcutToggler) {
+        this(title, value, null, null, null, isEncodedInHex, false, shortcutToggler);
     }
     
     public ReadOnlyTextAreaDialog(final String title, final String value, Table table, Object[] primaryKeys,
-            IDatabasePlatform platform, boolean isEncodedInHex, boolean isLob) {
+            IDatabasePlatform platform, boolean isEncodedInHex, boolean isLob, Consumer<Boolean> shortcutToggler) {
         super(title);
         this.table = table;
         this.primaryKeys = primaryKeys;
         this.platform = platform;
         this.column = table == null ? null : table.getColumnWithName(title);
+        
+        if (shortcutToggler != null) {
+            addOpenedChangeListener(event -> shortcutToggler.accept(event.isOpened()));
+        }
         
         content.setHeight("90%");
 
@@ -357,14 +366,18 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
     }
 
     public static void show(String title, String value, boolean isEncodedInHex) {
-        ReadOnlyTextAreaDialog dialog = new ReadOnlyTextAreaDialog(title, value, isEncodedInHex);
+        show(title, value, isEncodedInHex, null);
+    }
+    
+    public static void show(String title, String value, boolean isEncodedInHex, Consumer<Boolean> shortcutToggler) {
+        ReadOnlyTextAreaDialog dialog = new ReadOnlyTextAreaDialog(title, value, isEncodedInHex, shortcutToggler);
         dialog.showAtSize(.4);
     }
     
     public static void show(String title, String value, Table table, Object[] primaryKeys, IDatabasePlatform platform,
             boolean isEncodedInHex, boolean isLob) {
         ReadOnlyTextAreaDialog dialog = new ReadOnlyTextAreaDialog(title, value, table, primaryKeys, platform,
-                isEncodedInHex, isLob);
+                isEncodedInHex, isLob, null);
         dialog.showAtSize(.45);
     }
 }
