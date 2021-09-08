@@ -1,0 +1,46 @@
+name: Docker Run Action
+  uses: addnab/docker-run-action@v3
+  with:
+	registry: gcr.io
+	image: mysql8
+
+name: Gradle Package
+on:
+  workflow_dispatch:
+  push:
+    branches: [ 3.12 ]
+  pull_request:
+    branches: [ 3.12 ]
+  release:
+    types: [created]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        settings-path: ${{ github.workspace }} # location for the settings.xml file
+
+    - name: Build with Gradle
+      run: ./gradlew clean integrationTest
+      working-directory: ./symmetric-assemble
+      args:  -Dtest.client=mysql -Dtest.server=mysql -Dtest.root=mysql -Dport.number=31507	
+
+    # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
+    # the publishing section of your build.gradle
+    - name: Publish to GitHub Packages
+      run: gradle publish
+      env:
+        USERNAME: ${{ github.actor }}
+        TOKEN: ${{ secrets.GITHUB_TOKEN }}
