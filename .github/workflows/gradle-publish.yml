@@ -6,7 +6,7 @@ name: Gradle Package
 on:
   workflow_dispatch:
   push:
-    branches: [ 3.12 ]
+    branches: [ feature/github-actions ]
   pull_request:
     branches: [ 3.12 ]
   release:
@@ -31,7 +31,7 @@ jobs:
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew build -x licenseMain -x licenseTest -x licenseIntegrationTest
       working-directory: ./symmetric-assemble
 
     # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
