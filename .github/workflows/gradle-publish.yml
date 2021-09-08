@@ -38,7 +38,7 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action@v1
       if: always()
       with:
-        files: **/build/*test-results/**/*.xml
+        files: **/build/test-results/**/*.xml
 
     # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
     # the publishing section of your build.gradle
