@@ -27,7 +27,7 @@ jobs:
 
     - name: Build with Gradle
       run: ./gradlew build
-        working-directory: symmetric-assemble
+      working-directory: ./symmetric-assemble
 
     # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
     # the publishing section of your build.gradle
