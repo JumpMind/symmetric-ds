@@ -34,10 +34,17 @@ jobs:
       run: ./gradlew build -x licenseMain -x licenseTest -x licenseIntegrationTest
       working-directory: ./symmetric-assemble
 
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v1
+      if: always()
+      with:
+        files: test-results/**/*.xml
+
     # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
     # the publishing section of your build.gradle
-    - name: Publish to GitHub Packages
-      run: gradle publish
-      env:
-        USERNAME: ${{ github.actor }}
-        TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #- name: Publish to GitHub Packages
+    #  run: ./gradlew publish
+    #  working-directory: ./symmetric-assemble
+    #  env:
+    #    USERNAME: ${{ github.actor }}
+    #    TOKEN: ${{ secrets.GITHUB_TOKEN }}
