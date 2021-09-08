@@ -1,8 +1,8 @@
 name: Docker Run Action
   uses: addnab/docker-run-action@v3
   with:
-	registry: gcr.io
-	image: mysql8
+    registry: gcr.ioa
+    image: mysql8
 
 name: Gradle Package
 on:
