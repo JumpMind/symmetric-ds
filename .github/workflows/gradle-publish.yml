@@ -4,6 +4,11 @@
 name: Gradle Package
 
 on:
+  workflow_dispatch:
+  push:
+    branches: [ 3.12 ]
+  pull_request:
+    branches: [ 3.12 ]
   release:
     types: [created]
 
