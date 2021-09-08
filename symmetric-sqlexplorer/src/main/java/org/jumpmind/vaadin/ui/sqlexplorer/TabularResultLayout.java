@@ -429,7 +429,7 @@ public class TabularResultLayout extends VerticalLayout {
             final String catalogSeparator = dbInfo.getCatalogSeparator();
             final String schemaSeparator = dbInfo.getSchemaSeparator();
 
-            String[] columnHeaders = CommonUiUtils.getHeaderCaptions(grid);
+            String[] columnHeaders = ArrayUtils.removeElement(CommonUiUtils.getHeaderCaptions(grid), null);
             Set<List<Object>> selectedRowsSet = grid.getSelectedItems();
             Iterator<List<Object>> setIterator = selectedRowsSet.iterator();
             while (setIterator.hasNext()) {
