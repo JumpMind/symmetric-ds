@@ -631,7 +631,7 @@
 		<column name="batch_id" type="BIGINT" required="true" primaryKey="true" description="A unique id for the batch." />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node that this batch is targeted at." />
         <column name="channel_id" type="VARCHAR" size="128"  description="The channel that this batch is part of." />
-        <column name="status" type="CHAR" size="2"  description="The current status of a batch can be routing (RT), requested to be extracted in the background (RQ), newly created and ready for replication (NE), being queried from the database (QY), sent to a Node (SE), ready to be loaded (LD) and acknowledged as successful (OK), ignored (IG) or in error (ER)." />
+        <column name="status" type="CHAR" size="2"  description="The current status of a batch can be routing (RT), requested to be extracted in the background (RQ), newly created and ready for replication (NE), being queried from the database (QY), sent to a node (SE), ready to be loaded (LD), resend requested because missing in staging (RS), acknowledged as successful (OK), ignored (IG), or in error (ER)." />
 		<column name="error_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch was in error during the last synchornization attempt." />
 		<column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
         <column name="sql_code" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />

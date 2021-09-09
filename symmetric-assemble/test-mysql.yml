@@ -1,0 +1,10 @@
+# action.yml
+name: 'Docker MySQL'
+description: 'Run MySQL docker image'
+runs:
+  using: 'docker'
+  image: 'mysql'
+  args:
+    - '-Dtest.client=mysql -Dtest.server=mysql -Dtest.root=mysql -Dport.number=31507'
+    
+    

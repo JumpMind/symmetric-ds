@@ -49,6 +49,7 @@ import org.jumpmind.symmetric.io.data.transform.TransformedData;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.NestedRuntimeException;
 
 public class TransformWriter extends NestedDataWriter {
 
@@ -448,6 +449,15 @@ public class TransformWriter extends NestedDataWriter {
                 }
                 returnValue = transform.transform(platform, context, transformColumn, data,
                         sourceValues, value, oldValue);
+            } catch (NestedRuntimeException nestedRuntimeException) {
+                Throwable rootCause = nestedRuntimeException.getRootCause();
+                if (rootCause instanceof IgnoreColumnException) {
+                    throw (IgnoreColumnException) rootCause;
+                } else if (rootCause instanceof IgnoreRowException) {
+                    throw (IgnoreRowException) rootCause;
+                } else {
+                    throw nestedRuntimeException;
+                }
             } catch (RuntimeException ex) {
                 log.warn("Column transform failed {}.{} ({}) for source values of {}", new Object[] { transformColumn.getTransformId(), transformColumn.getTargetColumnName(), transformColumn.getIncludeOn().name(), sourceValues.toString() });
                 throw ex;

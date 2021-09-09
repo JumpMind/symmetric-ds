@@ -34,7 +34,7 @@ public class TeradataBulkDataLoaderFactory extends AbstractDataLoaderFactory imp
         List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
 
         return new TeradataBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
-                stagingManager, buildParameterDatabaseWritterSettings());
+                stagingManager, buildParameterDatabaseWriterSettings(conflictSettings));
     }
     
     public boolean isPlatformSupported(IDatabasePlatform platform) {

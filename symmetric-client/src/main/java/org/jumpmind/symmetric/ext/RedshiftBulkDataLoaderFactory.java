@@ -65,7 +65,7 @@ public class RedshiftBulkDataLoaderFactory extends AbstractDataLoaderFactory imp
 
         return new RedshiftBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                 symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService,
-                securityService, buildParameterDatabaseWritterSettings());
+                securityService, buildParameterDatabaseWriterSettings(conflictSettings));
         
     }
 

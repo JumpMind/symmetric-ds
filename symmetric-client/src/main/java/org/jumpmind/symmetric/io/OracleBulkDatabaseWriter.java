@@ -158,17 +158,27 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 out.write(("CHARACTERSET " + sqlLoaderInfileCharset + "\n").getBytes());
             }
             out.write(getInfileControl().getBytes());
-            out.write(("APPEND INTO TABLE " + targetTable.getQualifiedTableName("\"", ".", ".") + "\n").getBytes());
+            
+            String quote = "";
+            if (delimitTokens) {
+                quote = targetPlatform.getDdlBuilder().getDatabaseInfo().getDelimiterToken();
+            }
+
+            out.write(("APPEND INTO TABLE " + getTargetTableName(targetTable, quote) + "\n").getBytes());
 
             out.write(("FIELDS TERMINATED BY '" + fieldTerminator + "'\n").getBytes());
+            String valueEnclosedBy = getValueEnclosedBy();
+            if (StringUtils.isNotBlank(valueEnclosedBy)) {
+                out.write((valueEnclosedBy + "\n").getBytes());
+            }
+            String valueEscapedBy = getValueEscapedBy();
+            if (StringUtils.isNotBlank(valueEscapedBy)) {
+                out.write((valueEscapedBy + "\n").getBytes());
+            }
             out.write(getLineTerminatedByControl().getBytes());
             
             out.write("TRAILING NULLCOLS\n".getBytes());
 
-            String quote = "";
-            if(delimitTokens) {
-                quote = targetPlatform.getDdlBuilder().getDatabaseInfo().getDelimiterToken();
-            }
             StringBuilder columns = new StringBuilder("(");
             int index = 0;
             for (Column column : targetTable.getColumns()) {
@@ -197,6 +207,18 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    protected String getValueEscapedBy() {
+        return "";
+    }
+    
+    protected String getValueEnclosedBy() {
+        return "";
+    }
+    
+    protected String getTargetTableName(Table targetTable, String delimiterToken) {
+        return targetTable.getQualifiedTableName(delimiterToken, ".", ".") + "\n";
     }
 
     protected String getInfileControl() {

@@ -66,7 +66,7 @@ public class TiberoDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     public boolean canColumnBeUsedInWhereClause(Column column) {
         String jdbcTypeName = column.getJdbcTypeName();
-        return !column.isOfBinaryType() || "RAW".equals(jdbcTypeName);
+        return !(isLob(column.getJdbcTypeCode()) || column.isOfBinaryType() || "RAW".equals(jdbcTypeName));
     }
 
     @Override

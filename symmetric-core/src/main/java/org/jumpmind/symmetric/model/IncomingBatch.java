@@ -107,10 +107,12 @@ public class IncomingBatch extends AbstractBatch {
             setLoadUpdateRowCount(writerStatistics.get(DataWriterStatisticConstants.UPDATECOUNT));
             setLoadDeleteRowCount(writerStatistics.get(DataWriterStatisticConstants.DELETECOUNT));
             setTableLoadedCount(writerStatistics.getTableStats());
-            for (Map.Entry<String, Map<String, Long>> entry : writerStatistics.getTableStats().entrySet()) {
-            	for (Map.Entry<String, Long> dmlEntry : entry.getValue().entrySet()) {
-            		log.info("Loaded table:" + entry.getKey() + ", " + dmlEntry.getKey() + ", " + dmlEntry.getValue() + " rows");
-            	}
+            if (log.isDebugEnabled()) {
+                for (Map.Entry<String, Map<String, Long>> entry : writerStatistics.getTableStats().entrySet()) {
+                	for (Map.Entry<String, Long> dmlEntry : entry.getValue().entrySet()) {
+                		log.debug("Loaded table: {}, {}, {} rows" , entry.getKey(), dmlEntry.getKey(), dmlEntry.getValue());
+                	}
+                }
             }
         }
     }

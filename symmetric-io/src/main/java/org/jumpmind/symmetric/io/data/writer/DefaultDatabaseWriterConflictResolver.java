@@ -48,6 +48,7 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.db.util.DatabaseConstants;
 import org.jumpmind.db.util.TableRow;
 import org.jumpmind.exception.ParseException;
@@ -148,7 +149,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                             new boolean[targetTable.getPrimaryKeyColumnCount()], databaseWriter.getWriterSettings().getTextColumnExpression());
                     Object[] values = databaseWriter.getPlatform().getObjectValues(writer.getBatch().getBinaryEncoding(), 
                             pkData, targetTable.getPrimaryKeyColumns());
-                    databaseWriter.getTransaction().prepareAndExecute(st.getSql(), ArrayUtils.addAll(values, values));
+                    databaseWriter.getTransaction().prepareAndExecute(st.getSql(), ArrayUtils.addAll(values, values), st.getTypes());
                 } else {
                     Column[] columns = targetTable.getNonPrimaryKeyColumns();
                     if (columns != null && columns.length > 0) {
@@ -159,7 +160,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                         Object[] values = databaseWriter.getPlatform().getObjectValues(writer.getBatch().getBinaryEncoding(), 
                                 ArrayUtils.addAll(new String[] { rowDataMap.get(columns[0].getName()) }, pkData),
                                 ArrayUtils.addAll(new Column[] { columns[0] }, targetTable.getPrimaryKeyColumns()));
-                        databaseWriter.getTransaction().prepareAndExecute(st.getSql(), values);
+                        databaseWriter.getTransaction().prepareAndExecute(st.getSql(), values,  st.getTypes());
                     }
                 }
             }
@@ -383,7 +384,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                     databaseWriter.getWriterSettings().getTextColumnExpression());
             Object[] objectValues = platform.getObjectValues(databaseWriter.getBatch().getBinaryEncoding(),
                     whereValues.toArray(new String[0]), whereColumns.toArray(new Column[0]));
-            int pkCount = queryForInt(platform, databaseWriter, countStmt.getSql(), objectValues);
+            int pkCount = queryForInt(platform, databaseWriter, countStmt.getSql(), objectValues, countStmt.getTypes());
             boolean isUniqueKeyBlocking = false;
             boolean isPrimaryKeyBlocking = false;
 
@@ -616,10 +617,14 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         });
     }
 
-    protected int queryForInt(IDatabasePlatform platform, DefaultDatabaseWriter databaseWriter, String sql, Object... values) {
+    protected int queryForInt(IDatabasePlatform platform, DefaultDatabaseWriter databaseWriter, String sql, Object[] values, int[] types) {
         return doInTransaction(platform, databaseWriter, new ITransactionCallback<Integer>() {
             public Integer execute(ISqlTransaction transaction) {
-                return transaction.queryForInt(sql, values);
+                List<Number> list = transaction.query(sql, new NumberMapper(), values, types);
+                if (list.size() > 0) {
+                    return list.get(0).intValue();
+                }
+                return 0;
             }
         });
     }

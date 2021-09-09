@@ -44,7 +44,7 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
 
         if (engine.getParameterService().is(ParameterConstants.JDBC_EXECUTE_BULK_BATCH_OVERRIDE, false)) {
             return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), platform, 
-                    symmetricDialect.getTablePrefix(), buildParameterDatabaseWritterSettings());
+                    symmetricDialect.getTablePrefix(), buildParameterDatabaseWriterSettings(conflictSettings));
         } else if (DatabaseNamesConstants.MYSQL.equals(platformName)) {
             return new MySqlBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
@@ -79,7 +79,7 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
                     filters, errorHandlers, conflictSettings, resolvedData);
         } else {
             return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), platform, 
-                    symmetricDialect.getTablePrefix(), buildParameterDatabaseWritterSettings());
+                    symmetricDialect.getTablePrefix(), buildParameterDatabaseWriterSettings(conflictSettings));
         }
     }
 

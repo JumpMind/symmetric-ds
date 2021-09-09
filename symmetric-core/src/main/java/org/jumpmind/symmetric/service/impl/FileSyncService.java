@@ -195,6 +195,7 @@ INodeCommunicationExecutor {
             if (fileTriggerRouter.isEnabled()) {
                 try {
                     FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
+                    checkSourceDir(fileTriggerRouter);
                     boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
                     FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, getDirectorySnapshot(fileTriggerRouter), 
                             processInfo, useCrc, engine);
@@ -229,6 +230,7 @@ INodeCommunicationExecutor {
             for (final FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
                 if (fileTriggerRouter.isEnabled()) {
                     FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
+                    checkSourceDir(fileTriggerRouter);
                     boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
                     FileAlterationObserver observer = new FileAlterationObserver(fileTriggerRouter.getFileTrigger().getBaseDir(),
                             fileTriggerRouter.getFileTrigger().createIOFileFilter());
@@ -252,6 +254,15 @@ INodeCommunicationExecutor {
         }
     }
     
+    protected void checkSourceDir(FileTriggerRouter fileTriggerRouter) {
+        File sourceDir = new File(fileTriggerRouter.getFileTrigger().getBaseDir());
+        if (!sourceDir.exists()) {
+            log.warn("Source directory does not exist: {}", sourceDir.getAbsolutePath());
+        } else if (!sourceDir.canRead()) {
+            log.warn("Source directory is not readable by user {}: {}", System.getProperty("user.name"), sourceDir.getAbsolutePath());
+        }
+    }
+
     protected boolean shouldIgnoreInitialFiles(FileTriggerRouter router, FileTrigger trigger, Date contextDate) {
         if (!router.isInitialLoadEnabled()) {
             if (contextDate == null || router.getLastUpdateTime().after(contextDate) || trigger.getLastUpdateTime().after(contextDate)) {
