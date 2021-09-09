@@ -47,21 +47,26 @@ import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDdlBuilder;
 import org.jumpmind.db.platform.sqlite.SqliteDdlBuilder;
 import org.jumpmind.db.platform.tibero.TiberoDdlBuilder;
 import org.jumpmind.db.platform.voltdb.VoltDbDdlBuilder;
+import org.jumpmind.util.AppUtils;
 
 /**
  * Factory that creates {@link IDdlBuilder} from {@link DatabaseNamesConstants} values.
  */
-final public class DdlBuilderFactory {
-    private DdlBuilderFactory() {
+public class DdlBuilderFactory implements IDdlBuilderFactory {
+    protected static IDdlBuilderFactory instance;
+
+    protected DdlBuilderFactory() {
     }
 
-    /**
-     * @param databaseName
-     *            see {@link DatabaseNamesConstants}
-     * @return the associated ddl builder
-     */
-    public static final IDdlBuilder createDdlBuilder(String databaseName) {
-        if (DatabaseNamesConstants.DB2.equals(databaseName) || DatabaseNamesConstants.DB2ZOS.equalsIgnoreCase(databaseName)) {
+    public static synchronized IDdlBuilderFactory getInstance() {
+        if (instance == null) {
+            instance = AppUtils.newInstance(IDdlBuilderFactory.class, DdlBuilderFactory.class);
+        }
+        return instance;
+    }
+
+    public IDdlBuilder create(String databaseName) {
+        if (DatabaseNamesConstants.DB2.equals(databaseName)) {
             return new Db2DdlBuilder();
         } else if (DatabaseNamesConstants.DERBY.equalsIgnoreCase(databaseName)) {
             return new DerbyDdlBuilder();

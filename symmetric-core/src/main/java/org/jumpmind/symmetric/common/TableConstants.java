@@ -75,6 +75,7 @@ public class TableConstants {
     public static final String SYM_CONSOLE_ROLE_PRIVILEGE = "console_role_privilege";
     public static final String SYM_CONSOLE_USER_HIST = "console_user_hist";
     public static final String SYM_CONSOLE_EVENT = "console_event";
+    public static final String SYM_CONSOLE_TABLE_STATS = "console_table_stats";
     public static final String SYM_DESIGN_DIAGRAM = "design_diagram";
     public static final String SYM_DIAGRAM_GROUP = "diagram_group";
     public static final String SYM_DIAGRAM_GROUP_LINK = "diagram_group_link";
@@ -204,6 +205,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_CONSOLE_ROLE_PRIVILEGE));
         tables.add(getTableName(tablePrefix, SYM_CONSOLE_USER_HIST));
         tables.add(getTableName(tablePrefix, SYM_CONSOLE_EVENT));
+        tables.add(getTableName(tablePrefix, SYM_CONSOLE_TABLE_STATS));
         tables.add(getTableName(tablePrefix, SYM_EXTENSION));
         tables.add(getTableName(tablePrefix, SYM_MONITOR));
         tables.add(getTableName(tablePrefix, SYM_MONITOR_EVENT));
@@ -226,6 +228,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_NODE_CHANNEL_CTL));
         tables.add(getTableName(tablePrefix, SYM_CONSOLE_EVENT));
         tables.add(getTableName(tablePrefix, SYM_TABLE_RELOAD_STATUS));
+        tables.add(getTableName(tablePrefix, SYM_CONSOLE_TABLE_STATS));
         return tables;
     }
 

@@ -21,15 +21,12 @@
 package org.jumpmind.db.platform.sqlite;
 
 import org.jumpmind.db.model.Column;
-import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatementOptions;
 
 public class SqliteDmlStatement extends DmlStatement {
-    public SqliteDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
-            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues,
-            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
-        super(type, catalogName, null, tableName, keysColumns, columns,
-                nullKeyValues, databaseInfo, useQuotedIdentifiers, textColumnExpression);
+    public SqliteDmlStatement(DmlStatementOptions options) {
+        super(options);
     }
 
     @Override

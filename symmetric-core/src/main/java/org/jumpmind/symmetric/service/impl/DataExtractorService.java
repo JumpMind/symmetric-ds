@@ -175,7 +175,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     };
 
     protected ISymmetricEngine engine;
-    private IOutgoingBatchService outgoingBatchService;
+    IOutgoingBatchService outgoingBatchService;
     private IRouterService routerService;
     private IInitialLoadService initialLoadService;
     private IConfigurationService configurationService;
@@ -184,7 +184,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private ISequenceService sequenceService;
     private IDataService dataService;
     private INodeService nodeService;
-    private IStatisticManager statisticManager;
+    IStatisticManager statisticManager;
     private IStagingManager stagingManager;
     private INodeCommunicationService nodeCommunicationService;
     private IClusterService clusterService;
@@ -451,8 +451,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     .getNodeId());
             List<OutgoingBatch> activeBatches = filterBatchesForExtraction(batches, channelMap);
             if (activeBatches.size() > 0) {
-                IDdlBuilder builder = DdlBuilderFactory.createDdlBuilder(targetNode
-                        .getDatabaseType());
+                IDdlBuilder builder = DdlBuilderFactory.getInstance().create(targetNode.getDatabaseType());
                 if (builder == null) {
                     throw new IllegalStateException(
                             "Could not find a ddl builder registered for the database type of "
@@ -993,12 +992,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             currentBatch.setDataInsertRowCount(stats.get(DataWriterStatisticConstants.INSERTCOUNT));
                             currentBatch.setDataUpdateRowCount(stats.get(DataWriterStatisticConstants.UPDATECOUNT));
                             currentBatch.setDataDeleteRowCount(stats.get(DataWriterStatisticConstants.DELETECOUNT));
+                            currentBatch.setTableExtractedCount(stats.getTableStats());
                             currentBatch.setTransformExtractMillis(transformTimeInMs);
                             extractTimeInMs = extractTimeInMs - transformTimeInMs;
                             byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
                             statisticManager.incrementDataBytesExtracted(currentBatch.getChannelId(), byteCount);
                             statisticManager.incrementDataExtracted(currentBatch.getChannelId(),
                                     stats.get(DataWriterStatisticConstants.ROWCOUNT));
+                            statisticManager.incrementTableRows(currentBatch.getTableExtractedCount(), false);
                             currentBatch.setByteCount(byteCount);
                             if (!useStagingDataWriter) {
                                 statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), byteCount);

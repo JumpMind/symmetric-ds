@@ -72,7 +72,7 @@ public abstract class AbstractServiceTest {
                 }
             } catch (Exception ex) {
                 logger.error("", ex);
-                Assert.fail(ex.getMessage());
+                Assert.fail(ex.getClass().getName() + ": " + ex.getMessage());
             }
             // setLoggingLevelForTest(old);
         }

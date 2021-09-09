@@ -232,8 +232,8 @@ public class DbCompareCommand extends AbstractCommandLauncher {
             String configPropertiesFile = line.getOptionValue(OPTION_CONFIG_PROPERTIES);
             if (!StringUtils.isEmpty(configPropertiesFile)) {
                 Properties props = new Properties();
-                try {
-                    props.load(new FileInputStream(configPropertiesFile));
+                try (FileInputStream in = new FileInputStream(configPropertiesFile)) {
+                    props.load(in);
                     SymmetricUtils.replaceSystemAndEnvironmentVariables(props);
                     configProperties = props;
                     return configProperties;

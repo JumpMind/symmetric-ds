@@ -151,7 +151,7 @@ public class JmxCommand extends AbstractCommandLauncher {
                                 String[] args = null;
                                 if (line.hasOption(OPTION_ARGS)) {
                                     String argLine = line.getOptionValue(OPTION_ARGS);
-                                    args = argsDelimiter == "," ? CsvUtils.tokenizeCsvData(argLine) : argLine.split(argsDelimiter);
+                                    args = argsDelimiter.equals(",") ? CsvUtils.tokenizeCsvData(argLine) : argLine.split(argsDelimiter);
                                     ;
                                 } else {
                                     args = new String[0];

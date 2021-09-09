@@ -34,7 +34,6 @@ import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDatabasePlatform;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
-import org.jumpmind.db.platform.db2.Db2As400DatabasePlatform;
 import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
@@ -530,9 +529,6 @@ public class DatabaseWriterTest extends AbstractWriterTest {
 
     @Test
     public void testBenchmark() throws Exception {
-        if (platform instanceof Db2As400DatabasePlatform) {
-            return;
-        }
         Table table = buildSourceTable(TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
         int startId = Integer.parseInt(getId()) + 1;
         List<CsvData> datas = new ArrayList<CsvData>();

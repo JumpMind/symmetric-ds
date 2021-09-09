@@ -94,8 +94,7 @@ abstract public class AbstractEmbeddedTrigger {
      */
     public void fire(Connection conn, Object[] oldRow, Object[] newRow) throws SQLException {
         String sql = null;
-        try {
-            Statement stmt = conn.createStatement();
+        try (Statement stmt = conn.createStatement()) {
             sql = fillVirtualTableSql(templates.get(KEY_CONDITION_SQL), oldRow, newRow);
             ResultSet rs = stmt.executeQuery(sql);
             if (rs.next() && rs.getInt(1) > 0) {
@@ -103,7 +102,6 @@ abstract public class AbstractEmbeddedTrigger {
                 sql = fillVirtualTableSql(templates.get(KEY_INSERT_DATA_SQL), oldRow, newRow);
                 stmt.executeUpdate(sql);
             }
-            stmt.close();
         } catch (SQLException ex) {
             System.err.println("This sql failed: " + sql);
             Throwable rootException = ex;
@@ -249,19 +247,20 @@ abstract public class AbstractEmbeddedTrigger {
 
     protected Map<String, String> getTemplates(Connection conn) throws SQLException {
         Map<String, String> templates = new HashMap<String, String>();
-        Statement stmt = conn.createStatement();
-        String schemaPrefix = schemaName != null && schemaName.length() > 0 ? "\"" + schemaName + "\"." : "";
-        ResultSet rs = stmt.executeQuery(String.format("select * from %s%s%s", schemaPrefix, triggerName, TEMPLATE_TABLE_SUFFIX));
-        if (rs.next()) {
-            ResultSetMetaData metaData = rs.getMetaData();
-            int columnCount = metaData.getColumnCount();
-            for (int i = 1; i <= columnCount; i++) {
-                templates.put(metaData.getColumnName(i), rs.getString(i));
+        try (Statement stmt = conn.createStatement()) {
+            String schemaPrefix = schemaName != null && schemaName.length() > 0 ? "\"" + schemaName + "\"." : "";
+            ResultSet rs = stmt.executeQuery(String.format("select * from %s%s%s", schemaPrefix, triggerName, TEMPLATE_TABLE_SUFFIX));
+            if (rs.next()) {
+                ResultSetMetaData metaData = rs.getMetaData();
+                int columnCount = metaData.getColumnCount();
+                for (int i = 1; i <= columnCount; i++) {
+                    templates.put(metaData.getColumnName(i), rs.getString(i));
+                }
+                return templates;
+            } else {
+                throw new SQLException(String.format("%s is in an invalid state.  %s%s did not return a row.", triggerName,
+                        triggerName, TEMPLATE_TABLE_SUFFIX));
             }
-            return templates;
-        } else {
-            throw new SQLException(String.format("%s is in an invalid state.  %s%s did not return a row.", triggerName,
-                    triggerName, TEMPLATE_TABLE_SUFFIX));
         }
     }
 }

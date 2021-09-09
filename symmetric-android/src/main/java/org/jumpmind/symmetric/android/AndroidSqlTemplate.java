@@ -63,10 +63,6 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
     public byte[] queryForBlob(String sql, Object... params) {
         return queryForObject(sql, byte[].class, params);
     }
-    // @Override
-    // public String queryForClob(String sql, Object... args) {
-    // return queryForClob(sql, Types.CLOB, TypeMap.CLOB, args);
-    // }
 
     public String queryForClob(String sql, int jdbcTypeCode, String jdbcTypeName, Object... params) {
         return queryForString(sql, params);
@@ -328,7 +324,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
             result = (String) cursor.getString(columnIndex);
         } else if (clazz.equals(Integer.class)) {
             result = (Integer) cursor.getInt(columnIndex);
-        } else if (clazz.equals(Integer.class)) {
+        } else if (clazz.equals(Double.class)) {
             result = (Double) cursor.getDouble(columnIndex);
         } else if (clazz.equals(Float.class)) {
             result = (Float) cursor.getFloat(columnIndex);

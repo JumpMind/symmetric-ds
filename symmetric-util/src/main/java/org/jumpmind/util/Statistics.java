@@ -26,6 +26,7 @@ import java.util.Map;
 public class Statistics {
     Map<String, Long> stats = new HashMap<String, Long>();
     Map<String, Long> timers = new HashMap<String, Long>();
+    Map<String, Map<String, Long>> tableStats = new HashMap<String, Map<String, Long>>();
 
     public void increment(String category) {
         increment(category, 1);
@@ -57,7 +58,26 @@ public class Statistics {
         }
         stats.put(category, value);
     }
+    
+    public void incrementTableStats(String tableName, String dmlType, long increment) {
+        Map<String, Long> tableStatMap = tableStats.get(tableName);
+        if (tableStatMap == null) {
+        	tableStatMap = new HashMap<String, Long>();
+        }
+        Long value = tableStatMap.get(dmlType);
+        if (value == null) {
+        	value = increment;
+        } else {
+            value = value + increment;
+        }
+        tableStatMap.put(dmlType, value);
+        tableStats.put(tableName, tableStatMap);
+    }
 
+    public Map<String, Map<String, Long>> getTableStats() {
+    	return this.tableStats;
+    }
+    
     public void startTimer(String category) {
         timers.put(category, System.currentTimeMillis());
     }

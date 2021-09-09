@@ -56,9 +56,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.platform.cassandra.CassandraPlatform;
-import org.jumpmind.db.platform.db2.Db2As400DatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
-import org.jumpmind.db.platform.db2.Db2zOsDatabasePlatform;
 import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
 import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
 import org.jumpmind.db.platform.firebird.FirebirdDialect1DatabasePlatform;
@@ -93,8 +91,8 @@ import org.jumpmind.db.platform.voltdb.VoltDbDatabasePlatform;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
-import org.jumpmind.db.util.DatabaseConstants;
 import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.util.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,104 +103,101 @@ import org.slf4j.LoggerFactory;
  */
 public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
     public static final String JDBC_PREFIX = "jdbc:";
-    /* The database name -> platform map. */
-    private Map<String, Class<? extends IDatabasePlatform>> platforms = new HashMap<String, Class<? extends IDatabasePlatform>>();
-    /*
-     * Maps the sub-protocl part of a jdbc connection url to a OJB platform name.
-     */
-    private Map<String, Class<? extends IDatabasePlatform>> jdbcSubProtocolToPlatform = new HashMap<String, Class<? extends IDatabasePlatform>>();
-    private static IDatabasePlatformFactory instance;
     private static final Logger log = LoggerFactory.getLogger(JdbcDatabasePlatformFactory.class);
+    /* The database name -> platform map. */
+    protected Map<String, Class<? extends IDatabasePlatform>> platforms = new HashMap<String, Class<? extends IDatabasePlatform>>();
+    /* Maps the sub-protocol part of a jdbc connection url to platform */
+    protected Map<String, Class<? extends IDatabasePlatform>> jdbcSubProtocolToPlatform = new HashMap<String, Class<? extends IDatabasePlatform>>();
+    private static IDatabasePlatformFactory instance;
 
     protected JdbcDatabasePlatformFactory() {
-        addPlatform(platforms, "H2", H2DatabasePlatform.class);
-        addPlatform(platforms, "H21", H2DatabasePlatform.class);
-        addPlatform(platforms, "Informix Dynamic Server11", InformixDatabasePlatform.class);
-        addPlatform(platforms, "Informix Dynamic Server", InformixDatabasePlatform.class);
-        addPlatform(platforms, "Apache Derby", DerbyDatabasePlatform.class);
-        addPlatform(platforms, "Firebird", FirebirdDatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.GREENPLUM, GreenplumPlatform.class);
+        /**
+         * Match on short name for utilities like dbexport
+         */
+        addPlatform(platforms, DatabaseNamesConstants.ASE, AseDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.CASSANDRA, CassandraPlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.DB2, Db2DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.DERBY, DerbyDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.FIREBIRD, FirebirdDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.FIREBIRD_DIALECT1, FirebirdDialect1DatabasePlatform.class);
-        addPlatform(platforms, "HsqlDb", HsqlDbDatabasePlatform.class);
-        addPlatform(platforms, "HSQL Database Engine2", HsqlDb2DatabasePlatform.class);
-        addPlatform(platforms, "Interbase", InterbaseDatabasePlatform.class);
-        addPlatform(platforms, "MariaDB", MariaDBDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.GENERIC, GenericJdbcDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.GREENPLUM, GreenplumPlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.H2, H2DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.HANA, HanaDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.HBASE, HbasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.HSQLDB, HsqlDbDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.HSQLDB2, HsqlDb2DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.INGRES, IngresDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.INFORMIX, InformixDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.INTERBASE, InterbaseDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.KAFKA, KafkaPlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.MSSQL, MsSql2000DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.MSSQL2000, MsSql2000DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.MSSQL2005, MsSql2005DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.MSSQL2008, MsSql2008DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.MSSQL2016, MsSql2016DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.MYSQL, MySqlDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.NUODB, NuoDbDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.ORACLE, OracleDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.ORACLE122, Oracle122DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.POSTGRESQL, PostgreSqlDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.POSTGRESQL95, PostgreSql95DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.SQLITE, SqliteDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.SQLANYWHERE, SqliteDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.RAIMA, RaimaDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.REDSHIFT, RedshiftDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.TIBERO, TiberoDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.VOLTDB, VoltDbDatabasePlatform.class);
+        /**
+         * Match on name + version to get a specific version
+         */
         addPlatform(platforms, "microsoft sql server8", MsSql2000DatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server9", MsSql2005DatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server10", MsSql2008DatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server11", MsSql2008DatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server12", MsSql2008DatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server13", MsSql2016DatabasePlatform.class);
-        addPlatform(platforms, "microsoft sql server", MsSql2016DatabasePlatform.class);
-        addPlatform(platforms, "MySQL", MySqlDatabasePlatform.class);
-        addPlatform(platforms, "Oracle", OracleDatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.ORACLE122, Oracle122DatabasePlatform.class);
-        addPlatform(platforms, "PostgreSql", PostgreSqlDatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.POSTGRESQL95, PostgreSql95DatabasePlatform.class);
+        addPlatform(platforms, "HSQL Database Engine2", HsqlDb2DatabasePlatform.class);
+        /**
+         * Match on database product name when sub-protocol is used by different platforms
+         */
         addPlatform(platforms, "Adaptive Server Enterprise", AseDatabasePlatform.class);
         addPlatform(platforms, "Adaptive Server Anywhere", SqlAnywhereDatabasePlatform.class);
         addPlatform(platforms, "SQL Anywhere", SqlAnywhereDatabasePlatform.class);
-        addPlatform(platforms, "DB2", Db2DatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.DB2ZOS, Db2zOsDatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.DB2AS400, Db2As400DatabasePlatform.class);
-        addPlatform(platforms, "SQLite", SqliteDatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.REDSHIFT, RedshiftDatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.VOLTDB, VoltDbDatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.NUODB, NuoDbDatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.TIBERO, TiberoDatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.RAIMA, RaimaDatabasePlatform.class);
-        addPlatform(platforms, "phoenix", HbasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.HANA, HanaDatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.INGRES, IngresDatabasePlatform.class);
-        ;
+        addPlatform(platforms, "Microsoft SQL Server", MsSql2016DatabasePlatform.class);
+        /**
+         * Matching on sub-protocol is usually enough to find platform
+         */
+        jdbcSubProtocolToPlatform.put(AseDatabasePlatform.JDBC_SUBPROTOCOL, AseDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(Db2DatabasePlatform.JDBC_SUBPROTOCOL, Db2DatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(DerbyDatabasePlatform.JDBC_SUBPROTOCOL, DerbyDatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(FirebirdDatabasePlatform.JDBC_SUBPROTOCOL,
-                FirebirdDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(FirebirdDatabasePlatform.JDBC_SUBPROTOCOL, FirebirdDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(H2DatabasePlatform.JDBC_SUBPROTOCOL, H2DatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(HanaDatabasePlatform.JDBC_SUBPROTOCOL, HanaDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(HbasePlatform.JDBC_SUBPROTOCOL, HbasePlatform.class);
         jdbcSubProtocolToPlatform.put(HsqlDbDatabasePlatform.JDBC_SUBPROTOCOL, HsqlDbDatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(InterbaseDatabasePlatform.JDBC_SUBPROTOCOL,
-                InterbaseDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(InformixDatabasePlatform.JDBC_SUBPROTOCOL, InformixDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(IngresDatabasePlatform.JDBC_SUBPROTOCOL, IngresDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(InterbaseDatabasePlatform.JDBC_SUBPROTOCOL, InterbaseDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(MariaDBDatabasePlatform.JDBC_SUBPROTOCOL, MariaDBDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(MsSql2000DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2000DatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(MySqlDatabasePlatform.JDBC_SUBPROTOCOL, MySqlDatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(OracleDatabasePlatform.JDBC_SUBPROTOCOL_THIN,
-                OracleDatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(OracleDatabasePlatform.JDBC_SUBPROTOCOL_OCI8,
-                OracleDatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(OracleDatabasePlatform.JDBC_SUBPROTOCOL_THIN_OLD,
-                OracleDatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put("polite", OracleDatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(PostgreSqlDatabasePlatform.JDBC_SUBPROTOCOL,
-                PostgreSqlDatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(AseDatabasePlatform.JDBC_SUBPROTOCOL, AseDatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(FirebirdDatabasePlatform.JDBC_SUBPROTOCOL,
-                FirebirdDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(NuoDbDatabasePlatform.JDBC_SUBPROTOCOL, NuoDbDatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(TiberoDatabasePlatform.JDBC_SUBPROTOCOL_THIN,
-                TiberoDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(OracleDatabasePlatform.JDBC_SUBPROTOCOL_THIN, OracleDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(OracleDatabasePlatform.JDBC_SUBPROTOCOL_OCI8, OracleDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(OracleDatabasePlatform.JDBC_SUBPROTOCOL_THIN_OLD, OracleDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(PostgreSqlDatabasePlatform.JDBC_SUBPROTOCOL, PostgreSqlDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(SqliteDatabasePlatform.JDBC_SUBPROTOCOL, SqliteDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(SqlAnywhereDatabasePlatform.JDBC_SUBPROTOCOL, SqlAnywhereDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(RaimaDatabasePlatform.JDBC_SUBPROTOCOL, RaimaDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(RedshiftDatabasePlatform.JDBC_SUBPROTOCOL, RedshiftDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(TiberoDatabasePlatform.JDBC_SUBPROTOCOL_THIN, TiberoDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(VoltDbDatabasePlatform.JDBC_SUBPROTOCOL, VoltDbDatabasePlatform.class);
     }
 
-    public synchronized static IDatabasePlatformFactory getInstance() {
-        return getInstance(null);
-    }
-
-    public synchronized static IDatabasePlatformFactory getInstance(TypedProperties properties) {
+    public static synchronized IDatabasePlatformFactory getInstance() {
         if (instance == null) {
-            if (properties == null) {
-                properties = new TypedProperties(System.getProperties());
-            }
-
-            String platformFactoryClassName = properties.get(DatabaseConstants.DATABASE_PLATFORM_FACTORY_CLASS);
-            if (platformFactoryClassName != null) {
-                try {
-                    Constructor<?> cons = Class.forName(platformFactoryClassName).getConstructor();
-                    instance = (IDatabasePlatformFactory) cons.newInstance();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                instance = new JdbcDatabasePlatformFactory();
-            }
+            instance = AppUtils.newInstance(IDatabasePlatformFactory.class, JdbcDatabasePlatformFactory.class);
         }
         return instance;
     }
@@ -219,7 +214,7 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
      * @param dataSource The data source for the database
      * 
      * @param log The logger that the platform should use
-     *
+     * 
      * @return The platform or <code>null</code> if the database is not supported
      */
     public synchronized IDatabasePlatform create(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode,
@@ -237,7 +232,7 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
         }
         // connects to the database and uses actual metadata info to get db name
         // and version to determine platform
-        DatabaseVersion nameVersion = determineDatabaseNameVersionSubprotocol(dataSource, isLoadOnly);
+        DatabaseVersion nameVersion = determineDatabaseNameVersionSubprotocol(dataSource);
         Class<? extends IDatabasePlatform> clazz = findPlatformClass(nameVersion);
         try {
             Constructor<? extends IDatabasePlatform> construtor = clazz.getConstructor(DataSource.class, SqlTemplateSettings.class);
@@ -269,14 +264,8 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
     }
 
     public DatabaseVersion determineDatabaseNameVersionSubprotocol(DataSource dataSource) {
-        return determineDatabaseNameVersionSubprotocol(dataSource, false);
-    }
-
-    public DatabaseVersion determineDatabaseNameVersionSubprotocol(DataSource dataSource, boolean isLoadOnly) {
-        Connection connection = null;
         DatabaseVersion nameVersion = new DatabaseVersion();
-        try {
-            connection = dataSource.getConnection();
+        try (Connection connection = dataSource.getConnection()) {
             DatabaseMetaData metaData = connection.getMetaData();
             nameVersion.setName(metaData.getDatabaseProductName());
             nameVersion.setVersion(metaData.getDatabaseMajorVersion());
@@ -288,119 +277,70 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
                 }
             }
             nameVersion.setProtocol(url);
-            /*
-             * if the productName is PostgreSQL, it could be either PostgreSQL or Greenplum
-             */
-            /* query the metadata to determine which one it is */
-            if (nameVersion.getName().equalsIgnoreCase("PostgreSql")) {
-                if (isGreenplumDatabase(connection)) {
-                    nameVersion.setName(DatabaseNamesConstants.GREENPLUM);
-                    nameVersion.setVersion(getGreenplumVersion(connection));
-                } else if (isRedshiftDatabase(connection)) {
-                    nameVersion.setName(DatabaseNamesConstants.REDSHIFT);
-                } else if (metaData.getDatabaseMajorVersion() > 9
-                        || (metaData.getDatabaseMajorVersion() == 9 && metaData.getDatabaseMinorVersion() >= 5)) {
-                    nameVersion.setName(DatabaseNamesConstants.POSTGRESQL95);
-                }
-            }
-            /*
-             * if the productName is MySQL, it could be either MysSQL or MariaDB query the metadata to determine which one it is
-             */
-            if (nameVersion.getName().equalsIgnoreCase(DatabaseNamesConstants.MYSQL)) {
-                if (isMariaDBDatabase(connection)) {
-                    nameVersion.setName(DatabaseNamesConstants.MARIADB);
-                }
-            }
-            if (nameVersion.getProtocol().equalsIgnoreCase("as400")) {
-                nameVersion.setName(DatabaseNamesConstants.DB2AS400);
-            }
-            if (nameVersion.getName().toLowerCase().indexOf(DatabaseNamesConstants.DB2) != -1 && nameVersion.getProtocol().equalsIgnoreCase("db2")) {
-                String productVersion = getDatabaseProductVersion(dataSource);
-                if (nameVersion.getName().toUpperCase().indexOf("Z") != -1
-                        || (productVersion != null && productVersion.startsWith("DSN"))) {
-                    nameVersion.setName(DatabaseNamesConstants.DB2ZOS);
-                } else {
-                    nameVersion.setName(DatabaseNamesConstants.DB2);
-                }
-            }
-            if (nameVersion.getName().equalsIgnoreCase("AS") && nameVersion.getProtocol().equalsIgnoreCase("db2")) {
-                nameVersion.setName(DatabaseNamesConstants.DB2AS400);
-            }
-            if (nameVersion.getName().toLowerCase().startsWith(DatabaseNamesConstants.FIREBIRD)) {
-                if (isFirebirdDialect1(connection)) {
-                    nameVersion.setName(DatabaseNamesConstants.FIREBIRD_DIALECT1);
-                }
-            }
-            if (nameVersion.getName().equalsIgnoreCase(DatabaseNamesConstants.ORACLE)) {
-                int majorVersion = Integer.valueOf(metaData.getDatabaseMajorVersion());
-                int minorVersion = Integer.valueOf(metaData.getDatabaseMinorVersion());
-                if (majorVersion > 12 || (majorVersion == 12 && minorVersion >= 2)) {
-                    if (isOracle122Compatible(connection)) {
-                        nameVersion.setName(DatabaseNamesConstants.ORACLE122);
-                    }
-                }
-            }
+            determineDatabaseNameVersionSubprotocol(dataSource, connection, metaData, nameVersion);
             log.info("Detected database '" + nameVersion.getName() + "', version '" + nameVersion.getVersion() + "', protocol '" + nameVersion.getProtocol()
                     + "'");
-            return nameVersion;
         } catch (Throwable ex) {
-            if (!isLoadOnly) {
-                throw new SqlException("Error while reading the database metadata: "
-                        + ex.getMessage(), ex);
-            } else {
-                return nameVersion;
+            throw new SqlException("Error while reading the database metadata: " + ex.getMessage(), ex);
+        }
+        return nameVersion;
+    }
+
+    protected void determineDatabaseNameVersionSubprotocol(DataSource dataSource, Connection connection, DatabaseMetaData metaData, DatabaseVersion nameVersion)
+            throws SQLException {
+        if (nameVersion.getProtocol().equalsIgnoreCase(PostgreSqlDatabasePlatform.JDBC_SUBPROTOCOL)) {
+            if (isGreenplumDatabase(connection)) {
+                nameVersion.setName(DatabaseNamesConstants.GREENPLUM);
+                nameVersion.setVersion(getGreenplumVersion(connection));
+            } else if (metaData.getDatabaseMajorVersion() > 9 || (metaData.getDatabaseMajorVersion() == 9 && metaData.getDatabaseMinorVersion() >= 5)) {
+                nameVersion.setName(DatabaseNamesConstants.POSTGRESQL95);
             }
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    // we ignore this one
+        }
+        if (nameVersion.getProtocol().equalsIgnoreCase(FirebirdDatabasePlatform.JDBC_SUBPROTOCOL)) {
+            if (isFirebirdDialect1(connection)) {
+                nameVersion.setName(DatabaseNamesConstants.FIREBIRD_DIALECT1);
+            }
+        }
+        if (nameVersion.getName().equalsIgnoreCase(DatabaseNamesConstants.ORACLE)) {
+            int majorVersion = Integer.valueOf(metaData.getDatabaseMajorVersion());
+            int minorVersion = Integer.valueOf(metaData.getDatabaseMinorVersion());
+            if (majorVersion > 12 || (majorVersion == 12 && minorVersion >= 2)) {
+                if (isOracle122Compatible(connection)) {
+                    nameVersion.setName(DatabaseNamesConstants.ORACLE122);
                 }
             }
         }
     }
 
     private boolean isGreenplumDatabase(Connection connection) {
-        Statement stmt = null;
-        ResultSet rs = null;
-        int greenplumCount = 0;
-        try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(GreenplumPlatform.SQL_GET_GREENPLUM_COUNT);
+        int count = 0;
+        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(GreenplumPlatform.SQL_GET_GREENPLUM_COUNT)) {
             if (rs.next()) {
-                greenplumCount = rs.getInt(1);
+                count = rs.getInt(1);
             }
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException ex) {
-            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return greenplumCount > 0;
+        return count > 0;
     }
 
-    private boolean isRedshiftDatabase(Connection connection) {
-        boolean isRedshift = false;
-        try {
-            DatabaseMetaData dmd = connection.getMetaData();
-            dmd.getMaxColumnsInIndex();
-            if (dmd.getDriverName().toUpperCase().contains("REDSHIFT")) {
-                isRedshift = true;
+    private int getGreenplumVersion(Connection connection) {
+        String versionName = null;
+        int productVersion = 0;
+        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(GreenplumPlatform.SQL_GET_GREENPLUM_VERSION)) {
+            while (rs.next()) {
+                versionName = rs.getString(1);
+            }
+            if (versionName.indexOf('.') != -1) {
+                versionName = versionName.substring(0, versionName.indexOf('.'));
+            }
+            try {
+                productVersion = Integer.parseInt(versionName);
+            } catch (NumberFormatException ex) {
             }
         } catch (SQLException ex) {
-            if (ex.getSQLState().equals("99999")) {
-                isRedshift = true;
-            }
         }
-        return isRedshift;
+        return productVersion;
     }
 
     private boolean isFirebirdDialect1(Connection connection) {
@@ -419,75 +359,6 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
             }
         }
         return isDialect1;
-    }
-
-    private boolean isMariaDBDatabase(Connection connection) {
-        Statement stmt = null;
-        ResultSet rs = null;
-        String productName = null;
-        boolean isMariaDB = false;
-        try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(MariaDBDatabasePlatform.SQL_GET_MARIADB_NAME);
-            while (rs.next()) {
-                productName = rs.getString(1);
-            }
-            if (productName != null && StringUtils.containsIgnoreCase(productName, DatabaseNamesConstants.MARIADB)) {
-                isMariaDB = true;
-            }
-        } catch (SQLException ex) {
-            // ignore the exception, if it is caught, then this is most likely
-            // not a mariadb database
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException ex) {
-            }
-        }
-        return isMariaDB;
-    }
-
-    private int getGreenplumVersion(Connection connection) {
-        Statement stmt = null;
-        ResultSet rs = null;
-        String versionName = null;
-        int productVersion = 0;
-        try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(GreenplumPlatform.SQL_GET_GREENPLUM_VERSION);
-            while (rs.next()) {
-                versionName = rs.getString(1);
-            }
-            // take up to the first "." for version number
-            if (versionName.indexOf('.') != -1) {
-                versionName = versionName.substring(0, versionName.indexOf('.'));
-            }
-            try {
-                productVersion = Integer.parseInt(versionName);
-            } catch (NumberFormatException ex) {
-                // if we can't convert this to a version number, leave it 0
-            }
-        } catch (SQLException ex) {
-            // ignore the exception, if it is caught, then this is most likely
-            // not
-            // a greenplum database
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException ex) {
-            }
-        }
-        return productVersion;
     }
 
     private boolean isOracle122Compatible(Connection connection) {
@@ -531,73 +402,11 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
         return isOracle122;
     }
 
-    public String getDatabaseProductVersion(DataSource dataSource) {
-        Connection connection = null;
-        try {
-            connection = dataSource.getConnection();
-            DatabaseMetaData metaData = connection.getMetaData();
-            return metaData.getDatabaseProductVersion();
-        } catch (SQLException ex) {
-            throw new SqlException("Error while reading the database metadata: "
-                    + ex.getMessage(), ex);
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    // we ignore this one
-                }
-            }
-        }
-    }
-
-    public int getDatabaseMajorVersion(DataSource dataSource) {
-        Connection connection = null;
-        try {
-            connection = dataSource.getConnection();
-            DatabaseMetaData metaData = connection.getMetaData();
-            return metaData.getDatabaseMajorVersion();
-        } catch (SQLException ex) {
-            throw new SqlException("Error while reading the database metadata: "
-                    + ex.getMessage(), ex);
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    // we ignore this one
-                }
-            }
-        }
-    }
-
-    public int getDatabaseMinorVersion(DataSource dataSource) {
-        Connection connection = null;
-        try {
-            connection = dataSource.getConnection();
-            DatabaseMetaData metaData = connection.getMetaData();
-            return metaData.getDatabaseMinorVersion();
-        } catch (SQLException ex) {
-            throw new SqlException("Error while reading the database metadata: "
-                    + ex.getMessage(), ex);
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    // we ignore this one
-                }
-            }
-        }
-    }
-
-    private synchronized void addPlatform(
-            Map<String, Class<? extends IDatabasePlatform>> platformMap, String platformName,
+    protected synchronized void addPlatform(Map<String, Class<? extends IDatabasePlatform>> platformMap, String platformName,
             Class<? extends IDatabasePlatform> platformClass) {
         if (!IDatabasePlatform.class.isAssignableFrom(platformClass)) {
-            throw new IllegalArgumentException("Cannot register class " + platformClass.getName()
-                    + " because it does not implement the " + IDatabasePlatform.class.getName()
-                    + " interface");
+            throw new IllegalArgumentException("Cannot register class " + platformClass.getName() + " because it does not implement the "
+                    + IDatabasePlatform.class.getName() + " interface");
         }
         platformMap.put(platformName.toLowerCase(), platformClass);
     }

@@ -28,30 +28,6 @@ apply from: symAssembleDir + '/common.gradle'
             exclude group: 'org.slf4j'
         }
 
-        compileOnly ("com.amazonaws:aws-java-sdk-s3:1.11.510") {
-            exclude group: 'org.apache.httpcomponents'
-            exclude group: 'commons-logging'
-            exclude group: 'com.fasterxml.jackson.core'
-            exclude group: 'com.fasterxml.jackson.dataformat'
-            exclude group: 'com.fasterxml.jackson.databind'
-            exclude group: 'commons-codec'
-        }
-
-        compileOnly ('com.google.cloud:google-cloud-bigquery:1.99.0') {
-            exclude group: 'com.google.protobuf'
-            exclude group: 'com.fasterxml.jackson.core'
-            exclude group: 'com.fasterxml.jackson.dataformat'
-            exclude group: 'com.fasterxml.jackson.databind'
-        }
-        
-        compileOnly ("com.microsoft.azure:azure-storage:8.1.0") {
-            exclude group: 'com.fasterxml.jackson.core'
-            exclude group: 'com.fasterxml.jackson.dataformat'
-            exclude group: 'com.fasterxml.jackson.databind'
-            exclude group: 'log4j'
-            exclude group: 'org.slf4j'
-        }
-
         compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
 
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')

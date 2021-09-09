@@ -18,36 +18,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.util;
+package org.jumpmind.db.platform;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.RegionUtils;
-import com.amazonaws.regions.Regions;
-
-/**
- * Amazon Web Services Helper
- * 
- * Avoid static methods so we don't load AWS classes unless that addon is installed
- */
-public class AWSHelper {
-    public AWSHelper() {
-    }
-
-    public List<String> getRegions() {
-        List<String> list = new ArrayList<String>();
-        List<Region> regions = RegionUtils.getRegions();
-        if (regions != null) {
-            for (Region region : regions) {
-                list.add(region.getName());
-            }
-        }
-        return list;
-    }
-
-    public Regions fromName(String regionName) {
-        return Regions.fromName(regionName);
-    }
+public interface IDdlBuilderFactory {
+    public IDdlBuilder create(String databaseName);
 }

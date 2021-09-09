@@ -86,6 +86,7 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.sql.DmlStatementOptions;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
@@ -141,26 +142,30 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     abstract public ISqlTemplate getSqlTemplateDirty();
 
+    @Override
     public DmlStatement createDmlStatement(DmlType dmlType, Table table, String textColumnExpression) {
         return createDmlStatement(dmlType, table.getCatalog(), table.getSchema(), table.getName(), table.getPrimaryKeyColumns(),
                 table.getColumns(), null, textColumnExpression);
     }
 
-    public DmlStatement createDmlStatement(DmlType dmlType, Table table, String textColumnExpression, String sourceNodeId) {
-        return createDmlStatement(dmlType, table.getCatalog(), table.getSchema(), table.getName(), table.getPrimaryKeyColumns(),
-                table.getColumns(), null, textColumnExpression);
-    }
-
+    @Override
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName, String tableName, Column[] keys,
             Column[] columns, boolean[] nullKeyValues, String textColumnExpression) {
-        return DmlStatementFactory.createDmlStatement(getName(), dmlType, catalogName, schemaName, tableName, keys, columns, nullKeyValues,
-                getDdlBuilder(), textColumnExpression);
+        return createDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns, nullKeyValues, textColumnExpression, false);
     }
 
+    @Override
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName, String tableName, Column[] keys,
             Column[] columns, boolean[] nullKeyValues, String textColumnExpression, boolean namedParameters) {
-        return DmlStatementFactory.createDmlStatement(getName(), dmlType, catalogName, schemaName, tableName, keys, columns, nullKeyValues,
-                getDdlBuilder(), textColumnExpression, namedParameters);
+        DmlStatementOptions options = new DmlStatementOptions(dmlType, tableName).databaseInfo(getDatabaseInfo()).catalogName(catalogName).schemaName(
+                schemaName).columns(columns).keys(keys).nullKeyValues(nullKeyValues).quotedIdentifiers(getDdlBuilder().isDelimitedIdentifierModeOn())
+                .textColumnExpression(textColumnExpression).namedParameters(namedParameters);
+        return createDmlStatement(options);
+    }
+
+    @Override
+    public DmlStatement createDmlStatement(DmlStatementOptions options) {
+        return DmlStatementFactory.getInstance().create(getName(), options);
     }
 
     public IDdlReader getDdlReader() {

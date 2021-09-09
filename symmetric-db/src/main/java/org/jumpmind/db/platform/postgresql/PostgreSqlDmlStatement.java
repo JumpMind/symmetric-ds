@@ -25,18 +25,15 @@ import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatementOptions;
 
 public class PostgreSqlDmlStatement extends DmlStatement {
-    protected boolean allowIgnoreOnConflict = true;
-
-    public PostgreSqlDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
-            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues,
-            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
-        super(type, catalogName, schemaName, tableName, keysColumns, columns,
-                nullKeyValues, databaseInfo, useQuotedIdentifiers, textColumnExpression);
+    public PostgreSqlDmlStatement(DmlStatementOptions options) {
+        super(options);
     }
+
+    protected boolean allowIgnoreOnConflict = true;
 
     @Override
     public String buildInsertSql(String tableName, Column[] keyColumns, Column[] columns) {

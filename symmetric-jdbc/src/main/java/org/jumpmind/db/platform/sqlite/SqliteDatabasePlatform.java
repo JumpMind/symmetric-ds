@@ -32,6 +32,8 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionResult;
 import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatementOptions;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
@@ -41,6 +43,7 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform implements
         IDatabasePlatform {
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
+    public static final String JDBC_SUBPROTOCOL = "sqlite";
     private Map<String, String> sqlScriptReplacementTokens;
 
     public SqliteDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
@@ -91,6 +94,11 @@ public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform impleme
         JdbcSqlTemplate sqlTemplateDirty = new SqliteJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
         sqlTemplateDirty.setIsolationLevel(Connection.TRANSACTION_READ_UNCOMMITTED);
         return sqlTemplateDirty;
+    }
+
+    @Override
+    public DmlStatement createDmlStatement(DmlStatementOptions options) {
+        return new SqliteDmlStatement(options.databaseInfo(getDatabaseInfo()));
     }
 
     @Override

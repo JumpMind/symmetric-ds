@@ -667,7 +667,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                 String password = SecurityConstants.PREFIX_OBF + service.obfuscate(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD));
                 prop.put(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD, password);
             }
-            prop.store(new FileOutputStream(new File(workingDirectory, "WEB-INF/classes/symmetric-server.properties")), warFileName);
+            try (FileOutputStream out = new FileOutputStream(new File(workingDirectory, "WEB-INF/classes/symmetric-server.properties"))) {
+                prop.store(out, warFileName);
+            }
         } catch (Exception e) {
             log.error("Failed to process symmetric-server.properties", e);
         }

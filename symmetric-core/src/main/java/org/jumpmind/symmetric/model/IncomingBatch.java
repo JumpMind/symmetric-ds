@@ -49,14 +49,19 @@ import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants
 import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.TRANSFORMMILLIS;
 
 import java.util.Date;
+import java.util.Map;
 
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.util.Statistics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IncomingBatch extends AbstractBatch {
     private static final long serialVersionUID = 1L;
+    private static final Logger log = LoggerFactory.getLogger(IncomingBatch.class);
+
     private long failedRowNumber;
     private long startTime;
     private boolean retry;
@@ -95,6 +100,14 @@ public class IncomingBatch extends AbstractBatch {
             setLoadInsertRowCount(writerStatistics.get(DataWriterStatisticConstants.INSERTCOUNT));
             setLoadUpdateRowCount(writerStatistics.get(DataWriterStatisticConstants.UPDATECOUNT));
             setLoadDeleteRowCount(writerStatistics.get(DataWriterStatisticConstants.DELETECOUNT));
+            setTableLoadedCount(writerStatistics.getTableStats());
+            if (log.isDebugEnabled()) {
+                for (Map.Entry<String, Map<String, Long>> entry : writerStatistics.getTableStats().entrySet()) {
+                	for (Map.Entry<String, Long> dmlEntry : entry.getValue().entrySet()) {
+                		log.debug("Loaded table: {}, {}, {} rows" , entry.getKey(), dmlEntry.getKey(), dmlEntry.getValue());
+                	}
+                }
+            }
         }
     }
 

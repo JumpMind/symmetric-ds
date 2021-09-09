@@ -28,8 +28,11 @@ import java.util.Map;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.platform.IDdlReader;
+import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatementOptions;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
@@ -54,7 +57,7 @@ public class CassandraPlatform extends AbstractDatabasePlatform {
 
     @Override
     public String getName() {
-        return "cassandra";
+        return DatabaseNamesConstants.CASSANDRA;
     }
 
     @Override
@@ -95,6 +98,11 @@ public class CassandraPlatform extends AbstractDatabasePlatform {
     @Override
     public ISqlTemplate getSqlTemplateDirty() {
         return new CassandraSqlTemplate();
+    }
+
+    @Override
+    public DmlStatement createDmlStatement(DmlStatementOptions options) {
+        return new CassandraDMLStatement(options.databaseInfo(getDatabaseInfo()));
     }
 
     public Session getSession() {

@@ -33,7 +33,6 @@ import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.ase.AseDdlBuilder;
-import org.jumpmind.db.platform.db2.Db2As400DdlBuilder;
 import org.jumpmind.db.platform.db2.Db2DdlBuilder;
 import org.jumpmind.db.platform.derby.DerbyDdlBuilder;
 import org.jumpmind.db.platform.firebird.FirebirdDdlBuilder;
@@ -188,13 +187,6 @@ public class AbstractDdlBuilderTest {
                 new DdlBuilderForeignKeySupport(new AseDdlBuilder(),
                         false, new ForeignKeyAction[] {},
                         false, new ForeignKeyAction[] {}),
-                // DB2 AS400
-                new DdlBuilderForeignKeySupport(new Db2As400DdlBuilder(),
-                        true, new ForeignKeyAction[] {
-                                ForeignKeyAction.CASCADE, ForeignKeyAction.RESTRICT, ForeignKeyAction.NOACTION, ForeignKeyAction.SETDEFAULT,
-                                ForeignKeyAction.SETNULL },
-                        true, new ForeignKeyAction[] {
-                                ForeignKeyAction.RESTRICT, ForeignKeyAction.NOACTION }),
                 // DB2
                 new DdlBuilderForeignKeySupport(new Db2DdlBuilder(),
                         true, new ForeignKeyAction[] {

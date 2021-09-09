@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.ext;
 
 import java.util.List;
 
-import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -51,42 +50,12 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
         IDatabasePlatform platform = engine.getTargetDialect().getPlatform();
-        String platformName = platform.getName();
         if (engine.getParameterService().is(ParameterConstants.JDBC_EXECUTE_BULK_BATCH_OVERRIDE, false)) {
             return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), platform,
-                    symmetricDialect.getTablePrefix(), buildParameterDatabaseWritterSettings());
-        } else if (DatabaseNamesConstants.MYSQL.equals(platformName)) {
-            return new MySqlBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
-                    filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.MSSQL2000.equals(platformName)
-                || DatabaseNamesConstants.MSSQL2005.equals(platformName)
-                || DatabaseNamesConstants.MSSQL2008.equals(platformName)
-                || DatabaseNamesConstants.MSSQL2016.equals(platformName)) {
-            return new MsSqlBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
-                    filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.ORACLE.equals(platformName) || DatabaseNamesConstants.ORACLE122.equals(platformName)) {
-            return new OracleBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
-                    filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.TIBERO.equals(platformName)) {
-            return new TiberoBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
-                    filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.POSTGRESQL.equals(platformName)
-                || DatabaseNamesConstants.POSTGRESQL95.equals(platformName)
-                || DatabaseNamesConstants.GREENPLUM.equals(platformName)) {
-            return new PostgresBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
-                    filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.REDSHIFT.equals(platformName)) {
-            return new RedshiftBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
-                    filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (platformName != null && platformName.startsWith(DatabaseNamesConstants.TERADATA)) {
-            return new TeradataBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
-                    filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (platformName != null && platformName.startsWith(DatabaseNamesConstants.SNOWFLAKE)) {
-            return new SnowflakeBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
-                    filters, errorHandlers, conflictSettings, resolvedData);
+                    symmetricDialect.getTablePrefix(), buildParameterDatabaseWriterSettings(conflictSettings));
         } else {
             return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), platform,
-                    symmetricDialect.getTablePrefix(), buildParameterDatabaseWritterSettings());
+                    symmetricDialect.getTablePrefix(), buildParameterDatabaseWriterSettings(conflictSettings));
         }
     }
 

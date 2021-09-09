@@ -28,6 +28,9 @@ import org.jumpmind.db.platform.generic.GenericJdbcDatabasePlatform;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class HbasePlatform extends GenericJdbcDatabasePlatform {
+    public static final String JDBC_DRIVER = "com.sap.db.jdbc.Driver";
+    public static final String JDBC_SUBPROTOCOL = "phoenix";
+
     public HbasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
     }

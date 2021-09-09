@@ -45,12 +45,13 @@ import java.util.Map;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.sql.DmlStatementOptions;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.util.BinaryEncoding;
 
 /*
@@ -143,6 +144,8 @@ public interface IDatabasePlatform {
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
             String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues, String textColumnExpression,
             boolean namedParameters);
+
+    public DmlStatement createDmlStatement(DmlStatementOptions options);
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData);

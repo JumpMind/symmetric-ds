@@ -29,15 +29,14 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -48,12 +47,12 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.sql.DmlStatementOptions;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.csv.CsvWriter;
-import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.io.IoVersion;
 
 /**
@@ -65,7 +64,7 @@ public class DbExport {
     };
 
     public enum Compatible {
-        DB2, DB2ZOS, DERBY, FIREBIRD, FIREBIRD_DIALECT1, GREENPLUM, H2, HSQLDB, HSQLDB2, INFORMIX, INGRES, INTERBASE, MSSQL, MSSQL2000, MSSQL2005, MSSQL2008, MSSQL2016, MYSQL, ORACLE, ORACLE122, POSTGRES, POSTGRES95, RAIMA, SYBASE, SQLITE, MARIADB, ASE, SQLANYWHERE, REDSHIFT, VOLTDB, NUODB, TIBERO, GENERIC
+        DB2, DB2AS400, DB2ZOS, DERBY, FIREBIRD, FIREBIRD_DIALECT1, GREENPLUM, H2, HSQLDB, HSQLDB2, INFORMIX, INGRES, INTERBASE, MSSQL, MSSQL2000, MSSQL2005, MSSQL2008, MSSQL2016, MYSQL, ORACLE, ORACLE122, POSTGRES, POSTGRES95, RAIMA, SYBASE, SQLITE, MARIADB, ASE, SQLANYWHERE, REDSHIFT, VOLTDB, NUODB, TIBERO, GENERIC
     };
 
     private Format format = Format.SQL;
@@ -510,19 +509,17 @@ public class DbExport {
                         table.setSchema(null);
                     }
                     Table targetTable = table.copy();
+                    DmlStatementOptions options = new DmlStatementOptions(DmlType.INSERT, targetTable);
                     if (excludeColumns == null || excludeColumns.length == 0) {
-                        insertSql = DmlStatementFactory.createDmlStatement(databaseName,
-                                DmlType.INSERT, targetTable, useQuotedIdentifiers);
+                        insertSql = DmlStatementFactory.getInstance().create(databaseName, options.quotedIdentifiers(useQuotedIdentifiers));
                     } else {
                         Column[] columnsToExport = getColumnsToExport(table);
-                        insertSql = DmlStatementFactory.createDmlStatement(databaseName,
-                                DmlType.INSERT, table.getCatalog(), table.getSchema(), table.getName(),
-                                table.getPrimaryKeyColumns(), columnsToExport, null, startedWriting);
+                        insertSql = DmlStatementFactory.getInstance().create(databaseName, options.columns(columnsToExport).quotedIdentifiers(startedWriting));
                     }
                 }
                 if (!noCreateInfo) {
                     if (format == Format.SQL) {
-                        IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(databaseName);
+                        IDdlBuilder target = DdlBuilderFactory.getInstance().create(databaseName);
                         target.setDelimitedIdentifierModeOn(useQuotedIdentifiers);
                         write(cleanupSQL(target.createTables(getDatabase(table), addDropTable)));
                     } else if (format == Format.XML) {
@@ -536,7 +533,7 @@ public class DbExport {
                     }
                 } else if (addDropTable) {
                     if (format == Format.SQL) {
-                        IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(databaseName);
+                        IDdlBuilder target = DdlBuilderFactory.getInstance().create(databaseName);
                         write(target.dropTables(getDatabase(table)));
                     }
                 }

@@ -190,6 +190,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             if (fileTriggerRouter.isEnabled()) {
                 try {
                     FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
+                    checkSourceDir(fileTriggerRouter);
                     boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
                     FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, getDirectorySnapshot(fileTriggerRouter),
                             processInfo, useCrc, engine);
@@ -222,6 +223,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             for (final FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
                 if (fileTriggerRouter.isEnabled()) {
                     FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
+                    checkSourceDir(fileTriggerRouter);
                     boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
                     FileAlterationObserver observer = new FileAlterationObserver(fileTriggerRouter.getFileTrigger().getBaseDir(),
                             fileTriggerRouter.getFileTrigger().createIOFileFilter());
@@ -242,6 +244,15 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             }
         } catch (Exception ex) {
             log.error("Failed to track changes", ex);
+        }
+    }
+    
+    protected void checkSourceDir(FileTriggerRouter fileTriggerRouter) {
+        File sourceDir = new File(fileTriggerRouter.getFileTrigger().getBaseDir());
+        if (!sourceDir.exists()) {
+            log.warn("Source directory does not exist: {}", sourceDir.getAbsolutePath());
+        } else if (!sourceDir.canRead()) {
+            log.warn("Source directory is not readable by user {}: {}", System.getProperty("user.name"), sourceDir.getAbsolutePath());
         }
     }
 
