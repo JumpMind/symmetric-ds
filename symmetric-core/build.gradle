@@ -23,6 +23,8 @@ apply from: symAssembleDir + '/common.gradle'
         }
         compileOnly ("io.confluent:kafka-avro-serializer:3.2.1") {
             exclude group: 'com.fasterxml.jackson.core'
+            exclude group: 'com.fasterxml.jackson.dataformat'
+            exclude group: 'com.fasterxml.jackson.databind'
             exclude group: 'log4j'
             exclude group: 'org.slf4j'
         }
@@ -30,7 +32,7 @@ apply from: symAssembleDir + '/common.gradle'
             exclude group: 'log4j'
             exclude group: 'org.slf4j'
         }
-        
+
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
     }

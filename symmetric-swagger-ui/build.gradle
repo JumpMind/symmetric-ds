@@ -11,6 +11,8 @@ apply from: symAssembleDir + '/common.gradle'
         compile "com.google.guava:guava:$guavaVersion"
         compile ("io.springfox:springfox-swagger2:2.9.2") {
             exclude group: "com.fasterxml.jackson.core"
+            exclude group: 'com.fasterxml.jackson.dataformat'
+            exclude group: 'com.fasterxml.jackson.databind'
             exclude group: "com.google.guava"
             exclude group: "com.fasterxml"
         }

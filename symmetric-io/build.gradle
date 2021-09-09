@@ -17,6 +17,8 @@ apply from: symAssembleDir + '/common.gradle'
         compileOnly ('com.google.cloud:google-cloud-bigquery:1.99.0') {
             exclude group: 'com.google.protobuf'
             exclude group: 'com.fasterxml.jackson.core'
+            exclude group: 'com.fasterxml.jackson.dataformat'
+            exclude group: 'com.fasterxml.jackson.databind'
         }
 
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')

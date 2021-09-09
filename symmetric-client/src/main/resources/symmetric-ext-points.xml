@@ -14,10 +14,6 @@
 
     <bean id="bulkLoaderFactory" class="org.jumpmind.symmetric.ext.BulkDataLoaderFactory" />
 
-    <bean id="mongoLoaderFactory" class="org.jumpmind.symmetric.io.MongoDataLoaderFactory">
-        <property name="typeName" value="mongodb" />
-    </bean>
-
     <bean id="hbaseLoaderFactory" class="org.jumpmind.symmetric.io.HbaseDataLoaderFactory">
         <property name="typeName" value="hbase" />
     </bean>
