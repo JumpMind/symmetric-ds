@@ -12,17 +12,23 @@ pipeline {
         stage('Build') {
             steps {
                 echo "Running ${env.BUILD_ID} on ${env.NODE_NAME} node"
-                sh './gradlew compile'
+                dir('symmetric-assemble') {
+                    sh './gradlew compile'
+                }
             }
         }
         stage('Test') {
             steps {
-                sh './gradlew test'
+                dir('symmetric-assemble') {
+                    sh './gradlew test'
+                }
             }
         }
         stage('Quality') {
             steps {
-                sh './gradlew sonarqube'
+                dir('symmetric-assemble') {
+                    sh './gradlew sonarqube'
+                }
             }
         }
         stage('Deploy') {
