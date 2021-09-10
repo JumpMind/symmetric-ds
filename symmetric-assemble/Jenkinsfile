@@ -13,7 +13,7 @@ pipeline {
             steps {
                 echo "Running ${env.BUILD_ID} on ${env.NODE_NAME} node"
                 dir('symmetric-assemble') {
-                    sh './gradlew compile'
+                    sh './gradlew compileTestJava'
                 }
             }
         }
