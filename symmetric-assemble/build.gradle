@@ -40,6 +40,7 @@ allprojects {
 sonarqube {
     properties {
         property "sonar.projectKey", "SymmetricDS"
+        property "sonar.host.url", "https://quality.jumpmind.com"
     }
 }
 
