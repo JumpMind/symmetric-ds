@@ -15,6 +15,10 @@ buildscript {
     }
 }
 
+plugins {
+    id "org.sonarqube" version "3.3"
+}
+
 apply plugin: 'java-library'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
@@ -30,6 +34,12 @@ allprojects {
     license {
         header rootProject.file("HEADER")
         include "**/jumpmind/**"
+    }
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "SymmetricDS"
     }
 }
 
