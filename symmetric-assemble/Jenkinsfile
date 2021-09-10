@@ -3,10 +3,6 @@ pipeline {
     	label 'master'
     }
 
-    parameters {
-        string(name: 'Version', defaultValue: '1.0', description: 'Version Number X.Y.Z')
-    }
-
     environment {
         MAVEN_JM_PW = credentials('mavenJumpMindPassword')
         SONAR_TOKEN = credentials('sonarTokenSymmetricDS')
@@ -45,17 +41,6 @@ pipeline {
         always {
             archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
             junit 'build/reports/**/*.xml'
-        }
-        success {
-            slackSend channel: '#jumpmind-devops',
-                  color: 'good',
-                  message: "The pipeline ${currentBuild.fullDisplayName} completed successfully."
-        }
-        failure {
-            //mail to: symmetricds@jumpmind.com, subject: 'The pipeline failed'
-            slackSend channel: '#jumpmind-devops',
-                  color: 'RED',
-                  message: "The pipeline ${currentBuild.fullDisplayName} completed successfully."
         }
     }
 }
