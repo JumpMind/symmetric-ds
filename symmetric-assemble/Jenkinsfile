@@ -52,7 +52,7 @@ pipeline {
                   message: "The pipeline ${currentBuild.fullDisplayName} completed successfully."
         }
         failure {
-            mail to: symmetricds@jumpmind.com, subject: 'The pipeline failed'
+            #mail to: symmetricds@jumpmind.com, subject: 'The pipeline failed'
             slackSend channel: '#jumpmind-devops',
                   color: 'RED',
                   message: "The pipeline ${currentBuild.fullDisplayName} completed successfully."
