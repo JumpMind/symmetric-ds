@@ -222,6 +222,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                     factory.setValidating(false);
                     factory.setNamespaceAware(true);
                     factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+                    factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+                    factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
                     DocumentBuilder builder = factory.newDocumentBuilder();
                     // the "parse" method also validates XML, will throw an exception if misformatted
                     builder.parse(new InputSource(new StringReader(xml)));
