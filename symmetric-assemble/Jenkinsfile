@@ -1,0 +1,45 @@
+pipeline {
+    agent {
+    	label 'symmetric'
+    }
+
+    environment {
+        MAVEN_JM_PW = credentials('mavenJumpMindPassword')
+        SONAR_TOKEN = credentials('sonarTokenSymmetricDS')
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                echo "Running ${env.BUILD_ID} on ${env.NODE_NAME} node"
+                dir('symmetric-assemble') {
+                    sh './gradlew compileTestJava'
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                dir('symmetric-assemble') {
+                    sh './gradlew test'
+                }
+            }
+        }
+        stage('Quality') {
+            steps {
+                dir('symmetric-assemble') {
+                    sh './gradlew sonarqube'
+                }
+            }
+        }
+        stage('Deploy') {
+            when {
+              expression {
+                currentBuild.result == null || currentBuild.result == 'SUCCESS' 
+              }
+            }
+            steps {
+                echo 'Deploying'
+            }
+        }
+    }
+}
