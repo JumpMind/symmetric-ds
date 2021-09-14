@@ -36,6 +36,8 @@ public class Label extends Span {
 
     public Label() {
         super();
+        getElement().getStyle().set("display", "flex");
+        getElement().getStyle().set("margin", "auto");
     }
 
     public Label(String text) {
@@ -65,6 +67,8 @@ public class Label extends Span {
 
     public Label(Component component) {
         setText(component.getElement().getOuterHTML());
+        getElement().getStyle().set("display", "flex");
+        getElement().getStyle().set("margin", "auto");
     }
 
     public String getText() {
