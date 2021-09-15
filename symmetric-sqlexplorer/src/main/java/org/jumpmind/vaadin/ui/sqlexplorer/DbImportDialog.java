@@ -56,7 +56,9 @@ import com.vaadin.flow.component.upload.Receiver;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller.ScrollDirection;
 
 public class DbImportDialog extends ResizableDialog {
 
@@ -72,7 +74,7 @@ public class DbImportDialog extends ResizableDialog {
 
     private Table selectedTable;
 
-    private VerticalLayout importLayout;
+    private Scroller importLayout;
 
     private ComboBox<DbImportFormat> formatSelect;
 
@@ -124,17 +126,16 @@ public class DbImportDialog extends ResizableDialog {
     }
 
     protected void createImportLayout() {
-        importLayout = new VerticalLayout();
-        importLayout.setSizeFull();
-        importLayout.addClassName("v-scrollable");
-        importLayout.setMargin(false);
-        importLayout.setSpacing(true);
+        VerticalLayout importContent = new VerticalLayout();
+        importContent.setSizeFull();
+        importContent.setMargin(false);
+        importContent.setSpacing(true);
 
-        importLayout.add(new Label("Please select from the following options"));
+        importContent.add(new Label("Please select from the following options"));
 
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
-        importLayout.addAndExpand(formLayout);
+        importContent.addAndExpand(formLayout);
 
         formatSelect = new ComboBox<>("Format");
         formatSelect.setItems( DbImportFormat.values());
@@ -271,6 +272,10 @@ public class DbImportDialog extends ResizableDialog {
         upload.setUploadButton(uploadButton);
         formLayout.add(upload);
 
+        importLayout = new Scroller(importContent);
+        importLayout.setScrollDirection(ScrollDirection.VERTICAL);
+        importLayout.setSizeFull();
+        
         cancelButton = new Button("Cancel", event -> close());
         add(importLayout, 1);
         HorizontalLayout buttonLayout = buildButtonFooter(cancelButton);

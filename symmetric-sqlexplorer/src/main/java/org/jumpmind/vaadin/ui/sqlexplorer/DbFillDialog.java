@@ -42,7 +42,9 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller.ScrollDirection;
 
 public class DbFillDialog extends ResizableDialog {
 
@@ -64,7 +66,7 @@ public class DbFillDialog extends ResizableDialog {
 
     private TableSelectionLayout tableSelectionLayout;
 
-    private VerticalLayout optionLayout;
+    private Scroller optionLayout;
 
     private Checkbox continueBox;
 
@@ -172,16 +174,15 @@ public class DbFillDialog extends ResizableDialog {
     }
 
     protected void createOptionLayout() {
-        optionLayout = new VerticalLayout();
-        optionLayout.addClassName("v-scrollable");
-        optionLayout.setMargin(false);
-        optionLayout.setSpacing(true);
-        optionLayout.setSizeFull();
-        optionLayout.add(new Span("Please choose from the following options"));
+        VerticalLayout optionContent = new VerticalLayout();
+        optionContent.setMargin(false);
+        optionContent.setSpacing(true);
+        optionContent.setSizeFull();
+        optionContent.add(new Span("Please choose from the following options"));
 
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
-        optionLayout.addAndExpand(formLayout);
+        optionContent.addAndExpand(formLayout);
 
         countField = new TextField("Count (# of rows to fill)");
         countField.setValue("1");
@@ -237,7 +238,10 @@ public class DbFillDialog extends ResizableDialog {
         oGroup.setItems("Fill Table(s)", "Send to Sql Editor");
         oGroup.setValue("Fill Table(s)");
         formLayout.add(oGroup);
-
+        
+        optionLayout = new Scroller(optionContent);
+        optionLayout.setScrollDirection(ScrollDirection.VERTICAL);
+        optionLayout.setSizeFull();
     }
 
     protected void confirm() {

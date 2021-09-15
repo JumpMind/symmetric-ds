@@ -54,7 +54,9 @@ import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller.ScrollDirection;
 
 public class DbExportDialog extends ResizableDialog {
 
@@ -110,7 +112,7 @@ public class DbExportDialog extends ResizableDialog {
 
     private TableSelectionLayout tableSelectionLayout;
 
-    private VerticalLayout optionLayout;
+    private Scroller optionLayout;
     
     private HorizontalLayout buttonFooter;
 
@@ -193,16 +195,15 @@ public class DbExportDialog extends ResizableDialog {
     }
 
     protected void createOptionLayout() {
-        optionLayout = new VerticalLayout();
-        optionLayout.addClassName("v-scrollable");
-        optionLayout.setMargin(false);
-        optionLayout.setSpacing(true);
-        optionLayout.setSizeFull();
-        optionLayout.add(new Span("Please choose from the following options"));
+        VerticalLayout optionContent = new VerticalLayout();
+        optionContent.setMargin(false);
+        optionContent.setSpacing(true);
+        optionContent.setSizeFull();
+        optionContent.add(new Span("Please choose from the following options"));
 
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
-        optionLayout.addAndExpand(formLayout);
+        optionContent.addAndExpand(formLayout);
 
         formatSelect = new ComboBox<DbExportFormat>("Format", Arrays.asList(DbExportFormat.values()));
         formatSelect.setValue(DbExportFormat.SQL);
@@ -279,6 +280,9 @@ public class DbExportDialog extends ResizableDialog {
         exportFormatOptionGroup.addValueChangeListener(event -> setExportButtonsEnabled());
         formLayout.add(exportFormatOptionGroup);
 
+        optionLayout = new Scroller(optionContent);
+        optionLayout.setScrollDirection(ScrollDirection.VERTICAL);
+        optionLayout.setSizeFull();
     }
 
     protected void setDefaultCompatibility() {
