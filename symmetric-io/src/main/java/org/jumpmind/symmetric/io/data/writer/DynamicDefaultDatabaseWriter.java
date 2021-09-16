@@ -26,9 +26,9 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.io.data.DataContext;
 
 public class DynamicDefaultDatabaseWriter extends DefaultDatabaseWriter {
-    private IDatabasePlatform targetPlatform;
-    private ISqlTransaction targetTransaction;
-    private String tablePrefix;
+    protected IDatabasePlatform targetPlatform;
+    protected ISqlTransaction targetTransaction;
+    protected String tablePrefix;
 
     public DynamicDefaultDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, String prefix) {
         super(symmetricPlatform);
