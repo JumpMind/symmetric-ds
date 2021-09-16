@@ -61,15 +61,20 @@ public class MailService extends AbstractService implements IMailService {
         this.securityService = securityService;
     }
     
+    public String decryptPassword(String password) {
+    	if (password != null && password.startsWith(SecurityConstants.PREFIX_ENC)) {
+            return securityService.decrypt(password.substring(SecurityConstants.PREFIX_ENC.length()));
+        }
+    	return password;
+    }
+    
     public String sendEmail(String subject, String text, String toRecipients) {
         return sendEmail(subject, text, toRecipients, null, null);
     }
     
     public String sendEmail(String subject, String text, String toRecipients, String ccRecipients, String bccRecipients) {
-        String password = parameterService.getString(ParameterConstants.SMTP_PASSWORD);
-        if (password != null && password.startsWith(SecurityConstants.PREFIX_ENC)) {
-            password = securityService.decrypt(password.substring(SecurityConstants.PREFIX_ENC.length()));
-        }
+        String password = decryptPassword(parameterService.getString(ParameterConstants.SMTP_PASSWORD));
+        
         return sendEmail(subject, text, toRecipients, ccRecipients, bccRecipients, getJavaMailProperties(),
                 parameterService.getString(ParameterConstants.SMTP_TRANSPORT, "smtp"),
                 parameterService.is(ParameterConstants.SMTP_USE_AUTH, false),
@@ -84,7 +89,7 @@ public class MailService extends AbstractService implements IMailService {
         return sendEmail(subject, text, toRecipients, ccRecipients, bccRecipients, getJavaMailProperties(prop),
                 prop.get(ParameterConstants.SMTP_TRANSPORT, "smtp"),
                 prop.is(ParameterConstants.SMTP_USE_AUTH, false),
-                prop.get(ParameterConstants.SMTP_USER), prop.get(ParameterConstants.SMTP_PASSWORD));        
+                prop.get(ParameterConstants.SMTP_USER), decryptPassword(prop.get(ParameterConstants.SMTP_PASSWORD)));        
     }
 
     protected String sendEmail(String subject, String text, String toRecipients, String ccRecipients, String bccRecipients,
@@ -108,7 +113,7 @@ public class MailService extends AbstractService implements IMailService {
 
         try {
             if (useAuth) {
-                transport.connect(user, password);
+                transport.connect(user, decryptPassword(password));
             } else {
                 transport.connect();
             }
@@ -160,8 +165,8 @@ public class MailService extends AbstractService implements IMailService {
             Session session = Session.getInstance(getJavaMailProperties(prop));
             transport = session.getTransport(prop.get(ParameterConstants.SMTP_TRANSPORT, "smtp"));
             if (prop.is(ParameterConstants.SMTP_USE_AUTH, false)) {
-                transport.connect(prop.get(ParameterConstants.SMTP_USER),
-                        prop.get(ParameterConstants.SMTP_PASSWORD));
+                transport.connect("email-smtp.us-east-1.amazonaws.com", prop.get(ParameterConstants.SMTP_USER),
+                        decryptPassword(prop.get(ParameterConstants.SMTP_PASSWORD)));
             } else {
                 transport.connect();
             }
