@@ -208,7 +208,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             configurer.setProperties(parameterService.getAllParameters());
             ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(springContext);
             ctx.addBeanFactoryPostProcessor(configurer);
-            List<String> extensionLocations = new ArrayList<String>();
+            List<String> extensionLocations = new ArrayList<>();
             extensionLocations.add("classpath:/symmetric-ext-points.xml");
             if (registerEngine) {
                 extensionLocations.add("classpath:/symmetric-jmx.xml");
@@ -507,7 +507,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public List<File> listSnapshots() {
         File snapshotsDir = SnapshotUtil.getSnapshotDirectory(this);
-        List<File> files = new ArrayList<File>(FileUtils.listFiles(snapshotsDir, new String[] { "zip" }, false));
+        List<File> files = new ArrayList<>(FileUtils.listFiles(snapshotsDir, new String[] { "zip" }, false));
         Collections.sort(files, new Comparator<File>() {
             public int compare(File o1, File o2) {
                 return -o1.compareTo(o2);

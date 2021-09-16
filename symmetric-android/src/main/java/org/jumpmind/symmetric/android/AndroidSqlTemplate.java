@@ -106,7 +106,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
             Object[] params, int[] types) {
-        return new AndroidSqlReadCursor<T>(sql, toStringArray(params), mapper, this);
+        return new AndroidSqlReadCursor<>(sql, toStringArray(params), mapper, this);
     }
 
     public int update(boolean autoCommit, boolean failOnError, int commitRate,
