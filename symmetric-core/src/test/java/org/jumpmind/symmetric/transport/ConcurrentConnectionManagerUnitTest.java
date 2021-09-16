@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
 import org.jumpmind.symmetric.statistic.MockStatisticManager;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.Reservation;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ConcurrentConnectionManagerUnitTest {
     @Test

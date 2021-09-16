@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.impl.MockNodeService;
 import org.jumpmind.symmetric.service.impl.MockParameterService;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class DefaultNodeIdCreatorTest {

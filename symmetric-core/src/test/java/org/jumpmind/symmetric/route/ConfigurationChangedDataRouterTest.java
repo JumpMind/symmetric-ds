@@ -42,7 +42,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IConfigurationService;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ConfigurationChangedDataRouterTest {
     private static List<NodeGroupLink> THREE_TIER_LINKS;

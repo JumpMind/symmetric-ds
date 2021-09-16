@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data.writer;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TransformDatabaseWriterTest {
     @Test

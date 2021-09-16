@@ -42,20 +42,20 @@ import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.StagingManager;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class StagingDataWriterTest {
     static final File DIR = new File("target/tmp");
     List<String> batchesWritten = new ArrayList<String>();
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         FileUtils.deleteDirectory(DIR);
     }
 
-    @Before
+    @BeforeEach
     public void clearBatches() {
         batchesWritten.clear();
     }

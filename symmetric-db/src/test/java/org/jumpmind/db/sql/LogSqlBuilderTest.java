@@ -26,7 +26,7 @@ import java.sql.Types;
 import java.util.Date;
 
 import org.jumpmind.util.FormatUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LogSqlBuilderTest {
     @Test

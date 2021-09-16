@@ -26,7 +26,7 @@ import java.io.StringWriter;
 
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DatabaseXmlUtilTest {
     @Test

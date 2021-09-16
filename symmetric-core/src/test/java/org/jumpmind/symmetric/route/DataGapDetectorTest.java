@@ -63,8 +63,8 @@ import org.jumpmind.symmetric.service.impl.RouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.internal.verification.VerificationModeFactory;
@@ -88,7 +88,7 @@ public class DataGapDetectorTest {
     DataGapFastDetector detector;
     ThreadLocalRandom rand = ThreadLocalRandom.current();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         sqlTemplate = mock(ISqlTemplate.class);
         sqlTransaction = mock(ISqlTransaction.class);

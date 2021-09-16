@@ -41,8 +41,8 @@ import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 
 public class DataServiceTest {
@@ -52,7 +52,7 @@ public class DataServiceTest {
     IParameterService parameterService;
     ISymmetricDialect symmetricDialect;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         sqlTemplate = mock(ISqlTemplate.class);
         sqlTransaction = mock(ISqlTransaction.class);

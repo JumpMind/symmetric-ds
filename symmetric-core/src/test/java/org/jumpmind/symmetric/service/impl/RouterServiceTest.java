@@ -37,8 +37,8 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class RouterServiceTest {
     final static Channel CHANNEL_2_TEST = new Channel("test", 1);
@@ -46,7 +46,7 @@ public class RouterServiceTest {
     final static String TARGET_NODE_GROUP = "target";
     RouterService routerService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         ISymmetricEngine engine = mock(ISymmetricEngine.class);
         IParameterService parameterService = mock(IParameterService.class);

@@ -24,11 +24,11 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public abstract class AbstractClusterServiceTest extends AbstractServiceTest {
-    @Before
+    @BeforeEach
     public void setupForTest() {
         getClusterService().init();
         getParameterService().saveParameter(ParameterConstants.LOCK_WAIT_RETRY_MILLIS, "1", "test");

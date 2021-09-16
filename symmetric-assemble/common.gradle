@@ -74,9 +74,6 @@ subprojects { subproject ->
     apply plugin: 'propdeps-maven'
     apply plugin: 'propdeps-eclipse'
     apply plugin: 'maven'
-
-    // Integration test plugin
-    apply from: "$symAssembleDir/gradle/integrationTest.gradle"
     
     configurations { deployerJars }
     configurations { testArtifacts.extendsFrom testRuntime }
@@ -93,10 +90,6 @@ subprojects { subproject ->
     
     compileTestJava {
     	options.compilerArgs += '-Xlint:deprecation'
-    }
-    
-    compileIntegrationTestJava {
-        options.compilerArgs += '-Xlint:deprecation'
     }
     
     eclipse {   
@@ -182,30 +175,23 @@ subprojects { subproject ->
     
     test {
         ignoreFailures true
-        systemProperty "test.server", System.getProperty("test.server", "h2")
-        systemProperty "test.client", System.getProperty("test.client", "h2")
-        systemProperty "test.root", System.getProperty("test.root", "h2")
-        systemProperty "port.number", System.getProperty("port.number", "31415")
-        systemProperty "db2i.db.user", System.getProperty("db2i.db.user")
-        systemProperty "db2i.db.password", System.getProperty("db2i.db.password")
         minHeapSize = "128m"
         maxHeapSize = "512m"
-        forkEvery=1
+        useJUnitPlatform {
+            excludeTags("integration")
+        }
     }
-    
-    integrationTest {
+
+    def integrationTest = tasks.register("integrationTest", Test) {
         ignoreFailures true
-        systemProperty "test.server", System.getProperty("test.server", "h2")
-        systemProperty "test.client", System.getProperty("test.client", "h2")
-        systemProperty "test.root", System.getProperty("test.root", "h2")
-        systemProperty "port.number", System.getProperty("port.number", "31415")
-        systemProperty "db2i.db.user", System.getProperty("db2i.db.user")
-        systemProperty "db2i.db.password", System.getProperty("db2i.db.password")
         minHeapSize = "128m"
         maxHeapSize = "512m"
         forkEvery=1
+        useJUnitPlatform {
+            includeTags("integration")
+        }
     }
-    
+        
     jar {
         manifest {
             attributes("Implementation-Title": project.name,
@@ -243,7 +229,7 @@ subprojects { subproject ->
         gsonVersion = '2.8.6'
         jacksonVersion = '2.11.3'
         guavaVersion = '29.0-android'
-        junitVersion = '4.13'
+        junitVersion = '5.7.2'
         spotBugsVersion = '4.2.3'
         log4jVersion = '2.13.3'
         slf4jVersion = '1.7.30'
@@ -274,7 +260,9 @@ subprojects { subproject ->
         compileOnly "com.github.spotbugs:spotbugs-annotations:$spotBugsVersion"
 
         testCompile fileTree(dir: System.getProperty("user.home") + '/.symmetricds/lib', include: '*.jar')
-        testCompile "junit:junit:$junitVersion"
+        testCompile "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+        testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+        
         testCompile "org.hamcrest:hamcrest-all:$hamcrestVersion"
         testCompile "org.mockito:mockito-core:$mockitoVersion"
         testCompile "org.powermock:powermock-api-mockito2:$powerMockVersion"

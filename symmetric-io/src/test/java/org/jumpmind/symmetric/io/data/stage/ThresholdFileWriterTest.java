@@ -26,7 +26,7 @@ import java.io.File;
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.io.stage.ThresholdFileWriter;
 import static org.junit.Assert.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ThresholdFileWriterTest {
     final String TEST_STR = "The quick brown fox jumped over the lazy dog";

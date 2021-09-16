@@ -30,7 +30,7 @@ import java.util.Date;
 import org.jumpmind.db.platform.h2.H2DdlBuilder;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AbstractDatabasePlatformTest {
     @Test

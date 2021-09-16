@@ -41,8 +41,8 @@ import org.jumpmind.symmetric.io.data.transform.TransformedData;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.impl.ExtensionService;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -52,7 +52,7 @@ public class JavaColumnTransformTest {
     IDatabasePlatform platform;
     DataContext context;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         ISqlTransaction sqlTransaction = mock(ISqlTransaction.class);
         platform = mock(IDatabasePlatform.class);

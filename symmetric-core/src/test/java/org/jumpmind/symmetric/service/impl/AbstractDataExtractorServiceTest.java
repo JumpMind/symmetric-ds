@@ -38,14 +38,14 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTest {
     protected static final String TEST_TABLE = "test_extract_table";
     private static int id = 0;
 
-    @Before
+    @BeforeEach
     public void setupForTest() {
         ITriggerRouterService triggerRouterService = getTriggerRouterService();
         TriggerRouter triggerRouter = triggerRouterService.findTriggerRouterById(TEST_TABLE,

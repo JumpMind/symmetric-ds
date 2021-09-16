@@ -28,7 +28,7 @@ import java.util.Map;
 
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataProcessor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class XmlDataReaderTest {
     @Test

@@ -55,8 +55,8 @@ import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDdlBuilder;
 import org.jumpmind.db.platform.sqlite.SqliteDdlBuilder;
 import org.jumpmind.db.platform.tibero.TiberoDdlBuilder;
 import org.jumpmind.db.platform.voltdb.VoltDbDdlBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AbstractDdlBuilderTest {
     AbstractDdlBuilder[] ddlBuilders;
@@ -100,7 +100,7 @@ public class AbstractDdlBuilderTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         ddlBuilders = new AbstractDdlBuilder[] { new H2DdlBuilder(), new OracleDdlBuilder(), new PostgreSqlDdlBuilder() };
         buildForeignKeyDdlBuilders();

@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class OutgoingBatchesTest {
     public static final String[] nodeIds = { "0001", "0002", "0003", "0004", "0005" };

@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ProtocolDataReaderTest {
     @Test
