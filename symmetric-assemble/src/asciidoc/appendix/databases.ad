@@ -88,6 +88,18 @@ by database.
 |
 |
 
+
+|Elasticsearch
+|7.13.2
+|
+|
+|
+|✔
+|
+|
+|
+|✔
+
 |Firebird
 |2.0
 |✔
@@ -360,6 +372,13 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 |✔
 |values current schema   
  
+|Elasticsearch
+|
+|
+|
+|
+|   
+ 
 |Firebird
 |
 |
@@ -520,6 +539,7 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 include::bigquery.ad[]
 include::db2.ad[]
 include::derby.ad[]
+include::elasticserach.ad[]
 include::firebird.ad[]
 include::greenplum.ad[]
 include::h2.ad[]

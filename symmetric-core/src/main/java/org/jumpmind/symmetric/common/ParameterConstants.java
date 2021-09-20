@@ -47,6 +47,9 @@ final public class ParameterConstants {
     public final static String JDBC_EXECUTE_BULK_BATCH_OVERRIDE = "db.jdbc.bulk.execute.batch.override";
     public final static String JDBC_READ_STRINGS_AS_BYTES = "db.read.strings.as.bytes";
     public final static String JDBC_ISOLATION_LEVEL = "db.jdbc.isolation.level";
+    public final static String DB_AWS_ACTIVE_KEY = "target.db.aws.active.key";
+    public final static String DB_AWS_SECRET_KEY = "target.db.aws.secret.key";
+    public final static String DB_AWS_REGION = "target.db.aws.region";
     public final static String DB_USER = "db.user";
     public final static String DB_PASSWORD = "db.password";
     public final static String START_PULL_JOB = "start.pull.job";

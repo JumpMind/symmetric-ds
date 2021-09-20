@@ -64,4 +64,5 @@ final public class DatabaseNamesConstants {
     public final static String BIGQUERY = "bigquery";
     public final static String HANA = "hdb";
     public final static String INGRES = "ingres";
+    public final static String ELASTIC = "elasticsearch";
 }
