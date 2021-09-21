@@ -115,8 +115,10 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
     public Long longValue() {
         Object obj = this.values().iterator().next();
         if (obj != null) {
-            if (obj instanceof Long || obj instanceof Double) {
+            if (obj instanceof Long) {
                 return (Long)obj;
+            } else if (obj instanceof Double) {
+                return ((Double) obj).longValue();   
             } else {
                 return Long.valueOf(obj.toString());    
             }            
