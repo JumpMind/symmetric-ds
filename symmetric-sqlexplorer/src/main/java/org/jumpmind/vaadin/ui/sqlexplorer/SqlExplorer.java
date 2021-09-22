@@ -65,7 +65,6 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -419,7 +418,7 @@ public class SqlExplorer extends CustomSplitLayout {
                         db.getPlatform().dropTables(false, table);
                     } catch (Exception e) {
                         String msg = "Failed to drop " + table.getFullyQualifiedTableName() + ".  ";
-                        CommonUiUtils.notify(msg + "See log file for more details", NotificationVariant.LUMO_CONTRAST);
+                        CommonUiUtils.notify(msg + "See log file for more details");
                         log.warn(msg, e);
                     }
                 }

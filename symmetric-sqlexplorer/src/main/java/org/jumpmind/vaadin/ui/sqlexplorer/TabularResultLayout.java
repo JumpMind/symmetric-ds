@@ -338,7 +338,7 @@ public class TabularResultLayout extends VerticalLayout {
             }
         } catch (SQLException ex) {
             log.error(ex.getMessage(), ex);
-            CommonUiUtils.notify(ex);
+            CommonUiUtils.notifyError();
         }
 
     }

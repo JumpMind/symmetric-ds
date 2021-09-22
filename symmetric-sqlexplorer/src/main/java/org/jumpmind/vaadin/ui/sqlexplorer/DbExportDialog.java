@@ -405,7 +405,7 @@ public class DbExportDialog extends ResizableDialog {
         } catch (IOException e) {
             String msg = "Failed to export to the sql editor";
             log.error(msg, e);
-            CommonUiUtils.notify(msg, e);
+            CommonUiUtils.notifyError(msg, opened -> enableEscapeShortcut(!opened));
         }
     }
 
@@ -444,7 +444,7 @@ public class DbExportDialog extends ResizableDialog {
                     } catch (IOException e) {
                         String msg = "Failed to export to a file";
                         log.error(msg, e);
-                        CommonUiUtils.notify(msg, e);
+                        CommonUiUtils.notifyError(msg, opened -> enableEscapeShortcut(!opened));
                     }
                     return null;
                 });

@@ -39,8 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
@@ -272,7 +270,7 @@ public class DbTree extends TreeGrid<DbTreeNode> {
             }
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
-            CommonUiUtils.notify(ex);
+            CommonUiUtils.notifyError();
         }
     }
 

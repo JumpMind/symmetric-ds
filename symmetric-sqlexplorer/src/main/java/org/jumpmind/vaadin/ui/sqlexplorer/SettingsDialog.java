@@ -41,7 +41,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
 
 public class SettingsDialog extends ResizableDialog {
@@ -201,11 +200,11 @@ public class SettingsDialog extends ResizableDialog {
                 return true;
             } catch (Exception ex) {
                 log.error(ex.getMessage(), ex);
-                CommonUiUtils.notify(ex);
+                CommonUiUtils.notifyError(opened -> enableEscapeShortcut(!opened));
                 return false;
             }
         }
-        CommonUiUtils.notify("Save Failed", "Ensure that all fields are valid", NotificationVariant.LUMO_CONTRAST);
+        CommonUiUtils.notify("Save Failed", "Ensure that all fields are valid", opened -> enableEscapeShortcut(!opened));
         return false;
     }
 }

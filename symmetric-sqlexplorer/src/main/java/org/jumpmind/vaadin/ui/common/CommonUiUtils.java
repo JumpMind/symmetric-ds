@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.function.Consumer;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.time.FastDateFormat;
@@ -64,7 +65,6 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.page.Page;
@@ -139,22 +139,18 @@ public final class CommonUiUtils {
     }
 
     public static void notify(String message) {
-        notify("", message, NotificationVariant.LUMO_SUCCESS);
+        notify("", message);
+    }
+    
+    public static void notify(String message, Consumer<Boolean> shortcutToggler) {
+        notify("", message, shortcutToggler);
     }
 
     public static void notify(String caption, String message) {
-        notify(caption, message, NotificationVariant.LUMO_SUCCESS);
+        notify(caption, message, null);
     }
-
-    public static void notify(String message, NotificationVariant type) {
-        notify("", message, type);
-    }
-
-    public static void notify(String caption, String message, NotificationVariant type) {
-        notify(caption, message, null, type);
-    }
-
-    public static void notify(String caption, String message, Throwable ex, NotificationVariant type) {
+    
+    public static void notify(String caption, String message, Consumer<Boolean> shortcutToggler) {
         Page page = UI.getCurrent().getPage();
         if (page != null) {
             HorizontalLayout layout = new HorizontalLayout();
@@ -178,6 +174,10 @@ public final class CommonUiUtils {
             layout.add(closeIcon);
             layout.setVerticalComponentAlignment(Alignment.START, closeIcon);
             
+            if (shortcutToggler != null) {
+                notification.addOpenedChangeListener(event -> shortcutToggler.accept(event.isOpened()));
+            }
+            
             notification.setPosition(Position.MIDDLE);
             notification.setDuration(-1);
             notification.open();
@@ -191,13 +191,21 @@ public final class CommonUiUtils {
         }
         return line.toString();
     }
-
-    public static void notify(String message, Throwable ex) {
-        notify("An error occurred", message, ex, NotificationVariant.LUMO_ERROR);
+    
+    public static void notifyError() {
+        notifyError((Consumer<Boolean>) null);
+    }
+    
+    public static void notifyError(Consumer<Boolean> shortcutToggler) {
+        notify("An unexpected error occurred", "See the log file for additional details", shortcutToggler);
     }
 
-    public static void notify(Throwable ex) {
-        notify("An unexpected error occurred", "See the log file for additional details", ex, NotificationVariant.LUMO_ERROR);
+    public static void notifyError(String message) {
+        notifyError(message, null);
+    }
+    
+    public static void notifyError(String message, Consumer<Boolean> shortcutToggler) {
+        notify("An error occurred", message, shortcutToggler);
     }
 
     public static Object getObject(ResultSet rs, int i) throws SQLException {

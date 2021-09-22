@@ -244,7 +244,7 @@ public class DbImportDialog extends ResizableDialog {
                     return new BufferedOutputStream(new FileOutputStream(file));
                 } catch (Exception e) {
                     log.warn(e.getMessage(), e);
-                    CommonUiUtils.notify("Failed to import " + filename, e);
+                    CommonUiUtils.notifyError("Failed to import " + filename, opened -> enableEscapeShortcut(!opened));
                 }
                 return null;
             }
