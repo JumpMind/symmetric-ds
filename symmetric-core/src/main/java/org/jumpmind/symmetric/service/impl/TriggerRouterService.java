@@ -2304,7 +2304,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             router.setTargetSchemaName(StringUtils.trimToNull(rs.getString("target_schema_name")));
             router.setTargetTableName(StringUtils.trimToNull(rs.getString("target_table_name")));
 
-            String condition = rs.getString(StringUtils.trimToNull("router_expression"));
+            String condition = StringUtils.trimToNull(rs.getString("router_expression"));
             if (!StringUtils.isBlank(condition)) {
                 router.setRouterExpression(condition);
             }
