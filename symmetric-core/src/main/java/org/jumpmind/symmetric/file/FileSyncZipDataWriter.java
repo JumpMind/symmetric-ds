@@ -24,10 +24,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -238,6 +241,10 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                 if (file.exists()) {
                                     byteCount += file.length();
                                     ZipEntry entry = new ZipEntry(entryName.toString());
+                                    BasicFileAttributes attr = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+                                    // note: as of 8/21 getting the creation time won't work on unix file systems EVEN IF THEY HAVE EXT4
+                                    // you also cannot set the creation time on unix systems (birth date) using setCreationTime, so this only works for windows
+                                    entry.setCreationTime(attr.creationTime());
                                     entry.setSize(file.length());
                                     entry.setTime(file.lastModified());
                                     zos.putNextEntry(entry);
