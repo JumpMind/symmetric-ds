@@ -72,7 +72,7 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
     protected PermissionResult getLogMinePermission() {
         final PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "");
         try {
-            if (getSqlTemplate().queryForInt("SELECT COUNT(*) FROM fn_my_permissions(NULL, 'SERVER') WHERE permission_name='ALTER'") > 0) {
+            if (getSqlTemplate().queryForInt("SELECT COUNT(*) FROM fn_my_permissions(NULL, 'SERVER') WHERE permission_name='ALTER ANY DATABASE'") > 0) {
                 result.setStatus(Status.PASS);
             } else {
                 result.setStatus(Status.FAIL);
