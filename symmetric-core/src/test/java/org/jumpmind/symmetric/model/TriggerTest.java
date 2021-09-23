@@ -25,7 +25,7 @@ import static org.junit.Assert.assertArrayEquals;
 import java.sql.Types;
 
 import org.jumpmind.db.model.Column;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TriggerTest {
     @Test

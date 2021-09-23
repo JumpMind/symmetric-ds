@@ -24,7 +24,7 @@ import java.util.Date;
 
 import org.apache.commons.lang3.time.DateUtils;
 import static org.junit.Assert.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AppUtilsTest {
     @Test

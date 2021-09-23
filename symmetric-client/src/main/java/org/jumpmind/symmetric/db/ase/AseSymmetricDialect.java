@@ -128,12 +128,10 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                     .executeCallback(new IConnectionCallback<Boolean>() {
                         public Boolean execute(Connection con) throws SQLException {
                             String previousCatalog = con.getCatalog();
-                            Statement stmt = null;
-                            try {
+                            try (Statement stmt = con.createStatement()) {
                                 if (catalogName != null) {
                                     con.setCatalog(catalogName);
                                 }
-                                stmt = con.createStatement();
                                 stmt.execute(sql);
                             } catch (Exception e) {
                                 log.warn("Error removing {}: {}", triggerName, e.getMessage());
@@ -141,10 +139,6 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                             } finally {
                                 if (catalogName != null) {
                                     con.setCatalog(previousCatalog);
-                                }
-                                try {
-                                    stmt.close();
-                                } catch (Exception e) {
                                 }
                             }
                             return Boolean.FALSE;
@@ -182,9 +176,8 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                 .execute(new IConnectionCallback<Boolean>() {
                     public Boolean execute(Connection con) throws SQLException {
                         String previousCatalog = con.getCatalog();
-                        PreparedStatement stmt = con
-                                .prepareStatement("select count(*) from dbo.sysobjects where type = 'TR' AND name = ?");
-                        try {
+                        String sql = "select count(*) from dbo.sysobjects where type = 'TR' AND name = ?";
+                        try (PreparedStatement stmt = con.prepareStatement(sql)) {
                             if (catalogName != null) {
                                 con.setCatalog(catalogName);
                             }
@@ -193,20 +186,13 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                             try {
                                 rs = stmt.executeQuery();
                             } catch (Exception ex) {
-                                try {
-                                    stmt.close();
-                                } catch (Exception exClose) {
-                                    log.debug("Falied to close stmt", exClose);
-                                }
                                 if (catalogName != null) {
                                     log.debug(
                                             "Tried: select count(*) from dbo.sysobjects where type = 'TR' AND name ='{}' which failed, will try again with catalog.",
                                             triggerName);
                                     // try again with the source catalog prefixed.
-                                    try {
-                                        PreparedStatement stmt2 = con
-                                                .prepareStatement(String.format("select count(*) from %s.dbo.sysobjects where type = 'TR' AND name = ?",
-                                                        catalogName));
+                                    sql = String.format("select count(*) from %s.dbo.sysobjects where type = 'TR' AND name = ?", catalogName);
+                                    try (PreparedStatement stmt2 = con.prepareStatement(sql)) {
                                         stmt2.setString(1, triggerName);
                                         log.debug("TRY AGAIN Exceute:  select count(*) from {}.dbo.sysobjects where type = 'TR' AND name ='{}'", catalogName,
                                                 triggerName);
@@ -233,7 +219,6 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                             if (catalogName != null) {
                                 con.setCatalog(previousCatalog);
                             }
-                            stmt.close();
                         }
                         return Boolean.FALSE;
                     }

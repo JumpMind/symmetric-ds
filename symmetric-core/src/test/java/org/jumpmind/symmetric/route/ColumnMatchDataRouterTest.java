@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.route.ColumnMatchDataRouter.Expression;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ColumnMatchDataRouterTest {
     @Test

@@ -60,7 +60,7 @@ public class AndroidJobManager implements IJobManager {
     }
 
     public List<IJob> getJobs() {
-        List<IJob> jobs = new ArrayList<IJob>(1);
+        List<IJob> jobs = new ArrayList<>(1);
         if (job != null) {
             jobs.add(job);
         }

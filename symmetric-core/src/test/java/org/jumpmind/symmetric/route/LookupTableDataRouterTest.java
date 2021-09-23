@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.route;
 import static org.junit.Assert.*;
 
 import org.jumpmind.symmetric.SyntaxParsingException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LookupTableDataRouterTest {
     @Test

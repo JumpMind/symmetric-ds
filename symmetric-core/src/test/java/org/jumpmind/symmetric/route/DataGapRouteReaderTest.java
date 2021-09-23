@@ -56,8 +56,8 @@ import org.jumpmind.symmetric.service.impl.ParameterService;
 import org.jumpmind.symmetric.service.impl.RouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -76,7 +76,7 @@ public class DataGapRouteReaderTest {
     IParameterService parameterService;
     NodeChannel nodeChannel;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         sqlTemplate = mock(ISqlTemplate.class);
         dataService = mock(DataService.class);

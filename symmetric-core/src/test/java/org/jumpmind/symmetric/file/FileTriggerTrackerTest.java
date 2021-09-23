@@ -31,8 +31,8 @@ import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.Router;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class FileTriggerTrackerTest {
     File snapshotDirectory = new File("target/snapshots");
@@ -42,7 +42,7 @@ public class FileTriggerTrackerTest {
     File fileInDirectory2 = new File(directory, "2.csv");
     File fileInSubDirectory = new File(subdirectory, "3.doc");
 
-    @Before
+    @BeforeEach
     public void setupTest() throws Exception {
         recreateDirectorySpecAndFiles();
     }

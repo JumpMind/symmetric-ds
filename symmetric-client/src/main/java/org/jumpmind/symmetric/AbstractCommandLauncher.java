@@ -243,7 +243,7 @@ public abstract class AbstractCommandLauncher {
     }
 
     public static File[] findEnginePropertiesFiles() {
-        List<File> propFiles = new ArrayList<File>();
+        List<File> propFiles = new ArrayList<>();
         File enginesDir = new File(getEnginesDir());
         File[] files = enginesDir.listFiles();
         if (files != null) {

@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.impl.BandwidthService;
 import org.jumpmind.symmetric.service.impl.MockNodeService;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class HttpBandwidthBalancerTest {
     @Test

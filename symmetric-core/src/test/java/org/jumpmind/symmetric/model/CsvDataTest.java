@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CsvDataTest {
     @Test

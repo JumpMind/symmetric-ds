@@ -65,13 +65,13 @@ import org.jumpmind.symmetric.transport.MockTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractDataLoaderServiceTest.class);
     protected final static String TEST_TABLE = "test_dataloader_table";

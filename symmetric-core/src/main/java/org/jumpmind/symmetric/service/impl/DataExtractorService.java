@@ -96,6 +96,7 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.ProtocolException;
 import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
+import org.jumpmind.symmetric.io.data.reader.IExtractDataReaderSource;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
@@ -1160,14 +1161,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected ExtractDataReader buildExtractDataReader(Node sourceNode, Node targetNode, OutgoingBatch currentBatch, ProcessInfo processInfo) {
-        return new ExtractDataReader(symmetricDialect.getPlatform(),
-                new SelectFromSymDataSource(engine, currentBatch, sourceNode, targetNode, processInfo));
+        boolean containsBigLob = engine.getConfigurationService().getNodeChannel(currentBatch.getChannelId(), false).getChannel().isContainsBigLob();
+        return buildExtractDataReader(sourceNode, targetNode, currentBatch, processInfo, containsBigLob);
     }
 
     protected ExtractDataReader buildExtractDataReader(Node sourceNode, Node targetNode, OutgoingBatch currentBatch, ProcessInfo processInfo,
             boolean containsBigLob) {
-        return new ExtractDataReader(symmetricDialect.getPlatform(),
-                new SelectFromSymDataSource(engine, currentBatch, sourceNode, targetNode, processInfo, containsBigLob));
+        IExtractDataReaderSource source = AppUtils.newInstance(IExtractDataReaderSource.class, SelectFromSymDataSource.class,
+                new Object[] { engine, currentBatch, sourceNode, targetNode, processInfo, containsBigLob },
+                new Class[] { ISymmetricEngine.class, OutgoingBatch.class, Node.class, Node.class, ProcessInfo.class, boolean.class });
+        return new ExtractDataReader(symmetricDialect.getPlatform(), source);
     }
 
     protected Statistics getExtractStats(IDataWriter writer, OutgoingBatch currentBatch) {
@@ -1579,8 +1582,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     targetNode.setNodeId("-1");
                 }
                 if (targetNode != null) {
-                    IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
-                            new SelectFromSymDataSource(engine, batch, sourceNode, targetNode, new ProcessInfo()));
+                    IDataReader dataReader = buildExtractDataReader(sourceNode, targetNode, batch, new ProcessInfo());
                     DataContext ctx = new DataContext();
                     ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                     ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
@@ -1609,8 +1611,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 targetNode.setNodeId("-1");
             }
             if (targetNode != null) {
-                IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
-                        new SelectFromSymDataSource(engine, outgoingBatch, sourceNode, targetNode, new ProcessInfo()));
+                IDataReader dataReader = buildExtractDataReader(sourceNode, targetNode, outgoingBatch, new ProcessInfo());
                 DataContext ctx = new DataContext();
                 ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                 ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());

@@ -45,15 +45,17 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Tag("integration")
 public abstract class AbstractServiceTest {
     static protected ISymmetricEngine engine;
     private final static Logger logger = LoggerFactory.getLogger(AbstractServiceTest.class);
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         if (engine == null) {
             // Level old = setLoggingLevelForTest(Level.DEBUG);

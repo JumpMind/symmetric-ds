@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 import org.jumpmind.properties.DefaultParameterParser;
 import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DefaultParameterParserTest {
     @Test

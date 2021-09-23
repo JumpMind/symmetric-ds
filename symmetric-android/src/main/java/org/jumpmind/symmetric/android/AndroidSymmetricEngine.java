@@ -219,7 +219,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     }
 
     public List<File> listSnapshots() {
-        return new ArrayList<File>(0);
+        return new ArrayList<>(0);
     }
 
     public IMonitorService getMonitorService() {

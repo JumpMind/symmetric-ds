@@ -39,7 +39,7 @@ public class AndroidSqlTransaction implements ISqlTransaction {
     protected boolean autoCommit = false;
     protected String sql;
     protected boolean needsRolledback = false;
-    protected List<ISqlTransactionListener> listeners = new ArrayList<ISqlTransactionListener>();
+    protected List<ISqlTransactionListener> listeners = new ArrayList<>();
 
     public AndroidSqlTransaction(AndroidSqlTemplate sqlTemplate, boolean autoCommit) {
         this.autoCommit = autoCommit;
@@ -148,7 +148,7 @@ public class AndroidSqlTransaction implements ISqlTransaction {
     }
 
     public List<Object> getUnflushedMarkers(boolean clear) {
-        return new ArrayList<Object>(0);
+        return new ArrayList<>(0);
     }
 
     public void allowInsertIntoAutoIncrementColumns(boolean value, Table table, String quote,
@@ -162,12 +162,10 @@ public class AndroidSqlTransaction implements ISqlTransaction {
 
     @Override
     public boolean isAllowInsertIntoAutoIncrement() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public void clearBatch() {
-        // TODO Auto-generated method stub
     }
 }
