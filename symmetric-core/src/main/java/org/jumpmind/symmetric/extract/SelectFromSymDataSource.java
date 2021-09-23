@@ -60,19 +60,19 @@ import org.slf4j.LoggerFactory;
 
 public class SelectFromSymDataSource extends SelectFromSource {
     private final Logger log = LoggerFactory.getLogger(getClass());
-    private OutgoingBatch outgoingBatch;
-    private TriggerHistory lastTriggerHistory;
-    private String lastRouterId;
-    private boolean requiresLobSelectedFromSource;
-    private ISqlReadCursor<Data> cursor;
-    private SelectFromTableSource reloadSource;
-    private Node targetNode;
-    private ProcessInfo processInfo;
-    private ColumnsAccordingToTriggerHistory columnsAccordingToTriggerHistory;
-    private Map<Integer, TriggerRouter> triggerRoutersByTriggerHist;
-    private Map<Integer, CounterStat> missingTriggerRoutersByTriggerHist = new HashMap<Integer, CounterStat>();
-    private boolean containsBigLob;
-    private boolean dialectHasNoOldBinaryData;
+    protected OutgoingBatch outgoingBatch;
+    protected TriggerHistory lastTriggerHistory;
+    protected String lastRouterId;
+    protected boolean requiresLobSelectedFromSource;
+    protected ISqlReadCursor<Data> cursor;
+    protected SelectFromTableSource reloadSource;
+    protected Node targetNode;
+    protected ProcessInfo processInfo;
+    protected ColumnsAccordingToTriggerHistory columnsAccordingToTriggerHistory;
+    protected Map<Integer, TriggerRouter> triggerRoutersByTriggerHist;
+    protected Map<Integer, CounterStat> missingTriggerRoutersByTriggerHist = new HashMap<Integer, CounterStat>();
+    protected boolean containsBigLob;
+    protected boolean dialectHasNoOldBinaryData;
 
     public SelectFromSymDataSource(ISymmetricEngine engine, OutgoingBatch outgoingBatch, Node sourceNode, Node targetNode,
             ProcessInfo processInfo, boolean containsBigLob) {
@@ -90,12 +90,6 @@ public class SelectFromSymDataSource extends SelectFromSource {
                 || symmetricDialect.getName().equals(DatabaseNamesConstants.MSSQL2005)
                 || symmetricDialect.getName().equals(DatabaseNamesConstants.MSSQL2008)
                 || symmetricDialect.getName().equals(DatabaseNamesConstants.MSSQL2016);
-    }
-
-    public SelectFromSymDataSource(ISymmetricEngine engine, OutgoingBatch outgoingBatch,
-            Node sourceNode, Node targetNode, ProcessInfo processInfo) {
-        this(engine, outgoingBatch, sourceNode, targetNode, processInfo,
-                engine.getConfigurationService().getNodeChannel(outgoingBatch.getChannelId(), false).getChannel().isContainsBigLob());
     }
 
     public CsvData next() {
@@ -210,7 +204,7 @@ public class SelectFromSymDataSource extends SelectFromSource {
             }
         }
         SelectFromTableEvent event = new SelectFromTableEvent(targetNode, triggerRouter, triggerHistory, initialLoadSelect);
-        reloadSource = new SelectFromTableSource(engine, outgoingBatch, batch, event);
+        reloadSource = createSelectFromTableSource(event);
         data = (Data) reloadSource.next();
         sourceTable = reloadSource.getSourceTable();
         targetTable = reloadSource.getTargetTable();
@@ -219,6 +213,10 @@ public class SelectFromSymDataSource extends SelectFromSource {
             data = (Data) next();
         }
         return data;
+    }
+
+    protected SelectFromTableSource createSelectFromTableSource(SelectFromTableEvent event) {
+        return new SelectFromTableSource(engine, outgoingBatch, batch, event);
     }
 
     protected boolean processCreateEvent(TriggerHistory triggerHistory, String routerId, Data data) {
