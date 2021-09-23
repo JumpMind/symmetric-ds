@@ -116,7 +116,10 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
         String sourceNativeType = getBareNativeType(sourceColumn);
         String targetNativeType = getBareNativeType(targetColumn);
 
-        if (sourceNativeType.equals(targetNativeType)) {
+        if (sourceNativeType.equals(targetNativeType)
+                || ((sourceNativeType.equalsIgnoreCase("CLOB") || sourceNativeType.equalsIgnoreCase("LONG VARCHAR"))
+                        && (targetNativeType.equalsIgnoreCase("CHAR") || targetNativeType.equalsIgnoreCase("VARCHAR")
+                                || targetNativeType.equalsIgnoreCase("LONG VARCHAR")))) {
             printIdentifier(getColumnName(sourceColumn), ddl);
         } else {
             // Derby currently has the limitation that it cannot convert numeric
