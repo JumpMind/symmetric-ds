@@ -2298,13 +2298,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             router.setSyncOnInsert(rs.getBoolean("r_sync_on_insert"));
             router.setSyncOnUpdate(rs.getBoolean("r_sync_on_update"));
             router.setSyncOnDelete(rs.getBoolean("r_sync_on_delete"));
-            router.setTargetCatalogName(rs.getString("target_catalog_name"));
+            router.setTargetCatalogName(StringUtils.trimToNull(rs.getString("target_catalog_name")));
             router.setNodeGroupLink(getNodeGroupLink(
                     rs.getString("source_node_group_id"), rs.getString("target_node_group_id")));
-            router.setTargetSchemaName(rs.getString("target_schema_name"));
-            router.setTargetTableName(rs.getString("target_table_name"));
+            router.setTargetSchemaName(StringUtils.trimToNull(rs.getString("target_schema_name")));
+            router.setTargetTableName(StringUtils.trimToNull(rs.getString("target_table_name")));
 
-            String condition = rs.getString("router_expression");
+            String condition = rs.getString(StringUtils.trimToNull("router_expression"));
             if (!StringUtils.isBlank(condition)) {
                 router.setRouterExpression(condition);
             }
@@ -2418,9 +2418,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             triggerRouter.setLastUpdateTime(rs.getDateTime("last_update_time"));
             triggerRouter.setLastUpdateBy(rs.getString("last_update_by"));
             triggerRouter.setInitialLoadOrder(rs.getInt("initial_load_order"));
-            triggerRouter.setInitialLoadSelect(rs.getString("initial_load_select"));
+            triggerRouter.setInitialLoadSelect(StringUtils.trimToNull(rs.getString("initial_load_select")));
             triggerRouter.setEnabled(rs.getBoolean("enabled"));
-            triggerRouter.setInitialLoadDeleteStmt(rs.getString("initial_load_delete_stmt"));
+            triggerRouter.setInitialLoadDeleteStmt(StringUtils.trimToNull(rs.getString("initial_load_delete_stmt")));
             triggerRouter.setPingBackEnabled(rs.getBoolean("ping_back_enabled"));
 
             return triggerRouter;
