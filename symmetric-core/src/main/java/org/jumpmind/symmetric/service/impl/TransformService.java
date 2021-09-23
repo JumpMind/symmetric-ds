@@ -502,12 +502,12 @@ public class TransformService extends AbstractService implements ITransformServi
             table.setTransformId(rs.getString("transform_id"));
             table.setNodeGroupLink(configurationService
                .getNodeGroupLinkFor(rs.getString("source_node_group_id"), rs.getString("target_node_group_id"), false));
-            table.setSourceCatalogName(rs.getString("source_catalog_name"));
-            table.setSourceSchemaName(rs.getString("source_schema_name"));
+            table.setSourceCatalogName(StringUtils.trimToNull(rs.getString("source_catalog_name")));
+            table.setSourceSchemaName(StringUtils.trimToNull(rs.getString("source_schema_name")));
             table.setSourceTableName(rs.getString("source_table_name"));
-            table.setTargetCatalogName(rs.getString("target_catalog_name"));
-            table.setTargetSchemaName(rs.getString("target_schema_name"));
-            table.setTargetTableName(rs.getString("target_table_name"));
+            table.setTargetCatalogName(StringUtils.trimToNull(rs.getString("target_catalog_name")));
+            table.setTargetSchemaName(StringUtils.trimToNull(rs.getString("target_schema_name")));
+            table.setTargetTableName(StringUtils.trimToNull(rs.getString("target_table_name")));
             try {
                 table.setTransformPoint(TransformPoint.valueOf(rs.getString("transform_point")
                         .toUpperCase()));
