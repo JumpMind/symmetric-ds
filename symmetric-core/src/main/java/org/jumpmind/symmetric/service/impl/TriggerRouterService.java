@@ -1937,6 +1937,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         (trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded()) ? table.getName()
                                 : trigger.getSourceTableNameUnescaped());
             }
+            if (hist == null) {
+            	hist = historyMap.get(newTriggerHist.getTriggerHistoryId());
+            }
             return hist;
         }
         if (trigger.isSyncOnInsert()) {

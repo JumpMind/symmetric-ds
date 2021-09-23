@@ -443,7 +443,8 @@ final public class ParameterConstants {
     public final static String[] ALL_GOOGLE_BIG_QUERY_PARAMS = new String[] { GOOGLE_BIG_QUERY_MAX_ROWS_PER_RPC, GOOGLE_BIG_QUERY_LOCATION,
             GOOGLE_BIG_QUERY_PROJECT_ID, GOOGLE_BIG_QUERY_SECURITY_CREDENTIALS_PATH };
     public final static String HBASE_SITE_XML_PATH = "hbase.site.xml.path";
-
+    public final static String MONGO_DEFAULT_DATABASE = "mongodb.default.database";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
