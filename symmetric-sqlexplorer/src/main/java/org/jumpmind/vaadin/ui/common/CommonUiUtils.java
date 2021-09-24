@@ -42,6 +42,7 @@ import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.util.FormatUtils;
@@ -154,17 +155,16 @@ public final class CommonUiUtils {
         Page page = UI.getCurrent().getPage();
         if (page != null) {
             HorizontalLayout layout = new HorizontalLayout();
-            layout.setWidth("400px");
+            layout.getStyle().set("max-width", "400px");
             Notification notification = new Notification(layout);
             
             Label label;
-            if (caption != null) {
-                label = new Label(caption + "\n" + contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
+            if (!StringUtils.isBlank(caption)) {
+                label = new Label(caption + "<hr>" + contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
             } else {
                 label = new Label(contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
             }
             layout.add(label);
-            layout.setVerticalComponentAlignment(Alignment.CENTER, label);
             
             Icon closeIcon = new Icon(VaadinIcon.CLOSE_CIRCLE_O);
             closeIcon.setSize("36px");
