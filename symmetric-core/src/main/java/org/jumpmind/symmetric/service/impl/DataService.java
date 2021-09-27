@@ -2539,10 +2539,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void reloadMissingForeignKeyRowsForLoad(String sourceNodeId, long batchId, long rowNumber, Table table, CsvData data, String channelId) {
-        String rowData = data.getCsvData(CsvData.ROW_DATA);
-        // Replace all actual newlines and carriage returns with \n and \r strings
-        rowData = rowData.replaceAll("\n", "\\n").replaceAll("\r", "\\r");
-        rowData = CsvUtils.escapeCsvData(rowData);
+        String rowData = CsvUtils.escapeCsvData(data.getCsvData(CsvData.ROW_DATA));
         Node sourceNode = engine.getNodeService().findNode(sourceNodeId);
         String script = "try { engine.getDataService().sendMissingForeignKeyRowsForLoad(" + batchId + ", \""
                 + engine.getNodeId() + "\", " + rowNumber + ", " + rowData + "); } catch (Exception e) { }";
