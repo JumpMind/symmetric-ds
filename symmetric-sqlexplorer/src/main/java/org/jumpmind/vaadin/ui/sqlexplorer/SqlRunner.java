@@ -408,6 +408,7 @@ public class SqlRunner extends Thread {
         content.setMargin(false);
         panel.setContent(content);
         Label label = new Label("<pre>" + text.toString() + "</pre>");
+        label.getStyle().set("margin", null);
         if (StringUtils.isNotBlank(style)) {
             label.setClassName(style);
         }
