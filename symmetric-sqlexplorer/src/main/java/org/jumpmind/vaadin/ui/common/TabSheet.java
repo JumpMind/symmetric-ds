@@ -278,7 +278,7 @@ public class TabSheet extends Div {
             tabHeader.setVerticalComponentAlignment(Alignment.END, nameSpan);
             
             closeIcon = new Icon(VaadinIcon.CLOSE);
-            closeIcon.setSize("12px");
+            closeIcon.setSize("16px");
             closeIcon.addClickListener(event -> TabSheet.this.remove(EnhancedTab.this));
             closeIcon.setVisible(closeable);
             tabHeader.add(closeIcon);
