@@ -449,7 +449,11 @@ public class SqlExplorer extends CustomSplitLayout {
                 String selectedTabCaption = null;
                 for (IInfoPanel panel : infoTabs) {
                     selectedTabCaption = panel.getSelectedTabCaption();
-                    contentTabs.remove(contentTabs.getTab((Component) panel));
+                    
+                    EnhancedTab tab = contentTabs.getTab((Component) panel);
+                    if (tab != null) {
+                        contentTabs.remove(tab);
+                    }
                 }
                 infoTabs.clear();
 
