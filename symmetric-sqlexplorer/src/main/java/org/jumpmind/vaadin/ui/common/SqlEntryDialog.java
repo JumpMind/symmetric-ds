@@ -35,8 +35,8 @@ public class SqlEntryDialog extends ResizableDialog {
         editor.setMode(AceMode.sql);
         editor.setValue(sql);
         editor.setSizeFull();
-        content.add(editor, buildButtonFooter(buildCloseButton()));
-        content.expand(editor);
+        innerContent.add(editor, buildButtonFooter(buildCloseButton()));
+        innerContent.expand(editor);
     }
     
     public String getSQL() {

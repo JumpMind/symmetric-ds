@@ -117,6 +117,7 @@ public class DbFillDialog extends ResizableDialog {
                 nextButton.setEnabled(tableSelectionLayout.getSelectedTables().size() > 0);
             };
         };
+        tableSelectionLayout.setHeight("318px");
 
         createOptionLayout();
 
@@ -303,9 +304,9 @@ public class DbFillDialog extends ResizableDialog {
     }
 
     protected void previous() {
-        content.remove(optionLayout);
-        content.addComponentAtIndex(0, tableSelectionLayout);
-        content.expand(tableSelectionLayout);
+        innerContent.remove(optionLayout);
+        innerContent.addComponentAtIndex(0, tableSelectionLayout);
+        innerContent.expand(tableSelectionLayout);
         fillButton.setVisible(false);
         if (fillShortcutRegistration != null) {
             fillShortcutRegistration.remove();
@@ -319,9 +320,9 @@ public class DbFillDialog extends ResizableDialog {
     }
 
     protected void next() {
-        content.remove(tableSelectionLayout);
-        content.addComponentAtIndex(0, optionLayout);
-        content.expand(optionLayout);
+        innerContent.remove(tableSelectionLayout);
+        innerContent.addComponentAtIndex(0, optionLayout);
+        innerContent.expand(optionLayout);
         nextButton.setVisible(false);
         if (nextShortcutRegistration != null) {
             nextShortcutRegistration.remove();

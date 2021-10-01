@@ -104,7 +104,8 @@ public class SqlHistoryDialog extends ResizableDialog {
             }
         });
 
-        grid.setSizeFull();
+        grid.setHeight("120px");
+        grid.setWidthFull();
 
         mainLayout.addAndExpand(grid);
         

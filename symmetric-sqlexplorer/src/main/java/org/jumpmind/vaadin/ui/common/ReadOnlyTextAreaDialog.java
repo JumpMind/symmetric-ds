@@ -95,12 +95,11 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
         if (shortcutToggler != null) {
             addOpenedChangeListener(event -> shortcutToggler.accept(event.isOpened()));
         }
-        
-        content.setHeight("90%");
 
         wrapper = new VerticalLayout();
         wrapper.setMargin(false);
-        wrapper.setSizeFull();
+        wrapper.setHeight("100px");
+        wrapper.setWidthFull();
         textField = new TextArea();
         textField.getStyle().set("max-height", "480px");
         textField.setSizeFull();

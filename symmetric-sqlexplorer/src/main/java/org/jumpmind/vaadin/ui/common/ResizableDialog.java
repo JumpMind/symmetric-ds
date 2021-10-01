@@ -43,7 +43,7 @@ public class ResizableDialog extends Dialog {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
     
-    protected VerticalLayout content;
+    protected VerticalLayout innerContent;
     
     protected Label captionLabel;
     
@@ -61,17 +61,23 @@ public class ResizableDialog extends Dialog {
         setModal(true);
         setResizable(true);
         
+        VerticalLayout content = new VerticalLayout();
+        content.setSizeFull();
+        content.setPadding(false);
+        super.add(content);
+        
         if (caption != null) {
             captionLabel = new Label(caption + "<hr>");
-            super.add(captionLabel);
+            captionLabel.setWidthFull();
+            captionLabel.getStyle().set("margin", null);
+            content.add(captionLabel);
         }
         
-        content = new VerticalLayout();
-        content.setWidthFull();
-        content.setHeight("92%");
-        content.setMargin(false);
-        content.setSpacing(false);
-        super.add(content);
+        innerContent = new VerticalLayout();
+        innerContent.setWidthFull();
+        innerContent.setMargin(false);
+        innerContent.setSpacing(false);
+        content.addAndExpand(innerContent);
         
         UI.getCurrent().addShortcutListener(() -> {
             if (!"100%".equals(getWidth())) {
@@ -89,17 +95,17 @@ public class ResizableDialog extends Dialog {
     }
     
     protected void add(Component component, int expandRatio) {
-        content.add(component);
-        content.setFlexGrow(expandRatio, component);
+        innerContent.add(component);
+        innerContent.setFlexGrow(expandRatio, component);
     }
     
     protected void add(Component component) {
-        content.add(component);
+        innerContent.add(component);
     }
     
     protected void addComponents(Component... components) {
         for (Component component : components) {
-            content.add(component);    
+            innerContent.add(component);    
         }        
     }
 

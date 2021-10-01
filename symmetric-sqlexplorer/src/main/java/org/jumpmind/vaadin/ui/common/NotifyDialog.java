@@ -43,8 +43,6 @@ public class NotifyDialog extends ResizableDialog {
         super(caption);
         setWidth("400px");
         setHeight("320px");
-        
-        content.setHeight("86%");
 
         final Scroller messageArea = new Scroller();
         messageArea.setSizeFull();
@@ -60,8 +58,8 @@ public class NotifyDialog extends ResizableDialog {
         final Label textLabel = new Label(message);
         messageArea.setContent(textLabel);
         
-        content.add(messageArea);
-        content.expand(messageArea);
+        innerContent.add(messageArea);
+        innerContent.expand(messageArea);
 
         final Button detailsButton = new Button("Details");
         detailsButton.setVisible(ex != null);
@@ -83,7 +81,7 @@ public class NotifyDialog extends ResizableDialog {
             }
         });
 
-        content.add(buildButtonFooter(detailsButton, buildCloseButton()));
+        innerContent.add(buildButtonFooter(detailsButton, buildCloseButton()));
 
     }
 
