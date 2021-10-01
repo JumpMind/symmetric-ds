@@ -539,7 +539,7 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 include::bigquery.ad[]
 include::db2.ad[]
 include::derby.ad[]
-include::elasticserach.ad[]
+include::elasticsearch.ad[]
 include::firebird.ad[]
 include::greenplum.ad[]
 include::h2.ad[]
