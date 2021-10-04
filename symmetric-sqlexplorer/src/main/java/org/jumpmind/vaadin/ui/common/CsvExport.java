@@ -36,7 +36,7 @@ public class CsvExport {
     protected String fileName;
     protected String title;
 
-    protected StringBuffer cellData;
+    protected StringBuilder cellData;
     protected final String csvMimeContentType = "text/csv";
 
     final Logger log = LoggerFactory.getLogger(getClass());
@@ -66,7 +66,7 @@ public class CsvExport {
         } else {
             this.title = title;
         }
-        this.cellData = new StringBuffer();
+        this.cellData = new StringBuilder();
     }
 
     public void setFileName(String fileName) {
