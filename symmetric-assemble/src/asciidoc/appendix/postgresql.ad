@@ -54,6 +54,17 @@ GRANT ALL ON ALL FUNCTIONS IN SCHEMA {SYMMETRIC_SCHEMA} TO  {APPLICATION USER}
 
 ----
 
+ifdef::pro[]
+==== Log Miner
+When using Log Miner instead of triggers, it will use the logical decoding feature introduced in PostgreSQL version 9.4.
+The WAL level should be set to "logical" on the Postgres server.
+Edit postgresql.conf and restart Postgres after changing:
+
+   wal_level = logical
+   max_replication_slots = 3
+
+endif::pro[]
+
 .supported data types
 |===
 |Data Type|Supported?

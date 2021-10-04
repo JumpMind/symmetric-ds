@@ -251,6 +251,20 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     @Override
+    protected PermissionResult getLogMinePermission() {
+        PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "UNIMPLEMENTED");
+        String walLevel = getSqlTemplate().queryForString("select current_setting('wal_level')");
+        if ("logical".equals(walLevel)) {
+            result.setStatus(Status.PASS);
+        } else {
+            result.setStatus(Status.FAIL);
+            result.setTestDetails(walLevel);
+            result.setSolution("Set wal_level to logical");
+        }
+        return result;
+    }
+
+    @Override
     public long getEstimatedRowCount(Table table) {
         return getSqlTemplateDirty().queryForLong("select coalesce(c.reltuples, -1) from pg_catalog.pg_class c inner join pg_catalog.pg_namespace n " +
                 "on n.oid = c.relnamespace where c.relname = ? and n.nspname = ?",
