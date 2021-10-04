@@ -214,5 +214,14 @@ public class TableReloadStatus {
     public int getTotalBatchLoaded() {
         return this.setupBatchLoaded + this.dataBatchLoaded + this.finalizeBatchLoaded;
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj != null && obj instanceof TableReloadStatus) {
+            TableReloadStatus status = (TableReloadStatus) obj;
+            return status.loadId == loadId && status.sourceNodeId != null && status.sourceNodeId.equals(sourceNodeId);
+        }
+        return false;
+    }
 
 }

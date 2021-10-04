@@ -350,5 +350,10 @@ public class TriggerHistory implements Serializable {
             throw new SymmetricException("Failed to parse columns [" + argColumnNames + "]", ex);
         }
     }    
+    
+    @Override
+    public boolean equals(Object obj) {
+        return obj != null && obj instanceof TriggerHistory && ((TriggerHistory) obj).triggerHistoryId == triggerHistoryId;
+    }
 
 }
