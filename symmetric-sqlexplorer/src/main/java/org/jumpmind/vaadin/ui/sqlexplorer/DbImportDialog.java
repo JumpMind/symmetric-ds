@@ -266,6 +266,7 @@ public class DbImportDialog extends ResizableDialog {
                 deleteFileAndResource();
             }
         });        
+        upload.setMaxFiles(100);
         upload.setDropAllowed(false);
         Button uploadButton = new Button("Import");
         uploadButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);

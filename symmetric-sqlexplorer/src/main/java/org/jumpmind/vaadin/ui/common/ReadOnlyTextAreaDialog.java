@@ -153,6 +153,7 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
         
         LobUploader lobUploader = new LobUploader();
         final Upload upload = new Upload(lobUploader);
+        upload.setMaxFiles(100);
         upload.setDropLabel(new Span("Upload new " + table.getColumnWithName(title).getMappedType()));
         upload.addSucceededListener(lobUploader);
 
