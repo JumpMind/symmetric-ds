@@ -802,7 +802,7 @@ public class TabularResultLayout extends VerticalLayout {
                     return "rowheader";
                 }
                 return null;
-            }).setFrozen(true).setResizable(true).setVisible(showRowNumbers);
+            }).setFrozen(true).setFlexGrow(0).setResizable(true).setVisible(showRowNumbers);
             
             if (valueProviderMap == null) {
                 valueProviderMap = new HashMap<Grid.Column<List<Object>>, ValueProvider<List<Object>, Object>>();
