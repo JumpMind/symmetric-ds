@@ -61,7 +61,14 @@ The WAL level should be set to "logical" on the Postgres server.
 Edit postgresql.conf and restart Postgres after changing:
 
    wal_level = logical
-   max_replication_slots = 3
+   max_replication_slots = 10
+
+Replication of updates and deletes work as expected for tables with a primary key.
+For tables without a primary key, the user needs to set the REPLICA IDENTITY on the table to either USING INDEX
+to record columns from the named index or FULL to record all columns of the row.
+In Postgres 10 and newer, it will prevent updates and deletes with an error about setting REPLICA IDENTITY.
+
+   alter table mytable replica identity full;
 
 endif::pro[]
 
