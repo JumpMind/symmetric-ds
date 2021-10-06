@@ -223,6 +223,7 @@ public class SqlExplorer extends CustomSplitLayout {
             }
             listenerRegistration.remove();
             listenerRegistration = dbTree.addSelectionListener(listener);
+            dbTree.refresh(true);
         });
         selectionMode.getElement().setAttribute("title", "Switch to multi-select mode");
         
