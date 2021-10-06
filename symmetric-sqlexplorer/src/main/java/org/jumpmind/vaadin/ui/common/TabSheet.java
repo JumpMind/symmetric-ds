@@ -155,6 +155,9 @@ public class TabSheet extends Div {
         }
         tabs.remove(tab);
         tabList.remove(tab);
+        if (tabCount <= 1) {
+            content.removeAll();
+        }
     }
     
     public void setCloseable(boolean closeable) {

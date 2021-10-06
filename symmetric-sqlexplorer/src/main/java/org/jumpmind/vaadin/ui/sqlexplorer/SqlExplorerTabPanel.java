@@ -54,6 +54,9 @@ public class SqlExplorerTabPanel extends TabSheet {
             }
             tabs.remove(tab);
             tabList.remove(tab);
+            if (tabCount <= 1) {
+                content.removeAll();
+            }
         }
     }
     
