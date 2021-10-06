@@ -476,4 +476,11 @@ public final class CommonUiUtils {
         Div buttons = new Div(save, cancel);
         editorColumn.setEditorComponent(buttons);
     }
+    
+    public static Icon createMenuBarIcon(VaadinIcon icon) {
+        Icon menuBarIcon = new Icon(icon);
+        menuBarIcon.getStyle().set("padding", "var(--lumo-space-xs)");
+        menuBarIcon.getStyle().set("box-sizing", "border-box");
+        return menuBarIcon;
+    }
 }

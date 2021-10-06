@@ -22,6 +22,8 @@ package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import java.io.Serializable;
 
+import org.jumpmind.vaadin.ui.common.CommonUiUtils;
+
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.html.Span;
@@ -91,28 +93,32 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
     }
     
     protected void populate(MenuBar menuBar) {
-        executeAtCursorButton = menuBar.addItem(new Icon(VaadinIcon.PLAY), event -> queryPanel.requestExecutionAtCursor());
+        executeAtCursorButton = menuBar.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.PLAY),
+                event -> queryPanel.requestExecutionAtCursor());
         executeAtCursorButton.getElement().setAttribute("title", "Run sql under cursor (CTRL+ENTER)");
 
-        executeScriptButton = menuBar.addItem(new Icon(VaadinIcon.FORWARD), event -> queryPanel.requestScriptExecution());
+        executeScriptButton = menuBar.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.FORWARD),
+                event -> queryPanel.requestScriptExecution());
         executeScriptButton.getElement().setAttribute("title", "Run as script");
 
-        commitButton = menuBar.addItem(new Icon(VaadinIcon.ARROW_CIRCLE_RIGHT_O), event -> queryPanel.commit());
+        commitButton = menuBar.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.ARROW_CIRCLE_RIGHT_O),
+                event -> queryPanel.commit());
         commitButton.getElement().getClassList().add("green");
         commitButton.getElement().setAttribute("title", "Commit");
         commitButton.setEnabled(false);
 
-        rollbackButton = menuBar.addItem(new Icon(VaadinIcon.ARROW_CIRCLE_LEFT_O), event -> queryPanel.rollback());
+        rollbackButton = menuBar.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.ARROW_CIRCLE_LEFT_O),
+                event -> queryPanel.rollback());
         rollbackButton.getElement().getClassList().add("red");
         rollbackButton.getElement().setAttribute("title", "Rollback");
         rollbackButton.setEnabled(false);
 
-        historyButton = menuBar.addItem(new Icon(VaadinIcon.SEARCH),
+        historyButton = menuBar.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.SEARCH),
                 event -> new SqlHistoryDialog(settingsProvider, queryPanel).showAtSize(0.6));
         historyButton.getElement().setAttribute("title", "Sql History");
         historyButton.setEnabled(true);
 
-        MenuItem optionsButton = menuBar.addItem(new Icon(VaadinIcon.TASKS), null);
+        MenuItem optionsButton = menuBar.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.TASKS), null);
         optionsButton.getElement().setAttribute("title", "Options");
 
         SubMenu optionsSubMenu = optionsButton.getSubMenu();

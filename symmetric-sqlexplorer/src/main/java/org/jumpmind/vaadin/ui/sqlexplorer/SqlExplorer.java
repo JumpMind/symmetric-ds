@@ -190,7 +190,7 @@ public class SqlExplorer extends CustomSplitLayout {
         MenuBar leftMenu = new MenuBar();
         leftMenu.addThemeVariants(MenuBarVariant.LUMO_TERTIARY);
         leftMenu.setWidthFull();
-        MenuItem hideButton = leftMenu.addItem(new Icon(VaadinIcon.MENU), event -> {
+        MenuItem hideButton = leftMenu.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.MENU), event -> {
             savedSplitPosition = this.getSplitterPosition() > 10 ? this.getSplitterPosition(): DEFAULT_SPLIT_POS;
             setSplitterPosition(0);
             setPrimaryStyle("max-width", "0%");
@@ -198,7 +198,7 @@ public class SqlExplorer extends CustomSplitLayout {
         });
         hideButton.getElement().setAttribute("title", "Hide the database explorer");
 
-        MenuItem refreshButton = leftMenu.addItem(new Icon(VaadinIcon.REFRESH), event -> {
+        MenuItem refreshButton = leftMenu.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.REFRESH), event -> {
             dbTree.refresh(true);
             Component tab = contentTabs.getSelectedTab();
             if (tab instanceof QueryPanel) {
@@ -209,7 +209,7 @@ public class SqlExplorer extends CustomSplitLayout {
         });
         refreshButton.getElement().setAttribute("title", "Refresh the database explorer");
 
-        MenuItem selectionMode = leftMenu.addItem(new Icon(VaadinIcon.GRID_BIG_O), event -> {
+        MenuItem selectionMode = leftMenu.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.GRID_BIG_O), event -> {
             MenuItem source = event.getSource();
             source.removeAll();
             if (dbTree.getSelectionModel() instanceof GridMultiSelectionModel) {
@@ -227,10 +227,11 @@ public class SqlExplorer extends CustomSplitLayout {
         });
         selectionMode.getElement().setAttribute("title", "Switch to multi-select mode");
         
-        MenuItem openQueryTab = leftMenu.addItem(new Icon(QUERY_ICON), event -> openQueryWindow(dbTree.getSelectedItems()));
+        MenuItem openQueryTab = leftMenu.addItem(CommonUiUtils.createMenuBarIcon(QUERY_ICON),
+                event -> openQueryWindow(dbTree.getSelectedItems()));
         openQueryTab.getElement().setAttribute("title", "Open a query tab");
 
-        MenuItem settings = leftMenu.addItem(new Icon(VaadinIcon.COG), event -> {
+        MenuItem settings = leftMenu.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.COG), event -> {
             SettingsDialog dialog = new SettingsDialog(SqlExplorer.this);
             dialog.show();
         });
