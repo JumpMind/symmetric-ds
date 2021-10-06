@@ -259,7 +259,7 @@ public class QueryPanel extends CustomSplitLayout implements IContentTab {
                 addResultsTab(((TabularResultLayout) content).refreshWithoutSaveButton(),
                         StringUtils.abbreviate(((TabularResultLayout) content).getSql(), 20), generalResultsTab.getIcon(), 0);
             }
-            resultsTabs.remove(generalResultsTab.getComponent());
+            resultsTabs.remove(generalResultsTab);
             generalResultsTab = null;
         }
     }
@@ -267,6 +267,7 @@ public class QueryPanel extends CustomSplitLayout implements IContentTab {
     public void resetGeneralResultsTab() {
         if (generalResultsTab != null) {
             replaceGeneralResultsWith(emptyResults, null);
+            generalResultsTab.setCloseable(false);
         }
     }
 
@@ -483,7 +484,7 @@ public class QueryPanel extends CustomSplitLayout implements IContentTab {
                             } finally {
                                 setButtonsEnabled();
                                 if (executingTab != null) {
-                                    resultsTabs.remove(executingTab.getName());
+                                    resultsTabs.remove(executingTab);
                                 } else if (results.size() > 1) {
                                     resetGeneralResultsTab();
                                 }
@@ -499,7 +500,12 @@ public class QueryPanel extends CustomSplitLayout implements IContentTab {
             final Button cancel = new Button("Cancel");
             cancel.addClickListener(event -> {
                 log.info("Canceling sql: " + sql);
-                label.setText("Canceling" + label.getText().substring(9));
+                String labelText = label.getText();
+                if (labelText != null) {
+                    label.setText("Canceling" + labelText.substring(9));
+                } else {
+                    label.setText("Canceling:\n\n" + StringUtils.abbreviate(sql, 250));
+                }
                 executingLayout.remove(cancel);
                 canceled = true;
                 new Thread(new Runnable() {
@@ -535,8 +541,8 @@ public class QueryPanel extends CustomSplitLayout implements IContentTab {
             errorTab = null;
         }
 
-        if (maxNumberOfResultTabs > 0 && resultsTabs.getComponentCount() > maxNumberOfResultTabs) {
-            resultsTabs.remove(resultsTabs.getTab(resultsTabs.getComponentCount() - 1));
+        if (maxNumberOfResultTabs > 0 && resultsTabs.getTabCount() > maxNumberOfResultTabs) {
+            resultsTabs.remove(resultsTabs.getTab(resultsTabs.getTabCount() - 1));
         }
 
         if (icon.equals(new Icon(VaadinIcon.STOP))) {

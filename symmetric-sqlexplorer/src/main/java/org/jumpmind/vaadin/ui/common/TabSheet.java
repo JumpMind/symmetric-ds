@@ -143,6 +143,20 @@ public class TabSheet extends Div {
         }
     }
     
+    public void remove(EnhancedTab tab) {
+        int tabCount = tabList.size();
+        if (tab.isSelected() && tabCount > 1) {
+            int index = tabList.indexOf(tab);
+            if (index < tabCount - 1) {
+                tabs.setSelectedIndex(index + 1);
+            } else {
+                tabs.setSelectedIndex(index - 1);
+            }
+        }
+        tabs.remove(tab);
+        tabList.remove(tab);
+    }
+    
     public void setCloseable(boolean closeable) {
         this.closeable = closeable;
         for (EnhancedTab tab : tabList) {
@@ -228,20 +242,6 @@ public class TabSheet extends Div {
     
     public void setAutoselect(boolean autoselect) {
         tabs.setAutoselect(autoselect);
-    }
-    
-    protected void remove(EnhancedTab tab) {
-        int tabCount = tabList.size();
-        if (tab.isSelected() && tabCount > 1) {
-            int index = tabList.indexOf(tab);
-            if (index < tabCount - 1) {
-                tabs.setSelectedIndex(index + 1);
-            } else {
-                tabs.setSelectedIndex(index - 1);
-            }
-        }
-        tabs.remove(tab);
-        tabList.remove(tab);
     }
     
     public class EnhancedTab extends Tab {

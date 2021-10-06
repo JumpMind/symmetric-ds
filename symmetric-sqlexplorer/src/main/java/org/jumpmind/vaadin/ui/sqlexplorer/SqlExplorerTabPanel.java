@@ -37,7 +37,7 @@ public class SqlExplorerTabPanel extends TabSheet {
     }
     
     @Override
-    protected void remove(EnhancedTab tab) {
+    public void remove(EnhancedTab tab) {
         Component component = tab.getComponent();
         if (component != null && component instanceof QueryPanel && ((QueryPanel) component).commitButtonValue) {
             NotifyDialog.show("Cannot Close Tab", "You must commit or rollback queries before closing this tab.", null,

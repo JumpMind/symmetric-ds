@@ -73,7 +73,7 @@ public class TabbedApplicationPanel extends TabSheet {
     }
     
     @Override
-    protected void remove(EnhancedTab tab) {
+    public void remove(EnhancedTab tab) {
         Component component = tab.getComponent();
         if (!(component instanceof IUiPanel) || ((IUiPanel) component).closing()) {
             int tabCount = tabList.size();
