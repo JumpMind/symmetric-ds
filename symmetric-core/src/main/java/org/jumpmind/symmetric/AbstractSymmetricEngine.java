@@ -608,9 +608,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                                 "Starting registered node [group={}, id={}, nodeId={}]",
                                 new Object[] { node.getNodeGroupId(), node.getNodeId(),
                                         node.getExternalId() });
-                        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS_AT_STARTUP,
-                                true)) {
-                            triggerRouterService.syncTriggers();
+                        boolean force = parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS_AT_STARTUP_FORCE);
+                        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS_AT_STARTUP, true) || force ||
+                                triggerRouterService.getActiveTriggerHistories().size() == 0) {
+                            triggerRouterService.syncTriggers(force);
                         } else {
                             log.info(ParameterConstants.AUTO_SYNC_TRIGGERS_AT_STARTUP
                                     + " is turned off");
