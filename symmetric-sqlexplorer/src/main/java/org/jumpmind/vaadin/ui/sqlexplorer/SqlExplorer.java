@@ -172,7 +172,7 @@ public class SqlExplorer extends CustomSplitLayout {
         rightMenuWrapper.add(contentMenuBar, spacer);
         rightLayout.add(rightMenuWrapper);
 
-        contentTabs = new SqlExplorerTabPanel();
+        contentTabs = new SqlExplorerTabPanel(this);
         contentTabs.addSelectedTabChangeListener(event -> {
             if (event.getSelectedTab() != null) {
                 selectContentTab((IContentTab) ((EnhancedTab) event.getSelectedTab()).getComponent());
@@ -256,14 +256,18 @@ public class SqlExplorer extends CustomSplitLayout {
                 selected.unselected();
             }
             contentTabs.setSelectedTab((Component) tab);
-            contentMenuBar.removeAll();
-            addShowButton(contentMenuBar);
+            resetContentMenuBar();
             if (tab instanceof QueryPanel) {
                 ((DefaultButtonBar) ((QueryPanel) tab).getButtonBar()).populate(contentMenuBar);
             }
             tab.selected();
             selected = tab;
         }
+    }
+    
+    public void resetContentMenuBar() {
+        contentMenuBar.removeAll();
+        addShowButton(contentMenuBar);
     }
 
     protected QueryPanel openQueryWindow(DbTreeNode node) {

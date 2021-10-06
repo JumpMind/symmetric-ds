@@ -30,8 +30,11 @@ public class SqlExplorerTabPanel extends TabSheet {
     
     private static final long serialVersionUID = 1L;
     
-    public SqlExplorerTabPanel() {
+    private SqlExplorer sqlExplorer;
+    
+    public SqlExplorerTabPanel(SqlExplorer sqlExplorer) {
         super();
+        this.sqlExplorer = sqlExplorer;
         
         setSizeFull();
     }
@@ -56,6 +59,7 @@ public class SqlExplorerTabPanel extends TabSheet {
             tabList.remove(tab);
             if (tabCount <= 1) {
                 content.removeAll();
+                sqlExplorer.resetContentMenuBar();
             }
         }
     }
