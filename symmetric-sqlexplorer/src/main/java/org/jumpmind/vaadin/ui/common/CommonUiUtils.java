@@ -246,6 +246,10 @@ public final class CommonUiUtils {
                 return outerList.indexOf(row) + 1;
             }).setHeader("#").setKey("#").setFrozen(true).setResizable(true).setVisible(showRowNumbers);
             
+            grid.addAttachListener(e -> {
+                grid.getElement().executeJs("this.querySelector('vaadin-grid-flow-selection-column').frozen = true");
+            });
+            
             final ResultSetMetaData meta = rs.getMetaData();
             int totalColumns = meta.getColumnCount();
             Set<Integer> skipColumnIndexes = new HashSet<Integer>();
