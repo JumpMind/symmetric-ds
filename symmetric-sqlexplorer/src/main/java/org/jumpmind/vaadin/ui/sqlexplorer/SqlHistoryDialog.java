@@ -21,7 +21,6 @@
 package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -46,6 +45,8 @@ public class SqlHistoryDialog extends ResizableDialog {
     private static final long serialVersionUID = 1L;
 
     private final Grid<SqlHistory> grid;
+    
+    private final TreeSet<SqlHistory> sqlHistories;
 
     private QueryPanel queryPanel;
 
@@ -62,7 +63,7 @@ public class SqlHistoryDialog extends ResizableDialog {
         mainLayout.setSpacing(true);
         add(mainLayout, 1);
 
-        final Set<SqlHistory> sqlHistories = new TreeSet<SqlHistory>(settingsProvider.get().getSqlHistory());
+        sqlHistories = new TreeSet<SqlHistory>(settingsProvider.get().getSqlHistory());
 
         grid = new Grid<SqlHistory>();
         grid.setSelectionMode(SelectionMode.MULTI);
@@ -134,13 +135,14 @@ public class SqlHistoryDialog extends ResizableDialog {
     }
 
     protected void select() {
-        List<SqlHistory> histories = new ArrayList<SqlHistory>(grid.getSelectedItems());
-        Collections.reverse(histories);
+        Set<SqlHistory> histories = grid.getSelectedItems();
         if (histories != null && histories.size() > 0) {
             String delimiter = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_DELIMITER);
-            for (SqlHistory history : histories) {
-                String sql = history.getSqlStatement();
-                queryPanel.appendSql(sql + (sql.trim().endsWith(delimiter) ? "" : delimiter));
+            for (SqlHistory history : sqlHistories.descendingSet()) {
+                if (histories.contains(history)) {
+                    String sql = history.getSqlStatement();
+                    queryPanel.appendSql(sql + (sql.trim().endsWith(delimiter) ? "" : delimiter));
+                }
             }
             close();
         }
