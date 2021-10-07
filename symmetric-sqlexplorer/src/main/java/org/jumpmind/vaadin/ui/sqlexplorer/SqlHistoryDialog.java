@@ -74,9 +74,9 @@ public class SqlHistoryDialog extends ResizableDialog {
                 .setHeader("Time").setWidth("150px");
 
         grid.addColumn(history -> CommonUiUtils.formatDuration(history.getLastExecuteDuration())).setHeader("Duration")
-                .setWidth("120px");
+                .setWidth("120px").setFlexGrow(0);
 
-        grid.addColumn(history -> history.getExecuteCount()).setHeader("Count").setWidth("120px");
+        grid.addColumn(history -> history.getExecuteCount()).setHeader("Count").setWidth("120px").setFlexGrow(0);
         
         for (Column<SqlHistory> column : grid.getColumns()) {
             column.setResizable(true);
