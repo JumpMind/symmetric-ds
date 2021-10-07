@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.html.Pre;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -417,7 +418,13 @@ public class SqlRunner extends Thread {
     }
 
     protected Scroller putResultsInArea(ResultSet rs, int maxResultSize) throws SQLException {
-        return wrapTextInComponent(resultsAsText(rs, maxResultSize));
+        Scroller panel = new Scroller();      
+        Pre pre = new Pre(resultsAsText(rs, maxResultSize));
+        panel.setContent(pre);
+        pre.getStyle().set("margin", "0");
+        pre.getStyle().set("white-space", "pre");
+        pre.setWidth("max-content");
+        return panel;
     }
 
     protected String resultsAsText(ResultSet rs, int maxResultSize) throws SQLException {

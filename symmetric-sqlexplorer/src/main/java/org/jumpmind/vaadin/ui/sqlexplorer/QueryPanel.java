@@ -138,6 +138,8 @@ public class QueryPanel extends CustomSplitLayout implements IContentTab {
         resultsLayout.setSizeFull();
 
         resultsTabs = CommonUiUtils.createTabSheet();
+        resultsTabs.setHeight("90px");
+        resultsTabs.getStyle().set("margin-bottom", "20px");
         resultStatuses = new HashMap<Component, String>();
 
         HorizontalLayout statusBar = new HorizontalLayout();
