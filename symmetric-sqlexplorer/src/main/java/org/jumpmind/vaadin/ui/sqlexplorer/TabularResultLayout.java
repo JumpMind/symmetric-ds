@@ -184,6 +184,7 @@ public class TabularResultLayout extends VerticalLayout {
         this.setSizeFull();
         this.setSpacing(false);
         this.setMargin(false);
+        getStyle().set("padding-bottom", "0");
         createMenuBar();
 
         try {
@@ -797,12 +798,11 @@ public class TabularResultLayout extends VerticalLayout {
         if (rs != null) {
             grid.addColumn(row -> {
                 return outerList.indexOf(row) + 1;
-            }).setHeader("#").setKey("#").setClassNameGenerator(row -> {
-                if (!grid.getSelectedItems().contains(row)) {
-                    return "rowheader";
-                }
-                return null;
-            }).setFrozen(true).setFlexGrow(0).setResizable(true).setVisible(showRowNumbers);
+            }).setHeader("#").setKey("#").setFrozen(true).setFlexGrow(0).setResizable(true).setVisible(showRowNumbers);
+            
+            grid.addAttachListener(e -> {
+                grid.getElement().executeJs("this.querySelector('vaadin-grid-flow-selection-column').frozen = true");
+            });
             
             if (valueProviderMap == null) {
                 valueProviderMap = new HashMap<Grid.Column<List<Object>>, ValueProvider<List<Object>, Object>>();

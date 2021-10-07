@@ -244,12 +244,7 @@ public final class CommonUiUtils {
         if (rs != null) {
             grid.addColumn(row -> {
                 return outerList.indexOf(row) + 1;
-            }).setHeader("#").setKey("#").setClassNameGenerator(row -> {
-                if (!grid.getSelectedItems().contains(row)) {
-                    return "rowheader";
-                }
-                return null;
-            }).setFrozen(true).setResizable(true).setVisible(showRowNumbers);
+            }).setHeader("#").setKey("#").setFrozen(true).setResizable(true).setVisible(showRowNumbers);
             
             final ResultSetMetaData meta = rs.getMetaData();
             int totalColumns = meta.getColumnCount();
@@ -455,6 +450,7 @@ public final class CommonUiUtils {
 
         Column<?> editorColumn = grid.addComponentColumn(item -> {
             Button edit = new Button("Edit");
+            edit.addThemeVariants(ButtonVariant.LUMO_SMALL);
             edit.addClassName("edit");
             edit.addClickListener(event -> editor.editItem(item));
             edit.setEnabled(!editor.isOpen());
