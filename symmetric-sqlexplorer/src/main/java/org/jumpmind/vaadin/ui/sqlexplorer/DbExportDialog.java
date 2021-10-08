@@ -242,7 +242,9 @@ public class DbExportDialog extends ResizableDialog {
         formatSelect.setValue(DbExportFormat.SQL);
         formLayout.add(formatSelect);
 
-        compatibilitySelect = new ComboBox<Compatible>("Compatibility", Arrays.asList(Compatible.values()));
+        List<Compatible> compatibilityList = Arrays.asList(Compatible.values());
+        compatibilityList.sort((c0, c1) -> c0.name().compareTo(c1.name()));
+        compatibilitySelect = new ComboBox<Compatible>("Compatibility", compatibilityList);
 
         setDefaultCompatibility();
         formLayout.add(compatibilitySelect);
