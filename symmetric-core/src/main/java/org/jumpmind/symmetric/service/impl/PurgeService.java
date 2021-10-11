@@ -422,11 +422,19 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private long purgeExtractRequests() {
         Calendar retentionCutoff = Calendar.getInstance();
-        retentionCutoff.add(Calendar.MINUTE, -parameterService
-                .getInt(ParameterConstants.PURGE_EXTRACT_REQUESTS_RETENTION_MINUTES));
+        retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_EXTRACT_REQUESTS_RETENTION_MINUTES));
+        log.info("Purging table reload statuses that are older than {}", retentionCutoff.getTime());
+        long count = sqlTemplate.update(getSql("deleteTableReloadStatusSql"), retentionCutoff.getTime());
+        if (count > 0) {
+            log.info("Purged {} table reload statuses", count);
+        }
+        log.info("Purging table reload requests that are older than {}", retentionCutoff.getTime());
+        count = sqlTemplate.update(getSql("deleteTableReloadRequestSql"), retentionCutoff.getTime());
+        if (count > 0) {
+            log.info("Purged {} table reload requests", count);
+        }
         log.info("Purging extract requests that are older than {}", retentionCutoff.getTime());
-        long count = sqlTemplate.update(getSql("deleteExtractRequestSql"),
-                ExtractRequest.ExtractStatus.OK.name(), retentionCutoff.getTime());
+        count = sqlTemplate.update(getSql("deleteExtractRequestSql"), ExtractRequest.ExtractStatus.OK.name(), retentionCutoff.getTime());
         if (count > 0) {
             log.info("Purged {} extract requests", count);
         }
