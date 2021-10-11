@@ -124,6 +124,7 @@ final public class ParameterConstants {
     public final static String AUTO_CONFIGURE_DATABASE_FAST = "auto.config.database.fast";
     public final static String AUTO_SYNC_TRIGGERS = "auto.sync.triggers";
     public final static String AUTO_SYNC_TRIGGERS_AT_STARTUP = "auto.sync.triggers.at.startup";
+    public final static String AUTO_SYNC_TRIGGERS_AT_STARTUP_FORCE = "auto.sync.triggers.at.startup.force";
     public final static String AUTO_SYNC_CONFIG_AT_STARTUP = "auto.sync.config.at.startup";
     public final static String AUTO_SYNC_CONFIG_AFTER_UPGRADE = "auto.sync.config.after.upgrade";
     public final static String AUTO_SYNC_TRIGGERS_AFTER_CONFIG_CHANGED = "auto.sync.triggers.after.config.change";
@@ -305,6 +306,7 @@ final public class ParameterConstants {
     public final static String PURGE_EXTRACT_REQUESTS_RETENTION_MINUTES = "purge.extract.request.retention.minutes";
     public final static String PURGE_REGISTRATION_REQUEST_RETENTION_MINUTES = "purge.registration.request.retention.minutes";
     public final static String PURGE_STATS_RETENTION_MINUTES = "purge.stats.retention.minutes";
+    public final static String PURGE_TRIGGER_HIST_RETENTION_MINUTES = "purge.trigger.hist.retention.minutes";
     public final static String PURGE_MAX_NUMBER_OF_DATA_IDS = "job.purge.max.num.data.to.delete.in.tx";
     public final static String PURGE_MAX_NUMBER_OF_BATCH_IDS = "job.purge.max.num.batches.to.delete.in.tx";
     public final static String PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS = "job.purge.max.num.data.event.batches.to.delete.in.tx";

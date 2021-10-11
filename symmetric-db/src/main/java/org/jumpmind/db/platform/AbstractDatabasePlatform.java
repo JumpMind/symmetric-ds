@@ -1152,7 +1152,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     protected PermissionResult getLogMinePermission() {
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, "UNIMPLEMENTED");
+        PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "UNIMPLEMENTED");
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }

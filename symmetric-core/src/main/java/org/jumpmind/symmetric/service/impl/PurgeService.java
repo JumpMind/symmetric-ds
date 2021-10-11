@@ -459,6 +459,17 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return count;
     }
 
+    private long purgeTriggerHist() {
+        Calendar retentionCutoff = Calendar.getInstance();
+        retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_TRIGGER_HIST_RETENTION_MINUTES));
+        log.info("Purging trigger histories that are inactive and older than {}", retentionCutoff.getTime());
+        long count = sqlTemplate.update(getSql("deleteInactiveTriggerHistSql"), retentionCutoff.getTime());
+        if (count > 0) {
+            log.info("Purged {} trigger histories", count);
+        }
+        return count;
+    }
+
     private int purgeByMinMax(long[] minMax, long minGapStartId, MinMaxDeleteSql identifier, Date retentionTime,
             int maxNumtoPurgeinTx) {
         long minId = minMax[0];
@@ -564,6 +575,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     purgedRowCount += purgeIncomingError();
                     purgedRowCount += purgeRegistrationRequests();
                     purgedRowCount += purgeMonitorEvents();
+                    purgedRowCount += purgeTriggerHist();
                     List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
                     for (IPurgeListener purgeListener : purgeListeners) {
                         purgedRowCount += purgeListener.purgeIncoming(force);
