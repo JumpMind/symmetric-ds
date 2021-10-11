@@ -1,58 +1,58 @@
 
 === MongoDB
 
+ifndef::pro[]
+MongoDB is only support in the professional version of SymmetricDS.
+endif::pro[]
+
+ifdef::pro[]
+
 Use `symadmin module install mongodb` to install driver files, or copy your own files into the `lib` sub-directory.
 
-Since SymmetricDS is trigger based and there are not triggers in MongoDB data can only synchronized to a MongoDB instance.  The runtime SymmetricDS 
-tables will also need to be installed in a full relational database to support integration with MongoDB.
+MongoDB can be setup as a load only or a log based node.
 
-TIP:  The simplest solution to support MongoDB is to add a new node (see <<Add Node>>) that is connected to an H2 database to store all the SYM_* runtime tables.
-           
-The MongoDB data loader maps relational database rows to MongoDB documents in collections.  To use the preconfigured MongoDB data loader,
-you set the `data_loader_type` to *MongoDB* on a <<Channels, channel>>.  
+*Load Only* - Select this mode at setup if you only need to load data into Mongo (no capture).
+*Log Based* - Select this mode if you need to capture changes in Mongo to be sent out to other nodes.
 
-ifdef::pro[]
-image::appendix/mongodb-new-channel.png[]
-endif::pro[]
 
-Tables that should be synchronized to MongoDB should be configured to use this channel.
+==== Setup
 
-ifdef::pro[]
-image::appendix/mongodb-trigger.png[]
-endif::pro[]
+Obtain the connection url from MongoDB.  On their dashboard select "Connect".
 
-In order to point it to a MongoDB instance set the following properties in the engines properties file.
+image::appendix/mongodb-setup-1.png[]
 
-[source,properties]   
-----       
-mongodb.username=xxxx
-mongodb.password=xxxx
-mongodb.host=xxxx
-mongodb.port=xxxx
-mongodb.default.databasename=default
-mongodb.url=
-----
-      
-By default, the catalog or schema passed by SymmetricDS will be used for the MongoDB database name. The table passed by SymmetricDS 
-will be used as the MongoDB collection name.  If the catalog or schema are not set, the default database name property is used as the 
-database name. 
-           
-The _id of the MongoDB document will be the primary key of the database record. If the table has a composite primary key, then the 
-_id will be an embedded document that has name value pairs of the composite key. The body of the document will be name value pairs 
-of the table column name and table row value.
-           
-SymmetricDS uses the MongoDB Java Driver to upsert documents.
-           
-TIP: SymmetricDS transforms can be used to transform the data.  If a complex mapping is required that is not supported by transforms, then
-the `IDBObjectMapper` can be implemented and a new `MongoDataLoaderFactory` can be wired up
-as an extension point.
+Select the "Connect your application"
 
-==== Shared Clusters
+image::appendix/mongodb-setup-2.png[]
 
-Use the mongodb.url parameter to connect to a shared cluster in Mongo.
+Choose the Java driver to produce the proper connection string for driver used by SymmetricDS
+
+image::appendix/mongodb-setup-3.png[]
+
+Add a new node to SymmetricDS
+
+image::appendix/mongodb-setup-4.png[]
+
+On the advanced options you can setup bulk loading and a database to use.  If no database is used it will create and use one named "symmetricds".
+
+image::appendix/mongodb-setup-5.png[]
+
+
+==== Supported Operations for CDC
+
+SymmetricDS uses the change streams feature of MongoDB to monitor ("watch") for changes that occur in MongoDB.  The change stream API though does not support old data.   
+
+*Updates* - In the case of updates only the final updated values are provided to the change stream.   This is sufficient for most replications as long as conflict detection is not needed.
+
+*Deletes* - When a delete occurs the only value provided through the change stream is the _id that was deleted.  This represents MongoDBs identifier for this row (similar to a rowid on other platforms).  
+
+In order to fully support deletes all replicated tables must contain an _id column and the following parameter must be turned on.
 
 [source,properties]   
 ----  
-mongodb.url=mongodb://host1:27017,host2:27017
+mongodb.use.mongo.ids=true
 ----
+
+endif::pro[]
+
 

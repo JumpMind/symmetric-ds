@@ -59,27 +59,27 @@ import org.slf4j.LoggerFactory;
 
 public class SelectFromTableSource extends SelectFromSource {
     private final Logger log = LoggerFactory.getLogger(getClass());
-    private OutgoingBatch outgoingBatch;
-    private List<SelectFromTableEvent> selectFromTableEventsToSend;
-    private SelectFromTableEvent currentInitialLoadEvent;
-    private ISqlReadCursor<Data> cursor;
-    private SimpleRouterContext routingContext;
-    private Node node;
-    private Set<Node> nodeSet;
-    private TriggerRouter triggerRouter;
-    private Map<String, IDataRouter> routers;
-    private IDataRouter dataRouter;
-    private ColumnsAccordingToTriggerHistory columnsAccordingToTriggerHistory;
-    private String overrideSelectSql;
-    private boolean initialLoadSelectUsed;
-    private boolean isSelfReferencingFk;
-    private int selfRefLevel;
-    private String selfRefParentColumnName;
-    private String selfRefChildColumnName;
-    private boolean isFirstRow;
-    private boolean isLobFirstPass;
-    private boolean isConfiguration;
-    private boolean isInitialLoadUseColumnTemplates;
+    protected OutgoingBatch outgoingBatch;
+    protected List<SelectFromTableEvent> selectFromTableEventsToSend;
+    protected SelectFromTableEvent currentInitialLoadEvent;
+    protected ISqlReadCursor<Data> cursor;
+    protected SimpleRouterContext routingContext;
+    protected Node node;
+    protected Set<Node> nodeSet;
+    protected TriggerRouter triggerRouter;
+    protected Map<String, IDataRouter> routers;
+    protected IDataRouter dataRouter;
+    protected ColumnsAccordingToTriggerHistory columnsAccordingToTriggerHistory;
+    protected String overrideSelectSql;
+    protected boolean initialLoadSelectUsed;
+    protected boolean isSelfReferencingFk;
+    protected int selfRefLevel;
+    protected String selfRefParentColumnName;
+    protected String selfRefChildColumnName;
+    protected boolean isFirstRow;
+    protected boolean isLobFirstPass;
+    protected boolean isConfiguration;
+    protected boolean isInitialLoadUseColumnTemplates;
 
     public SelectFromTableSource(ISymmetricEngine engine, OutgoingBatch outgoingBatch, Batch batch, SelectFromTableEvent event) {
         super(engine);

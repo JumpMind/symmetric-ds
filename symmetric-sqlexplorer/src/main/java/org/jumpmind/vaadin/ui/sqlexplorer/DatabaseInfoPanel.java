@@ -70,81 +70,83 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
         addComponent(tabSheet);
         Connection c = null;
         try {
-            c = ((DataSource) db.getPlatform().getDataSource()).getConnection();
-            DatabaseMetaData metaData = c.getMetaData();
-            tabSheet.addTab(createTabData(createGridWithReflection(DatabaseMetaData.class, metaData)), "Meta Data");
-            tabSheet.addTab(createTabData(createGridWithReflection(Connection.class, c)), "Connection");
-            try {
-                ResultSet rs = null;
-                try {
-                    rs = metaData.getClientInfoProperties();
-                } catch (SQLException e) {
-                    log.debug("Could not create Client Info Properties tab", e.getMessage());
-                }
-                Grid<List<Object>> clientInfoProperties = CommonUiUtils.putResultsInGrid(rs, Integer.MAX_VALUE, false);
-                clientInfoProperties.setSizeFull();
-                tabSheet.addTab(createTabData(clientInfoProperties), "Client Info Properties");
-            } catch (AbstractMethodError e) {
-                log.debug("Could not create Client Info Properties tab", e);
-            }
-            try {
-                Grid<List<Object>> catalogs = CommonUiUtils.putResultsInGrid(metaData.getCatalogs(), Integer.MAX_VALUE, false);
-                catalogs.setSizeFull();
-                tabSheet.addTab(createTabData(catalogs), "Catalogs");
-            } catch (AbstractMethodError e) {
-                log.debug("Could not create Catalogs tab", e);
-            }
-            try {
-                Grid<List<Object>> schemas;
-                try {
-                    schemas = CommonUiUtils.putResultsInGrid(metaData.getSchemas(), Integer.MAX_VALUE, false);
-                } catch (SQLException e) {
-                    schemas = CommonUiUtils.putResultsInGrid(metaData.getSchemas("", null), Integer.MAX_VALUE, false);
-                }
-                schemas.setSizeFull();
-                tabSheet.addTab(createTabData(schemas), "Schemas");
-            } catch (AbstractMethodError e) {
-                log.debug("Could not create Schemas tab", e);
-            }
-            try {
-                Grid<List<Object>> tableTypes = CommonUiUtils.putResultsInGrid(metaData.getTableTypes(), Integer.MAX_VALUE, false);
-                tableTypes.setSizeFull();
-                tabSheet.addTab(createTabData(tableTypes), "Table Types");
-            } catch (AbstractMethodError e) {
-                log.debug("Could not create Table Types tab", e);
-            }
-            try {
-                Grid<List<Object>> dataTypes = CommonUiUtils.putResultsInGrid(metaData.getTypeInfo(), Integer.MAX_VALUE, false);
-                dataTypes.setSizeFull();
-                tabSheet.addTab(createTabData(dataTypes), "Data Types");
-            } catch (AbstractMethodError e) {
-                log.debug("Could not create Data Types tab", e);
-            }
-            try {
-                tabSheet.addTab(createTabData(createGridFromString(metaData.getNumericFunctions(), "Numeric Functions")), "Numeric Functions");
-            } catch (AbstractMethodError e) {
-                log.debug("Could not create Numeric Functions tab", e);
-            }
-            try {
-                tabSheet.addTab(createTabData(createGridFromString(metaData.getStringFunctions(), "String Functions")), "String Functions");
-            } catch (AbstractMethodError e) {
-                log.debug("Could not create String Functions tab", e);
-            }
-            try {
-                tabSheet.addTab(createTabData(createGridFromString(metaData.getSystemFunctions(), "System Functions")), "System Functions");
-            } catch (AbstractMethodError e) {
-                log.debug("Could not create System Functions tab", e);
-            }
-            try {
-                tabSheet.addTab(createTabData(createGridFromString(metaData.getTimeDateFunctions(), "Date/Time Functions")), "Date/Time Functions");
-            } catch (AbstractMethodError e) {
-                log.debug("Could not create Date/Time Functions tab", e);
-            }
-            try {
-                tabSheet.addTab(createTabData(createGridFromString(metaData.getSQLKeywords(), "Keywords")), "Keywords");
-            } catch (AbstractMethodError e) {
-                log.debug("Could not create Keywords tab", e);
-            }
+        	if (db.getPlatform().getDataSource() != null) {
+	        	c = ((DataSource) db.getPlatform().getDataSource()).getConnection();
+	            DatabaseMetaData metaData = c.getMetaData();
+	            tabSheet.addTab(createTabData(createGridWithReflection(DatabaseMetaData.class, metaData)), "Meta Data");
+	            tabSheet.addTab(createTabData(createGridWithReflection(Connection.class, c)), "Connection");
+	            try {
+	                ResultSet rs = null;
+	                try {
+	                    rs = metaData.getClientInfoProperties();
+	                } catch (SQLException e) {
+	                    log.debug("Could not create Client Info Properties tab", e.getMessage());
+	                }
+	                Grid<List<Object>> clientInfoProperties = CommonUiUtils.putResultsInGrid(rs, Integer.MAX_VALUE, false);
+	                clientInfoProperties.setSizeFull();
+	                tabSheet.addTab(createTabData(clientInfoProperties), "Client Info Properties");
+	            } catch (AbstractMethodError e) {
+	                log.debug("Could not create Client Info Properties tab", e);
+	            }
+	            try {
+	                Grid<List<Object>> catalogs = CommonUiUtils.putResultsInGrid(metaData.getCatalogs(), Integer.MAX_VALUE, false);
+	                catalogs.setSizeFull();
+	                tabSheet.addTab(createTabData(catalogs), "Catalogs");
+	            } catch (AbstractMethodError e) {
+	                log.debug("Could not create Catalogs tab", e);
+	            }
+	            try {
+	                Grid<List<Object>> schemas;
+	                try {
+	                    schemas = CommonUiUtils.putResultsInGrid(metaData.getSchemas(), Integer.MAX_VALUE, false);
+	                } catch (SQLException e) {
+	                    schemas = CommonUiUtils.putResultsInGrid(metaData.getSchemas("", null), Integer.MAX_VALUE, false);
+	                }
+	                schemas.setSizeFull();
+	                tabSheet.addTab(createTabData(schemas), "Schemas");
+	            } catch (AbstractMethodError e) {
+	                log.debug("Could not create Schemas tab", e);
+	            }
+	            try {
+	                Grid<List<Object>> tableTypes = CommonUiUtils.putResultsInGrid(metaData.getTableTypes(), Integer.MAX_VALUE, false);
+	                tableTypes.setSizeFull();
+	                tabSheet.addTab(createTabData(tableTypes), "Table Types");
+	            } catch (AbstractMethodError e) {
+	                log.debug("Could not create Table Types tab", e);
+	            }
+	            try {
+	                Grid<List<Object>> dataTypes = CommonUiUtils.putResultsInGrid(metaData.getTypeInfo(), Integer.MAX_VALUE, false);
+	                dataTypes.setSizeFull();
+	                tabSheet.addTab(createTabData(dataTypes), "Data Types");
+	            } catch (AbstractMethodError e) {
+	                log.debug("Could not create Data Types tab", e);
+	            }
+	            try {
+	                tabSheet.addTab(createTabData(createGridFromString(metaData.getNumericFunctions(), "Numeric Functions")), "Numeric Functions");
+	            } catch (AbstractMethodError e) {
+	                log.debug("Could not create Numeric Functions tab", e);
+	            }
+	            try {
+	                tabSheet.addTab(createTabData(createGridFromString(metaData.getStringFunctions(), "String Functions")), "String Functions");
+	            } catch (AbstractMethodError e) {
+	                log.debug("Could not create String Functions tab", e);
+	            }
+	            try {
+	                tabSheet.addTab(createTabData(createGridFromString(metaData.getSystemFunctions(), "System Functions")), "System Functions");
+	            } catch (AbstractMethodError e) {
+	                log.debug("Could not create System Functions tab", e);
+	            }
+	            try {
+	                tabSheet.addTab(createTabData(createGridFromString(metaData.getTimeDateFunctions(), "Date/Time Functions")), "Date/Time Functions");
+	            } catch (AbstractMethodError e) {
+	                log.debug("Could not create Date/Time Functions tab", e);
+	            }
+	            try {
+	                tabSheet.addTab(createTabData(createGridFromString(metaData.getSQLKeywords(), "Keywords")), "Keywords");
+	            } catch (AbstractMethodError e) {
+	                log.debug("Could not create Keywords tab", e);
+	            }
+        	}
         } catch (SQLException e) {
             log.error("", e);
         } finally {

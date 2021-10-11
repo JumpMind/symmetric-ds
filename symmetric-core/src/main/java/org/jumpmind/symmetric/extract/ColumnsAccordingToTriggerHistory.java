@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.util.FormatUtils;
 
-class ColumnsAccordingToTriggerHistory {
+public class ColumnsAccordingToTriggerHistory {
     private Map<CacheKey, Table> cache = new HashMap<CacheKey, Table>();
     private Node sourceNode;
     private Node targetNode;
