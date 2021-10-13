@@ -39,10 +39,12 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterFilterAdapter;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.JobDefinition;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
@@ -82,7 +84,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
     final String CTX_KEY_REINITIALIZED = "Reinitialized."
             + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FILE_SYNC_ENABLED = "FileSyncEnabled."
+    final String CTX_KEY_FILE_SYNC_ENABLE = "FileSyncEnable."
             + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
     final String CTX_KEY_INITIAL_LOAD_COMPLETED = "InitialLoadCompleted."
             + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
@@ -123,8 +125,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         recordLoadFilterFlushNeeded(context, table);
         recordChannelFlushNeeded(context, table);
         recordTransformFlushNeeded(context, table);
-        recordParametersFlushNeeded(context, table);
-        recordJobManagerRestartNeeded(context, table, data);
+        recordParametersFlushNeeded(context, table, data);
         recordConflictFlushNeeded(context, table);
         recordExtensionFlushNeeded(context, table);
         recordNodeSecurityFlushNeeded(context, table);
@@ -279,20 +280,24 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         return null;
     }
 
-    private void recordJobManagerRestartNeeded(DataContext context, Table table, CsvData data) {
-        if (isJobManagerRestartNeeded(table, data)) {
-            context.put(CTX_KEY_RESTART_JOBMANAGER_NEEDED, true);
-        }
-    }
-
     private void recordConflictFlushNeeded(DataContext context, Table table) {
         if (isConflictFlushNeeded(table)) {
             context.put(CTX_KEY_FLUSH_CONFLICTS_NEEDED, true);
         }
     }
 
-    private void recordParametersFlushNeeded(DataContext context, Table table) {
-        if (isParameterFlushNeeded(table)) {
+    private void recordParametersFlushNeeded(DataContext context, Table table, CsvData data) {
+        if (matchesTable(table, TableConstants.SYM_PARAMETER)) {
+            String jobName = JobDefinition.getJobNameFromData(data);
+            if (jobName != null) {
+                @SuppressWarnings("unchecked")
+                Set<String> jobNames = (Set<String>) context.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED);
+                if (jobNames == null) {
+                    jobNames = new HashSet<String>();
+                    context.put(CTX_KEY_RESTART_JOBMANAGER_NEEDED, jobNames);
+                }
+                jobNames.add(jobName);
+            }
             context.put(CTX_KEY_FLUSH_PARAMETERS_NEEDED, true);
         }
     }
@@ -335,7 +340,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
 
     private void recordFileSyncEnabled(DataContext context, Table table, CsvData data) {
         if (isFileSyncEnabled(table, data)) {
-            context.put(CTX_KEY_FILE_SYNC_ENABLED, true);
+            context.put(CTX_KEY_FILE_SYNC_ENABLE, true);
         }
     }
 
@@ -357,21 +362,12 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         return matchesTable(table, TableConstants.SYM_CONFLICT);
     }
 
-    private boolean isParameterFlushNeeded(Table table) {
-        return matchesTable(table, TableConstants.SYM_PARAMETER);
-    }
-
-    private boolean isJobManagerRestartNeeded(Table table, CsvData data) {
-        return matchesTable(table, TableConstants.SYM_PARAMETER)
-                && data.getCsvData(CsvData.ROW_DATA) != null
-                && data.getCsvData(CsvData.ROW_DATA).contains("job.");
-    }
-
     private boolean isFileSyncEnabled(Table table, CsvData data) {
+        String rowData = data.getCsvData(CsvData.ROW_DATA);
+        String pkData = data.getCsvData(CsvData.PK_DATA);
         return matchesTable(table, TableConstants.SYM_PARAMETER)
-                && data.getCsvData(CsvData.ROW_DATA) != null
-                && data.getCsvData(CsvData.ROW_DATA).contains(ParameterConstants.FILE_SYNC_ENABLE)
-                && data.getCsvData(CsvData.ROW_DATA).contains("true");
+                && ((rowData != null && rowData.contains(ParameterConstants.FILE_SYNC_ENABLE))
+                        || (pkData != null && pkData.contains(ParameterConstants.FILE_SYNC_ENABLE)));
     }
 
     private boolean isTransformFlushNeeded(Table table) {
@@ -408,12 +404,15 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             engine.getStagingManager().clean(0);
             context.remove(CTX_KEY_FLUSH_TRANSFORMS_NEEDED);
         }
-        if (context.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null
-                || context.get(CTX_KEY_FILE_SYNC_ENABLED) != null) {
+        if (context.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null) {
+            @SuppressWarnings("unchecked")
+            Set<String> jobNames = (Set<String>) context.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED);
             IJobManager jobManager = engine.getJobManager();
-            if (jobManager != null && jobManager.isStarted()) {
-                log.info("About to restart jobs because new configuration came through the data loader");
-                jobManager.restartJobs();
+            if (jobManager != null && jobNames != null) {
+                log.info("About to restart jobs because new configuration come through the data router");
+                for (String jobName : jobNames) {
+                    jobManager.restartJob(jobName);
+                }
             }
             context.remove(CTX_KEY_RESTART_JOBMANAGER_NEEDED);
         }
@@ -446,15 +445,26 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             }
             context.remove(CTX_KEY_RESYNC_TABLE_NEEDED);
         }
-        if (context.get(CTX_KEY_FILE_SYNC_ENABLED) != null
-                && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            log.info("About to syncTriggers for file snapshot because the file sync parameter has changed");
-            engine.clearCaches();
+        if (context.get(CTX_KEY_FILE_SYNC_ENABLE) != null) {
+            log.info("About to restart file sync jobs because new configuration come through the data router");
+            engine.getParameterService().rereadParameters();
+            engine.getConfigurationService().initDefaultChannels();
             engine.getFileSyncService().clearCache();
-            Table fileSnapshotTable = engine.getDatabasePlatform()
-                    .getTableFromCache(TableConstants.getTableName(engine.getTablePrefix(), TableConstants.SYM_FILE_SNAPSHOT), false);
-            engine.getTriggerRouterService().syncTriggers(fileSnapshotTable, false);
-            context.remove(CTX_KEY_FILE_SYNC_ENABLED);
+            IJobManager jobManager = engine.getJobManager();
+            if (jobManager != null) {
+                jobManager.restartJob(ClusterConstants.FILE_SYNC_TRACKER);
+                jobManager.restartJob(ClusterConstants.FILE_SYNC_PULL);
+                jobManager.restartJob(ClusterConstants.FILE_SYNC_PUSH);
+            }
+            
+            if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                log.info("About to syncTriggers for file snapshot because the file sync parameter has changed");
+                engine.getTriggerRouterService().clearCache();
+                Table fileSnapshotTable = engine.getDatabasePlatform()
+                        .getTableFromCache(TableConstants.getTableName(engine.getTablePrefix(), TableConstants.SYM_FILE_SNAPSHOT), false);
+                engine.getTriggerRouterService().syncTriggers(fileSnapshotTable, false);
+            }
+            context.remove(CTX_KEY_FILE_SYNC_ENABLE);
         }
         if (context.get(CTX_KEY_INITIAL_LOAD_COMPLETED) != null) {
             log.info("Initial load ended for me");

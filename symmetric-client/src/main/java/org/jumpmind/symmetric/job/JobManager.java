@@ -82,7 +82,7 @@ public class JobManager extends AbstractService implements IJobManager {
     @Override
     public IJob getJob(String name) {
         for (IJob job : jobs) {
-            if (job.getName().equals(name)) {
+            if (job.getName().equalsIgnoreCase(name)) {
                 return job;
             }
         }
@@ -176,6 +176,20 @@ public class JobManager extends AbstractService implements IJobManager {
     public void restartJobs() {
         this.init();
         this.startJobs();
+    }
+
+    @Override
+    public void restartJob(String name) {
+        IJob job = getJob(name);
+        if (job != null) {
+            job.stop();
+            if (job instanceof AbstractJob) {
+                job.getJobDefinition().setDefaultAutomaticStartup(((AbstractJob) job).getDefaults().isEnabled());
+            }
+            if (isAutoStartConfigured(job) && isJobApplicableToNodeGroup(job)) {
+                job.start();
+            }
+        }
     }
 
     @Override

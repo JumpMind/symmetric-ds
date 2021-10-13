@@ -43,12 +43,14 @@ import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.load.ConfigurationChangedDatabaseWriterFilter;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.DataMetaData;
+import org.jumpmind.symmetric.model.JobDefinition;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
@@ -85,9 +87,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
     final String CTX_KEY_FLUSH_NODE_GROUP_LINK_NEEDED = "FlushNodeGroupLink."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FILE_SYNC_TRIGGERS_NEEDED = "FileSyncTriggers."
+    final String CTX_KEY_FILE_SYNC_ENABLE = "FileSyncEnable."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    public final static String KEY = "symconfig";
+
     protected ISymmetricEngine engine;
 
     public ConfigurationChangedDataRouter() {
@@ -170,13 +172,18 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 if (tableMatches(dataMetaData, TableConstants.SYM_LOAD_FILTER)) {
                     routingContext.put(CTX_KEY_FLUSH_LOADFILTERS_NEEDED, Boolean.TRUE);
                 }
-                if (tableMatches(dataMetaData, TableConstants.SYM_PARAMETER)) {
-                    routingContext.put(CTX_KEY_FLUSH_PARAMETERS_NEEDED, Boolean.TRUE);
-                    if (StringUtils.isBlank(dataMetaData.getData().getSourceNodeId())
-                            && (dataMetaData.getData().getRowData() != null && dataMetaData
-                                    .getData().getRowData().contains("job."))) {
-                        routingContext.put(CTX_KEY_RESTART_JOBMANAGER_NEEDED, Boolean.TRUE);
+                if (tableMatches(dataMetaData, TableConstants.SYM_PARAMETER) && StringUtils.isBlank(dataMetaData.getData().getSourceNodeId())) {
+                    String jobName = JobDefinition.getJobNameFromData(dataMetaData.getData());
+                    if (jobName != null) {
+                        @SuppressWarnings("unchecked")
+                        Set<String> jobNames = (Set<String>) routingContext.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED);
+                        if (jobNames == null) {
+                            jobNames = new HashSet<String>();
+                            routingContext.put(CTX_KEY_RESTART_JOBMANAGER_NEEDED, jobNames);
+                        }
+                        jobNames.add(jobName);
                     }
+                    routingContext.put(CTX_KEY_FLUSH_PARAMETERS_NEEDED, Boolean.TRUE);
                 }
                 if (tableMatches(dataMetaData, TableConstants.SYM_TRANSFORM_COLUMN)
                         || tableMatches(dataMetaData, TableConstants.SYM_TRANSFORM_TABLE)) {
@@ -202,8 +209,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                         }
                     }
                 }
-                if (tableMatches(dataMetaData, TableConstants.SYM_JOB)
-                        || routingContext.get(CTX_KEY_FILE_SYNC_TRIGGERS_NEEDED) != null) {
+                if (tableMatches(dataMetaData, TableConstants.SYM_JOB)) {
                     routingContext.put(CTX_KEY_FLUSH_JOBS_NEEDED, Boolean.TRUE);
                 }
             }
@@ -448,9 +454,11 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 || tableMatches(dataMetaData, TableConstants.SYM_NODE_GROUP_LINK)) {
             routingContext.put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
         } else if (tableMatches(dataMetaData, TableConstants.SYM_PARAMETER)) {
-            if (dataMetaData.getData().getCsvData(CsvData.ROW_DATA) != null
-                    && dataMetaData.getData().getCsvData(CsvData.ROW_DATA).contains(ParameterConstants.FILE_SYNC_ENABLE)) {
-                routingContext.put(CTX_KEY_FILE_SYNC_TRIGGERS_NEEDED, Boolean.TRUE);
+            String rowData = dataMetaData.getData().getCsvData(CsvData.ROW_DATA);
+            String pkData = dataMetaData.getData().getCsvData(CsvData.PK_DATA);
+            if ((rowData != null && rowData.contains(ParameterConstants.FILE_SYNC_ENABLE)) ||
+                    (pkData != null && pkData.contains(ParameterConstants.FILE_SYNC_ENABLE))) {
+                routingContext.put(CTX_KEY_FILE_SYNC_ENABLE, Boolean.TRUE);
             }
         }
     }
@@ -588,10 +596,14 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 engine.getLoadFilterService().clearCache();
             }
             if (routingContext.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null) {
+                log.info("About to restart jobs because new configuration come through the data router");
+                @SuppressWarnings("unchecked")
+                Set<String> jobNames = (Set<String>) routingContext.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED);
                 IJobManager jobManager = engine.getJobManager();
                 if (jobManager != null) {
-                    log.info("About to restart jobs because new configuration come through the data router");
-                    jobManager.restartJobs();
+                    for (String jobName : jobNames) {
+                        jobManager.restartJob(jobName);
+                    }
                 }
             }
             if (routingContext.get(CTX_KEY_REFRESH_EXTENSIONS_NEEDED) != null) {
@@ -627,13 +639,25 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 log.info("About to refresh the cache of transformation because new configuration came through the data router");
                 engine.getTransformService().clearCache();
             }
-            if (routingContext.get(CTX_KEY_FILE_SYNC_TRIGGERS_NEEDED) != null
-                    && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-                log.info("About to syncTriggers for file snapshot because the file sync parameter has changed");
-                Table fileSnapshotTable = engine.getDatabasePlatform()
-                        .getTableFromCache(TableConstants.getTableName(engine.getTablePrefix(), TableConstants.SYM_FILE_SNAPSHOT), false);
-                engine.getTriggerRouterService().syncTriggers(fileSnapshotTable, false);
+            if (routingContext.get(CTX_KEY_FILE_SYNC_ENABLE) != null) {
+                log.info("About to restart file sync jobs because new configuration come through the data router");
+                engine.getParameterService().rereadParameters();
+                engine.getConfigurationService().initDefaultChannels();
                 engine.getFileSyncService().clearCache();
+                IJobManager jobManager = engine.getJobManager();
+                if (jobManager != null) {
+                    jobManager.restartJob(ClusterConstants.FILE_SYNC_TRACKER);
+                    jobManager.restartJob(ClusterConstants.FILE_SYNC_PULL);
+                    jobManager.restartJob(ClusterConstants.FILE_SYNC_PUSH);
+                }
+                
+                if (engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                    log.info("About to syncTriggers for file snapshot because the file sync parameter has changed");
+                    engine.getTriggerRouterService().clearCache();
+                    Table fileSnapshotTable = engine.getDatabasePlatform()
+                            .getTableFromCache(TableConstants.getTableName(engine.getTablePrefix(), TableConstants.SYM_FILE_SNAPSHOT), false);
+                    engine.getTriggerRouterService().syncTriggers(fileSnapshotTable, false);    
+                }
             }
         }
     }

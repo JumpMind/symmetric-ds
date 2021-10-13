@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.model;
 import java.util.Date;
 
 import org.apache.commons.lang3.math.NumberUtils;
+import org.jumpmind.symmetric.io.data.CsvData;
 
 public class JobDefinition {
     public enum JobType {
@@ -182,5 +183,33 @@ public class JobDefinition {
 
     public String getCronParameter() {
         return String.format("job.%s.cron", getJobNameParameter(jobName));
+    }
+
+    public static String getJobNameFromParameter(String paramName) {
+        String jobName = null;
+        if (paramName != null) {
+            if (paramName.startsWith("start.") && paramName.endsWith(".job") && paramName.length() > 10) {
+                jobName = paramName.substring(6, paramName.length() - 4);
+            } else if (paramName.startsWith("job.") && paramName.endsWith(".cron") && paramName.length() > 9) {
+                jobName = paramName.substring(4, paramName.length() - 5);
+            } else if (paramName.startsWith("job.") && paramName.endsWith(".period.time.ms") && paramName.length() > 19) {
+                jobName = paramName.substring(4, paramName.length() - 15);
+            }
+        }
+        if (jobName != null) {
+            jobName = jobName.replace(".", " ");
+        }
+        return jobName;
+    }
+
+    public static String getJobNameFromData(CsvData data) {
+        String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
+        if (parsedData == null) {
+            parsedData = data.getParsedData(CsvData.PK_DATA);
+        }
+        if (parsedData != null && parsedData.length >= 3) {
+            return getJobNameFromParameter(parsedData[2]);
+        }
+        return null;
     }
 }
