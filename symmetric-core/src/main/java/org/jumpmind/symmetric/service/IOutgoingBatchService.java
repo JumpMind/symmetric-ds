@@ -126,4 +126,6 @@ public interface IOutgoingBatchService {
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId);
 
     public List<Long> getAllBatches();
+    
+    public List<OutgoingBatch> getBatchesInProgress();
 }

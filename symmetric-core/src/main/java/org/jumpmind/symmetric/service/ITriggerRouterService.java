@@ -199,6 +199,8 @@ public interface ITriggerRouterService {
     public void syncTriggers(List<Trigger> triggers, ITriggerCreationListener listener, boolean force, boolean verifyInDatabase);
 
     public void syncTriggers(Table table, boolean genAlways);
+    
+    public void syncTriggers(List<Table> tables, boolean genAlways);
 
     public void dropTriggers(TriggerHistory history);
 

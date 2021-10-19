@@ -200,7 +200,6 @@ public class JobManager extends AbstractService implements IJobManager {
         if (sqlTemplate.update(getSql("updateJobSql"), args) <= 0) {
             sqlTemplate.update(getSql("insertJobSql"), args);
         }
-        restartJobs();
     }
 
     @Override
@@ -210,6 +209,5 @@ public class JobManager extends AbstractService implements IJobManager {
         } else {
             throw new SymmetricException("Failed to remove job " + name + ".  Note that BUILT_IN jobs cannot be removed.");
         }
-        restartJobs();
     }
 }
