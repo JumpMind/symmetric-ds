@@ -22,13 +22,12 @@ package org.jumpmind.symmetric.io.data.transform;
 
 import java.util.Map;
 
-import net.sourceforge.jeval.EvaluationException;
-import net.sourceforge.jeval.Evaluator;
-
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.DataEventType;
+
+import net.sourceforge.jeval.EvaluationException;
+import net.sourceforge.jeval.Evaluator;
 
 public class MathColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
 
@@ -73,11 +72,7 @@ public class MathColumnTransform implements ISingleNewAndOldValueColumnTransform
                 result = result.substring(0, result.length()-2);
             }
 
-            if (data.getTargetDmlType().equals(DataEventType.DELETE) && data.getOldSourceValues() != null) {
-                return new NewAndOldValue(null, result);
-            } else {
-                return new NewAndOldValue(result, null);
-            }
+            return new NewAndOldValue(column, data, result);
         } catch (EvaluationException e) {
             throw new RuntimeException("Unable to evaluate transform expression: " + transformExpression);
         }
