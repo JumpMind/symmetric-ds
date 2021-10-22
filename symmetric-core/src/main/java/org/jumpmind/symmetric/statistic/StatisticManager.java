@@ -638,7 +638,7 @@ public class StatisticManager implements IStatisticManager {
         return hostStats;
     }
 
-	@Override
-	public void incrementTableRows(Map<String, Map<String, Long>> tableCounts, boolean loaded) {
-	}
+    @Override
+    public void incrementTableRows(Map<String, Map<String, Long>> tableCounts, boolean loaded) {
+    }
 }

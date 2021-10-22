@@ -33,9 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractDataLoaderFactory {
-	
     protected IParameterService parameterService;
-    
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     public DatabaseWriterSettings buildParameterDatabaseWriterSettings(List<? extends Conflict> conflictSettings) {
@@ -58,7 +56,6 @@ public abstract class AbstractDataLoaderFactory {
         settings.setApplyChangesOnly(parameterService.is(ParameterConstants.DATA_LOADER_APPLY_CHANGES_ONLY, true));
         settings.setUsePrimaryKeysFromSource(
                 parameterService.is(ParameterConstants.DATA_LOADER_USE_PRIMARY_KEYS_FROM_SOURCE));
-        
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();
         boolean multipleDefaultSettingsFound = false;
@@ -77,14 +74,12 @@ public abstract class AbstractDataLoaderFactory {
                 }
             }
         }
-
         if (multipleDefaultSettingsFound) {
             log.warn("There were multiple default conflict settings found.  Using '{}' as the default",
                     settings.getDefaultConflictSetting().getConflictId());
         }
         settings.setConflictSettingsByChannel(byChannel);
         settings.setConflictSettingsByTable(byTable);
-        
         return settings;
     }
 }

@@ -25,14 +25,14 @@ import com.vaadin.flow.component.UI;
 
 @SuppressWarnings("serial")
 public class ThemeChangedEvent extends ComponentEvent<UI> {
-	
-	private final String theme;
-	public ThemeChangedEvent(UI source, String theme) {
-		super(source, false);
-		this.theme = theme;
-	}
+    private final String theme;
 
-	public String getTheme() {
-		return theme;
-	}
+    public ThemeChangedEvent(UI source, String theme) {
+        super(source, false);
+        this.theme = theme;
+    }
+
+    public String getTheme() {
+        return theme;
+    }
 }

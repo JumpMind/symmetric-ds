@@ -107,7 +107,6 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                 throw new RuntimeException(e);
             }
         }
-
         DynamicDefaultDatabaseWriter writer = new DynamicDefaultDatabaseWriter(symmetricDialect.getPlatform(),
                 symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
                 new DefaultTransformWriterConflictResolver(transformWriter) {

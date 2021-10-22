@@ -220,7 +220,8 @@ public class UnixService extends WrapperService {
                     cnt++;
                     try {
                         Thread.sleep(1000);
-                    } catch(InterruptedException e) {}
+                    } catch (InterruptedException e) {
+                    }
                 }
                 for (String arg : args) {
                     if (arg.contains(config.getJavaCommand())) {

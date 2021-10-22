@@ -52,7 +52,7 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.Theme;
 
 @PageTitle("SQL Explorer Demo")
-//@Theme("sqlexplorer")
+// @Theme("sqlexplorer")
 @PreserveOnRefresh
 @Push(value = PushMode.AUTOMATIC)
 public class DemoUI extends UI implements IDbProvider {
@@ -76,7 +76,7 @@ public class DemoUI extends UI implements IDbProvider {
     }
 
     @WebServlet(urlPatterns = "/*")
-    @VaadinServletConfiguration(ui = DemoUI.class, productionMode = false/*, widgetset = "AppWidgetset"*/)
+    @VaadinServletConfiguration(ui = DemoUI.class, productionMode = false/* , widgetset = "AppWidgetset" */)
     public static class DemoUIServlet extends VaadinServlet {
         private static final long serialVersionUID = 1L;
     }

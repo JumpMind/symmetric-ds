@@ -456,7 +456,6 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
                 jobManager.restartJob(ClusterConstants.FILE_SYNC_PULL);
                 jobManager.restartJob(ClusterConstants.FILE_SYNC_PUSH);
             }
-            
             if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
                 log.info("About to syncTriggers for file snapshot because the file sync parameter has changed");
                 engine.getTriggerRouterService().clearCache();

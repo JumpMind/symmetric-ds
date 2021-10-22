@@ -451,7 +451,7 @@ final public class ParameterConstants {
     public final static String MONGO_DEFAULT_DATABASE = "mongodb.default.database";
     public final static String MONGO_USE_MONGO_IDS = "mongodb.use.mongo.ids";
     public final static String[] ALL_MONGODB_PARAMS = new String[] { MONGO_DEFAULT_DATABASE, MONGO_USE_MONGO_IDS };
-    
+
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

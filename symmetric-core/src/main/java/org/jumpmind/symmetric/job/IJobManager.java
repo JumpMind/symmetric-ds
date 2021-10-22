@@ -50,6 +50,6 @@ public interface IJobManager {
     public boolean isJobApplicableToNodeGroup(IJob job);
 
     public void restartJobs();
-    
+
     public void restartJob(String name);
 }

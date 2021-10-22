@@ -116,11 +116,11 @@ public interface IStatisticManager {
     public void incrementTriggersRemovedCount(long count);
 
     public void incrementTriggersRebuiltCount(long count);
-    
+
     public void incrementTriggersCreatedCount(long count);
-    
+
     public void incrementTableRows(Map<String, Map<String, Long>> tableCounts, boolean loaded);
-    
+
     public Map<String, ChannelStats> getWorkingChannelStats();
 
     public HostStats getWorkingHostStats();

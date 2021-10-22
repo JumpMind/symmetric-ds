@@ -89,7 +89,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
     final String CTX_KEY_FILE_SYNC_ENABLE = "FileSyncEnable."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-
     protected ISymmetricEngine engine;
 
     public ConfigurationChangedDataRouter() {
@@ -650,13 +649,12 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     jobManager.restartJob(ClusterConstants.FILE_SYNC_PULL);
                     jobManager.restartJob(ClusterConstants.FILE_SYNC_PUSH);
                 }
-                
                 if (engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
                     log.info("About to syncTriggers for file snapshot because the file sync parameter has changed");
                     engine.getTriggerRouterService().clearCache();
                     Table fileSnapshotTable = engine.getDatabasePlatform()
                             .getTableFromCache(TableConstants.getTableName(engine.getTablePrefix(), TableConstants.SYM_FILE_SNAPSHOT), false);
-                    engine.getTriggerRouterService().syncTriggers(fileSnapshotTable, false);    
+                    engine.getTriggerRouterService().syncTriggers(fileSnapshotTable, false);
                 }
             }
         }

@@ -390,7 +390,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 long count = execute(data, currentDmlStatement.getLookupKeyData(lookupDataMap));
                 statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
                 statistics.get(batch).incrementTableStats(targetTable.getName(), DataEventType.DELETE.getCode(), count);
-                
                 if (count > 0) {
                     return LoadStatus.SUCCESS;
                 } else {
@@ -559,7 +558,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     long count = execute(data, values);
                     statistics.get(batch).increment(DataWriterStatisticConstants.UPDATECOUNT, count);
                     statistics.get(batch).incrementTableStats(targetTable.getName(), DataEventType.UPDATE.getCode(), count);
-                    
                     if (count > 0) {
                         return LoadStatus.SUCCESS;
                     } else {

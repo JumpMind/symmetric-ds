@@ -38,47 +38,38 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class ResizableDialog extends Dialog {
-
     private static final long serialVersionUID = 1L;
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    
     protected VerticalLayout innerContent;
-    
     protected Label captionLabel;
-    
     protected ShortcutRegistration escapeShortcutRegistration;
 
     public ResizableDialog() {
         this("");
     }
-    
+
     public ResizableDialog(String caption) {
         this(caption, true);
     }
-    
+
     public ResizableDialog(String caption, boolean addEscapeShortcut) {
         setModal(true);
         setResizable(true);
-        
         VerticalLayout content = new VerticalLayout();
         content.setSizeFull();
         content.setPadding(false);
         super.add(content);
-        
         if (caption != null) {
             captionLabel = new Label(caption + "<hr>");
             captionLabel.setWidthFull();
             captionLabel.getStyle().set("margin", null);
             content.add(captionLabel);
         }
-        
         innerContent = new VerticalLayout();
         innerContent.setWidthFull();
         innerContent.setMargin(false);
         innerContent.setSpacing(false);
         content.addAndExpand(innerContent);
-        
         UI.getCurrent().addShortcutListener(() -> {
             if (!"100%".equals(getWidth())) {
                 setWidth("100%");
@@ -88,25 +79,24 @@ public class ResizableDialog extends Dialog {
                 setHeight(null);
             }
         }, Key.KEY_M, KeyModifier.CONTROL);
-        
         if (addEscapeShortcut) {
             escapeShortcutRegistration = UI.getCurrent().addShortcutListener(() -> close(), Key.ESCAPE);
         }
     }
-    
+
     protected void add(Component component, int expandRatio) {
         innerContent.add(component);
         innerContent.setFlexGrow(expandRatio, component);
     }
-    
+
     protected void add(Component component) {
         innerContent.add(component);
     }
-    
+
     protected void addComponents(Component... components) {
         for (Component component : components) {
-            innerContent.add(component);    
-        }        
+            innerContent.add(component);
+        }
     }
 
     protected Button buildCloseButton() {
@@ -116,55 +106,48 @@ public class ResizableDialog extends Dialog {
         closeButton.focus();
         return closeButton;
     }
-    
+
     protected HorizontalLayout buildButtonFooter(Component... toTheRightButtons) {
-        return buildButtonFooter((Component[])null, toTheRightButtons);
+        return buildButtonFooter((Component[]) null, toTheRightButtons);
     }
 
     protected HorizontalLayout buildButtonFooter(Component[] toTheLeftButtons, Component... toTheRightButtons) {
         HorizontalLayout footer = new HorizontalLayout();
-
         footer.setSpacing(true);
-
         if (toTheLeftButtons != null) {
             footer.add(toTheLeftButtons);
         }
-        
         Span footerText = new Span("");
         footerText.setSizeUndefined();
-
         footer.addAndExpand(footerText);
-
         if (toTheRightButtons != null) {
             footer.add(toTheRightButtons);
         }
-
-
         return footer;
     }
-    
-    protected boolean onClose() { return true;}
+
+    protected boolean onClose() {
+        return true;
+    }
 
     public void show() {
         open();
     }
-    
+
     public void showAtSize(double percentOfBrowserSize) {
         UI.getCurrent().getPage().retrieveExtendedClientDetails(details -> {
             setHeight((details.getWindowInnerHeight() * percentOfBrowserSize) + "px");
             setWidth((details.getWindowInnerWidth() * percentOfBrowserSize) + "px");
         });
-
-        show();       
-       
+        show();
     }
 
     public void bringToFront() {
         if (getElement().getNode().isAttached()) {
-           super.getElement().executeJs("$0._bringOverlayToFront()");
+            super.getElement().executeJs("$0._bringOverlayToFront()");
         }
     }
-    
+
     protected void enableEscapeShortcut(boolean enable) {
         if (enable && escapeShortcutRegistration == null) {
             escapeShortcutRegistration = UI.getCurrent().addShortcutListener(() -> close(), Key.ESCAPE);
@@ -173,9 +156,8 @@ public class ResizableDialog extends Dialog {
             escapeShortcutRegistration = null;
         }
     }
-    
-    public class CloseButtonListener implements ComponentEventListener<ClickEvent<Button>> {
 
+    public class CloseButtonListener implements ComponentEventListener<ClickEvent<Button>> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -184,7 +166,5 @@ public class ResizableDialog extends Dialog {
                 close();
             }
         }
-
     }
-
 }

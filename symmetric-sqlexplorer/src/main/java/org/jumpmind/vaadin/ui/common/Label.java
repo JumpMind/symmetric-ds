@@ -27,11 +27,8 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 public class Label extends Span {
-
     private static final long serialVersionUID = 1L;
-
     private Html html;
-
     private Component icon;
 
     public Label() {

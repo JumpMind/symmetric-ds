@@ -189,8 +189,8 @@ public class MockStatisticManager implements IStatisticManager {
         // TODO Auto-generated method stub
     }
 
-	@Override
-	public void incrementTableRows(Map<String, Map<String, Long>> tableCounts, boolean loaded) {
-		// TODO Auto-generated method stub		
-	}
+    @Override
+    public void incrementTableRows(Map<String, Map<String, Long>> tableCounts, boolean loaded) {
+        // TODO Auto-generated method stub
+    }
 }

@@ -58,7 +58,6 @@ public class AppUtils {
     private static Logger log = LoggerFactory.getLogger(AppUtils.class);
     private static FastDateFormat timezoneFormatter = FastDateFormat.getInstance("Z");
     private static Properties implProp = new Properties();
-
     static {
         loadProperties(implProp, "symmetric-impl.properties");
     }

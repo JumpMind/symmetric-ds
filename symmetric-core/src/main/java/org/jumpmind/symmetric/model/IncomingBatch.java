@@ -61,7 +61,6 @@ import org.slf4j.LoggerFactory;
 public class IncomingBatch extends AbstractBatch {
     private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(IncomingBatch.class);
-
     private long failedRowNumber;
     private long startTime;
     private boolean retry;
@@ -103,9 +102,9 @@ public class IncomingBatch extends AbstractBatch {
             setTableLoadedCount(writerStatistics.getTableStats());
             if (log.isDebugEnabled()) {
                 for (Map.Entry<String, Map<String, Long>> entry : writerStatistics.getTableStats().entrySet()) {
-                	for (Map.Entry<String, Long> dmlEntry : entry.getValue().entrySet()) {
-                		log.debug("Loaded table: {}, {}, {} rows" , entry.getKey(), dmlEntry.getKey(), dmlEntry.getValue());
-                	}
+                    for (Map.Entry<String, Long> dmlEntry : entry.getValue().entrySet()) {
+                        log.debug("Loaded table: {}, {}, {} rows", entry.getKey(), dmlEntry.getKey(), dmlEntry.getValue());
+                    }
                 }
             }
         }

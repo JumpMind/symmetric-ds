@@ -40,35 +40,24 @@ import com.vaadin.flow.component.tabs.Tabs.SelectedChangeEvent;
 import com.vaadin.flow.component.tabs.TabsVariant;
 
 public class TabSheet extends Div {
-
     private static final long serialVersionUID = 1L;
-    
     protected VerticalLayout layout;
-    
     protected Tabs tabs;
-    
     protected List<EnhancedTab> tabList;
-    
     protected Div content;
-    
     protected boolean closeable = false;
-    
+
     public TabSheet() {
         super();
-        
         layout = new VerticalLayout();
         layout.setSizeFull();
         layout.setSpacing(false);
         layout.getThemeList().remove("padding");
-        
         tabs = new Tabs();
         tabs.setWidthFull();
-        
         tabList = new ArrayList<EnhancedTab>();
-        
         content = new Div();
         content.setSizeFull();
-        
         tabs.addSelectedChangeListener(event -> {
             if (event.getSelectedTab() != null) {
                 content.getChildren().forEach(element -> element.setVisible(false));
@@ -83,43 +72,40 @@ public class TabSheet extends Div {
                 }
             }
         });
-        
         layout.add(tabs, content);
         add(layout);
     }
-    
+
     public EnhancedTab add(Component component, String name) {
         EnhancedTab newTab = new EnhancedTab(name, component);
         tabs.add(newTab);
         tabList.add(newTab);
         return newTab;
     }
-    
+
     public EnhancedTab add(Component component, String name, Icon icon) {
         EnhancedTab newTab = new EnhancedTab(name, icon, component);
         tabs.add(newTab);
         tabList.add(newTab);
         return newTab;
     }
-    
+
     public EnhancedTab add(Component component, String name, int index) {
         EnhancedTab newTab = new EnhancedTab(name, component);
         add(newTab, index);
         return newTab;
     }
-    
+
     public EnhancedTab add(Component component, String name, Icon icon, int index) {
         EnhancedTab newTab = new EnhancedTab(name, icon, component);
         add(newTab, index);
         return newTab;
     }
-    
+
     private void add(EnhancedTab tab, int index) {
         List<EnhancedTab> oldList = new ArrayList<EnhancedTab>(tabList);
-        
         tabList.clear();
         tabs.removeAll();
-        
         Iterator<EnhancedTab> tabIterator = oldList.iterator();
         for (int i = 0; i <= index || tabIterator.hasNext(); i++) {
             if (i == index || !tabIterator.hasNext()) {
@@ -135,14 +121,14 @@ public class TabSheet extends Div {
             }
         }
     }
-    
+
     public void remove(String name) {
         EnhancedTab tab = getTab(name);
         if (tab != null) {
             remove(tab);
         }
     }
-    
+
     public void remove(EnhancedTab tab) {
         int tabCount = tabList.size();
         if (tab.isSelected() && tabCount > 1) {
@@ -159,26 +145,26 @@ public class TabSheet extends Div {
             content.removeAll();
         }
     }
-    
+
     public void setCloseable(boolean closeable) {
         this.closeable = closeable;
         for (EnhancedTab tab : tabList) {
             tab.setCloseable(closeable);
         }
     }
-    
+
     public void addThemeVariants(TabsVariant... variants) {
         tabs.addThemeVariants(variants);
     }
-    
+
     public void addSelectedTabChangeListener(ComponentEventListener<SelectedChangeEvent> listener) {
         tabs.addSelectedChangeListener(listener);
     }
-    
+
     public EnhancedTab getSelectedTab() {
         return (EnhancedTab) tabs.getSelectedTab();
     }
-    
+
     public EnhancedTab getTab(Component component) {
         if (component != null) {
             for (EnhancedTab tab : tabList) {
@@ -189,7 +175,7 @@ public class TabSheet extends Div {
         }
         return null;
     }
-    
+
     public EnhancedTab getTab(String name) {
         for (EnhancedTab tab : tabList) {
             if (tab.getName().equals(name)) {
@@ -198,11 +184,11 @@ public class TabSheet extends Div {
         }
         return null;
     }
-    
+
     public EnhancedTab getTab(int index) {
         return tabList.get(index);
     }
-    
+
     public int getTabIndex(Component component) {
         if (component != null) {
             for (int i = 0; i < tabList.size(); i++) {
@@ -213,83 +199,73 @@ public class TabSheet extends Div {
         }
         return -1;
     }
-    
+
     public int getTabCount() {
         return tabList.size();
     }
-    
+
     public void setSelectedTab(String name) {
         EnhancedTab tab = getTab(name);
         if (tab != null) {
             tabs.setSelectedTab(tab);
         }
     }
-    
+
     public void setSelectedTab(int index) {
         EnhancedTab tab = getTab(index);
         if (tab != null) {
             tabs.setSelectedTab(tab);
         }
     }
-    
+
     public void setSelectedTab(Component component) {
         EnhancedTab tab = getTab(component);
         if (tab != null) {
             tabs.setSelectedTab(tab);
         }
     }
-    
+
     public Iterator<Component> iterator() {
         return tabList.stream().map(EnhancedTab::getComponent).iterator();
     }
-    
+
     public void setAutoselect(boolean autoselect) {
         tabs.setAutoselect(autoselect);
     }
-    
-    public class EnhancedTab extends Tab {
 
+    public class EnhancedTab extends Tab {
         private static final long serialVersionUID = 1L;
-        
         private String name;
-        
         private Icon icon;
-        
         private Component component;
-        
         private Icon closeIcon;
-        
+
         public EnhancedTab(String name, Component component) {
             this(name, null, component);
         }
-        
+
         public EnhancedTab(String name, Icon icon, Component component) {
             this.name = name;
             this.icon = icon;
             this.component = component;
-            
             HorizontalLayout tabHeader = new HorizontalLayout();
-            
             if (icon != null) {
                 icon.setSize("16px");
                 tabHeader.add(icon);
                 tabHeader.setVerticalComponentAlignment(Alignment.CENTER, icon);
             }
-            
             Span nameSpan = new Span(name);
             tabHeader.add(nameSpan);
             tabHeader.setVerticalComponentAlignment(Alignment.END, nameSpan);
-            
             closeIcon = new Icon(VaadinIcon.CLOSE);
             closeIcon.setSize("16px");
             closeIcon.addClickListener(event -> TabSheet.this.remove(EnhancedTab.this));
             closeIcon.setVisible(closeable);
             tabHeader.add(closeIcon);
             tabHeader.setVerticalComponentAlignment(Alignment.CENTER, closeIcon);
-            
             add(tabHeader);
         }
-        
+
         public String getName() {
             return name;
         }
@@ -297,7 +273,7 @@ public class TabSheet extends Div {
         public void setName(String name) {
             this.name = name;
         }
-        
+
         public Icon getIcon() {
             return icon;
         }
@@ -313,11 +289,9 @@ public class TabSheet extends Div {
         public void setComponent(Component component) {
             this.component = component;
         }
-        
+
         public void setCloseable(boolean closeable) {
             closeIcon.setVisible(closeable);
         }
-        
     }
-
 }

@@ -148,7 +148,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                         Object[] values = databaseWriter.getPlatform().getObjectValues(writer.getBatch().getBinaryEncoding(),
                                 ArrayUtils.addAll(new String[] { rowDataMap.get(columns[0].getName()) }, pkData),
                                 ArrayUtils.addAll(new Column[] { columns[0] }, targetTable.getPrimaryKeyColumns()));
-                        databaseWriter.getTransaction().prepareAndExecute(st.getSql(), values,  st.getTypes());
+                        databaseWriter.getTransaction().prepareAndExecute(st.getSql(), values, st.getTypes());
                     }
                 }
             }
