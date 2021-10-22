@@ -24,6 +24,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -53,7 +54,6 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -1547,34 +1547,37 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void syncTriggers(Table table, boolean force) {
+        syncTriggers(Arrays.asList(table), force);
+    }
+
+    public void syncTriggers(List<Table> tables, boolean force) {
         boolean ignoreCase = this.parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE);
-        if (table == null) {
-            throw new SymmetricException("'table' cannot be null, check that the table exists.");
-        }
-        /* Re-lookup just in case the table was just altered */
-        table = platform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(), true);
         List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
         List<TriggerHistory> activeTriggerHistories = getActiveTriggerHistories();
         Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(triggersForCurrentNode,
                 activeTriggerHistories, true);
-        for (Trigger trigger : triggersForCurrentNode) {
-            if (trigger.matches(table, platform.getDefaultCatalog(), platform.getDefaultSchema(), ignoreCase) &&
-                    (!trigger.isSourceTableNameWildCarded() || !trigger.isSourceTableNameExpanded()
-                            || !containsExactMatchForSourceTableName(table, triggersForCurrentNode, ignoreCase))) {
-                List<TriggerTableSupportingInfo> triggerTableSupportingInfoList = triggerToTableSupportingInfo.get(trigger.getTriggerId());
-                TriggerTableSupportingInfo triggerTableSupportingInfo = null;
-                for (TriggerTableSupportingInfo t : triggerTableSupportingInfoList) {
-                    if (t.getTable().getFullyQualifiedTableName().equals(table.getFullyQualifiedTableName())) {
-                        triggerTableSupportingInfo = t;
-                        break;
+        for (Table table : tables) {
+            /* Re-lookup just in case the table was just altered */
+            table = platform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(), true);
+            for (Trigger trigger : triggersForCurrentNode) {
+                if (trigger.matches(table, platform.getDefaultCatalog(), platform.getDefaultSchema(), ignoreCase) &&
+                        (!trigger.isSourceTableNameWildCarded() || !trigger.isSourceTableNameExpanded()
+                                || !containsExactMatchForSourceTableName(table, triggersForCurrentNode, ignoreCase))) {
+                    List<TriggerTableSupportingInfo> triggerTableSupportingInfoList = triggerToTableSupportingInfo.get(trigger.getTriggerId());
+                    TriggerTableSupportingInfo triggerTableSupportingInfo = null;
+                    for (TriggerTableSupportingInfo t : triggerTableSupportingInfoList) {
+                        if (t.getTable().getFullyQualifiedTableName().equals(table.getFullyQualifiedTableName())) {
+                            triggerTableSupportingInfo = t;
+                            break;
+                        }
                     }
-                }
-                if (triggerTableSupportingInfo != null) {
-                    log.info("Synchronizing triggers for {}", table.getFullyQualifiedTableName());
-                    updateOrCreateDatabaseTriggers(trigger, table, null, force, true, activeTriggerHistories, triggerTableSupportingInfo);
-                    log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
-                } else {
-                    log.warn("Can't find table {} for trigger {}, make sure table exists.", table.getFullyQualifiedTableName(), trigger.getTriggerId());
+                    if (triggerTableSupportingInfo != null) {
+                        log.info("Synchronizing triggers for {}", table.getFullyQualifiedTableName());
+                        updateOrCreateDatabaseTriggers(trigger, table, null, force, true, activeTriggerHistories, triggerTableSupportingInfo);
+                        log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
+                    } else {
+                        log.warn("Can't find table {} for trigger {}, make sure table exists.", table.getFullyQualifiedTableName(), trigger.getTriggerId());
+                    }
                 }
             }
         }

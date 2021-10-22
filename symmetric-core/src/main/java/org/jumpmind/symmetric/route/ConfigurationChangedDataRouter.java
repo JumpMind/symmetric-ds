@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.route;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -29,78 +28,46 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.ConfigurationChangedHelper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.job.IJobManager;
-import org.jumpmind.symmetric.load.ConfigurationChangedDatabaseWriterFilter;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.DataMetaData;
-import org.jumpmind.symmetric.model.JobDefinition;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
-import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter, IBuiltInExtensionPoint {
     public static final String ROUTER_TYPE = "configurationChanged";
-    final String CTX_KEY_RESYNC_NEEDED = "Resync."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FLUSH_CHANNELS_NEEDED = "FlushChannels."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FLUSH_LOADFILTERS_NEEDED = "FlushLoadFilters."
-            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FLUSH_TRANSFORMS_NEEDED = "FlushTransforms."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FLUSH_PARAMETERS_NEEDED = "FlushParameters."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FLUSH_CONFLICTS_NEEDED = "FlushConflicts."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FLUSH_MONITORS_NEEDED = "FlushMonitors."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FLUSH_NOTIFICATIONS_NEEDED = "FlushNotifcations."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FLUSH_NODES_NEEDED = "FlushNodes."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FLUSH_NODE_SECURITYS_NEEDED = "FlushNodeSecuritys."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_RESTART_JOBMANAGER_NEEDED = "RestartJobManager."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_REFRESH_EXTENSIONS_NEEDED = "RefreshExtensions."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FLUSHED_TRIGGER_ROUTERS = "FlushedTriggerRouters."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FLUSH_JOBS_NEEDED = "FlushJobs."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FLUSH_NODE_GROUP_LINK_NEEDED = "FlushNodeGroupLink."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    final String CTX_KEY_FILE_SYNC_ENABLE = "FileSyncEnable."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
-    protected ISymmetricEngine engine;
 
-    public ConfigurationChangedDataRouter() {
-    }
+    protected ISymmetricEngine engine;
+    private ConfigurationChangedHelper helper;
 
     public ConfigurationChangedDataRouter(ISymmetricEngine engine) {
         this.engine = engine;
+        helper = new ConfigurationChangedHelper(engine);
     }
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData,
             Set<Node> possibleTargetNodes, boolean initialLoad, boolean initialLoadSelectUsed,
             TriggerRouter triggerRouter) {
+        if (helper.isNewContext(routingContext)) {
+            helper.setSyncTriggersAllowed(routingContext, engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS) &&
+                    engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS_AFTER_CONFIG_CHANGED));
+        }
+        helper.handleChange(routingContext, dataMetaData.getTable(), dataMetaData.getData());
         possibleTargetNodes = filterOutOlderNodes(dataMetaData, possibleTargetNodes);
         possibleTargetNodes = filterOutNodesByDeploymentType(dataMetaData, possibleTargetNodes);
         // the list of nodeIds that we will return
@@ -112,21 +79,16 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         if (me != null) {
             NetworkedNode rootNetworkedNode = getRootNetworkNodeFromContext(routingContext);
             if (tableMatches(dataMetaData, TableConstants.SYM_NODE)
-                    && dataMetaData.getData().getDataEventType().equals(DataEventType.SQL)
+                    && dataMetaData.getData().getDataEventType() == DataEventType.SQL
                     && dataMetaData.getData().getParsedData(CsvData.ROW_DATA).length > 1
                     && dataMetaData.getData().getParsedData(CsvData.ROW_DATA)[0].toUpperCase().contains("TABLE")) {
-                routingContext.put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
+                helper.setSyncTriggersNeeded(routingContext);
                 routeNodeTables(nodeIds, columnValues, rootNetworkedNode, me, routingContext,
                         dataMetaData, possibleTargetNodes, initialLoad);
             } else if (tableMatches(dataMetaData, TableConstants.SYM_NODE)
                     || tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)
                     || tableMatches(dataMetaData, TableConstants.SYM_NODE_HOST)
                     || tableMatches(dataMetaData, TableConstants.SYM_MONITOR_EVENT)) {
-                if (tableMatches(dataMetaData, TableConstants.SYM_NODE)) {
-                    routingContext.put(CTX_KEY_FLUSH_NODES_NEEDED, Boolean.TRUE);
-                } else if (tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
-                    routingContext.put(CTX_KEY_FLUSH_NODE_SECURITYS_NEEDED, Boolean.TRUE);
-                }
                 /*
                  * If this is sym_node or sym_node_security determine which nodes it goes to.
                  */
@@ -159,47 +121,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                         }
                     }
                 }
-                if (StringUtils.isBlank(dataMetaData.getData().getSourceNodeId())) {
-                    queueSyncTriggers(routingContext, dataMetaData, columnValues);
-                }
-                if (tableMatches(dataMetaData, TableConstants.SYM_CHANNEL)) {
-                    routingContext.put(CTX_KEY_FLUSH_CHANNELS_NEEDED, Boolean.TRUE);
-                }
-                if (tableMatches(dataMetaData, TableConstants.SYM_CONFLICT)) {
-                    routingContext.put(CTX_KEY_FLUSH_CONFLICTS_NEEDED, Boolean.TRUE);
-                }
-                if (tableMatches(dataMetaData, TableConstants.SYM_LOAD_FILTER)) {
-                    routingContext.put(CTX_KEY_FLUSH_LOADFILTERS_NEEDED, Boolean.TRUE);
-                }
-                if (tableMatches(dataMetaData, TableConstants.SYM_PARAMETER) && StringUtils.isBlank(dataMetaData.getData().getSourceNodeId())) {
-                    String jobName = JobDefinition.getJobNameFromData(dataMetaData.getData());
-                    if (jobName != null) {
-                        @SuppressWarnings("unchecked")
-                        Set<String> jobNames = (Set<String>) routingContext.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED);
-                        if (jobNames == null) {
-                            jobNames = new HashSet<String>();
-                            routingContext.put(CTX_KEY_RESTART_JOBMANAGER_NEEDED, jobNames);
-                        }
-                        jobNames.add(jobName);
-                    }
-                    routingContext.put(CTX_KEY_FLUSH_PARAMETERS_NEEDED, Boolean.TRUE);
-                }
-                if (tableMatches(dataMetaData, TableConstants.SYM_TRANSFORM_COLUMN)
-                        || tableMatches(dataMetaData, TableConstants.SYM_TRANSFORM_TABLE)) {
-                    routingContext.put(CTX_KEY_FLUSH_TRANSFORMS_NEEDED, Boolean.TRUE);
-                }
-                if (tableMatches(dataMetaData, TableConstants.SYM_EXTENSION)) {
-                    routingContext.put(CTX_KEY_REFRESH_EXTENSIONS_NEEDED, Boolean.TRUE);
-                }
-                if (tableMatches(dataMetaData, TableConstants.SYM_MONITOR)) {
-                    routingContext.put(CTX_KEY_FLUSH_MONITORS_NEEDED, Boolean.TRUE);
-                }
-                if (tableMatches(dataMetaData, TableConstants.SYM_NOTIFICATION)) {
-                    routingContext.put(CTX_KEY_FLUSH_NOTIFICATIONS_NEEDED, Boolean.TRUE);
-                }
                 if (tableMatches(dataMetaData, TableConstants.SYM_NODE_GROUP_LINK)) {
-                    routingContext.put(CTX_KEY_FLUSH_NODE_GROUP_LINK_NEEDED, Boolean.TRUE);
-                    if (dataMetaData.getData().getDataEventType().equals(DataEventType.INSERT)) {
+                    if (dataMetaData.getData().getDataEventType() == DataEventType.INSERT) {
                         if (!initialLoad) {
                             if (!isConfigDataMetaDataAlreadyHandled(dataMetaData, routingContext)) {
                                 buildReloadEvents(dataMetaData, columnValues);
@@ -207,9 +130,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                             }
                         }
                     }
-                }
-                if (tableMatches(dataMetaData, TableConstants.SYM_JOB)) {
-                    routingContext.put(CTX_KEY_FLUSH_JOBS_NEEDED, Boolean.TRUE);
                 }
             }
         }
@@ -239,7 +159,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         String tableName = dataMetaData.getTable().getName();
         if (TableConstants.getTableName(symTablePrefix, TableConstants.SYM_NODE_GROUP_LINK).equalsIgnoreCase(tableName)) {
             if (engine.getParameterService().isRegistrationServer()) {
-                if (dataMetaData.getData().getDataEventType().equals(DataEventType.INSERT)) {
+                if (dataMetaData.getData().getDataEventType() == DataEventType.INSERT) {
                     Node me = engine.getNodeService().findIdentity();
                     String targetNodeGroupId = columnValues.get("TARGET_NODE_GROUP_ID");
                     String sourceNodeGroupId = columnValues.get("SOURCE_NODE_GROUP_ID");
@@ -413,55 +333,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected void queueSyncTriggers(SimpleRouterContext routingContext, DataMetaData dataMetaData,
-            Map<String, String> columnValues) {
-        if ((tableMatches(dataMetaData, TableConstants.SYM_TRIGGER) || tableMatches(dataMetaData,
-                TableConstants.SYM_TRIGGER_ROUTER))) {
-            Object needResync = routingContext.get(CTX_KEY_RESYNC_NEEDED);
-            if (needResync == null || needResync instanceof Set) {
-                if (needResync == null) {
-                    needResync = new HashSet<Trigger>();
-                    routingContext.put(CTX_KEY_RESYNC_NEEDED, needResync);
-                }
-                ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
-                boolean refreshCache = false;
-                if (routingContext.get(CTX_KEY_FLUSHED_TRIGGER_ROUTERS) == null) {
-                    triggerRouterService.clearCache();
-                    refreshCache = true;
-                    routingContext.put(CTX_KEY_FLUSHED_TRIGGER_ROUTERS, true);
-                }
-                Trigger trigger = null;
-                String triggerId = columnValues.get("TRIGGER_ID");
-                if (tableMatches(dataMetaData, TableConstants.SYM_TRIGGER_ROUTER)) {
-                    String routerId = columnValues.get("ROUTER_ID");
-                    TriggerRouter tr = triggerRouterService.findTriggerRouterById(triggerId,
-                            routerId, refreshCache);
-                    if (tr != null) {
-                        trigger = tr.getTrigger();
-                    }
-                } else {
-                    trigger = triggerRouterService.getTriggerById(triggerId, refreshCache);
-                }
-                if (trigger != null) {
-                    ((Set<Trigger>) needResync).add(trigger);
-                } else {
-                    routingContext.put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
-                }
-            }
-        } else if (tableMatches(dataMetaData, TableConstants.SYM_ROUTER)
-                || tableMatches(dataMetaData, TableConstants.SYM_NODE_GROUP_LINK)) {
-            routingContext.put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
-        } else if (tableMatches(dataMetaData, TableConstants.SYM_PARAMETER)) {
-            String rowData = dataMetaData.getData().getCsvData(CsvData.ROW_DATA);
-            String pkData = dataMetaData.getData().getCsvData(CsvData.PK_DATA);
-            if ((rowData != null && rowData.contains(ParameterConstants.FILE_SYNC_ENABLE)) ||
-                    (pkData != null && pkData.contains(ParameterConstants.FILE_SYNC_ENABLE))) {
-                routingContext.put(CTX_KEY_FILE_SYNC_ENABLE, Boolean.TRUE);
-            }
-        }
-    }
-
     protected Node findIdentity() {
         return engine.getNodeService().findIdentity();
     }
@@ -555,114 +426,11 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     @Override
     public void contextCommitted(SimpleRouterContext routingContext) {
-        if (engine.getParameterService().is(ParameterConstants.AUTO_REFRESH_AFTER_CONFIG_CHANGED,
-                true)) {
-            if (routingContext.get(CTX_KEY_FLUSH_PARAMETERS_NEEDED) != null
-                    && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
-                log.info("About to refresh the cache of parameters because new configuration came through the data router");
-                engine.getParameterService().rereadParameters();
-            }
-            if (routingContext.get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
-                log.info("Channels flushed because new channels came through the data router");
-                engine.getConfigurationService().clearCache();
-            }
-            Object needsSynced = routingContext.get(CTX_KEY_RESYNC_NEEDED);
-            if (needsSynced != null
-                    && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)
-                    && engine.getParameterService().is(
-                            ParameterConstants.AUTO_SYNC_TRIGGERS_AFTER_CONFIG_CHANGED)) {
-                log.info("About to syncTriggers because new configuration came through the data router");
-                @SuppressWarnings("unchecked")
-                Set<Trigger> triggers = needsSynced instanceof Set ? (Set<Trigger>) needsSynced : null;
-                if (triggers != null && triggers.size() > 0) {
-                    engine.getTriggerRouterService().syncTriggers(new ArrayList<Trigger>(triggers), null, false, true);
-                } else {
-                    engine.getTriggerRouterService().syncTriggers();
-                }
-            }
-            if (routingContext.get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null) {
-                log.info("About to refresh the cache of transformation because new configuration came through the data router");
-                engine.getTransformService().clearCache();
-                log.info("About to clear the staging area because new transform configuration came through the data router");
-                engine.getStagingManager().clean(0);
-            }
-            if (routingContext.get(CTX_KEY_FLUSH_CONFLICTS_NEEDED) != null) {
-                log.info("About to refresh the cache of conflict settings because new configuration came through the data router");
-                engine.getDataLoaderService().clearCache();
-            }
-            if (routingContext.get(CTX_KEY_FLUSH_LOADFILTERS_NEEDED) != null) {
-                log.info("About to refresh the cache of load filters because new configuration came through the data router");
-                engine.getLoadFilterService().clearCache();
-            }
-            if (routingContext.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null) {
-                log.info("About to restart jobs because new configuration come through the data router");
-                @SuppressWarnings("unchecked")
-                Set<String> jobNames = (Set<String>) routingContext.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED);
-                IJobManager jobManager = engine.getJobManager();
-                if (jobManager != null) {
-                    for (String jobName : jobNames) {
-                        jobManager.restartJob(jobName);
-                    }
-                }
-            }
-            if (routingContext.get(CTX_KEY_REFRESH_EXTENSIONS_NEEDED) != null) {
-                log.info("About to refresh the cache of extensions because new configuration came through the data router");
-                engine.getExtensionService().refresh();
-            }
-            if (routingContext.get(CTX_KEY_FLUSH_MONITORS_NEEDED) != null) {
-                log.info("About to refresh the cache of monitors because new configuration came through the data router");
-                engine.getMonitorService().flushMonitorCache();
-            }
-            if (routingContext.get(CTX_KEY_FLUSH_NOTIFICATIONS_NEEDED) != null) {
-                log.info("About to refresh the cache of notifications because new configuration came through the data router");
-                engine.getMonitorService().flushNotificationCache();
-            }
-            if (routingContext.get(CTX_KEY_FLUSH_JOBS_NEEDED) != null) {
-                log.info("About to reset the job manager because new configuration came through the data router");
-                engine.getJobManager().init();
-                engine.getJobManager().startJobs();
-            }
-            if (routingContext.get(CTX_KEY_FLUSH_NODES_NEEDED) != null) {
-                log.info("About to refresh the cache of nodes because new configuration came through the data router");
-                engine.getNodeService().flushNodeCache();
-                engine.getNodeService().flushNodeGroupCache();
-            }
-            if (routingContext.get(CTX_KEY_FLUSH_NODE_SECURITYS_NEEDED) != null) {
-                log.info("About to refresh the cache of node security because new configuration came through the data router");
-                engine.getNodeService().flushNodeAuthorizedCache();
-            }
-            if (routingContext.get(CTX_KEY_FLUSH_NODE_GROUP_LINK_NEEDED) != null) {
-                log.info("About to refresh the cache of node group link because new configuration came through the data router");
-                engine.getConfigurationService().clearCache();
-                engine.getNodeService().flushNodeGroupCache();
-                log.info("About to refresh the cache of transformation because new configuration came through the data router");
-                engine.getTransformService().clearCache();
-            }
-            if (routingContext.get(CTX_KEY_FILE_SYNC_ENABLE) != null) {
-                log.info("About to restart file sync jobs because new configuration come through the data router");
-                engine.getParameterService().rereadParameters();
-                engine.getConfigurationService().initDefaultChannels();
-                engine.getFileSyncService().clearCache();
-                IJobManager jobManager = engine.getJobManager();
-                if (jobManager != null) {
-                    jobManager.restartJob(ClusterConstants.FILE_SYNC_TRACKER);
-                    jobManager.restartJob(ClusterConstants.FILE_SYNC_PULL);
-                    jobManager.restartJob(ClusterConstants.FILE_SYNC_PUSH);
-                }
-                if (engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-                    log.info("About to syncTriggers for file snapshot because the file sync parameter has changed");
-                    engine.getTriggerRouterService().clearCache();
-                    Table fileSnapshotTable = engine.getDatabasePlatform()
-                            .getTableFromCache(TableConstants.getTableName(engine.getTablePrefix(), TableConstants.SYM_FILE_SNAPSHOT), false);
-                    engine.getTriggerRouterService().syncTriggers(fileSnapshotTable, false);
-                }
-            }
-        }
+        helper.contextCommittedAndComplete(routingContext);
     }
 
     private String tableName(String tableName) {
-        return TableConstants.getTableName(engine != null ? engine.getTablePrefix() : "sym",
-                tableName);
+        return TableConstants.getTableName(engine != null ? engine.getTablePrefix() : "sym", tableName);
     }
 
     private boolean tableMatches(DataMetaData dataMetaData, String tableName) {
