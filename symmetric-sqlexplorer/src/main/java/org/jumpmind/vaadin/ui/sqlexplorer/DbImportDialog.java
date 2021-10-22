@@ -39,29 +39,28 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.data.DbImport;
 import org.jumpmind.symmetric.io.data.DbImport.Format;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
-import org.jumpmind.vaadin.ui.common.ResizableWindow;
+import org.jumpmind.vaadin.ui.common.ResizableDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.ui.AbstractLayout;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.CheckBox;
-import com.vaadin.ui.ComboBox;
-import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.Upload;
-import com.vaadin.ui.Upload.Receiver;
-import com.vaadin.ui.Upload.SucceededEvent;
-import com.vaadin.ui.Upload.SucceededListener;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.upload.Receiver;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller.ScrollDirection;
 
-public class DbImportDialog extends ResizableWindow {
+public class DbImportDialog extends ResizableDialog {
     private static final long serialVersionUID = 1L;
     final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -71,17 +70,17 @@ public class DbImportDialog extends ResizableWindow {
 
     private Set<Table> selectedTablesSet;
     private Table selectedTable;
-    private VerticalLayout importLayout;
+    private Scroller importLayout;
     private ComboBox<DbImportFormat> formatSelect;
-    private CheckBox force;
-    private CheckBox ignore;
-    private CheckBox replace;
+    private Checkbox force;
+    private Checkbox ignore;
+    private Checkbox replace;
     private ComboBox<String> schemaSelect;
     private ComboBox<String> catalogSelect;
     private ComboBox<String> listOfTablesSelect;
     private TextField commitField;
-    private CheckBox alter;
-    private CheckBox alterCase;
+    private Checkbox alter;
+    private Checkbox alterCase;
     private Button cancelButton;
     private DbImport dbImport;
     private Upload upload;
@@ -98,23 +97,21 @@ public class DbImportDialog extends ResizableWindow {
         super("Database Import");
         this.selectedTablesSet = selectedTableSet;
         this.databasePlatform = databasePlatform;
+        setCloseOnOutsideClick(false);
         createImportLayout();
     }
 
     protected void createImportLayout() {
-        importLayout = new VerticalLayout();
-        importLayout.setSizeFull();
-        importLayout.addStyleName("v-scrollable");
-        importLayout.setMargin(true);
-        importLayout.setSpacing(true);
-        importLayout.addComponent(new Label("Please select from the following options"));
+        VerticalLayout importContent = new VerticalLayout();
+        importContent.setSizeFull();
+        importContent.setMargin(false);
+        importContent.setSpacing(true);
+        importContent.add(new Label("Please select from the following options"));
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
-        importLayout.addComponent(formLayout);
-        importLayout.setExpandRatio(formLayout, 1);
+        importContent.addAndExpand(formLayout);
         formatSelect = new ComboBox<>("Format");
         formatSelect.setItems(DbImportFormat.values());
-        formatSelect.setEmptySelectionAllowed(false);
         formatSelect.setValue(DbImportFormat.SQL);
         formatSelect.addValueChangeListener((e) -> {
             DbImportFormat format = (DbImportFormat) formatSelect.getValue();
@@ -142,11 +139,11 @@ public class DbImportDialog extends ResizableWindow {
                     break;
             }
         });
-        formLayout.addComponent(formatSelect);
+        formLayout.add(formatSelect);
         catalogSelect = new ComboBox<>("Catalog");
         catalogSelect.setItems(getCatalogs());
         catalogSelect.setValue(databasePlatform.getDefaultCatalog());
-        formLayout.addComponent(catalogSelect);
+        formLayout.add(catalogSelect);
         schemaSelect = new ComboBox<>("Schema");
         schemaSelect.setItems(getSchemas());
         if (selectedTablesSet.size() > 0) {
@@ -157,7 +154,7 @@ public class DbImportDialog extends ResizableWindow {
         schemaSelect.addValueChangeListener((e) -> {
             populateListOfTablesSelect();
         });
-        formLayout.addComponent(schemaSelect);
+        formLayout.add(schemaSelect);
         listOfTablesSelect = new ComboBox<>("Tables");
         populateListOfTablesSelect();
         listOfTablesSelect.setEnabled(false);
@@ -173,27 +170,28 @@ public class DbImportDialog extends ResizableWindow {
                 this.selectedTablesSet.clear();
             }
         }
-        formLayout.addComponent(listOfTablesSelect);
+        formLayout.add(listOfTablesSelect);
         commitField = new TextField("Rows to Commit");
         commitField.addValueChangeListener((event) -> {
             commitField.setValue(event.getValue());
         });
+        commitField.setValueChangeMode(ValueChangeMode.LAZY);
         commitField.setValueChangeTimeout(200);
         commitField.setValue("10000");
-        formLayout.addComponent(commitField);
-        force = new CheckBox("Force");
-        formLayout.addComponent(force);
-        ignore = new CheckBox("Ignore");
-        formLayout.addComponent(ignore);
-        replace = new CheckBox("Replace");
-        formLayout.addComponent(replace);
-        alter = new CheckBox("Alter");
+        formLayout.add(commitField);
+        force = new Checkbox("Force");
+        formLayout.add(force);
+        ignore = new Checkbox("Ignore");
+        formLayout.add(ignore);
+        replace = new Checkbox("Replace");
+        formLayout.add(replace);
+        alter = new Checkbox("Alter");
         alter.setEnabled(false);
-        formLayout.addComponent(alter);
-        alterCase = new CheckBox("Alter Case");
+        formLayout.add(alter);
+        alterCase = new Checkbox("Alter Case");
         alterCase.setEnabled(false);
-        formLayout.addComponent(alterCase);
-        upload = new Upload(null, new Receiver() {
+        formLayout.add(alterCase);
+        upload = new Upload(new Receiver() {
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -204,43 +202,42 @@ public class DbImportDialog extends ResizableWindow {
                     return new BufferedOutputStream(new FileOutputStream(file));
                 } catch (Exception e) {
                     log.warn(e.getMessage(), e);
-                    CommonUiUtils.notify("Failed to import " + filename, e);
+                    CommonUiUtils.notifyError("Failed to import " + filename, opened -> enableEscapeShortcut(!opened));
                 }
                 return null;
             }
         });
-        upload.addSucceededListener(new SucceededListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void uploadSucceeded(SucceededEvent event) {
-                createDbImport();
-                try {
-                    doDbImport();
-                    close();
-                    Notification.show("Successful Import", Type.HUMANIZED_MESSAGE);
-                } catch (Exception e) {
-                    log.warn(e.getMessage(), e);
-                    Notification.show(e.getMessage(), Type.ERROR_MESSAGE);
-                } finally {
-                    deleteFileAndResource();
-                }
+        upload.addSucceededListener(event -> {
+            createDbImport();
+            try {
+                doDbImport();
+                close();
+                Notification successNotification = new Notification("Successful Import", 10000);
+                successNotification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                successNotification.open();
+            } catch (Exception e) {
+                log.warn(e.getMessage(), e);
+                Notification errorNotification = new Notification(e.getMessage(), 10000);
+                errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                errorNotification.open();
+            } finally {
+                deleteFileAndResource();
             }
         });
-        upload.setButtonCaption("Import");
-        upload.setStyleName(ValoTheme.BUTTON_PRIMARY);
-        formLayout.addComponent(upload);
-        cancelButton = new Button("Cancel", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                UI.getCurrent().removeWindow(DbImportDialog.this);
-            }
-        });
-        addComponent(importLayout, 1);
-        AbstractLayout buttonLayout = buildButtonFooter(cancelButton);
-        buttonLayout.addComponent(upload);
-        addComponent(buttonLayout);
+        upload.setMaxFiles(100);
+        upload.setDropAllowed(false);
+        Button uploadButton = new Button("Import");
+        uploadButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        upload.setUploadButton(uploadButton);
+        formLayout.add(upload);
+        importLayout = new Scroller(importContent);
+        importLayout.setScrollDirection(ScrollDirection.VERTICAL);
+        importLayout.setSizeFull();
+        cancelButton = new Button("Cancel", event -> close());
+        add(importLayout, 1);
+        HorizontalLayout buttonLayout = buildButtonFooter(cancelButton);
+        buttonLayout.add(upload);
+        add(buttonLayout);
     }
 
     protected void deleteFileAndResource() {

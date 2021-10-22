@@ -20,71 +20,72 @@
  */
 package org.jumpmind.vaadin.ui.common;
 
-import java.util.Iterator;
-
-import com.vaadin.server.Resource;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasSize;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.tabs.TabsVariant;
 
 public class TabbedApplicationPanel extends TabSheet {
     private static final long serialVersionUID = 1L;
-    protected Tab mainTab;
+    protected EnhancedTab mainTab;
 
     public TabbedApplicationPanel() {
+        super();
         setSizeFull();
-        addStyleName(ValoTheme.TABSHEET_FRAMED);
-        addStyleName(ValoTheme.TABSHEET_COMPACT_TABBAR);
-        addSelectedTabChangeListener(new SelectedTabChangeListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void selectedTabChange(SelectedTabChangeEvent event) {
-                Component selected = event.getTabSheet().getSelectedTab();
+        addThemeVariants(TabsVariant.LUMO_SMALL);
+        addSelectedTabChangeListener(event -> {
+            if (tabs.getSelectedTab() != null) {
+                Component selected = ((EnhancedTab) tabs.getSelectedTab()).getComponent();
                 if (selected instanceof IUiPanel) {
                     ((IUiPanel) selected).selected();
                 }
             }
         });
-        setCloseHandler(new CloseHandler() {
-            private static final long serialVersionUID = 1L;
+    }
 
-            @Override
-            public void onTabClose(TabSheet tabsheet, Component tabContent) {
-                if (tabContent instanceof IUiPanel) {
-                    if (((IUiPanel) tabContent).closing()) {
-                        tabsheet.removeComponent(tabContent);
-                    }
+    public void setMainTab(String caption, Icon icon, Component component) {
+        if (component instanceof HasSize) {
+            ((HasSize) component).setSizeFull();
+        }
+        this.mainTab = add(component, caption, icon, 0);
+    }
+
+    public void addCloseableTab(String caption, Icon icon, Component component, boolean setSizeFull) {
+        EnhancedTab tab = getTab(caption);
+        if (tab != null) {
+            tabs.setSelectedTab(tab);
+            return;
+        }
+        if (setSizeFull && component instanceof HasSize) {
+            ((HasSize) component).setSizeFull();
+        }
+        tab = add(component, caption, icon, mainTab == null ? 0 : 1);
+        tab.setCloseable(true);
+        tabs.setSelectedTab(tab);
+    }
+
+    public void addCloseableTab(String caption, Icon icon, Component component) {
+        addCloseableTab(caption, icon, component, true);
+    }
+
+    @Override
+    public void remove(EnhancedTab tab) {
+        Component component = tab.getComponent();
+        if (!(component instanceof IUiPanel) || ((IUiPanel) component).closing()) {
+            int tabCount = tabList.size();
+            if (tab.isSelected() && tabCount > 1) {
+                int index = tabList.indexOf(tab);
+                if (index < tabCount - 1) {
+                    tabs.setSelectedIndex(index + 1);
                 } else {
-                    tabsheet.removeComponent(tabContent);
+                    tabs.setSelectedIndex(index - 1);
                 }
             }
-        });
-    }
-
-    public void setMainTab(String caption, Resource icon, Component component) {
-        component.setSizeFull();
-        this.mainTab = addTab(component, caption, icon, 0);
-    }
-
-    public void addCloseableTab(String caption, Resource icon, Component component, boolean setSizeFull) {
-        Iterator<Component> i = iterator();
-        while (i.hasNext()) {
-            Component c = i.next();
-            if (getTab(c).getCaption().equals(caption)) {
-                setSelectedTab(c);
-                return;
+            tabs.remove(tab);
+            tabList.remove(tab);
+            if (tabCount <= 1) {
+                content.removeAll();
             }
         }
-        if (setSizeFull) {
-            component.setSizeFull();
-        }
-        Tab tab = addTab(component, caption, icon, mainTab == null ? 0 : 1);
-        tab.setClosable(true);
-        setSelectedTab(tab);
-    }
-
-    public void addCloseableTab(String caption, Resource icon, Component component) {
-        addCloseableTab(caption, icon, component, true);
     }
 }

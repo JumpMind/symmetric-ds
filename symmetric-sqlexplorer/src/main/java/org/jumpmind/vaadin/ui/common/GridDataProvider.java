@@ -22,17 +22,21 @@ package org.jumpmind.vaadin.ui.common;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.vaadin.data.provider.Query;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.Grid.Column;
+import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.Column;
 
-public class GridDataProvider implements IDataProvider {
-    private Grid<?> grid;
+public class GridDataProvider<T> implements IDataProvider<T> {
+    private Grid<T> grid;
+    private Map<Column<T>, ValueProvider<T, Object>> valueProviderMap;
 
-    public GridDataProvider(Grid<?> grid) {
+    public GridDataProvider(Grid<T> grid, Map<Column<T>, ValueProvider<T, Object>> valueProviderMap) {
         this.grid = grid;
+        this.valueProviderMap = valueProviderMap;
     }
 
     @Override
@@ -45,23 +49,16 @@ public class GridDataProvider implements IDataProvider {
         return grid.getColumns();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public Object getCellValue(Object item, Object column) {
-        if (column instanceof Column) {
-            grid.getColumns().stream().map(Column::getId).collect(Collectors.toList());
-            return ((Column<Object, ?>) column).getValueProvider().apply(item);
+    public Object getCellValue(T item, Object column) {
+        if (column instanceof Column && valueProviderMap.get(column) != null) {
+            return valueProviderMap.get(column).apply(item);
         }
         return null;
     }
 
     @Override
-    public String getHeaderValue(Object column) {
-        return grid.getDefaultHeaderRow().getCell((Column<?, ?>) column).getText();
-    }
-
-    @Override
-    public boolean isHeaderVisible() {
-        return grid.isHeaderVisible();
+    public String getKeyValue(Object column) {
+        return ((Column<?>) column).getKey();
     }
 }

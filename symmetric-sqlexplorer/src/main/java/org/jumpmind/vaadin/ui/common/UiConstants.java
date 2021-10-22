@@ -20,8 +20,6 @@
  */
 package org.jumpmind.vaadin.ui.common;
 
-import com.vaadin.ui.renderers.DateRenderer;
-
 final public class UiConstants {
     private UiConstants() {
     }
@@ -29,5 +27,4 @@ final public class UiConstants {
     public static final String STYLE_BUTTON_LEFT_ALIGNED = "leftAligned";
     public static final int TEXTFIELD_WIDTH = 255;
     public static final int TABLE_SELECTED_COLUMN_WIDTH = 35;
-    public static DateRenderer DATE_RENDERER = new DateRenderer("%1$tk:%1$tM:%1$tS:%1$tL");
 }

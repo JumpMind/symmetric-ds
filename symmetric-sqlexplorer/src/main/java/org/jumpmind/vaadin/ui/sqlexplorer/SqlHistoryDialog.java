@@ -21,29 +21,29 @@
 package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
-import org.jumpmind.vaadin.ui.common.ResizableWindow;
+import org.jumpmind.vaadin.ui.common.ResizableDialog;
 
-import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.Grid.SelectionMode;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.components.grid.HeaderCell;
-import com.vaadin.ui.components.grid.HeaderRow;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.Column;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.HeaderRow;
+import com.vaadin.flow.component.grid.HeaderRow.HeaderCell;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.value.ValueChangeMode;
 
-public class SqlHistoryDialog extends ResizableWindow {
+public class SqlHistoryDialog extends ResizableDialog {
     private static final long serialVersionUID = 1L;
     private final Grid<SqlHistory> grid;
+    private final TreeSet<SqlHistory> sqlHistories;
     private QueryPanel queryPanel;
     private ISettingsProvider settingsProvider;
 
@@ -55,22 +55,27 @@ public class SqlHistoryDialog extends ResizableWindow {
         mainLayout.setSizeFull();
         mainLayout.setMargin(false);
         mainLayout.setSpacing(true);
-        addComponent(mainLayout, 1);
-        final Set<SqlHistory> sqlHistories = new TreeSet<SqlHistory>(settingsProvider.get().getSqlHistory());
+        add(mainLayout, 1);
+        sqlHistories = new TreeSet<SqlHistory>(settingsProvider.get().getSqlHistory());
         grid = new Grid<SqlHistory>();
         grid.setSelectionMode(SelectionMode.MULTI);
-        grid.addColumn(history -> StringUtils.abbreviate(history.getSqlStatement(), 50)).setId("sqlStatement").setCaption("SQL");
+        grid.addColumn(history -> StringUtils.abbreviate(history.getSqlStatement(), 50)).setKey("sqlStatement").setHeader("SQL");
         grid.addColumn(history -> String.format("%1$tY-%1$tm-%1$td %1$tk:%1$tM:%1$tS", history.getLastExecuteTime()))
-                .setCaption("Time").setWidth(150).setMaximumWidth(200);
-        grid.addColumn(history -> CommonUiUtils.formatDuration(history.getLastExecuteDuration())).setCaption("Duration").setWidth(120);
-        grid.addColumn(history -> history.getExecuteCount()).setCaption("Count").setWidth(120);
-        grid.setDescriptionGenerator(history -> history.getSqlStatement());
+                .setHeader("Time").setWidth("150px");
+        grid.addColumn(history -> CommonUiUtils.formatDuration(history.getLastExecuteDuration())).setHeader("Duration")
+                .setWidth("120px").setFlexGrow(0);
+        grid.addColumn(history -> history.getExecuteCount()).setHeader("Count").setWidth("120px").setFlexGrow(0);
+        for (Column<SqlHistory> column : grid.getColumns()) {
+            column.setResizable(true);
+        }
         HeaderRow filteringHeader = grid.appendHeaderRow();
-        HeaderCell logTextFilterCell = filteringHeader.getCell("sqlStatement");
+        HeaderCell logTextFilterCell = filteringHeader.getCell(grid.getColumnByKey("sqlStatement"));
         TextField filterField = new TextField();
+        filterField.setValueChangeMode(ValueChangeMode.EAGER);
         filterField.setPlaceholder("Filter");
-        filterField.addStyleName(ValoTheme.TEXTFIELD_TINY);
+        filterField.getElement().setAttribute("theme", "font-size-xs");
         filterField.setWidth("100%");
+        filterField.addThemeName("small");
         // Update filter When the filter input is changed
         filterField.addValueChangeListener(event -> filter(event.getValue()));
         logTextFilterCell.setComponent(filterField);
@@ -79,32 +84,20 @@ public class SqlHistoryDialog extends ResizableWindow {
                 grid.deselectAll();
                 grid.select(event.getItem());
             }
-            if (event.getMouseEventDetails().isDoubleClick()) {
+            if (event.getClickCount() == 2) {
                 select();
             }
         });
-        grid.setSizeFull();
-        mainLayout.addComponent(grid);
-        mainLayout.setExpandRatio(grid, 1);
+        grid.setHeight("120px");
+        grid.setWidthFull();
+        mainLayout.addAndExpand(grid);
         grid.setItems(sqlHistories);
         Button cancelButton = new Button("Cancel");
-        cancelButton.addClickListener(new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                close();
-            }
-        });
+        cancelButton.addClickListener(event -> close());
         Button applyButton = CommonUiUtils.createPrimaryButton("Select");
-        applyButton.setClickShortcut(KeyCode.ENTER);
-        applyButton.addClickListener(new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                select();
-            }
-        });
-        addComponent(buildButtonFooter(cancelButton, applyButton));
+        applyButton.addClickShortcut(Key.ENTER);
+        applyButton.addClickListener(event -> select());
+        add(buildButtonFooter(cancelButton, applyButton));
     }
 
     private void filter(String filter) {
@@ -119,13 +112,14 @@ public class SqlHistoryDialog extends ResizableWindow {
     }
 
     protected void select() {
-        List<SqlHistory> histories = new ArrayList<SqlHistory>(grid.getSelectedItems());
-        Collections.reverse(histories);
+        Set<SqlHistory> histories = grid.getSelectedItems();
         if (histories != null && histories.size() > 0) {
             String delimiter = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_DELIMITER);
-            for (SqlHistory history : histories) {
-                String sql = history.getSqlStatement();
-                queryPanel.appendSql(sql + (sql.trim().endsWith(delimiter) ? "" : delimiter));
+            for (SqlHistory history : sqlHistories.descendingSet()) {
+                if (histories.contains(history)) {
+                    String sql = history.getSqlStatement();
+                    queryPanel.appendSql(sql + (sql.trim().endsWith(delimiter) ? "" : delimiter));
+                }
             }
             close();
         }

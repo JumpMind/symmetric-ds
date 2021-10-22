@@ -30,18 +30,19 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import com.vaadin.data.provider.Query;
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Grid.SelectionMode;
-import com.vaadin.ui.themes.ValoTheme;
-import com.vaadin.ui.ComboBox;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.TextField;
+import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.textfield.TextField;
 
 public class TableSelectionLayout extends VerticalLayout {
     private Set<org.jumpmind.db.model.Table> selectedTablesSet;
@@ -71,7 +72,7 @@ public class TableSelectionLayout extends VerticalLayout {
             Set<org.jumpmind.db.model.Table> selectedSet, List<String> excludedTables, String excludeTablesRegex) {
         super();
         this.setSizeFull();
-        this.setMargin(true);
+        this.setMargin(false);
         this.setSpacing(true);
         this.selectedTablesSet = selectedSet;
         this.originalSelectedTablesSet = selectedSet;
@@ -82,39 +83,36 @@ public class TableSelectionLayout extends VerticalLayout {
     }
 
     protected void createTableSelectionLayout(String titleKey) {
-        this.addComponent(new Label(titleKey));
+        this.add(new Span(titleKey));
         HorizontalLayout schemaChooserLayout = new HorizontalLayout();
-        schemaChooserLayout.setWidth(100, Unit.PERCENTAGE);
         schemaChooserLayout.setSpacing(true);
-        this.addComponent(schemaChooserLayout);
+        this.add(schemaChooserLayout);
         catalogSelect = new ComboBox<String>("Catalog", getCatalogs());
-        schemaChooserLayout.addComponent(catalogSelect);
+        schemaChooserLayout.add(catalogSelect);
         if (selectedTablesSet.iterator().hasNext()) {
-            catalogSelect.setSelectedItem(selectedTablesSet.iterator().next().getCatalog());
+            catalogSelect.setValue(selectedTablesSet.iterator().next().getCatalog());
         } else {
-            catalogSelect.setSelectedItem(databasePlatform.getDefaultCatalog());
+            catalogSelect.setValue(databasePlatform.getDefaultCatalog());
         }
         schemaSelect = new ComboBox<String>("Schema", getSchemas());
-        schemaChooserLayout.addComponent(schemaSelect);
+        schemaChooserLayout.add(schemaSelect);
         if (selectedTablesSet.iterator().hasNext()) {
-            schemaSelect.setSelectedItem(selectedTablesSet.iterator().next().getSchema());
+            schemaSelect.setValue(selectedTablesSet.iterator().next().getSchema());
         } else {
-            schemaSelect.setSelectedItem(databasePlatform.getDefaultSchema());
+            schemaSelect.setValue(databasePlatform.getDefaultSchema());
         }
-        Label spacer = new Label();
-        schemaChooserLayout.addComponent(spacer);
-        schemaChooserLayout.setExpandRatio(spacer, 1);
+        schemaChooserLayout.addAndExpand(new Span());
         filterField = new TextField();
-        filterField.addStyleName(ValoTheme.TEXTFIELD_INLINE_ICON);
-        filterField.setIcon(VaadinIcons.SEARCH);
+        filterField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         filterField.setPlaceholder("Filter Tables");
+        filterField.setValueChangeMode(ValueChangeMode.LAZY);
         filterField.setValueChangeTimeout(200);
         filterField.addValueChangeListener(event -> {
             filterField.setValue(event.getValue());
             refreshTableOfTables();
         });
-        schemaChooserLayout.addComponent(filterField);
-        schemaChooserLayout.setComponentAlignment(filterField, Alignment.BOTTOM_RIGHT);
+        schemaChooserLayout.add(filterField);
+        schemaChooserLayout.setVerticalComponentAlignment(Alignment.END, filterField);
         listOfTablesGrid = new Grid<String>();
         listOfTablesGrid.setSizeFull();
         listOfTablesGrid.setSelectionMode(SelectionMode.MULTI);
@@ -133,23 +131,20 @@ public class TableSelectionLayout extends VerticalLayout {
             selectionChanged();
         });
         listOfTablesGrid.addColumn(table -> table);
-        this.addComponent(listOfTablesGrid);
-        this.setExpandRatio(listOfTablesGrid, 1);
+        this.addAndExpand(listOfTablesGrid);
         schemaSelect.addValueChangeListener(event -> refreshTableOfTables());
         catalogSelect.addValueChangeListener(event -> refreshTableOfTables());
         Button selectAllLink = new Button("Select All");
-        selectAllLink.addStyleName(ValoTheme.BUTTON_LINK);
+        selectAllLink.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY_INLINE);
         selectAllLink.addClickListener((event) -> selectAll());
         Button selectNoneLink = new Button("Select None");
-        selectNoneLink.addStyleName(ValoTheme.BUTTON_LINK);
+        selectNoneLink.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY_INLINE);
         selectNoneLink.addClickListener((event) -> selectNone());
         HorizontalLayout selectAllFooter = new HorizontalLayout();
         selectAllFooter.setWidth("100%");
         selectAllFooter.setSpacing(true);
-        selectAllFooter.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
-        selectAllFooter.addComponent(selectAllLink);
-        selectAllFooter.addComponent(selectNoneLink);
-        this.addComponent(selectAllFooter);
+        selectAllFooter.add(selectAllLink, selectNoneLink);
+        this.add(selectAllFooter);
         refreshTableOfTables();
     }
 

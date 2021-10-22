@@ -21,34 +21,43 @@
 package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import org.jumpmind.vaadin.ui.common.NotifyDialog;
+import org.jumpmind.vaadin.ui.common.TabSheet;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.notification.NotificationVariant;
 
 public class SqlExplorerTabPanel extends TabSheet {
     private static final long serialVersionUID = 1L;
+    private SqlExplorer sqlExplorer;
 
-    public SqlExplorerTabPanel() {
+    public SqlExplorerTabPanel(SqlExplorer sqlExplorer) {
         super();
+        this.sqlExplorer = sqlExplorer;
         setSizeFull();
-        addStyleName(ValoTheme.TABSHEET_FRAMED);
-        addStyleName(ValoTheme.TABSHEET_COMPACT_TABBAR);
-        addStyleName(ValoTheme.TABSHEET_PADDED_TABBAR);
-        setCloseHandler(new CloseHandler() {
-            private static final long serialVersionUID = 1L;
+    }
 
-            @Override
-            public void onTabClose(TabSheet tabsheet, Component tabContent) {
-                if (tabContent instanceof QueryPanel && ((QueryPanel) tabContent).commitButtonValue) {
-                    NotifyDialog.show("Cannot Close Tab",
-                            "You must commit or rollback queries before closing this tab.",
-                            null, Type.WARNING_MESSAGE);
+    @Override
+    public void remove(EnhancedTab tab) {
+        Component component = tab.getComponent();
+        if (component != null && component instanceof QueryPanel && ((QueryPanel) component).commitButtonValue) {
+            NotifyDialog.show("Cannot Close Tab", "You must commit or rollback queries before closing this tab.", null,
+                    NotificationVariant.LUMO_CONTRAST);
+        } else {
+            int tabCount = tabList.size();
+            if (tab.isSelected() && tabCount > 1) {
+                int index = tabList.indexOf(tab);
+                if (index < tabCount - 1) {
+                    tabs.setSelectedIndex(index + 1);
                 } else {
-                    tabsheet.removeComponent(tabContent);
+                    tabs.setSelectedIndex(index - 1);
                 }
             }
-        });
+            tabs.remove(tab);
+            tabList.remove(tab);
+            if (tabCount <= 1) {
+                content.removeAll();
+                sqlExplorer.resetContentMenuBar();
+            }
+        }
     }
 }

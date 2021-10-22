@@ -22,10 +22,16 @@ package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import java.io.Serializable;
 
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.ui.MenuBar;
-import com.vaadin.ui.MenuBar.Command;
-import com.vaadin.ui.MenuBar.MenuItem;
+import org.jumpmind.vaadin.ui.common.CommonUiUtils;
+
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.contextmenu.SubMenu;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 public class DefaultButtonBar implements IButtonBar, Serializable {
     private static final long serialVersionUID = 1L;
@@ -72,86 +78,60 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
     }
 
     protected void populate(MenuBar menuBar) {
-        executeAtCursorButton = menuBar.addItem("", VaadinIcons.PLAY, new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                queryPanel.execute(false);
-            }
-        });
-        executeAtCursorButton.setDescription("Run sql under cursor (CTRL+ENTER)");
-        executeScriptButton = menuBar.addItem("", VaadinIcons.FORWARD, new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                queryPanel.execute(true);
-            }
-        });
-        executeScriptButton.setDescription("Run as script");
-        commitButton = menuBar.addItem("", VaadinIcons.ARROW_CIRCLE_RIGHT_O, new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                queryPanel.commit();
-            }
-        });
-        commitButton.setStyleName("green");
-        commitButton.setDescription("Commit");
+        executeAtCursorButton = menuBar.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.PLAY),
+                event -> queryPanel.requestExecutionAtCursor());
+        executeAtCursorButton.getElement().setAttribute("title", "Run sql under cursor (CTRL+ENTER)");
+        executeScriptButton = menuBar.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.FORWARD),
+                event -> queryPanel.requestScriptExecution());
+        executeScriptButton.getElement().setAttribute("title", "Run as script");
+        commitButton = menuBar.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.ARROW_CIRCLE_RIGHT_O),
+                event -> queryPanel.commit());
+        commitButton.getElement().getClassList().add("green");
+        commitButton.getElement().setAttribute("title", "Commit");
         commitButton.setEnabled(false);
-        rollbackButton = menuBar.addItem("", VaadinIcons.ARROW_CIRCLE_LEFT_O, new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                queryPanel.rollback();
-            }
-        });
-        rollbackButton.setStyleName("red");
-        rollbackButton.setDescription("Rollback");
+        rollbackButton = menuBar.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.ARROW_CIRCLE_LEFT_O),
+                event -> queryPanel.rollback());
+        rollbackButton.getElement().getClassList().add("red");
+        rollbackButton.getElement().setAttribute("title", "Rollback");
         rollbackButton.setEnabled(false);
-        historyButton = menuBar.addItem("", VaadinIcons.SEARCH, new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                new SqlHistoryDialog(settingsProvider, queryPanel).showAtSize(0.6);
-            }
-        });
-        historyButton.setDescription("Sql History");
+        historyButton = menuBar.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.SEARCH),
+                event -> new SqlHistoryDialog(settingsProvider, queryPanel).showAtSize(0.6));
+        historyButton.getElement().setAttribute("title", "Sql History");
         historyButton.setEnabled(true);
-        MenuItem optionsButton = menuBar.addItem("", VaadinIcons.TASKS, null);
-        optionsButton.setDescription("Options");
-        importButton = optionsButton.addItem("DB Import", VaadinIcons.DOWNLOAD, new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                new DbImportDialog(db.getPlatform()).showAtSize(0.6);
-            }
+        MenuItem optionsButton = menuBar.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.TASKS), null);
+        optionsButton.getElement().setAttribute("title", "Options");
+        SubMenu optionsSubMenu = optionsButton.getSubMenu();
+        HorizontalLayout importLayout = new HorizontalLayout();
+        Icon importIcon = new Icon(VaadinIcon.DOWNLOAD);
+        importIcon.setSize("16px");
+        importLayout.add(importIcon, new Span("DB Import"));
+        importLayout.setVerticalComponentAlignment(Alignment.END, importIcon);
+        importButton = optionsSubMenu.addItem(importLayout, event -> new DbImportDialog(db.getPlatform()).showAtSize(0.6));
+        HorizontalLayout exportLayout = new HorizontalLayout();
+        Icon exportIcon = new Icon(VaadinIcon.UPLOAD);
+        exportIcon.setSize("16px");
+        exportLayout.add(exportIcon, new Span("DB Export"));
+        exportLayout.setVerticalComponentAlignment(Alignment.END, exportIcon);
+        exportButton = optionsSubMenu.addItem(exportLayout, event -> {
+            String excludeTablesRegex = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
+            new DbExportDialog(db.getPlatform(), queryPanel, excludeTablesRegex).showAtSize(0.6);
         });
-        exportButton = optionsButton.addItem("DB Export", VaadinIcons.UPLOAD, new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                String excludeTablesRegex = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
-                new DbExportDialog(db.getPlatform(), queryPanel, excludeTablesRegex).showAtSize(0.6);
-            }
-        });
-        fillButton = optionsButton.addItem("DB Fill", VaadinIcons.FILL, new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                String excludeTablesRegex = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
-                new DbFillDialog(db.getPlatform(), queryPanel, excludeTablesRegex).showAtSize(0.6);
-            }
+        HorizontalLayout fillLayout = new HorizontalLayout();
+        Icon fillIcon = new Icon(VaadinIcon.FILL);
+        fillIcon.setSize("16px");
+        fillLayout.add(fillIcon, new Span("DB Fill"));
+        fillLayout.setVerticalComponentAlignment(Alignment.END, fillIcon);
+        fillButton = optionsSubMenu.addItem(fillLayout, event -> {
+            String excludeTablesRegex = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
+            new DbFillDialog(db.getPlatform(), queryPanel, excludeTablesRegex).showAtSize(0.6);
         });
         for (IDbMenuItem item : additionalMenuItems) {
-            optionsButton.addItem(item.getCaption(), item.getIcon(), item.getCommand());
+            HorizontalLayout layout = new HorizontalLayout();
+            Icon icon = item.getIcon();
+            icon.setSize("16px");
+            layout.add(icon, new Span(item.getCaption()));
+            layout.setVerticalComponentAlignment(Alignment.END, icon);
+            optionsSubMenu.addItem(layout, item.getListener());
         }
     }
 }

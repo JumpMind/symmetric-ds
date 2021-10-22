@@ -24,19 +24,17 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.Serializable;
 
-import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-public class PromptDialog extends Window {
+public class PromptDialog extends Dialog {
     private static final long serialVersionUID = 1L;
 
     public PromptDialog(String caption, String text, final IPromptListener iPromptListener) {
@@ -45,64 +43,52 @@ public class PromptDialog extends Window {
 
     public PromptDialog(String caption, String text, String defaultValue,
             final IPromptListener promptListener) {
-        setCaption(caption);
         setModal(true);
         setResizable(false);
         setSizeUndefined();
-        setClosable(false);
+        setCloseOnEsc(false);
+        setCloseOnOutsideClick(false);
+        if (caption != null) {
+            add(new Label(caption + "<hr>"));
+        }
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(true);
         layout.setMargin(true);
-        setContent(layout);
+        add(layout);
         if (isNotBlank(text)) {
-            layout.addComponent(new Label(text));
+            layout.add(new Span(text));
         }
         final TextField field = new TextField();
-        field.setWidth(100, Unit.PERCENTAGE);
+        field.setWidthFull();
         field.setValue(defaultValue);
         if (defaultValue != null) {
-            field.setSelection(0, defaultValue.length());
+            UI.getCurrent().getPage().executeJs("$0.select();", field.getElement());
+            field.focus();
         }
-        layout.addComponent(field);
+        layout.add(field);
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
-        buttonLayout.setWidth(100, Unit.PERCENTAGE);
-        Label spacer = new Label(" ");
-        buttonLayout.addComponent(spacer);
-        buttonLayout.setExpandRatio(spacer, 1);
+        buttonLayout.addAndExpand(new Span());
         Button cancelButton = new Button("Cancel");
-        cancelButton.setClickShortcut(KeyCode.ESCAPE);
-        cancelButton.addClickListener(new ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                UI.getCurrent().removeWindow(PromptDialog.this);
-            }
-        });
-        buttonLayout.addComponent(cancelButton);
+        cancelButton.addClickShortcut(Key.ESCAPE);
+        cancelButton.addClickListener(event -> close());
+        buttonLayout.add(cancelButton);
         Button okButton = new Button("Ok");
-        okButton.setStyleName(ValoTheme.BUTTON_PRIMARY);
-        okButton.setClickShortcut(KeyCode.ENTER);
-        okButton.addClickListener(new ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                if (promptListener.onOk(field.getValue())) {
-                    UI.getCurrent().removeWindow(PromptDialog.this);
-                }
+        okButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        okButton.addClickShortcut(Key.ENTER);
+        okButton.addClickListener(event -> {
+            if (promptListener.onOk(field.getValue())) {
+                close();
             }
         });
-        buttonLayout.addComponent(okButton);
-        layout.addComponent(buttonLayout);
+        buttonLayout.add(okButton);
+        layout.add(buttonLayout);
         field.focus();
     }
 
     public static void prompt(String caption, String message, IPromptListener listener) {
         PromptDialog prompt = new PromptDialog(caption, message, listener);
-        UI.getCurrent().addWindow(prompt);
+        prompt.open();
     }
 
     public static interface IPromptListener extends Serializable {

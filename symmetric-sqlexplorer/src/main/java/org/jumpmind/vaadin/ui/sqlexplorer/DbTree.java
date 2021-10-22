@@ -21,6 +21,7 @@
 package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -33,16 +34,17 @@ import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlReader;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
+import org.jumpmind.vaadin.ui.common.Label;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.data.TreeData;
-import com.vaadin.data.provider.TreeDataProvider;
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.ui.Tree;
-import com.vaadin.ui.StyleGenerator;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.treegrid.TreeGrid;
+import com.vaadin.flow.data.provider.hierarchy.TreeData;
+import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
+import com.vaadin.flow.function.SerializableFunction;
 
-public class DbTree extends Tree<DbTreeNode> {
+public class DbTree extends TreeGrid<DbTreeNode> {
     public static final String PROPERTY_SCHEMA_NAME = "schemaName";
     public static final String PROPERTY_CATALOG_NAME = "catalogName";
     private static final long serialVersionUID = 1L;
@@ -65,44 +67,49 @@ public class DbTree extends Tree<DbTreeNode> {
     public DbTree(IDbProvider databaseProvider, ISettingsProvider settingsProvider) {
         this.databaseProvider = databaseProvider;
         this.settingsProvider = settingsProvider;
-        setWidth(100, Unit.PERCENTAGE);
-        setStyleGenerator(getStyleGenerator());
-        setStyleGenerator(new DbTreeStyleGenerator());
-        setItemIconGenerator(node -> node.getIcon());
+        setWidthFull();
+        setClassNameGenerator(new DbTreeClassNameGenerator());
         expandedNodes = new LinkedHashSet<DbTreeNode>();
-        addExpandListener(event -> {
-            DbTreeNode node = event.getExpandedItem();
-            expandedNodes.add(node);
-            if (!node.getType().equals(NODE_TYPE_TRIGGER) && !node.hasChildren()) {
-                loadChildren(node);
+        addComponentHierarchyColumn(node -> {
+            Label label = new Label(node.getName());
+            if (node.getIcon() != null) {
+                label.setLeftIcon(node.getIcon());
             }
-            DbTreeNode firstChild = treeData.getChildren(node).get(0);
-            if (node.hasChildren() && firstChild.getType().equals(NODE_TYPE_PLACEHOLDER)) {
-                treeData.removeItem(firstChild);
-                for (DbTreeNode child : node.getChildren()) {
-                    treeData.addItem(node, child);
-                    if (!child.getType().equals(NODE_TYPE_TRIGGER)) {
-                        treeData.addItem(child, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, child));
-                    }
+            return label;
+        });
+        addExpandListener(event -> {
+            Collection<DbTreeNode> items = event.getItems();
+            if (!items.isEmpty()) {
+                DbTreeNode node = items.iterator().next();
+                expandedNodes.add(node);
+                if (!node.getType().equals(NODE_TYPE_TRIGGER) && !node.hasChildren()) {
+                    loadChildren(node);
                 }
-                if (event.isUserOriginated()) {
-                    refresh(false);
+                DbTreeNode firstChild = treeData.getChildren(node).get(0);
+                if (node.hasChildren() && firstChild.getType().equals(NODE_TYPE_PLACEHOLDER)) {
+                    treeData.removeItem(firstChild);
+                    for (DbTreeNode child : node.getChildren()) {
+                        treeData.addItem(node, child);
+                        if (!child.getType().equals(NODE_TYPE_TRIGGER)) {
+                            treeData.addItem(child, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, child));
+                        }
+                    }
                 }
             }
         });
         addCollapseListener(event -> {
-            DbTreeNode node = event.getCollapsedItem();
-            expandedNodes.remove(node);
-            for (DbTreeNode child : new ArrayList<DbTreeNode>(treeData.getChildren(node))) {
-                if (expandedNodes.contains(child)) {
-                    collapse(child);
+            Collection<DbTreeNode> items = event.getItems();
+            if (!items.isEmpty()) {
+                DbTreeNode node = event.getItems().iterator().next();
+                expandedNodes.remove(node);
+                for (DbTreeNode child : new ArrayList<DbTreeNode>(treeData.getChildren(node))) {
+                    if (expandedNodes.contains(child)) {
+                        collapse(child);
+                    }
+                    deselect(child);
+                    treeData.removeItem(child);
                 }
-                deselect(child);
-                treeData.removeItem(child);
-            }
-            treeData.addItem(node, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, node));
-            if (event.isUserOriginated()) {
-                refresh(false);
+                treeData.addItem(node, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, node));
             }
         });
     }
@@ -120,7 +127,7 @@ public class DbTree extends Tree<DbTreeNode> {
             expandedNodes.clear();
             rootNodes = new LinkedHashSet<DbTreeNode>();
             for (IDb database : databases) {
-                DbTreeNode databaseNode = new DbTreeNode(this, database.getName(), NODE_TYPE_DATABASE, VaadinIcons.DATABASE, null);
+                DbTreeNode databaseNode = new DbTreeNode(this, database.getName(), NODE_TYPE_DATABASE, VaadinIcon.DATABASE, null);
                 treeData.addItem(null, databaseNode);
                 treeData.addItem(databaseNode, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, databaseNode));
                 rootNodes.add(databaseNode);
@@ -231,7 +238,7 @@ public class DbTree extends Tree<DbTreeNode> {
             }
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
-            CommonUiUtils.notify(ex.getMessage(), ex);
+            CommonUiUtils.notifyError(ex.getMessage());
         }
     }
 
@@ -251,7 +258,7 @@ public class DbTree extends Tree<DbTreeNode> {
                     && !tableName.toUpperCase().matches(excludeRegex)
                     && !tableName.toLowerCase().matches(excludeRegex)) {
                 DbTreeNode treeNode = new DbTreeNode(this, tableName,
-                        NODE_TYPE_TABLE, VaadinIcons.TABLE, parent);
+                        NODE_TYPE_TABLE, VaadinIcon.TABLE, parent);
                 if (catalogName != null) {
                     treeNode.getProperties().setProperty(PROPERTY_CATALOG_NAME, catalogName);
                 }
@@ -282,7 +289,7 @@ public class DbTree extends Tree<DbTreeNode> {
             log.warn("Unable to look up triggers for catalog, schema, table : " + catalogName + "." + schemaName + "." + parent.getName());
         }
         for (Trigger trigger : triggers) {
-            DbTreeNode treeNode = new DbTreeNode(this, trigger.getName(), NODE_TYPE_TRIGGER, VaadinIcons.CROSSHAIRS, parent);
+            DbTreeNode treeNode = new DbTreeNode(this, trigger.getName(), NODE_TYPE_TRIGGER, VaadinIcon.CROSSHAIRS, parent);
             if (catalogName != null) {
                 treeNode.getProperties().setProperty(PROPERTY_CATALOG_NAME, catalogName);
             }
@@ -307,7 +314,7 @@ public class DbTree extends Tree<DbTreeNode> {
             catalogs.add(0, platform.getDefaultCatalog());
         }
         for (String catalog : catalogs) {
-            DbTreeNode catalogNode = new DbTreeNode(this, catalog, NODE_TYPE_CATALOG, VaadinIcons.BOOK, parent);
+            DbTreeNode catalogNode = new DbTreeNode(this, catalog, NODE_TYPE_CATALOG, VaadinIcon.BOOK, parent);
             parent.getChildren().add(catalogNode);
         }
     }
@@ -318,12 +325,12 @@ public class DbTree extends Tree<DbTreeNode> {
             schemas.add(0, platform.getDefaultSchema());
         }
         for (String schema : schemas) {
-            DbTreeNode schemaNode = new DbTreeNode(this, schema, NODE_TYPE_SCHEMA, VaadinIcons.BOOK, parent);
+            DbTreeNode schemaNode = new DbTreeNode(this, schema, NODE_TYPE_SCHEMA, VaadinIcon.BOOK, parent);
             parent.getChildren().add(schemaNode);
         }
     }
 
-    class DbTreeStyleGenerator implements StyleGenerator<DbTreeNode> {
+    class DbTreeClassNameGenerator implements SerializableFunction<DbTreeNode, String> {
         private static final long serialVersionUID = 1L;
 
         @Override

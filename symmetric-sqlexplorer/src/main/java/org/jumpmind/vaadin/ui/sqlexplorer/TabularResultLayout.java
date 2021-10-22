@@ -25,13 +25,16 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.jumpmind.vaadin.ui.sqlexplorer.Settings.SQL_EXPLORER_MAX_RESULTS;
 import static org.jumpmind.vaadin.ui.sqlexplorer.Settings.SQL_EXPLORER_SHOW_ROW_NUMBERS;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -51,35 +54,42 @@ import org.jumpmind.db.platform.IDdlReader;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.util.FormatUtils;
+import org.jumpmind.vaadin.ui.common.ColumnVisibilityToggler;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.CsvExport;
 import org.jumpmind.vaadin.ui.common.GridDataProvider;
 import org.jumpmind.vaadin.ui.common.IDataProvider;
+import org.jumpmind.vaadin.ui.common.Label;
 import org.jumpmind.vaadin.ui.common.NotifyDialog;
 import org.jumpmind.vaadin.ui.sqlexplorer.SqlRunner.ISqlRunnerListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.contextmenu.ContextMenu;
-import com.vaadin.data.Binder;
-import com.vaadin.data.Binder.Binding;
-import com.vaadin.data.provider.Query;
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.MenuBar;
-import com.vaadin.ui.MenuBar.Command;
-import com.vaadin.ui.MenuBar.MenuItem;
-import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.components.grid.Editor;
-import com.vaadin.ui.themes.ValoTheme;
-import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.Label;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.Binder.Binding;
+import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.Shortcuts;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.contextmenu.ContextMenu;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.editor.Editor;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 
 public class TabularResultLayout extends VerticalLayout {
     private static final long serialVersionUID = 1L;
@@ -95,6 +105,7 @@ public class TabularResultLayout extends VerticalLayout {
     String schemaName;
     Grid<List<Object>> grid;
     Map<Integer, String> columnNameMap;
+    Map<Grid.Column<List<Object>>, ValueProvider<List<Object>, Object>> valueProviderMap;
     org.jumpmind.db.model.Table resultTable;
     String sql;
     ResultSet rs;
@@ -105,8 +116,10 @@ public class TabularResultLayout extends VerticalLayout {
     Settings settings;
     boolean showSql = true;
     boolean isInQueryGeneralResults;
-    MenuBar.MenuItem followToMenu;
-    MenuBar.MenuItem toggleKeepResultsButton;
+    boolean generateNewExport = true;
+    MenuItem followToMenu;
+    MenuItem toggleKeepResultsButton;
+    ColumnVisibilityToggler columnVisibilityToggler;
     Label resultLabel;
 
     public TabularResultLayout(IDb db, String sql, ResultSet rs, ISqlRunnerListener listener, Settings settings, boolean showSql)
@@ -142,6 +155,7 @@ public class TabularResultLayout extends VerticalLayout {
         this.setSizeFull();
         this.setSpacing(false);
         this.setMargin(false);
+        getStyle().set("padding-bottom", "0");
         createMenuBar();
         try {
             grid = putResultsInGrid(settings.getProperties().getInt(SQL_EXPLORER_MAX_RESULTS));
@@ -156,63 +170,37 @@ public class TabularResultLayout extends VerticalLayout {
                 }
                 columnNameMap.put(i, columnName);
             }
-            ContextMenu menu = new ContextMenu(grid, true);
-            menu.addItem(ACTION_SELECT, new MenuBar.Command() {
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void menuSelected(MenuItem selectedItem) {
-                    handleAction(ACTION_SELECT);
-                }
-            });
-            menu.addItem(ACTION_INSERT, new MenuBar.Command() {
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void menuSelected(MenuItem selectedItem) {
-                    handleAction(ACTION_INSERT);
-                }
-            });
-            menu.addItem(ACTION_UPDATE, new MenuBar.Command() {
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void menuSelected(MenuItem selectedItem) {
-                    handleAction(ACTION_UPDATE);
-                }
-            });
-            menu.addItem(ACTION_DELETE, new MenuBar.Command() {
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void menuSelected(MenuItem selectedItem) {
-                    handleAction(ACTION_DELETE);
-                }
-            });
+            ContextMenu menu = new ContextMenu(grid);
+            menu.addItem(ACTION_SELECT, event -> handleAction(ACTION_SELECT));
+            menu.addItem(ACTION_INSERT, event -> handleAction(ACTION_INSERT));
+            menu.addItem(ACTION_UPDATE, event -> handleAction(ACTION_UPDATE));
+            menu.addItem(ACTION_DELETE, event -> handleAction(ACTION_DELETE));
             if (resultTable != null && resultTable.getForeignKeyCount() > 0) {
                 followToMenu = menu.addItem("Follow to", null);
                 buildFollowToMenu();
             }
             Editor<List<Object>> editor = grid.getEditor();
-            Binder<List<Object>> binder = editor.getBinder();
+            Binder<List<Object>> binder = new Binder<List<Object>>();
             int i = 0;
-            for (Grid.Column<List<Object>, ?> col : grid.getColumns()) {
-                String colId = col.getId();
+            for (Grid.Column<List<Object>> col : grid.getColumns()) {
+                String colId = col.getKey();
                 if (colId == null || !colId.equals("#")) {
-                    Integer index = i;
-                    Binding<List<Object>, String> binding = binder.bind(new TextField(),
+                    Integer index = new Integer(i);
+                    TextField field = new TextField();
+                    Binding<List<Object>, String> binding = binder.bind(field,
                             list -> list.get(index).toString(), (list, value) -> list.set(index, value));
-                    col.setEditorBinding(binding);
+                    col.setEditorComponent(field);
                     i++;
                 }
             }
+            editor.setBinder(binder);
             if (resultTable != null) {
                 @SuppressWarnings("unchecked")
                 List<Object>[] unchangedValue = (List<Object>[]) new List[1];
                 Object[] pkParams = new Object[resultTable.getPrimaryKeyColumnCount()];
                 int[] pkTypes = new int[pkParams.length];
                 editor.addOpenListener(event -> {
-                    unchangedValue[0] = new ArrayList<Object>(event.getBean());
+                    unchangedValue[0] = new ArrayList<Object>(event.getItem());
                     int paramCount = 0;
                     for (int j = 0; j < unchangedValue[0].size(); j++) {
                         if (resultTable.getPrimaryKeyColumnIndex(columnNameMap.get(j)) >= 0) {
@@ -224,7 +212,7 @@ public class TabularResultLayout extends VerticalLayout {
                 });
                 editor.addSaveListener(event -> {
                     grid.setDataProvider(grid.getDataProvider());
-                    List<Object> row = event.getBean();
+                    List<Object> row = event.getItem();
                     List<String> colNames = new ArrayList<String>();
                     List<Object> params = new ArrayList<Object>();
                     List<Integer> types = new ArrayList<Integer>();
@@ -278,95 +266,101 @@ public class TabularResultLayout extends VerticalLayout {
                                 "<b>The table could not be updated.</b><br>"
                                         + "Cause: the sql update statement failed to execute.<br><br>"
                                         + "To view the <b>Stack Trace</b>, click <b>\"Details\"</b>.",
-                                e, Type.ERROR_MESSAGE);
+                                e, NotificationVariant.LUMO_ERROR);
                     }
                 });
-                editor.setEnabled(true);
+                CommonUiUtils.configureEditor(grid);
             }
-            this.addComponent(grid);
-            this.setExpandRatio(grid, 1);
+            Shortcuts.addShortcutListener(grid, () -> {
+                Component parent = grid.getParent().orElse(null);
+                if (parent != null && parent instanceof TabularResultLayout) {
+                    TabularResultLayout layout = (TabularResultLayout) parent;
+                    queryPanel.reExecute(layout.getSql());
+                }
+            }, Key.ENTER, KeyModifier.CONTROL).listenOn(grid);
+            Shortcuts.addShortcutListener(grid, () -> {
+                TabularResultLayout layout = (TabularResultLayout) grid.getParent().orElse(null);
+                if (layout != null) {
+                    queryPanel.reExecute(layout.getSql());
+                }
+            }, Key.ENTER, KeyModifier.CONTROL, KeyModifier.SHIFT).listenOn(grid);
+            this.addAndExpand(grid);
             long count = (grid.getDataProvider().fetch(new Query<>()).count());
             int maxResultsSize = settings.getProperties().getInt(SQL_EXPLORER_MAX_RESULTS);
             if (count >= maxResultsSize) {
-                resultLabel.setValue("Limited to <span style='color: red'>" + maxResultsSize + "</span> rows;");
+                resultLabel.setText("Limited to <span style='color: red'>" + maxResultsSize + "</span> rows;");
             } else {
-                resultLabel.setValue(count + " rows returned;");
+                resultLabel.setText(count + " rows returned;");
             }
         } catch (SQLException ex) {
             log.error(ex.getMessage(), ex);
-            CommonUiUtils.notify(ex);
+            CommonUiUtils.notifyError();
         }
     }
 
     private void createMenuBar() {
         HorizontalLayout resultBar = new HorizontalLayout();
-        resultBar.setWidth(100, Unit.PERCENTAGE);
-        resultBar.setMargin(new MarginInfo(false, true, false, true));
+        resultBar.getStyle().set("margin", "0 16px");
         HorizontalLayout leftBar = new HorizontalLayout();
         leftBar.setSpacing(true);
-        resultLabel = new Label("", ContentMode.HTML);
-        leftBar.addComponent(resultLabel);
-        final Label sqlLabel = new Label("", ContentMode.TEXT);
-        sqlLabel.setWidth(800, Unit.PIXELS);
-        leftBar.addComponent(sqlLabel);
-        resultBar.addComponent(leftBar);
-        resultBar.setComponentAlignment(leftBar, Alignment.MIDDLE_LEFT);
-        resultBar.setExpandRatio(leftBar, 1);
+        resultLabel = new Label("");
+        leftBar.add(resultLabel);
+        final Span sqlSpan = new Span("");
+        sqlSpan.setWidth("800px");
+        leftBar.add(sqlSpan);
+        resultBar.addAndExpand(leftBar);
+        resultBar.setVerticalComponentAlignment(Alignment.CENTER, leftBar);
         MenuBar rightBar = new MenuBar();
-        rightBar.addStyleName(ValoTheme.MENUBAR_BORDERLESS);
-        rightBar.addStyleName(ValoTheme.MENUBAR_SMALL);
-        MenuBar.MenuItem refreshButton = rightBar.addItem("", new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuBar.MenuItem selectedItem) {
-                listener.reExecute(sql);
-            }
-        });
-        refreshButton.setIcon(VaadinIcons.REFRESH);
-        refreshButton.setDescription("Refresh");
-        MenuBar.MenuItem exportButton = rightBar.addItem("", new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuBar.MenuItem selectedItem) {
-                IDataProvider target = new GridDataProvider(grid);
+        rightBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_SMALL);
+        MenuItem refreshButton = rightBar.addItem(new Icon(VaadinIcon.REFRESH), event -> listener.reExecute(sql));
+        refreshButton.getElement().setAttribute("title", "Refresh");
+        Anchor downloadAnchor = new Anchor();
+        downloadAnchor.setTarget("_blank");
+        downloadAnchor.getElement().setAttribute("download", true);
+        Icon downloadIcon = new Icon(VaadinIcon.UPLOAD);
+        downloadIcon.setSize("16px");
+        downloadIcon.addClickListener(event -> {
+            if (generateNewExport) {
+                IDataProvider<List<Object>> target = new GridDataProvider<List<Object>>(grid, valueProviderMap);
                 CsvExport csvExport = null;
                 if (target instanceof IDataProvider) {
-                    csvExport = new CsvExport((IDataProvider) target);
+                    csvExport = new CsvExport(target);
                     csvExport.setFileName(db.getName() + "-export.csv");
                     csvExport.setTitle(sql);
-                    csvExport.export();
+                    downloadAnchor.setHref(csvExport.getFileDownloader());
                 }
+                generateNewExport = false;
+                UI.getCurrent().getPage().executeJs("$0.click();", downloadAnchor.getElement());
+            } else {
+                downloadAnchor.removeHref();
+                generateNewExport = true;
             }
         });
-        exportButton.setIcon(VaadinIcons.UPLOAD);
-        exportButton.setDescription("Export Results");
+        downloadAnchor.add(downloadIcon);
+        MenuItem exportButton = rightBar.addItem(downloadAnchor);
+        exportButton.getElement().setAttribute("title", "Export Results");
         if (isInQueryGeneralResults) {
-            MenuBar.MenuItem keepResultsButton = rightBar.addItem("", new Command() {
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void menuSelected(com.vaadin.ui.MenuBar.MenuItem selectedItem) {
-                    queryPanel.addResultsTab(refreshWithoutSaveButton(), StringUtils.abbreviate(sql, 20),
-                            queryPanel.getGeneralResultsTab().getIcon());
-                    queryPanel.resetGeneralResultsTab();
-                }
+            MenuItem keepResultsButton = rightBar.addItem(new Icon(VaadinIcon.COPY), event -> {
+                queryPanel.addResultsTab(refreshWithoutSaveButton(), StringUtils.abbreviate(sql, 20),
+                        queryPanel.getGeneralResultsTab().getIcon());
+                queryPanel.resetGeneralResultsTab();
             });
-            keepResultsButton.setIcon(VaadinIcons.COPY);
-            keepResultsButton.setDescription("Save these results to a new tab");
+            keepResultsButton.getElement().setAttribute("title", "Save these results to a new tab");
         }
         if (showSql) {
-            sqlLabel.setValue(StringUtils.abbreviate(sql, 200));
+            sqlSpan.setText(StringUtils.abbreviate(sql, 200));
         }
-        resultBar.addComponent(rightBar);
-        resultBar.setComponentAlignment(rightBar, Alignment.MIDDLE_RIGHT);
-        this.addComponent(resultBar, 0);
+        resultBar.add(rightBar);
+        resultBar.setVerticalComponentAlignment(Alignment.CENTER, rightBar);
+        columnVisibilityToggler = new ColumnVisibilityToggler();
+        resultBar.add(columnVisibilityToggler);
+        resultBar.setVerticalComponentAlignment(Alignment.END, columnVisibilityToggler);
+        this.addComponentAsFirst(resultBar);
     }
 
     protected TabularResultLayout refreshWithoutSaveButton() {
         isInQueryGeneralResults = false;
-        this.removeComponent(this.getComponent(0));
+        this.remove(this.getComponentAt(0));
         createMenuBar();
         return this;
     }
@@ -377,7 +371,7 @@ public class TabularResultLayout extends VerticalLayout {
             final String quote = db.getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? dbInfo.getDelimiterToken() : "";
             final String catalogSeparator = dbInfo.getCatalogSeparator();
             final String schemaSeparator = dbInfo.getSchemaSeparator();
-            String[] columnHeaders = CommonUiUtils.getHeaderCaptions(grid);
+            String[] columnHeaders = ArrayUtils.removeElement(CommonUiUtils.getHeaderCaptions(grid), null);
             Set<List<Object>> selectedRowsSet = grid.getSelectedItems();
             Iterator<List<Object>> setIterator = selectedRowsSet.iterator();
             while (setIterator.hasNext()) {
@@ -535,14 +529,7 @@ public class TabularResultLayout extends VerticalLayout {
                 optionTitle += ref.getLocalColumnName() + ", ";
             }
             optionTitle = optionTitle.substring(0, optionTitle.length() - 2) + ")";
-            followToMenu.addItem(optionTitle, new MenuBar.Command() {
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void menuSelected(MenuItem selectedItem) {
-                    followTo(foreignKey);
-                }
-            });
+            followToMenu.getSubMenu().addItem(optionTitle, event -> followTo(foreignKey));
         }
     }
 
@@ -574,8 +561,8 @@ public class TabularResultLayout extends VerticalLayout {
                 for (List<Object> row : selectedRows) {
                     for (Reference ref : references) {
                         int colNum = 0;
-                        for (Grid.Column<List<Object>, ?> col : grid.getColumns()) {
-                            if (col.getCaption().equals(ref.getLocalColumnName())) {
+                        for (Grid.Column<List<Object>> col : grid.getColumns()) {
+                            if (col.getKey().equals(ref.getLocalColumnName())) {
                                 break;
                             }
                         }
@@ -711,8 +698,107 @@ public class TabularResultLayout extends VerticalLayout {
             }
         }
         TypedProperties properties = settings.getProperties();
-        return CommonUiUtils.putResultsInGrid(rs, properties.getInt(SQL_EXPLORER_MAX_RESULTS),
-                properties.is(SQL_EXPLORER_SHOW_ROW_NUMBERS), getColumnsToExclude());
+        boolean showRowNumbers = properties.is(SQL_EXPLORER_SHOW_ROW_NUMBERS);
+        String[] excludeValues = getColumnsToExclude();
+        final Grid<List<Object>> grid = new Grid<List<Object>>();
+        grid.setSelectionMode(SelectionMode.MULTI);
+        grid.setColumnReorderingAllowed(true);
+        grid.addItemClickListener(event -> {
+            if (event.getColumn() != null) {
+                grid.deselectAll();
+                grid.select(event.getItem());
+            }
+        });
+        List<List<Object>> outerList = new ArrayList<List<Object>>();
+        if (rs != null) {
+            grid.addColumn(row -> {
+                return outerList.indexOf(row) + 1;
+            }).setHeader("#").setKey("#").setFrozen(true).setFlexGrow(0).setResizable(true).setVisible(showRowNumbers);
+            grid.addAttachListener(e -> {
+                grid.getElement().executeJs("this.querySelector('vaadin-grid-flow-selection-column').frozen = true");
+            });
+            if (valueProviderMap == null) {
+                valueProviderMap = new HashMap<Grid.Column<List<Object>>, ValueProvider<List<Object>, Object>>();
+            }
+            valueProviderMap.put(grid.getColumnByKey("#"), row -> outerList.indexOf(row) + 1);
+            final ResultSetMetaData meta = rs.getMetaData();
+            int totalColumns = meta.getColumnCount();
+            Set<Integer> skipColumnIndexes = new HashSet<Integer>();
+            Set<String> columnNames = new HashSet<String>();
+            int[] types = new int[totalColumns];
+            final int[] columnCounter = { 1 };
+            while (columnCounter[0] <= totalColumns) {
+                String realColumnName = meta.getColumnName(columnCounter[0]);
+                String columnName = realColumnName;
+                if (!Arrays.asList(excludeValues).contains(columnName)) {
+                    int index = 1;
+                    while (columnNames.contains(columnName)) {
+                        columnName = realColumnName + "_" + index++;
+                    }
+                    columnNames.add(columnName);
+                    Integer colNum = new Integer(columnCounter[0] - 1 - skipColumnIndexes.size());
+                    columnVisibilityToggler.addColumn(grid.addColumn(row -> row.get(colNum)).setKey(columnName)
+                            .setHeader(columnName).setClassNameGenerator(row -> {
+                                if (row.get(colNum) == null) {
+                                    return "italics";
+                                }
+                                return null;
+                            }).setResizable(true), columnName);
+                    valueProviderMap.put(grid.getColumnByKey(columnName), row -> row.get(colNum));
+                    types[columnCounter[0] - 1] = meta.getColumnType(columnCounter[0]);
+                } else {
+                    skipColumnIndexes.add(columnCounter[0] - 1);
+                }
+                columnCounter[0]++;
+            }
+            for (int rowNumber = 1; rs.next() && rowNumber <= maxResultSize; rowNumber++) {
+                List<Object> innerList = new ArrayList<Object>();
+                for (int i = 0; i < totalColumns; i++) {
+                    if (!skipColumnIndexes.contains(i)) {
+                        Object o = CommonUiUtils.getObject(rs, i + 1);
+                        int type = types[i];
+                        switch (type) {
+                            case Types.FLOAT:
+                            case Types.DOUBLE:
+                            case Types.REAL:
+                            case Types.NUMERIC:
+                            case Types.DECIMAL:
+                                if (o != null && !(o instanceof BigDecimal)) {
+                                    o = new BigDecimal(CommonUiUtils.castToNumber(o.toString()));
+                                }
+                                break;
+                            case Types.TINYINT:
+                            case Types.SMALLINT:
+                            case Types.BIGINT:
+                            case Types.INTEGER:
+                                if (o != null && !(o instanceof Long)) {
+                                    o = new Long(CommonUiUtils.castToNumber(o.toString()));
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                        innerList.add(o == null ? CommonUiUtils.NULL_TEXT : o);
+                    }
+                }
+                outerList.add(innerList);
+                if (rowNumber < 100) {
+                    grid.getColumnByKey("#").setWidth("75px");
+                } else if (rowNumber < 1000) {
+                    grid.getColumnByKey("#").setWidth("95px");
+                } else {
+                    grid.getColumnByKey("#").setWidth("115px");
+                }
+            }
+        } else {
+            grid.addColumn(row -> row.get(0)).setHeader("Status").setKey("Status").setResizable(true);
+            valueProviderMap.put(grid.getColumnByKey("Status"), row -> row.get(0));
+            List<Object> innerList = new ArrayList<Object>();
+            innerList.add("Metadata unavailable");
+            outerList.add(innerList);
+        }
+        grid.setItems(outerList);
+        return grid;
     }
 
     protected String[] getColumnsToExclude() {

@@ -28,13 +28,13 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 
 public class CsvExport {
     protected IDataProvider gridData = null;
     protected String fileName;
     protected String title;
-    protected StringBuffer cellData;
+    protected StringBuilder cellData;
     protected final String csvMimeContentType = "text/csv";
     final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -62,7 +62,7 @@ public class CsvExport {
         } else {
             this.title = title;
         }
-        this.cellData = new StringBuffer();
+        this.cellData = new StringBuilder();
     }
 
     public void setFileName(String fileName) {
@@ -73,9 +73,27 @@ public class CsvExport {
         this.title = title;
     }
 
-    public void export() {
+    public ExportFileDownloader getFileDownloader() {
         convertToCsv();
-        sendCsvToUser();
+        FileOutputStream outStream = null;
+        File file = null;
+        try {
+            String prefix = fileName.substring(0, fileName.length() - 4);
+            file = File.createTempFile(prefix, ".csv");
+            outStream = new FileOutputStream(file);
+            outStream.write(cellData.toString().getBytes());
+            return new ExportFileDownloader(fileName, csvMimeContentType, file);
+        } catch (Exception e) {
+            log.error("", e);
+            return null;
+        } finally {
+            try {
+                file.deleteOnExit();
+                outStream.close();
+            } catch (IOException e) {
+                log.error("Problem closing File Stream", e);
+            }
+        }
     }
 
     public void convertToCsv() {
@@ -108,43 +126,14 @@ public class CsvExport {
     }
 
     public void addHeaders() {
-        if (gridData.isHeaderVisible()) {
-            Iterator<?> iterator = gridData.getColumns().iterator();
-            while (iterator.hasNext()) {
-                Object col = iterator.next();
-                String value = gridData.getHeaderValue(col);
-                if (iterator.hasNext()) {
-                    cellData.append(value + ",");
-                } else {
-                    cellData.append(value + "\n");
-                }
-            }
-        }
-    }
-
-    @SuppressWarnings("deprecation")
-    public void sendCsvToUser() {
-        FileOutputStream outStream = null;
-        File file = null;
-        try {
-            String prefix = fileName.substring(0, fileName.length() - 4);
-            file = File.createTempFile(prefix, ".csv");
-            outStream = new FileOutputStream(file);
-            outStream.write(cellData.toString().getBytes());
-            ExportFileDownloader downloader = new ExportFileDownloader(fileName, csvMimeContentType, file);
-            UI.getCurrent().getPage().open(downloader, "Download", false);
-        } catch (Exception e) {
-            log.error("", e);
-        } finally {
-            try {
-                if (file != null) {
-                    file.delete();
-                }
-                if (outStream != null) {
-                    outStream.close();
-                }
-            } catch (IOException e) {
-                log.error("Problem closing File Stream", e);
+        Iterator<?> iterator = gridData.getColumns().iterator();
+        while (iterator.hasNext()) {
+            Object col = iterator.next();
+            String value = gridData.getKeyValue(col);
+            if (iterator.hasNext()) {
+                cellData.append(value + ",");
+            } else {
+                cellData.append(value + "\n");
             }
         }
     }

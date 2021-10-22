@@ -32,49 +32,61 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.servlet.ServletContext;
+import java.util.WeakHashMap;
+import java.util.function.Consumer;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vaadin.aceeditor.AceEditor;
 
-import com.vaadin.server.Page;
-import com.vaadin.server.Sizeable.Unit;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.shared.Position;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.Grid.Column;
-import com.vaadin.ui.Grid.SelectionMode;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.Column;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.editor.Editor;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.tabs.TabsVariant;
+import com.vaadin.flow.theme.lumo.Lumo;
+
+import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceTheme;
 
 public final class CommonUiUtils {
     private final static Logger log = LoggerFactory.getLogger(CommonUiUtils.class);
     static final FastDateFormat DATETIMEFORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
     static final FastDateFormat TIMEFORMAT = FastDateFormat.getInstance("HH:mm:ss.SSS");
-    static final String NULL_TEXT = "<null>";
+    public static final String NULL_TEXT = "<null>";
 
     private CommonUiUtils() {
     }
 
     public static void styleTabSheet(TabSheet tabSheet) {
         tabSheet.setSizeFull();
-        tabSheet.addStyleName(ValoTheme.TABSHEET_FRAMED);
-        tabSheet.addStyleName(ValoTheme.TABSHEET_COMPACT_TABBAR);
-        tabSheet.addStyleName(ValoTheme.TABSHEET_PADDED_TABBAR);
+        tabSheet.addThemeVariants(TabsVariant.LUMO_SMALL);
     }
 
     public static TabSheet createTabSheet() {
@@ -87,64 +99,76 @@ public final class CommonUiUtils {
         return createPrimaryButton(name, null);
     }
 
-    public static Button createPrimaryButton(String name, Button.ClickListener listener) {
+    public static Button createPrimaryButton(String name, ComponentEventListener<ClickEvent<Button>> listener) {
         Button button = new Button(name);
         if (listener != null) {
             button.addClickListener(listener);
         }
-        button.addStyleName(ValoTheme.BUTTON_PRIMARY);
+        button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         return button;
     }
 
     public static AceEditor createAceEditor() {
         AceEditor editor = new AceEditor();
         editor.setSizeFull();
-        ServletContext context = VaadinServlet.getCurrent().getServletContext();
-        if (context.getRealPath("/VAADIN/ace") != null) {
-            String acePath = context.getContextPath() + "/VAADIN/ace";
-            editor.setThemePath(acePath);
-            editor.setModePath(acePath);
-            editor.setWorkerPath(acePath);
-        } else {
-            log.warn("Could not find a local version of the ace editor.  " + "You might want to consider installing the ace web artifacts at "
-                    + context.getRealPath(""));
-        }
-        editor.setHighlightActiveLine(true);
+        editor.setHighlightActiveLine(false);
+        editor.setHighlightSelectedWord(false);
         editor.setShowPrintMargin(false);
+        editor.setBaseUrl("../ace-builds/src-min-noconflict/");
+        UI ui = UI.getCurrent();
+        if (ui.getElement().getThemeList().contains(Lumo.DARK)) {
+            editor.setTheme(AceTheme.nord_dark);
+        } else {
+            editor.setTheme(AceTheme.eclipse);
+        }
+        ComponentUtil.addListener(ui, ThemeChangedEvent.class, (event) -> {
+            if (event.getTheme().equals(Lumo.DARK)) {
+                editor.setTheme(AceTheme.nord_dark);
+            } else {
+                editor.setTheme(AceTheme.eclipse);
+            }
+        });
         return editor;
     }
 
     public static void notify(String message) {
-        notify("", message, Type.HUMANIZED_MESSAGE);
+        notify("", message);
+    }
+
+    public static void notify(String message, Consumer<Boolean> shortcutToggler) {
+        notify("", message, shortcutToggler);
     }
 
     public static void notify(String caption, String message) {
-        notify(caption, message, Type.HUMANIZED_MESSAGE);
+        notify(caption, message, null);
     }
 
-    public static void notify(String message, Type type) {
-        notify("", message, type);
-    }
-
-    public static void notify(String caption, String message, Type type) {
-        notify(caption, message, null, type);
-    }
-
-    public static void notify(String caption, String message, Throwable ex, Type type) {
-        Page page = Page.getCurrent();
+    public static void notify(String caption, String message, Consumer<Boolean> shortcutToggler) {
+        Page page = UI.getCurrent().getPage();
         if (page != null) {
-            Notification notification = new Notification(caption, contactWithLineFeed(FormatUtils.wordWrap(message, 150)),
-                    Type.HUMANIZED_MESSAGE);
-            notification.setPosition(Position.MIDDLE_CENTER);
-            notification.setDelayMsec(-1);
-            String style = ValoTheme.NOTIFICATION_SUCCESS;
-            if (type == Type.ERROR_MESSAGE) {
-                style = ValoTheme.NOTIFICATION_FAILURE;
-            } else if (type == Type.WARNING_MESSAGE) {
-                style = ValoTheme.NOTIFICATION_WARNING;
+            HorizontalLayout layout = new HorizontalLayout();
+            layout.getStyle().set("max-width", "400px");
+            Notification notification = new Notification(layout);
+            Label label;
+            if (!StringUtils.isBlank(caption)) {
+                label = new Label(caption + "<hr>" + contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
+            } else {
+                label = new Label(contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
             }
-            notification.setStyleName(notification.getStyleName() + " " + ValoTheme.NOTIFICATION_CLOSABLE + " " + style);
-            notification.show(Page.getCurrent());
+            layout.add(label);
+            Icon closeIcon = new Icon(VaadinIcon.CLOSE_CIRCLE_O);
+            closeIcon.setSize("36px");
+            closeIcon.getStyle().set("min-width", "36px");
+            closeIcon.addClickListener(event -> notification.close());
+            closeIcon.addClickShortcut(Key.ESCAPE);
+            layout.add(closeIcon);
+            layout.setVerticalComponentAlignment(Alignment.START, closeIcon);
+            if (shortcutToggler != null) {
+                notification.addOpenedChangeListener(event -> shortcutToggler.accept(event.isOpened()));
+            }
+            notification.setPosition(Position.MIDDLE);
+            notification.setDuration(-1);
+            notification.open();
         }
     }
 
@@ -156,12 +180,20 @@ public final class CommonUiUtils {
         return line.toString();
     }
 
-    public static void notify(String message, Throwable ex) {
-        notify("An error occurred", message, ex, Type.ERROR_MESSAGE);
+    public static void notifyError() {
+        notifyError((Consumer<Boolean>) null);
     }
 
-    public static void notify(Throwable ex) {
-        notify("An unexpected error occurred", "See the log file for additional details", ex, Type.ERROR_MESSAGE);
+    public static void notifyError(Consumer<Boolean> shortcutToggler) {
+        notify("An unexpected error occurred", "See the log file for additional details", shortcutToggler);
+    }
+
+    public static void notifyError(String message) {
+        notifyError(message, null);
+    }
+
+    public static void notifyError(String message, Consumer<Boolean> shortcutToggler) {
+        notify("An error occurred", message, shortcutToggler);
     }
 
     public static Object getObject(ResultSet rs, int i) throws SQLException {
@@ -177,14 +209,14 @@ public final class CommonUiUtils {
 
     public static String[] getHeaderCaptions(Grid<?> grid) {
         List<String> headers = new ArrayList<String>();
-        for (Column<?, ?> column : grid.getColumns()) {
-            headers.add(column.getCaption());
+        for (Column<?> column : grid.getColumns()) {
+            headers.add(column.getKey());
         }
         return headers.toArray(new String[headers.size()]);
     }
 
-    public static Grid<List<Object>> putResultsInGrid(final ResultSet rs, int maxResultSize, final boolean showRowNumbers,
-            String... excludeValues) throws SQLException {
+    public static Grid<List<Object>> putResultsInGrid(ColumnVisibilityToggler columnVisibilityToggler, final ResultSet rs,
+            int maxResultSize, final boolean showRowNumbers, String... excludeValues) throws SQLException {
         final Grid<List<Object>> grid = new Grid<List<Object>>();
         grid.setSelectionMode(SelectionMode.MULTI);
         grid.setColumnReorderingAllowed(true);
@@ -198,11 +230,9 @@ public final class CommonUiUtils {
         if (rs != null) {
             grid.addColumn(row -> {
                 return outerList.indexOf(row) + 1;
-            }).setCaption("#").setId("#").setHidden(!showRowNumbers).setStyleGenerator(row -> {
-                if (!grid.getSelectedItems().contains(row)) {
-                    return "rowheader";
-                }
-                return null;
+            }).setHeader("#").setKey("#").setFrozen(true).setResizable(true).setVisible(showRowNumbers);
+            grid.addAttachListener(e -> {
+                grid.getElement().executeJs("this.querySelector('vaadin-grid-flow-selection-column').frozen = true");
             });
             final ResultSetMetaData meta = rs.getMetaData();
             int totalColumns = meta.getColumnCount();
@@ -220,13 +250,13 @@ public final class CommonUiUtils {
                     }
                     columnNames.add(columnName);
                     int colNum = columnCounter[0] - 1 - skipColumnIndexes.size();
-                    grid.addColumn(row -> row.get(colNum)).setId(columnName).setCaption(columnName).setHidable(true)
-                            .setStyleGenerator(row -> {
+                    columnVisibilityToggler.addColumn(grid.addColumn(row -> row.get(colNum)).setKey(columnName)
+                            .setHeader(columnName).setClassNameGenerator(row -> {
                                 if (row.get(colNum) == null) {
                                     return "italics";
                                 }
                                 return null;
-                            });
+                            }).setResizable(true), columnName);
                     types[columnCounter[0] - 1] = meta.getColumnType(columnCounter[0]);
                 } else {
                     skipColumnIndexes.add(columnCounter[0] - 1);
@@ -265,18 +295,15 @@ public final class CommonUiUtils {
                 }
                 outerList.add(innerList);
                 if (rowNumber < 100) {
-                    grid.getColumn("#").setWidth(75);
+                    grid.getColumnByKey("#").setWidth("75px");
                 } else if (rowNumber < 1000) {
-                    grid.getColumn("#").setWidth(95);
+                    grid.getColumnByKey("#").setWidth("95px");
                 } else {
-                    grid.getColumn("#").setWidth(115);
-                }
-                if (showRowNumbers) {
-                    grid.setFrozenColumnCount(1);
+                    grid.getColumnByKey("#").setWidth("115px");
                 }
             }
         } else {
-            grid.addColumn(row -> row.get(0)).setCaption("Status");
+            grid.addColumn(row -> row.get(0)).setHeader("Status").setKey("Status").setResizable(true);
             List<Object> innerList = new ArrayList<Object>();
             innerList.add("Metadata unavailable");
             outerList.add(innerList);
@@ -285,7 +312,7 @@ public final class CommonUiUtils {
         return grid;
     }
 
-    protected static String castToNumber(String value) {
+    public static String castToNumber(String value) {
         if ("NO".equalsIgnoreCase(value) || "FALSE".equalsIgnoreCase(value)) {
             return "0";
         } else if ("YES".equalsIgnoreCase(value) || "TRUE".equalsIgnoreCase(value)) {
@@ -387,11 +414,43 @@ public final class CommonUiUtils {
         return value;
     }
 
-    public static Label createSeparator() {
-        Label separator = new Label(" ");
-        separator.setStyleName("vrule");
-        separator.setHeight(100, Unit.PERCENTAGE);
-        separator.setWidthUndefined();
+    public static Span createSeparator() {
+        Span separator = new Span(" ");
+        separator.setClassName("vrule");
+        separator.setHeightFull();
+        separator.setWidth(null);
         return separator;
+    }
+
+    public static void configureEditor(Grid<?> grid) {
+        @SuppressWarnings("unchecked")
+        Editor<Object> editor = (Editor<Object>) grid.getEditor();
+        Collection<Button> editButtons = Collections.newSetFromMap(new WeakHashMap<>());
+        editor.setBuffered(true);
+        Column<?> editorColumn = grid.addComponentColumn(item -> {
+            Button edit = new Button("Edit");
+            edit.addThemeVariants(ButtonVariant.LUMO_SMALL);
+            edit.addClassName("edit");
+            edit.addClickListener(event -> editor.editItem(item));
+            edit.setEnabled(!editor.isOpen());
+            editButtons.add(edit);
+            return edit;
+        }).setWidth("175px").setFlexGrow(0);
+        editor.addOpenListener(event -> editButtons.stream().forEach(button -> button.setEnabled(!editor.isOpen())));
+        editor.addCloseListener(event -> editButtons.stream().forEach(button -> button.setEnabled(!editor.isOpen())));
+        Button save = new Button("Save", event -> editor.save());
+        Button cancel = new Button("Cancel", event -> editor.cancel());
+        cancel.getStyle().set("margin-left", "8px");
+        grid.getElement().addEventListener("keyup", event -> editor.cancel())
+                .setFilter("event.key === 'Escape' || event.key === 'Esc'");
+        Div buttons = new Div(save, cancel);
+        editorColumn.setEditorComponent(buttons);
+    }
+
+    public static Icon createMenuBarIcon(VaadinIcon icon) {
+        Icon menuBarIcon = new Icon(icon);
+        menuBarIcon.getStyle().set("padding", "var(--lumo-space-xs)");
+        menuBarIcon.getStyle().set("box-sizing", "border-box");
+        return menuBarIcon;
     }
 }

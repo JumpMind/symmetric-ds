@@ -1,0 +1,61 @@
+.align-center {
+	text-align: center;
+}
+
+.centerSmall {
+	padding: 0 7px;
+	font-size: 11px;
+	text-align: center;
+}
+
+.highlight, .v-grid-cell-highlight {
+	background-color: var(--lumo-contrast-10pct) !important;
+}
+
+:host-context(.compact-header) [part="row"]:only-child [part~="header-cell"] {
+	min-height: 31px;
+	max-height: 31px;
+}
+
+.italics { 
+	font-style: italic;
+}
+
+.marked, .v-grid-row-marked {
+	color: red;
+	font-weight: bold;
+}
+
+.mouse_pointer, .pseudo-link:hover {
+	cursor: pointer;
+}
+
+.rowheader {
+	background: var(--lumo-shade-10pct);
+}
+
+.unsuccessful {
+	color: #E53935;
+}
+
+.v-grid-row-marked > .v-grid-cell, .v-grid-row-marked > .v-treegrid-cell {
+	color: red !important;
+}
+
+.v-grid-row-ignored {
+	color: darkgray;
+	font-weight: bold;
+}
+
+.v-grid-row-strong {
+	font-weight: bold;
+}
+
+vaadin-grid .cancelled vaadin-progress-bar {
+	border-radius: none;
+	border: none;
+	background-image: -webkit-linear-gradient(#DFDFDF, #DFDFDF);
+	background-image: -moz-linear-gradient(#DFDFDF, #DFDFDF);
+	background-image: linear, false, zip(#DFDFDF #DFDFDF);
+	background-color: #DFDFDF;
+}

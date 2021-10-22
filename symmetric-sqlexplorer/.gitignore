@@ -17,3 +17,8 @@ hs_err_pid*
 /.classpath
 /.project
 /.clover/
+/node_modules/
+/webpack.generated.js
+
+# build stuff
+/target/

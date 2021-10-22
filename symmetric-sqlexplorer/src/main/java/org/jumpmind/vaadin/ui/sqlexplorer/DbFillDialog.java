@@ -31,35 +31,38 @@ import org.jumpmind.symmetric.io.data.DbFill;
 import org.jumpmind.symmetric.io.data.DmlWeight;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.ConfirmDialog;
+import org.jumpmind.vaadin.ui.common.ResizableDialog;
 import org.jumpmind.vaadin.ui.common.ConfirmDialog.IConfirmListener;
-import org.jumpmind.vaadin.ui.common.ResizableWindow;
 
-import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.shared.ui.ValueChangeMode;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.CheckBox;
-import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.RadioButtonGroup;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.ShortcutRegistration;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller.ScrollDirection;
 
-public class DbFillDialog extends ResizableWindow {
+public class DbFillDialog extends ResizableDialog {
     private static final long serialVersionUID = 1L;
     private Button cancelButton;
+    private ShortcutRegistration cancelShortcutRegistration;
     private Button nextButton;
+    private ShortcutRegistration nextShortcutRegistration;
     private Button previousButton;
     private Button fillButton;
+    private ShortcutRegistration fillShortcutRegistration;
     private TableSelectionLayout tableSelectionLayout;
-    private VerticalLayout optionLayout;
-    private CheckBox continueBox;
-    private CheckBox cascadeBox;
-    private CheckBox cascadeSelectBox;
-    private CheckBox truncateBox;
-    private CheckBox verboseBox;
+    private Scroller optionLayout;
+    private Checkbox continueBox;
+    private Checkbox cascadeBox;
+    private Checkbox cascadeSelectBox;
+    private Checkbox truncateBox;
+    private Checkbox verboseBox;
     private TextField countField;
     private TextField intervalField;
     private TextField insertWeightField;
@@ -76,10 +79,10 @@ public class DbFillDialog extends ResizableWindow {
 
     public DbFillDialog(IDatabasePlatform databasePlatform, Set<Table> selectedTableSet,
             QueryPanel queryPanel, String excludeTablesRegex) {
-        super("Database Fill");
+        super("Database Fill", false);
         setModal(true);
-        setHeight(500, Unit.PIXELS);
-        setWidth(605, Unit.PIXELS);
+        setHeight("500px");
+        setWidth("605px");
         this.databasePlatform = databasePlatform;
         this.queryPanel = queryPanel;
         tableSelectionLayout = new TableSelectionLayout(databasePlatform, selectedTableSet, excludeTablesRegex) {
@@ -89,149 +92,137 @@ public class DbFillDialog extends ResizableWindow {
                 nextButton.setEnabled(tableSelectionLayout.getSelectedTables().size() > 0);
             };
         };
+        tableSelectionLayout.setHeight("318px");
         createOptionLayout();
-        addComponent(tableSelectionLayout, 1);
+        add(tableSelectionLayout, 1);
         addButtons();
-        nextButton.setClickShortcut(KeyCode.ENTER);
-        nextButton.focus();
+        nextShortcutRegistration = nextButton.addClickShortcut(Key.ENTER);
     }
 
     protected void addButtons() {
-        nextButton = CommonUiUtils.createPrimaryButton("Next", new ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                next();
-            }
-        });
+        nextButton = CommonUiUtils.createPrimaryButton("Next", event -> next());
         nextButton.setEnabled(tableSelectionLayout.getSelectedTables().size() > 0);
-        cancelButton = new Button("Close", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                close();
-            }
-        });
-        previousButton = new Button("Previous", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                previous();
-            }
-        });
+        cancelButton = new Button("Close", event -> close());
+        cancelShortcutRegistration = cancelButton.addClickShortcut(Key.ESCAPE);
+        previousButton = new Button("Previous", event -> previous());
         previousButton.setVisible(false);
-        fillButton = CommonUiUtils.createPrimaryButton("Fill...", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                createDbFill();
-                if (dbFill.getPrint() == false) {
-                    confirm();
-                } else {
-                    List<String> tables = getSelectedTables();
-                    for (String tableName : tables) {
-                        Table table = databasePlatform.getTableFromCache(
-                                tableSelectionLayout.catalogSelect.getValue() != null ? tableSelectionLayout.catalogSelect
-                                        .getValue().toString() : null,
-                                tableSelectionLayout.schemaSelect.getValue() != null ? tableSelectionLayout.schemaSelect
-                                        .getValue().toString() : null, tableName, false);
-                        if (table != null) {
-                            for (int i = 0; i < dbFill.getRecordCount(); i++) {
-                                for (int j = 0; j < dbFill.getInsertWeight(); j++) {
-                                    String sql = dbFill.createDynamicRandomInsertSql(table);
-                                    queryPanel.appendSql(sql);
-                                }
-                                for (int j = 0; j < dbFill.getUpdateWeight(); j++) {
-                                    String sql = dbFill.createDynamicRandomUpdateSql(table);
-                                    queryPanel.appendSql(sql);
-                                }
-                                for (int j = 0; j < dbFill.getDeleteWeight(); j++) {
-                                    String sql = dbFill.createDynamicRandomDeleteSql(table);
-                                    queryPanel.appendSql(sql);
-                                }
+        fillButton = CommonUiUtils.createPrimaryButton("Fill...", event -> {
+            createDbFill();
+            if (dbFill.getPrint() == false) {
+                confirm();
+            } else {
+                List<String> tables = getSelectedTables();
+                for (String tableName : tables) {
+                    Table table = databasePlatform.getTableFromCache(
+                            tableSelectionLayout.catalogSelect.getValue() != null ? tableSelectionLayout.catalogSelect
+                                    .getValue().toString() : null,
+                            tableSelectionLayout.schemaSelect.getValue() != null ? tableSelectionLayout.schemaSelect
+                                    .getValue().toString() : null, tableName, false);
+                    if (table != null) {
+                        for (int i = 0; i < dbFill.getRecordCount(); i++) {
+                            for (int j = 0; j < dbFill.getInsertWeight(); j++) {
+                                String sql = dbFill.createDynamicRandomInsertSql(table);
+                                queryPanel.appendSql(sql);
+                            }
+                            for (int j = 0; j < dbFill.getUpdateWeight(); j++) {
+                                String sql = dbFill.createDynamicRandomUpdateSql(table);
+                                queryPanel.appendSql(sql);
+                            }
+                            for (int j = 0; j < dbFill.getDeleteWeight(); j++) {
+                                String sql = dbFill.createDynamicRandomDeleteSql(table);
+                                queryPanel.appendSql(sql);
                             }
                         }
                     }
-                    UI.getCurrent().removeWindow(DbFillDialog.this);
                 }
+                close();
             }
         });
         fillButton.setVisible(false);
-        addComponent(buildButtonFooter(cancelButton, previousButton, nextButton, fillButton));
+        add(buildButtonFooter(cancelButton, previousButton, nextButton, fillButton));
     }
 
     protected void createOptionLayout() {
-        optionLayout = new VerticalLayout();
-        optionLayout.addStyleName("v-scrollable");
-        optionLayout.setMargin(true);
-        optionLayout.setSpacing(true);
-        optionLayout.setSizeFull();
-        optionLayout.addComponent(new Label("Please choose from the following options"));
+        VerticalLayout optionContent = new VerticalLayout();
+        optionContent.setMargin(false);
+        optionContent.setSpacing(true);
+        optionContent.setSizeFull();
+        optionContent.add(new Span("Please choose from the following options"));
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
-        optionLayout.addComponent(formLayout);
-        optionLayout.setExpandRatio(formLayout, 1);
+        optionContent.addAndExpand(formLayout);
         countField = new TextField("Count (# of rows to fill)");
         countField.setValue("1");
         countField.setValueChangeMode(ValueChangeMode.EAGER);
         countField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
-        formLayout.addComponent(countField);
+        formLayout.add(countField);
         intervalField = new TextField("Interval (ms)");
         intervalField.setValue("0");
         intervalField.setValueChangeMode(ValueChangeMode.EAGER);
         intervalField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
-        formLayout.addComponent(intervalField);
+        formLayout.add(intervalField);
         insertWeightField = new TextField("Insert Weight");
         insertWeightField.setValue("1");
         insertWeightField.setValueChangeMode(ValueChangeMode.EAGER);
         insertWeightField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
-        formLayout.addComponent(insertWeightField);
+        formLayout.add(insertWeightField);
         updateWeightField = new TextField("Update Weight");
         updateWeightField.setValue("0");
         updateWeightField.setValueChangeMode(ValueChangeMode.EAGER);
         updateWeightField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
-        formLayout.addComponent(updateWeightField);
+        formLayout.add(updateWeightField);
         deleteWeightField = new TextField("Delete Weight");
         deleteWeightField.setValue("0");
         deleteWeightField.setValueChangeMode(ValueChangeMode.EAGER);
         deleteWeightField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
-        formLayout.addComponent(deleteWeightField);
-        continueBox = new CheckBox("Continue (ignore ANY errors and continue to modify)");
+        formLayout.add(deleteWeightField);
+        continueBox = new Checkbox("Continue (ignore ANY errors and continue to modify)");
         continueBox.setValue(true);
-        formLayout.addComponent(continueBox);
-        cascadeBox = new CheckBox("Fill dependent tables also.");
+        formLayout.add(continueBox);
+        cascadeBox = new Checkbox("Fill dependent tables also.");
         cascadeBox.setValue(false);
-        formLayout.addComponent(cascadeBox);
-        cascadeSelectBox = new CheckBox("Fill dependent tables by selecting existing data.");
+        formLayout.add(cascadeBox);
+        cascadeSelectBox = new Checkbox("Fill dependent tables by selecting existing data.");
         cascadeSelectBox.setValue(false);
-        formLayout.addComponent(cascadeSelectBox);
-        verboseBox = new CheckBox("Turn on verbose logging during fill.");
+        formLayout.add(cascadeSelectBox);
+        verboseBox = new Checkbox("Turn on verbose logging during fill.");
         verboseBox.setValue(false);
-        formLayout.addComponent(verboseBox);
-        truncateBox = new CheckBox("Truncate table(s) before filling.");
+        formLayout.add(verboseBox);
+        truncateBox = new Checkbox("Truncate table(s) before filling.");
         truncateBox.setValue(false);
-        formLayout.addComponent(truncateBox);
+        formLayout.add(truncateBox);
         oGroup = new RadioButtonGroup<String>();
         oGroup.setItems("Fill Table(s)", "Send to Sql Editor");
-        oGroup.setSelectedItem("Fill Table(s)");
-        formLayout.addComponent(oGroup);
+        oGroup.setValue("Fill Table(s)");
+        formLayout.add(oGroup);
+        optionLayout = new Scroller(optionContent);
+        optionLayout.setScrollDirection(ScrollDirection.VERTICAL);
+        optionLayout.setSizeFull();
     }
 
     protected void confirm() {
-        ConfirmDialog
-                .show("Confirm",
-                        "Are you sure?  Please note that this will effect data in the selected tables.  Make sure you have a backup of your data.",
-                        new IConfirmListener() {
-                            private static final long serialVersionUID = 1L;
+        ConfirmDialog.show("Confirm",
+                "Are you sure?  Please note that this will affect data in the selected tables.  Make sure you have a backup of your data.",
+                new IConfirmListener() {
+                    private static final long serialVersionUID = 1L;
 
-                            @Override
-                            public boolean onOk() {
-                                fill();
-                                close();
-                                return true;
-                            }
-                        });
+                    @Override
+                    public boolean onOk() {
+                        fill();
+                        close();
+                        return true;
+                    }
+                }, opened -> {
+                    if (!opened && cancelShortcutRegistration == null && fillShortcutRegistration == null) {
+                        cancelShortcutRegistration = cancelButton.addClickShortcut(Key.ESCAPE);
+                        fillShortcutRegistration = fillButton.addClickShortcut(Key.ENTER);
+                    } else if (opened && cancelShortcutRegistration != null && fillShortcutRegistration != null) {
+                        cancelShortcutRegistration.remove();
+                        cancelShortcutRegistration = null;
+                        fillShortcutRegistration.remove();
+                        fillShortcutRegistration = null;
+                    }
+                });
     }
 
     protected void fill() {
@@ -263,27 +254,35 @@ public class DbFillDialog extends ResizableWindow {
     }
 
     protected void previous() {
-        content.removeComponent(optionLayout);
-        content.addComponent(tableSelectionLayout, 0);
-        content.setExpandRatio(tableSelectionLayout, 1);
+        innerContent.remove(optionLayout);
+        innerContent.addComponentAtIndex(0, tableSelectionLayout);
+        innerContent.expand(tableSelectionLayout);
         fillButton.setVisible(false);
-        fillButton.removeClickShortcut();
+        if (fillShortcutRegistration != null) {
+            fillShortcutRegistration.remove();
+            fillShortcutRegistration = null;
+        }
         previousButton.setVisible(false);
         nextButton.setVisible(true);
-        nextButton.setClickShortcut(KeyCode.ENTER);
-        nextButton.focus();
+        if (nextShortcutRegistration == null) {
+            nextShortcutRegistration = nextButton.addClickShortcut(Key.ENTER);
+        }
     }
 
     protected void next() {
-        content.removeComponent(tableSelectionLayout);
-        content.addComponent(optionLayout, 0);
-        content.setExpandRatio(optionLayout, 1);
+        innerContent.remove(tableSelectionLayout);
+        innerContent.addComponentAtIndex(0, optionLayout);
+        innerContent.expand(optionLayout);
         nextButton.setVisible(false);
-        nextButton.removeClickShortcut();
+        if (nextShortcutRegistration != null) {
+            nextShortcutRegistration.remove();
+            nextShortcutRegistration = null;
+        }
         previousButton.setVisible(true);
         fillButton.setVisible(true);
-        fillButton.setClickShortcut(KeyCode.ENTER);
-        fillButton.focus();
+        if (fillShortcutRegistration == null) {
+            fillShortcutRegistration = fillButton.addClickShortcut(Key.ENTER);
+        }
     }
 
     protected boolean enableFillButton() {

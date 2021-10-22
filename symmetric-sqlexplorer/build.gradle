@@ -1,5 +1,3 @@
-apply from: symAssembleDir + '/common.gradle'
-
 buildscript {
     repositories { 
        jcenter()
@@ -14,22 +12,18 @@ buildscript {
     }    
 }
 
-apply plugin: 'com.devsoap.plugin.vaadin'
+plugins {
+    id 'com.vaadin' apply false
+}
+
+apply from: symAssembleDir + '/common.gradle'
+
 apply plugin: 'maven'
 apply plugin: 'propdeps'
 apply plugin: 'propdeps-maven'
 apply plugin: 'propdeps-eclipse'
 
 configurations { deployerJars }
-
-vaadin.version = vaadinVersion
-vaadin.manageDependencies = true
-vaadin.manageRepositories = false
-vaadin.logToConsole = true
-vaadinSourcesJar.enabled=false
-vaadinJavadocJar.enabled=false
-vaadin.push = true
-vaadinCompile.gwtSdkFirstInClasspath=false
     
 artifacts {
    archives file("$buildDir/libs/${jar.baseName}-${jar.version}.${jar.extension}")
@@ -53,15 +47,15 @@ dependencies {
     
     compile "org.springframework:spring-webmvc:$springVersion"
     
-    compile "com.vaadin:vaadin-push:$vaadinVersion"
-    compile "com.vaadin:vaadin-themes:$vaadinVersion"
-    compile "org.vaadin.addons:aceeditor:0.8.15"
+    compile "de.f0rce:ace:1.3.0"
     compile "com.vaadin:vaadin-context-menu:3.0.0"
     
     testCompile "com.h2database:h2:$h2Version"
     testCompile "javax.websocket:javax.websocket-api:$websocketVersion"    
     testCompile "org.eclipse.jetty:jetty-webapp:$jettyVersion"
-    testCompile "org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion"
+    testCompile "org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion"    
+	
+	implementation "com.vaadin:vaadin-core:14.+"
 }
 
 assemble.dependsOn jar
