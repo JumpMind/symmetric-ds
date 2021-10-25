@@ -34,6 +34,7 @@ import java.util.Set;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -42,6 +43,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.junit.jupiter.api.Test;
 
 public class ConfigurationChangedDataRouterTest {
@@ -234,10 +236,14 @@ public class ConfigurationChangedDataRouterTest {
     protected IDataRouter buildTestableRouter(final Node nodeThatIsRouting,
             final List<NodeGroupLink> links, final NetworkedNode root) {
         IConfigurationService configService = mock(IConfigurationService.class);
+        IParameterService paramService = mock(IParameterService.class);
         when(configService.isMasterToMaster()).thenReturn(false);
         ISymmetricEngine engine = mock(ISymmetricEngine.class);
         when(engine.getConfigurationService()).thenReturn(configService);
+        when(engine.getParameterService()).thenReturn(paramService);
         when(engine.getTablePrefix()).thenReturn("sym");
+        when(paramService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)).thenReturn(true);
+        when(paramService.is(ParameterConstants.AUTO_SYNC_TRIGGERS_AFTER_CONFIG_CHANGED)).thenReturn(true);
         ConfigurationChangedDataRouter router = new ConfigurationChangedDataRouter(engine) {
             @Override
             protected Node findIdentity() {
