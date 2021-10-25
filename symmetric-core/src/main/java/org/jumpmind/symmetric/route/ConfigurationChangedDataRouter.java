@@ -51,7 +51,6 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter, IBuiltInExtensionPoint {
     public static final String ROUTER_TYPE = "configurationChanged";
-
     protected ISymmetricEngine engine;
     private ConfigurationChangedHelper helper;
 
