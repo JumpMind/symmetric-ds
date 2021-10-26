@@ -23,82 +23,75 @@ package org.jumpmind.vaadin.ui.common;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.Serializable;
+import java.util.function.Consumer;
 
-import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.TextArea;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-public class ConfirmDialog extends Window {
+public class ConfirmDialog extends Dialog {
     private static final long serialVersionUID = 1L;
 
-    public ConfirmDialog(String caption, String text, final IConfirmListener confirmListener) {
-        setCaption(caption);
+    public ConfirmDialog(String caption, String text, final IConfirmListener confirmListener, Consumer<Boolean> shortcutToggler) {
         setModal(true);
         setResizable(true);
-        setWidth(400, Unit.PIXELS);
-        setHeight(300, Unit.PIXELS);
-        setClosable(false);
+        setWidth("400px");
+        setHeight("300px");
+        setCloseOnEsc(false);
+        setCloseOnOutsideClick(false);
+        if (shortcutToggler != null) {
+            addOpenedChangeListener(event -> shortcutToggler.accept(event.isOpened()));
+        }
+        if (caption != null) {
+            add(new Label(caption + "<hr>"));
+        }
         VerticalLayout layout = new VerticalLayout();
-        layout.setSizeFull();
+        layout.setWidthFull();
         layout.setSpacing(true);
-        layout.setMargin(true);
-        setContent(layout);
+        layout.setMargin(false);
+        add(layout);
         if (isNotBlank(text)) {
             TextArea textLabel = new TextArea();
             textLabel.setSizeFull();
-            textLabel.setStyleName(ValoTheme.TEXTAREA_BORDERLESS);
             textLabel.setValue(text);
             textLabel.setReadOnly(true);
-            layout.addComponent(textLabel);
-            layout.setExpandRatio(textLabel, 1);
+            layout.addAndExpand(textLabel);
+            layout.setHeight("86%");
+        } else {
+            setHeight("160px");
         }
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.setStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
-        buttonLayout.setWidth(100, Unit.PERCENTAGE);
-        Label spacer = new Label(" ");
-        buttonLayout.addComponent(spacer);
-        buttonLayout.setExpandRatio(spacer, 1);
+        buttonLayout.addAndExpand(new Span());
         Button cancelButton = new Button("Cancel");
-        cancelButton.setClickShortcut(KeyCode.ESCAPE);
-        cancelButton.addClickListener(new ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                UI.getCurrent().removeWindow(ConfirmDialog.this);
-            }
-        });
-        buttonLayout.addComponent(cancelButton);
+        cancelButton.addClickShortcut(Key.ESCAPE);
+        cancelButton.addClickListener(event -> close());
+        buttonLayout.add(cancelButton);
         Button okButton = new Button("Ok");
-        okButton.setStyleName(ValoTheme.BUTTON_PRIMARY);
-        okButton.setClickShortcut(KeyCode.ENTER);
-        okButton.addClickListener(new ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                if (confirmListener.onOk()) {
-                    UI.getCurrent().removeWindow(ConfirmDialog.this);
-                }
+        okButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        okButton.addClickShortcut(Key.ENTER);
+        okButton.addClickListener(event -> {
+            if (confirmListener.onOk()) {
+                close();
             }
         });
-        buttonLayout.addComponent(okButton);
-        layout.addComponent(buttonLayout);
+        buttonLayout.add(okButton);
+        layout.add(buttonLayout);
         okButton.focus();
     }
 
     public static void show(String caption, String text, IConfirmListener listener) {
-        ConfirmDialog dialog = new ConfirmDialog(caption, text, listener);
-        UI.getCurrent().addWindow(dialog);
+        show(caption, text, listener, null);
+    }
+
+    public static void show(String caption, String text, IConfirmListener listener, Consumer<Boolean> shortcutToggler) {
+        ConfirmDialog dialog = new ConfirmDialog(caption, text, listener, shortcutToggler);
+        dialog.open();
     }
 
     public static interface IConfirmListener extends Serializable {

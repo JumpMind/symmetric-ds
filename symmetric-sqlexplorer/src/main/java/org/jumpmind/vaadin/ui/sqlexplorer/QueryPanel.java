@@ -22,7 +22,6 @@ package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.jumpmind.vaadin.ui.sqlexplorer.Settings.SQL_EXPLORER_AUTO_COMMIT;
-import static org.jumpmind.vaadin.ui.sqlexplorer.Settings.SQL_EXPLORER_AUTO_COMPLETE;
 import static org.jumpmind.vaadin.ui.sqlexplorer.Settings.SQL_EXPLORER_DELIMITER;
 import static org.jumpmind.vaadin.ui.sqlexplorer.Settings.SQL_EXPLORER_SHOW_RESULTS_IN_NEW_TABS;
 
@@ -39,67 +38,59 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
+import org.jumpmind.vaadin.ui.common.CustomSplitLayout;
+import org.jumpmind.vaadin.ui.common.Label;
+import org.jumpmind.vaadin.ui.common.TabSheet;
+import org.jumpmind.vaadin.ui.common.TabSheet.EnhancedTab;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vaadin.aceeditor.AceEditor;
-import org.vaadin.aceeditor.AceEditor.SelectionChangeEvent;
-import org.vaadin.aceeditor.AceEditor.SelectionChangeListener;
-import org.vaadin.aceeditor.AceMode;
-import org.vaadin.aceeditor.Suggester;
-import org.vaadin.aceeditor.Suggestion;
-import org.vaadin.aceeditor.SuggestionExtension;
-import org.vaadin.aceeditor.TextRange;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.HasSize;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.ShortcutRegistration;
+import com.vaadin.flow.component.Shortcuts;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.shared.Registration;
 
-import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.event.ShortcutAction.ModifierKey;
-import com.vaadin.event.ShortcutListener;
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.server.Resource;
-import com.vaadin.shared.Registration;
-import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.HasComponents;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
-import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
-import com.vaadin.ui.TabSheet.Tab;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.VerticalSplitPanel;
-import com.vaadin.ui.themes.ValoTheme;
+import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceMode;
+import de.f0rce.ace.events.AceSelectionChanged;
 
-public class QueryPanel extends VerticalSplitPanel implements IContentTab {
+public class QueryPanel extends CustomSplitLayout implements IContentTab {
     private static final Logger log = LoggerFactory.getLogger(QueryPanel.class);
     private static final long serialVersionUID = 1L;
     AceEditor sqlArea;
     IDb db;
-    SelectionChangeListener selectionChangeListener;
-    Map<ShortcutListener, Registration> shortCutListeners = new HashMap<ShortcutListener, Registration>();
-    boolean executeAtCursorButtonValue = false;
-    boolean executeScriptButtonValue = false;
+    ComponentEventListener<AceSelectionChanged> selectionChangeListener;
+    Registration selectionChangeRegistration;
+    List<ShortcutRegistration> shortcutRegistrations;
+    boolean requestedExecutionAtCursor = false;
+    boolean requestedScriptExecution = false;
     boolean commitButtonValue = false;
     boolean rollbackButtonValue = false;
     IButtonBar buttonBar;
     TabSheet resultsTabs;
-    Tab errorTab;
+    EnhancedTab errorTab;
     int maxNumberOfResultTabs = 10;
     ISettingsProvider settingsProvider;
     String user;
     Connection connection;
-    Label status;
+    Span status;
     transient SqlSuggester suggester;
     boolean canceled = false;
     VerticalLayout emptyResults;
     Map<Component, String> resultStatuses;
-    Tab generalResultsTab;
-    private SuggestionExtension suggestionExtension;
+    EnhancedTab generalResultsTab;
     private AceEditor editor;
     transient Set<SqlRunner> runnersInProgress = new HashSet<SqlRunner>();
 
@@ -109,32 +100,35 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
         this.user = user;
         this.buttonBar = buttonBar;
         this.sqlArea = buildSqlEditor();
-        this.shortCutListeners.put(createExecuteSqlShortcutListener(), null);
-        this.shortCutListeners.put(createExecuteSqlScriptShortcutListener(), null);
+        this.shortcutRegistrations = new ArrayList<ShortcutRegistration>();
+        this.setOrientation(Orientation.VERTICAL);
+        setHeightFull();
         VerticalLayout resultsLayout = new VerticalLayout();
         resultsLayout.setMargin(false);
         resultsLayout.setSpacing(false);
         resultsLayout.setSizeFull();
         resultsTabs = CommonUiUtils.createTabSheet();
+        resultsTabs.setHeight("90px");
+        resultsTabs.getStyle().set("margin-bottom", "20px");
         resultStatuses = new HashMap<Component, String>();
         HorizontalLayout statusBar = new HorizontalLayout();
         statusBar.setMargin(false);
-        statusBar.addStyleName(ValoTheme.PANEL_WELL);
-        statusBar.setWidth(100, Unit.PERCENTAGE);
-        status = new Label("No Results");
-        status.setStyleName(ValoTheme.LABEL_SMALL);
-        statusBar.addComponent(status);
+        statusBar.setWidthFull();
+        status = new Span("No Results");
+        status.getElement().setAttribute("theme", "font-size-s");
+        statusBar.add(status);
         setSelectedTabChangeListener();
-        resultsLayout.addComponents(resultsTabs, statusBar);
-        resultsLayout.setExpandRatio(resultsTabs, 1);
-        addComponents(sqlArea, resultsLayout);
-        setSplitPosition(400, Unit.PIXELS);
+        resultsLayout.add(resultsTabs, statusBar);
+        resultsLayout.expand(resultsTabs);
+        addToPrimary(sqlArea);
+        addToSecondary(resultsLayout);
+        setSplitterPosition(50);
         emptyResults = new VerticalLayout();
         emptyResults.setSizeFull();
-        Label label = new Label("New results will appear here");
-        label.setWidthUndefined();
-        emptyResults.addComponent(label);
-        emptyResults.setComponentAlignment(label, Alignment.MIDDLE_CENTER);
+        Span span = new Span("New results will appear here");
+        span.setWidth(null);
+        emptyResults.add(span);
+        emptyResults.setHorizontalComponentAlignment(Alignment.CENTER, span);
         resultStatuses.put(emptyResults, "No Results");
         if (!settingsProvider.get().getProperties().is(SQL_EXPLORER_SHOW_RESULTS_IN_NEW_TABS)) {
             createGeneralResultsTab();
@@ -148,25 +142,39 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
     protected AceEditor buildSqlEditor() {
         editor = CommonUiUtils.createAceEditor();
         editor.setMode(AceMode.sql);
-        editor.addValueChangeListener(new com.vaadin.data.HasValue.ValueChangeListener<String>() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void valueChange(com.vaadin.data.HasValue.ValueChangeEvent<String> event) {
-                if (!editor.getValue().equals("")) {
-                    executeAtCursorButtonValue = true;
-                    executeScriptButtonValue = true;
-                } else {
-                    executeAtCursorButtonValue = false;
-                    executeScriptButtonValue = false;
+        editor.addValueChangeListener(event -> {
+            setButtonsEnabled();
+        });
+        editor.addSyncCompletedListener(event -> {
+            if (!editor.getValue().equals("")) {
+                if (requestedExecutionAtCursor) {
+                    if (execute(false) && !settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMMIT)) {
+                        setButtonsEnabled();
+                    }
+                    requestedExecutionAtCursor = false;
+                } else if (requestedScriptExecution) {
+                    if (execute(true) && !settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMMIT)) {
+                        setButtonsEnabled();
+                    }
+                    requestedScriptExecution = false;
                 }
-                setButtonsEnabled();
+            } else {
+                requestedExecutionAtCursor = false;
+                requestedScriptExecution = false;
             }
         });
-        boolean autoSuggestEnabled = settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMPLETE);
+        boolean autoSuggestEnabled = settingsProvider.get().getProperties().is(Settings.SQL_EXPLORER_AUTO_COMPLETE);
         setAutoCompleteEnabled(autoSuggestEnabled);
         selectionChangeListener = new DummyChangeListener();
         return editor;
+    }
+
+    public AceEditor getSqlEditor() {
+        return editor;
+    }
+
+    public void syncSqlEditor() {
+        editor.sync();
     }
 
     public IButtonBar getButtonBar() {
@@ -174,27 +182,24 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
     }
 
     protected void setSelectedTabChangeListener() {
-        resultsTabs.addSelectedTabChangeListener(new SelectedTabChangeListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void selectedTabChange(SelectedTabChangeEvent event) {
-                Component tab = resultsTabs.getSelectedTab();
+        resultsTabs.addSelectedTabChangeListener(event -> {
+            if (resultsTabs.getSelectedTab() != null) {
+                Component tab = resultsTabs.getSelectedTab().getComponent();
                 String st = resultStatuses.get(tab);
                 if (st == null && tab instanceof VerticalLayout) {
                     if (((VerticalLayout) tab).getComponentCount() > 0) {
-                        st = resultStatuses.get(((VerticalLayout) tab).getComponent(0));
+                        st = resultStatuses.get(((VerticalLayout) tab).getComponentAt(0));
                     }
                 }
                 if (st == null) {
                     st = "No Results";
                 }
-                status.setValue(st);
+                status.setText(st);
             }
         });
     }
 
-    public Tab getGeneralResultsTab() {
+    public EnhancedTab getGeneralResultsTab() {
         return generalResultsTab;
     }
 
@@ -202,19 +207,19 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
         if (generalResultsTab == null) {
             VerticalLayout generalResultsPanel = new VerticalLayout();
             generalResultsPanel.setSizeFull();
-            generalResultsTab = resultsTabs.addTab(generalResultsPanel, "Results", null, 0);
+            generalResultsTab = resultsTabs.add(generalResultsPanel, "Results", 0);
             resetGeneralResultsTab();
         }
     }
 
     public void removeGeneralResultsTab() {
         if (generalResultsTab != null) {
-            Component content = ((VerticalLayout) generalResultsTab.getComponent()).getComponent(0);
+            Component content = ((VerticalLayout) generalResultsTab.getComponent()).getComponentAt(0);
             if (content instanceof TabularResultLayout) {
                 addResultsTab(((TabularResultLayout) content).refreshWithoutSaveButton(),
                         StringUtils.abbreviate(((TabularResultLayout) content).getSql(), 20), generalResultsTab.getIcon(), 0);
             }
-            resultsTabs.removeComponent(generalResultsTab.getComponent());
+            resultsTabs.remove(generalResultsTab);
             generalResultsTab = null;
         }
     }
@@ -222,87 +227,62 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
     public void resetGeneralResultsTab() {
         if (generalResultsTab != null) {
             replaceGeneralResultsWith(emptyResults, null);
+            generalResultsTab.setCloseable(false);
         }
     }
 
-    public void replaceGeneralResultsWith(Component newComponent, VaadinIcons icon) {
-        ((VerticalLayout) generalResultsTab.getComponent()).removeAllComponents();
-        ((VerticalLayout) generalResultsTab.getComponent()).addComponent(newComponent);
-        generalResultsTab.setIcon(icon);
+    public void replaceGeneralResultsWith(Component newComponent, VaadinIcon icon) {
+        ((VerticalLayout) generalResultsTab.getComponent()).removeAll();
+        ((VerticalLayout) generalResultsTab.getComponent()).add(newComponent);
+        if (icon != null) {
+            generalResultsTab.setIcon(new Icon(icon));
+        }
     }
 
     @Override
     public void selected() {
         unselected();
-        sqlArea.addSelectionChangeListener(selectionChangeListener);
-        for (ShortcutListener l : shortCutListeners.keySet()) {
-            shortCutListeners.put(l, sqlArea.addShortcutListener(l));
-        }
+        selectionChangeRegistration = sqlArea.addSelectionChangeListener(selectionChangeListener);
+        shortcutRegistrations.add(createExecuteSqlShortcutListener());
+        shortcutRegistrations.add(createExecuteSqlScriptShortcutListener());
         setButtonsEnabled();
-        sqlArea.focus();
+        editor.focus();
     }
 
     @Override
     public void unselected() {
-        sqlArea.removeSelectionChangeListener(selectionChangeListener);
-        for (ShortcutListener l : shortCutListeners.keySet()) {
-            Registration r = shortCutListeners.get(l);
-            if (r != null) {
-                r.remove();
-            }
+        if (selectionChangeRegistration != null) {
+            selectionChangeRegistration.remove();
         }
+        for (ShortcutRegistration registration : shortcutRegistrations) {
+            registration.remove();
+        }
+        shortcutRegistrations.clear();
     }
 
     protected void setButtonsEnabled() {
-        buttonBar.setExecuteScriptButtonEnabled(executeScriptButtonValue);
-        buttonBar.setExecuteAtCursorButtonEnabled(executeAtCursorButtonValue);
         buttonBar.setCommitButtonEnabled(commitButtonValue);
         buttonBar.setRollbackButtonEnabled(rollbackButtonValue);
     }
 
-    protected ShortcutListener createExecuteSqlShortcutListener() {
-        return new ShortcutListener("", KeyCode.ENTER, new int[] { ModifierKey.CTRL }) {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void handleAction(Object sender, Object target) {
-                if (target instanceof Grid<?>) {
-                    Grid<?> table = (Grid<?>) target;
-                    HasComponents parent = table.getParent();
-                    if (parent instanceof TabularResultLayout) {
-                        TabularResultLayout layout = (TabularResultLayout) parent;
-                        reExecute(layout.getSql());
-                    }
-                } else if (target instanceof AceEditor) {
-                    if (executeAtCursorButtonValue) {
-                        if (execute(false) && !settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMMIT)) {
-                            setButtonsEnabled();
-                        }
-                    }
-                }
-            }
-        };
+    protected ShortcutRegistration createExecuteSqlShortcutListener() {
+        return Shortcuts.addShortcutListener(editor, () -> requestExecutionAtCursor(), Key.ENTER, KeyModifier.CONTROL)
+                .listenOn(editor);
     }
 
-    protected ShortcutListener createExecuteSqlScriptShortcutListener() {
-        return new ShortcutListener("", KeyCode.ENTER, new int[] { ModifierKey.CTRL, ModifierKey.SHIFT }) {
-            private static final long serialVersionUID = 1L;
+    protected ShortcutRegistration createExecuteSqlScriptShortcutListener() {
+        return Shortcuts.addShortcutListener(editor, () -> requestScriptExecution(), Key.ENTER, KeyModifier.CONTROL,
+                KeyModifier.SHIFT).listenOn(editor);
+    }
 
-            @Override
-            public void handleAction(Object sender, Object target) {
-                if (target instanceof Grid<?>) {
-                    Grid<?> table = (Grid<?>) target;
-                    TabularResultLayout layout = (TabularResultLayout) table.getParent();
-                    reExecute(layout.getSql());
-                } else if (target instanceof AceEditor) {
-                    if (executeScriptButtonValue) {
-                        if (execute(true) && !settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMMIT)) {
-                            setButtonsEnabled();
-                        }
-                    }
-                }
-            }
-        };
+    public void requestExecutionAtCursor() {
+        requestedExecutionAtCursor = true;
+        editor.sync();
+    }
+
+    public void requestScriptExecution() {
+        requestedScriptExecution = true;
+        editor.sync();
     }
 
     protected void addToSqlHistory(String sqlStatement, Date executeTime, long executeDuration, String userId) {
@@ -321,14 +301,13 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
         settingsProvider.save(settings);
     }
 
-    protected boolean reExecute(String sql) {
-        Component comp = resultsTabs.getSelectedTab();
-        Tab tab = resultsTabs.getTab(comp);
-        int tabPosition = resultsTabs.getTabPosition(tab);
+    public boolean reExecute(String sql) {
+        EnhancedTab tab = resultsTabs.getSelectedTab();
+        int tabPosition = resultsTabs.getTabIndex(tab.getComponent());
         if (generalResultsTab != null && generalResultsTab == tab) {
             return execute(false, sql, tabPosition);
         } else {
-            resultsTabs.removeTab(tab);
+            resultsTabs.remove(tab.getName());
             return execute(false, sql, tabPosition, true);
         }
     }
@@ -375,20 +354,21 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
             final HorizontalLayout executingLayout = new HorizontalLayout();
             executingLayout.setMargin(true);
             executingLayout.setSizeFull();
-            final Label label = new Label("Executing:\n\n" + StringUtils.abbreviate(sqlText, 250), ContentMode.PREFORMATTED);
+            final Label label = new Label("Executing:\n\n" + StringUtils.abbreviate(sqlText, 250));
             label.setEnabled(false);
-            executingLayout.addComponent(label);
-            executingLayout.setComponentAlignment(label, Alignment.TOP_LEFT);
+            executingLayout.add(label);
+            executingLayout.setVerticalComponentAlignment(Alignment.START, label);
             final String sql = sqlText;
-            final Tab executingTab;
+            final EnhancedTab executingTab;
             if (!forceNewTab && generalResultsTab != null) {
-                replaceGeneralResultsWith(executingLayout, VaadinIcons.SPINNER);
+                replaceGeneralResultsWith(executingLayout, VaadinIcon.SPINNER);
                 executingTab = null;
             } else {
-                executingTab = resultsTabs.addTab(executingLayout, StringUtils.abbreviate(sql, 20), VaadinIcons.SPINNER, tabPosition);
+                executingTab = resultsTabs.add(executingLayout, StringUtils.abbreviate(sql, 20),
+                        new Icon(VaadinIcon.SPINNER), tabPosition);
             }
             if (executingTab != null) {
-                executingTab.setClosable(true);
+                executingTab.setCloseable(true);
                 resultsTabs.setSelectedTab(executingTab);
             }
             final SqlRunner runner = new SqlRunner(sql, runAsScript, user, db, settingsProvider.get(), this, generalResultsTab != null);
@@ -407,11 +387,11 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
                     QueryPanel.this.reExecute(sql);
                 }
 
-                public void finished(final VaadinIcons icon, final List<Component> results, final long executionTimeInMs,
+                public void finished(final VaadinIcon icon, final List<Component> results, final long executionTimeInMs,
                         final boolean transactionStarted, final boolean transactionEnded) {
-                    getUI().access(new Runnable() {
-                        @Override
-                        public void run() {
+                    UI ui = getUI().orElse(null);
+                    if (ui != null) {
+                        ui.access(() -> {
                             try {
                                 if (transactionEnded) {
                                     transactionEnded();
@@ -419,66 +399,67 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
                                     rollbackButtonValue = true;
                                     commitButtonValue = true;
                                     setButtonsEnabled();
-                                    sqlArea.setStyleName("transaction-in-progress");
+                                    sqlArea.setClassName("transaction-in-progress");
                                     connection = runner.getConnection();
                                 }
                                 addToSqlHistory(StringUtils.abbreviate(sql, 1024 * 8), runner.getStartTime(), executionTimeInMs, user);
                                 for (Component resultComponent : results) {
-                                    resultComponent.setSizeFull();
+                                    ((HasSize) resultComponent).setSizeFull();
                                     if (forceNewTab || generalResultsTab == null || results.size() > 1) {
                                         if (resultComponent instanceof TabularResultLayout) {
                                             resultComponent = ((TabularResultLayout) resultComponent).refreshWithoutSaveButton();
                                         }
-                                        addResultsTab(resultComponent, StringUtils.abbreviate(sql, 20), icon, tabPosition);
+                                        addResultsTab(resultComponent, StringUtils.abbreviate(sql, 20), new Icon(icon), tabPosition);
                                     } else {
                                         replaceGeneralResultsWith(resultComponent, icon);
                                         resultsTabs.setSelectedTab(generalResultsTab.getComponent());
                                     }
                                     String statusVal;
                                     if (canceled) {
-                                        statusVal = "Sql canceled after " + executionTimeInMs + " ms for " + db.getName() + ".  Finished at "
+                                        statusVal = "Sql canceled after " + executionTimeInMs + " ms for "
+                                                + db.getName() + ".  Finished at "
                                                 + SimpleDateFormat.getTimeInstance().format(new Date());
                                     } else {
-                                        statusVal = "Sql executed in " + executionTimeInMs + " ms for " + db.getName() + ".  Finished at "
-                                                + SimpleDateFormat.getTimeInstance().format(new Date());
+                                        statusVal = "Sql executed in " + executionTimeInMs + " ms for " + db.getName()
+                                                + ".  Finished at " + SimpleDateFormat.getTimeInstance().format(new Date());
                                     }
-                                    status.setValue(statusVal);
+                                    status.setText(statusVal);
                                     resultStatuses.put(resultComponent, statusVal);
                                     canceled = false;
                                 }
                             } finally {
                                 setButtonsEnabled();
                                 if (executingTab != null) {
-                                    resultsTabs.removeTab(executingTab);
+                                    resultsTabs.remove(executingTab);
                                 } else if (results.size() > 1) {
                                     resetGeneralResultsTab();
                                 }
                                 runnersInProgress.remove(runner);
                                 runner.setListener(null);
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             });
             final Button cancel = new Button("Cancel");
-            cancel.addClickListener(new ClickListener() {
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void buttonClick(ClickEvent event) {
-                    log.info("Canceling sql: " + sql);
-                    label.setValue("Canceling" + label.getValue().substring(9));
-                    executingLayout.removeComponent(cancel);
-                    canceled = true;
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            runner.cancel();
-                        }
-                    }).start();
+            cancel.addClickListener(event -> {
+                log.info("Canceling sql: " + sql);
+                String labelText = label.getText();
+                if (labelText != null) {
+                    label.setText("Canceling" + labelText.substring(9));
+                } else {
+                    label.setText("Canceling:\n\n" + StringUtils.abbreviate(sql, 250));
                 }
+                executingLayout.remove(cancel);
+                canceled = true;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        runner.cancel();
+                    }
+                }).start();
             });
-            executingLayout.addComponent(cancel);
+            executingLayout.add(cancel);
             scheduled = true;
             runner.start();
         }
@@ -486,22 +467,22 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
         return scheduled;
     }
 
-    public void addResultsTab(Component resultComponent, String title, Resource icon) {
+    public void addResultsTab(Component resultComponent, String title, Icon icon) {
         addResultsTab(resultComponent, title, icon, resultsTabs.getComponentCount());
     }
 
-    public void addResultsTab(Component resultComponent, String title, Resource icon, int position) {
-        Tab tab = resultsTabs.addTab(resultComponent, title, icon, position);
-        tab.setClosable(true);
-        resultsTabs.setSelectedTab(tab.getComponent());
+    public void addResultsTab(Component resultComponent, String title, Icon icon, int position) {
+        EnhancedTab tab = resultsTabs.add(resultComponent, title, icon, position);
+        resultsTabs.setCloseable(true);
+        resultsTabs.setSelectedTab(title);
         if (errorTab != null) {
-            resultsTabs.removeTab(errorTab);
+            resultsTabs.remove(errorTab);
             errorTab = null;
         }
-        if (maxNumberOfResultTabs > 0 && resultsTabs.getComponentCount() > maxNumberOfResultTabs) {
-            resultsTabs.removeTab(resultsTabs.getTab(resultsTabs.getComponentCount() - 1));
+        if (maxNumberOfResultTabs > 0 && resultsTabs.getTabCount() > maxNumberOfResultTabs) {
+            resultsTabs.remove(resultsTabs.getTab(resultsTabs.getTabCount() - 1));
         }
-        if (icon == VaadinIcons.STOP) {
+        if (icon.equals(new Icon(VaadinIcon.STOP))) {
             errorTab = tab;
         }
     }
@@ -514,8 +495,6 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
         } finally {
             commitButtonValue = false;
             rollbackButtonValue = false;
-            executeAtCursorButtonValue = true;
-            executeScriptButtonValue = true;
             setButtonsEnabled();
             connection = null;
         }
@@ -524,8 +503,6 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
     public void transactionEnded() {
         commitButtonValue = false;
         rollbackButtonValue = false;
-        executeAtCursorButtonValue = true;
-        executeScriptButtonValue = true;
         setButtonsEnabled();
         connection = null;
     }
@@ -538,8 +515,6 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
         } finally {
             commitButtonValue = false;
             rollbackButtonValue = false;
-            executeAtCursorButtonValue = true;
-            executeScriptButtonValue = true;
             setButtonsEnabled();
             connection = null;
         }
@@ -548,32 +523,20 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
     protected String selectSqlToRun() {
         String delimiter = settingsProvider.get().getProperties().get(SQL_EXPLORER_DELIMITER);
         String sql = sqlArea.getValue();
-        TextRange range = sqlArea.getSelection();
-        boolean selected = !range.isZeroLength();
+        String selectedText = sqlArea.getSelectedText();
+        boolean selected = selectedText != null && !selectedText.trim().isEmpty();
         if (selected) {
-            if (range.isBackwards()) {
-                if (sql.length() > range.getStart()) {
-                    sql = sql.substring(range.getEnd(), range.getStart());
-                } else {
-                    selected = false;
-                }
-            } else {
-                if (sql.length() > range.getEnd()) {
-                    sql = sql.substring(range.getStart(), range.getEnd());
-                } else {
-                    selected = false;
-                }
-            }
-        }
-        if (!selected) {
+            sql = sqlArea.getSelectedText();
+        } else {
             StringBuilder sqlBuffer = new StringBuilder();
             String[] lines = sql.split("\n");
+            int[] cursorPosition = sqlArea.getCursorPosition();
             int charCount = 0;
             boolean pastCursor = false;
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
                 charCount += line.length() + (i > 0 ? 1 : 0);
-                if (charCount >= sqlArea.getCursorPosition()) {
+                if (i == cursorPosition[0]) {
                     pastCursor = true;
                 }
                 if (!pastCursor) {
@@ -601,35 +564,17 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
     }
 
     public void setAutoCompleteEnabled(boolean enabled) {
-        if (enabled) {
-            suggester = new SqlSuggester(db);
-            suggestionExtension = new SuggestionExtension(suggester);
-            suggestionExtension.extend(editor);
-        } else if (suggestionExtension != null) {
-            suggestionExtension.remove();
-            BlankSuggester blank = new BlankSuggester();
-            suggestionExtension = new SuggestionExtension(blank);
-            suggestionExtension.extend(editor);
+        if (suggester == null) {
+            suggester = new SqlSuggester(db, editor);
         }
+        suggester.setEnabled(enabled);
     }
 
-    static class DummyChangeListener implements SelectionChangeListener, Serializable {
+    static class DummyChangeListener implements ComponentEventListener<AceSelectionChanged>, Serializable {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public void selectionChanged(SelectionChangeEvent e) {
-        }
-    }
-
-    static class BlankSuggester implements Suggester {
-        @Override
-        public List<Suggestion> getSuggestions(String text, int cursor) {
-            return new ArrayList<Suggestion>();
-        }
-
-        @Override
-        public String applySuggestion(Suggestion sugg, String text, int cursor) {
-            return null;
+        public void onComponentEvent(AceSelectionChanged event) {
         }
     }
 }

@@ -31,38 +31,31 @@ import java.text.DecimalFormat;
 
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
-import org.jumpmind.vaadin.ui.common.ResizableWindow;
+import org.jumpmind.vaadin.ui.common.ResizableDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.data.Binder;
-import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.ui.AbstractLayout;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.CheckBox;
-import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.GridLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 
-public class SettingsDialog extends ResizableWindow {
+public class SettingsDialog extends ResizableDialog {
     private static final long serialVersionUID = 1L;
     protected final Logger log = LoggerFactory.getLogger(getClass());
     private TextField rowsToFetchField;
     private Binder<Integer> binder;
-    private CheckBox autoCommitBox;
-    private CheckBox autoCompleteBox;
+    private Checkbox autoCommitBox;
+    private Checkbox autoCompleteBox;
     private TextField delimiterField;
     private TextField excludeTablesWithPrefixField;
-    private CheckBox resultAsTextBox;
-    private CheckBox ignoreErrorsWhenRunningScript;
-    private CheckBox showRowNumbersBox;
-    private CheckBox showResultsInNewTabsBox;
+    private Checkbox resultAsTextBox;
+    private Checkbox ignoreErrorsWhenRunningScript;
+    private Checkbox showRowNumbersBox;
+    private Checkbox showResultsInNewTabsBox;
     ISettingsProvider settingsProvider;
     SqlExplorer explorer;
 
@@ -70,102 +63,89 @@ public class SettingsDialog extends ResizableWindow {
         super("Settings");
         this.explorer = explorer;
         this.settingsProvider = explorer.getSettingsProvider();
-        setWidth(600, Unit.PIXELS);
-        addComponent(createSettingsLayout(), 1);
-        addComponent(createButtonLayout());
+        setCloseOnOutsideClick(false);
+        setWidth("800px");
+        add(createSettingsLayout(), 1);
+        add(createButtonLayout());
     }
 
-    protected AbstractLayout createSettingsLayout() {
-        GridLayout layout = new GridLayout(2, 9);
-        layout.setWidth(700, Unit.PIXELS);
-        layout.setMargin(new MarginInfo(false, true, false, true));
+    protected HorizontalLayout createSettingsLayout() {
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.setWidth("700px");
+        layout.getStyle().set("margin", "0 16px");
         FormLayout settingsLayout = new FormLayout();
         Settings settings = settingsProvider.get();
         TypedProperties properties = settings.getProperties();
         rowsToFetchField = new TextField("Max Results");
-        rowsToFetchField.setWidth(6, Unit.EM);
-        Label rowsToFetchLabel = new Label();
-        rowsToFetchLabel.addStyleName("v-label-marked");
+        rowsToFetchField.setWidth("6em");
         binder = new Binder<Integer>();
         binder.forField(rowsToFetchField).withConverter(new StringToIntegerConverter("Could not convert value to Integer"))
-                .withValidator(value -> value != null, "Invalid value").withValidationStatusHandler(event -> {
-                    rowsToFetchLabel.setValue(event.getMessage().orElse(""));
-                    if (event.isError()) {
-                        rowsToFetchField.addStyleName("v-textfield-error");
-                    } else {
-                        rowsToFetchField.removeStyleName("v-textfield-error");
-                    }
-                }).bind(integer -> integer, (integer, value) -> integer = value);
+                .withValidator(value -> value != null, "Invalid value")
+                .bind(integer -> integer, (integer, value) -> integer = value);
         rowsToFetchField.setValue(properties.getProperty(SQL_EXPLORER_MAX_RESULTS, "100"));
-        settingsLayout.addComponent(rowsToFetchField);
+        settingsLayout.add(rowsToFetchField);
         delimiterField = new TextField("Delimiter");
         delimiterField.setValue(properties.getProperty(SQL_EXPLORER_DELIMITER, ";"));
-        settingsLayout.addComponent(delimiterField);
+        settingsLayout.add(delimiterField);
         excludeTablesWithPrefixField = new TextField("Hide Tables (regex)");
         excludeTablesWithPrefixField.setValue(properties.getProperty(SQL_EXPLORER_EXCLUDE_TABLES_REGEX));
-        settingsLayout.addComponent(excludeTablesWithPrefixField);
-        resultAsTextBox = new CheckBox("Result As Text");
+        settingsLayout.add(excludeTablesWithPrefixField);
+        resultAsTextBox = new Checkbox("Result As Text");
         String resultAsTextValue = (properties.getProperty(SQL_EXPLORER_RESULT_AS_TEXT, "false"));
         if (resultAsTextValue.equals("true")) {
             resultAsTextBox.setValue(true);
         } else {
             resultAsTextBox.setValue(false);
         }
-        settingsLayout.addComponent(resultAsTextBox);
-        ignoreErrorsWhenRunningScript = new CheckBox("Ignore Errors When Running Scripts");
+        settingsLayout.add(resultAsTextBox);
+        ignoreErrorsWhenRunningScript = new Checkbox("Ignore Errors When Running Scripts");
         String ignoreErrorsWhenRunningScriptTextValue = (properties.getProperty(SQL_EXPLORER_IGNORE_ERRORS_WHEN_RUNNING_SCRIPTS, "false"));
         if (ignoreErrorsWhenRunningScriptTextValue.equals("true")) {
             ignoreErrorsWhenRunningScript.setValue(true);
         } else {
             ignoreErrorsWhenRunningScript.setValue(false);
         }
-        settingsLayout.addComponent(ignoreErrorsWhenRunningScript);
-        autoCommitBox = new CheckBox("Auto Commit");
+        settingsLayout.add(ignoreErrorsWhenRunningScript);
+        autoCommitBox = new Checkbox("Auto Commit");
         String autoCommitValue = (properties.getProperty(SQL_EXPLORER_AUTO_COMMIT, "true"));
         if (autoCommitValue.equals("true")) {
             autoCommitBox.setValue(true);
         } else {
             autoCommitBox.setValue(false);
         }
-        settingsLayout.addComponent(autoCommitBox);
-        autoCompleteBox = new CheckBox("Auto Complete");
+        settingsLayout.add(autoCommitBox);
+        autoCompleteBox = new Checkbox("Auto Complete");
         String autoCompleteValue = (properties.getProperty(SQL_EXPLORER_AUTO_COMPLETE, "true"));
         if (autoCompleteValue.equals("true")) {
             autoCompleteBox.setValue(true);
         } else {
             autoCompleteBox.setValue(false);
         }
-        settingsLayout.addComponent(autoCompleteBox);
-        showRowNumbersBox = new CheckBox("Show Row Numbers");
+        settingsLayout.add(autoCompleteBox);
+        showRowNumbersBox = new Checkbox("Show Row Numbers");
         String showRowNumbersValue = (properties.getProperty(SQL_EXPLORER_SHOW_ROW_NUMBERS, "true"));
         if (showRowNumbersValue.equals("true")) {
             showRowNumbersBox.setValue(true);
         } else {
             showRowNumbersBox.setValue(false);
         }
-        settingsLayout.addComponent(showRowNumbersBox);
-        showResultsInNewTabsBox = new CheckBox("Always Put Results In New Tabs");
+        settingsLayout.add(showRowNumbersBox);
+        showResultsInNewTabsBox = new Checkbox("Always Put Results In New Tabs");
         String showResultsInNewTabsValue = (properties.getProperty(SQL_EXPLORER_SHOW_RESULTS_IN_NEW_TABS, "false"));
         if (showResultsInNewTabsValue.equals("true")) {
             showResultsInNewTabsBox.setValue(true);
         } else {
             showResultsInNewTabsBox.setValue(false);
         }
-        settingsLayout.addComponent(showResultsInNewTabsBox);
-        layout.addComponent(settingsLayout, 0, 0, 0, 8);
-        layout.addComponent(rowsToFetchLabel, 1, 0);
-        layout.setComponentAlignment(rowsToFetchLabel, Alignment.MIDDLE_LEFT);
+        settingsLayout.add(showResultsInNewTabsBox);
+        layout.add(settingsLayout);
         return layout;
     }
 
-    protected AbstractLayout createButtonLayout() {
-        Button saveButton = CommonUiUtils.createPrimaryButton("Save", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                if (save()) {
-                    UI.getCurrent().removeWindow(SettingsDialog.this);
-                }
+    protected HorizontalLayout createButtonLayout() {
+        Button saveButton = CommonUiUtils.createPrimaryButton("Save", event -> {
+            if (save()) {
+                close();
             }
         });
         return buildButtonFooter(new Button("Cancel", new CloseButtonListener()), saveButton);
@@ -190,11 +170,11 @@ public class SettingsDialog extends ResizableWindow {
                 return true;
             } catch (Exception ex) {
                 log.error(ex.getMessage(), ex);
-                CommonUiUtils.notify(ex);
+                CommonUiUtils.notifyError(opened -> enableEscapeShortcut(!opened));
                 return false;
             }
         }
-        CommonUiUtils.notify("Save Failed", "Ensure that all fields are valid", Type.WARNING_MESSAGE);
+        CommonUiUtils.notify("Save Failed", "Ensure that all fields are valid", opened -> enableEscapeShortcut(!opened));
         return false;
     }
 }

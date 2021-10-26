@@ -345,6 +345,11 @@ public class AndroidJobManager implements IJobManager {
     }
 
     @Override
+    public void restartJob(String name) {
+        restartJobs();
+    }
+
+    @Override
     public void init() {
         // No action on Android
     }

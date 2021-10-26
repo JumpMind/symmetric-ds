@@ -46,15 +46,15 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlScriptReader;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
+import org.jumpmind.vaadin.ui.common.Label;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Panel;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.html.Pre;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class SqlRunner extends Thread {
     private static final Logger log = LoggerFactory.getLogger(SqlRunner.class);
@@ -180,7 +180,7 @@ public class SqlRunner extends Thread {
         String delimiter = properties.get(SQL_EXPLORER_DELIMITER);
         boolean ignoreWhenRunAsScript = properties.is(SQL_EXPLORER_IGNORE_ERRORS_WHEN_RUNNING_SCRIPTS);
         List<Component> resultComponents = new ArrayList<Component>();
-        VaadinIcons icon = VaadinIcons.CHECK_CIRCLE;
+        VaadinIcon icon = VaadinIcon.CHECK_CIRCLE;
         rowsUpdated = false;
         boolean committed = false;
         boolean autoCommitBefore = true;
@@ -310,7 +310,7 @@ public class SqlRunner extends Thread {
                     String canceledMessage = "Canceled successfully.\n\n" + sqlText;
                     resultComponents.add(wrapTextInComponent(canceledMessage));
                 } else {
-                    icon = VaadinIcons.BAN;
+                    icon = VaadinIcon.BAN;
                     resultComponents.add(wrapTextInComponent(buildErrorMessage(ex), "marked"));
                 }
             } finally {
@@ -328,7 +328,7 @@ public class SqlRunner extends Thread {
                 }
             }
             if (resultComponents.size() == 0 && StringUtils.isNotBlank(results.toString())) {
-                resultComponents.add(wrapTextInComponent(results.toString(), icon == VaadinIcons.BAN ? "marked" : null));
+                resultComponents.add(wrapTextInComponent(results.toString(), icon == VaadinIcon.BAN ? "marked" : null));
             }
         } finally {
             endTime = new Date();
@@ -365,25 +365,32 @@ public class SqlRunner extends Thread {
         }
     }
 
-    protected Component wrapTextInComponent(String text) {
+    protected Scroller wrapTextInComponent(String text) {
         return wrapTextInComponent(text, null);
     }
 
-    protected Component wrapTextInComponent(String text, String style) {
-        Panel panel = new Panel();
+    protected Scroller wrapTextInComponent(String text, String style) {
+        Scroller panel = new Scroller();
         VerticalLayout content = new VerticalLayout();
-        content.setMargin(true);
+        content.setMargin(false);
         panel.setContent(content);
-        Label label = new Label("<pre>" + text + "</pre>", ContentMode.HTML);
+        Label label = new Label("<pre>" + text + "</pre>");
+        label.getStyle().set("margin", null);
         if (StringUtils.isNotBlank(style)) {
-            label.setStyleName(style);
+            label.setClassName(style);
         }
-        content.addComponent(label);
+        content.add(label);
         return panel;
     }
 
-    protected Component putResultsInArea(ResultSet rs, int maxResultSize) throws SQLException {
-        return wrapTextInComponent(resultsAsText(rs, maxResultSize));
+    protected Scroller putResultsInArea(ResultSet rs, int maxResultSize) throws SQLException {
+        Scroller panel = new Scroller();
+        Pre pre = new Pre(resultsAsText(rs, maxResultSize));
+        panel.setContent(pre);
+        pre.getStyle().set("margin", "0");
+        pre.getStyle().set("white-space", "pre");
+        pre.setWidth("max-content");
+        return panel;
     }
 
     protected String resultsAsText(ResultSet rs, int maxResultSize) throws SQLException {
@@ -482,7 +489,7 @@ public class SqlRunner extends Thread {
 
         public void reExecute(String sql);
 
-        public void finished(VaadinIcons icon, List<Component> results, long executionTimeInMs, boolean transactionStarted,
+        public void finished(VaadinIcon icon, List<Component> results, long executionTimeInMs, boolean transactionStarted,
                 boolean transactionEnded);
     }
 }

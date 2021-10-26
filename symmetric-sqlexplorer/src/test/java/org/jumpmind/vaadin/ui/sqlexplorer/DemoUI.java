@@ -41,18 +41,18 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.annotations.PreserveOnRefresh;
-import com.vaadin.annotations.Push;
-import com.vaadin.annotations.Theme;
-import com.vaadin.annotations.Title;
-import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.shared.communication.PushMode;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PreserveOnRefresh;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletConfiguration;
+import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.theme.Theme;
 
-@Title("SQL Explorer Demo")
-@Theme("sqlexplorer")
+@PageTitle("SQL Explorer Demo")
+// @Theme("sqlexplorer")
 @PreserveOnRefresh
 @Push(value = PushMode.AUTOMATIC)
 public class DemoUI extends UI implements IDbProvider {
@@ -66,7 +66,7 @@ public class DemoUI extends UI implements IDbProvider {
         dbList.add(new DB("DATABASE1"));
         dbList.add(new DB("DATABASE2"));
         SqlExplorer explorer = new SqlExplorer("build", this, "admin", 300);
-        setContent(explorer);
+        add(explorer);
         explorer.refresh();
     }
 
@@ -76,7 +76,7 @@ public class DemoUI extends UI implements IDbProvider {
     }
 
     @WebServlet(urlPatterns = "/*")
-    @VaadinServletConfiguration(ui = DemoUI.class, productionMode = false, widgetset = "AppWidgetset")
+    @VaadinServletConfiguration(ui = DemoUI.class, productionMode = false/* , widgetset = "AppWidgetset" */)
     public static class DemoUIServlet extends VaadinServlet {
         private static final long serialVersionUID = 1L;
     }

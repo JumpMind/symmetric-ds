@@ -753,6 +753,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return sqlTemplateDirty.query(getSql("getAllBatchesSql"), new LongMapper());
     }
 
+    @Override
+    public List<OutgoingBatch> getBatchesInProgress() {
+        return sqlTemplateDirty.query(getSql("selectOutgoingBatchPrefixSql", "whereInProgressStatusSql"), new OutgoingBatchMapper(true),
+                Status.ER.name(), Status.LD.name(), Status.QY.name(), Status.RS.name(), Status.SE.name());
+    }
+
     static class OutgoingBatchSummaryMapper implements ISqlRowMapper<OutgoingBatchSummary> {
         boolean withNode = false;
         boolean withChannel = false;

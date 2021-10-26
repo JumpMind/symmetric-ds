@@ -246,7 +246,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             log.error("Failed to track changes", ex);
         }
     }
-    
+
     protected void checkSourceDir(FileTriggerRouter fileTriggerRouter) {
         File sourceDir = new File(fileTriggerRouter.getFileTrigger().getBaseDir());
         if (!sourceDir.exists()) {

@@ -164,5 +164,6 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "  (select batch_id, ?, channel_id, 'NE', load_id, extract_job_flag, load_flag, common_flag, reload_row_count, other_row_count,          "
                         + "   last_update_hostname, current_timestamp, create_time, 'copy' from $(outgoing_batch) where node_id=? and channel_id=? and batch_id > ?)     ");
         putSql("getAllBatchesSql", "select batch_id from $(outgoing_batch)");
+        putSql("whereInProgressStatusSql", "where status in (?, ?, ?, ?, ?) ");
     }
 }

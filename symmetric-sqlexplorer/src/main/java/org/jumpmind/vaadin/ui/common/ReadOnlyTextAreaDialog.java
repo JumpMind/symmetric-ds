@@ -31,8 +31,7 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.Consumer;
 
 import javax.sql.DataSource;
 
@@ -47,33 +46,28 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.server.FileDownloader;
-import com.vaadin.server.Resource;
-import com.vaadin.server.StreamResource;
-import com.vaadin.server.StreamResource.StreamSource;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.NativeSelect;
-import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.TextArea;
-import com.vaadin.ui.Upload;
-import com.vaadin.ui.Upload.Receiver;
-import com.vaadin.ui.Upload.SucceededEvent;
-import com.vaadin.ui.Upload.SucceededListener;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.upload.Receiver;
+import com.vaadin.flow.component.upload.SucceededEvent;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-public class ReadOnlyTextAreaDialog extends ResizableWindow {
+public class ReadOnlyTextAreaDialog extends ResizableDialog {
     private static final long serialVersionUID = 1L;
     final Logger log = LoggerFactory.getLogger(getClass());
     VerticalLayout wrapper;
     protected HorizontalLayout buttonLayout;
     protected TextArea textField;
-    protected NativeSelect<String> displayBox;
+    protected Select<String> displayBox;
     protected Button downloadButton;
     protected Table table;
     protected Column column;
@@ -81,50 +75,52 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
     protected IDatabasePlatform platform;
 
     public ReadOnlyTextAreaDialog(final String title, final String value, boolean isEncodedInHex) {
-        this(title, value, null, null, null, isEncodedInHex, false);
+        this(title, value, isEncodedInHex, null);
+    }
+
+    public ReadOnlyTextAreaDialog(final String title, final String value, boolean isEncodedInHex, Consumer<Boolean> shortcutToggler) {
+        this(title, value, null, null, null, isEncodedInHex, false, shortcutToggler);
     }
 
     public ReadOnlyTextAreaDialog(final String title, final String value, Table table, Object[] primaryKeys,
-            IDatabasePlatform platform, boolean isEncodedInHex, boolean isLob) {
+            IDatabasePlatform platform, boolean isEncodedInHex, boolean isLob, Consumer<Boolean> shortcutToggler) {
         super(title);
         this.table = table;
         this.primaryKeys = primaryKeys;
         this.platform = platform;
         this.column = table == null ? null : table.getColumnWithName(title);
+        if (shortcutToggler != null) {
+            addOpenedChangeListener(event -> shortcutToggler.accept(event.isOpened()));
+        }
         wrapper = new VerticalLayout();
-        wrapper.setMargin(true);
-        wrapper.setSizeFull();
+        wrapper.setMargin(false);
+        wrapper.setHeight("100px");
+        wrapper.setWidthFull();
         textField = new TextArea();
+        textField.getStyle().set("max-height", "480px");
         textField.setSizeFull();
-        textField.setWordWrap(false);
-        wrapper.addComponent(textField);
-        addComponent(wrapper, 1);
+        wrapper.add(textField);
+        add(wrapper, 1);
         buttonLayout = new HorizontalLayout();
-        buttonLayout.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
-        buttonLayout.setWidth(100, Unit.PERCENTAGE);
-        addComponent(buttonLayout);
+        buttonLayout.setWidthFull();
+        add(buttonLayout);
         if (value != null && isEncodedInHex) {
-            List<String> displayList = new ArrayList<String>();
-            displayList.add("Hex");
-            displayList.add("Text");
-            displayList.add("Decimal");
-            displayBox = new NativeSelect<String>("Display As", displayList);
+            displayBox = new Select<String>("Hex", "Text", "Decimal");
+            displayBox.setLabel("Display As");
             displayBox.setEmptySelectionAllowed(false);
-            displayBox.setSelectedItem("Hex");
+            displayBox.setValue("Hex");
             displayBox.addValueChangeListener(event -> updateTextField((String) displayBox.getValue(), value));
-            buttonLayout.addComponent(displayBox);
+            buttonLayout.add(displayBox);
         }
         if (table != null && isLob) {
             buildUploadButton(title, value);
             buildDownloadButton(title);
         }
-        Label spacer = new Label();
-        buttonLayout.addComponent(spacer);
-        buttonLayout.setExpandRatio(spacer, 1);
+        buttonLayout.addAndExpand(new Span());
         Button closeButton = buildCloseButton();
-        buttonLayout.addComponent(closeButton);
-        buttonLayout.setComponentAlignment(closeButton, Alignment.BOTTOM_RIGHT);
+        buttonLayout.add(closeButton);
+        buttonLayout.setVerticalComponentAlignment(Alignment.END, closeButton);
         textField.setValue(value);
         textField.addValueChangeListener(event -> {
             if (displayBox != null) {
@@ -133,10 +129,6 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
                 textField.setValue(value);
             }
         });
-    }
-
-    @Override
-    protected void grabFocus() {
     }
 
     @Override
@@ -149,35 +141,26 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         final Button uploadButton = new Button("Upload");
         final Button viewTextButton = new Button("View Text");
         LobUploader lobUploader = new LobUploader();
-        final Upload upload = new Upload("Upload new " + table.getColumnWithName(title)
-                .getMappedType(), lobUploader);
+        final Upload upload = new Upload(lobUploader);
+        upload.setMaxFiles(100);
+        upload.setDropLabel(new Span("Upload new " + table.getColumnWithName(title).getMappedType()));
         upload.addSucceededListener(lobUploader);
-        uploadButton.addClickListener(new ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                wrapper.replaceComponent(textField, upload);
-                wrapper.setComponentAlignment(upload, Alignment.MIDDLE_CENTER);
-                buttonLayout.replaceComponent(uploadButton, viewTextButton);
-            }
+        uploadButton.addClickListener(event -> {
+            wrapper.replace(textField, upload);
+            wrapper.setHorizontalComponentAlignment(Alignment.CENTER, upload);
+            buttonLayout.replace(uploadButton, viewTextButton);
         });
-        viewTextButton.addClickListener(new ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                wrapper.replaceComponent(upload, textField);
-                wrapper.setComponentAlignment(textField, Alignment.TOP_LEFT);
-                buttonLayout.replaceComponent(viewTextButton, uploadButton);
-            }
+        viewTextButton.addClickListener(event -> {
+            wrapper.replace(upload, textField);
+            wrapper.setHorizontalComponentAlignment(Alignment.END, textField);
+            buttonLayout.replace(viewTextButton, uploadButton);
         });
         if (value != null) {
-            buttonLayout.addComponent(uploadButton);
-            buttonLayout.setComponentAlignment(uploadButton, Alignment.BOTTOM_CENTER);
+            buttonLayout.add(uploadButton);
+            buttonLayout.setVerticalComponentAlignment(Alignment.END, uploadButton);
         } else {
-            wrapper.replaceComponent(textField, upload);
-            wrapper.setComponentAlignment(upload, Alignment.MIDDLE_CENTER);
+            wrapper.replace(textField, upload);
+            wrapper.setHorizontalComponentAlignment(Alignment.CENTER, upload);
         }
     }
 
@@ -185,17 +168,11 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         downloadButton = new Button("Download");
         final byte[] lobData = getLobData(title);
         if (lobData != null) {
-            Resource resource = new StreamResource(new StreamSource() {
-                private static final long serialVersionUID = 1L;
-
-                public InputStream getStream() {
-                    return new ByteArrayInputStream(lobData);
-                }
-            }, title);
-            FileDownloader fileDownloader = new FileDownloader(resource);
-            fileDownloader.extend(downloadButton);
-            buttonLayout.addComponent(downloadButton);
-            buttonLayout.setComponentAlignment(downloadButton, Alignment.BOTTOM_CENTER);
+            StreamResource resource = new StreamResource(title, () -> new ByteArrayInputStream(lobData));
+            Anchor fileDownloader = new Anchor(resource, null);
+            fileDownloader.add(downloadButton);
+            buttonLayout.add(fileDownloader);
+            buttonLayout.setVerticalComponentAlignment(Alignment.END, fileDownloader);
             long fileSize = lobData.length;
             String sizeText = fileSize + " Bytes";
             if (fileSize / 1024 > 0) {
@@ -209,10 +186,9 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
             if (fileSize / 1024 > 0) {
                 sizeText = Math.round(fileSize / 1024.0) + " GB";
             }
-            Label sizeLabel = new Label(sizeText);
-            buttonLayout.addComponent(sizeLabel);
-            buttonLayout.setExpandRatio(sizeLabel, 1.0f);
-            buttonLayout.setComponentAlignment(sizeLabel, Alignment.BOTTOM_CENTER);
+            Span sizeSpan = new Span(sizeText);
+            buttonLayout.addAndExpand(sizeSpan);
+            buttonLayout.setVerticalComponentAlignment(Alignment.END, sizeSpan);
         }
     }
 
@@ -277,7 +253,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
 
     public void selectAll() {
         textField.focus();
-        textField.selectAll();
+        textField.getElement().executeJs("this.inputElement.select()");
     }
 
     protected void updateTextField(String display, String value) {
@@ -308,7 +284,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         }
     }
 
-    private class LobUploader implements Receiver, SucceededListener {
+    private class LobUploader implements Receiver, ComponentEventListener<SucceededEvent> {
         private static final long serialVersionUID = 1L;
         File file;
 
@@ -321,13 +297,13 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
             } catch (FileNotFoundException e) {
                 NotifyDialog.show("Upload Error", "<b>The file could not be uploaded.</b><br>" +
                         "Cause: the file could not be found.<br><br>" +
-                        "To view the <b>Stack Trace</b>, click <b>\"Details\"</b>.", e, Type.ERROR_MESSAGE);
+                        "To view the <b>Stack Trace</b>, click <b>\"Details\"</b>.", e, NotificationVariant.LUMO_ERROR);
                 return new ByteArrayOutputStream();
             }
             return out;
         }
 
-        public void uploadSucceeded(SucceededEvent event) {
+        public void onComponentEvent(SucceededEvent event) {
             log.info("File received successfully. Updating database");
             String sql = buildLobUpdate(table.getPrimaryKeyColumns());
             Connection con = null;
@@ -350,7 +326,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
             } catch (SQLException e1) {
                 NotifyDialog.show("Upload Error", "<b>The file could not be uploaded.</b><br>" +
                         "Cause: the sql update statement failed.<br><br>" +
-                        "To view the <b>Stack Trace</b>, click <b>\"Details\"</b>.", e1, Type.ERROR_MESSAGE);
+                        "To view the <b>Stack Trace</b>, click <b>\"Details\"</b>.", e1, NotificationVariant.LUMO_ERROR);
             } catch (FileNotFoundException e2) {
                 // do nothing -- already notified
             } finally {
@@ -373,14 +349,18 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
     }
 
     public static void show(String title, String value, boolean isEncodedInHex) {
-        ReadOnlyTextAreaDialog dialog = new ReadOnlyTextAreaDialog(title, value, isEncodedInHex);
+        show(title, value, isEncodedInHex, null);
+    }
+
+    public static void show(String title, String value, boolean isEncodedInHex, Consumer<Boolean> shortcutToggler) {
+        ReadOnlyTextAreaDialog dialog = new ReadOnlyTextAreaDialog(title, value, isEncodedInHex, shortcutToggler);
         dialog.showAtSize(.4);
     }
 
     public static void show(String title, String value, Table table, Object[] primaryKeys, IDatabasePlatform platform,
             boolean isEncodedInHex, boolean isLob) {
         ReadOnlyTextAreaDialog dialog = new ReadOnlyTextAreaDialog(title, value, table, primaryKeys, platform,
-                isEncodedInHex, isLob);
+                isEncodedInHex, isLob, null);
         dialog.showAtSize(.45);
     }
 }

@@ -48,7 +48,7 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
                         +
                         "                                declare variable sync_triggers_disabled varchar(30);                                                                                                                   "
                         +
-                        "                                declare variable sync_node_disabled varchar(30);                                                                                                                       "
+                        "                                declare variable sync_node_disabled varchar(50);                                                                                                                       "
                         +
                         "                                begin                                                                                                                                                                  "
                         +
@@ -103,7 +103,7 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
                         +
                         "                                declare variable sync_triggers_disabled varchar(30);                                                                                                                   "
                         +
-                        "                                declare variable sync_node_disabled varchar(30);                                                                                                                       "
+                        "                                declare variable sync_node_disabled varchar(50);                                                                                                                       "
                         +
                         "                                begin                                                                                                                                                                  "
                         +
@@ -158,7 +158,7 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
                         +
                         "                                declare variable sync_triggers_disabled varchar(30);                                                                                                                   "
                         +
-                        "                                declare variable sync_node_disabled varchar(30);                                                                                                                       "
+                        "                                declare variable sync_node_disabled varchar(50);                                                                                                                       "
                         +
                         "                                begin                                                                                                                                                                  "
                         +
@@ -217,7 +217,7 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
                         +
                         "                                declare variable sync_triggers_disabled varchar(30);                                                                                                                   "
                         +
-                        "                                declare variable sync_node_disabled varchar(30);                                                                                                                       "
+                        "                                declare variable sync_node_disabled varchar(50);                                                                                                                       "
                         +
                         "                                begin                                                                                                                                                                  "
                         +
@@ -272,7 +272,7 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
                         +
                         "                                declare variable sync_triggers_disabled varchar(30);                                                                                                                   "
                         +
-                        "                                declare variable sync_node_disabled varchar(30);                                                                                                                       "
+                        "                                declare variable sync_node_disabled varchar(50);                                                                                                                       "
                         +
                         "                                begin                                                                                                                                                                  "
                         +

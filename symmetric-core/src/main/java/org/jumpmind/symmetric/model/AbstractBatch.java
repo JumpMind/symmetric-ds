@@ -115,12 +115,10 @@ public class AbstractBatch implements Serializable {
     private long failedLineNumber;
     private transient Map<String, Integer> tableCounts = new LinkedHashMap<String, Integer>();
     private transient long processedRowCount;
-
     private Map<String, Map<String, Long>> tableLoadedCount;
     private Map<String, Map<String, Long>> tableExtractedCount;
-    
-    
-	public void resetStats() {
+
+    public void resetStats() {
         // save off old stats in case there
         // is an error and we want to be able to
         // restore the previous stats
@@ -687,21 +685,20 @@ public class AbstractBatch implements Serializable {
     public int hashCode() {
         return (String.valueOf(getBatchId()) + "-" + getNodeId()).hashCode();
     }
-    
+
     public Map<String, Map<String, Long>> getTableLoadedCount() {
-		return tableLoadedCount;
-	}
+        return tableLoadedCount;
+    }
 
-	public void setTableLoadedCount(Map<String, Map<String, Long>> tableLoadedCount) {
-		this.tableLoadedCount = tableLoadedCount;
-	}
+    public void setTableLoadedCount(Map<String, Map<String, Long>> tableLoadedCount) {
+        this.tableLoadedCount = tableLoadedCount;
+    }
 
-	public Map<String, Map<String, Long>> getTableExtractedCount() {
-		return tableExtractedCount;
-	}
+    public Map<String, Map<String, Long>> getTableExtractedCount() {
+        return tableExtractedCount;
+    }
 
-	public void setTableExtractedCount(Map<String, Map<String, Long>> tableExtractedCount) {
-		this.tableExtractedCount = tableExtractedCount;
-	}
-
+    public void setTableExtractedCount(Map<String, Map<String, Long>> tableExtractedCount) {
+        this.tableExtractedCount = tableExtractedCount;
+    }
 }

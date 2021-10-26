@@ -58,15 +58,15 @@ public class Statistics {
         }
         stats.put(category, value);
     }
-    
+
     public void incrementTableStats(String tableName, String dmlType, long increment) {
         Map<String, Long> tableStatMap = tableStats.get(tableName);
         if (tableStatMap == null) {
-        	tableStatMap = new HashMap<String, Long>();
+            tableStatMap = new HashMap<String, Long>();
         }
         Long value = tableStatMap.get(dmlType);
         if (value == null) {
-        	value = increment;
+            value = increment;
         } else {
             value = value + increment;
         }
@@ -75,9 +75,9 @@ public class Statistics {
     }
 
     public Map<String, Map<String, Long>> getTableStats() {
-    	return this.tableStats;
+        return this.tableStats;
     }
-    
+
     public void startTimer(String category) {
         timers.put(category, System.currentTimeMillis());
     }

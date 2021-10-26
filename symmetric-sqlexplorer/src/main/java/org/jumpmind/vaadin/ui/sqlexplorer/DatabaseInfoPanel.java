@@ -32,19 +32,17 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.vaadin.ui.common.ColumnVisibilityToggler;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
+import org.jumpmind.vaadin.ui.common.TabSheet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.ui.AbstractLayout;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
-import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
-import com.vaadin.ui.TabSheet.Tab;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Grid.SelectionMode;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
 
 public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
     private static final long serialVersionUID = 1L;
@@ -59,94 +57,103 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
         this.settings = settings;
         setSizeFull();
         tabSheet = CommonUiUtils.createTabSheet();
-        tabSheet.addSelectedTabChangeListener(new SelectedTabChangeListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void selectedTabChange(SelectedTabChangeEvent event) {
-                selectedCaption = tabSheet.getTab(tabSheet.getSelectedTab()).getCaption();
-            }
-        });
-        addComponent(tabSheet);
+        tabSheet.addSelectedTabChangeListener(event -> selectedCaption = tabSheet.getSelectedTab().getName());
+        add(tabSheet);
         Connection c = null;
         try {
-        	if (db.getPlatform().getDataSource() != null) {
-	        	c = ((DataSource) db.getPlatform().getDataSource()).getConnection();
-	            DatabaseMetaData metaData = c.getMetaData();
-	            tabSheet.addTab(createTabData(createGridWithReflection(DatabaseMetaData.class, metaData)), "Meta Data");
-	            tabSheet.addTab(createTabData(createGridWithReflection(Connection.class, c)), "Connection");
-	            try {
-	                ResultSet rs = null;
-	                try {
-	                    rs = metaData.getClientInfoProperties();
-	                } catch (SQLException e) {
-	                    log.debug("Could not create Client Info Properties tab", e.getMessage());
-	                }
-	                Grid<List<Object>> clientInfoProperties = CommonUiUtils.putResultsInGrid(rs, Integer.MAX_VALUE, false);
-	                clientInfoProperties.setSizeFull();
-	                tabSheet.addTab(createTabData(clientInfoProperties), "Client Info Properties");
-	            } catch (AbstractMethodError e) {
-	                log.debug("Could not create Client Info Properties tab", e);
-	            }
-	            try {
-	                Grid<List<Object>> catalogs = CommonUiUtils.putResultsInGrid(metaData.getCatalogs(), Integer.MAX_VALUE, false);
-	                catalogs.setSizeFull();
-	                tabSheet.addTab(createTabData(catalogs), "Catalogs");
-	            } catch (AbstractMethodError e) {
-	                log.debug("Could not create Catalogs tab", e);
-	            }
-	            try {
-	                Grid<List<Object>> schemas;
-	                try {
-	                    schemas = CommonUiUtils.putResultsInGrid(metaData.getSchemas(), Integer.MAX_VALUE, false);
-	                } catch (SQLException e) {
-	                    schemas = CommonUiUtils.putResultsInGrid(metaData.getSchemas("", null), Integer.MAX_VALUE, false);
-	                }
-	                schemas.setSizeFull();
-	                tabSheet.addTab(createTabData(schemas), "Schemas");
-	            } catch (AbstractMethodError e) {
-	                log.debug("Could not create Schemas tab", e);
-	            }
-	            try {
-	                Grid<List<Object>> tableTypes = CommonUiUtils.putResultsInGrid(metaData.getTableTypes(), Integer.MAX_VALUE, false);
-	                tableTypes.setSizeFull();
-	                tabSheet.addTab(createTabData(tableTypes), "Table Types");
-	            } catch (AbstractMethodError e) {
-	                log.debug("Could not create Table Types tab", e);
-	            }
-	            try {
-	                Grid<List<Object>> dataTypes = CommonUiUtils.putResultsInGrid(metaData.getTypeInfo(), Integer.MAX_VALUE, false);
-	                dataTypes.setSizeFull();
-	                tabSheet.addTab(createTabData(dataTypes), "Data Types");
-	            } catch (AbstractMethodError e) {
-	                log.debug("Could not create Data Types tab", e);
-	            }
-	            try {
-	                tabSheet.addTab(createTabData(createGridFromString(metaData.getNumericFunctions(), "Numeric Functions")), "Numeric Functions");
-	            } catch (AbstractMethodError e) {
-	                log.debug("Could not create Numeric Functions tab", e);
-	            }
-	            try {
-	                tabSheet.addTab(createTabData(createGridFromString(metaData.getStringFunctions(), "String Functions")), "String Functions");
-	            } catch (AbstractMethodError e) {
-	                log.debug("Could not create String Functions tab", e);
-	            }
-	            try {
-	                tabSheet.addTab(createTabData(createGridFromString(metaData.getSystemFunctions(), "System Functions")), "System Functions");
-	            } catch (AbstractMethodError e) {
-	                log.debug("Could not create System Functions tab", e);
-	            }
-	            try {
-	                tabSheet.addTab(createTabData(createGridFromString(metaData.getTimeDateFunctions(), "Date/Time Functions")), "Date/Time Functions");
-	            } catch (AbstractMethodError e) {
-	                log.debug("Could not create Date/Time Functions tab", e);
-	            }
-	            try {
-	                tabSheet.addTab(createTabData(createGridFromString(metaData.getSQLKeywords(), "Keywords")), "Keywords");
-	            } catch (AbstractMethodError e) {
-	                log.debug("Could not create Keywords tab", e);
-	            }
-        	}
+            if (db.getPlatform().getDataSource() != null) {
+                c = ((DataSource) db.getPlatform().getDataSource()).getConnection();
+                DatabaseMetaData metaData = c.getMetaData();
+                tabSheet.add(createTabData(createGridWithReflection(DatabaseMetaData.class, metaData), null), "Meta Data");
+                tabSheet.add(createTabData(createGridWithReflection(Connection.class, c), null), "Connection");
+                try {
+                    ResultSet rs = null;
+                    try {
+                        rs = metaData.getClientInfoProperties();
+                    } catch (SQLException e) {
+                        log.debug("Could not create Client Info Properties tab", e.getMessage());
+                    }
+                    ColumnVisibilityToggler clientInfoPropertiesToggler = new ColumnVisibilityToggler();
+                    Grid<List<Object>> clientInfoProperties = CommonUiUtils.putResultsInGrid(clientInfoPropertiesToggler,
+                            rs, Integer.MAX_VALUE, false);
+                    clientInfoProperties.setSizeFull();
+                    tabSheet.add(createTabData(clientInfoProperties, clientInfoPropertiesToggler), "Client Info Properties");
+                } catch (AbstractMethodError e) {
+                    log.debug("Could not create Client Info Properties tab", e);
+                }
+                try {
+                    ColumnVisibilityToggler catalogsToggler = new ColumnVisibilityToggler();
+                    Grid<List<Object>> catalogs = CommonUiUtils.putResultsInGrid(catalogsToggler, metaData.getCatalogs(),
+                            Integer.MAX_VALUE, false);
+                    catalogs.setSizeFull();
+                    tabSheet.add(createTabData(catalogs, catalogsToggler), "Catalogs");
+                } catch (AbstractMethodError e) {
+                    log.debug("Could not create Catalogs tab", e);
+                }
+                try {
+                    Grid<List<Object>> schemas;
+                    ColumnVisibilityToggler schemasToggler = new ColumnVisibilityToggler();
+                    try {
+                        schemas = CommonUiUtils.putResultsInGrid(schemasToggler, metaData.getSchemas(), Integer.MAX_VALUE, false);
+                    } catch (SQLException e) {
+                        schemas = CommonUiUtils.putResultsInGrid(schemasToggler, metaData.getSchemas("", null), Integer.MAX_VALUE, false);
+                    }
+                    schemas.setSizeFull();
+                    tabSheet.add(createTabData(schemas, schemasToggler), "Schemas");
+                } catch (AbstractMethodError e) {
+                    log.debug("Could not create Schemas tab", e);
+                }
+                try {
+                    ColumnVisibilityToggler tableTypesToggler = new ColumnVisibilityToggler();
+                    Grid<List<Object>> tableTypes = CommonUiUtils.putResultsInGrid(tableTypesToggler,
+                            metaData.getTableTypes(), Integer.MAX_VALUE, false);
+                    tableTypes.setSizeFull();
+                    tabSheet.add(createTabData(tableTypes, tableTypesToggler), "Table Types");
+                } catch (AbstractMethodError e) {
+                    log.debug("Could not create Table Types tab", e);
+                }
+                try {
+                    ColumnVisibilityToggler dataTypesToggler = new ColumnVisibilityToggler();
+                    Grid<List<Object>> dataTypes = CommonUiUtils.putResultsInGrid(dataTypesToggler, metaData.getTypeInfo(),
+                            Integer.MAX_VALUE, false);
+                    dataTypes.setSizeFull();
+                    tabSheet.add(createTabData(dataTypes, dataTypesToggler), "Data Types");
+                } catch (AbstractMethodError e) {
+                    log.debug("Could not create Data Types tab", e);
+                }
+                try {
+                    tabSheet.add(
+                            createTabData(createGridFromString(metaData.getNumericFunctions(), "Numeric Functions"), null),
+                            "Numeric Functions");
+                } catch (AbstractMethodError e) {
+                    log.debug("Could not create Numeric Functions tab", e);
+                }
+                try {
+                    tabSheet.add(
+                            createTabData(createGridFromString(metaData.getStringFunctions(), "String Functions"), null),
+                            "String Functions");
+                } catch (AbstractMethodError e) {
+                    log.debug("Could not create String Functions tab", e);
+                }
+                try {
+                    tabSheet.add(
+                            createTabData(createGridFromString(metaData.getSystemFunctions(), "System Functions"), null),
+                            "System Functions");
+                } catch (AbstractMethodError e) {
+                    log.debug("Could not create System Functions tab", e);
+                }
+                try {
+                    tabSheet.add(createTabData(createGridFromString(metaData.getTimeDateFunctions(), "Date/Time Functions"),
+                            null), "Date/Time Functions");
+                } catch (AbstractMethodError e) {
+                    log.debug("Could not create Date/Time Functions tab", e);
+                }
+                try {
+                    tabSheet.add(createTabData(createGridFromString(metaData.getSQLKeywords(), "Keywords"), null), "Keywords");
+                } catch (AbstractMethodError e) {
+                    log.debug("Could not create Keywords tab", e);
+                }
+            }
         } catch (SQLException e) {
             log.error("", e);
         } finally {
@@ -156,19 +163,22 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
         while (i.hasNext()) {
             Component component = i.next();
             Tab tab = tabSheet.getTab(component);
-            if (tab.getCaption().equals(selectedTabCaption)) {
+            if (tab.getLabel().equals(selectedTabCaption)) {
                 tabSheet.setSelectedTab(component);
                 break;
             }
         }
     }
 
-    public AbstractLayout createTabData(Grid<?> grid) {
+    public VerticalLayout createTabData(Grid<?> grid, ColumnVisibilityToggler columnVisibilityToggler) {
         VerticalLayout layout = new VerticalLayout();
         layout.setMargin(false);
         layout.setSizeFull();
-        layout.addComponent(grid);
-        layout.setExpandRatio(grid, 1);
+        if (columnVisibilityToggler != null && !columnVisibilityToggler.isEmpty()) {
+            layout.add(columnVisibilityToggler);
+            layout.setHorizontalComponentAlignment(Alignment.END, columnVisibilityToggler);
+        }
+        layout.addAndExpand(grid);
         return layout;
     }
 
@@ -182,8 +192,8 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
                 grid.select(event.getItem());
             }
         });
-        grid.addColumn(row -> row.get(0)).setCaption("Property").setWidth(400);
-        grid.addColumn(row -> row.get(1)).setCaption("Value");
+        grid.addColumn(row -> row.get(0)).setHeader("Property").setWidth("400px").setResizable(true);
+        grid.addColumn(row -> row.get(1)).setHeader("Value").setResizable(true);
         List<List<Object>> outerList = new ArrayList<List<Object>>();
         Method[] methods = reflectionClass.getMethods();
         for (Method method : methods) {
@@ -233,7 +243,7 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
                 grid.select(event.getItem());
             }
         });
-        grid.addColumn(row -> row).setCaption(columnName);
+        grid.addColumn(row -> row).setHeader(columnName);
         List<String> values = new ArrayList<String>();
         int lastComma = 0;
         for (int i = 0; i < data.length(); i++) {

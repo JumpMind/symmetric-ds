@@ -80,5 +80,4 @@ public class MultiNodeGroupSharedTablesRoutingTest extends AbstractTest {
         assertEquals(10, template(rootServer).queryForInt("select count(*) from sym_data_event where batch_id=?", batches2.get(0).getBatchId()));
         assertNotEquals(batches1.get(0), batches2.get(0));
     }
-
 }

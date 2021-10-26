@@ -22,7 +22,6 @@ package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,26 +36,29 @@ import org.jumpmind.symmetric.io.data.DbExport;
 import org.jumpmind.symmetric.io.data.DbExport.Compatible;
 import org.jumpmind.symmetric.io.data.DbExport.Format;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
-import org.jumpmind.vaadin.ui.common.ResizableWindow;
+import org.jumpmind.vaadin.ui.common.ResizableDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.server.FileDownloader;
-import com.vaadin.server.StreamResource;
-import com.vaadin.server.StreamResource.StreamSource;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.CheckBox;
-import com.vaadin.ui.ComboBox;
-import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.RadioButtonGroup;
-import com.vaadin.ui.TextArea;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.ShortcutRegistration;
+import com.vaadin.flow.component.Shortcuts;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
+import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller.ScrollDirection;
 
-public class DbExportDialog extends ResizableWindow {
+public class DbExportDialog extends ResizableDialog {
     private static final String EXPORT_TO_THE_SQL_EDITOR = "Export to the SQL Editor";
     private static final String EXPORT_AS_A_FILE = "Export as a File";
     private static final long serialVersionUID = 1L;
@@ -68,24 +70,27 @@ public class DbExportDialog extends ResizableWindow {
 
     private ComboBox<DbExportFormat> formatSelect;
     private ComboBox<Compatible> compatibilitySelect;
-    private CheckBox data;
-    private CheckBox createInfo;
-    private CheckBox foreignKeys;
-    private CheckBox indices;
-    private CheckBox quotedIdentifiers;
-    private CheckBox dropTables;
+    private Checkbox data;
+    private Checkbox createInfo;
+    private Checkbox foreignKeys;
+    private Checkbox indices;
+    private Checkbox quotedIdentifiers;
+    private Checkbox dropTables;
     private TextArea whereClauseField;
     private Button previousButton;
     private Button cancelButton;
-    private Button selectAllLink;
-    private Button selectNoneLink;
     public Button nextButton;
+    private ShortcutRegistration nextShortcutRegistration;
     private Button exportFileButton;
+    private ShortcutRegistration exportFileShortcutRegistration;
     private Button exportEditorButton;
+    private ShortcutRegistration exportEditorShortcutRegistration;
     private Button doneButton;
+    private ShortcutRegistration doneShortcutRegistration;
     private TableSelectionLayout tableSelectionLayout;
-    private VerticalLayout optionLayout;
-    private FileDownloader fileDownloader;
+    private Scroller optionLayout;
+    private HorizontalLayout buttonFooter;
+    private Anchor fileDownloader;
     private DbExport dbExport;
     private RadioButtonGroup<String> exportFormatOptionGroup;
     private QueryPanel queryPanel;
@@ -100,6 +105,8 @@ public class DbExportDialog extends ResizableWindow {
         super("Database Export");
         this.databasePlatform = databasePlatform;
         this.queryPanel = queryPanel;
+        setWidth("700px");
+        setCloseOnOutsideClick(false);
         tableSelectionLayout = new TableSelectionLayout(databasePlatform, selectedTableSet, excludeTablesRegex) {
             private static final long serialVersionUID = 1L;
 
@@ -108,109 +115,58 @@ public class DbExportDialog extends ResizableWindow {
                 nextButton.setEnabled(tableSelectionLayout.getSelectedTables().size() > 0);
             }
         };
+        tableSelectionLayout.setHeight("318px");
         createOptionLayout();
-        addComponent(tableSelectionLayout, 1);
+        add(tableSelectionLayout, 1);
         addButtons();
-        nextButton.setClickShortcut(KeyCode.ENTER);
-        nextButton.focus();
+        nextShortcutRegistration = nextButton.addClickShortcut(Key.ENTER);
     }
 
     protected void addButtons() {
-        selectAllLink = new Button("Select All");
-        selectAllLink.addStyleName(ValoTheme.BUTTON_LINK);
-        selectAllLink.addClickListener(new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                tableSelectionLayout.selectAll();
-            }
-        });
-        selectNoneLink = new Button("Select None");
-        selectNoneLink.addStyleName(ValoTheme.BUTTON_LINK);
-        selectNoneLink.addClickListener(new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                tableSelectionLayout.selectNone();
-            }
-        });
         nextButton = CommonUiUtils.createPrimaryButton("Next");
         nextButton.setEnabled(tableSelectionLayout.getSelectedTables().size() > 0);
-        nextButton.addClickListener(new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                next();
-            }
-        });
-        cancelButton = new Button("Cancel", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                close();
-            }
-        });
-        previousButton = new Button("Previous", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                previous();
-            }
-        });
+        nextButton.addClickListener(event -> next());
+        cancelButton = new Button("Cancel", event -> close());
+        previousButton = new Button("Previous", event -> previous());
         previousButton.setVisible(false);
-        exportFileButton = CommonUiUtils.createPrimaryButton("Export", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                exportFileButton.removeClickShortcut();
-                fileDownloader.setFileDownloadResource(createResource());
-                doneButton.setClickShortcut(KeyCode.ENTER);
-                doneButton.focus();
+        exportEditorButton = CommonUiUtils.createPrimaryButton("Export", event -> {
+            exportToEditor();
+            close();
+        });
+        exportEditorButton.setVisible(false);
+        doneButton = new Button("Close", event -> close());
+        doneButton.setVisible(false);
+        exportFileButton = CommonUiUtils.createPrimaryButton("Export", event -> {
+            if (exportFileShortcutRegistration != null) {
+                exportFileShortcutRegistration.remove();
+                exportFileShortcutRegistration = null;
+            }
+            if (doneShortcutRegistration == null) {
+                doneShortcutRegistration = doneButton.addClickShortcut(Key.ENTER);
             }
         });
         buildFileDownloader();
-        exportFileButton.setVisible(false);
-        exportEditorButton = CommonUiUtils.createPrimaryButton("Export", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                exportToEditor();
-                close();
-            }
-        });
-        exportEditorButton.setVisible(false);
-        doneButton = new Button("Close", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                close();
-            }
-        });
-        doneButton.setVisible(false);
-        addComponent(buildButtonFooter(new Button[] { selectAllLink, selectNoneLink },
-                cancelButton, previousButton, nextButton, exportFileButton, exportEditorButton, doneButton));
+        fileDownloader.setVisible(false);
+        buttonFooter = buildButtonFooter(new Button[] {}, cancelButton, previousButton, nextButton, fileDownloader,
+                exportEditorButton, doneButton);
+        add(buttonFooter);
     }
 
     protected void createOptionLayout() {
-        optionLayout = new VerticalLayout();
-        optionLayout.addStyleName("v-scrollable");
-        optionLayout.setMargin(true);
-        optionLayout.setSpacing(true);
-        optionLayout.setSizeFull();
-        optionLayout.addComponent(new Label("Please choose from the following options"));
+        VerticalLayout optionContent = new VerticalLayout();
+        optionContent.setMargin(false);
+        optionContent.setSpacing(true);
+        optionContent.setSizeFull();
+        optionContent.add(new Span("Please choose from the following options"));
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
-        optionLayout.addComponent(formLayout);
-        optionLayout.setExpandRatio(formLayout, 1);
+        optionContent.addAndExpand(formLayout);
         formatSelect = new ComboBox<DbExportFormat>("Format", Arrays.asList(DbExportFormat.values()));
-        formatSelect.setEmptySelectionAllowed(false);
         formatSelect.setValue(DbExportFormat.SQL);
         formatSelect.addValueChangeListener(event -> {
             switch (formatSelect.getValue()) {
                 case SQL:
                     compatibilitySelect.setEnabled(true);
-                    compatibilitySelect.setEmptySelectionAllowed(false);
                     setDefaultCompatibility();
                     data.setEnabled(true);
                     foreignKeys.setEnabled(true);
@@ -219,7 +175,6 @@ public class DbExportDialog extends ResizableWindow {
                     break;
                 case XML:
                     compatibilitySelect.setEnabled(false);
-                    compatibilitySelect.setEmptySelectionAllowed(true);
                     compatibilitySelect.setValue(null);
                     data.setEnabled(true);
                     foreignKeys.setEnabled(true);
@@ -230,38 +185,39 @@ public class DbExportDialog extends ResizableWindow {
                 case CSV_DQUOTE:
                 case SYM_XML:
                     compatibilitySelect.setEnabled(false);
-                    compatibilitySelect.setEmptySelectionAllowed(true);
                     compatibilitySelect.setValue(null);
                     data.setEnabled(false);
                     foreignKeys.setEnabled(false);
                     indices.setEnabled(false);
                     quotedIdentifiers.setEnabled(false);
             }
+            buildFileDownloader();
         });
-        formatSelect.setSelectedItem(DbExportFormat.SQL);
-        formLayout.addComponent(formatSelect);
-        compatibilitySelect = new ComboBox<Compatible>("Compatibility", Arrays.asList(Compatible.values()));
-        compatibilitySelect.setEmptySelectionAllowed(false);
+        formatSelect.setValue(DbExportFormat.SQL);
+        formLayout.add(formatSelect);
+        List<Compatible> compatibilityList = Arrays.asList(Compatible.values());
+        compatibilityList.sort((c0, c1) -> c0.name().compareTo(c1.name()));
+        compatibilitySelect = new ComboBox<Compatible>("Compatibility", compatibilityList);
         setDefaultCompatibility();
-        formLayout.addComponent(compatibilitySelect);
-        createInfo = new CheckBox("Create Tables");
-        formLayout.addComponent(createInfo);
-        dropTables = new CheckBox("Drop Tables");
-        formLayout.addComponent(dropTables);
-        data = new CheckBox("Insert Data");
+        formLayout.add(compatibilitySelect);
+        createInfo = new Checkbox("Create Tables");
+        formLayout.add(createInfo);
+        dropTables = new Checkbox("Drop Tables");
+        formLayout.add(dropTables);
+        data = new Checkbox("Insert Data");
         data.setValue(true);
-        formLayout.addComponent(data);
-        foreignKeys = new CheckBox("Create Foreign Keys");
-        formLayout.addComponent(foreignKeys);
-        indices = new CheckBox("Create Indices");
-        formLayout.addComponent(indices);
-        quotedIdentifiers = new CheckBox("Qualify with Quoted Identifiers");
-        formLayout.addComponent(quotedIdentifiers);
+        formLayout.add(data);
+        foreignKeys = new Checkbox("Create Foreign Keys");
+        formLayout.add(foreignKeys);
+        indices = new Checkbox("Create Indices");
+        formLayout.add(indices);
+        quotedIdentifiers = new Checkbox("Qualify with Quoted Identifiers");
+        formLayout.add(quotedIdentifiers);
         whereClauseField = new TextArea("Where Clause");
-        whereClauseField.setWidth(100, Unit.PERCENTAGE);
-        whereClauseField.setRows(2);
-        formLayout.addComponent(whereClauseField);
-        exportFormatOptionGroup = new RadioButtonGroup<String>("Export Format");
+        whereClauseField.setWidthFull();
+        formLayout.add(whereClauseField);
+        exportFormatOptionGroup = new RadioButtonGroup<String>();
+        exportFormatOptionGroup.setLabel("Export Format");
         List<String> formatList = new ArrayList<String>();
         formatList.add(EXPORT_AS_A_FILE);
         if (queryPanel != null) {
@@ -270,7 +226,10 @@ public class DbExportDialog extends ResizableWindow {
         exportFormatOptionGroup.setItems(formatList);
         exportFormatOptionGroup.setValue(EXPORT_AS_A_FILE);
         exportFormatOptionGroup.addValueChangeListener(event -> setExportButtonsEnabled());
-        formLayout.addComponent(exportFormatOptionGroup);
+        formLayout.add(exportFormatOptionGroup);
+        optionLayout = new Scroller(optionContent);
+        optionLayout.setScrollDirection(ScrollDirection.VERTICAL);
+        optionLayout.setSizeFull();
     }
 
     protected void setDefaultCompatibility() {
@@ -285,48 +244,74 @@ public class DbExportDialog extends ResizableWindow {
     protected void setExportButtonsEnabled() {
         if (exportFormatOptionGroup.getValue().equals(EXPORT_AS_A_FILE)) {
             exportEditorButton.setVisible(false);
-            exportFileButton.setVisible(true);
-            exportFileButton.setClickShortcut(KeyCode.ENTER);
-            exportFileButton.focus();
+            fileDownloader.setVisible(true);
+            if (exportEditorShortcutRegistration != null) {
+                exportEditorShortcutRegistration.remove();
+                exportEditorShortcutRegistration = null;
+            }
+            if (exportFileShortcutRegistration == null) {
+                exportFileShortcutRegistration = Shortcuts.addShortcutListener(exportFileButton, () -> {
+                    UI.getCurrent().getPage().executeJs("$0.click();", fileDownloader.getElement());
+                    if (exportFileShortcutRegistration != null) {
+                        exportFileShortcutRegistration.remove();
+                        exportFileShortcutRegistration = null;
+                    }
+                    if (doneShortcutRegistration == null) {
+                        doneShortcutRegistration = doneButton.addClickShortcut(Key.ENTER);
+                    }
+                }, Key.ENTER);
+            }
         } else {
-            exportFileButton.setVisible(false);
+            fileDownloader.setVisible(false);
             exportEditorButton.setVisible(true);
-            exportEditorButton.setClickShortcut(KeyCode.ENTER);
-            exportEditorButton.focus();
+            if (exportFileShortcutRegistration != null) {
+                exportFileShortcutRegistration.remove();
+                exportFileShortcutRegistration = null;
+            }
+            if (exportEditorShortcutRegistration == null) {
+                exportEditorShortcutRegistration = exportEditorButton.addClickShortcut(Key.ENTER);
+            }
         }
         doneButton.setVisible(true);
         cancelButton.setVisible(false);
     }
 
     protected void previous() {
-        content.removeComponent(optionLayout);
-        content.addComponent(tableSelectionLayout, 0);
-        content.setExpandRatio(tableSelectionLayout, 1);
+        innerContent.remove(optionLayout);
+        innerContent.addComponentAtIndex(0, tableSelectionLayout);
+        innerContent.expand(tableSelectionLayout);
         previousButton.setVisible(false);
         exportEditorButton.setVisible(false);
-        exportEditorButton.removeClickShortcut();
-        exportFileButton.setVisible(false);
-        exportFileButton.removeClickShortcut();
+        if (exportEditorShortcutRegistration != null) {
+            exportEditorShortcutRegistration.remove();
+            exportEditorShortcutRegistration = null;
+        }
+        fileDownloader.setVisible(false);
+        if (exportFileShortcutRegistration != null) {
+            exportFileShortcutRegistration.remove();
+            exportFileShortcutRegistration = null;
+        }
         doneButton.setVisible(false);
-        doneButton.removeClickShortcut();
+        if (doneShortcutRegistration != null) {
+            doneShortcutRegistration.remove();
+            doneShortcutRegistration = null;
+        }
         nextButton.setVisible(true);
-        nextButton.setClickShortcut(KeyCode.ENTER);
-        nextButton.focus();
-        selectAllLink.setVisible(true);
-        selectNoneLink.setVisible(true);
+        nextShortcutRegistration = nextButton.addClickShortcut(Key.ENTER);
         cancelButton.setVisible(true);
     }
 
     protected void next() {
-        content.removeComponent(tableSelectionLayout);
-        content.addComponent(optionLayout, 0);
-        content.setExpandRatio(optionLayout, 1);
+        innerContent.remove(tableSelectionLayout);
+        innerContent.addComponentAtIndex(0, optionLayout);
+        innerContent.expand(optionLayout);
         nextButton.setVisible(false);
-        nextButton.removeClickShortcut();
+        if (nextShortcutRegistration != null) {
+            nextShortcutRegistration.remove();
+            nextShortcutRegistration = null;
+        }
         previousButton.setVisible(true);
         setExportButtonsEnabled();
-        selectAllLink.setVisible(false);
-        selectNoneLink.setVisible(false);
     }
 
     protected void createDbExport() {
@@ -364,18 +349,21 @@ public class DbExportDialog extends ResizableWindow {
         } catch (IOException e) {
             String msg = "Failed to export to the sql editor";
             log.error(msg, e);
-            CommonUiUtils.notify(msg, e);
+            CommonUiUtils.notifyError(msg, opened -> enableEscapeShortcut(!opened));
         }
     }
 
     protected void buildFileDownloader() {
         if (fileDownloader != null) {
             fileDownloader.remove();
+            innerContent.remove(buttonFooter);
         }
-        fileDownloader = new FileDownloader(createResource()) {
-            private static final long serialVersionUID = 1L;
-        };
-        fileDownloader.extend(exportFileButton);
+        fileDownloader = new Anchor(createResource(), null);
+        fileDownloader.getElement().setAttribute("download", true);
+        fileDownloader.add(exportFileButton);
+        buttonFooter = buildButtonFooter(new Button[] {}, cancelButton, previousButton, nextButton, fileDownloader,
+                exportEditorButton, doneButton);
+        add(buttonFooter);
     }
 
     private StreamResource createResource() {
@@ -383,29 +371,23 @@ public class DbExportDialog extends ResizableWindow {
         if (format.equals("CSV_DQUOTE")) {
             format = "CSV";
         }
-        StreamSource ss = new StreamSource() {
-            private static final long serialVersionUID = 1L;
-
-            public InputStream getStream() {
-                List<String> list = tableSelectionLayout.getSelectedTables();
-                String[] array = new String[list.size()];
-                list.toArray(array);
-                createDbExport();
-                String script;
-                try {
-                    script = dbExport.exportTables(array);
-                    return new ByteArrayInputStream(script.getBytes());
-                } catch (IOException e) {
-                    String msg = "Failed to export to a file";
-                    log.error(msg, e);
-                    CommonUiUtils.notify(msg, e);
-                }
-                return null;
-            }
-        };
         String datetime = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
-        StreamResource sr = new StreamResource(ss, String.format(
-                "table-export-%s." + format.toLowerCase(), datetime));
+        StreamResource sr = new StreamResource(String.format("table-export-%s." + format.toLowerCase(), datetime), () -> {
+            List<String> list = tableSelectionLayout.getSelectedTables();
+            String[] array = new String[list.size()];
+            list.toArray(array);
+            createDbExport();
+            String script;
+            try {
+                script = dbExport.exportTables(array);
+                return new ByteArrayInputStream(script.getBytes());
+            } catch (IOException e) {
+                String msg = "Failed to export to a file";
+                log.error(msg, e);
+                CommonUiUtils.notifyError(msg, opened -> enableEscapeShortcut(!opened));
+            }
+            return null;
+        });
         return sr;
     }
 }

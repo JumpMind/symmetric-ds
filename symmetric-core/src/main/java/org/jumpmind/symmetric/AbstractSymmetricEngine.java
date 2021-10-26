@@ -944,7 +944,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         getNodeService().flushNodeAuthorizedCache();
         getNodeService().flushNodeCache();
         getNodeService().flushNodeGroupCache();
-        getJobManager().restartJobs();
         getLoadFilterService().clearCache();
         getFileSyncService().clearCache();
     }

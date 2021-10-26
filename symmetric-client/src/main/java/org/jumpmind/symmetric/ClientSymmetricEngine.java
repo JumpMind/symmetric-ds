@@ -395,7 +395,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         if (settings.getOverrideIsolationLevel() >= 0) {
             log.info("Overriding isolation level to " + settings.getOverrideIsolationLevel());
         }
-        
         settings.setJdbcLobHandling(SqlTemplateSettings.JdbcLobHandling.valueOf(properties.get(ParameterConstants.DBDIALECT_ORACLE_JDBC_LOB_HANDLING,
                 SqlTemplateSettings.JdbcLobHandling.PLAIN.name()).toUpperCase()));
         settings.setProperties(properties);
@@ -417,6 +416,11 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         String directory = parameterService.getString(ParameterConstants.STAGING_DIR);
         if (isBlank(directory)) {
             directory = parameterService.getTempDirectory();
+        } else {
+            String engineName = parameterService.getEngineName();
+            if (isNotBlank(engineName)) {
+                directory += File.separator + engineName;
+            }
         }
         String stagingManagerClassName = parameterService.getString(ParameterConstants.STAGING_MANAGER_CLASS);
         if (stagingManagerClassName != null) {

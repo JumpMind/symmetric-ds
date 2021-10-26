@@ -187,6 +187,10 @@ subprojects { subproject ->
         minHeapSize = "128m"
         maxHeapSize = "512m"
         forkEvery=1
+        systemProperty "test.root", System.getProperty("test.root")
+        systemProperty "test.server", System.getProperty("test.server")
+        systemProperty "test.client", System.getProperty("test.client")
+        systemProperty "port.number", System.getProperty("port.number")
         useJUnitPlatform {
             includeTags("integration")
         }
@@ -298,7 +302,6 @@ subprojects { subproject ->
             (group('org.jumpmind.symmetric')) : license('JumpMind License'),
             (group('com.jumpmind.symmetric')) : license('JumpMind License'),
             'com.byteowls:vaadin-chartjs:1.2.0' : mit,
-            'org.vaadin.addons:aceeditor:0.8.15' : bsd,
             'org.vaadin.addons:fontawesomelabel:1.4.0' : apacheTwo    
         ]
     

@@ -82,7 +82,7 @@ public class JobManager extends AbstractService implements IJobManager {
     @Override
     public IJob getJob(String name) {
         for (IJob job : jobs) {
-            if (job.getName().equals(name)) {
+            if (job.getName().equalsIgnoreCase(name)) {
                 return job;
             }
         }
@@ -179,6 +179,20 @@ public class JobManager extends AbstractService implements IJobManager {
     }
 
     @Override
+    public void restartJob(String name) {
+        IJob job = getJob(name);
+        if (job != null) {
+            job.stop();
+            if (job instanceof AbstractJob) {
+                job.getJobDefinition().setDefaultAutomaticStartup(((AbstractJob) job).getDefaults().isEnabled());
+            }
+            if (isAutoStartConfigured(job) && isJobApplicableToNodeGroup(job)) {
+                job.start();
+            }
+        }
+    }
+
+    @Override
     public void saveJob(JobDefinition job) {
         Object[] args = { job.getDescription(), job.getJobType().toString(),
                 job.getJobExpression(), job.isDefaultAutomaticStartup() ? 1 : 0, job.getDefaultSchedule(),
@@ -186,7 +200,6 @@ public class JobManager extends AbstractService implements IJobManager {
         if (sqlTemplate.update(getSql("updateJobSql"), args) <= 0) {
             sqlTemplate.update(getSql("insertJobSql"), args);
         }
-        restartJobs();
     }
 
     @Override
@@ -196,6 +209,5 @@ public class JobManager extends AbstractService implements IJobManager {
         } else {
             throw new SymmetricException("Failed to remove job " + name + ".  Note that BUILT_IN jobs cannot be removed.");
         }
-        restartJobs();
     }
 }

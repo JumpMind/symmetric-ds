@@ -25,24 +25,22 @@ import java.util.Iterator;
 
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
-import org.vaadin.aceeditor.AceEditor;
-import org.vaadin.aceeditor.AceMode;
+import org.jumpmind.vaadin.ui.common.TabSheet;
+import org.jumpmind.vaadin.ui.common.TabSheet.EnhancedTab;
 
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.MenuBar;
-import com.vaadin.ui.MenuBar.Command;
-import com.vaadin.ui.MenuBar.MenuItem;
-import com.vaadin.ui.ProgressBar;
-import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
-import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
-import com.vaadin.ui.TabSheet.Tab;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.progressbar.ProgressBar;
+
+import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceMode;
+
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
     private static final long serialVersionUID = 1L;
@@ -53,22 +51,20 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
     public TriggerInfoPanel(Trigger trigger, IDb db, Settings settings, String selectedTabCaption) {
         setSizeFull();
         tabSheet = CommonUiUtils.createTabSheet();
-        tabSheet.addSelectedTabChangeListener(new SelectedTabChangeListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void selectedTabChange(SelectedTabChangeEvent event) {
-                selectedCaption = tabSheet.getTab(tabSheet.getSelectedTab()).getCaption();
+        tabSheet.addSelectedTabChangeListener(event -> {
+            EnhancedTab tab = tabSheet.getSelectedTab();
+            if (tab != null) {
+                selectedCaption = tab.getName();
             }
         });
-        addComponent(tabSheet);
+        add(tabSheet);
         refreshSource(trigger);
         refreshDetails(trigger, db, settings);
         Iterator<Component> i = tabSheet.iterator();
         while (i.hasNext()) {
             Component component = i.next();
-            Tab tab = tabSheet.getTab(component);
-            if (tab.getCaption().equals(selectedTabCaption)) {
+            EnhancedTab tab = tabSheet.getTab(component);
+            if (tab.getName().equals(selectedTabCaption)) {
                 tabSheet.setSelectedTab(component);
                 break;
             }
@@ -90,30 +86,23 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         editor.setMode(AceMode.sql);
         editor.setValue(sourceText);
         editor.setSizeFull();
-        source.addComponent(editor);
-        source.setExpandRatio(editor, 1);
+        source.addAndExpand(editor);
         HorizontalLayout bar = new HorizontalLayout();
-        bar.setWidth(100, Unit.PERCENTAGE);
-        bar.setMargin(new MarginInfo(false, true, false, true));
+        bar.setWidthFull();
+        bar.getStyle().set("margin", "0 16px");
         MenuBar wrapSelect = new MenuBar();
-        wrapSelect.addStyleName(ValoTheme.MENUBAR_BORDERLESS);
-        wrapSelect.addStyleName(ValoTheme.MENUBAR_SMALL);
-        MenuItem wrapButton = wrapSelect.addItem("Wrap text", new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                wrapSourceText = !wrapSourceText;
-                tabSheet.removeTab(tabSheet.getTab(1));
-                refreshSource(trigger);
-            }
+        wrapSelect.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_SMALL);
+        MenuItem wrapButton = wrapSelect.addItem("Wrap text", event -> {
+            wrapSourceText = !wrapSourceText;
+            tabSheet.remove(tabSheet.getTab(1));
+            refreshSource(trigger);
         });
-        wrapButton.setIcon(VaadinIcons.ALIGN_JUSTIFY);
-        bar.addComponent(wrapSelect);
-        bar.setComponentAlignment(wrapSelect, Alignment.TOP_RIGHT);
-        bar.setHeight((float) (2.5), Unit.REM);
-        source.addComponent(bar);
-        tabSheet.addTab(source, "Source");
+        wrapButton.addComponentAsFirst(new Icon(VaadinIcon.ALIGN_JUSTIFY));
+        bar.add(wrapSelect);
+        bar.setVerticalComponentAlignment(Alignment.START, wrapSelect);
+        bar.setHeight("2.5rem");
+        source.add(bar);
+        tabSheet.add(source, "Source");
         tabSheet.setSelectedTab(source);
     }
 
@@ -278,22 +267,22 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         executingLayout.setSizeFull();
         final ProgressBar p = new ProgressBar();
         p.setIndeterminate(true);
-        executingLayout.addComponent(p);
-        tabSheet.addTab(executingLayout, "Details", VaadinIcons.SPINNER, 0);
+        executingLayout.add(p);
+        tabSheet.add(executingLayout, "Details", new Icon(VaadinIcon.SPINNER), 0);
         tabSheet.setSelectedTab(executingLayout);
         TriggerTableLayout triggerTable = new TriggerTableLayout(trigger, settings, new Refresher() {
             public void refresh() {
-                tabSheet.removeTab(tabSheet.getTab(0));
+                tabSheet.remove(tabSheet.getTab(0));
                 refreshDetails(trigger, db, settings);
             }
         });
-        boolean select = tabSheet.getSelectedTab().equals(executingLayout);
-        tabSheet.removeComponent(executingLayout);
+        boolean select = executingLayout.equals(tabSheet.getSelectedTab().getComponent());
+        tabSheet.remove("Details");
         VerticalLayout layout = new VerticalLayout();
         layout.setMargin(true);
         layout.setSizeFull();
-        layout.addComponent(triggerTable);
-        tabSheet.addTab(layout, "Details", null, 0);
+        layout.add(triggerTable);
+        tabSheet.add(layout, "Details", null, 0);
         if (select) {
             tabSheet.setSelectedTab(layout);
         }

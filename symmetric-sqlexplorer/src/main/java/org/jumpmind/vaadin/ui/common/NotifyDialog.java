@@ -24,77 +24,59 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.NotificationVariant;
 
-public class NotifyDialog extends ResizableWindow {
+public class NotifyDialog extends ResizableDialog {
     private static final long serialVersionUID = 1L;
     boolean detailsMode = false;
 
     public NotifyDialog(String text, Throwable ex) {
-        this("Error", text, ex, Type.ERROR_MESSAGE);
+        this("Error", text, ex, NotificationVariant.LUMO_ERROR);
     }
 
-    public NotifyDialog(String caption, String text, final Throwable ex, Type type) {
+    public NotifyDialog(String caption, String text, final Throwable ex, NotificationVariant type) {
         super(caption);
-        setWidth(400, Unit.PIXELS);
-        setHeight(300, Unit.PIXELS);
-        final HorizontalLayout messageArea = new HorizontalLayout();
-        messageArea.addStyleName("v-scrollable");
-        messageArea.setMargin(true);
-        messageArea.setSpacing(true);
+        setWidth("400px");
+        setHeight("320px");
+        final Scroller messageArea = new Scroller();
         messageArea.setSizeFull();
         text = isNotBlank(text) ? text
                 : (ex != null ? ex.getMessage()
                         : "");
-        if (type == Type.ERROR_MESSAGE) {
-            setIcon(VaadinIcons.BAN);
+        if (type == NotificationVariant.LUMO_ERROR) {
+            captionLabel.setLeftIcon(VaadinIcon.BAN);
         }
         final String message = text;
-        final Label textLabel = new Label(message, ContentMode.HTML);
-        messageArea.addComponent(textLabel);
-        messageArea.setExpandRatio(textLabel, 1);
-        content.addComponent(messageArea);
-        content.setExpandRatio(messageArea, 1);
+        final Label textLabel = new Label(message);
+        messageArea.setContent(textLabel);
+        innerContent.add(messageArea);
+        innerContent.expand(messageArea);
         final Button detailsButton = new Button("Details");
         detailsButton.setVisible(ex != null);
-        detailsButton.addClickListener(new ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                detailsMode = !detailsMode;
-                if (detailsMode) {
-                    String msg = "<pre>" + ExceptionUtils.getStackTrace(ex).trim() + "</pre>";
-                    msg = msg.replace("\t", "    ");
-                    textLabel.setValue(msg);
-                    detailsButton.setCaption("Message");
-                    messageArea.setMargin(new MarginInfo(false, false, false, true));
-                    setHeight(600, Unit.PIXELS);
-                    setWidth(1000, Unit.PIXELS);
-                    setPosition(getPositionX() - 300, getPositionY() - 150);
-                } else {
-                    textLabel.setValue(message);
-                    detailsButton.setCaption("Details");
-                    messageArea.setMargin(true);
-                    setWidth(400, Unit.PIXELS);
-                    setHeight(300, Unit.PIXELS);
-                    setPosition(getPositionX() + 300, getPositionY() + 150);
-                }
+        detailsButton.addClickListener(event -> {
+            detailsMode = !detailsMode;
+            if (detailsMode) {
+                String msg = "<pre>" + ExceptionUtils.getStackTrace(ex).trim() + "</pre>";
+                msg = msg.replace("\t", "    ");
+                textLabel.setText(msg);
+                detailsButton.setText("Message");
+                messageArea.getStyle().set("margin", "0 0 0 16px");
+                setHeight("600px");
+                setWidth("1000px");
+            } else {
+                textLabel.setText(message);
+                detailsButton.setText("Details");
+                setWidth("400px");
+                setHeight("320px");
             }
         });
-        content.addComponent(buildButtonFooter(detailsButton, buildCloseButton()));
+        innerContent.add(buildButtonFooter(detailsButton, buildCloseButton()));
     }
 
-    public static void show(String caption, String text, Throwable throwable, Type type) {
-        UI.getCurrent().addWindow(new NotifyDialog(caption, text, throwable, type));
+    public static void show(String caption, String text, Throwable throwable, NotificationVariant type) {
+        new NotifyDialog(caption, text, throwable, type).open();
     }
 }

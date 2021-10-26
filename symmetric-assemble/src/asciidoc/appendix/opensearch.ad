@@ -1,0 +1,25 @@
+ifndef::pro[] 
+
+=== OpenSearch
+
+Use `symadmin module install opensearch` to install driver files, or copy your own files into the `lib` sub-directory.
+
+Send changes from your relational database to OpenSearch in a variety of formats.  An OpenSearch node can be setup as a <<Load Only Node>> to receive changes from another node that is capturing changes.
+
+Setup the OpenSearch node by using the <<Add Node>> wizard and selecting OpenSearch as the type.   The URL will be the connection point to OpenSearch.  User and password are not needed (or used).
+
+image::appendix/opensearch-node-setup.png[]
+
+After hitting next you can setup advanced options for your OpenSearch node.
+
+image::appendix/opensearch-advanced-settings.png[]
+
+
+==== Loading Data Into OpenSearch
+
+
+===== Setup reload channels for bulk loading.
+
+Update any reload channels that will be used on the table triggers that will capture changes and send them to OpenSearch by setting the column data_loader_type to 'bulk'.  It is also recommended to increase the batch size so that larger CSV files will be processed instead of the default size on reloads of 10,000 rows.
+
+endif::pro[]

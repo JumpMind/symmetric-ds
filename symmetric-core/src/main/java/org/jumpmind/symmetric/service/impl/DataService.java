@@ -1617,11 +1617,11 @@ public class DataService extends AbstractService implements IDataService {
                 tableNames.add(sourceTableName);
             }
             for (String tableName : tableNames) {
-            	if (parameterService.is(ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE)) {
-            		String delimiter = engine.getTargetDialect().getTargetPlatform().getDatabaseInfo().getDelimiterToken();
-            		tableName = tableName.replaceAll("\\.", delimiter + "." + delimiter);
-            		tableName = delimiter + tableName + delimiter;
-            	}
+                if (parameterService.is(ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE)) {
+                    String delimiter = engine.getTargetDialect().getTargetPlatform().getDatabaseInfo().getDelimiterToken();
+                    tableName = tableName.replaceAll("\\.", delimiter + "." + delimiter);
+                    tableName = delimiter + tableName + delimiter;
+                }
                 sqlStatements.add(String.format(sql, tableName));
             }
         } else {
