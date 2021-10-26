@@ -187,7 +187,10 @@ subprojects { subproject ->
         minHeapSize = "128m"
         maxHeapSize = "512m"
         forkEvery=1
-        systemProperties System.getProperties()
+        systemProperty "test.root", System.getProperty("test.root")
+        systemProperty "test.server", System.getProperty("test.server")
+        systemProperty "test.client", System.getProperty("test.client")
+        systemProperty "port.number", System.getProperty("port.number")
         useJUnitPlatform {
             includeTags("integration")
         }
