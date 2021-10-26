@@ -416,6 +416,11 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         String directory = parameterService.getString(ParameterConstants.STAGING_DIR);
         if (isBlank(directory)) {
             directory = parameterService.getTempDirectory();
+        } else {
+            String engineName = parameterService.getEngineName();
+            if (isNotBlank(engineName)) {
+                directory += File.separator + engineName;
+            }
         }
         String stagingManagerClassName = parameterService.getString(ParameterConstants.STAGING_MANAGER_CLASS);
         if (stagingManagerClassName != null) {
