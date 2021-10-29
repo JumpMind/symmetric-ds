@@ -32,6 +32,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,7 @@ public class ModuleManager {
     private static final String PROP_REPOSITORIES = "repos";
     private static final String PROP_VERSION = "sym.version";
     private static final String PROP_DRIVER = "driver.";
+    private static final String MODULE_ID_ALL = "all";
     private static ModuleManager instance;
     private Properties properties = new Properties();
     private Map<String, List<MavenArtifact>> modules = new TreeMap<String, List<MavenArtifact>>();
@@ -109,6 +111,10 @@ public class ModuleManager {
     }
 
     public void install(String moduleId) throws ModuleException {
+        if (MODULE_ID_ALL.equals(moduleId)) {
+            installAll();
+            return;
+        }
         checkModuleInstalled(moduleId, false);
         List<MavenArtifact> artifacts = resolveArtifacts(moduleId);
         log.info("Installing module {} with {} artifacts", moduleId, artifacts.size());
@@ -165,6 +171,15 @@ public class ModuleManager {
             log.info("Successfully installed module {}", moduleId);
         } catch (IOException e) {
             logAndThrow("Unable to write properties file for module " + moduleId + " because: " + e.getMessage(), e);
+        }
+    }
+
+    public void installAll() throws ModuleException {
+        List<String> installedModuleIds = list();
+        for (String moduleId : listAll()) {
+            if (!installedModuleIds.contains(moduleId)) {
+                install(moduleId);
+            }
         }
     }
 
@@ -254,6 +269,10 @@ public class ModuleManager {
     }
 
     public void remove(String moduleId) throws ModuleException {
+        if (MODULE_ID_ALL.equals(moduleId)) {
+            removeAll();
+            return;
+        }
         checkModuleInstalled(moduleId, true);
         List<String> filesToRemove = listFiles(moduleId);
         for (String installedModuleId : list()) {
@@ -275,6 +294,12 @@ public class ModuleManager {
         }
     }
 
+    public void removeAll() throws ModuleException {
+        for (String moduleId : list()) {
+            remove(moduleId);
+        }
+    }
+
     private String[] getPropFileNames() {
         File dir = new File(modulesDir);
         FilenameFilter filter = new FilenameFilter() {
@@ -290,10 +315,11 @@ public class ModuleManager {
         List<String> names = new ArrayList<String>();
         String[] fileNames = getPropFileNames();
         if (fileNames != null) {
-            for (String propFileName : getPropFileNames()) {
+            for (String propFileName : fileNames) {
                 names.add(propFileName.substring(0, propFileName.length() - EXT_PROPERTIES.length()));
             }
         }
+        Collections.sort(names);
         return names;
     }
 
@@ -331,6 +357,7 @@ public class ModuleManager {
         for (String name : modules.keySet()) {
             names.add(name);
         }
+        Collections.sort(names);
         return names;
     }
 
