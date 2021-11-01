@@ -400,7 +400,7 @@ public class Column implements Cloneable, Serializable {
                 scale = Integer.parseInt(size.substring(pos + 1));
             }
         } else {
-            size = null;
+            this.size = null;
             sizeAsInt = null;
             scale = 0;
         }
