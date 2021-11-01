@@ -25,7 +25,6 @@ import java.util.Map;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class ParameterColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
@@ -57,10 +56,6 @@ public class ParameterColumnTransform implements ISingleNewAndOldValueColumnTran
         if (paramName != null) {
             value = parameterService.getString(paramName);
         }
-        if (data.getTargetDmlType().equals(DataEventType.DELETE) && data.getOldSourceValues() != null) {
-            return new NewAndOldValue(null, value);
-        } else {
-            return new NewAndOldValue(value, null);
-        }
+        return new NewAndOldValue(column, data, value);
     }
 }

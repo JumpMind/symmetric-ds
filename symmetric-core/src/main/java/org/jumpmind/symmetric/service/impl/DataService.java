@@ -1187,8 +1187,10 @@ public class DataService extends AbstractService implements IDataService {
                     if (!fullLoad) {
                         currentRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
                     }
-                    // Check the create flag on the specific table reload request
-                    if (currentRequest != null && currentRequest.isCreateTable()
+                    //Check the create flag on the specific table reload request
+                    if (triggerRouter.getInitialLoadOrder() > -1
+                            && currentRequest != null
+                            && currentRequest.isCreateTable()
                             && engine.getGroupletService().isTargetEnabled(triggerRouter,
                                     targetNode)) {
                         insertCreateEvent(transaction, targetNode, triggerHistory, triggerRouter.getTrigger().getReloadChannelId(), true,
@@ -1249,7 +1251,8 @@ public class DataService extends AbstractService implements IDataService {
                         currentRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
                     }
                     // Check the delete flag on the specific table reload request
-                    if (currentRequest != null && currentRequest.isDeleteFirst()
+                    if (triggerRouter.getInitialLoadOrder() > -1
+                            && currentRequest.isDeleteFirst()
                             && engine.getGroupletService().isTargetEnabled(triggerRouter,
                                     targetNode)) {
                         insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory,
@@ -1315,7 +1318,8 @@ public class DataService extends AbstractService implements IDataService {
                         currentRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
                     }
                     // Check the before custom sql is present on the specific table reload request
-                    if (currentRequest != null
+                    if (triggerRouter.getInitialLoadOrder() > -1
+                            && currentRequest != null
                             && currentRequest.getBeforeCustomSql() != null
                             && currentRequest.getBeforeCustomSql().length() > 0
                             && engine.getGroupletService().isTargetEnabled(triggerRouter,
@@ -2349,7 +2353,10 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void reloadMissingForeignKeyRowsForLoad(String sourceNodeId, long batchId, long rowNumber, Table table, CsvData data, String channelId) {
-        String rowData = CsvUtils.escapeCsvData(data.getCsvData(CsvData.ROW_DATA));
+        String rowData = data.getCsvData(CsvData.ROW_DATA);
+        // Replace all actual newlines and carriage returns with \n and \r strings
+        rowData = rowData.replaceAll("\n", "\\n").replaceAll("\r", "\\r");
+        rowData = CsvUtils.escapeCsvData(rowData);
         Node sourceNode = engine.getNodeService().findNode(sourceNodeId);
         String script = "try { engine.getDataService().sendMissingForeignKeyRowsForLoad(" + batchId + ", \""
                 + engine.getNodeId() + "\", " + rowNumber + ", " + rowData + "); } catch (Exception e) { }";

@@ -37,6 +37,7 @@ import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -162,7 +163,6 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                             Data data = new Data(tableName, csvData.getDataEventType(),
                                     csvData.getCsvData(CsvData.ROW_DATA), csvData.getCsvData(CsvData.PK_DATA), hist,
                                     csvData.getAttribute(CsvData.ATTRIBUTE_CHANNEL_ID), null, csvData.getAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID));
-                            data.setTableName(tableName);
                             data.setOldData(csvData.getCsvData(CsvData.OLD_DATA));
                             data.setPreRouted(true);
                             data.setCreateTime(csvData.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME));
@@ -170,15 +170,17 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                             String channelId = csvData.getAttribute(CsvData.ATTRIBUTE_CHANNEL_ID);
                             if (channelId != null && !channelId.equals(Constants.CHANNEL_RELOAD)) {
                                 String pkCsvData = CsvUtils.escapeCsvData(getPkCsvData(csvData, hist));
-                                if (pkCsvData != null) {
+                                String nodeTableName = TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_NODE);
+                                List<TriggerHistory> nodeHists = engine.getTriggerRouterService().getActiveTriggerHistories(nodeTableName);
+                                if (nodeHists != null && nodeHists.size() > 0 && pkCsvData != null) {
                                     String sourceNodeId = csvData.getAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID);
                                     long createTime = data.getCreateTime() != null ? data.getCreateTime().getTime() : 0;
                                     String script = "if (context != void && context != null) { " +
                                             "engine.getDataService().sendNewerDataToNode(context.findTransaction(), SOURCE_NODE_ID, \"" +
                                             tableName + "\", " + pkCsvData + ", new Date(" +
                                             createTime + "L), \"" + sourceNodeId + "\"); }";
-                                    Data scriptData = new Data(tableName, DataEventType.BSH,
-                                            CsvUtils.escapeCsvData(script), null, hist, Constants.CHANNEL_RELOAD, null, null);
+                                    Data scriptData = new Data(nodeTableName, DataEventType.BSH,
+                                            CsvUtils.escapeCsvData(script), null, nodeHists.get(0), Constants.CHANNEL_RELOAD, null, null);
                                     scriptData.setSourceNodeId(sourceNodeId);
                                     engine.getDataService().insertData(transaction, scriptData);
                                 }

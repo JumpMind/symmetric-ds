@@ -58,10 +58,6 @@ public class LeftColumnTransform implements ISingleNewAndOldValueColumnTransform
                 }
             }
         }
-        if (data.getTargetDmlType() == DataEventType.DELETE && data.getOldSourceValues() != null) {
-            return new NewAndOldValue(null, value);
-        } else {
-            return new NewAndOldValue(value, null);
-        }
+        return new NewAndOldValue(column, data, value);
     }
 }

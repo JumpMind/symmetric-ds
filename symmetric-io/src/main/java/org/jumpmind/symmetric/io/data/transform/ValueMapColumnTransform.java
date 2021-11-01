@@ -26,7 +26,6 @@ import java.util.StringTokenizer;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.DataEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,10 +75,6 @@ public class ValueMapColumnTransform implements ISingleNewAndOldValueColumnTrans
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
         String value = getValue(newValue, column.getTransformExpression());
-        if (data.getTargetDmlType() == DataEventType.DELETE && data.getOldSourceValues() != null) {
-            return new NewAndOldValue(null, value);
-        } else {
-            return new NewAndOldValue(value, null);
-        }
+        return new NewAndOldValue(column, data, value);
     }
 }

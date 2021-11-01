@@ -10,7 +10,7 @@ configuration options.
 
 === Log Mining for SQL-Server
 --
-Log mining is not available for SQL-Server in additional to trigger-based change capture.
+Log mining is now available for SQL-Server in additional to trigger-based change capture.
 It is based on change tracking provided by SQL Server 2008 and newer.
 --
 
