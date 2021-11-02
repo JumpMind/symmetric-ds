@@ -17,14 +17,20 @@ It is based on logical replication slots provided by PostgreSQL 9.4 and newer.
 
 === Cosmos
 --
-Azure Cosmos non-relational database is now supported for change capture, as well as load only and extract only.
+Azure Cosmos non-relational database is now supported for change capture, as well as load-only and extract-only replication.
 Tables and rows from relational databases are mapped to containers and items on Cosmos.
 --
 
 === Elasticseach
 --
-Elasticsearch and Amazon OpensSearch document databases are now supported for load only integration.
+Elasticsearch and Amazon OpensSearch document databases are now supported for load-only replication.
 Tables and rows from relational databases are mapped to indexes and JSON documents.
+--
+
+=== MongoDB
+--
+MongoDB support is enhanced to include change capture, as well as load-only and extract-only replication.
+Tables and rows from relational databases are mapped to collections and JSON documents.
 --
 
 endif::pro[]
