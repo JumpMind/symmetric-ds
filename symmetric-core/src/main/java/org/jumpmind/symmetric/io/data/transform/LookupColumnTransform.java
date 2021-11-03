@@ -32,7 +32,6 @@ import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
@@ -99,11 +98,7 @@ public class LookupColumnTransform implements ISingleNewAndOldValueColumnTransfo
                     "Expected SQL expression for lookup transform, but no expression was found for target column {} on transform {}",
                     column.getTargetColumnName(), column.getTransformId());
         }
-        if (data.getTargetDmlType().equals(DataEventType.DELETE) && data.getOldSourceValues() != null) {
-            return new NewAndOldValue(null, lookupValue);
-        } else {
-            return new NewAndOldValue(lookupValue, null);
-        }
+        return new NewAndOldValue(column, data, lookupValue);
     }
 
     protected String doTokenReplacementOnSql(DataContext context, String sql) {

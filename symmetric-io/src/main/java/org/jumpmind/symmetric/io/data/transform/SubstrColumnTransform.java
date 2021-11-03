@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class SubstrColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
     public static final String NAME = "substr";
@@ -71,11 +70,7 @@ public class SubstrColumnTransform implements ISingleNewAndOldValueColumnTransfo
                 }
             }
         }
-        if (data.getTargetDmlType() == DataEventType.DELETE && data.getOldSourceValues() != null) {
-            return new NewAndOldValue(null, newValue);
-        } else {
-            return new NewAndOldValue(newValue, null);
-        }
+        return new NewAndOldValue(column, data, newValue);
     }
 
     protected String[] prepend(String v, String[] array) {

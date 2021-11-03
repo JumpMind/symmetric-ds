@@ -52,8 +52,10 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.junit.Assert;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+@Tag("integration")
 public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest {
     protected final static String[] TEST_COLUMNS = { "id", "string_value", "string_required_value", "char_value",
             "char_required_value", "date_value", "time_value", "boolean_value", "integer_value", "decimal_value", "double_value",
@@ -114,7 +116,6 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
     protected abstract long writeData(List<CsvData> data);
 
     protected abstract long writeData(BinaryEncoding encoding, List<CsvData> data);
-    // protected abstract long writeBulkData(IDataWriter writer, List<CsvData> data);
 
     @Test
     public void testInsert() {

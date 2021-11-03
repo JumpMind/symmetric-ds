@@ -182,6 +182,9 @@ abstract public class AbstractTest {
                     } catch (Exception ex) {
                         log.warn("Failed to create engine on the first try.  Trying again.  The root cause of the first failure was: ", ex);
                         tries--;
+                        if (tries == 0) {
+                            throw ex;
+                        }
                         AppUtils.sleep(30000);
                     }
                 } while (tries > 0 && engine == null);

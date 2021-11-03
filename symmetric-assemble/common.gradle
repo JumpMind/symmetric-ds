@@ -187,10 +187,10 @@ subprojects { subproject ->
         minHeapSize = "128m"
         maxHeapSize = "512m"
         forkEvery=1
-        systemProperty "test.root", System.getProperty("test.root")
-        systemProperty "test.server", System.getProperty("test.server")
-        systemProperty "test.client", System.getProperty("test.client")
-        systemProperty "port.number", System.getProperty("port.number")
+        if (System.getProperty("test.root") != null) systemProperty "test.root", System.getProperty("test.root")
+        if (System.getProperty("test.server") != null) systemProperty "test.server", System.getProperty("test.server")
+        if (System.getProperty("test.client") != null) systemProperty "test.client", System.getProperty("test.client")
+        if (System.getProperty("port.number") != null) systemProperty "port.number", System.getProperty("port.number")
         useJUnitPlatform {
             includeTags("integration")
         }
@@ -241,12 +241,12 @@ subprojects { subproject ->
         powerMockVersion = '2.0.5'
         mysqlVersion = '5.1.45'
         servletVersion = '3.1.0'
-        springVersion = '5.2.9.RELEASE'
+        springVersion = '5.3.12'
         jtdsVersion = '1.3.1'
         bouncyCastleVersion = '1.68'
         animalSnifferVersion = '1.18'
         jnaVersion = '5.6.0'
-        jettyVersion = '9.4.40.v20210413'
+        jettyVersion = '9.4.44.v20210927'
         alpnBootVersion = '8.1.13.v20181017'
         alpnApiVersion = '1.1.3.v20160715'
         websocketVersion = '1.1'
@@ -307,12 +307,12 @@ subprojects { subproject ->
     
         aliases = [
             (gplTwo) : ['The GNU General Public License, Version 2'],
-            (gplTwoCE) : ['GPL2 w/ CPE', 'GPL v2 with ClassPath Exception'],
+            (gplTwoCE) : ['GPL2 w/ CPE', 'GPL v2 with ClassPath Exception', 'GNU General Public License, version 2 (GPL2), with the classpath exception'],
             (lgpl) : ['GNU Library or Lesser General Public License (LGPL) V2.1', 'LGPL, version 2.1', 'LGPL'],
-            (apacheTwo) : ['The Apache Software License, Version 2.0', 'Apache 2', 'Apache License Version 2.0', 'Apache License, Version 2.0', 'Apache License 2.0', 'Apache Software License - Version 2.0', 'The Apache License, Version 2.0', 'Apache License v2.0', 'Apache 2.0', 'Similar to Apache License but with the acknowledgment clause removed', 'GWT Terms'],
-            (bsd) : ['BSD License', 'BSD', 'BSD style', 'BSD 3-clause License w/nuclear disclaimer', 'BSD-2-Clause'],
+            (apacheTwo) : ['The Apache Software License, Version 2.0', 'Apache 2', 'Apache License Version 2.0', 'Apache License, Version 2.0', 'Apache License 2.0', 'Apache Software License - Version 2.0', 'The Apache License, Version 2.0', 'Apache License v2.0', 'Apache 2.0', 'Apache-2.0', 'Similar to Apache License but with the acknowledgment clause removed', 'GWT Terms'],
+            (bsd) : ['BSD License', 'BSD', 'BSD style', 'BSD 3-clause License w/nuclear disclaimer', 'BSD-2-Clause', 'BSD 3-Clause'],
             (eclipse) : ['Eclipse Public License, Version 1.0', 'Eclipse Public License - Version 1.0', 'The H2 License, Version 1.0'],
-            (mit) : ['MIT License', 'The MIT License', 'The MIT License (MIT)', 'Bouncy Castle Licence'],
+            (mit) : ['MIT License', 'The MIT License', 'The MIT License (MIT)', 'Bouncy Castle Licence', 'MIT'],
             (cddl) : ['CDDL', 'Common Development and Distribution License (CDDL) v1.0', 'CDDL 1.1', 'Dual license consisting of the CDDL v1.1 and GPL v2', 'CDDL/GPLv2+CE', 'CDDL + GPLv2 with classpath exception'],
             (w3c) : ['The W3C Software License', 'W3C Software Copyright Notice and License']
         ]

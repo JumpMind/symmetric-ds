@@ -1204,10 +1204,18 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         for (int i = 0; i < columnNames.length; i++) {
             String name = columnNames[i];
             for (Column column : unorderedColumns) {
-                if (column != null && column.getName().equalsIgnoreCase(name)) {
+                if (column != null && column.getName().equals(name)) {
                     orderedColumns[i] = column;
                     break;
                 }
+            }
+            if (orderedColumns[i] == null) {
+                for (Column column : unorderedColumns) {
+                    if (column != null && column.getName().equalsIgnoreCase(name)) {
+                        orderedColumns[i] = column;
+                        break;
+                    }
+                }                
             }
             if (orderedColumns[i] == null && log.isDebugEnabled()) {
                 log.debug("Could not find column with the name of {} on table {}", name, table.toVerboseString());

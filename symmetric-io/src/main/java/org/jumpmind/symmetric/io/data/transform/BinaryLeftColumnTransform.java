@@ -27,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class BinaryLeftColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
     public static final String NAME = "bleft";
@@ -55,11 +54,7 @@ public class BinaryLeftColumnTransform implements ISingleNewAndOldValueColumnTra
                 newValue = bleft(newValue, Integer.parseInt(expression));
             }
         }
-        if (data.getTargetDmlType() == DataEventType.DELETE && data.getOldSourceValues() != null) {
-            return new NewAndOldValue(null, newValue);
-        } else {
-            return new NewAndOldValue(newValue, null);
-        }
+        return new NewAndOldValue(column, data, newValue);
     }
 
     public String bleft(String value, int maxBytes) {

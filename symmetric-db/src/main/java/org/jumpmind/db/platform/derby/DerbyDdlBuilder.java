@@ -71,7 +71,7 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "LONG VARCHAR FOR BIT DATA");
-        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "LONG VARCHAR", Types.LONGVARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "CLOB", Types.LONGVARCHAR);
         databaseInfo.addNativeTypeMapping(Types.NULL, "LONG VARCHAR FOR BIT DATA", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.OTHER, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.REF, "LONG VARCHAR FOR BIT DATA", Types.LONGVARBINARY);
@@ -130,7 +130,10 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
     protected void writeCastExpression(Column sourceColumn, Column targetColumn, StringBuilder ddl) {
         String sourceNativeType = getBareNativeType(sourceColumn);
         String targetNativeType = getBareNativeType(targetColumn);
-        if (sourceNativeType.equals(targetNativeType)) {
+        if (sourceNativeType.equals(targetNativeType)
+                || ((sourceNativeType.equalsIgnoreCase("CLOB") || sourceNativeType.equalsIgnoreCase("LONG VARCHAR"))
+                        && (targetNativeType.equalsIgnoreCase("CHAR") || targetNativeType.equalsIgnoreCase("VARCHAR")
+                                || targetNativeType.equalsIgnoreCase("LONG VARCHAR")))) {
             printIdentifier(getColumnName(sourceColumn), ddl);
         } else {
             // Derby currently has the limitation that it cannot convert numeric

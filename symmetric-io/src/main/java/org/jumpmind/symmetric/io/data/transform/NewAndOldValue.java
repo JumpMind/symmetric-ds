@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.io.data.transform;
 
+import org.jumpmind.symmetric.io.data.DataEventType;
+
 public class NewAndOldValue {
     protected String newValue;
     protected String oldValue;
@@ -30,6 +32,17 @@ public class NewAndOldValue {
     public NewAndOldValue(String newValue, String oldValue) {
         this.newValue = newValue;
         this.oldValue = oldValue;
+    }
+
+    public NewAndOldValue(TransformColumn column, TransformedData data, String value) {
+        if (data.getTargetDmlType() == DataEventType.DELETE && data.getOldSourceValues() != null) {
+            this.oldValue = value;
+        } else if (data.getTargetDmlType() == DataEventType.UPDATE && column.isPk()) {
+            this.oldValue = value;
+            this.newValue = value;
+        } else {
+            this.newValue = value;
+        }
     }
 
     public void setNewValue(String newValue) {

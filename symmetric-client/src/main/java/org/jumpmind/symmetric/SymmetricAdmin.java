@@ -106,8 +106,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String CMD_SEND_SCHEMA = "send-schema";
     private static final String CMD_BACKUP_FILE_CONFIGURATION = "backup-config";
     private static final String CMD_RESTORE_FILE_CONFIGURATION = "restore-config";
-    private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES, CMD_ENCRYPT_TEXT, CMD_OBFUSCATE_TEXT, CMD_LIST_ENGINES, CMD_MODULE,
-            CMD_BACKUP_FILE_CONFIGURATION, CMD_RESTORE_FILE_CONFIGURATION, CMD_CREATE_WAR };
+    private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES, CMD_ENCRYPT_TEXT, CMD_OBFUSCATE_TEXT, CMD_UNOBFUSCATE_TEXT, CMD_LIST_ENGINES,
+            CMD_MODULE, CMD_BACKUP_FILE_CONFIGURATION, CMD_RESTORE_FILE_CONFIGURATION, CMD_CREATE_WAR };
     private static final String OPTION_NODE = "node";
     private static final String OPTION_CATALOG = "catalog";
     private static final String OPTION_SCHEMA = "schema";
