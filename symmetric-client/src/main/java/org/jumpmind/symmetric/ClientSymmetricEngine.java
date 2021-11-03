@@ -304,6 +304,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             copyProperties(properties, "", ParameterConstants.ALL_KAFKA_PARAMS);
             copyProperties(properties, "", ParameterConstants.ALL_GOOGLE_BIG_QUERY_PARAMS);
             copyProperties(properties, "", ParameterConstants.ALL_MONGODB_PARAMS);
+            copyProperties(properties, "", ParameterConstants.ALL_COSMOS_PARAMS);
             IDatabasePlatform targetPlatform = createDatabasePlatform(null, properties, null, true, true,
                     parameterService.is(ParameterConstants.START_LOG_MINER_JOB, false));
             if (targetPlatform instanceof GenericJdbcDatabasePlatform) {

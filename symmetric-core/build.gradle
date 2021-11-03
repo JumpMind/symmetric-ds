@@ -16,6 +16,7 @@ apply from: symAssembleDir + '/common.gradle'
         
         compileOnly ("nl.cad:tps-parse:1.0.15-SNAPSHOT") {
             exclude group: 'commons-lang', module: 'commons-lang'
+            exclude group: 'joda-time', module: 'joda-time'
         }
         compileOnly ("org.apache.kafka:kafka-clients:1.1.0") {
             exclude group: 'log4j'
@@ -27,6 +28,7 @@ apply from: symAssembleDir + '/common.gradle'
             exclude group: 'com.fasterxml.jackson.databind'
             exclude group: 'log4j'
             exclude group: 'org.slf4j'
+            exclude group: 'io.netty'
         }
         compileOnly ("org.apache.avro:avro:1.8.2") {
             exclude group: 'log4j'
