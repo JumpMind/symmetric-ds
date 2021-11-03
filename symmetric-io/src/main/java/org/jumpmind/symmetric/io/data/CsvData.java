@@ -229,6 +229,25 @@ public class CsvData {
             return new HashMap<String, String>(0);
         }
     }
+    
+    public Map<String, String> toColumnNameValuePairsWithExactMatch(String[] primaryKeyNames, String[] secondaryKeyNames,String key) {
+        String[] values = getParsedData(key);
+        if (values != null && primaryKeyNames != null && values.length == primaryKeyNames.length) {
+            Map<String, String> map = new LinkedCaseInsensitiveMap<String>(primaryKeyNames.length);
+            for (int i = 0; i < primaryKeyNames.length; i++) {
+                map.put(primaryKeyNames[i], values[i]);
+            }
+            return map;
+        } else if (values != null && secondaryKeyNames != null && values.length == secondaryKeyNames.length) {
+            Map<String, String> map = new LinkedCaseInsensitiveMap<String>(secondaryKeyNames.length);
+            for (int i = 0; i < secondaryKeyNames.length; i++) {
+                map.put(secondaryKeyNames[i], values[i]);
+            }
+            return map;
+        } else {
+            return new HashMap<String, String>(0);
+        }
+    }
 
     public boolean requiresTable() {
         return dataEventType != null && dataEventType != DataEventType.CREATE

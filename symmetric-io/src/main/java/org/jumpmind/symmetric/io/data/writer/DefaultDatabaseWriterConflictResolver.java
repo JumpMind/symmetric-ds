@@ -344,7 +344,8 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         int count = 0;
         if (e != null && sqlTemplate.isUniqueKeyViolation(e)) {
             Table targetTable = writer.getTargetTable();
-            Map<String, String> values = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
+            Map<String, String> values = data.toColumnNameValuePairsWithExactMatch(targetTable.getColumnNames(), 
+            		writer.getSourceTable().getColumnNames(), CsvData.ROW_DATA);
             List<Column> whereColumns = targetTable.getPrimaryKeyColumnsAsList();
             List<String> whereValues = new ArrayList<String>();
             for (Column column : whereColumns) {
