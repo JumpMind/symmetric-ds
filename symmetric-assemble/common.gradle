@@ -289,13 +289,6 @@ subprojects { subproject ->
 
         provided "org.mongodb:mongo-java-driver:2.12.3"
         
-        provided ("com.amazon.redshift:redshift-jdbc42-no-awssdk:1.2.36.1060") {
-			exclude group: 'org.apache.httpcomponents'
-            exclude group: 'commons-logging'
-            exclude group: 'com.fasterxml.jackson.core'
-            exclude group: 'commons-codec'
-        }
-        
         provided ("com.amazonaws:aws-java-sdk-s3:1.11.510") {
 			exclude group: 'org.apache.httpcomponents'
             exclude group: 'commons-logging'
