@@ -21,7 +21,7 @@ ifdef::pro[]
 * To setup a load only node, begin by adding a new node to your configuration (See <<Add Node>> for details on adding a new node).
 
 ===== Setup Load Only Node For Supported Databases
-* On the database setup screen of the add node wizard, check the load only box after selecting your database type.
+* On the database setup screen of the add node wizard, select load only after selecting your database type.
 
 image::manage/manage-load-only.png[]
 
