@@ -8,7 +8,7 @@ In other words, the sync on insert, sync on update, and sync on delete attribute
 ifdef::pro[]
 .Sample load only trigger
 ====
-image::triggers/trigger-load-only.png[500,400]
+image::triggers/trigger-load-only.png[]
 ====
 endif::pro[]
 

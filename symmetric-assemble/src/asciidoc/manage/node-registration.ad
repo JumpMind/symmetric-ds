@@ -6,7 +6,7 @@ ifdef::pro[]
 To allow a node to register, navigate to Manage Nodes on the server, click the *Registration* button and select *Allow*.
 Registration requests appear at the top of the list with a question mark (?) for the Node ID. 
 
-image::manage/mange-nodes-allow-registration.png[role="help"]
+image::manage/manage-nodes-allow-registration.png[role="help"]
 
 The registration menu has the following actions:
 

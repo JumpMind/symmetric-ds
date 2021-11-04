@@ -1,6 +1,11 @@
-ifndef::pro[] 
 
 === Elasticsearch
+
+ifndef::pro[]
+Elasticsearch is only supported in the professional version of SymmetricDS.
+endif::pro[]
+
+ifdef::pro[]
 
 Use `symadmin module install elasticsearch` to install driver files, or copy your own files into the `lib` sub-directory.
 

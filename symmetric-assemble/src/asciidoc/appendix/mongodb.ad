@@ -2,7 +2,7 @@
 === MongoDB
 
 ifndef::pro[]
-MongoDB is only support in the professional version of SymmetricDS.
+MongoDB is only supported in the professional version of SymmetricDS.
 endif::pro[]
 
 ifdef::pro[]

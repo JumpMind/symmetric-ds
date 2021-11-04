@@ -67,7 +67,7 @@ Provide this file path on the advanced settings while setting up a BigQuery node
 NOTE: You will need to use your Google BigQuery dataset name in the target schema of the router that is used to route data to BigQuery.
 ====
 
-image::appendix/bigquery-advanced-settings-snowflake-managed.png[]
+image::appendix/bigquery-advanced-settings.png[]
 endif::pro[]
 ifndef::pro[] 
 [source, properties]

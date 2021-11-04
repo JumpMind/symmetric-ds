@@ -120,22 +120,6 @@ You can also select HTTPS or HTTP to be used for transferring data.
 --
 
 
-===== Load Existing Data
-
-[.float-group]
---
-[.left.text-left]
-image::wizard-connect/wizard-connect-initial.png[]
-
-Often when new nodes are connected for synchronization they need to be 
-initially loaded with existing data before synchronization was in place.
-
-You can also indicate if you wish tables to be created in the new node 
-as part of the initial load process if they do not already exist.
-
-See <<Initial Loads>> for more details.
---
-
 ===== Finish
 
 [.float-group]
