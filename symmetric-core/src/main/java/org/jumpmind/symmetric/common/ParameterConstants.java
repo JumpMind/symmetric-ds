@@ -452,7 +452,7 @@ final public class ParameterConstants {
     public final static String[] ALL_MONGODB_PARAMS = new String[] { MONGO_DEFAULT_DATABASE, MONGO_USE_MONGO_IDS };
     public final static String COSMOS_DEFAULT_DATABASE = "cosmosdb.default.database";
     public final static String[] ALL_COSMOS_PARAMS = new String[] { COSMOS_DEFAULT_DATABASE };
-    
+
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
