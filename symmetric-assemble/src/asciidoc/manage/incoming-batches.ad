@@ -1,14 +1,3 @@
-ifdef::pro[]
-
-The Incoming Batches screens allows you to monitor batches that have been delivered to the target node.
-
-image::manage/manage-incoming-batches.png[]
-
-endif::pro[]
-
-Incoming batches are delivered to the target node when the source node <<_push_job,pushes>> or when the target node <<_pull_job,pulls>>.
-
-Incoming batches are written to the <<Staging Area>> first and then loaded.  The use of the staging area can be turned off by setting the `stream.to.file.enabled` parameter.
 
 ==== Incoming Sync Status
 

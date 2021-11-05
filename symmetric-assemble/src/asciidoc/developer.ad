@@ -24,7 +24,7 @@ The INodeGroupExtensionPoint interface may be optionally implemented to indicate
  }
 ----
 
-===== IParameterFilter
+==== IParameterFilter
 Parameter values can be specified in code using a parameter filter. Note that there can be only one parameter filter per engine instance. The IParameterFilter replaces the deprecated IRuntimeConfig from prior releases.
 
 [source, java]
@@ -55,7 +55,7 @@ public class MyParameterFilter
 }
 ----
 
-===== IDatabaseWriterFilter
+==== IDatabaseWriterFilter
 Data can be filtered or manipulated before it is loaded into the target database. A filter can change the data in a column, save it somewhere else or do something else with the data entirely. It can also specify by the return value of the function call that the data loader should continue on and load the data (by returning true) or ignore it (by returning false). One possible use of the filter, for example, might be to route credit card data to a secure database and blank it out as it loads into a less-restricted reporting database.
 
 A DataContext is passed to each of the callback methods. A new context is created for each synchronization. The context provides a mechanism to share data during the load of a batch between different rows of data that are committed in a single database transaction.
@@ -99,55 +99,55 @@ The filter class should be specified in conf/symmetric-extensions.xml as follows
 </beans>
 ----
 
-===== IDatabaseWriterErrorHandler
+==== IDatabaseWriterErrorHandler
 Implement this extension point to override how errors are handled. You can use this extension point to ignore rows that produce foreign key errors.
 
-===== IDataLoaderFactory
+==== IDataLoaderFactory
 Implement this extension point to provide a different implementation of the org.jumpmind.symmetric.io.data.IDataWriter that is used by the SymmetricDS data loader. Data loaders are configured for a channel. After this extension point is registered it can be activated for a CHANNEL by indicating the data loader name in the data_loader_type column.
 
 SymmetricDS has two out of the box extensions of IDataLoaderFactory already implemented in its PostgresBulkDataLoaderFactory and OracleBulkDataLoaderFactory classes. These extension points implement bulk data loading capabilities for Oracle, Postgres and Greenplum dialects. See Appendix C. Database Notes for details.
 
 Another possible use of this extension point is to route data to a NOSQL data sink.
 
-===== IAcknowledgeEventListener
+==== IAcknowledgeEventListener
 Implement this extension point to receive callback events when a batch is acknowledged. The callback for this listener happens at the point of extraction.
 
-===== IReloadListener
+==== IReloadListener
 Implement this extension point to listen in and take action before or after a reload is requested for a Node. The callback for this listener happens at the point of extraction.
 
-===== IReloadVariableFilter
+==== IReloadVariableFilter
 Implement this extension point to filter the SQL used by the initial load to query source tables and purge target tables.  The extension receives the SQL and can replace variable names with values, which allows for adding new variables.  The org.jumpmind.util.FormatUtils.replace() method can be used to find and replace variables.
 
-===== ISyncUrlExtension
+==== ISyncUrlExtension
 This extension point is used to select an appropriate URL based on the URI provided in the sync_url column of sym_node.
 
 To use this extension point configure the sync_url for a node with the protocol of ext://beanName. The beanName is the name you give the extension point in the extension xml file.
 
-===== IColumnTransform
+==== IColumnTransform
 This extension point allows custom column transformations to be created. There are a handful of out-of-the-box implementations. If any of these do not meet the column transformation needs of the application, then a custom transform can be created and registered. It can be activated by referencing the column transform's name transform_type column of TRANSFORM_COLUMN
 
-===== INodeIdCreator
+==== INodeIdCreator
 This extension point allows SymmetricDS users to implement their own algorithms for how node ids and passwords are generated or selected during the registration process. There may be only one node creator per SymmetricDS instance (Please note that the node creator extension has replaced the node generator extension).
 
-===== ITriggerCreationListener
+==== ITriggerCreationListener
 Implement this extension point to get status callbacks during trigger creation.
 
-===== IBatchAlgorithm
+==== IBatchAlgorithm
 Implement this extension point and set the name of the Spring bean on the batch_algorithm column of the Channel table to use. This extension point gives fine grained control over how a channel is batched.
 
-===== IDataRouter
+==== IDataRouter
 Implement this extension point and set the name of the Spring bean on the router_type column of the Router table to use. This extension point gives the ability to programmatically decide which nodes data should be routed to.
 
-===== IHeartbeatListener
+==== IHeartbeatListener
 Implement this extension point to get callbacks during the heartbeat job.
 
-===== IOfflineClientListener
+==== IOfflineClientListener
 Implement this extension point to get callbacks for offline events on client nodes.
 
-===== IOfflineServerListener
+==== IOfflineServerListener
 Implement this extension point to get callbacks for offline events detected on a server node during monitoring of client nodes.
 
-===== INodePasswordFilter
+==== INodePasswordFilter
 Implement this extension point to intercept the saving and rendering of the node password.
 
 === Embedding in Android

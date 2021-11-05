@@ -1,33 +1,3 @@
-ifdef::pro[]
-
-The Outgoing Batches screens allows you to monitor data that has been <<_route_job,routed>>.
-
-image::manage/manage-outgoing-batches.png[]
-
-endif::pro[]
-
-Outgoing batches are delivered to the target node when the source node <<_push_job,pushes>> or when the target node <<_pull_job,pulls>>.
-
-A single push or pull connection is called a _synchronization_.
-
-For one synchronization, each enabled channel will be processed.  Channels are processed in the order defined by the 
-<<configuration/channels.ad#processing-order,Processing Order>> 
-setting on the <<_channels,channel>> with two exceptions:
-
-* If there are reload channels available to be sent _and_ the reload channels are _not_ in error, then only reload channels will be sent
-* If a channel is in error it will be moved to the bottom of the list 
-
-When outgoing batches are selected for a node and a channel, the maximum number of batches that are extracted per synchronization is 
-controlled by the <<configuration/channels.ad#max-batch-to-send,Max Batch To Send>> setting on the <<_channels,channel>>.
-
-There is also a setting that controls the max number of bytes to send in one synchronization. If SymmetricDS has extracted more than
-the number of bytes configured by the `transport.max.bytes.to.sync` parameter, then it will finish extracting the current batch and then finish
-synchronization so the client has a chance to process and acknowledge the "big" batch. This may happen before the configured 
-<<configuration/channels.ad#max-batch-to-send,Max Batch To Send>> has been reached.
-
-When extracting a batch, data is first extracted to the <<Staging Area>> and then sent across the network from the <<Staging Area>>.  
-The staging area is used to minimize the amount of time a database connection is being used when streaming
-over slower networks.  The use of the staging area can be turned off by setting the `stream.to.file.enabled` parameter.
 
 ==== Extract Frequency By Channel
 

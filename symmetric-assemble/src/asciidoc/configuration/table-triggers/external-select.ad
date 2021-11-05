@@ -13,23 +13,31 @@ IMPORTANT: The external select SQL must return a single row, single column
 
 ifdef::pro[]
 .Sample External Select SQL that returns STORE_ID based on the ORDER_ID captured in the trigger.
-[source, SQL]
 ====
+
+[source, SQL]
+----
 select STORE_ID 
 from order 
 where order_id=$(curTriggerValue).$(curColumnPrefix)order_id
+----
+
 ====
 endif::pro[]
 
 ifndef::pro[]
 .Sample Trigger With External Select SQL that returns STORE_ID based on the ORDER_ID captured in the trigger.
-[source, SQL]
 ====
+
+[source, SQL]
+----
 insert into SYM_TRIGGER
 	(trigger_id,source_table_name,channel_id,external_select, last_update_time,create_time) 
 values ('orderlineitem', 'orderlineitem','orderlineitem',
 	'select STORE_ID from order where order_id=$(curTriggerValue).$(curColumnPrefix)order_id',
 	current_timestamp, current_timestamp);
+----
+
 ====
 endif::pro[]
 

@@ -1,4 +1,3 @@
-ifdef::pro[]
 
 === Security
 
@@ -36,5 +35,3 @@ The client will be required to send a valid certificate before HTTPS requests ca
 ==== Console Client Authentication
 
 Authentication of console users using client certificates can be enabled with parameter `console.auth.client.cert`.  The console username is parsed from the distinguished name of the certificate's subject using the first matching group of a regular expression specified by parameter `console.auth.client.cert.subject.regex`.  By default, it will match on the common name of the subject.
-
-endif::pro[]
