@@ -10,7 +10,7 @@ The Quick Config Wizard can be found under the Configure->Overview screen.
 image::configure-overview.png[]
 
 NOTE: The quick config wizard will show a screen for each router that is in place.  The below example
-shows the profile `Standard 2 Tier` with a client and server.
+shows the `Two Tier` configuration option with a client and server.
 
 image::wizard-config/wizard-config-start.png[]
 

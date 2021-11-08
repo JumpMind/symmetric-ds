@@ -4,7 +4,7 @@
 There are two ways a SymmetricDS configuration can be imported.  Both ways support importing an export that is in CSV format.  
 In order to import in SQL format you would run the SQL script via database specific tools or import through the web console in Configure -> Overview.
 
-. During the creation of the master node, while selecting a profile
+. During the creation of the master node, while selecting a configuration
 +
 .Import Existing configuration during the node creation
 image::import-wizard-profile.png[]

@@ -60,9 +60,9 @@ Import existing configuration:: Allows you to import an existing SymmetricDS con
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-profile.png[]
+image::wizard-connect/wizard-connect-config.png[]
 
-Select the profile or option and click *Next*.
+Select the option and click *Next*.
 --
 
 ==== Communication Settings
