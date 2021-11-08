@@ -28,8 +28,6 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.UI;
-
 public class CsvExport {
     protected IDataProvider gridData = null;
     protected String fileName;

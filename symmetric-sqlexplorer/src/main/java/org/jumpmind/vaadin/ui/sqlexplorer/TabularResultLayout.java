@@ -66,7 +66,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -187,8 +186,7 @@ public class TabularResultLayout extends VerticalLayout {
                 if (colId == null || !colId.equals("#")) {
                     Integer index = new Integer(i);
                     TextField field = new TextField();
-                    Binding<List<Object>, String> binding = binder.bind(field,
-                            list -> list.get(index).toString(), (list, value) -> list.set(index, value));
+                    binder.bind(field, list -> list.get(index).toString(), (list, value) -> list.set(index, value));
                     col.setEditorComponent(field);
                     i++;
                 }

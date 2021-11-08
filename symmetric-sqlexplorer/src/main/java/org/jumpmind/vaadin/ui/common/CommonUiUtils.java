@@ -46,8 +46,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.util.FormatUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -76,7 +74,6 @@ import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceTheme;
 
 public final class CommonUiUtils {
-    private final static Logger log = LoggerFactory.getLogger(CommonUiUtils.class);
     static final FastDateFormat DATETIMEFORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
     static final FastDateFormat TIMEFORMAT = FastDateFormat.getInstance("HH:mm:ss.SSS");
     public static final String NULL_TEXT = "<null>";
