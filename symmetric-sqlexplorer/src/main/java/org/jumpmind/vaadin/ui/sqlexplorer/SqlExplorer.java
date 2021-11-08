@@ -610,9 +610,8 @@ public class SqlExplorer extends CustomSplitLayout {
     }
 
     public void addResultsTab(String caption, Icon icon, IContentTab panel) {
-        EnhancedTab tab = contentTabs.add((Component) panel, caption);
+        EnhancedTab tab = contentTabs.add((Component) panel, caption, icon);
         tab.setCloseable(true);
-        tab.setIcon(icon);
         selectContentTab(panel);
     }
 

@@ -38,8 +38,6 @@ import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.util.FormatUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class FileTransportManager extends HttpTransportManager implements ITransportManager {
     protected IParameterService parameterService;

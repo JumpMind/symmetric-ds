@@ -48,7 +48,7 @@ public class PushStatusUriHandler extends AbstractUriHandler {
         String batchToSendCountParam = ServletUtils.getParameter(req, WebConstants.BATCH_TO_SEND_COUNT);
         log.debug("Push stats for nodeId: {} batchToSendCountParam: '{}'", nodeId, batchToSendCountParam);
         // queueName:4,anotherQueueName:6
-        if (!StringUtils.isEmpty(batchToSendCountParam)) {
+        if (StringUtils.hasLength(batchToSendCountParam)) {
             try {
                 Map<String, Integer> queuesToBatchCounts = nodeCommunicationService.parseQueueToBatchCounts(batchToSendCountParam);
                 log.debug("Push stats for nodeId: {} queuesToBatchCounts: '{}'", nodeId, queuesToBatchCounts);

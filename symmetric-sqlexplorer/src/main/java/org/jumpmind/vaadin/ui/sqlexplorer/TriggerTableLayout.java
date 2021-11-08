@@ -27,8 +27,6 @@ import org.jumpmind.vaadin.ui.common.Label;
 import org.jumpmind.vaadin.ui.common.ReadOnlyTextAreaDialog;
 import org.jumpmind.vaadin.ui.sqlexplorer.TriggerInfoPanel.Refresher;
 
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
-import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
@@ -63,7 +61,7 @@ public class TriggerTableLayout extends VerticalLayout {
         bar.setVerticalComponentAlignment(Alignment.CENTER, leftBar);
         MenuBar rightBar = new MenuBar();
         rightBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_SMALL);
-        MenuItem refreshButton = rightBar.addItem(new Icon(VaadinIcon.REFRESH), event -> refresher.refresh());
+        rightBar.addItem(new Icon(VaadinIcon.REFRESH), event -> refresher.refresh());
         bar.add(rightBar);
         bar.setVerticalComponentAlignment(Alignment.CENTER, rightBar);
         this.add(bar);

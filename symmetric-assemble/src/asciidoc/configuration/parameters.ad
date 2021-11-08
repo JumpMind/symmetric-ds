@@ -15,7 +15,7 @@ Parameters can be set for a given node or node group to allow more flexibility i
 .Setting parameters by target
 image::parameters/parameters-target.png[]
 
-NOTE: Only certain parameters can be edited.  To edit a SymmetricDS startup parameter, you must locate and edit the engine.properties file.
+NOTE: Only certain parameters can be edited on this screen.  To edit a SymmetricDS startup parameter, you must go to the Manage->Startup Parameters screen or locate and edit the engine.properties file.
 
 ==== Filtering
 

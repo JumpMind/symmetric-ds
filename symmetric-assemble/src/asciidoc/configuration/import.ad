@@ -1,5 +1,5 @@
 
-==== Import
+=== Import
 
 There are two ways a SymmetricDS configuration can be imported.  Both ways support importing an export that is in CSV format.  
 In order to import in SQL format you would run the SQL script via database specific tools or import through the web console in Configure -> Overview.

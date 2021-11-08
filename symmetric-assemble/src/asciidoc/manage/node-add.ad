@@ -1,20 +1,3 @@
-Multiple nodes can be hosted in a single SymmetricDS instance.  SymmetricDS will start a node for each properties file it finds in the engines directory.
-
-ifndef::pro[]
-Additional nodes can be added to the same SymmetricDS instance that the master node is running in or they can be added to a different
-SymmetricDS instance.  Either way, you create additional nodes by creating an <<Node Properties File>> with the `registration.url` set to 
-the `sync.url` of the master node.  When the SymmetricDS instance is restarted the new node will attempt to register with the master node.
-
-For the new node to fully become a part of the synchronization network <<Registration>> must be opened.
-endif::pro[]
-
-ifdef::pro[]
-
-Add nodes to your synchronization scenario by using the Node Setup Wizard.  This wizard is automatically shown when less the 2 nodes are configured.  
-It can also be accessed from the Manage Nodes screen by clicking the *Add* button. 
-
-image::wizard-connect/wizard-connect-menu.png[]
-
 ===== Choosing node location
 
 [.float-group]
@@ -120,22 +103,6 @@ You can also select HTTPS or HTTP to be used for transferring data.
 --
 
 
-===== Load Existing Data
-
-[.float-group]
---
-[.left.text-left]
-image::wizard-connect/wizard-connect-initial.png[]
-
-Often when new nodes are connected for synchronization they need to be 
-initially loaded with existing data before synchronization was in place.
-
-You can also indicate if you wish tables to be created in the new node 
-as part of the initial load process if they do not already exist.
-
-See <<Initial Loads>> for more details.
---
-
 ===== Finish
 
 [.float-group]
@@ -145,5 +112,3 @@ image::wizard-connect/wizard-connect-install.png[]
 
 The node is now ready to be installed.
 --
-
-endif::pro[]

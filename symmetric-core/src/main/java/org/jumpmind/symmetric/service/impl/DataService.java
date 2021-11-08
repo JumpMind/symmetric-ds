@@ -1187,7 +1187,7 @@ public class DataService extends AbstractService implements IDataService {
                     if (!fullLoad) {
                         currentRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
                     }
-                    //Check the create flag on the specific table reload request
+                    // Check the create flag on the specific table reload request
                     if (triggerRouter.getInitialLoadOrder() > -1
                             && currentRequest != null
                             && currentRequest.isCreateTable()

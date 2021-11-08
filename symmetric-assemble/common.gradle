@@ -239,7 +239,7 @@ subprojects { subproject ->
         slf4jVersion = '1.7.30'
         mockitoVersion = '3.2.4'
         powerMockVersion = '2.0.5'
-        mysqlVersion = '5.1.45'
+        mysqlVersion = '8.0.27'
         servletVersion = '3.1.0'
         springVersion = '5.3.12'
         jtdsVersion = '1.3.1'
@@ -302,7 +302,6 @@ subprojects { subproject ->
             (group('org.jumpmind.symmetric')) : license('JumpMind License'),
             (group('com.jumpmind.symmetric')) : license('JumpMind License'),
             'com.byteowls:vaadin-chartjs:1.2.0' : mit,
-            'org.vaadin.addons:fontawesomelabel:1.4.0' : apacheTwo    
         ]
     
         aliases = [

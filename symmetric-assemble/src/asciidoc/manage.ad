@@ -14,7 +14,26 @@ endif::pro[]
     
 ==== Add Node
 
+Multiple nodes can be hosted in a single SymmetricDS instance.  SymmetricDS will start a node for each properties file it finds in the engines directory.
+
+ifndef::pro[]
+Additional nodes can be added to the same SymmetricDS instance that the master node is running in or they can be added to a different
+SymmetricDS instance.  Either way, you create additional nodes by creating an <<Node Properties File>> with the `registration.url` set to 
+the `sync.url` of the master node.  When the SymmetricDS instance is restarted the new node will attempt to register with the master node.
+
+For the new node to fully become a part of the synchronization network <<Registration>> must be opened.
+endif::pro[]
+
+ifdef::pro[]
+
+Add nodes to your synchronization scenario by using the Node Setup Wizard.  This wizard is automatically shown when less the 2 nodes are configured.  
+It can also be accessed from the Manage Nodes screen by clicking the *Add* button. 
+
+image::wizard-connect/wizard-connect-menu.png[]
+
 include::manage/node-add.ad[]
+
+endif::pro[]
 
 ==== Load Data
 
@@ -30,6 +49,81 @@ include::manage/node-registration.ad[]
 		
 ==== Initial Loads
 
+Loading data for 3.8 and above has been modified, see <<Load Data>>.
+
+ifndef::pro[]
+
+When a load is requested it will either set the `initial_load_enabled` or the `reverse_initial_load_enabled` flag on the 
+appropriate <<NODE_SECURITY>> row.
+
+
+When the <<Route Job>> runs next, it will create batches that represent the initial load.  Batches will be created on the reload 
+channel for each table that is defined by <<Table Triggers>> and linked by <<Table Routing>> in the direction that the load 
+was requested.  The default reload channel is the _"reload"_ channel.  At the
+same time reload batches are inserted, all previously pending batches
+for the node are marked as successfully sent.
+
+Each table defined by <<Table Triggers>> and linked by <<Table Routing>> is represented by a reload <<OUTGOING_BATCH>>.  The batches 
+are inserted in the defined order.  If the `initial_load_order` is the same then SymmetricDS tries to determine the order the 
+tables need to be loaded in automatically based on foreign key dependencies.  A negative value for `initial_load_order` in <<Table Routing>> will result
+_no_ reload batch being inserted.
+
+If there are cyclical constraints, then foreign keys might need to be
+turned off or the initial load will need to be manually configured based
+on knowledge of how the data is structured.
+
+A SQL statement is run against each table to get the data load
+that will be streamed to the target node. The selected data is filtered
+through the configured router for the table being loaded. If the data
+set is going to be large, then SQL criteria can optionally be provided in `initial_load_select` 
+to pare down the data that is selected out of the database.
+            
+IMPORTANT: Note that if the parent node that a node is registering with is _not_ a registration server node 
+(as can happen when using <<REGISTRATION_REDIRECT>> or when using multiple tiers) the parent node's <<NODE_SECURITY>> 
+entry must exist at the parent node and have a non-null value for column `initial_load_time`.  Nodes can't be registered 
+to a non-registration-server node without this value being set one way or another (i.e., manually, or as a result
+of an initial load occurring at the parent node).           
+            
+===== Partial Initial Loads
+
+An efficient way to select a subset of data from a table for an initial
+load is to provide an `initial_load_select` clause in <<Table Routing>>
+. This clause, if present, is applied as a `where` clause to the SQL used to 
+select the data to be loaded. The clause may use "t" as an alias for the table being loaded, if needed. The
+`$(externalId)` token can be used for subsetting the data in the where clause.
+            
+In cases where routing is done using a feature like
+<<Subselect Router>>
+, an
+`initial_load_select`
+clause matching the subselect's criteria would be a more efficient
+approach. Some routers will check to see if the
+`initial_load_select`
+clause is provided, and they will
+_not_
+execute assuming that the more optimal path is using the
+`initial_load_select`
+statement.
+
+One example of the use of an initial load select would be if you wished
+to only load data created more recently than the start of year 2011.
+Say, for example, the column
+`created_time`
+contains the creation date. Your
+`initial_load_select`
+would read
+`created_time &gt; ts {'2011-01-01 00:00:00.0000'}`
+(using whatever timestamp format works for your database). This then
+gets applied as a
+`where`
+clause when selecting data from the table.
+
+IMPORTANT: When providing an
+            `initial_load_select`
+            be sure to test out the criteria against production data in a query
+            browser. Do an explain plan to make sure you are properly using indexes.
+endif::pro[]
+
 include::manage/node-initial-load.ad[]
 
 ==== Send
@@ -37,6 +131,44 @@ include::manage/node-initial-load.ad[]
 include::manage/node-send.ad[]
 	
 === Jobs
+
+Most work done by SymmetricDS is initiated by jobs. Jobs are tasks that are started and scheduled by a job manager.  
+Jobs are enabled by the `start.<name>.job` parameter.  
+
+Most jobs are enabled by default.  The frequency at which a job 
+runs is controlled by one of two parameters:  
+
+* `job.<name>.period.time.ms`
+* `job.<name>.cron`
+
+If a valid cron property exists in the configuration, then it will be used to schedule the job. Otherwise, the job manager 
+will attempt to use the period.time.ms property.
+
+ifdef::pro[]
+From the manage jobs screen the frequency that a job will run for the *current node* in the cluster can be managed.  If you want to change
+the frequency a job runs across a group or for everyone, you modify the parameter in the <<Parameters>> screen.  
+
+A job can also be _stopped_ and _restarted_.  If a job is scheduled to run infrequently and the job is needed to run immediately 
+you can select job and click *Run Now*.
+
+image::manage/manage-jobs.png[]
+endif::pro[]
+
+ifndef::pro[]
+
+The frequency of jobs can be configured in either the <<Node Properties File>> or in the <<PARAMETER>> table.  When managed in
+<<PARAMETER>> table the frequency properties can be changed in the master node and when the updated settings sync to the other nodes 
+in the system the job manager will restart the jobs at the new frequency settings.
+
+endif::pro[]
+
+SymmetricDS utilizes Spring's CRON support, which includes seconds as the first parameter. This differs from the typical Unix-based
+implementation, where the first parameter is usually minutes. For example,
+`*/15 * * * * *`
+means every 15 seconds, not every 15 minutes. See
+http://static.springsource.org/spring/docs/3.0.x/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html"[Spring's
+documentation]
+for more details.
 
 include::manage/jobs.ad[]
 
@@ -58,9 +190,52 @@ endif::pro[]
 
 === Outgoing Batches
 
+ifdef::pro[]
+
+The Outgoing Batches screens allows you to monitor data that has been <<_route_job,routed>>.
+
+image::manage/manage-outgoing-batches.png[]
+
+endif::pro[]
+
+Outgoing batches are delivered to the target node when the source node <<_push_job,pushes>> or when the target node <<_pull_job,pulls>>.
+
+A single push or pull connection is called a _synchronization_.
+
+For one synchronization, each enabled channel will be processed.  Channels are processed in the order defined by the 
+<<configuration/channels.ad#processing-order,Processing Order>> 
+setting on the <<_channels,channel>> with two exceptions:
+
+* If there are reload channels available to be sent _and_ the reload channels are _not_ in error, then only reload channels will be sent
+* If a channel is in error it will be moved to the bottom of the list 
+
+When outgoing batches are selected for a node and a channel, the maximum number of batches that are extracted per synchronization is 
+controlled by the <<configuration/channels.ad#max-batch-to-send,Max Batch To Send>> setting on the <<_channels,channel>>.
+
+There is also a setting that controls the max number of bytes to send in one synchronization. If SymmetricDS has extracted more than
+the number of bytes configured by the `transport.max.bytes.to.sync` parameter, then it will finish extracting the current batch and then finish
+synchronization so the client has a chance to process and acknowledge the "big" batch. This may happen before the configured 
+<<configuration/channels.ad#max-batch-to-send,Max Batch To Send>> has been reached.
+
+When extracting a batch, data is first extracted to the <<Staging Area>> and then sent across the network from the <<Staging Area>>.  
+The staging area is used to minimize the amount of time a database connection is being used when streaming
+over slower networks.  The use of the staging area can be turned off by setting the `stream.to.file.enabled` parameter.
+
 include::manage/outgoing-batches.ad[]
 
 === Incoming Batches
+
+ifdef::pro[]
+
+The Incoming Batches screens allows you to monitor batches that have been delivered to the target node.
+
+image::manage/manage-incoming-batches.png[]
+
+endif::pro[]
+
+Incoming batches are delivered to the target node when the source node <<_push_job,pushes>> or when the target node <<_pull_job,pulls>>.
+
+Incoming batches are written to the <<Staging Area>> first and then loaded.  The use of the staging area can be turned off by setting the `stream.to.file.enabled` parameter.
 
 include::manage/incoming-batches.ad[]
 

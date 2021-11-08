@@ -531,11 +531,9 @@ public class QueryPanel extends CustomSplitLayout implements IContentTab {
             StringBuilder sqlBuffer = new StringBuilder();
             String[] lines = sql.split("\n");
             int[] cursorPosition = sqlArea.getCursorPosition();
-            int charCount = 0;
             boolean pastCursor = false;
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
-                charCount += line.length() + (i > 0 ? 1 : 0);
                 if (i == cursorPosition[0]) {
                     pastCursor = true;
                 }

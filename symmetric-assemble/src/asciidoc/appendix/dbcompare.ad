@@ -21,7 +21,7 @@ The results of the compare can be presented in four ways:
 
 The *Show Report* option will open a new tab in the SQL editor showing the results of the compare.
 
-image::appendix/dbcompare/dbcomapre-results-table.png[]
+image::appendix/dbcompare/dbcompare-results-table.png[]
 
 The *Write Differences to SQL Editor* option will write all the required SQL to get the tables in sync and copy it to the current instance of the SQL editor.
 
