@@ -30,26 +30,32 @@ This screen shows the permissions required to install the Symmetric System table
 
 --
 
-==== Select a profile
+==== Select a configuration
 
-SymmetricDS has several predefined profiles that can assist in creating configuration for a synchronization scenario.  These profiles
-create a base configuration and allow you to tweak that configuration after initial creation.  The following profiles are provided:
+SymmetricDS has several predefined configuration options that can assist you with setting up a synchronization scenario.  These options
+create a base configuration and allow you to tweak that configuration after initial creation.  The following configuration options are provided:
 
 [horizontal]
-Standard 2 Tier:: This pattern is a central database being synchronized with many child databases of the same type.  
+Two Tier:: This pattern is a central database being synchronized with many child databases of the same type.  
 Typical examples include a central office database synchronizing to field databases (central office to stores, 
 central office to field offices, etc.)
 
-Master to Master:: Master to Master synchronization.  Typically two master databases / nodes used in failover fashion
+Source to Target:: Similar to Two Tier, except the node groups are named source and target
 
-Multiple Source to One Target:: Many source databases synchronizing to a target database.  A typical example for this pattern is
+Multi Master:: Multi Master synchronization.  Typically two master databases / nodes used in failover fashion
+
+Secondary:: A primary node group and a secondary node group synchronize by pushing data to each other.
+
+On Prem to Cloud:: A cloud node group synchronizes data down to an on prem node group that includes the registration server.
+
+Multi Source:: Many source databases synchronizing to a target database.  A typical example for this pattern is
 operational databases to a data warehouse or data mart.  
 
-The other options aren't profiles, but options for configuration
+The other options aren't predefined configurations, but options for making your own configuration.
 
-I'll configure things myself:: This option allows you to configure everything from scratch
+Custom configuration:: This option allows you to configure everything from scratch
 
-Import Existing:: Allows you to import an existing SymmetricDS configuration file for this node
+Import existing configuration:: Allows you to import an existing SymmetricDS configuration file for this node
 
 [.float-group]
 --

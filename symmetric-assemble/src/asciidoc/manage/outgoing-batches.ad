@@ -71,8 +71,8 @@ In order to view the error message, click the *magnifying glass* link in the det
 
 image::manage/manage-outgoing-batches-error-show.png[]
 
-In order to view the data row in error, click the *Sent Data* tab on the captured batch data screen.  There is a button you can click to *Scroll to error*.  The row 
-that is in error will be italicized.  You can view the data that changed at the bottom of the dialog.
+In order to view the data row in error, click the *Sent Data* tab on the captured batch data screen.  The row that is in error will be red.  
+You can view the data that changed at the bottom of the dialog.
 
 image::manage/manage-outgoing-batches-error-data.png[]
 
