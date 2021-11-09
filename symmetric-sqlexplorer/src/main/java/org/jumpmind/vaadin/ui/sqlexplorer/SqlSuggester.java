@@ -76,7 +76,7 @@ public class SqlSuggester {
         Shortcuts.addShortcutListener(this.editor, () -> {
             addPeriod = true;
             this.editor.sync();
-        }, Key.PERIOD);
+        }, Key.PERIOD).listenOn(editor);
     }
 
     public void updateSuggestions(String text, int cursor) {
