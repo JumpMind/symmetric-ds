@@ -287,6 +287,8 @@
 		<column name="common_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that the data in this batch is shared by other nodes (they will have the same batch_id).  Shared batches will be extracted to a common location." />
 		<column name="fallback_insert_count" type="INTEGER" required="true" default="0" description="The number of times an update was turned into an insert because the data was not already in the target database." />
         <column name="fallback_update_count" type="INTEGER" required="true" default="0" description="The number of times an insert was turned into an update because a data row already existed in the target database." />
+        <column name="conflict_win_count" type="INTEGER" required="true" default="0" description="Not implemented. The number of times a conflict was detected for a row and it was resolved as the winning row." />
+        <column name="conflict_lose_count" type="INTEGER" required="true" default="0" description="Not implemented. The number of times a conflict was detected for a row and it was resolved as the losing row." />
 		<column name="ignore_row_count" type="INTEGER" required="true" default="0" description="The number of times a row was ignored." />
         <column name="missing_delete_count" type="INTEGER" required="true" default="0" description="The number of times a delete did not affect the database because the row was already deleted." />
 		<column name="skip_count" type="INTEGER" required="true" default="0" description="The number of times a batch was sent and skipped because it had already been loaded according to incoming_batch." />
@@ -671,6 +673,8 @@
 		<column name="common_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that the data in this batch is shared by other nodes (they will have the same batch_id).  Shared batches will be extracted to a common location." />
 		<column name="fallback_insert_count" type="INTEGER" required="true" default="0" description="The number of times an update was turned into an insert because the data was not already in the target database." />
         <column name="fallback_update_count" type="INTEGER" required="true" default="0" description="The number of times an insert was turned into an update because a data row already existed in the target database." />
+        <column name="conflict_win_count" type="INTEGER" required="true" default="0" description="Not implemented. The number of times a conflict was detected for a row and it was resolved as the winning row." />
+        <column name="conflict_lose_count" type="INTEGER" required="true" default="0" description="Not implemented. The number of times a conflict was detected for a row and it was resolved as the losing row." />
 		<column name="ignore_row_count" type="INTEGER" required="true" default="0" description="The number of times a row was ignored." />
         <column name="missing_delete_count" type="INTEGER" required="true" default="0" description="The number of times a delete did not affect the database because the row was already deleted." />
 		<column name="skip_count" type="INTEGER" required="true" default="0" description="The number of times a batch was sent and skipped because it had already been loaded according to incoming_batch." />
