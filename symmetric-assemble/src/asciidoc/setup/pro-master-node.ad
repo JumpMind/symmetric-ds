@@ -46,7 +46,7 @@ Multi Master:: Multi Master synchronization.  Typically two master databases / n
 
 Secondary:: A primary node group and a secondary node group synchronize by pushing data to each other.
 
-On Prem to Cloud:: A cloud node group synchronizes data down to an on prem node group that includes the registration server.
+On Prem to Cloud:: An on prem node group that includes the registration server synchronizes data to and from a cloud node group.
 
 Multi Source:: Many source databases synchronizing to a target database.  A typical example for this pattern is
 operational databases to a data warehouse or data mart.  
