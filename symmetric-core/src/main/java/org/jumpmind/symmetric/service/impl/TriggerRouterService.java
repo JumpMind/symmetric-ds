@@ -2029,6 +2029,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (usingTargetDialect) {
             if (hist == null && (oldhist == null || forceRebuild)) {
                 insert(newTriggerHist);
+                activeTriggerHistories.add(newTriggerHist);
                 hist = getNewestTriggerHistoryForTrigger(activeTriggerHistories, trigger.getTriggerId(),
                         trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
                         trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaNameUnescaped(),
