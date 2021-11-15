@@ -372,7 +372,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         
         if (e != null && sqlTemplate.isUniqueKeyViolation(e)) {
             Table targetTable = writer.getTargetTable();
-            Map<String, String> values = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
+            Map<String, String> values = data.toColumnNameValuePairs(writer.getSourceTable().getColumnNames(), CsvData.ROW_DATA);
             List<Column> whereColumns = targetTable.getPrimaryKeyColumnsAsList();
             List<String> whereValues = new ArrayList<String>();
             for (Column column : whereColumns) {
@@ -390,13 +390,14 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
 
             if ((!isFallback && data.getDataEventType().equals(DataEventType.UPDATE)) || 
                     (isFallback && data.getDataEventType().equals(DataEventType.INSERT))) {
-                Map<String, String> pkValues = data.toColumnNameValuePairs(targetTable.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
+                Map<String, String> pkValues = data.toColumnNameValuePairs(writer.getSourceTable().getPrimaryKeyColumnNames(), CsvData.PK_DATA);
                 boolean isPkChanged = false;
-                for (Map.Entry<String, String> entry : pkValues.entrySet()) {
-                    String newValue = values.get(entry.getKey());
-                    if (!StringUtils.equals(newValue, entry.getValue())) {
-                        isPkChanged = true;
-                        break;
+                if (pkValues.size() > 0) {
+                    for (String name : targetTable.getPrimaryKeyColumnNames()) {
+                        if (!StringUtils.equals(values.get(name), pkValues.get(name))) {
+                            isPkChanged = true;
+                            break;
+                        }
                     }
                 }
                 if (isPkChanged && pkCount > 0) {
