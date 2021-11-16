@@ -25,5 +25,6 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 
 public interface ISymmetricEngineLifecycle extends IExtensionPoint {
     public void started(ISymmetricEngine engine);
+
     public void stopped(ISymmetricEngine engine);
 }
