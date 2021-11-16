@@ -216,16 +216,14 @@ public class TabularResultLayout extends VerticalLayout {
                     List<Integer> types = new ArrayList<Integer>();
                     for (int j = 0; j < row.size(); j++) {
                         String colName = columnNameMap.get(j);
-                        if (!db.getPlatform().isLob(resultTable.getColumnWithName(colName).getMappedTypeCode())) {
-                            Object param = row.get(j);
-                            Object originalValue = unchangedValue[0].get(j).toString();
-                            if ((param == null && originalValue == null) || (param != null && param.equals(originalValue))) {
-                                continue;
-                            }
-                            colNames.add(colName);
-                            params.add(param);
-                            types.add(resultTable.getColumnWithName(colName).getMappedTypeCode());
+                        Object param = row.get(j);
+                        Object originalValue = unchangedValue[0].get(j).toString();
+                        if ((param == null && originalValue == null) || (param != null && param.equals(originalValue))) {
+                            continue;
                         }
+                        colNames.add(colName);
+                        params.add(param);
+                        types.add(resultTable.getColumnWithName(colName).getMappedTypeCode());
                     }
                     String sql = buildUpdate(resultTable, colNames, unchangedValue[0], resultTable.getPrimaryKeyColumnNames());
                     log.warn(sql);
