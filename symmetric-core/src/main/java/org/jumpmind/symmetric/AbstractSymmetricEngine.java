@@ -56,6 +56,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISoftwareUpgradeListener;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.ext.ISymmetricEngineLifecycle;
 import org.jumpmind.symmetric.io.DefaultOfflineClientListener;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -647,6 +648,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     lastRestartTime = new Date();
                     statisticManager.incrementRestart();
                     started = true;
+                    for (ISymmetricEngineLifecycle ext : extensionService.getExtensionPointList(ISymmetricEngineLifecycle.class)) {
+                        ext.started(this);
+                    }
                 } else {
                     log.error("Did not start SymmetricDS.  It has not been configured properly");
                 }
@@ -800,6 +804,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         started = false;
         starting = false;
         isInitialized = false;
+        if (extensionService != null) {
+            for (ISymmetricEngineLifecycle ext : extensionService.getExtensionPointList(ISymmetricEngineLifecycle.class)) {
+                ext.stopped(this);
+            }
+        }
     }
 
     public synchronized void destroy() {

@@ -74,6 +74,8 @@ import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.AppUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see IClusterService
@@ -85,6 +87,7 @@ public class ClusterService extends AbstractService implements IClusterService {
             MONITOR, SYNC_CONFIG, LOG_MINER };
     protected static final String[] sharedActions = new String[] { FILE_SYNC_SHARED };
     protected static boolean isUpgradedInstanceId;
+    protected static final Logger log = LoggerFactory.getLogger(ClusterService.class);
     protected String serverId = null;
     protected static String instanceId = null;
     protected INodeService nodeService;
@@ -106,11 +109,7 @@ public class ClusterService extends AbstractService implements IClusterService {
             log.warn("Cluster lock is only available in SymmetricDS Pro.  Remove {} from engine properties.",
                     ParameterConstants.CLUSTER_LOCKING_ENABLED);
         }
-        if (instanceId == null) {
-            synchronized (ClusterService.class) {
-                initInstanceId();
-            }
-        }
+        initInstanceId();
         if (isUpgradedInstanceId) {
             nodeService.deleteNodeHost(nodeService.findIdentityNodeId()); // This is cleanup mostly for an upgrade.
         }
@@ -130,16 +129,28 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     protected void initInstanceId() {
-        if (instanceId != null) {
-            return;
+        if (instanceId == null) {
+            synchronized (ClusterService.class) {
+                IClusterInstanceGenerator generator = null;
+                if (extensionService != null) {
+                    generator = extensionService.getExtensionPoint(IClusterInstanceGenerator.class);
+                }
+                initInstanceId(generator);
+            }
         }
-        File defaultFile = new File(AppUtils.getSymHome() + "/" + parameterService.getString(ParameterConstants.INSTANCE_ID_LOCATION));
+    }
+
+    public static String initInstanceId(IClusterInstanceGenerator generator) {
+        if (instanceId != null) {
+            return instanceId;
+        }
+        File defaultFile = new File(AppUtils.getSymHome() + "/conf/instance.uuid");
         File instanceIdFile = null;
         URL instanceIdURL = null;
         if ("true".equals(System.getProperty(SystemConstants.SYSPROP_LAUNCHER))) {
             instanceIdFile = defaultFile;
         } else {
-            instanceIdURL = getClass().getClassLoader().getResource("/instance.uuid");
+            instanceIdURL = ClusterService.class.getClassLoader().getResource("/instance.uuid");
         }
         if (instanceIdFile != null) {
             try {
@@ -153,10 +164,6 @@ public class ClusterService extends AbstractService implements IClusterService {
             } catch (Exception ex) {
                 log.debug("Failed to load instance id from classpath '" + instanceIdURL + "'", ex);
             }
-        }
-        IClusterInstanceGenerator generator = null;
-        if (extensionService != null) {
-            generator = extensionService.getExtensionPoint(IClusterInstanceGenerator.class);
         }
         if (StringUtils.isBlank(instanceId) || (generator != null && !generator.isValid(instanceId))) {
             String newInstanceId = null;
@@ -177,6 +184,7 @@ public class ClusterService extends AbstractService implements IClusterService {
                 }
             }
         }
+        return instanceId;
     }
 
     protected void checkSymDbOwnership() {
@@ -369,7 +377,7 @@ public class ClusterService extends AbstractService implements IClusterService {
      * local file system. The intension is to uniquely identity SymmetricDS installations, and protect against situations where things are misconfigured and
      * potentially pointed at the wrong databases, or pointed at the same database without the cluster.lock.enabled parameter turned on.
      */
-    protected String generateInstanceId(String hostName) {
+    protected static String generateInstanceId(String hostName) {
         final int MAX_HOST_LENGTH = 23;
         StringBuilder buff = new StringBuilder();
         buff.append(hostName);

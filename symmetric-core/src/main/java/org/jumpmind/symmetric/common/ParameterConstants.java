@@ -299,7 +299,6 @@ final public class ParameterConstants {
     public final static String CLUSTER_LOCK_REFRESH_MS = "cluster.lock.refresh.ms";
     public final static String LOCK_TIMEOUT_MS = "lock.timeout.ms";
     public final static String LOCK_WAIT_RETRY_MILLIS = "lock.wait.retry.ms";
-    public final static String INSTANCE_ID_LOCATION = "instance.id.location";
     public final static String PURGE_LOG_SUMMARY_MINUTES = "purge.log.summary.retention.minutes";
     public final static String PURGE_RETENTION_MINUTES = "purge.retention.minutes";
     public final static String PURGE_EXTRACT_REQUESTS_RETENTION_MINUTES = "purge.extract.request.retention.minutes";
