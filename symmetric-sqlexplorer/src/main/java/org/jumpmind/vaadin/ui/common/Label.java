@@ -91,6 +91,7 @@ public class Label extends Span {
         }
         icon.getElement().getStyle().set("align-self", "flex-start");
         icon.getElement().getStyle().set("min-width", "24px");
+        icon.getElement().getStyle().set("margin-right", "5px");
         this.icon = icon;
         addComponentAsFirst(icon);
     }
@@ -101,6 +102,7 @@ public class Label extends Span {
         }
         icon.getElement().getStyle().set("align-self", "flex-end");
         icon.getElement().getStyle().set("min-width", "24px");
+        icon.getElement().getStyle().set("margin-left", "5px");
         this.icon = icon;
         add(icon);
     }
