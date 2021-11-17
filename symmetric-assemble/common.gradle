@@ -272,7 +272,7 @@ subprojects { subproject ->
         testCompile "org.powermock:powermock-api-mockito2:$powerMockVersion"
         testCompile "org.powermock:powermock-module-junit4:$powerMockVersion"
         
-        deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"        
+        deployerJars "org.apache.maven.wagon:wagon-ssh:3.4.3"        
     }    
 
     task develop {
