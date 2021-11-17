@@ -1128,14 +1128,19 @@ public class DataService extends AbstractService implements IDataService {
             insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(), true,
                     loadId, createBy, channelId);
             batchCount++;
+
+            long curBatchId = engine.getSequenceService().currVal(transaction, Constants.SEQUENCE_OUTGOING_BATCH);
+            
             /*
-             * Mark incoming batches as OK at the target node because we marked outgoing batches as OK at the source
+             * Mark incoming batches as OK at the target node because we marked
+             * outgoing batches as OK at the source
              */
             insertSqlEvent(
                     transaction,
                     targetNode,
                     String.format(
-                            "update %s_incoming_batch set status='OK', error_flag=0 where node_id='%s' and status != 'OK'",
+                            "update %s_incoming_batch set status='OK', error_flag=0 where node_id='%s' and status != 'OK' "
+                            + "and batch_id < " + curBatchId,
                             tablePrefix, engine.getNodeService().findIdentityNodeId()), true,
                     loadId, createBy);
             batchCount++;
