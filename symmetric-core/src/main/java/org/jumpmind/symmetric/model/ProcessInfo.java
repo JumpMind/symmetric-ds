@@ -26,6 +26,7 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.Date;
 
+import org.jumpmind.extension.IProcessInfoListener;
 import org.jumpmind.util.AppUtils;
 
 public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Cloneable {
@@ -71,6 +72,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     private Date startTime = new Date();
     private Date lastStatusChangeTime = new Date();
     private Date endTime;
+    private IProcessInfoListener listener;
 
     public ProcessInfo() {
         this(new ProcessInfoKey("", "", null));
@@ -119,6 +121,9 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     public void setCurrentDataCount(long dataCount) {
         this.currentDataCount = dataCount;
+        if (listener != null) {
+            listener.changeDataCount(currentDataCount);
+        }
     }
 
     public long getTotalBatchCount() {
@@ -133,6 +138,9 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         this.currentDataCount++;
         if (totalDataCount < currentDataCount) {
             totalDataCount = currentDataCount;
+        }
+        if (listener != null) {
+            listener.changeDataCount(currentDataCount);
         }
     }
 
@@ -298,6 +306,10 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     public void setTotalDataCount(long totalDataCount) {
         this.totalDataCount = totalDataCount;
+    }
+    
+    public void setListener(IProcessInfoListener listener) {
+        this.listener = listener;
     }
 
     static public class ThreadData {

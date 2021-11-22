@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.util.List;
 
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.extension.IProcessInfoListener;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingError;
 import org.jumpmind.symmetric.model.Node;
@@ -55,6 +56,8 @@ public interface IDataLoaderService {
     public List<String> getAvailableDataLoaderFactories();
 
     public List<IncomingBatch> loadDataBatch(String batchData);
+    
+    public List<IncomingBatch> loadDataBatch(String batchData, IProcessInfoListener listener);
 
     public List<ConflictNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link, boolean refreshCache);
 

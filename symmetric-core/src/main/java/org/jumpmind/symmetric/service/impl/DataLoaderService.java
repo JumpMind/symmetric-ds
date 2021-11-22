@@ -62,6 +62,7 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.HttpException;
 import org.jumpmind.exception.InvalidRetryException;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.extension.IProcessInfoListener;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
@@ -207,10 +208,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     public List<IncomingBatch> loadDataBatch(String batchData) {
+        return loadDataBatch(batchData, null);
+    }
+
+    public List<IncomingBatch> loadDataBatch(String batchData, IProcessInfoListener listener) {
         String nodeId = nodeService.findIdentityNodeId();
         if (StringUtils.isNotBlank(nodeId)) {
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(nodeId,
                     nodeId, MANUAL_LOAD));
+            processInfo.setListener(listener);
             try {
                 InternalIncomingTransport transport = new InternalIncomingTransport(
                         new BufferedReader(new StringReader(batchData)));
