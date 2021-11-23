@@ -199,6 +199,9 @@ public class DataProcessor {
                         processTable = false;
                     }
                 }
+                if (listener != null) {
+                    listener.dataRowProcessed();
+                }
             }
             if (System.currentTimeMillis() - ts > 60000 && context.getWriter() != null) {
                 Statistics stats = context.getWriter().getStatistics().get(batch);
