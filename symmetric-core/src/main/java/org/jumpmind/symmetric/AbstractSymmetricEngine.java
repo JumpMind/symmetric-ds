@@ -51,6 +51,8 @@ import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
+import org.jumpmind.symmetric.cache.CacheManager;
+import org.jumpmind.symmetric.cache.ICacheManager;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -194,6 +196,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IMailService mailService;
     protected IContextService contextService;
     protected IUpdateService updateService;
+    protected ICacheManager cacheManager;
     protected Date lastRestartTime = null;
 
     abstract protected ITypedPropertiesFactory createTypedPropertiesFactory();
@@ -284,13 +287,13 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.extensionService.refresh();
         this.symmetricDialect.setExtensionService(extensionService);
         this.parameterService.setExtensionService(extensionService);
+        this.cacheManager = new CacheManager(this);
         this.contextService = new ContextService(parameterService, symmetricDialect);
         this.bandwidthService = new BandwidthService(this);
         this.sequenceService = new SequenceService(parameterService, symmetricDialect);
         this.stagingManager = createStagingManager();
         this.nodeService = new NodeService(this);
-        this.configurationService = new ConfigurationService(parameterService, symmetricDialect,
-                nodeService);
+        this.configurationService = new ConfigurationService(this, symmetricDialect);
         this.dataService = new DataService(this, extensionService);
         this.clusterService = createClusterService();
         this.statisticService = new StatisticService(parameterService, symmetricDialect);
@@ -299,10 +302,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 statisticManager);
         this.purgeService = new PurgeService(parameterService, symmetricDialect, clusterService,
                 statisticManager, extensionService, contextService);
-        this.transformService = new TransformService(parameterService, symmetricDialect,
-                configurationService, extensionService);
-        this.loadFilterService = new LoadFilterService(parameterService, symmetricDialect,
-                configurationService);
+        this.transformService = new TransformService(this, symmetricDialect);
+        this.loadFilterService = new LoadFilterService(this, symmetricDialect);
         this.groupletService = new GroupletService(this);
         this.triggerRouterService = new TriggerRouterService(this);
         this.outgoingBatchService = new OutgoingBatchService(parameterService, symmetricDialect,
@@ -1233,5 +1234,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     @Override
     public String toString() {
         return "Engine " + getNodeId() + " " + super.toString();
+    }
+    
+    @Override
+    public ICacheManager getCacheManager() {
+        return cacheManager;
     }
 }

@@ -201,8 +201,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 SymmetricUtils.logNotices();
             }
             super.init();
-            this.monitorService = new MonitorService(parameterService, symmetricDialect, nodeService, extensionService,
-                    clusterService, contextService);
+            this.monitorService = new MonitorService(this, symmetricDialect);
             this.dataSource = platform.getDataSource();
             PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
             configurer.setProperties(parameterService.getAllParameters());

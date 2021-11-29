@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.security.ISecurityService;
+import org.jumpmind.symmetric.cache.ICacheManager;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.extension.IProgressListener;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -335,4 +336,6 @@ public interface ISymmetricEngine {
     public String getLastExceptionMessage();
 
     public String getEngineDescription(String mesage);
+    
+    public ICacheManager getCacheManager();
 }

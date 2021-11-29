@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.cache.TriggerRouterRoutersCache;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -49,6 +50,8 @@ public interface ITriggerRouterService {
     public List<TriggerHistory> getActiveTriggerHistories(String tableName);
 
     public List<TriggerRouter> getTriggerRouters(boolean refreshCache);
+    
+    public List<TriggerRouter> getTriggerRoutersFromDatabase();
 
     /**
      * Return a list of triggers used when extraction configuration data during the registration process.
@@ -75,6 +78,8 @@ public interface ITriggerRouterService {
     public List<Trigger> getTriggersForCurrentNode(boolean refreshCache);
 
     public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String nodeGroupId);
+    
+    public Map<String, List<TriggerRouter>> getTriggerRoutersByChannelFromDatabase(String nodeGroupId);
 
     /**
      * Returns a map of trigger routers keyed by trigger id.
@@ -83,8 +88,12 @@ public interface ITriggerRouterService {
      *            Indicates that the cache should be refreshed
      */
     public Map<String, List<TriggerRouter>> getTriggerRoutersForCurrentNode(boolean refreshCache);
+    
+    public Map<String, TriggerRouterRoutersCache> getTriggerRoutersCacheByNodeGroupIdFromDatabase();
 
     public Map<Integer, TriggerRouter> getTriggerRoutersByTriggerHist(String targetNodeGroupId, boolean refreshCache);
+    
+    public Map<String, Map<Integer, TriggerRouter>> getTriggerRoutersByTriggerHistFromDatabase();
 
     public TriggerRouter getTriggerRouterByTriggerHist(String targetNodeGroupId, int triggerHistId, boolean refreshCache);
 
@@ -233,4 +242,6 @@ public interface ITriggerRouterService {
     public List<Table> getTablesFor(List<TriggerHistory> histories);
 
     public List<Table> getSortedTablesFor(List<TriggerHistory> histories);
+    
+    public List<Trigger> buildTriggersForSymmetricTables(String version, String... tablesToExclude);
 }

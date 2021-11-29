@@ -60,6 +60,8 @@ public interface IDataLoaderService {
     public List<IncomingBatch> loadDataBatch(String batchData, IProcessInfoListener listener);
 
     public List<ConflictNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link, boolean refreshCache);
+    
+    public List<ConflictNodeGroupLink> getConflictSettinsNodeGroupLinksFromDb(NodeGroupLink link);
 
     public List<ConflictNodeGroupLink> getConflictSettingsNodeGroupLinks();
 

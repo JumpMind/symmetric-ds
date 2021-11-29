@@ -32,7 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.cache.ICacheManager;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.transform.AdditiveColumnTransform;
@@ -79,19 +80,18 @@ public class TransformService extends AbstractService implements ITransformServi
     private static final String NODE_FILTER_BSH = "filter = null; if (engine != null && engine.getExtensionService() != null) " +
             "filter = engine.getExtensionService().getExtensionPoint(org.jumpmind.symmetric.security.INodePasswordFilter.class); " +
             "if (filter != null) return filter.%s(currentValue); else return currentValue;";
-    private Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> transformsCacheByNodeGroupLinkByTransformPoint;
-    private long lastCacheTimeInMs;
     private IConfigurationService configurationService;
     private IExtensionService extensionService;
     private IParameterService parameterService;
     private Date lastUpdateTime;
+    private ICacheManager cacheManager;
 
-    public TransformService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
-            IConfigurationService configurationService, IExtensionService extensionService) {
-        super(parameterService, symmetricDialect);
-        this.configurationService = configurationService;
-        this.extensionService = extensionService;
-        this.parameterService = parameterService;
+    public TransformService(ISymmetricEngine engine, ISymmetricDialect symmetricDialect) {
+        super(engine.getParameterService(), symmetricDialect);
+        this.cacheManager = engine.getCacheManager();
+        this.configurationService = engine.getConfigurationService();
+        this.extensionService = engine.getExtensionService();
+        this.parameterService = engine.getParameterService();
         addColumnTransform(ParameterColumnTransform.NAME, new ParameterColumnTransform(parameterService));
         addColumnTransform(VariableColumnTransform.NAME, new VariableColumnTransform());
         addColumnTransform(LookupColumnTransform.NAME, new LookupColumnTransform());
@@ -120,7 +120,7 @@ public class TransformService extends AbstractService implements ITransformServi
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-
+    
     private void addColumnTransform(String name, IColumnTransform<?> columnTransform) {
         extensionService.addExtensionPoint(name, columnTransform);
     }
@@ -196,43 +196,36 @@ public class TransformService extends AbstractService implements ITransformServi
     }
 
     public void clearCache() {
-        synchronized (this) {
-            this.transformsCacheByNodeGroupLinkByTransformPoint = null;
-        }
+        cacheManager.flushTransformCache();
     }
 
     private Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> readInCacheIfExpired() {
-        // get the cache timeout
-        long cacheTimeoutInMs = parameterService
-                .getLong(ParameterConstants.CACHE_TIMEOUT_TRANSFORM_IN_MS);
-        Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> byByLinkByTransformPoint = transformsCacheByNodeGroupLinkByTransformPoint;
-        synchronized (this) {
-            if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
-                    || byByLinkByTransformPoint == null) {
-                byByLinkByTransformPoint = new HashMap<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>>(2);
-                List<TransformTableNodeGroupLink> transforms = getTransformTablesFromDB(true, true);
-                for (TransformTableNodeGroupLink transformTable : transforms) {
-                    NodeGroupLink nodeGroupLink = transformTable.getNodeGroupLink();
-                    Map<TransformPoint, List<TransformTableNodeGroupLink>> byTransformPoint = byByLinkByTransformPoint
-                            .get(nodeGroupLink);
-                    if (byTransformPoint == null) {
-                        byTransformPoint = new HashMap<TransformPoint, List<TransformTableNodeGroupLink>>(2);
-                        byByLinkByTransformPoint.put(nodeGroupLink,
-                                byTransformPoint);
-                    }
-                    List<TransformTableNodeGroupLink> byTableName = byTransformPoint
-                            .get(transformTable.getTransformPoint());
-                    if (byTableName == null) {
-                        byTableName = new ArrayList<TransformTableNodeGroupLink>();
-                        byTransformPoint.put(transformTable.getTransformPoint(), byTableName);
-                    }
-                    byTableName.add(transformTable);
-                }
-                addBuiltInTableTransforms(byByLinkByTransformPoint);
-                lastCacheTimeInMs = System.currentTimeMillis();
-                this.transformsCacheByNodeGroupLinkByTransformPoint = byByLinkByTransformPoint;
+        return cacheManager.getTransformCache();
+    }
+    
+    @Override
+    public Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> readInCacheIfExpiredFromDb() {
+        Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> byByLinkByTransformPoint =
+                new HashMap<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>>(2);
+        List<TransformTableNodeGroupLink> transforms = getTransformTablesFromDB(true, true);
+        for (TransformTableNodeGroupLink transformTable : transforms) {
+            NodeGroupLink nodeGroupLink = transformTable.getNodeGroupLink();
+            Map<TransformPoint, List<TransformTableNodeGroupLink>> byTransformPoint = byByLinkByTransformPoint
+                    .get(nodeGroupLink);
+            if (byTransformPoint == null) {
+                byTransformPoint = new HashMap<TransformPoint, List<TransformTableNodeGroupLink>>(2);
+                byByLinkByTransformPoint.put(nodeGroupLink,
+                        byTransformPoint);
             }
+            List<TransformTableNodeGroupLink> byTableName = byTransformPoint
+                    .get(transformTable.getTransformPoint());
+            if (byTableName == null) {
+                byTableName = new ArrayList<TransformTableNodeGroupLink>();
+                byTransformPoint.put(transformTable.getTransformPoint(), byTableName);
+            }
+            byTableName.add(transformTable);
         }
+        addBuiltInTableTransforms(byByLinkByTransformPoint);
         return byByLinkByTransformPoint;
     }
 

@@ -40,4 +40,6 @@ public interface ILoadFilterService {
     public void clearCache();
 
     public boolean refreshFromDatabase();
+    
+    public Map<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>> findLoadFiltersFromDb();
 }

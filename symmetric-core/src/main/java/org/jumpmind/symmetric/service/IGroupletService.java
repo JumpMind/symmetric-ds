@@ -35,6 +35,8 @@ public interface IGroupletService {
     public void clearCache();
 
     public List<Grouplet> getGrouplets(boolean refreshCache);
+    
+    public List<Grouplet> getGroupletsFromDb();
 
     public void deleteGrouplet(Grouplet grouplet);
 

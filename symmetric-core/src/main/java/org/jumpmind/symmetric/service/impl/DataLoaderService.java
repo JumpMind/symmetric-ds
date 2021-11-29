@@ -65,6 +65,7 @@ import org.jumpmind.exception.IoException;
 import org.jumpmind.extension.IProcessInfoListener;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.cache.ICacheManager;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ErrorConstants;
@@ -155,11 +156,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private IStagingManager stagingManager;
     private IExtensionService extensionService;
     private INodeCommunicationService nodeCommunicationService;
-    private Map<NodeGroupLink, List<ConflictNodeGroupLink>> conflictSettingsCache = new HashMap<NodeGroupLink, List<ConflictNodeGroupLink>>();
-    private long lastConflictCacheResetTimeInMs = 0;
     private ISymmetricEngine engine = null;
     private Date lastUpdateTime;
     private CustomizableThreadFactory threadFactory;
+    private ICacheManager cacheManager;
 
     public DataLoaderService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -176,6 +176,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         extensionService.addExtensionPoint(new DefaultDataLoaderFactory(engine));
         extensionService.addExtensionPoint(new ConfigurationChangedDatabaseWriterFilter(engine));
         this.nodeCommunicationService = engine.getNodeCommunicationService();
+        this.cacheManager = engine.getCacheManager();
         this.engine = engine;
     }
 
@@ -753,35 +754,26 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void clearCache() {
         synchronized (this) {
-            conflictSettingsCache.clear();
-            lastConflictCacheResetTimeInMs = System.currentTimeMillis();
+            cacheManager.flushConflictSettingsNodeGroupLinks();
         }
     }
 
-    public List<ConflictNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link,
-            boolean refreshCache) {
+    @Override
+    public List<ConflictNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link, boolean refreshCache) {
         if (link != null) {
-            long cacheTime = parameterService
-                    .getLong(ParameterConstants.CACHE_TIMEOUT_CONFLICT_IN_MS);
-            if (System.currentTimeMillis() - lastConflictCacheResetTimeInMs > cacheTime
-                    || refreshCache) {
-                clearCache();
-            }
-            List<ConflictNodeGroupLink> list = conflictSettingsCache.get(link);
-            if (list == null) {
-                list = sqlTemplate.query(
-                        getSql("selectConflictSettingsSql",
-                                " where source_node_group_id=? and target_node_group_id=?"),
-                        new ConflictSettingsNodeGroupLinkMapper(), link.getSourceNodeGroupId(),
-                        link.getTargetNodeGroupId());
-                synchronized (this) {
-                    conflictSettingsCache.put(link, list);
-                }
-            }
-            return list;
+            return cacheManager.getConflictSettingsNodeGroupLinks(link, refreshCache);
         } else {
             return new ArrayList<DataLoaderService.ConflictNodeGroupLink>(0);
         }
+    }
+    
+    @Override
+    public List<ConflictNodeGroupLink> getConflictSettinsNodeGroupLinksFromDb(NodeGroupLink link) {
+        return sqlTemplate.query(
+                getSql("selectConflictSettingsSql",
+                        " where source_node_group_id=? and target_node_group_id=?"),
+                new ConflictSettingsNodeGroupLinkMapper(), link.getSourceNodeGroupId(),
+                link.getTargetNodeGroupId());
     }
 
     public void delete(ConflictNodeGroupLink settings) {
@@ -793,7 +785,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     public void save(ConflictNodeGroupLink setting) {
-        this.lastConflictCacheResetTimeInMs = 0;
+        cacheManager.flushConflictSettingsNodeGroupLinks();
         if (sqlTemplate.update(
                 getSql("updateConflictSettingsSql"),
                 new Object[] { setting.getNodeGroupLink().getSourceNodeGroupId(),

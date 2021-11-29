@@ -47,6 +47,7 @@ import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.cache.ICacheManager;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -106,17 +107,16 @@ import bsh.TargetError;
 public class FileSyncService extends AbstractOfflineDetectorService implements IFileSyncService,
         INodeCommunicationExecutor {
     private ISymmetricEngine engine;
-    private List<FileTriggerRouter> fileTriggerRoutersCache = new ArrayList<FileTriggerRouter>();
-    private long fileTriggerRoutersCacheTime;
-    private Object cacheLock = new Object();
     private Date lastUpdateTime;
+    private ICacheManager cacheManager;
 
     public FileSyncService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect(), engine.getExtensionService());
         this.engine = engine;
+        this.cacheManager = engine.getCacheManager();
         setSqlMap(new FileSyncServiceSqlMap(platform, createSqlReplacementTokens()));
     }
-
+    
     public boolean refreshFromDatabase() {
         Date date1 = sqlTemplate.queryForObject(getSql("selectMaxFileTriggerLastUpdateTime"), Date.class);
         Date date2 = sqlTemplate.queryForObject(getSql("selectMaxRouterLastUpdateTime"), Date.class);
@@ -319,21 +319,14 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         return currentValues;
     }
 
+    @Override
     public List<FileTriggerRouter> getFileTriggerRouters(boolean refreshCache) {
-        long fileTriggerRouterCacheTimeoutInMs = parameterService
-                .getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
-        List<FileTriggerRouter> currentValues = fileTriggerRoutersCache;
-        if (currentValues == null || refreshCache ||
-                System.currentTimeMillis() - this.fileTriggerRoutersCacheTime > fileTriggerRouterCacheTimeoutInMs) {
-            synchronized (cacheLock) {
-                List<FileTriggerRouter> newValues = sqlTemplate.query(getSql("selectFileTriggerRoutersSql"),
-                        new FileTriggerRouterMapper());
-                fileTriggerRoutersCache = newValues;
-                currentValues = newValues;
-                fileTriggerRoutersCacheTime = System.currentTimeMillis();
-            }
-        }
-        return currentValues;
+        return cacheManager.getFileTriggerRouters(refreshCache);
+    }
+    
+    @Override
+    public List<FileTriggerRouter> getFileTriggerRoutersFromDb() {
+        return sqlTemplate.query(getSql("selectFileTriggerRoutersSql"), new FileTriggerRouterMapper());
     }
 
     public FileTriggerRouter getFileTriggerRouter(String triggerId, String routerId, boolean refreshCache) {
@@ -347,9 +340,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     }
 
     public void clearCache() {
-        synchronized (cacheLock) {
-            this.fileTriggerRoutersCacheTime = 0;
-        }
+        cacheManager.flushFileTriggerRouters();
     }
 
     public void saveFileTrigger(FileTrigger fileTrigger) {

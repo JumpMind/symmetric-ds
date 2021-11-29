@@ -29,7 +29,8 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.cache.ICacheManager;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.model.Monitor;
@@ -37,7 +38,6 @@ import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Notification;
 import org.jumpmind.symmetric.monitor.IMonitorType;
-import org.jumpmind.symmetric.monitor.MonitorTypeOfflineNodes;
 import org.jumpmind.symmetric.monitor.MonitorTypeBatchError;
 import org.jumpmind.symmetric.monitor.MonitorTypeBatchUnsent;
 import org.jumpmind.symmetric.monitor.MonitorTypeBlock;
@@ -46,6 +46,7 @@ import org.jumpmind.symmetric.monitor.MonitorTypeDataGap;
 import org.jumpmind.symmetric.monitor.MonitorTypeDisk;
 import org.jumpmind.symmetric.monitor.MonitorTypeLog;
 import org.jumpmind.symmetric.monitor.MonitorTypeMemory;
+import org.jumpmind.symmetric.monitor.MonitorTypeOfflineNodes;
 import org.jumpmind.symmetric.monitor.MonitorTypeUnrouted;
 import org.jumpmind.symmetric.notification.INotificationType;
 import org.jumpmind.symmetric.notification.NotificationTypeEmail;
@@ -56,7 +57,6 @@ import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.AppUtils;
 
 public class MonitorService extends AbstractService implements IMonitorService {
@@ -67,22 +67,19 @@ public class MonitorService extends AbstractService implements IMonitorService {
     protected IContextService contextService;
     protected Map<String, Long> checkTimesByType = new HashMap<String, Long>();
     protected Map<String, List<Long>> averagesByType = new HashMap<String, List<Long>>();
-    protected List<Monitor> activeMonitorCache;
-    protected long activeMonitorCacheTime;
-    protected List<Notification> activeNotificationCache;
-    protected long activeNotificationCacheTime;
     protected String typeColumnName;
+    private ICacheManager cacheManager;
 
-    public MonitorService(IParameterService parameterService, ISymmetricDialect symmetricDialect, INodeService nodeService,
-            IExtensionService extensionService, IClusterService clusterService, IContextService contextService) {
-        super(parameterService, symmetricDialect);
+    public MonitorService(ISymmetricEngine engine, ISymmetricDialect symmetricDialect) {
+        super(engine.getParameterService(), symmetricDialect);
         MonitorServiceSqlMap sqlMap = new MonitorServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens());
         typeColumnName = sqlMap.getTypeColumnName();
         setSqlMap(sqlMap);
-        this.nodeService = nodeService;
-        this.extensionService = extensionService;
-        this.clusterService = clusterService;
-        this.contextService = contextService;
+        this.nodeService = engine.getNodeService();
+        this.extensionService = engine.getExtensionService();
+        this.clusterService = engine.getClusterService();
+        this.contextService = engine.getContextService();
+        this.cacheManager = engine.getCacheManager();
         hostName = StringUtils.left(AppUtils.getHostName(), 60);
         IMonitorType monitorExtensions[] = { new MonitorTypeBatchError(), new MonitorTypeBatchUnsent(), new MonitorTypeCpu(),
                 new MonitorTypeDataGap(), new MonitorTypeDisk(), new MonitorTypeMemory(), new MonitorTypeUnrouted(),
@@ -95,7 +92,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
             extensionService.addExtensionPoint(ext.getName(), ext);
         }
     }
-
+    
     @Override
     public synchronized void update() {
         Map<String, IMonitorType> monitorTypes = extensionService.getExtensionPointMap(IMonitorType.class);
@@ -238,22 +235,24 @@ public class MonitorService extends AbstractService implements IMonitorService {
 
     @Override
     public List<Monitor> getActiveMonitorsForNode(String nodeGroupId, String externalId) {
-        long cacheTimeout = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_MONITOR_IN_MS);
-        if (activeMonitorCache == null || System.currentTimeMillis() - activeMonitorCacheTime > cacheTimeout) {
-            activeMonitorCache = sqlTemplate.query(getSql("selectMonitorSql", "whereMonitorByNodeSql"), new MonitorRowMapper(),
-                    nodeGroupId, externalId);
-        }
-        return activeMonitorCache;
+        return cacheManager.getActiveMonitorsForNode(nodeGroupId, externalId);
+    }
+    
+    @Override
+    public List<Monitor> getActiveMonitorsForNodeFromDb(String nodeGroupId, String externalId) {
+        return sqlTemplate.query(getSql("selectMonitorSql", "whereMonitorByNodeSql"), new MonitorRowMapper(),
+                nodeGroupId, externalId);
     }
 
     @Override
     public List<Monitor> getActiveMonitorsUnresolvedForNode(String nodeGroupId, String externalId) {
-        long cacheTimeout = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_MONITOR_IN_MS);
-        if (activeMonitorCache == null || System.currentTimeMillis() - activeMonitorCacheTime > cacheTimeout) {
-            activeMonitorCache = sqlTemplate.query(getSql("selectMonitorWhereNotResolved"), new MonitorRowMapper(),
-                    nodeGroupId, externalId);
-        }
-        return activeMonitorCache;
+        return cacheManager.getActiveMonitorsUnresolvedForNode(nodeGroupId, externalId);
+    }
+    
+    @Override
+    public List<Monitor> getActiveMonitorsUnresolvedForNodeFromDb(String nodeGroupId, String externalId) {
+        return sqlTemplate.query(getSql("selectMonitorWhereNotResolved"), new MonitorRowMapper(),
+                nodeGroupId, externalId);
     }
 
     @Override
@@ -364,12 +363,13 @@ public class MonitorService extends AbstractService implements IMonitorService {
 
     @Override
     public List<Notification> getActiveNotificationsForNode(String nodeGroupId, String externalId) {
-        long cacheTimeout = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NOTIFICATION_IN_MS);
-        if (activeNotificationCache == null || System.currentTimeMillis() - activeNotificationCacheTime > cacheTimeout) {
-            activeNotificationCache = sqlTemplate.query(getSql("selectNotificationSql", "whereNotificationByNodeSql"),
-                    new NotificationRowMapper(), nodeGroupId, externalId);
-        }
-        return activeNotificationCache;
+        return cacheManager.getActiveNotificationsForNode(nodeGroupId, externalId);
+    }
+    
+    @Override
+    public List<Notification> getActiveNotificationsForNodeFromDb(String nodeGroupId, String externalId) {
+        return sqlTemplate.query(getSql("selectNotificationSql", "whereNotificationByNodeSql"),
+                new NotificationRowMapper(), nodeGroupId, externalId);
     }
 
     @Override
@@ -395,12 +395,12 @@ public class MonitorService extends AbstractService implements IMonitorService {
 
     @Override
     public void flushMonitorCache() {
-        activeMonitorCache = null;
+        cacheManager.flushMonitorCache();
     }
 
     @Override
     public void flushNotificationCache() {
-        activeNotificationCache = null;
+        cacheManager.flushNotificationCache();
     }
 
     static class MonitorRowMapper implements ISqlRowMapper<Monitor> {

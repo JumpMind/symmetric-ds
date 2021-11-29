@@ -33,6 +33,7 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.cache.ICacheManager;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Grouplet;
 import org.jumpmind.symmetric.model.Grouplet.GroupletLinkPolicy;
@@ -45,17 +46,17 @@ import org.jumpmind.symmetric.service.IGroupletService;
 
 public class GroupletService extends AbstractService implements IGroupletService {
     protected ISymmetricEngine engine;
-    protected List<Grouplet> cache;
-    protected long lastCacheTime = 0;
     private Date lastUpdateTime;
+    private ICacheManager cacheManager;
 
     public GroupletService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         this.engine = engine;
+        this.cacheManager = engine.getCacheManager();
         setSqlMap(new GroupletServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-
+    
     @Override
     public boolean refreshFromDatabase() {
         if (!engine.getParameterService().is(ParameterConstants.GROUPLET_ENABLE)) {
@@ -79,7 +80,7 @@ public class GroupletService extends AbstractService implements IGroupletService
     }
 
     public void clearCache() {
-        lastCacheTime = 0;
+        cacheManager.flushGrouplets();
     }
 
     public boolean isSourceEnabled(TriggerRouter triggerRouter) {
@@ -156,68 +157,66 @@ public class GroupletService extends AbstractService implements IGroupletService
         }
     }
 
+    @Override
     public List<Grouplet> getGrouplets(boolean refreshCache) {
         if (!engine.getParameterService().is(ParameterConstants.GROUPLET_ENABLE)) {
             return new ArrayList<Grouplet>();
         }
-        long maxCacheTime = parameterService
-                .getLong(ParameterConstants.CACHE_TIMEOUT_GROUPLETS_IN_MS);
-        List<Grouplet> all = cache;
-        if (all == null || System.currentTimeMillis() - lastCacheTime >= maxCacheTime
-                || lastCacheTime == 0 || refreshCache) {
-            ISqlTemplate sqlTemplate = platform.getSqlTemplate();
-            final Map<String, Grouplet> groupletMap = new HashMap<String, Grouplet>();
-            all = sqlTemplate.query(getSql("selectGroupletSql"), new ISqlRowMapper<Grouplet>() {
-                public Grouplet mapRow(Row rs) {
-                    Grouplet grouplet = new Grouplet();
-                    grouplet.setGroupletId(rs.getString("grouplet_id"));
-                    grouplet.setDescription(rs.getString("description"));
-                    grouplet.setGroupletLinkPolicy(GroupletLinkPolicy.valueOf(rs
-                            .getString("grouplet_link_policy")));
-                    grouplet.setCreateTime(rs.getDateTime("create_time"));
-                    grouplet.setLastUpdateBy(rs.getString("last_update_by"));
-                    grouplet.setLastUpdateTime(rs.getDateTime("last_update_time"));
-                    groupletMap.put(grouplet.getGroupletId(), grouplet);
-                    return grouplet;
+        return cacheManager.getGrouplets(refreshCache);
+    }
+    
+    @Override
+    public List<Grouplet> getGroupletsFromDb() {
+        ISqlTemplate sqlTemplate = platform.getSqlTemplate();
+        final Map<String, Grouplet> groupletMap = new HashMap<String, Grouplet>();
+        List<Grouplet> all = sqlTemplate.query(getSql("selectGroupletSql"), new ISqlRowMapper<Grouplet>() {
+            public Grouplet mapRow(Row rs) {
+                Grouplet grouplet = new Grouplet();
+                grouplet.setGroupletId(rs.getString("grouplet_id"));
+                grouplet.setDescription(rs.getString("description"));
+                grouplet.setGroupletLinkPolicy(GroupletLinkPolicy.valueOf(rs
+                        .getString("grouplet_link_policy")));
+                grouplet.setCreateTime(rs.getDateTime("create_time"));
+                grouplet.setLastUpdateBy(rs.getString("last_update_by"));
+                grouplet.setLastUpdateTime(rs.getDateTime("last_update_time"));
+                groupletMap.put(grouplet.getGroupletId(), grouplet);
+                return grouplet;
+            }
+        });
+        sqlTemplate.query(getSql("selectGroupletLinkSql"), new ISqlRowMapper<GroupletLink>() {
+            public GroupletLink mapRow(Row rs) {
+                GroupletLink groupletLink = new GroupletLink();
+                String groupletId = rs.getString("grouplet_id");
+                Grouplet grouplet = groupletMap.get(groupletId);
+                groupletLink.setExternalId(rs.getString("external_id"));
+                groupletLink.setCreateTime(rs.getDateTime("create_time"));
+                groupletLink.setLastUpdateBy(rs.getString("last_update_by"));
+                groupletLink.setLastUpdateTime(rs.getDateTime("last_update_time"));
+                if (grouplet != null) {
+                    grouplet.getGroupletLinks().add(groupletLink);
                 }
-            });
-            sqlTemplate.query(getSql("selectGroupletLinkSql"), new ISqlRowMapper<GroupletLink>() {
-                public GroupletLink mapRow(Row rs) {
-                    GroupletLink groupletLink = new GroupletLink();
-                    String groupletId = rs.getString("grouplet_id");
-                    Grouplet grouplet = groupletMap.get(groupletId);
-                    groupletLink.setExternalId(rs.getString("external_id"));
-                    groupletLink.setCreateTime(rs.getDateTime("create_time"));
-                    groupletLink.setLastUpdateBy(rs.getString("last_update_by"));
-                    groupletLink.setLastUpdateTime(rs.getDateTime("last_update_time"));
-                    if (grouplet != null) {
-                        grouplet.getGroupletLinks().add(groupletLink);
-                    }
-                    return groupletLink;
-                }
-            });
-            sqlTemplate.query(getSql("selectTriggerRouterGroupletSql"),
-                    new ISqlRowMapper<TriggerRouterGrouplet>() {
-                        public TriggerRouterGrouplet mapRow(Row rs) {
-                            TriggerRouterGrouplet trGrouplet = new TriggerRouterGrouplet();
-                            String groupletId = rs.getString("grouplet_id");
-                            Grouplet grouplet = groupletMap.get(groupletId);
-                            trGrouplet.setAppliesWhen(AppliesWhen.valueOf(rs
-                                    .getString("applies_when")));
-                            trGrouplet.setRouterId(rs.getString("router_id"));
-                            trGrouplet.setTriggerId(rs.getString("trigger_id"));
-                            trGrouplet.setCreateTime(rs.getDateTime("create_time"));
-                            trGrouplet.setLastUpdateBy(rs.getString("last_update_by"));
-                            trGrouplet.setLastUpdateTime(rs.getDateTime("last_update_time"));
-                            if (grouplet != null) {
-                                grouplet.getTriggerRouterGrouplets().add(trGrouplet);
-                            }
-                            return trGrouplet;
+                return groupletLink;
+            }
+        });
+        sqlTemplate.query(getSql("selectTriggerRouterGroupletSql"),
+                new ISqlRowMapper<TriggerRouterGrouplet>() {
+                    public TriggerRouterGrouplet mapRow(Row rs) {
+                        TriggerRouterGrouplet trGrouplet = new TriggerRouterGrouplet();
+                        String groupletId = rs.getString("grouplet_id");
+                        Grouplet grouplet = groupletMap.get(groupletId);
+                        trGrouplet.setAppliesWhen(AppliesWhen.valueOf(rs
+                                .getString("applies_when")));
+                        trGrouplet.setRouterId(rs.getString("router_id"));
+                        trGrouplet.setTriggerId(rs.getString("trigger_id"));
+                        trGrouplet.setCreateTime(rs.getDateTime("create_time"));
+                        trGrouplet.setLastUpdateBy(rs.getString("last_update_by"));
+                        trGrouplet.setLastUpdateTime(rs.getDateTime("last_update_time"));
+                        if (grouplet != null) {
+                            grouplet.getTriggerRouterGrouplets().add(trGrouplet);
                         }
-                    });
-            cache = all;
-            lastCacheTime = System.currentTimeMillis();
-        }
+                        return trGrouplet;
+                    }
+                });
         return all;
     }
 

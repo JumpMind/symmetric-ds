@@ -40,6 +40,7 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.cache.ICacheManager;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
@@ -52,9 +53,9 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.FilterCriterion;
+import org.jumpmind.symmetric.service.FilterCriterion.FilterOption;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.FilterCriterion.FilterOption;
 import org.jumpmind.symmetric.util.DefaultNodeIdCreator;
 import org.jumpmind.util.AppUtils;
 
@@ -69,21 +70,19 @@ public class NodeService extends AbstractService implements INodeService {
     private long securityCacheTime;
     private Map<String, Node> nodeCache = new HashMap<String, Node>();
     private long nodeCacheTime;
-    private Map<String, List<Node>> sourceNodesCache = new HashMap<String, List<Node>>();
-    private Map<String, List<Node>> targetNodesCache = new HashMap<String, List<Node>>();
-    private Map<String, Long> sourceNodeLinkCacheTime = new HashMap<String, Long>();
-    private Map<String, Long> targetNodeLinkCacheTime = new HashMap<String, Long>();
     private INodePasswordFilter nodePasswordFilter;
     private NodeHost nodeHostForCurrentNode = null;
+    private ICacheManager cacheManager;
 
     public NodeService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         this.engine = engine;
+        this.cacheManager = engine.getCacheManager();
         extensionService = engine.getExtensionService();
         extensionService.addExtensionPoint(new DefaultNodeIdCreator(parameterService, this, engine.getSecurityService()));
         setSqlMap(new NodeServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
     }
-
+    
     public String findSymmetricVersion() {
         return (String) sqlTemplate.queryForObject(getSql("findSymmetricVersionSql"), String.class);
     }
@@ -353,16 +352,17 @@ public class NodeService extends AbstractService implements INodeService {
 
     public List<Node> findSourceNodesFor(NodeGroupLinkAction eventAction) {
         Node node = findIdentity();
-        long cacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);
         if (node != null) {
-            List<Node> list = sourceNodesCache.get(eventAction.name());
-            if (list == null || (System.currentTimeMillis() - sourceNodeLinkCacheTime.get(eventAction.toString())) >= cacheTimeoutInMs) {
-                list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoTargetMeSql"),
-                        new NodeRowMapper(), node.getNodeGroupId(), eventAction.name());
-                sourceNodesCache.put(eventAction.name(), list);
-                sourceNodeLinkCacheTime.put(eventAction.toString(), System.currentTimeMillis());
-            }
-            return list;
+            return cacheManager.getSourceNodesCache(eventAction, node);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+    
+    public List<Node> getSourceNodesFromDatabase(NodeGroupLinkAction eventAction, Node node) {
+        if (node != null) {
+            return sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoTargetMeSql"),
+                    new NodeRowMapper(), node.getNodeGroupId(), eventAction.name());
         } else {
             return Collections.emptyList();
         }
@@ -370,24 +370,25 @@ public class NodeService extends AbstractService implements INodeService {
 
     public List<Node> findTargetNodesFor(NodeGroupLinkAction eventAction) {
         Node node = findIdentity();
-        long cacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);
         if (node != null) {
-            List<Node> list = targetNodesCache.get(eventAction.name());
-            if (list == null || (System.currentTimeMillis() - targetNodeLinkCacheTime.get(eventAction.toString())) >= cacheTimeoutInMs) {
-                list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoITargetSql"),
-                        new NodeRowMapper(), node.getNodeGroupId(), eventAction.name());
-                targetNodesCache.put(eventAction.name(), list);
-                targetNodeLinkCacheTime.put(eventAction.toString(), System.currentTimeMillis());
-            }
-            return new ArrayList<Node>(list);
+            return cacheManager.getTargetNodesCache(eventAction, node);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+    
+    public List<Node> getTargetNodesFromDatabase(NodeGroupLinkAction eventAction, Node node) {
+        if (node != null) {
+            return sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoITargetSql"),
+                    new NodeRowMapper(), node.getNodeGroupId(), eventAction.name());
         } else {
             return Collections.emptyList();
         }
     }
 
     public void flushNodeGroupCache() {
-        sourceNodesCache = new HashMap<String, List<Node>>();
-        targetNodesCache = new HashMap<String, List<Node>>();
+        cacheManager.flushSourceNodesCache();
+        cacheManager.flushTargetNodesCache();
     }
 
     public List<String> findAllExternalIds() {

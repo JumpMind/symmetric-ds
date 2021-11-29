@@ -31,6 +31,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.cache.ICacheManager;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.LoadFilter;
@@ -38,100 +40,80 @@ import org.jumpmind.symmetric.model.LoadFilter.LoadFilterType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.FormatUtils;
 
 public class LoadFilterService extends AbstractService implements ILoadFilterService {
-    private Map<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>> loadFilterCacheByNodeGroupLink;
-    private long lastCacheTimeInMs;
     private Date lastUpdateTime;
     private IConfigurationService configurationService;
+    private ICacheManager cacheManager;
 
-    public LoadFilterService(IParameterService parameterService,
-            ISymmetricDialect symmetricDialect, IConfigurationService configurationService) {
-        super(parameterService, symmetricDialect);
-        this.configurationService = configurationService;
+    public LoadFilterService(ISymmetricEngine engine, ISymmetricDialect symmetricDialect) {
+        super(engine.getParameterService(), symmetricDialect);
+        this.configurationService = engine.getConfigurationService();
+        this.cacheManager = engine.getCacheManager();
         setSqlMap(new LoadFilterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-
+    
+    @Override
     public Map<LoadFilterType, Map<String, List<LoadFilter>>> findLoadFiltersFor(NodeGroupLink nodeGroupLink,
             boolean useCache) {
-        // get the cache timeout
-        long cacheTimeoutInMs = parameterService
-                .getLong(ParameterConstants.CACHE_TIMEOUT_LOAD_FILTER_IN_MS);
-        // if the cache is expired or the caller doesn't want to use the cache,
-        // pull the data and refresh the cache
-        synchronized (this) {
-            if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
-                    || loadFilterCacheByNodeGroupLink == null || useCache == false) {
-                refreshCache();
-            }
-        }
-        if (loadFilterCacheByNodeGroupLink != null) {
-            Map<LoadFilterType, Map<String, List<LoadFilter>>> loadFilters = loadFilterCacheByNodeGroupLink
-                    .get(nodeGroupLink);
-            return loadFilters;
+        Map<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>> data = cacheManager.findLoadFilters(nodeGroupLink, useCache);
+        if (data != null) {
+            return data.get(nodeGroupLink);
         }
         return null;
     }
-
-    protected void refreshCache() {
-        // get the cache timeout
-        long cacheTimeoutInMs = parameterService
-                .getLong(ParameterConstants.CACHE_TIMEOUT_LOAD_FILTER_IN_MS);
-        synchronized (this) {
-            if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
-                    || loadFilterCacheByNodeGroupLink == null) {
-                loadFilterCacheByNodeGroupLink = new HashMap<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>>();
-                List<LoadFilterNodeGroupLink> loadFilters = getLoadFiltersFromDB();
-                boolean ignoreCase = this.parameterService
-                        .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
-                for (LoadFilterNodeGroupLink loadFilter : loadFilters) {
-                    NodeGroupLink nodeGroupLink = loadFilter.getNodeGroupLink();
-                    if (nodeGroupLink != null) {
-                        Map<LoadFilterType, Map<String, List<LoadFilter>>> loadFiltersByType = loadFilterCacheByNodeGroupLink
-                                .get(nodeGroupLink);
-                        if (loadFiltersByType == null) {
-                            loadFiltersByType = new HashMap<LoadFilterType, Map<String, List<LoadFilter>>>();
-                            loadFilterCacheByNodeGroupLink.put(nodeGroupLink, loadFiltersByType);
-                        }
-                        Map<String, List<LoadFilter>> loadFiltersByTable = loadFiltersByType.get(loadFilter.getLoadFilterType());
-                        if (loadFiltersByTable == null) {
-                            loadFiltersByTable = new HashMap<String, List<LoadFilter>>();
-                            loadFiltersByType.put(loadFilter.getLoadFilterType(), loadFiltersByTable);
-                        }
-                        String tableName = loadFilter.getTargetTableName();
-                        if (StringUtils.isBlank(tableName)) {
-                            tableName = FormatUtils.WILDCARD;
-                        } else if (ignoreCase) {
-                            tableName = tableName.toUpperCase();
-                        }
-                        String schemaName = loadFilter.getTargetSchemaName();
-                        if (StringUtils.isBlank(schemaName)) {
-                            schemaName = FormatUtils.WILDCARD;
-                        } else if (ignoreCase) {
-                            schemaName = schemaName.toUpperCase();
-                        }
-                        String catalogName = loadFilter.getTargetCatalogName();
-                        if (StringUtils.isBlank(catalogName)) {
-                            catalogName = FormatUtils.WILDCARD;
-                        } else if (ignoreCase) {
-                            catalogName = catalogName.toUpperCase();
-                        }
-                        String qualifiedName = Table.getFullyQualifiedTableName(
-                                catalogName, schemaName, tableName);
-                        List<LoadFilter> loadFiltersForTable = loadFiltersByTable.get(qualifiedName);
-                        if (loadFiltersForTable == null) {
-                            loadFiltersForTable = new ArrayList<LoadFilter>();
-                            loadFiltersByTable.put(qualifiedName, loadFiltersForTable);
-                        }
-                        loadFiltersForTable.add(loadFilter);
-                    }
+    
+    @Override
+    public Map<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>> findLoadFiltersFromDb() {
+        Map<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>> data = new HashMap<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>>();
+        List<LoadFilterNodeGroupLink> loadFilters = getLoadFiltersFromDB();
+        boolean ignoreCase = this.parameterService
+                .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
+        for (LoadFilterNodeGroupLink loadFilter : loadFilters) {
+            NodeGroupLink nodeGroupLink = loadFilter.getNodeGroupLink();
+            if (nodeGroupLink != null) {
+                Map<LoadFilterType, Map<String, List<LoadFilter>>> loadFiltersByType = data
+                        .get(nodeGroupLink);
+                if (loadFiltersByType == null) {
+                    loadFiltersByType = new HashMap<LoadFilterType, Map<String, List<LoadFilter>>>();
+                    data.put(nodeGroupLink, loadFiltersByType);
                 }
-                lastCacheTimeInMs = System.currentTimeMillis();
+                Map<String, List<LoadFilter>> loadFiltersByTable = loadFiltersByType.get(loadFilter.getLoadFilterType());
+                if (loadFiltersByTable == null) {
+                    loadFiltersByTable = new HashMap<String, List<LoadFilter>>();
+                    loadFiltersByType.put(loadFilter.getLoadFilterType(), loadFiltersByTable);
+                }
+                String tableName = loadFilter.getTargetTableName();
+                if (StringUtils.isBlank(tableName)) {
+                    tableName = FormatUtils.WILDCARD;
+                } else if (ignoreCase) {
+                    tableName = tableName.toUpperCase();
+                }
+                String schemaName = loadFilter.getTargetSchemaName();
+                if (StringUtils.isBlank(schemaName)) {
+                    schemaName = FormatUtils.WILDCARD;
+                } else if (ignoreCase) {
+                    schemaName = schemaName.toUpperCase();
+                }
+                String catalogName = loadFilter.getTargetCatalogName();
+                if (StringUtils.isBlank(catalogName)) {
+                    catalogName = FormatUtils.WILDCARD;
+                } else if (ignoreCase) {
+                    catalogName = catalogName.toUpperCase();
+                }
+                String qualifiedName = Table.getFullyQualifiedTableName(
+                        catalogName, schemaName, tableName);
+                List<LoadFilter> loadFiltersForTable = loadFiltersByTable.get(qualifiedName);
+                if (loadFiltersForTable == null) {
+                    loadFiltersForTable = new ArrayList<LoadFilter>();
+                    loadFiltersByTable.put(qualifiedName, loadFiltersForTable);
+                }
+                loadFiltersForTable.add(loadFilter);
             }
         }
+        return data;
     }
 
     private List<LoadFilterNodeGroupLink> getLoadFiltersFromDB() {
@@ -220,9 +202,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
     }
 
     public void clearCache() {
-        synchronized (this) {
-            this.loadFilterCacheByNodeGroupLink = null;
-        }
+        cacheManager.flushLoadFilters();
     }
 
     public static class LoadFilterNodeGroupLink extends LoadFilter {

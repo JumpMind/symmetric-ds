@@ -63,6 +63,8 @@ public interface IFileSyncService {
     public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode(boolean refreshCache);
 
     public List<FileTriggerRouter> getFileTriggerRouters(boolean refreshCache);
+    
+    public List<FileTriggerRouter> getFileTriggerRoutersFromDb();
 
     public FileTriggerRouter getFileTriggerRouter(String triggerId, String routerId, boolean refreshCache);
 

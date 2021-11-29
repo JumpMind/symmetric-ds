@@ -50,6 +50,8 @@ public interface IConfigurationService {
     public void deleteAllNodeGroupLinks();
 
     public List<NodeGroupLink> getNodeGroupLinks(boolean refreshCache);
+    
+    public List<NodeGroupLink> getNodeGroupLinksFromDb();
 
     public List<NodeGroupLink> getNodeGroupLinksFor(String sourceGroupId, boolean refreshCache);
 
@@ -73,12 +75,16 @@ public interface IConfigurationService {
     public void deleteChannel(Channel channel);
 
     public List<NodeGroupChannelWindow> getNodeGroupChannelWindows(String nodeGroupId, String channelId);
+    
+    public Map<String, List<NodeGroupChannelWindow>> getNodeGroupChannelWindowsFromDb();
 
     public NodeGroupLinkAction getDataEventActionByGroupLinkId(String sourceGroupId, String targetGroupId);
 
     public List<NodeChannel> getNodeChannels(boolean refreshExtractMillis);
 
     public List<NodeChannel> getNodeChannels(String nodeId, boolean refreshExtractMillis);
+    
+    public List<NodeChannel> getNodeChannelsFromDb(String nodeId);
 
     public NodeChannel getNodeChannel(String channelId, boolean refreshExtractMillis);
 
@@ -87,6 +93,8 @@ public interface IConfigurationService {
     public List<Channel> getFileSyncChannels();
 
     public Map<String, Channel> getChannels(boolean refreshCache);
+    
+    public Map<String, Channel> getChannelsFromDb();
 
     public NodeChannel getNodeChannel(String channelId, String nodeId, boolean refreshExtractMillis);
 
