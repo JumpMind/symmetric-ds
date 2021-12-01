@@ -120,7 +120,7 @@ public class TransformService extends AbstractService implements ITransformServi
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-    
+
     private void addColumnTransform(String name, IColumnTransform<?> columnTransform) {
         extensionService.addExtensionPoint(name, columnTransform);
     }
@@ -202,11 +202,11 @@ public class TransformService extends AbstractService implements ITransformServi
     private Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> readInCacheIfExpired() {
         return cacheManager.getTransformCache();
     }
-    
+
     @Override
     public Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> readInCacheIfExpiredFromDb() {
-        Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> byByLinkByTransformPoint =
-                new HashMap<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>>(2);
+        Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> byByLinkByTransformPoint = new HashMap<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>>(
+                2);
         List<TransformTableNodeGroupLink> transforms = getTransformTablesFromDB(true, true);
         for (TransformTableNodeGroupLink transformTable : transforms) {
             NodeGroupLink nodeGroupLink = transformTable.getNodeGroupLink();

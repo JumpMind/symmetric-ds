@@ -92,7 +92,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
             extensionService.addExtensionPoint(ext.getName(), ext);
         }
     }
-    
+
     @Override
     public synchronized void update() {
         Map<String, IMonitorType> monitorTypes = extensionService.getExtensionPointMap(IMonitorType.class);
@@ -237,7 +237,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
     public List<Monitor> getActiveMonitorsForNode(String nodeGroupId, String externalId) {
         return cacheManager.getActiveMonitorsForNode(nodeGroupId, externalId);
     }
-    
+
     @Override
     public List<Monitor> getActiveMonitorsForNodeFromDb(String nodeGroupId, String externalId) {
         return sqlTemplate.query(getSql("selectMonitorSql", "whereMonitorByNodeSql"), new MonitorRowMapper(),
@@ -248,7 +248,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
     public List<Monitor> getActiveMonitorsUnresolvedForNode(String nodeGroupId, String externalId) {
         return cacheManager.getActiveMonitorsUnresolvedForNode(nodeGroupId, externalId);
     }
-    
+
     @Override
     public List<Monitor> getActiveMonitorsUnresolvedForNodeFromDb(String nodeGroupId, String externalId) {
         return sqlTemplate.query(getSql("selectMonitorWhereNotResolved"), new MonitorRowMapper(),
@@ -365,7 +365,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
     public List<Notification> getActiveNotificationsForNode(String nodeGroupId, String externalId) {
         return cacheManager.getActiveNotificationsForNode(nodeGroupId, externalId);
     }
-    
+
     @Override
     public List<Notification> getActiveNotificationsForNodeFromDb(String nodeGroupId, String externalId) {
         return sqlTemplate.query(getSql("selectNotificationSql", "whereNotificationByNodeSql"),

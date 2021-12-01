@@ -54,7 +54,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         setSqlMap(new LoadFilterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-    
+
     @Override
     public Map<LoadFilterType, Map<String, List<LoadFilter>>> findLoadFiltersFor(NodeGroupLink nodeGroupLink,
             boolean useCache) {
@@ -64,7 +64,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         }
         return null;
     }
-    
+
     @Override
     public Map<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>> findLoadFiltersFromDb() {
         Map<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>> data = new HashMap<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>>();

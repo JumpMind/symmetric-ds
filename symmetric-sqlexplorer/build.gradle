@@ -55,7 +55,8 @@ dependencies {
     testCompile "org.eclipse.jetty:jetty-webapp:$jettyVersion"
     testCompile "org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion"    
 	
-	implementation "com.vaadin:vaadin-core:14.+"
+	implementation "com.vaadin:vaadin-core:22.+"
+	implementation "com.vaadin:vaadin-dev-server:9.0.0"
 }
 
 assemble.dependsOn jar

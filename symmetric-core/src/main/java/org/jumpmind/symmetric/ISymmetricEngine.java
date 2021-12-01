@@ -336,6 +336,6 @@ public interface ISymmetricEngine {
     public String getLastExceptionMessage();
 
     public String getEngineDescription(String mesage);
-    
+
     public ICacheManager getCacheManager();
 }

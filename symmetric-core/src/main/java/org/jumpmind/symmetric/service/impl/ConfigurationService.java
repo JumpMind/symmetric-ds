@@ -55,7 +55,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private Map<String, Channel> defaultChannels;
     private Date lastUpdateTime;
     private ICacheManager cacheManager;
-    
+
     public ConfigurationService(ISymmetricEngine engine, ISymmetricDialect dialect) {
         super(engine.getParameterService(), dialect);
         this.nodeService = engine.getNodeService();
@@ -64,7 +64,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         setSqlMap(new ConfigurationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-    
+
     protected final void createDefaultChannels() {
         Map<String, Channel> updatedDefaultChannels = new LinkedHashMap<String, Channel>();
         updatedDefaultChannels.put(Constants.CHANNEL_CONFIG,
@@ -216,7 +216,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return cacheManager.getNodeGroupLinks(refreshCache);
     }
-    
+
     @Override
     public List<NodeGroupLink> getNodeGroupLinksFromDb() {
         return sqlTemplate.query(getSql("groupsLinksSql"), new NodeGroupLinkMapper());
@@ -376,7 +376,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return nodeChannels;
     }
-    
+
     @Override
     public List<NodeChannel> getNodeChannelsFromDb(String nodeId) {
         List<NodeChannel> nodeChannels = sqlTemplate.query(getSql("selectNodeChannelsSql"), new NodeChannelMapper(nodeId));
@@ -456,7 +456,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public List<NodeGroupChannelWindow> getNodeGroupChannelWindows(String notUsed, String channelId) {
         return cacheManager.getNodeGroupChannelWindows().get(channelId);
     }
-    
+
     @Override
     public Map<String, List<NodeGroupChannelWindow>> getNodeGroupChannelWindowsFromDb() {
         Map<String, List<NodeGroupChannelWindow>> channelWindowsByChannel = new HashMap<String, List<NodeGroupChannelWindow>>();
@@ -501,7 +501,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public Map<String, Channel> getChannels(boolean refreshCache) {
         return cacheManager.getChannels(refreshCache);
     }
-    
+
     @Override
     public Map<String, Channel> getChannelsFromDb() {
         Map<String, Channel> channels = new HashMap<String, Channel>();

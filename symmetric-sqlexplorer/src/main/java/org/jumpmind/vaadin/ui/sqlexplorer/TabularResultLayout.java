@@ -66,6 +66,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.InMemoryDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -209,7 +211,7 @@ public class TabularResultLayout extends VerticalLayout {
                     }
                 });
                 editor.addSaveListener(event -> {
-                    grid.setDataProvider(grid.getDataProvider());
+                    grid.setItems((DataProvider<List<Object>, Void>) grid.getDataProvider());
                     List<Object> row = event.getItem();
                     List<String> colNames = new ArrayList<String>();
                     List<Object> params = new ArrayList<Object>();

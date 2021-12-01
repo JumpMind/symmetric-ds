@@ -82,7 +82,7 @@ public class NodeService extends AbstractService implements INodeService {
         extensionService.addExtensionPoint(new DefaultNodeIdCreator(parameterService, this, engine.getSecurityService()));
         setSqlMap(new NodeServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
     }
-    
+
     public String findSymmetricVersion() {
         return (String) sqlTemplate.queryForObject(getSql("findSymmetricVersionSql"), String.class);
     }
@@ -358,7 +358,7 @@ public class NodeService extends AbstractService implements INodeService {
             return Collections.emptyList();
         }
     }
-    
+
     public List<Node> getSourceNodesFromDatabase(NodeGroupLinkAction eventAction, Node node) {
         if (node != null) {
             return sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoTargetMeSql"),
@@ -376,7 +376,7 @@ public class NodeService extends AbstractService implements INodeService {
             return Collections.emptyList();
         }
     }
-    
+
     public List<Node> getTargetNodesFromDatabase(NodeGroupLinkAction eventAction, Node node) {
         if (node != null) {
             return sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoITargetSql"),
