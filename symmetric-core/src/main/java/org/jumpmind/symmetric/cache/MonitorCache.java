@@ -15,6 +15,8 @@ public class MonitorCache {
     
     volatile private List<Monitor> activeMonitorCache;
     volatile private long activeMonitorCacheTime;
+    volatile private List<Monitor> activeUnresolvedMonitorCache;
+    volatile private long activeUnresolvedMonitorCacheTime;
     volatile private List<Notification> activeNotificationCache;
     volatile private long activeNotificationCacheTime;
     
@@ -31,6 +33,7 @@ public class MonitorCache {
             synchronized(monitorCacheLock) {
                 if (activeMonitorCache == null || System.currentTimeMillis() - activeMonitorCacheTime > cacheTimeout) {
                     activeMonitorCache = monitorService.getActiveMonitorsForNodeFromDb(nodeGroupId, externalId);
+                    activeMonitorCacheTime = System.currentTimeMillis();
                 }
             }
         }
@@ -39,14 +42,15 @@ public class MonitorCache {
     
     public List<Monitor> getMonitorsUnresolvedForNode(String nodeGroupId, String externalId) {
         long cacheTimeout = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_MONITOR_IN_MS);
-        if (activeMonitorCache == null || System.currentTimeMillis() - activeMonitorCacheTime > cacheTimeout) {
+        if (activeUnresolvedMonitorCache == null || System.currentTimeMillis() - activeUnresolvedMonitorCacheTime > cacheTimeout) {
             synchronized(monitorCacheLock) {
-                if (activeMonitorCache == null || System.currentTimeMillis() - activeMonitorCacheTime > cacheTimeout) {
-                    activeMonitorCache = monitorService.getActiveMonitorsUnresolvedForNodeFromDb(nodeGroupId, externalId);
+                if (activeUnresolvedMonitorCache == null || System.currentTimeMillis() - activeUnresolvedMonitorCacheTime > cacheTimeout) {
+                    activeUnresolvedMonitorCache = monitorService.getActiveMonitorsUnresolvedForNodeFromDb(nodeGroupId, externalId);
+                    activeUnresolvedMonitorCacheTime = System.currentTimeMillis();
                 }
             }
         }
-        return activeMonitorCache;
+        return activeUnresolvedMonitorCache;
     }
     
     public void flushMonitorCache() {
@@ -61,6 +65,7 @@ public class MonitorCache {
             synchronized(monitorCacheLock) {
                 if (activeNotificationCache == null || System.currentTimeMillis() - activeNotificationCacheTime > cacheTimeout) {
                     activeNotificationCache = monitorService.getActiveNotificationsForNodeFromDb(nodeGroupId, externalId);
+                    activeNotificationCacheTime = System.currentTimeMillis();
                 }
             }
         }

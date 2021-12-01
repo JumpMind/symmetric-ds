@@ -36,6 +36,7 @@ public class GroupletCache {
                 if (groupletCache == null || System.currentTimeMillis() - groupletCacheTime >= maxCacheTime
                         || groupletCacheTime == 0 || refreshCache) {
                     groupletCache = groupletService.getGroupletsFromDb();
+                    groupletCacheTime = System.currentTimeMillis();
                 }
             }
         }

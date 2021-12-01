@@ -27,6 +27,7 @@ public class ConfigurationCache {
     volatile private long channelCacheTime;
     volatile private long nodeChannelCacheTime;
     volatile private long nodeGroupLinkCacheTime;
+    volatile private long channelWindowsByChannelCacheTime;
     
     public ConfigurationCache(ISymmetricEngine engine) {
         this.parameterService = engine.getParameterService();
@@ -93,10 +94,11 @@ public class ConfigurationCache {
     
     public Map<String, List<NodeGroupChannelWindow>> getNodeGroupChannelWindows() {
         long channelCacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_CHANNEL_IN_MS, 60000);
-        if (System.currentTimeMillis() - channelCacheTime >= channelCacheTimeoutInMs || channelWindowsByChannelCache == null) {
+        if (System.currentTimeMillis() - channelWindowsByChannelCacheTime >= channelCacheTimeoutInMs || channelWindowsByChannelCache == null) {
             synchronized (configurationCacheLock) {
-                if (System.currentTimeMillis() - channelCacheTime >= channelCacheTimeoutInMs || channelWindowsByChannelCache == null) {
+                if (System.currentTimeMillis() - channelWindowsByChannelCacheTime >= channelCacheTimeoutInMs || channelWindowsByChannelCache == null) {
                     channelWindowsByChannelCache = configurationService.getNodeGroupChannelWindowsFromDb();
+                    channelWindowsByChannelCacheTime = System.currentTimeMillis();
                 }
             }
         }

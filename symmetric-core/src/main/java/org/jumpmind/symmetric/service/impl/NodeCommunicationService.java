@@ -172,12 +172,14 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         switch (communicationType) {
             case PULL:
             case FILE_PULL:
-                nodesToCommunicateWith = removeOfflineNodes(nodeService.findNodesToPull());
+                List<Node> nodes = nodeService.findNodesToPull();
+                nodesToCommunicateWith = removeOfflineNodes(nodes);
                 break;
             case FILE_PUSH:
             case PUSH:
                 ts = System.currentTimeMillis();
-                nodesToCommunicateWith = removeOfflineNodes(nodeService.findNodesToPushTo());
+                nodes = nodeService.findNodesToPushTo();
+                nodesToCommunicateWith = removeOfflineNodes(nodes);
                 log.debug("Found {} nodes to push to in {}ms", nodesToCommunicateWith.size(), System.currentTimeMillis() - ts);
                 break;
             case OFFLN_PUSH:
@@ -308,26 +310,25 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
     }
 
     protected List<Node> getNodesToCommunicateWithOffline(CommunicationType communicationType) {
-        List<Node> nodesToCommunicateWith = null;
+        List<Node> nodesToCommunicateWith = new ArrayList<Node>();
         if (parameterService.is(ParameterConstants.NODE_OFFLINE) ||
                 (communicationType.equals(CommunicationType.PULL) && parameterService.is(ParameterConstants.NODE_OFFLINE_INCOMING_ACCEPT_ALL))) {
             if (communicationType.equals(CommunicationType.PUSH)) {
-                nodesToCommunicateWith = nodeService.findTargetNodesFor(NodeGroupLinkAction.W);
+                nodesToCommunicateWith.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));
                 nodesToCommunicateWith.addAll(nodeService.findNodesToPushTo());
             } else if (communicationType.equals(CommunicationType.PULL)) {
-                nodesToCommunicateWith = nodeService.findSourceNodesFor(NodeGroupLinkAction.P);
+                nodesToCommunicateWith.addAll(nodeService.findSourceNodesFor(NodeGroupLinkAction.P));
                 nodesToCommunicateWith.addAll(nodeService.findNodesToPull());
             }
         } else {
             List<DatabaseParameter> parms = parameterService.getOfflineNodeParameters();
-            nodesToCommunicateWith = new ArrayList<Node>(parms.size());
             if (parms.size() > 0) {
-                List<Node> sourceNodes = null;
+                List<Node> sourceNodes = new ArrayList<Node>();
                 if (communicationType.equals(CommunicationType.PUSH)) {
-                    sourceNodes = nodeService.findTargetNodesFor(NodeGroupLinkAction.W);
+                    sourceNodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));
                     sourceNodes.addAll(nodeService.findNodesToPushTo());
                 } else if (communicationType.equals(CommunicationType.PULL)) {
-                    sourceNodes = nodeService.findSourceNodesFor(NodeGroupLinkAction.P);
+                    sourceNodes.addAll(nodeService.findSourceNodesFor(NodeGroupLinkAction.P));
                     sourceNodes.addAll(nodeService.findNodesToPull());
                 }
                 if (sourceNodes != null && sourceNodes.size() > 0) {
