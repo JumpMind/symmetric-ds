@@ -50,7 +50,7 @@ public interface ITriggerRouterService {
     public List<TriggerHistory> getActiveTriggerHistories(String tableName);
 
     public List<TriggerRouter> getTriggerRouters(boolean refreshCache);
-    
+
     public List<TriggerRouter> getTriggerRoutersFromDatabase();
 
     /**
@@ -78,7 +78,7 @@ public interface ITriggerRouterService {
     public List<Trigger> getTriggersForCurrentNode(boolean refreshCache);
 
     public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String nodeGroupId);
-    
+
     public Map<String, List<TriggerRouter>> getTriggerRoutersByChannelFromDatabase(String nodeGroupId);
 
     /**
@@ -88,11 +88,11 @@ public interface ITriggerRouterService {
      *            Indicates that the cache should be refreshed
      */
     public Map<String, List<TriggerRouter>> getTriggerRoutersForCurrentNode(boolean refreshCache);
-    
+
     public Map<String, TriggerRouterRoutersCache> getTriggerRoutersCacheByNodeGroupIdFromDatabase();
 
     public Map<Integer, TriggerRouter> getTriggerRoutersByTriggerHist(String targetNodeGroupId, boolean refreshCache);
-    
+
     public Map<String, Map<Integer, TriggerRouter>> getTriggerRoutersByTriggerHistFromDatabase();
 
     public TriggerRouter getTriggerRouterByTriggerHist(String targetNodeGroupId, int triggerHistId, boolean refreshCache);
@@ -242,6 +242,6 @@ public interface ITriggerRouterService {
     public List<Table> getTablesFor(List<TriggerHistory> histories);
 
     public List<Table> getSortedTablesFor(List<TriggerHistory> histories);
-    
+
     public List<Trigger> buildTriggersForSymmetricTables(String version, String... tablesToExclude);
 }

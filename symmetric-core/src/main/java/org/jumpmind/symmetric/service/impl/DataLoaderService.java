@@ -766,7 +766,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             return new ArrayList<DataLoaderService.ConflictNodeGroupLink>(0);
         }
     }
-    
+
     @Override
     public List<ConflictNodeGroupLink> getConflictSettinsNodeGroupLinksFromDb(NodeGroupLink link) {
         return sqlTemplate.query(

@@ -1,3 +1,23 @@
+/**
+ * Licensed to JumpMind Inc under one or more contributor
+ * license agreements.  See the NOTICE file distributed
+ * with this work for additional information regarding
+ * copyright ownership.  JumpMind Inc licenses this file
+ * to you under the GNU General Public License, version 3.0 (GPLv3)
+ * (the "License"); you may not use this file except in compliance
+ * with the License.
+ *
+ * You should have received a copy of the GNU General Public License,
+ * version 3.0 (GPLv3) along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.jumpmind.symmetric.cache;
 
 import java.util.Collections;
@@ -15,24 +35,22 @@ import org.jumpmind.symmetric.service.IParameterService;
 public class NodeCache {
     private IParameterService parameterService;
     private INodeService nodeService;
-    
     private Object nodeCacheLock = new Object();
-    
     volatile private Map<String, List<Node>> sourceNodesCache = new HashMap<String, List<Node>>();
     volatile private Map<String, List<Node>> targetNodesCache = new HashMap<String, List<Node>>();
     volatile private Map<String, Long> sourceNodeLinkCacheTime = new HashMap<String, Long>();
     volatile private Map<String, Long> targetNodeLinkCacheTime = new HashMap<String, Long>();
-    
+
     public NodeCache(ISymmetricEngine engine) {
         this.parameterService = engine.getParameterService();
         this.nodeService = engine.getNodeService();
     }
-    
+
     public List<Node> getSourceNodesCache(NodeGroupLinkAction eventAction, Node node) {
         long cacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);
         if (node != null) {
             List<Node> list;
-            synchronized(nodeCacheLock) {
+            synchronized (nodeCacheLock) {
                 list = sourceNodesCache.get(eventAction.name());
                 if (list == null || (System.currentTimeMillis() - sourceNodeLinkCacheTime.get(eventAction.toString())) >= cacheTimeoutInMs) {
                     list = nodeService.getSourceNodesFromDatabase(eventAction, node);
@@ -45,25 +63,24 @@ public class NodeCache {
             return Collections.emptyList();
         }
     }
-    
+
     public void flushSourceNodesCache() {
-        synchronized(nodeCacheLock) {
+        synchronized (nodeCacheLock) {
             sourceNodesCache.clear();
         }
     }
-    
+
     public void flushTargetNodesCache() {
-        synchronized(nodeCacheLock) {
+        synchronized (nodeCacheLock) {
             targetNodesCache.clear();
         }
     }
-    
-    
+
     public List<Node> getTargetNodesCache(NodeGroupLinkAction eventAction, Node node) {
         long cacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);
         if (node != null) {
             List<Node> list;
-            synchronized(nodeCacheLock) {
+            synchronized (nodeCacheLock) {
                 list = targetNodesCache.get(eventAction.name());
                 if (list == null || (System.currentTimeMillis() - targetNodeLinkCacheTime.get(eventAction.toString())) >= cacheTimeoutInMs) {
                     list = nodeService.getTargetNodesFromDatabase(eventAction, node);

@@ -116,7 +116,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         this.cacheManager = engine.getCacheManager();
         setSqlMap(new FileSyncServiceSqlMap(platform, createSqlReplacementTokens()));
     }
-    
+
     public boolean refreshFromDatabase() {
         Date date1 = sqlTemplate.queryForObject(getSql("selectMaxFileTriggerLastUpdateTime"), Date.class);
         Date date2 = sqlTemplate.queryForObject(getSql("selectMaxRouterLastUpdateTime"), Date.class);
@@ -323,7 +323,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     public List<FileTriggerRouter> getFileTriggerRouters(boolean refreshCache) {
         return cacheManager.getFileTriggerRouters(refreshCache);
     }
-    
+
     @Override
     public List<FileTriggerRouter> getFileTriggerRoutersFromDb() {
         return sqlTemplate.query(getSql("selectFileTriggerRoutersSql"), new FileTriggerRouterMapper());

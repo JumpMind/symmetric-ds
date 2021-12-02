@@ -1,3 +1,23 @@
+/**
+ * Licensed to JumpMind Inc under one or more contributor
+ * license agreements.  See the NOTICE file distributed
+ * with this work for additional information regarding
+ * copyright ownership.  JumpMind Inc licenses this file
+ * to you under the GNU General Public License, version 3.0 (GPLv3)
+ * (the "License"); you may not use this file except in compliance
+ * with the License.
+ *
+ * You should have received a copy of the GNU General Public License,
+ * version 3.0 (GPLv3) along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.jumpmind.symmetric.cache;
 
 import java.util.ArrayList;
@@ -17,9 +37,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 public class ConfigurationCache {
     private IParameterService parameterService;
     private IConfigurationService configurationService;
-    
     private Object configurationCacheLock = new Object();
-    
     volatile private Map<String, List<NodeChannel>> nodeChannelCache;
     volatile private Map<String, Channel> channelsCache;
     volatile private List<NodeGroupLink> nodeGroupLinksCache;
@@ -28,16 +46,16 @@ public class ConfigurationCache {
     volatile private long nodeChannelCacheTime;
     volatile private long nodeGroupLinkCacheTime;
     volatile private long channelWindowsByChannelCacheTime;
-    
+
     public ConfigurationCache(ISymmetricEngine engine) {
         this.parameterService = engine.getParameterService();
         this.configurationService = engine.getConfigurationService();
     }
-    
+
     public List<NodeChannel> getNodeChannels(String nodeId) {
         long channelCacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_CHANNEL_IN_MS);
         List<NodeChannel> nodeChannels;
-        synchronized(configurationCacheLock) {
+        synchronized (configurationCacheLock) {
             nodeChannels = nodeChannelCache != null ? nodeChannelCache.get(nodeId) : null;
             if (System.currentTimeMillis() - nodeChannelCacheTime >= channelCacheTimeoutInMs || nodeChannels == null) {
                 if (System.currentTimeMillis() - nodeChannelCacheTime >= channelCacheTimeoutInMs || nodeChannelCache == null) {
@@ -54,11 +72,11 @@ public class ConfigurationCache {
         }
         return nodeChannels;
     }
-    
+
     public long getNodeChannelCacheTime() {
         return nodeChannelCacheTime;
     }
-    
+
     public Map<String, Channel> getChannels(boolean refreshCache) {
         long channelCacheTimeoutInMs = parameterService.getLong(
                 ParameterConstants.CACHE_TIMEOUT_CHANNEL_IN_MS, 60000);
@@ -74,7 +92,7 @@ public class ConfigurationCache {
         }
         return channelsCache;
     }
-    
+
     public List<NodeGroupLink> getNodeGroupLinks(boolean refreshCache) {
         long cacheTimeoutInMs = parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);
@@ -90,8 +108,7 @@ public class ConfigurationCache {
         }
         return nodeGroupLinksCache;
     }
-    
-    
+
     public Map<String, List<NodeGroupChannelWindow>> getNodeGroupChannelWindows() {
         long channelCacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_CHANNEL_IN_MS, 60000);
         if (System.currentTimeMillis() - channelWindowsByChannelCacheTime >= channelCacheTimeoutInMs || channelWindowsByChannelCache == null) {
@@ -104,27 +121,27 @@ public class ConfigurationCache {
         }
         return channelWindowsByChannelCache;
     }
-    
+
     public void flushNodeChannels() {
-        synchronized(configurationCacheLock) {
+        synchronized (configurationCacheLock) {
             this.nodeChannelCache = null;
         }
     }
-    
+
     public void flushChannels() {
-        synchronized(configurationCacheLock) {
+        synchronized (configurationCacheLock) {
             this.channelsCache = null;
         }
     }
-    
+
     public void flushNodeGroupLinks() {
-        synchronized(configurationCacheLock) {
+        synchronized (configurationCacheLock) {
             this.nodeGroupLinksCache = null;
         }
     }
-    
+
     public void flushNodeGroupChannelWindows() {
-        synchronized(configurationCacheLock) {
+        synchronized (configurationCacheLock) {
             this.channelWindowsByChannelCache = null;
         }
     }

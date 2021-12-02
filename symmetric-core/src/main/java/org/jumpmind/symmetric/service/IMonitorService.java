@@ -32,7 +32,7 @@ public interface IMonitorService {
     public List<Monitor> getMonitors();
 
     public List<Monitor> getActiveMonitorsForNode(String nodeGroupId, String externalId);
-    
+
     public List<Monitor> getActiveMonitorsForNodeFromDb(String nodeGroupId, String externalId);
 
     public void deleteMonitor(String notificationId);
@@ -52,7 +52,7 @@ public interface IMonitorService {
     public List<Notification> getNotifications();
 
     public List<Notification> getActiveNotificationsForNode(String nodeGroupId, String externalId);
-    
+
     public List<Notification> getActiveNotificationsForNodeFromDb(String nodeGroupId, String externalId);
 
     public void saveNotification(Notification notification);
@@ -64,6 +64,6 @@ public interface IMonitorService {
     public void flushNotificationCache();
 
     public List<Monitor> getActiveMonitorsUnresolvedForNode(String nodeGroupId, String externalId);
-    
+
     public List<Monitor> getActiveMonitorsUnresolvedForNodeFromDb(String nodeGroupId, String externalId);
 }

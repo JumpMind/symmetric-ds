@@ -56,7 +56,7 @@ public class GroupletService extends AbstractService implements IGroupletService
         setSqlMap(new GroupletServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-    
+
     @Override
     public boolean refreshFromDatabase() {
         if (!engine.getParameterService().is(ParameterConstants.GROUPLET_ENABLE)) {
@@ -164,7 +164,7 @@ public class GroupletService extends AbstractService implements IGroupletService
         }
         return cacheManager.getGrouplets(refreshCache);
     }
-    
+
     @Override
     public List<Grouplet> getGroupletsFromDb() {
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();

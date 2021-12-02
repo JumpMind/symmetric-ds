@@ -1235,7 +1235,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public String toString() {
         return "Engine " + getNodeId() + " " + super.toString();
     }
-    
+
     @Override
     public ICacheManager getCacheManager() {
         return cacheManager;

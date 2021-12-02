@@ -127,7 +127,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         setSqlMap(new TriggerRouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-    
+
     public boolean refreshFromDatabase() {
         Date date1 = sqlTemplate.queryForObject(getSql("selectMaxTriggerLastUpdateTime"), Date.class);
         Date date2 = sqlTemplate.queryForObject(getSql("selectMaxRouterLastUpdateTime"), Date.class);
@@ -714,7 +714,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public Map<Integer, TriggerRouter> getTriggerRoutersByTriggerHist(String targetNodeGroupId, boolean refreshCache) {
         return cacheManager.getTriggerRoutersByTriggerHist(refreshCache).get(targetNodeGroupId);
     }
-    
+
     public Map<String, Map<Integer, TriggerRouter>> getTriggerRoutersByTriggerHistFromDatabase() {
         Map<String, Map<Integer, TriggerRouter>> cache = new HashMap<String, Map<Integer, TriggerRouter>>();
         Map<String, List<TriggerRouter>> triggerRouters = getTriggerRoutersForCurrentNode(true);
@@ -743,7 +743,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         String myNodeGroupId = parameterService.getNodeGroupId();
         return cacheManager.getTriggerRoutersByNodeGroupId(refreshCache).get(myNodeGroupId);
     }
-    
+
     public Map<String, TriggerRouterRoutersCache> getTriggerRoutersCacheByNodeGroupIdFromDatabase() {
         String myNodeGroupId = parameterService.getNodeGroupId();
         Map<String, TriggerRouterRoutersCache> newTriggerRouterCacheByNodeGroupId = new HashMap<String, TriggerRouterRoutersCache>();
@@ -845,7 +845,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public List<TriggerRouter> getTriggerRouters(boolean refreshCache) {
         return cacheManager.getTriggerRouters(refreshCache);
     }
-    
+
     public List<TriggerRouter> getTriggerRoutersFromDatabase() {
         return enhanceTriggerRouters(sqlTemplate.query(
                 getTriggerRouterSql(null), new TriggerRouterMapper()));
@@ -907,7 +907,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String nodeGroupId, boolean refreshCache) {
         return cacheManager.getTriggerRoutersByChannel(nodeGroupId, refreshCache);
     }
-    
+
     public Map<String, List<TriggerRouter>> getTriggerRoutersByChannelFromDatabase(String nodeGroupId) {
         final Map<String, List<TriggerRouter>> newValue = new HashMap<String, List<TriggerRouter>>();
         List<TriggerRouter> triggerRouters = enhanceTriggerRouters(sqlTemplate.query(

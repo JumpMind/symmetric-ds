@@ -307,7 +307,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     public void setTotalDataCount(long totalDataCount) {
         this.totalDataCount = totalDataCount;
     }
-    
+
     public void setListener(IProcessInfoListener listener) {
         this.listener = listener;
     }
