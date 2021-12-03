@@ -19,13 +19,10 @@
 package org.jumpmind.db.platform.raima;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +30,6 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
-import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.Trigger.TriggerType;
@@ -115,7 +111,7 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
 
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) {
-        
+        // TODO This change is for issue 4826, not 4824
         List<Trigger> triggers = new ArrayList<Trigger>();
         
         log.debug("Reading triggers for: " + tableName);
@@ -123,30 +119,30 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
                 .getSqlTemplate();
         
         String sql = "SELECT "
-                        + "TRIGGERNAME, "
-                        + "SCHEMA, "
-                        + "TRIGGER_TYPE, "
-                        + "TABLENAME, "
-                        + "TRIG.* "
-                    + "FROM SYSTEM.TRIGGERS AS TRIG "
-                    + "WHERE TABLENAME=? and SCHEMA=? ;";
+                + "schemaname, "
+                + "tabname, "
+                + "name, "
+                + "event, "
+                + "trig.* "
+                + "FROM sys_trigger trig "
+                + "WHERE tabname = ? AND schemaname = ?";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
             public Trigger mapRow(Row row) {
                 Trigger trigger = new Trigger();
-                trigger.setName(row.getString("TRIGGERNAME"));
-                trigger.setSchemaName(row.getString("SCHEMA"));
-                trigger.setTableName(row.getString("TABLENAME"));
+                trigger.setName(row.getString("NAME"));
+                trigger.setSchemaName(row.getString("SCHEMANAME"));
+                trigger.setTableName(row.getString("TABNAME"));
                 trigger.setEnabled(true);
-                String triggerType = row.getString("TRIGGER_TYPE");
-                if (triggerType.equals("DELETE")
-                        || triggerType.equals("INSERT")
-                        || triggerType.equals("UPDATE")) {
-                    trigger.setTriggerType(TriggerType.valueOf(triggerType));
+                String triggerType = row.getString("EVENT");
+                if (triggerType.equalsIgnoreCase("DELETE")
+                        || triggerType.equalsIgnoreCase("INSERT")
+                        || triggerType.equalsIgnoreCase("UPDATE")) {
+                    trigger.setTriggerType(TriggerType.valueOf(triggerType.toUpperCase()));
                 }
                 trigger.setMetaData(row);
                 return trigger;
             }
-        }, tableName, catalog);
+        }, tableName, schema);
                 
         return triggers;
     }
