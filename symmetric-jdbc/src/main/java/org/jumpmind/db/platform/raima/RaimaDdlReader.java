@@ -109,31 +109,33 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
+        
         String sql = "SELECT "
-                + "TRIGGERNAME, "
-                + "SCHEMA, "
-                + "TRIGGER_TYPE, "
-                + "TABLENAME, "
-                + "TRIG.* "
-                + "FROM SYSTEM.TRIGGERS AS TRIG "
-                + "WHERE TABLENAME=? and SCHEMA=? ;";
+                + "schemaname, "
+                + "tabname, "
+                + "name, "
+                + "event, "
+                + "trig.* "
+                + "FROM sys_trigger trig "
+                + "WHERE tabname = ? AND schemaname = ?";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
             public Trigger mapRow(Row row) {
                 Trigger trigger = new Trigger();
-                trigger.setName(row.getString("TRIGGERNAME"));
-                trigger.setSchemaName(row.getString("SCHEMA"));
-                trigger.setTableName(row.getString("TABLENAME"));
+                trigger.setName(row.getString("NAME"));
+                trigger.setSchemaName(row.getString("SCHEMANAME"));
+                trigger.setTableName(row.getString("TABNAME"));
                 trigger.setEnabled(true);
-                String triggerType = row.getString("TRIGGER_TYPE");
-                if (triggerType.equals("DELETE")
-                        || triggerType.equals("INSERT")
-                        || triggerType.equals("UPDATE")) {
-                    trigger.setTriggerType(TriggerType.valueOf(triggerType));
+                String triggerType = row.getString("EVENT");
+                if (triggerType.equalsIgnoreCase("DELETE")
+                        || triggerType.equalsIgnoreCase("INSERT")
+                        || triggerType.equalsIgnoreCase("UPDATE")) {
+                    trigger.setTriggerType(TriggerType.valueOf(triggerType.toUpperCase()));
                 }
                 trigger.setMetaData(row);
                 return trigger;
             }
-        }, tableName, catalog);
+        }, tableName, schema);
+        
         return triggers;
     }
 
