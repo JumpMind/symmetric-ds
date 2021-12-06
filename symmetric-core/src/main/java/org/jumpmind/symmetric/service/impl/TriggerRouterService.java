@@ -1053,7 +1053,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void deleteRouter(Router router) {
         if (router != null) {
-            sqlTemplate.update(getSql("deleteRouterSql"), (Object) router.getRouterId());
+        	sqlTemplate.update(getSql("deleteTriggerRoutersByRouterSql"), router.getRouterId());
+        	groupletService.deleteTriggerRouterGroupletsFor(router);
+            sqlTemplate.update(getSql("deleteRouterSql"), router.getRouterId());
         }
     }
 

@@ -26,6 +26,7 @@ import java.util.Set;
 import org.jumpmind.symmetric.model.Grouplet;
 import org.jumpmind.symmetric.model.GroupletLink;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.model.TriggerRouterGrouplet;
 
@@ -59,4 +60,6 @@ public interface IGroupletService {
     public void deleteTriggerRouterGrouplet(Grouplet grouplet, TriggerRouterGrouplet triggerRouterGrouplet);
 
     public void deleteTriggerRouterGroupletsFor(TriggerRouter triggerRouter);
+    
+    public void deleteTriggerRouterGroupletsFor(Router router);
 }

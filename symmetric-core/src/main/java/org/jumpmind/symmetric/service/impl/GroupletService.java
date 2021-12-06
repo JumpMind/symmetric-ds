@@ -39,6 +39,7 @@ import org.jumpmind.symmetric.model.Grouplet;
 import org.jumpmind.symmetric.model.Grouplet.GroupletLinkPolicy;
 import org.jumpmind.symmetric.model.GroupletLink;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.model.TriggerRouterGrouplet;
 import org.jumpmind.symmetric.model.TriggerRouterGrouplet.AppliesWhen;
@@ -336,6 +337,12 @@ public class GroupletService extends AbstractService implements IGroupletService
                                 triggerRouter.getRouter().getRouterId() }, new int[] { Types.VARCHAR,
                                         Types.VARCHAR });
     }
+
+	public void deleteTriggerRouterGroupletsFor(Router router) {
+		ISqlTemplate sqlTemplate = platform.getSqlTemplate();
+		sqlTemplate.update(getSql("deleteTriggerRouterGroupletsForRouterSql"), new Object[] { router.getRouterId() },
+				new int[] { Types.VARCHAR });
+	}
 
     public void deleteTriggerRouterGrouplet(Grouplet grouplet,
             TriggerRouterGrouplet triggerRouterGrouplet) {
