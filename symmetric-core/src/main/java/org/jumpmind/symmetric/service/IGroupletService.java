@@ -49,6 +49,8 @@ public interface IGroupletService {
     public boolean isTargetEnabled(TriggerRouter triggerRouter, Node targetNode);
 
     public void saveGrouplet(Grouplet grouplet);
+    
+    public void editGrouplet(Grouplet oldGrouplet, Grouplet newGrouplet);
 
     public void saveGroupletLink(Grouplet grouplet, GroupletLink link);
 

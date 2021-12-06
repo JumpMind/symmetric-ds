@@ -43,8 +43,12 @@ public interface IFileSyncService {
     public FileTrigger getFileTrigger(String triggerId);
 
     public void saveFileTrigger(FileTrigger fileTrigger);
+    
+    public void editFileTrigger(String oldId, FileTrigger fileTrigger);
 
     public void saveFileTriggerRouter(FileTriggerRouter fileTriggerRouter);
+    
+    public void editFileTriggerRouter(String oldTriggerId, String oldRouterId, FileTriggerRouter fileTriggerRouter);
 
     public void deleteFileTriggerRouter(String triggerId, String routerId);
 

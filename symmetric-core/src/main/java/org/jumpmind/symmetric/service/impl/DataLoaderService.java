@@ -777,7 +777,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     public void delete(ConflictNodeGroupLink settings) {
-        sqlTemplate.update(getSql("deleteConflictSettingsSql"), settings.getConflictId());
+        delete(settings.getConflictId());
+    }
+    
+    private void delete(String id) {
+        sqlTemplate.update(getSql("deleteConflictSettingsSql"), id);
     }
 
     public void deleteAllConflicts() {
@@ -813,6 +817,23 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                     Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                                     Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
                                     Types.VARCHAR, Types.VARCHAR });
+        }
+    }
+    
+    public void edit(String oldId, ConflictNodeGroupLink setting) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            delete(oldId);
+            save(setting);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
         }
     }
 

@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.cache.ICacheManager;
@@ -171,6 +172,47 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     link.getLastUpdateBy(), link.getCreateTime());
         }
     }
+    
+    public void editNodeGroupLink(String oldSourceId, String oldTargetId, NodeGroupLink link) {
+        ISqlTransaction transaction = null;
+        try {
+            boolean sourceChanged = !oldSourceId.equals(link.getSourceNodeGroupId());
+            boolean targetChanged = !oldTargetId.equals(link.getTargetNodeGroupId());
+            transaction = sqlTemplate.startSqlTransaction();
+            saveNodeGroupLink(link);
+            if (sourceChanged && targetChanged) {
+                sqlTemplate.update(getSql("updateConflictGroupsSql"), link.getSourceNodeGroupId(),
+                        link.getTargetNodeGroupId(), oldSourceId, oldTargetId);
+                sqlTemplate.update(getSql("updateLoadFilterGroupsSql"), link.getSourceNodeGroupId(),
+                        link.getTargetNodeGroupId(), oldSourceId, oldTargetId);
+                sqlTemplate.update(getSql("updateRouterGroupsSql"), link.getSourceNodeGroupId(),
+                        link.getTargetNodeGroupId(), oldSourceId, oldTargetId);
+                sqlTemplate.update(getSql("updateTransformGroupsSql"), link.getSourceNodeGroupId(),
+                        link.getTargetNodeGroupId(), oldSourceId, oldTargetId);
+            }
+            if (sourceChanged) {
+                sqlTemplate.update(getSql("updateConflictSourceGroupSql"), link.getSourceNodeGroupId(), oldSourceId);
+                sqlTemplate.update(getSql("updateLoadFilterSourceGroupSql"), link.getSourceNodeGroupId(), oldSourceId);
+                sqlTemplate.update(getSql("updateRouterSourceGroupSql"), link.getSourceNodeGroupId(), oldSourceId);
+                sqlTemplate.update(getSql("updateTransformSourceGroupSql"), link.getSourceNodeGroupId(), oldSourceId);
+            }
+            if (targetChanged) {
+                sqlTemplate.update(getSql("updateConflictTargetGroupSql"), link.getTargetNodeGroupId(), oldTargetId);
+                sqlTemplate.update(getSql("updateLoadFilterTargetGroupSql"), link.getTargetNodeGroupId(), oldTargetId);
+                sqlTemplate.update(getSql("updateRouterTargetGroupSql"), link.getTargetNodeGroupId(), oldTargetId);
+                sqlTemplate.update(getSql("updateTransformTargetGroupSql"), link.getTargetNodeGroupId(), oldTargetId);
+            }
+            deleteNodeGroupLink(oldSourceId, oldTargetId);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
+        }
+    }
 
     public boolean doesNodeGroupExist(String nodeGroupId) {
         boolean exists = false;
@@ -197,8 +239,11 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     public void deleteNodeGroupLink(NodeGroupLink link) {
-        sqlTemplate.update(getSql("deleteNodeGroupLinkSql"), link.getSourceNodeGroupId(),
-                link.getTargetNodeGroupId());
+        deleteNodeGroupLink(link.getSourceNodeGroupId(), link.getTargetNodeGroupId());
+    }
+    
+    private void deleteNodeGroupLink(String sourceId, String targetId) {
+        sqlTemplate.update(getSql("deleteNodeGroupLinkSql"), sourceId, targetId);
     }
 
     public void deleteAllNodeGroupLinks() {
@@ -288,6 +333,28 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void saveChannel(NodeChannel nodeChannel, boolean reloadChannels) {
         saveChannel(nodeChannel.getChannel(), reloadChannels);
     }
+    
+    public void editChannel(String oldId, Channel channel) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            saveChannel(channel, true);
+            sqlTemplate.update(getSql("updateConflictChannelSql"), channel.getChannelId(), oldId);
+            sqlTemplate.update(getSql("updateTriggerChannelSql"), channel.getChannelId(), oldId);
+            sqlTemplate.update(getSql("updateTriggerReloadChannelSql"), channel.getChannelId(), oldId);
+            sqlTemplate.update(getSql("updateFileTriggerChannelSql"), channel.getChannelId(), oldId);
+            sqlTemplate.update(getSql("updateFileTriggerReloadChannelSql"), channel.getChannelId(), oldId);
+            deleteChannel(oldId);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
+        }
+    }
 
     public void saveNodeChannel(NodeChannel nodeChannel, boolean reloadChannels) {
         saveChannel(nodeChannel.getChannel(), false);
@@ -313,8 +380,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     public void deleteChannel(Channel channel) {
-        sqlTemplate.update(getSql("deleteNodeChannelSql"), new Object[] { channel.getChannelId() });
-        sqlTemplate.update(getSql("deleteChannelSql"), new Object[] { channel.getChannelId() });
+        deleteChannel(channel.getChannelId());
+    }
+    
+    private void deleteChannel(String id) {
+        sqlTemplate.update(getSql("deleteNodeChannelSql"), new Object[] { id });
+        sqlTemplate.update(getSql("deleteChannelSql"), new Object[] { id });
         clearCache();
     }
 

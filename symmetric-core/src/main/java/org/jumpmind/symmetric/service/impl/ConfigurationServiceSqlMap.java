@@ -136,6 +136,34 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
         putSql("selectMaxChannelLastUpdateTime" ,"select max(last_update_time) from $(channel) where last_update_time is not null" );
         putSql("selectMaxNodeGroupLastUpdateTime" ,"select max(last_update_time) from $(node_group) where last_update_time is not null" );
         putSql("selectMaxNodeGroupLinkLastUpdateTime" ,"select max(last_update_time) from $(node_group_link) where last_update_time is not null" );
+        
+        putSql("updateConflictChannelSql", "update $(conflict) set target_channel_id=? where target_channel_id=?");
+        putSql("updateConflictGroupsSql",
+                "update $(conflict) set source_node_group_id=?, target_node_group_id=? where source_node_group_id=? and target_node_group_id=?");
+        putSql("updateConflictSourceGroupSql", "update $(conflict) set source_node_group_id=? where source_node_group_id=?");
+        putSql("updateConflictTargetGroupSql", "update $(conflict) set target_node_group_id=? where target_node_group_id=?");
+        
+        putSql("updateFileTriggerChannelSql", "update $(file_trigger) set channel_id=? where channel_id=?");
+        putSql("updateFileTriggerReloadChannelSql", "update $(file_trigger) set reload_channel_id=? where reload_channel_id=?");
+        
+        putSql("updateLoadFilterGroupsSql",
+                "update $(load_filter) set source_node_group_id=?, target_node_group_id=? where source_node_group_id=? and target_node_group_id=?");
+        putSql("updateLoadFilterSourceGroupSql", "update $(load_filter) set source_node_group_id=? where source_node_group_id=?");
+        putSql("updateLoadFilterTargetGroupSql", "update $(load_filter) set target_node_group_id=? where target_node_group_id=?");
+        
+        putSql("updateRouterGroupsSql",
+                "update $(router) set source_node_group_id=?, target_node_group_id=? where source_node_group_id=? and target_node_group_id=?");
+        putSql("updateRouterSourceGroupSql", "update $(router) set source_node_group_id=? where source_node_group_id=?");
+        putSql("updateRouterTargetGroupSql", "update $(router) set target_node_group_id=? where target_node_group_id=?");
+        
+        putSql("updateTransformGroupsSql",
+                "update $(transform_table) set source_node_group_id=?, target_node_group_id=? where source_node_group_id=? and target_node_group_id=?");
+        putSql("updateTransformSourceGroupSql", "update $(transform_table) set source_node_group_id=? where source_node_group_id=?");
+        putSql("updateTransformTargetGroupSql", "update $(transform_table) set target_node_group_id=? where target_node_group_id=?");
+        
+        putSql("updateTriggerChannelSql", "update $(trigger) set channel_id=? where channel_id=?");
+        putSql("updateTriggerReloadChannelSql", "update $(trigger) set reload_channel_id=? where reload_channel_id=?");
+        
 
     }
 

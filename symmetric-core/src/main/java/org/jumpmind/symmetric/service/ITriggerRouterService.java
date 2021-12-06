@@ -127,6 +127,8 @@ public interface ITriggerRouterService {
     public void deleteAllRouters();
 
     public void saveRouter(Router router);
+    
+    public void editRouter(String oldId, Router router);
 
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId);
 
@@ -138,6 +140,8 @@ public interface ITriggerRouterService {
     public List<Trigger> getTriggers(boolean replaceTokens);
 
     public void saveTrigger(Trigger trigger);
+    
+    public void editTrigger(String oldId, Trigger trigger);
 
     public void deleteTrigger(Trigger trigger);
 
@@ -165,6 +169,8 @@ public interface ITriggerRouterService {
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId, boolean refreshCache);
 
     public List<TriggerRouter> findTriggerRoutersByTriggerId(String triggerId, boolean refreshCache);
+    
+    public List<TriggerRouter> findTriggerRoutersByRouterId(String routerId, boolean refreshCache);
 
     public void inactivateTriggerHistory(TriggerHistory history);
 
@@ -200,6 +206,8 @@ public interface ITriggerRouterService {
     public void saveTriggerRouter(TriggerRouter triggerRouter, boolean updateTriggerRouterTableOnly);
 
     public void saveTriggerRouter(TriggerRouter triggerRouter);
+    
+    public void editTriggerRouter(String oldTriggerId, String oldRouterId, TriggerRouter TriggerRouter);
 
     public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force);
 

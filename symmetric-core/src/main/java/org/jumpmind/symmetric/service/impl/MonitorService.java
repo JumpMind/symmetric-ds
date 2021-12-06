@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.cache.ICacheManager;
@@ -273,6 +274,24 @@ public class MonitorService extends AbstractService implements IMonitorService {
                     monitor.getCreateTime(), monitor.getLastUpdateBy(), monitor.getLastUpdateTime());
         }
     }
+    
+    @Override
+    public void editMonitor(String oldId, Monitor monitor) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            deleteMonitor(oldId);
+            saveMonitor(monitor);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
+        }
+    }
 
     @Override
     public List<MonitorEvent> getMonitorEvents() {
@@ -385,6 +404,24 @@ public class MonitorService extends AbstractService implements IMonitorService {
                     notification.getSeverityLevel(), notification.getType(), notification.getExpression(), notification.isEnabled() ? 1 : 0,
                     notification.getCreateTime(), notification.getLastUpdateBy(),
                     notification.getLastUpdateTime());
+        }
+    }
+    
+    @Override
+    public void editNotification(String oldId, Notification notification) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            deleteNotification(oldId);
+            saveNotification(notification);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
         }
     }
 

@@ -383,6 +383,24 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                             Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
         }
     }
+    
+    public void editFileTrigger(String oldId, FileTrigger fileTrigger) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            saveFileTrigger(fileTrigger);
+            sqlTemplate.update(getSql("updateFileTriggerIdSql"), fileTrigger.getTriggerId(), oldId);
+            deleteFileTrigger(oldId);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
+        }
+    }
 
     public void saveFileTriggerRouter(FileTriggerRouter fileTriggerRouter) {
         fileTriggerRouter.setLastUpdateTime(new Date());
@@ -414,6 +432,23 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         }
         clearCache();
     }
+    
+    public void editFileTriggerRouter(String oldTriggerId, String oldRouterId, FileTriggerRouter fileTriggerRouter) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            deleteFileTriggerRouter(oldTriggerId, oldRouterId);
+            saveFileTriggerRouter(fileTriggerRouter);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
+        }
+    }
 
     public void deleteFileTriggerRouter(String triggerId, String routerId) {
         sqlTemplate.update(getSql("deleteFileTriggerRouterSql"), triggerId, routerId);
@@ -432,7 +467,11 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     }
 
     public void deleteFileTrigger(FileTrigger fileTrigger) {
-        sqlTemplate.update(getSql("deleteFileTriggerSql"), (Object) fileTrigger.getTriggerId());
+        deleteFileTrigger(fileTrigger.getTriggerId());
+    }
+    
+    private void deleteFileTrigger(String id) {
+        sqlTemplate.update(getSql("deleteFileTriggerSql"), (Object) id);
     }
 
     public DirectorySnapshot getDirectorySnapshot(FileTriggerRouter fileTriggerRouter) {

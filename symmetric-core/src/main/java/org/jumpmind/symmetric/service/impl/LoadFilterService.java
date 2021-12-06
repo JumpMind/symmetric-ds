@@ -30,6 +30,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.cache.ICacheManager;
@@ -40,6 +41,7 @@ import org.jumpmind.symmetric.model.LoadFilter.LoadFilterType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
+import org.jumpmind.symmetric.service.impl.LoadFilterService.LoadFilterNodeGroupLink;
 import org.jumpmind.util.FormatUtils;
 
 public class LoadFilterService extends AbstractService implements ILoadFilterService {
@@ -179,6 +181,23 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
             sqlTemplate.update(getSql("insertLoadFilterSql"), args);
         }
         clearCache();
+    }
+    
+    public void editLoadFilter(String oldId, LoadFilterNodeGroupLink loadFilter) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            deleteLoadFilter(oldId);
+            saveLoadFilter(loadFilter);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
+        }
     }
 
     public void deleteLoadFilter(String loadFilterId) {

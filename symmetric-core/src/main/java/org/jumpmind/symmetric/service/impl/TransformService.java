@@ -74,6 +74,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITransformService;
+import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.util.FormatUtils;
 
 public class TransformService extends AbstractService implements ITransformService {
@@ -405,6 +406,35 @@ public class TransformService extends AbstractService implements ITransformServi
         } finally {
             close(transaction);
             clearCache();
+        }
+    }
+    
+    public void editTransformTable(String oldId, TransformTableNodeGroupLink transformTable) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            sqlTemplate.update(getSql("insertTransformTableSql"), transformTable
+                    .getNodeGroupLink().getSourceNodeGroupId(), transformTable
+                            .getNodeGroupLink().getTargetNodeGroupId(), transformTable
+                                    .getSourceCatalogName(), transformTable.getSourceSchemaName(),
+                    transformTable.getSourceTableName(), transformTable.getTargetCatalogName(),
+                    transformTable.getTargetSchemaName(), transformTable.getTargetTableName(),
+                    transformTable.getTransformPoint().toString(), transformTable
+                            .isUpdateFirst() ? 1 : 0, transformTable.getDeleteAction()
+                                    .toString(), transformTable.getUpdateAction(), transformTable.getTransformOrder(), transformTable
+                                            .getColumnPolicy().toString(), transformTable.getLastUpdateTime(),
+                    transformTable.getLastUpdateBy(), transformTable.getCreateTime(),
+                    transformTable.getTransformId());
+            sqlTemplate.update(getSql("updateTransformIdSql"), transformTable.getTransformId(), oldId);
+            sqlTemplate.update(getSql("deleteTransformTableSql"), oldId);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
         }
     }
 

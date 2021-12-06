@@ -174,6 +174,12 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
 
         putSql("deleteTriggerRouterSql", ""
                 + "delete from $(trigger_router) where trigger_id=? and router_id=?   ");
+        
+        putSql("deleteTriggerRoutersByTriggerIdSql", ""
+                + "delete from $(trigger_router) where trigger_id=?   ");
+        
+        putSql("deleteTriggerRoutersByRouterIdSql", ""
+                + "delete from $(trigger_router) where router_id=?   ");
 
         putSql("deleteAllTriggerRoutersSql", "delete from $(trigger_router)");
 
@@ -196,6 +202,8 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
         putSql("selectTriggerRouterSql", "" + "where t.trigger_id=? and r.router_id=?   ");
         
         putSql("selectTriggerRoutersByTriggerIdSql", "" + "where t.trigger_id=?   ");
+        
+        putSql("selectTriggerRoutersByRouterIdSql", "" + "where r.router_id=?   ");
 
         putSql("selectRouterSql", "" + "from $(router) r where r.router_id=?   ");
 
@@ -209,8 +217,11 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
         putSql("selectMaxTriggerLastUpdateTime" ,"select max(last_update_time) from $(trigger) where last_update_time is not null" );
         putSql("selectMaxRouterLastUpdateTime" ,"select max(last_update_time) from $(router) where last_update_time is not null" );
         putSql("selectMaxTriggerRouterLastUpdateTime" ,"select max(last_update_time) from $(trigger_router) where last_update_time is not null" );
+        
+        putSql("updateTriggerRouterIdSql0", "update $(trigger_router_grouplet) set trigger_id=? where trigger_id=?");
+        putSql("updateTriggerRouterIdSql1", "update $(trigger_router_grouplet) set router_id=? where router_id=?");
 
-
+        putSql("updateFileTriggerRouterSql", "update $(file_trigger_router) set router_id=? where router_id=?");
     }
 
 }

@@ -38,6 +38,8 @@ public interface IMonitorService {
     public void deleteMonitor(String notificationId);
 
     public void saveMonitor(Monitor monitor);
+    
+    public void editMonitor(String oldId, Monitor monitor);
 
     public List<MonitorEvent> getMonitorEvents();
 
@@ -56,6 +58,8 @@ public interface IMonitorService {
     public List<Notification> getActiveNotificationsForNodeFromDb(String nodeGroupId, String externalId);
 
     public void saveNotification(Notification notification);
+    
+    public void editNotification(String oldId, Notification notification);
 
     public void deleteNotification(String notificationId);
 

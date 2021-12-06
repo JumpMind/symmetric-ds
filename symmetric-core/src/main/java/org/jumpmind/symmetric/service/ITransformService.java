@@ -46,6 +46,8 @@ public interface ITransformService {
     public List<TransformColumn> getTransformColumnsForTable(String transformId);
 
     public void saveTransformTable(TransformTableNodeGroupLink transformTable, boolean saveTransformColumns);
+    
+    public void editTransformTable(String oldId, TransformTableNodeGroupLink transformTable);
 
     public void deleteTransformTable(String transformTableId);
 

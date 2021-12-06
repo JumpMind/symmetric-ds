@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.cache.ICacheManager;
@@ -255,6 +256,23 @@ public class GroupletService extends AbstractService implements IGroupletService
                             grouplet.getLastUpdateBy(), grouplet.getLastUpdateTime(),
                             grouplet.getGroupletId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                                     Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR });
+        }
+    }
+    
+    public void editGrouplet(Grouplet oldGrouplet, Grouplet newGrouplet) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            deleteGrouplet(oldGrouplet);
+            saveGrouplet(newGrouplet);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
         }
     }
 
