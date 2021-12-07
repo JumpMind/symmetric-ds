@@ -367,4 +367,9 @@ public class AndroidJobManager implements IJobManager {
     public boolean isJobApplicableToNodeGroup(IJob job) {
         return false;
     }
+
+    @Override
+    public void editJob(String oldName, JobDefinition jobDefinition) {
+        // No action on Android
+    }
 }
