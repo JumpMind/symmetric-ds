@@ -61,7 +61,7 @@ public class TransformCache {
 
     public void flushTransformCache() {
         synchronized (transformCacheLock) {
-            this.transformsCacheByNodeGroupLinkByTransformPoint = null;
+            this.transformCacheTimeInMs = 0l;
         }
     }
 }

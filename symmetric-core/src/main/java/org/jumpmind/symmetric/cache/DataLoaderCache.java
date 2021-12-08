@@ -63,7 +63,7 @@ public class DataLoaderCache {
 
     public void clearDataLoaderCache() {
         synchronized (dataLoaderCacheLock) {
-            conflictSettingsCache.clear();
+            conflictSettingsCache = new HashMap<NodeGroupLink, List<ConflictNodeGroupLink>>();
             lastConflictCacheResetTimeInMs = 0l;
         }
     }

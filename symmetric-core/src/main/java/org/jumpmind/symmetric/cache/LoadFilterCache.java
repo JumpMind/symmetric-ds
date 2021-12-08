@@ -62,7 +62,7 @@ public class LoadFilterCache {
 
     public void flushLoadFilterCache() {
         synchronized (loadFilterCacheLock) {
-            loadFilterCache = null;
+            loadFilterCacheTime = 0l;
         }
     }
 }

@@ -73,7 +73,8 @@ public class MonitorCache {
 
     public void flushMonitorCache() {
         synchronized (monitorCacheLock) {
-            activeMonitorCache = null;
+            activeMonitorCacheTime = 0l;
+            activeUnresolvedMonitorCacheTime = 0l;
         }
     }
 
@@ -92,7 +93,7 @@ public class MonitorCache {
 
     public void flushNotificationCache() {
         synchronized (monitorCacheLock) {
-            activeNotificationCache = null;
+            activeNotificationCacheTime = 0l;
         }
     }
 }

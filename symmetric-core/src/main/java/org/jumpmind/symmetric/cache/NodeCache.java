@@ -66,13 +66,13 @@ public class NodeCache {
 
     public void flushSourceNodesCache() {
         synchronized (nodeCacheLock) {
-            sourceNodesCache.clear();
+            sourceNodeLinkCacheTime.entrySet().stream().forEach(e -> e.setValue(0l));
         }
     }
 
     public void flushTargetNodesCache() {
         synchronized (nodeCacheLock) {
-            targetNodesCache.clear();
+            targetNodeLinkCacheTime.entrySet().stream().forEach(e -> e.setValue(0l));
         }
     }
 

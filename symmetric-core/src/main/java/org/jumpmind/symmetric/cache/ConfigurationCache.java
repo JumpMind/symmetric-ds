@@ -124,25 +124,25 @@ public class ConfigurationCache {
 
     public void flushNodeChannels() {
         synchronized (configurationCacheLock) {
-            this.nodeChannelCache = null;
+            nodeChannelCacheTime = 0l;
         }
     }
 
     public void flushChannels() {
         synchronized (configurationCacheLock) {
-            this.channelsCache = null;
+            channelCacheTime = 0l;
         }
     }
 
     public void flushNodeGroupLinks() {
         synchronized (configurationCacheLock) {
-            this.nodeGroupLinksCache = null;
+            nodeGroupLinkCacheTime = 0l;
         }
     }
 
     public void flushNodeGroupChannelWindows() {
         synchronized (configurationCacheLock) {
-            this.channelWindowsByChannelCache = null;
+            channelWindowsByChannelCacheTime = 0l;
         }
     }
 }
