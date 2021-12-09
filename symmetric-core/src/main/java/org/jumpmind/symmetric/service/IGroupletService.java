@@ -50,6 +50,8 @@ public interface IGroupletService {
 
     public void saveGrouplet(Grouplet grouplet);
     
+    public void saveGroupletAsCopy(Grouplet grouplet);
+    
     public void editGrouplet(Grouplet oldGrouplet, Grouplet newGrouplet);
 
     public void saveGroupletLink(Grouplet grouplet, GroupletLink link);

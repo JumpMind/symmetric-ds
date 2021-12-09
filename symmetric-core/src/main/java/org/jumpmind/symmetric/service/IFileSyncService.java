@@ -44,6 +44,8 @@ public interface IFileSyncService {
 
     public void saveFileTrigger(FileTrigger fileTrigger);
     
+    public void saveFileTriggerAsCopy(String originalId, FileTrigger fileTrigger);
+    
     public void editFileTrigger(String oldId, FileTrigger fileTrigger);
 
     public void saveFileTriggerRouter(FileTriggerRouter fileTriggerRouter);

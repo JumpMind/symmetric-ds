@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -181,6 +182,19 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
             sqlTemplate.update(getSql("insertLoadFilterSql"), args);
         }
         clearCache();
+    }
+    
+    public void saveLoadFilterAsCopy(LoadFilterNodeGroupLink loadFilter) {
+        String newId = loadFilter.getLoadFilterId();
+        List<LoadFilterNodeGroupLink> loadFilters = sqlTemplate
+                .query(getSql("selectLoadFilterTableWhereLoadFilterIdLike"), new LoadFilterMapper(), newId + "%");
+        List<String> ids = loadFilters.stream().map(LoadFilterNodeGroupLink::getLoadFilterId).collect(Collectors.toList());
+        String suffix = "";
+        for (int i = 2; ids.contains(newId + suffix); i++) {
+            suffix = "_" + i;
+        }
+        loadFilter.setLoadFilterId(newId + suffix);
+        saveLoadFilter(loadFilter);
     }
     
     public void editLoadFilter(String oldId, LoadFilterNodeGroupLink loadFilter) {

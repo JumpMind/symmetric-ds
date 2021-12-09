@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -289,6 +290,19 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         } else {
             refresh();
         }
+    }
+    
+    public void saveExtensionAsCopy(Extension extension) {
+        String newId = extension.getExtensionId();
+        List<Extension> extensions = sqlTemplate.query(getSql("selectAll", "whereExtensionIdLike"),
+                new ExtensionRowMapper(), newId + "%");
+        List<String> ids = extensions.stream().map(Extension::getExtensionId).collect(Collectors.toList());
+        String suffix = "";
+        for (int i = 2; ids.contains(newId + suffix); i++) {
+            suffix = "_" + i;
+        }
+        extension.setExtensionId(newId + suffix);
+        saveExtension(extension);
     }
     
     public void editExtension(String oldId, Extension extension) {

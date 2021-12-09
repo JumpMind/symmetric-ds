@@ -35,6 +35,8 @@ public interface ILoadFilterService {
 
     public void saveLoadFilter(LoadFilterNodeGroupLink loadFilter);
     
+    public void saveLoadFilterAsCopy(LoadFilterNodeGroupLink loadFilter);
+    
     public void editLoadFilter(String oldId, LoadFilterNodeGroupLink loadFilter);
 
     public void deleteLoadFilter(String loadFilterId);

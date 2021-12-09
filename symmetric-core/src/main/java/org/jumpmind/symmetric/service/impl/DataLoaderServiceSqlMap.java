@@ -85,6 +85,8 @@ public class DataLoaderServiceSqlMap extends AbstractSqlMap {
         putSql("updateIncomingErrorSql",
                 "update $(incoming_error) set resolve_data = ?, resolve_ignore = ? " +
                 "where batch_id = ? and node_id = ? and failed_row_number = ?");
+        
+        putSql("whereConflictIdLike", "where conflict_id like ?");
 
         // @formatter:on
     }

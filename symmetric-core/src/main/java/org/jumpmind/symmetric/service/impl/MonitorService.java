@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -276,6 +277,20 @@ public class MonitorService extends AbstractService implements IMonitorService {
     }
     
     @Override
+    public void saveMonitorAsCopy(Monitor monitor) {
+        String newId = monitor.getMonitorId();
+        List<Monitor> monitors = sqlTemplate.query(getSql("selectMonitorSql", "whereMonitorIdLikeSql"),
+                new MonitorRowMapper(), newId + "%");
+        List<String> ids = monitors.stream().map(Monitor::getMonitorId).collect(Collectors.toList());
+        String suffix = "";
+        for (int i = 2; ids.contains(newId + suffix); i++) {
+            suffix = "_" + i;
+        }
+        monitor.setMonitorId(newId + suffix);
+        saveMonitor(monitor);
+    }
+    
+    @Override
     public void editMonitor(String oldId, Monitor monitor) {
         ISqlTransaction transaction = null;
         try {
@@ -405,6 +420,20 @@ public class MonitorService extends AbstractService implements IMonitorService {
                     notification.getCreateTime(), notification.getLastUpdateBy(),
                     notification.getLastUpdateTime());
         }
+    }
+    
+    @Override
+    public void saveNotificationAsCopy(Notification notification) {
+        String newId = notification.getNotificationId();
+        List<Notification> notifications = sqlTemplate.query(
+                getSql("selectNotificationSql", "whereNotificationIdLikeSql"), new NotificationRowMapper(), newId + "%");
+        List<String> ids = notifications.stream().map(Notification::getNotificationId).collect(Collectors.toList());
+        String suffix = "";
+        for (int i = 2; ids.contains(newId + suffix); i++) {
+            suffix = "_" + i;
+        }
+        notification.setNotificationId(newId + suffix);
+        saveNotification(notification);
     }
     
     @Override

@@ -55,6 +55,8 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                         + "  trigger_hist_id=?                                                                         ");
 
         putSql("selectTriggersSql", "" + "from $(trigger) t order by trigger_id asc   ");
+        
+        putSql("selectTriggersWhereTriggerIdLikeSql", "" + "from $(trigger) t where trigger_id like ?   ");
 
         putSql("selectTriggerRoutersSql", ""
                 + "from $(trigger_router) tr                                 "
@@ -208,6 +210,8 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
         putSql("selectRouterSql", "" + "from $(router) r where r.router_id=?   ");
 
         putSql("selectRoutersSql", "" + "from $(router) r order by r.router_id   ");
+        
+        putSql("selectRoutersWhereRouterIdLikeSql", "" + "from $(router) r where r.router_id like ?   ");
 
         putSql("selectRouterByNodeGroupLinkWhereSql",
                 "from $(router) r where r.source_node_group_id=? and r.target_node_group_id=? order by r.router_id   ");

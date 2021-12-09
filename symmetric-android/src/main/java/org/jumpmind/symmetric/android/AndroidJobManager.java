@@ -358,6 +358,16 @@ public class AndroidJobManager implements IJobManager {
     public void saveJob(JobDefinition jobDefinition) {
         // No action on Android
     }
+    
+    @Override
+    public void saveJobAsCopy(JobDefinition jobDefinition) {
+        // No action on Android
+    }
+    
+    @Override
+    public void editJob(String oldName, JobDefinition jobDefinition) {
+        // No action on Android
+    }
 
     @Override
     public void removeJob(String name) {

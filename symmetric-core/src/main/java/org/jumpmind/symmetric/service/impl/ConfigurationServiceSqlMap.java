@@ -75,6 +75,15 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
           "  c.last_update_time, c.last_update_by, c.create_time, c.reload_flag, c.file_sync_flag, " +
           "  c.queue, c.max_network_kbps, c.data_event_action " +
           " from $(channel) c order by c.processing_order asc, c.channel_id                        ");
+        
+        putSql("selectChannelsWhereChannelIdLikeSql",
+          "select c.channel_id, c.processing_order, c.max_batch_size, c.enabled,                   " +
+          "  c.max_batch_to_send, c.max_data_to_route, c.use_old_data_to_route,                    " +
+          "  c.use_row_data_to_route, c.use_pk_data_to_route, c.contains_big_lob,                  " +
+          "  c.batch_algorithm, c.extract_period_millis, c.data_loader_type,                       " +
+          "  c.last_update_time, c.last_update_by, c.create_time, c.reload_flag, c.file_sync_flag, " +
+          "  c.queue, c.max_network_kbps, c.data_event_action " +
+          " from $(channel) c where channel_id like ? order by c.processing_order asc, c.channel_id");
 
         putSql("selectNodeChannelsSql",
             "select c.channel_id, c.processing_order,       "

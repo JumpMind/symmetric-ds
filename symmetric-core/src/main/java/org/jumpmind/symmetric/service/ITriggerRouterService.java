@@ -128,6 +128,8 @@ public interface ITriggerRouterService {
 
     public void saveRouter(Router router);
     
+    public void saveRouterAsCopy(Router router);
+    
     public void editRouter(String oldId, Router router);
 
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId);
@@ -140,6 +142,8 @@ public interface ITriggerRouterService {
     public List<Trigger> getTriggers(boolean replaceTokens);
 
     public void saveTrigger(Trigger trigger);
+    
+    public void saveTriggerAsCopy(String originalId, Trigger trigger);
     
     public void editTrigger(String oldId, Trigger trigger);
 

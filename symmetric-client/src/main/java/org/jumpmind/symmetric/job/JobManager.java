@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -201,6 +202,18 @@ public class JobManager extends AbstractService implements IJobManager {
         if (sqlTemplate.update(getSql("updateJobSql"), args) <= 0) {
             sqlTemplate.update(getSql("insertJobSql"), args);
         }
+    }
+    
+    @Override
+    public void saveJobAsCopy(JobDefinition job) {
+        String newName = job.getJobName();
+        List<String> names = jobs.stream().map(IJob::getName).collect(Collectors.toList());
+        String suffix = "";
+        for (int i = 2; names.contains(newName + suffix); i++) {
+            suffix = "_" + i;
+        }
+        job.setJobName(newName + suffix);
+        saveJob(job);
     }
     
     @Override

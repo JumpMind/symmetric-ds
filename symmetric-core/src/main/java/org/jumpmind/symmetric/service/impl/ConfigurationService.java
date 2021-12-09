@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -334,6 +335,19 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         saveChannel(nodeChannel.getChannel(), reloadChannels);
     }
     
+    public void saveChannelAsCopy(Channel channel, boolean reloadChannels) {
+        String newId = channel.getChannelId();
+        List<Channel> channels = sqlTemplate.query(getSql("selectChannelsWhereChannelIdLikeSql"), new ChannelMapper(),
+                newId + "%");
+        List<String> ids = channels.stream().map(Channel::getChannelId).collect(Collectors.toList());
+        String suffix = "";
+        for (int i = 2; ids.contains(newId + suffix); i++) {
+            suffix = "_" + i;
+        }
+        channel.setChannelId(newId + suffix);
+        saveChannel(channel, reloadChannels);
+    }
+    
     public void editChannel(String oldId, Channel channel) {
         ISqlTransaction transaction = null;
         try {
@@ -576,38 +590,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     @Override
     public Map<String, Channel> getChannelsFromDb() {
         Map<String, Channel> channels = new HashMap<String, Channel>();
-        List<Channel> list = sqlTemplate.query(getSql("selectChannelsSql"),
-                new ISqlRowMapper<Channel>() {
-                    public Channel mapRow(Row row) {
-                        Channel channel = new Channel();
-                        channel.setChannelId(row.getString("channel_id"));
-                        channel.setProcessingOrder(row.getInt("processing_order"));
-                        channel.setMaxBatchSize(row.getInt("max_batch_size"));
-                        channel.setEnabled(row.getBoolean("enabled"));
-                        channel.setMaxBatchToSend(row.getInt("max_batch_to_send"));
-                        channel.setMaxDataToRoute(row.getInt("max_data_to_route"));
-                        channel.setUseOldDataToRoute(row
-                                .getBoolean("use_old_data_to_route"));
-                        channel.setUseRowDataToRoute(row
-                                .getBoolean("use_row_data_to_route"));
-                        channel.setUsePkDataToRoute(row
-                                .getBoolean("use_pk_data_to_route"));
-                        channel.setContainsBigLob(row.getBoolean("contains_big_lob"));
-                        channel.setBatchAlgorithm(row.getString("batch_algorithm"));
-                        channel.setExtractPeriodMillis(row
-                                .getLong("extract_period_millis"));
-                        channel.setDataLoaderType(row.getString("data_loader_type"));
-                        channel.setCreateTime(row.getDateTime("create_time"));
-                        channel.setLastUpdateBy(row.getString("last_update_by"));
-                        channel.setLastUpdateTime(row.getDateTime("last_update_time"));
-                        channel.setReloadFlag(row.getBoolean("reload_flag"));
-                        channel.setFileSyncFlag(row.getBoolean("file_sync_flag"));
-                        channel.setQueue(row.getString("queue"));
-                        channel.setMaxKBytesPerSecond(row.getBigDecimal("max_network_kbps"));
-                        channel.setDataEventAction(NodeGroupLinkAction.fromCode(row.getString("data_event_action")));
-                        return channel;
-                    }
-                });
+        List<Channel> list = sqlTemplate.query(getSql("selectChannelsSql"), new ChannelMapper());
         for (Channel channel : list) {
             channels.put(channel.getChannelId(), channel);
         }
@@ -708,6 +691,38 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             nodeChannel.setMaxKBytesPerSecond(row.getBigDecimal("max_network_kbps"));
             nodeChannel.setDataEventAction(NodeGroupLinkAction.fromCode(row.getString("data_event_action")));
             return nodeChannel;
+        }
+    }
+    
+    static class ChannelMapper implements ISqlRowMapper<Channel> {
+        public Channel mapRow(Row row) {
+            Channel channel = new Channel();
+            channel.setChannelId(row.getString("channel_id"));
+            channel.setProcessingOrder(row.getInt("processing_order"));
+            channel.setMaxBatchSize(row.getInt("max_batch_size"));
+            channel.setEnabled(row.getBoolean("enabled"));
+            channel.setMaxBatchToSend(row.getInt("max_batch_to_send"));
+            channel.setMaxDataToRoute(row.getInt("max_data_to_route"));
+            channel.setUseOldDataToRoute(row
+                    .getBoolean("use_old_data_to_route"));
+            channel.setUseRowDataToRoute(row
+                    .getBoolean("use_row_data_to_route"));
+            channel.setUsePkDataToRoute(row
+                    .getBoolean("use_pk_data_to_route"));
+            channel.setContainsBigLob(row.getBoolean("contains_big_lob"));
+            channel.setBatchAlgorithm(row.getString("batch_algorithm"));
+            channel.setExtractPeriodMillis(row
+                    .getLong("extract_period_millis"));
+            channel.setDataLoaderType(row.getString("data_loader_type"));
+            channel.setCreateTime(row.getDateTime("create_time"));
+            channel.setLastUpdateBy(row.getString("last_update_by"));
+            channel.setLastUpdateTime(row.getDateTime("last_update_time"));
+            channel.setReloadFlag(row.getBoolean("reload_flag"));
+            channel.setFileSyncFlag(row.getBoolean("file_sync_flag"));
+            channel.setQueue(row.getString("queue"));
+            channel.setMaxKBytesPerSecond(row.getBigDecimal("max_network_kbps"));
+            channel.setDataEventAction(NodeGroupLinkAction.fromCode(row.getString("data_event_action")));
+            return channel;
         }
     }
 }
