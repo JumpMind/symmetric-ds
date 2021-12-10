@@ -28,9 +28,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.cache.ICacheManager;
@@ -57,7 +59,7 @@ public class GroupletService extends AbstractService implements IGroupletService
         setSqlMap(new GroupletServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-    
+
     @Override
     public boolean refreshFromDatabase() {
         if (!engine.getParameterService().is(ParameterConstants.GROUPLET_ENABLE)) {
@@ -165,25 +167,12 @@ public class GroupletService extends AbstractService implements IGroupletService
         }
         return cacheManager.getGrouplets(refreshCache);
     }
-    
+
     @Override
     public List<Grouplet> getGroupletsFromDb() {
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
         final Map<String, Grouplet> groupletMap = new HashMap<String, Grouplet>();
-        List<Grouplet> all = sqlTemplate.query(getSql("selectGroupletSql"), new ISqlRowMapper<Grouplet>() {
-            public Grouplet mapRow(Row rs) {
-                Grouplet grouplet = new Grouplet();
-                grouplet.setGroupletId(rs.getString("grouplet_id"));
-                grouplet.setDescription(rs.getString("description"));
-                grouplet.setGroupletLinkPolicy(GroupletLinkPolicy.valueOf(rs
-                        .getString("grouplet_link_policy")));
-                grouplet.setCreateTime(rs.getDateTime("create_time"));
-                grouplet.setLastUpdateBy(rs.getString("last_update_by"));
-                grouplet.setLastUpdateTime(rs.getDateTime("last_update_time"));
-                groupletMap.put(grouplet.getGroupletId(), grouplet);
-                return grouplet;
-            }
-        });
+        List<Grouplet> all = sqlTemplate.query(getSql("selectGroupletSql"), new GroupletMapper(groupletMap));
         sqlTemplate.query(getSql("selectGroupletLinkSql"), new ISqlRowMapper<GroupletLink>() {
             public GroupletLink mapRow(Row rs) {
                 GroupletLink groupletLink = new GroupletLink();
@@ -256,6 +245,36 @@ public class GroupletService extends AbstractService implements IGroupletService
                             grouplet.getLastUpdateBy(), grouplet.getLastUpdateTime(),
                             grouplet.getGroupletId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                                     Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR });
+        }
+    }
+    
+    public void saveGroupletAsCopy(Grouplet grouplet) {
+        String newId = grouplet.getGroupletId();
+        List<Grouplet> grouplets = sqlTemplate.query(getSql("selectGroupletSql", "whereGroupletIdLike"),
+                new GroupletMapper(null), newId + "%");
+        List<String> ids = grouplets.stream().map(Grouplet::getGroupletId).collect(Collectors.toList());
+        String suffix = "";
+        for (int i = 2; ids.contains(newId + suffix); i++) {
+            suffix = "_" + i;
+        }
+        grouplet.setGroupletId(newId + suffix);
+        saveGrouplet(grouplet);
+    }
+    
+    public void editGrouplet(Grouplet oldGrouplet, Grouplet newGrouplet) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            deleteGrouplet(oldGrouplet);
+            saveGrouplet(newGrouplet);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
         }
     }
 
@@ -354,5 +373,28 @@ public class GroupletService extends AbstractService implements IGroupletService
                                 triggerRouterGrouplet.getTriggerId(),
                                 triggerRouterGrouplet.getRouterId() }, new int[] { Types.VARCHAR,
                                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+    }
+    
+    static class GroupletMapper implements ISqlRowMapper<Grouplet> {
+        Map<String, Grouplet> groupletMap;
+        
+        public GroupletMapper(Map<String, Grouplet> groupletMap) {
+            this.groupletMap = groupletMap;
+        }
+        
+        public Grouplet mapRow(Row rs) {
+            Grouplet grouplet = new Grouplet();
+            grouplet.setGroupletId(rs.getString("grouplet_id"));
+            grouplet.setDescription(rs.getString("description"));
+            grouplet.setGroupletLinkPolicy(GroupletLinkPolicy.valueOf(rs
+                    .getString("grouplet_link_policy")));
+            grouplet.setCreateTime(rs.getDateTime("create_time"));
+            grouplet.setLastUpdateBy(rs.getString("last_update_by"));
+            grouplet.setLastUpdateTime(rs.getDateTime("last_update_time"));
+            if (groupletMap != null) {
+                groupletMap.put(grouplet.getGroupletId(), grouplet);
+            }
+            return grouplet;
+        }
     }
 }

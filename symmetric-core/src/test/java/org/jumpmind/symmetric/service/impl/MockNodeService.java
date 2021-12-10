@@ -188,11 +188,11 @@ public class MockNodeService implements INodeService {
     public List<Node> findTargetNodesFor(NodeGroupLinkAction eventAction) {
         return null;
     }
-    
+
     public List<Node> getSourceNodesFromDatabase(NodeGroupLinkAction eventAction, Node node) {
         return null;
     }
-    
+
     public List<Node> getTargetNodesFromDatabase(NodeGroupLinkAction eventAction, Node node) {
         return null;
     }

@@ -55,6 +55,8 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                         + "  trigger_hist_id=?                                                                         ");
 
         putSql("selectTriggersSql", "" + "from $(trigger) t order by trigger_id asc   ");
+        
+        putSql("selectTriggersWhereTriggerIdLikeSql", "" + "from $(trigger) t where trigger_id like ?   ");
 
         putSql("selectTriggerRoutersSql", ""
                 + "from $(trigger_router) tr                                 "
@@ -174,6 +176,12 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
 
         putSql("deleteTriggerRouterSql", ""
                 + "delete from $(trigger_router) where trigger_id=? and router_id=?   ");
+        
+        putSql("deleteTriggerRoutersByTriggerIdSql", ""
+                + "delete from $(trigger_router) where trigger_id=?   ");
+        
+        putSql("deleteTriggerRoutersByRouterIdSql", ""
+                + "delete from $(trigger_router) where router_id=?   ");
 
         putSql("deleteTriggerRoutersByRouterSql", "delete from $(trigger_router) where router_id = ?");
 
@@ -198,10 +206,14 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
         putSql("selectTriggerRouterSql", "" + "where t.trigger_id=? and r.router_id=?   ");
         
         putSql("selectTriggerRoutersByTriggerIdSql", "" + "where t.trigger_id=?   ");
+        
+        putSql("selectTriggerRoutersByRouterIdSql", "" + "where r.router_id=?   ");
 
         putSql("selectRouterSql", "" + "from $(router) r where r.router_id=?   ");
 
         putSql("selectRoutersSql", "" + "from $(router) r order by r.router_id   ");
+        
+        putSql("selectRoutersWhereRouterIdLikeSql", "" + "from $(router) r where r.router_id like ?   ");
 
         putSql("selectRouterByNodeGroupLinkWhereSql",
                 "from $(router) r where r.source_node_group_id=? and r.target_node_group_id=? order by r.router_id   ");
@@ -211,8 +223,11 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
         putSql("selectMaxTriggerLastUpdateTime" ,"select max(last_update_time) from $(trigger) where last_update_time is not null" );
         putSql("selectMaxRouterLastUpdateTime" ,"select max(last_update_time) from $(router) where last_update_time is not null" );
         putSql("selectMaxTriggerRouterLastUpdateTime" ,"select max(last_update_time) from $(trigger_router) where last_update_time is not null" );
+        
+        putSql("updateTriggerRouterIdSql0", "update $(trigger_router_grouplet) set trigger_id=? where trigger_id=?");
+        putSql("updateTriggerRouterIdSql1", "update $(trigger_router_grouplet) set router_id=? where router_id=?");
 
-
+        putSql("updateFileTriggerRouterSql", "update $(file_trigger_router) set router_id=? where router_id=?");
     }
 
 }

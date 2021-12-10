@@ -56,5 +56,6 @@ public class GroupletServiceSqlMap extends AbstractSqlMap {
         putSql("selectMaxGroupletLinkLastUpdateTime", "select max(last_update_time) from $(grouplet_link) where last_update_time is not null");
         putSql("selectMaxTriggerRouterGroupletLastUpdateTime",
                 "select max(last_update_time) from $(trigger_router_grouplet) where last_update_time is not null");
+        putSql("whereGroupletIdLike", "where grouplet_id like ?");
     }
 }

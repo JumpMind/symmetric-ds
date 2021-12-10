@@ -36,7 +36,7 @@ public interface IGroupletService {
     public void clearCache();
 
     public List<Grouplet> getGrouplets(boolean refreshCache);
-    
+
     public List<Grouplet> getGroupletsFromDb();
 
     public void deleteGrouplet(Grouplet grouplet);
@@ -50,6 +50,10 @@ public interface IGroupletService {
     public boolean isTargetEnabled(TriggerRouter triggerRouter, Node targetNode);
 
     public void saveGrouplet(Grouplet grouplet);
+    
+    public void saveGroupletAsCopy(Grouplet grouplet);
+    
+    public void editGrouplet(Grouplet oldGrouplet, Grouplet newGrouplet);
 
     public void saveGroupletLink(Grouplet grouplet, GroupletLink link);
 

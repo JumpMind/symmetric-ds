@@ -51,6 +51,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -127,6 +128,7 @@ import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationPendingException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
+import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.AuthenticationException;
@@ -766,7 +768,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             return new ArrayList<DataLoaderService.ConflictNodeGroupLink>(0);
         }
     }
-    
+
     @Override
     public List<ConflictNodeGroupLink> getConflictSettinsNodeGroupLinksFromDb(NodeGroupLink link) {
         return sqlTemplate.query(
@@ -777,7 +779,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     public void delete(ConflictNodeGroupLink settings) {
-        sqlTemplate.update(getSql("deleteConflictSettingsSql"), settings.getConflictId());
+        delete(settings.getConflictId());
+    }
+    
+    private void delete(String id) {
+        sqlTemplate.update(getSql("deleteConflictSettingsSql"), id);
     }
 
     public void deleteAllConflicts() {
@@ -813,6 +819,36 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                     Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                                     Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
                                     Types.VARCHAR, Types.VARCHAR });
+        }
+    }
+    
+    public void saveAsCopy(ConflictNodeGroupLink settings) {
+        String newId = settings.getConflictId();
+        List<ConflictNodeGroupLink> conflicts = sqlTemplate.query(
+                getSql("selectConflictSettingsSql", "whereConflictIdLike"), new ConflictSettingsNodeGroupLinkMapper(), newId + "%");
+        List<String> ids = conflicts.stream().map(ConflictNodeGroupLink::getConflictId).collect(Collectors.toList());
+        String suffix = "";
+        for (int i = 2; ids.contains(newId + suffix); i++) {
+            suffix = "_" + i;
+        }
+        settings.setConflictId(newId + suffix);
+        save(settings);
+    }
+    
+    public void edit(String oldId, ConflictNodeGroupLink setting) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            delete(oldId);
+            save(setting);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
         }
     }
 

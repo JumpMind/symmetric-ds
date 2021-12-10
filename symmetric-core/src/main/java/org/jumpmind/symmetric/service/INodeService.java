@@ -134,9 +134,9 @@ public interface INodeService {
     public List<Node> findSourceNodesFor(NodeGroupLinkAction eventAction);
 
     public List<Node> findTargetNodesFor(NodeGroupLinkAction eventAction);
-    
+
     public List<Node> getSourceNodesFromDatabase(NodeGroupLinkAction eventAction, Node node);
-    
+
     public List<Node> getTargetNodesFromDatabase(NodeGroupLinkAction eventAction, Node node);
 
     public boolean isExternalIdRegistered(String nodeGroupId, String externalId);

@@ -25,9 +25,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.cache.ICacheManager;
@@ -92,7 +94,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
             extensionService.addExtensionPoint(ext.getName(), ext);
         }
     }
-    
+
     @Override
     public synchronized void update() {
         Map<String, IMonitorType> monitorTypes = extensionService.getExtensionPointMap(IMonitorType.class);
@@ -237,7 +239,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
     public List<Monitor> getActiveMonitorsForNode(String nodeGroupId, String externalId) {
         return cacheManager.getActiveMonitorsForNode(nodeGroupId, externalId);
     }
-    
+
     @Override
     public List<Monitor> getActiveMonitorsForNodeFromDb(String nodeGroupId, String externalId) {
         return sqlTemplate.query(getSql("selectMonitorSql", "whereMonitorByNodeSql"), new MonitorRowMapper(),
@@ -248,7 +250,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
     public List<Monitor> getActiveMonitorsUnresolvedForNode(String nodeGroupId, String externalId) {
         return cacheManager.getActiveMonitorsUnresolvedForNode(nodeGroupId, externalId);
     }
-    
+
     @Override
     public List<Monitor> getActiveMonitorsUnresolvedForNodeFromDb(String nodeGroupId, String externalId) {
         return sqlTemplate.query(getSql("selectMonitorWhereNotResolved"), new MonitorRowMapper(),
@@ -271,6 +273,38 @@ public class MonitorService extends AbstractService implements IMonitorService {
                     monitor.getNodeGroupId(), monitor.getType(), monitor.getExpression(), monitor.isEnabled() ? 1 : 0, monitor.getThreshold(),
                     monitor.getRunPeriod(), monitor.getRunCount(), monitor.getSeverityLevel(),
                     monitor.getCreateTime(), monitor.getLastUpdateBy(), monitor.getLastUpdateTime());
+        }
+    }
+    
+    @Override
+    public void saveMonitorAsCopy(Monitor monitor) {
+        String newId = monitor.getMonitorId();
+        List<Monitor> monitors = sqlTemplate.query(getSql("selectMonitorSql", "whereMonitorIdLikeSql"),
+                new MonitorRowMapper(), newId + "%");
+        List<String> ids = monitors.stream().map(Monitor::getMonitorId).collect(Collectors.toList());
+        String suffix = "";
+        for (int i = 2; ids.contains(newId + suffix); i++) {
+            suffix = "_" + i;
+        }
+        monitor.setMonitorId(newId + suffix);
+        saveMonitor(monitor);
+    }
+    
+    @Override
+    public void editMonitor(String oldId, Monitor monitor) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            deleteMonitor(oldId);
+            saveMonitor(monitor);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
         }
     }
 
@@ -365,7 +399,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
     public List<Notification> getActiveNotificationsForNode(String nodeGroupId, String externalId) {
         return cacheManager.getActiveNotificationsForNode(nodeGroupId, externalId);
     }
-    
+
     @Override
     public List<Notification> getActiveNotificationsForNodeFromDb(String nodeGroupId, String externalId) {
         return sqlTemplate.query(getSql("selectNotificationSql", "whereNotificationByNodeSql"),
@@ -385,6 +419,38 @@ public class MonitorService extends AbstractService implements IMonitorService {
                     notification.getSeverityLevel(), notification.getType(), notification.getExpression(), notification.isEnabled() ? 1 : 0,
                     notification.getCreateTime(), notification.getLastUpdateBy(),
                     notification.getLastUpdateTime());
+        }
+    }
+    
+    @Override
+    public void saveNotificationAsCopy(Notification notification) {
+        String newId = notification.getNotificationId();
+        List<Notification> notifications = sqlTemplate.query(
+                getSql("selectNotificationSql", "whereNotificationIdLikeSql"), new NotificationRowMapper(), newId + "%");
+        List<String> ids = notifications.stream().map(Notification::getNotificationId).collect(Collectors.toList());
+        String suffix = "";
+        for (int i = 2; ids.contains(newId + suffix); i++) {
+            suffix = "_" + i;
+        }
+        notification.setNotificationId(newId + suffix);
+        saveNotification(notification);
+    }
+    
+    @Override
+    public void editNotification(String oldId, Notification notification) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            deleteNotification(oldId);
+            saveNotification(notification);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
         }
     }
 

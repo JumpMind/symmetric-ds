@@ -352,7 +352,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
 
     public void batchProgressUpdate(DataContext context) {
     }
-    
+
     public void dataRowProcessed() {
     }
 

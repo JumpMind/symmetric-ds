@@ -46,6 +46,10 @@ public interface ITransformService {
     public List<TransformColumn> getTransformColumnsForTable(String transformId);
 
     public void saveTransformTable(TransformTableNodeGroupLink transformTable, boolean saveTransformColumns);
+    
+    public void saveTransformTableAsCopy(String originalId, TransformTableNodeGroupLink transformTable);
+    
+    public void editTransformTable(String oldId, TransformTableNodeGroupLink transformTable);
 
     public void deleteTransformTable(String transformTableId);
 
@@ -58,6 +62,6 @@ public interface ITransformService {
     public List<TransformTableNodeGroupLink> getConfigExtractTransforms(NodeGroupLink nodeGroupLink);
 
     public List<TransformTableNodeGroupLink> getConfigLoadTransforms(NodeGroupLink nodeGroupLink);
-    
+
     public Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> readInCacheIfExpiredFromDb();
 }

@@ -42,6 +42,8 @@ public interface IConfigurationService {
     public void saveNodeGroup(NodeGroup group);
 
     public void saveNodeGroupLink(NodeGroupLink link);
+    
+    public void editNodeGroupLink(String oldSourceId, String oldTargetId, NodeGroupLink link);
 
     public void deleteNodeGroup(String nodeGroupId);
 
@@ -50,7 +52,7 @@ public interface IConfigurationService {
     public void deleteAllNodeGroupLinks();
 
     public List<NodeGroupLink> getNodeGroupLinks(boolean refreshCache);
-    
+
     public List<NodeGroupLink> getNodeGroupLinksFromDb();
 
     public List<NodeGroupLink> getNodeGroupLinksFor(String sourceGroupId, boolean refreshCache);
@@ -65,6 +67,10 @@ public interface IConfigurationService {
     public void saveChannel(Channel channel, boolean reloadChannels);
 
     public void saveChannel(NodeChannel channel, boolean reloadChannels);
+    
+    public void saveChannelAsCopy(Channel channel, boolean reloadChannels);
+    
+    public void editChannel(String oldId, Channel channel);
 
     public void saveNodeChannel(NodeChannel channel, boolean reloadChannels);
 
@@ -75,7 +81,7 @@ public interface IConfigurationService {
     public void deleteChannel(Channel channel);
 
     public List<NodeGroupChannelWindow> getNodeGroupChannelWindows(String nodeGroupId, String channelId);
-    
+
     public Map<String, List<NodeGroupChannelWindow>> getNodeGroupChannelWindowsFromDb();
 
     public NodeGroupLinkAction getDataEventActionByGroupLinkId(String sourceGroupId, String targetGroupId);
@@ -83,7 +89,7 @@ public interface IConfigurationService {
     public List<NodeChannel> getNodeChannels(boolean refreshExtractMillis);
 
     public List<NodeChannel> getNodeChannels(String nodeId, boolean refreshExtractMillis);
-    
+
     public List<NodeChannel> getNodeChannelsFromDb(String nodeId);
 
     public NodeChannel getNodeChannel(String channelId, boolean refreshExtractMillis);
@@ -93,7 +99,7 @@ public interface IConfigurationService {
     public List<Channel> getFileSyncChannels();
 
     public Map<String, Channel> getChannels(boolean refreshCache);
-    
+
     public Map<String, Channel> getChannelsFromDb();
 
     public NodeChannel getNodeChannel(String channelId, String nodeId, boolean refreshExtractMillis);

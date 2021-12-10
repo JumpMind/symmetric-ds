@@ -41,6 +41,8 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                 " from $(file_trigger)                                                        ");
 
         putSql("triggerIdWhere", "where trigger_id=?");
+        
+        putSql("triggerIdWhereLike", "where trigger_id like ?");
 
         putSql("updateFileTriggerSql",
                 " update $(file_trigger) set base_dir=?, recurse=?, includes_files=?,         " +
@@ -114,6 +116,8 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                 " from $(file_trigger_router) tr                                                ");
 
         putSql("whereTriggerRouterId", "where trigger_id=? and router_id=?");
+        
+        putSql("whereTriggerId", "where trigger_id=?");
 
         putSql("fileTriggerRoutersForCurrentNodeWhere", " " +
                 " inner join $(router) r on " +
@@ -143,6 +147,8 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         putSql("selectMaxFileTriggerLastUpdateTime" ,"select max(last_update_time) from $(file_trigger) where last_update_time is not null" );
         putSql("selectMaxRouterLastUpdateTime" ,"select max(last_update_time) from $(router) where last_update_time is not null" );
         putSql("selectMaxFileTriggerRouterLastUpdateTime" ,"select max(last_update_time) from $(file_trigger_router) where last_update_time is not null" );
+        
+        putSql("updateFileTriggerIdSql", "update $(file_trigger_router) set trigger_id=? where trigger_id=?");
     }
 
 

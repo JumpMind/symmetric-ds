@@ -47,6 +47,10 @@ public interface IExtensionService {
     public List<Extension> getExtensions();
 
     public void saveExtension(Extension extension);
+    
+    public void saveExtensionAsCopy(Extension extension);
+    
+    public void editExtension(String oldId, Extension extension);
 
     public void deleteExtension(String extensionId);
 

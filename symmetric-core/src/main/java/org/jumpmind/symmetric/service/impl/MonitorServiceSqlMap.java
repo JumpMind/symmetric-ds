@@ -47,6 +47,7 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
                         "(m.external_id = ? or m.external_id = 'ALL') and m.enabled = 1 and me.is_resolved = 0");
         putSql("whereMonitorByNodeSql",
                 "where (node_group_id = ? or node_group_id = 'ALL') and (external_id = ? or external_id = 'ALL') and enabled = 1");
+        putSql("whereMonitorIdLikeSql", "where monitor_id like ?");
         putSql("insertMonitorSql",
                 "insert into $(monitor) " +
                         "(monitor_id, external_id, node_group_id, " + type + ", expression, enabled, threshold, run_period, run_count, severity_level, " +
@@ -87,6 +88,7 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
                         "from $(notification)");
         putSql("whereNotificationByNodeSql",
                 "where (node_group_id = ? or node_group_id = 'ALL') and (external_id = ? or external_id = 'ALL') and enabled = 1");
+        putSql("whereNotificationIdLikeSql", "where notification_id like ?");
         putSql("insertNotificationSql",
                 "insert into $(notification) " +
                         "(notification_id, node_group_id, external_id, severity_level, " + type + ", expression, enabled, create_time, " +

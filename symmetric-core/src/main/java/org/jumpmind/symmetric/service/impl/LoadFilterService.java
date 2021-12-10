@@ -26,10 +26,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.cache.ICacheManager;
@@ -40,6 +42,7 @@ import org.jumpmind.symmetric.model.LoadFilter.LoadFilterType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
+import org.jumpmind.symmetric.service.impl.LoadFilterService.LoadFilterNodeGroupLink;
 import org.jumpmind.util.FormatUtils;
 
 public class LoadFilterService extends AbstractService implements ILoadFilterService {
@@ -54,7 +57,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         setSqlMap(new LoadFilterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-    
+
     @Override
     public Map<LoadFilterType, Map<String, List<LoadFilter>>> findLoadFiltersFor(NodeGroupLink nodeGroupLink,
             boolean useCache) {
@@ -64,7 +67,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         }
         return null;
     }
-    
+
     @Override
     public Map<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>> findLoadFiltersFromDb() {
         Map<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>> data = new HashMap<NodeGroupLink, Map<LoadFilterType, Map<String, List<LoadFilter>>>>();
@@ -179,6 +182,36 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
             sqlTemplate.update(getSql("insertLoadFilterSql"), args);
         }
         clearCache();
+    }
+    
+    public void saveLoadFilterAsCopy(LoadFilterNodeGroupLink loadFilter) {
+        String newId = loadFilter.getLoadFilterId();
+        List<LoadFilterNodeGroupLink> loadFilters = sqlTemplate
+                .query(getSql("selectLoadFilterTableWhereLoadFilterIdLike"), new LoadFilterMapper(), newId + "%");
+        List<String> ids = loadFilters.stream().map(LoadFilterNodeGroupLink::getLoadFilterId).collect(Collectors.toList());
+        String suffix = "";
+        for (int i = 2; ids.contains(newId + suffix); i++) {
+            suffix = "_" + i;
+        }
+        loadFilter.setLoadFilterId(newId + suffix);
+        saveLoadFilter(loadFilter);
+    }
+    
+    public void editLoadFilter(String oldId, LoadFilterNodeGroupLink loadFilter) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            deleteLoadFilter(oldId);
+            saveLoadFilter(loadFilter);
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
+        }
     }
 
     public void deleteLoadFilter(String loadFilterId) {
