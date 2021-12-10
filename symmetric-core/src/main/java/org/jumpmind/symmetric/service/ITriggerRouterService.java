@@ -138,8 +138,14 @@ public interface ITriggerRouterService {
     public List<Trigger> getTriggers(boolean replaceTokens);
 
     public void saveTrigger(Trigger trigger);
+    
+    public void insertTriggers(Collection<Trigger> triggers);
+    
+    public void updateTriggers(Collection<Trigger> triggers);
 
     public void deleteTrigger(Trigger trigger);
+    
+    public void deleteTriggers(Collection<Trigger> triggers);
 
     public void dropTriggers();
 
@@ -195,11 +201,19 @@ public interface ITriggerRouterService {
 
     public void deleteTriggerRouter(String triggerId, String routerId);
 
+    public void deleteTriggerRouters(Collection<TriggerRouter> triggerRouters);
+
     public void deleteAllTriggerRouters();
 
     public void saveTriggerRouter(TriggerRouter triggerRouter, boolean updateTriggerRouterTableOnly);
 
     public void saveTriggerRouter(TriggerRouter triggerRouter);
+
+    public void insertTriggerRouters(Collection<TriggerRouter> triggerRouters);
+    
+    public void insertTriggersAndTriggerRouters(Collection<Trigger> triggers, Collection<TriggerRouter> triggerRouters);
+
+    public void updateTriggerRouters(Collection<TriggerRouter> triggerRouters);
 
     public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force);
 

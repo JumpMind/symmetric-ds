@@ -219,6 +219,7 @@ final public class ParameterConstants {
     public final static String DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL = "datareload.batch.insert.transactional";
     public final static String DATA_EXTRACTOR_ENABLED = "dataextractor.enable";
     public final static String DATA_EXTRACTOR_TEXT_COLUMN_EXPRESSION = "dataextractor.text.column.expression";
+    public final static String DATA_FLUSH_JDBC_BATCH_SIZE = "data.flush.jdbc.batch.size";
     public final static String OUTGOING_BATCH_MAX_BATCHES_TO_SELECT = "outgoing.batches.max.to.select";
     public final static String DBDIALECT_ORACLE_USE_TRANSACTION_VIEW = "oracle.use.transaction.view";
     public final static String DBDIALECT_ORACLE_TEMPLATE_NUMBER_SPEC = "oracle.template.precision";
