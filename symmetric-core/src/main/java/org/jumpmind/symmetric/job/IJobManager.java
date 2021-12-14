@@ -45,7 +45,7 @@ public interface IJobManager {
     
     public void saveJobAsCopy(JobDefinition jobDefinition);
     
-    public void editJob(String oldName, JobDefinition jobDefinition);
+    public void renameJob(String oldName, JobDefinition jobDefinition);
 
     public void removeJob(String name);
 

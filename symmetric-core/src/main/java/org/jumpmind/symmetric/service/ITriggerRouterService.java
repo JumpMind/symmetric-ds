@@ -130,7 +130,7 @@ public interface ITriggerRouterService {
     
     public void saveRouterAsCopy(Router router);
     
-    public void editRouter(String oldId, Router router);
+    public void renameRouter(String oldId, Router router);
 
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId);
 
@@ -149,7 +149,7 @@ public interface ITriggerRouterService {
 
     public void saveTriggerAsCopy(String originalId, Trigger trigger);
     
-    public void editTrigger(String oldId, Trigger trigger);
+    public void renameTrigger(String oldId, Trigger trigger);
 
     public void deleteTrigger(Trigger trigger);
     
@@ -219,7 +219,7 @@ public interface ITriggerRouterService {
 
     public void saveTriggerRouter(TriggerRouter triggerRouter);
     
-    public void editTriggerRouter(String oldTriggerId, String oldRouterId, TriggerRouter TriggerRouter);
+    public void renameTriggerRouter(String oldTriggerId, String oldRouterId, TriggerRouter TriggerRouter);
 
     public void insertTriggerRouters(Collection<TriggerRouter> triggerRouters);
     

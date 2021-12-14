@@ -394,61 +394,19 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         for (int i = 2; ids.contains(newId + suffix); i++) {
             suffix = "_" + i;
         }
-        ISqlTransaction transaction = null;
-        try {
-            transaction = engine.getSqlTemplate().startSqlTransaction();
-            sqlTemplate.update(getSql("insertFileTriggerSql"),
-                    new Object[] { fileTrigger.getBaseDir(), fileTrigger.isRecurse() ? 1 : 0,
-                            fileTrigger.getIncludesFiles(), fileTrigger.getExcludesFiles(),
-                            fileTrigger.isSyncOnCreate() ? 1 : 0, fileTrigger.isSyncOnModified() ? 1 : 0,
-                            fileTrigger.isSyncOnDelete() ? 1 : 0, fileTrigger.isSyncOnCtlFile() ? 1 : 0,
-                            fileTrigger.isDeleteAfterSync() ? 1 : 0, fileTrigger.getBeforeCopyScript(),
-                            fileTrigger.getAfterCopyScript(), fileTrigger.getLastUpdateBy(), new Date(), newId + suffix,
-                            new Date(), fileTrigger.getChannelId(), fileTrigger.getReloadChannelId() },
-                    new int[] { Types.VARCHAR, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
-                            Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP,
-                            Types.VARCHAR, Types.VARCHAR });
-            for (FileTriggerRouter fileTriggerRouter : sqlTemplate.query(
-                    getSql("selectFileTriggerRoutersSql", "whereTriggerId"), new FileTriggerRouterMapper(), originalId)) {
-                sqlTemplate.update(getSql("insertFileTriggerRouterSql"),
-                        new Object[] { fileTriggerRouter.isEnabled() ? 1 : 0,
-                                fileTriggerRouter.isInitialLoadEnabled() ? 1 : 0, fileTriggerRouter.getTargetBaseDir(),
-                                fileTriggerRouter.getConflictStrategyString(), new Date(),
-                                fileTriggerRouter.getLastUpdateBy(), new Date(), newId + suffix,
-                                fileTriggerRouter.getRouter().getRouterId() },
-                        new int[] { Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-                                Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
-            }
-            transaction.commit();
-        } catch (Exception ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            if (transaction != null) {
-                transaction.close();
-            }
+        fileTrigger.setTriggerId(newId + suffix);
+        saveFileTrigger(fileTrigger);
+        for (FileTriggerRouter fileTriggerRouter : sqlTemplate.query(
+                getSql("selectFileTriggerRoutersSql", "whereTriggerId"), new FileTriggerRouterMapper(), originalId)) {
+            fileTriggerRouter.setTriggerId(newId + suffix);
+            saveFileTriggerRouter(fileTriggerRouter);
         }
     }
     
-    public void editFileTrigger(String oldId, FileTrigger fileTrigger) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            saveFileTrigger(fileTrigger);
-            sqlTemplate.update(getSql("updateFileTriggerIdSql"), fileTrigger.getTriggerId(), oldId);
-            deleteFileTrigger(oldId);
-            transaction.commit();
-        } catch (Exception ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
-        }
+    public void renameFileTrigger(String oldId, FileTrigger fileTrigger) {
+        saveFileTrigger(fileTrigger);
+        sqlTemplate.update(getSql("updateFileTriggerIdSql"), fileTrigger.getTriggerId(), oldId);
+        deleteFileTrigger(oldId);
     }
 
     public void saveFileTriggerRouter(FileTriggerRouter fileTriggerRouter) {
@@ -482,21 +440,9 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         clearCache();
     }
     
-    public void editFileTriggerRouter(String oldTriggerId, String oldRouterId, FileTriggerRouter fileTriggerRouter) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            deleteFileTriggerRouter(oldTriggerId, oldRouterId);
-            saveFileTriggerRouter(fileTriggerRouter);
-            transaction.commit();
-        } catch (Exception ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
-        }
+    public void renameFileTriggerRouter(String oldTriggerId, String oldRouterId, FileTriggerRouter fileTriggerRouter) {
+        deleteFileTriggerRouter(oldTriggerId, oldRouterId);
+        saveFileTriggerRouter(fileTriggerRouter);
     }
 
     public void deleteFileTriggerRouter(String triggerId, String routerId) {

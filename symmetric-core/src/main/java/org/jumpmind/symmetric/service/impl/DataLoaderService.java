@@ -128,7 +128,6 @@ import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationPendingException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
-import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.AuthenticationException;
@@ -835,21 +834,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         save(settings);
     }
     
-    public void edit(String oldId, ConflictNodeGroupLink setting) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            delete(oldId);
-            save(setting);
-            transaction.commit();
-        } catch (Exception ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
-        }
+    public void rename(String oldId, ConflictNodeGroupLink setting) {
+        delete(oldId);
+        save(setting);
     }
 
     public List<IncomingError> getIncomingErrors(long batchId, String nodeId) {

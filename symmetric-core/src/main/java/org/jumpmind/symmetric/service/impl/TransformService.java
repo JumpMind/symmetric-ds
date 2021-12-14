@@ -303,7 +303,7 @@ public class TransformService extends AbstractService implements ITransformServi
 
     private List<TransformTableNodeGroupLink> getTransformTablesFromDB(boolean includeColumns, boolean replaceTokens) {
         List<TransformTableNodeGroupLink> transforms = sqlTemplate.query(
-                getSql("selectTransformTable"), new TransformTableMapper());
+                getSql("selectTransformTable", "orderByTransformOrder"), new TransformTableMapper());
         if (includeColumns) {
             List<TransformColumn> columns = getTransformColumnsFromDB();
             for (TransformTableNodeGroupLink transformTable : transforms) {
@@ -412,25 +412,17 @@ public class TransformService extends AbstractService implements ITransformServi
     public void saveTransformTableAsCopy(String originalId, TransformTableNodeGroupLink transformTable) {
         String newId = transformTable.getTransformId();
         List<TransformTableNodeGroupLink> transformTables = sqlTemplate
-                .query(getSql("selectTransformTableWhereTransformIdLike"), new TransformTableMapper(), newId + "%");
+                .query(getSql("selectTransformTable", "whereTransformIdLike"), new TransformTableMapper(), newId + "%");
         List<String> ids = transformTables.stream().map(TransformTableNodeGroupLink::getTransformId).collect(Collectors.toList());
         String suffix = "";
         for (int i = 2; ids.contains(newId + suffix); i++) {
             suffix = "_" + i;
         }
+        transformTable.setTransformId(newId + suffix);
+        saveTransformTable(transformTable, false);
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            transaction.prepareAndExecute(getSql("insertTransformTableSql"),
-                    transformTable.getNodeGroupLink().getSourceNodeGroupId(),
-                    transformTable.getNodeGroupLink().getTargetNodeGroupId(), transformTable.getSourceCatalogName(),
-                    transformTable.getSourceSchemaName(), transformTable.getSourceTableName(),
-                    transformTable.getTargetCatalogName(), transformTable.getTargetSchemaName(),
-                    transformTable.getTargetTableName(), transformTable.getTransformPoint().toString(),
-                    transformTable.isUpdateFirst() ? 1 : 0, transformTable.getDeleteAction().toString(),
-                    transformTable.getUpdateAction(), transformTable.getTransformOrder(),
-                    transformTable.getColumnPolicy().toString(), new Date(), transformTable.getLastUpdateBy(),
-                    new Date(), newId + suffix);
             for (TransformColumn transformColumn : getTransformColumnsForTable(originalId)) {
                 transformColumn.setTransformId(newId + suffix);
                 saveTransformColumn(transaction, transformColumn);
@@ -448,24 +440,13 @@ public class TransformService extends AbstractService implements ITransformServi
         }
     }
     
-    public void editTransformTable(String oldId, TransformTableNodeGroupLink transformTable) {
+    public void renameTransformTable(String oldId, TransformTableNodeGroupLink transformTable) {
+        saveTransformTable(transformTable, false);
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            sqlTemplate.update(getSql("insertTransformTableSql"), transformTable
-                    .getNodeGroupLink().getSourceNodeGroupId(), transformTable
-                            .getNodeGroupLink().getTargetNodeGroupId(), transformTable
-                                    .getSourceCatalogName(), transformTable.getSourceSchemaName(),
-                    transformTable.getSourceTableName(), transformTable.getTargetCatalogName(),
-                    transformTable.getTargetSchemaName(), transformTable.getTargetTableName(),
-                    transformTable.getTransformPoint().toString(), transformTable
-                            .isUpdateFirst() ? 1 : 0, transformTable.getDeleteAction()
-                                    .toString(), transformTable.getUpdateAction(), transformTable.getTransformOrder(), transformTable
-                                            .getColumnPolicy().toString(), transformTable.getLastUpdateTime(),
-                    transformTable.getLastUpdateBy(), transformTable.getCreateTime(),
-                    transformTable.getTransformId());
-            sqlTemplate.update(getSql("updateTransformIdSql"), transformTable.getTransformId(), oldId);
-            sqlTemplate.update(getSql("deleteTransformTableSql"), oldId);
+            transaction.prepareAndExecute(getSql("updateTransformIdSql"), transformTable.getTransformId(), oldId);
+            transaction.prepareAndExecute(getSql("deleteTransformTableSql"), oldId);
             transaction.commit();
         } catch (Exception ex) {
             if (transaction != null) {

@@ -291,21 +291,9 @@ public class MonitorService extends AbstractService implements IMonitorService {
     }
     
     @Override
-    public void editMonitor(String oldId, Monitor monitor) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            deleteMonitor(oldId);
-            saveMonitor(monitor);
-            transaction.commit();
-        } catch (Exception ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
-        }
+    public void renameMonitor(String oldId, Monitor monitor) {
+        deleteMonitor(oldId);
+        saveMonitor(monitor);
     }
 
     @Override
@@ -437,21 +425,9 @@ public class MonitorService extends AbstractService implements IMonitorService {
     }
     
     @Override
-    public void editNotification(String oldId, Notification notification) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            deleteNotification(oldId);
-            saveNotification(notification);
-            transaction.commit();
-        } catch (Exception ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
-        }
+    public void renameNotification(String oldId, Notification notification) {
+        deleteNotification(oldId);
+        saveNotification(notification);
     }
 
     @Override

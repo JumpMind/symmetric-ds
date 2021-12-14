@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
-import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.extension.IExtensionPoint;
@@ -305,21 +304,9 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         saveExtension(extension);
     }
     
-    public void editExtension(String oldId, Extension extension) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            deleteExtension(oldId);
-            saveExtension(extension);
-            transaction.commit();
-        } catch (Exception ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
-        }
+    public void renameExtension(String oldId, Extension extension) {
+        deleteExtension(oldId);
+        saveExtension(extension);
     }
 
     public void deleteExtension(String extensionId) {

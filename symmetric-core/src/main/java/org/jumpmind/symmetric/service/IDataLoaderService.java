@@ -73,7 +73,7 @@ public interface IDataLoaderService {
     
     public void saveAsCopy(ConflictNodeGroupLink settings);
     
-    public void edit(String oldId, ConflictNodeGroupLink settings);
+    public void rename(String oldId, ConflictNodeGroupLink settings);
 
     public void clearCache();
 

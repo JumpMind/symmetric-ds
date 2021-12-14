@@ -49,7 +49,7 @@ public interface ITransformService {
     
     public void saveTransformTableAsCopy(String originalId, TransformTableNodeGroupLink transformTable);
     
-    public void editTransformTable(String oldId, TransformTableNodeGroupLink transformTable);
+    public void renameTransformTable(String oldId, TransformTableNodeGroupLink transformTable);
 
     public void deleteTransformTable(String transformTableId);
 

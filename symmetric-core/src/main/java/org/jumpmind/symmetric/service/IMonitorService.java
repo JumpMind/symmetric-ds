@@ -41,7 +41,7 @@ public interface IMonitorService {
     
     public void saveMonitorAsCopy(Monitor monitor);
     
-    public void editMonitor(String oldId, Monitor monitor);
+    public void renameMonitor(String oldId, Monitor monitor);
 
     public List<MonitorEvent> getMonitorEvents();
 
@@ -63,7 +63,7 @@ public interface IMonitorService {
     
     public void saveNotificationAsCopy(Notification notification);
     
-    public void editNotification(String oldId, Notification notification);
+    public void renameNotification(String oldId, Notification notification);
 
     public void deleteNotification(String notificationId);
 

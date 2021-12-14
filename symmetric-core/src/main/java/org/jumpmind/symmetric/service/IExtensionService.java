@@ -50,7 +50,7 @@ public interface IExtensionService {
     
     public void saveExtensionAsCopy(Extension extension);
     
-    public void editExtension(String oldId, Extension extension);
+    public void renameExtension(String oldId, Extension extension);
 
     public void deleteExtension(String extensionId);
 

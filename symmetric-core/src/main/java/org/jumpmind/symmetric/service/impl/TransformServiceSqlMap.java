@@ -38,23 +38,9 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
                 "  transform_order,                                            " +
                 "  update_first, update_action, delete_action, column_policy,  " +
                 "  last_update_time, last_update_by, create_time               " +
-                "  from                                                        " +
-                "  $(transform_table) order by transform_order    " +
-                "  asc                                                         ");
-        putSql("selectTransformTableWhereTransformIdLike", "" +
-                "select                                                        " +
-                "  transform_id, source_node_group_id, target_node_group_id,   " +
-                "  source_catalog_name, source_schema_name,                    " +
-                "  source_table_name,                                          " +
-                "  target_catalog_name, target_schema_name,                    " +
-                "  target_table_name,                                          " +
-                "  transform_point,                                            " +
-                "  transform_order,                                            " +
-                "  update_first, update_action, delete_action, column_policy,  " +
-                "  last_update_time, last_update_by, create_time               " +
-                "  from                                                        " +
-                "  $(transform_table) where transform_id like ?                " +
-                "  order by transform_order asc                                ");
+                "  from $(transform_table)                                     ");
+        putSql("orderByTransformOrder", "order by transform_order asc");
+        putSql("whereTransformIdLike", "where transform_id like ?");
         putSql("selectTransformColumn", "" +
                 "select                                            " +
                 "  transform_id, include_on, target_column_name,   " +

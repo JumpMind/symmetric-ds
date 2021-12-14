@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.model.JobDefinition;
@@ -217,21 +216,9 @@ public class JobManager extends AbstractService implements IJobManager {
     }
     
     @Override
-    public void editJob(String oldName, JobDefinition job) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            removeJob(oldName);
-            saveJob(job);
-            transaction.commit();
-        } catch (Exception ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
-        }
+    public void renameJob(String oldName, JobDefinition job) {
+        removeJob(oldName);
+        saveJob(job);
     }
 
     @Override

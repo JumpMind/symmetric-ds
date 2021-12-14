@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.cache.ICacheManager;
@@ -261,21 +260,9 @@ public class GroupletService extends AbstractService implements IGroupletService
         saveGrouplet(grouplet);
     }
     
-    public void editGrouplet(Grouplet oldGrouplet, Grouplet newGrouplet) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            deleteGrouplet(oldGrouplet);
-            saveGrouplet(newGrouplet);
-            transaction.commit();
-        } catch (Exception ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
-        }
+    public void renameGrouplet(Grouplet oldGrouplet, Grouplet newGrouplet) {
+        deleteGrouplet(oldGrouplet);
+        saveGrouplet(newGrouplet);
     }
 
     public void deleteGrouplet(Grouplet grouplet) {

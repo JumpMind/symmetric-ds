@@ -53,7 +53,7 @@ public interface IGroupletService {
     
     public void saveGroupletAsCopy(Grouplet grouplet);
     
-    public void editGrouplet(Grouplet oldGrouplet, Grouplet newGrouplet);
+    public void renameGrouplet(Grouplet oldGrouplet, Grouplet newGrouplet);
 
     public void saveGroupletLink(Grouplet grouplet, GroupletLink link);
 

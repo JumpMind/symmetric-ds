@@ -40,24 +40,11 @@ public class LoadFilterServiceSqlMap extends AbstractSqlMap {
 "  handle_error_script,                                               " +
 "  create_time, last_update_by, last_update_time,                     " +
 "  load_filter_order, fail_on_error                                   " +
-"  from                                                               " + 
-"  $(load_filter) order by load_filter_order                          "); 
+"  from $(load_filter)                                                "); 
         
-        putSql("selectLoadFilterTableWhereLoadFilterIdLike" ,"" + 
-"select                                                               " + 
-"  load_filter_id, load_filter_type,                                  " +
-"  source_node_group_id, target_node_group_id,                        " + 
-"  target_catalog_name, target_schema_name,                           " + 
-"  target_table_name,                                                 " +
-"  filter_on_insert, filter_on_update, filter_on_delete,              " +
-"  before_write_script, after_write_script,                           " +
-"  batch_complete_script, batch_commit_script, batch_rollback_script, " +
-"  handle_error_script,                                               " +
-"  create_time, last_update_by, last_update_time,                     " +
-"  load_filter_order, fail_on_error                                   " +
-"  from                                                               " + 
-"  $(load_filter) where load_filter_id like ?                         " +
-"  order by load_filter_order                                         "); 
+        putSql("orderByLoadFilterOrderSql", "order by load_filter_order");
+        
+        putSql("whereLoadFilterIdLikeSql", "where load_filter_id like ?");
 
         putSql("updateLoadFilterSql" ,"" + 
 "update                       " + 

@@ -374,7 +374,7 @@ public class AndroidJobManager implements IJobManager {
     }
 
     @Override
-    public void editJob(String oldName, JobDefinition jobDefinition) {
+    public void renameJob(String oldName, JobDefinition jobDefinition) {
         // No action on Android
     }
 }

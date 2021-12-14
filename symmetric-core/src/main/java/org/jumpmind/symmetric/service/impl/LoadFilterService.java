@@ -42,7 +42,6 @@ import org.jumpmind.symmetric.model.LoadFilter.LoadFilterType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
-import org.jumpmind.symmetric.service.impl.LoadFilterService.LoadFilterNodeGroupLink;
 import org.jumpmind.util.FormatUtils;
 
 public class LoadFilterService extends AbstractService implements ILoadFilterService {
@@ -120,7 +119,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
     }
 
     private List<LoadFilterNodeGroupLink> getLoadFiltersFromDB() {
-        return sqlTemplate.query(getSql("selectLoadFilterTable"), new LoadFilterMapper());
+        return sqlTemplate.query(getSql("selectLoadFilterTable", "orderByLoadFilterOrderSql"), new LoadFilterMapper());
     }
 
     class LoadFilterMapper implements ISqlRowMapper<LoadFilterNodeGroupLink> {
@@ -187,7 +186,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
     public void saveLoadFilterAsCopy(LoadFilterNodeGroupLink loadFilter) {
         String newId = loadFilter.getLoadFilterId();
         List<LoadFilterNodeGroupLink> loadFilters = sqlTemplate
-                .query(getSql("selectLoadFilterTableWhereLoadFilterIdLike"), new LoadFilterMapper(), newId + "%");
+                .query(getSql("selectLoadFilterTable", "whereLoadFilterIdLikeSql"), new LoadFilterMapper(), newId + "%");
         List<String> ids = loadFilters.stream().map(LoadFilterNodeGroupLink::getLoadFilterId).collect(Collectors.toList());
         String suffix = "";
         for (int i = 2; ids.contains(newId + suffix); i++) {
@@ -197,21 +196,9 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         saveLoadFilter(loadFilter);
     }
     
-    public void editLoadFilter(String oldId, LoadFilterNodeGroupLink loadFilter) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            deleteLoadFilter(oldId);
-            saveLoadFilter(loadFilter);
-            transaction.commit();
-        } catch (Exception ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
-        }
+    public void renameLoadFilter(String oldId, LoadFilterNodeGroupLink loadFilter) {
+        deleteLoadFilter(oldId);
+        saveLoadFilter(loadFilter);
     }
 
     public void deleteLoadFilter(String loadFilterId) {

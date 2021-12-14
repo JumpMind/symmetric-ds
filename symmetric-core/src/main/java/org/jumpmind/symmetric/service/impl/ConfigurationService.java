@@ -174,36 +174,35 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
     
-    public void editNodeGroupLink(String oldSourceId, String oldTargetId, NodeGroupLink link) {
+    public void renameNodeGroupLink(String oldSourceId, String oldTargetId, NodeGroupLink link) {
+        saveNodeGroupLink(link);
         ISqlTransaction transaction = null;
         try {
             boolean sourceChanged = !oldSourceId.equals(link.getSourceNodeGroupId());
             boolean targetChanged = !oldTargetId.equals(link.getTargetNodeGroupId());
             transaction = sqlTemplate.startSqlTransaction();
-            saveNodeGroupLink(link);
             if (sourceChanged && targetChanged) {
-                sqlTemplate.update(getSql("updateConflictGroupsSql"), link.getSourceNodeGroupId(),
+                transaction.prepareAndExecute(getSql("updateConflictGroupsSql"), link.getSourceNodeGroupId(),
                         link.getTargetNodeGroupId(), oldSourceId, oldTargetId);
-                sqlTemplate.update(getSql("updateLoadFilterGroupsSql"), link.getSourceNodeGroupId(),
+                transaction.prepareAndExecute(getSql("updateLoadFilterGroupsSql"), link.getSourceNodeGroupId(),
                         link.getTargetNodeGroupId(), oldSourceId, oldTargetId);
-                sqlTemplate.update(getSql("updateRouterGroupsSql"), link.getSourceNodeGroupId(),
+                transaction.prepareAndExecute(getSql("updateRouterGroupsSql"), link.getSourceNodeGroupId(),
                         link.getTargetNodeGroupId(), oldSourceId, oldTargetId);
-                sqlTemplate.update(getSql("updateTransformGroupsSql"), link.getSourceNodeGroupId(),
+                transaction.prepareAndExecute(getSql("updateTransformGroupsSql"), link.getSourceNodeGroupId(),
                         link.getTargetNodeGroupId(), oldSourceId, oldTargetId);
             }
             if (sourceChanged) {
-                sqlTemplate.update(getSql("updateConflictSourceGroupSql"), link.getSourceNodeGroupId(), oldSourceId);
-                sqlTemplate.update(getSql("updateLoadFilterSourceGroupSql"), link.getSourceNodeGroupId(), oldSourceId);
-                sqlTemplate.update(getSql("updateRouterSourceGroupSql"), link.getSourceNodeGroupId(), oldSourceId);
-                sqlTemplate.update(getSql("updateTransformSourceGroupSql"), link.getSourceNodeGroupId(), oldSourceId);
+                transaction.prepareAndExecute(getSql("updateConflictSourceGroupSql"), link.getSourceNodeGroupId(), oldSourceId);
+                transaction.prepareAndExecute(getSql("updateLoadFilterSourceGroupSql"), link.getSourceNodeGroupId(), oldSourceId);
+                transaction.prepareAndExecute(getSql("updateRouterSourceGroupSql"), link.getSourceNodeGroupId(), oldSourceId);
+                transaction.prepareAndExecute(getSql("updateTransformSourceGroupSql"), link.getSourceNodeGroupId(), oldSourceId);
             }
             if (targetChanged) {
-                sqlTemplate.update(getSql("updateConflictTargetGroupSql"), link.getTargetNodeGroupId(), oldTargetId);
-                sqlTemplate.update(getSql("updateLoadFilterTargetGroupSql"), link.getTargetNodeGroupId(), oldTargetId);
-                sqlTemplate.update(getSql("updateRouterTargetGroupSql"), link.getTargetNodeGroupId(), oldTargetId);
-                sqlTemplate.update(getSql("updateTransformTargetGroupSql"), link.getTargetNodeGroupId(), oldTargetId);
+                transaction.prepareAndExecute(getSql("updateConflictTargetGroupSql"), link.getTargetNodeGroupId(), oldTargetId);
+                transaction.prepareAndExecute(getSql("updateLoadFilterTargetGroupSql"), link.getTargetNodeGroupId(), oldTargetId);
+                transaction.prepareAndExecute(getSql("updateRouterTargetGroupSql"), link.getTargetNodeGroupId(), oldTargetId);
+                transaction.prepareAndExecute(getSql("updateTransformTargetGroupSql"), link.getTargetNodeGroupId(), oldTargetId);
             }
-            deleteNodeGroupLink(oldSourceId, oldTargetId);
             transaction.commit();
         } catch (Exception ex) {
             if (transaction != null) {
@@ -213,6 +212,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         } finally {
             close(transaction);
         }
+        deleteNodeGroupLink(oldSourceId, oldTargetId);
     }
 
     public boolean doesNodeGroupExist(String nodeGroupId) {
@@ -337,7 +337,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     
     public void saveChannelAsCopy(Channel channel, boolean reloadChannels) {
         String newId = channel.getChannelId();
-        List<Channel> channels = sqlTemplate.query(getSql("selectChannelsWhereChannelIdLikeSql"), new ChannelMapper(),
+        List<Channel> channels = sqlTemplate.query(getSql("selectChannelsSql", "whereChannelIdLikeSql"), new ChannelMapper(),
                 newId + "%");
         List<String> ids = channels.stream().map(Channel::getChannelId).collect(Collectors.toList());
         String suffix = "";
@@ -348,17 +348,16 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         saveChannel(channel, reloadChannels);
     }
     
-    public void editChannel(String oldId, Channel channel) {
+    public void renameChannel(String oldId, Channel channel) {
+        saveChannel(channel, true);
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            saveChannel(channel, true);
-            sqlTemplate.update(getSql("updateConflictChannelSql"), channel.getChannelId(), oldId);
-            sqlTemplate.update(getSql("updateTriggerChannelSql"), channel.getChannelId(), oldId);
-            sqlTemplate.update(getSql("updateTriggerReloadChannelSql"), channel.getChannelId(), oldId);
-            sqlTemplate.update(getSql("updateFileTriggerChannelSql"), channel.getChannelId(), oldId);
-            sqlTemplate.update(getSql("updateFileTriggerReloadChannelSql"), channel.getChannelId(), oldId);
-            deleteChannel(oldId);
+            transaction.prepareAndExecute(getSql("updateConflictChannelSql"), channel.getChannelId(), oldId);
+            transaction.prepareAndExecute(getSql("updateTriggerChannelSql"), channel.getChannelId(), oldId);
+            transaction.prepareAndExecute(getSql("updateTriggerReloadChannelSql"), channel.getChannelId(), oldId);
+            transaction.prepareAndExecute(getSql("updateFileTriggerChannelSql"), channel.getChannelId(), oldId);
+            transaction.prepareAndExecute(getSql("updateFileTriggerReloadChannelSql"), channel.getChannelId(), oldId);
             transaction.commit();
         } catch (Exception ex) {
             if (transaction != null) {
@@ -368,6 +367,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         } finally {
             close(transaction);
         }
+        deleteChannel(oldId);
     }
 
     public void saveNodeChannel(NodeChannel nodeChannel, boolean reloadChannels) {
@@ -590,7 +590,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     @Override
     public Map<String, Channel> getChannelsFromDb() {
         Map<String, Channel> channels = new HashMap<String, Channel>();
-        List<Channel> list = sqlTemplate.query(getSql("selectChannelsSql"), new ChannelMapper());
+        List<Channel> list = sqlTemplate.query(getSql("selectChannelsSql", "orderChannelsBySql"), new ChannelMapper());
         for (Channel channel : list) {
             channels.put(channel.getChannelId(), channel);
         }
