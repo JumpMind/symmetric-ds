@@ -48,17 +48,17 @@ public class StagingPerf {
     protected final static String STAT_BATCH_READ = "Read Batch File";
     protected Logger log = LoggerFactory.getLogger(getClass());
     protected IStagingManager stagingMgr;
-    protected StagingPerfListener listener;
+    protected PerfListener listener;
     protected String serverInfo;
 
-    public StagingPerf(IStagingManager stagingMgr, StagingPerfListener listener) {
+    public StagingPerf(IStagingManager stagingMgr, PerfListener listener) {
         this.stagingMgr = stagingMgr;
         this.listener = listener;
         serverInfo = String.format("Server: '%s' Host: '%s' IP: '%s'", getClass().getName(), AppUtils.getHostName(), AppUtils.getIpAddress());
     }
 
-    public List<StagingPerfResult> run(int seconds) {
-        Map<String, StagingPerfResult> results = new HashMap<String, StagingPerfResult>();
+    public List<PerfResult> run(int seconds) {
+        Map<String, PerfResult> results = new HashMap<String, PerfResult>();
         long startTime = System.currentTimeMillis();
         long lastCallbackTime = startTime;
         long totalSeconds = 0;
@@ -81,7 +81,7 @@ public class StagingPerf {
                     break;
                 }
                 if (time - lastCallbackTime > 1000) {
-                    List<StagingPerfResult> resultsAsList = getResultsAsList(results);
+                    List<PerfResult> resultsAsList = getResultsAsList(results);
                     logResults(totalSeconds, resultsAsList);
                     listener.update(getResultsAsList(results), (totalSeconds / (float) seconds));
                     lastCallbackTime = time;
@@ -90,19 +90,19 @@ public class StagingPerf {
         } catch (Exception e) {
             log.error("Failed to run test", e);
         }
-        List<StagingPerfResult> resultsAsList = getResultsAsList(results);
+        List<PerfResult> resultsAsList = getResultsAsList(results);
         logResults(totalSeconds, resultsAsList);
         return resultsAsList;
     }
 
-    protected void logResults(long totalSeconds, List<StagingPerfResult> resultsAsList) {
+    protected void logResults(long totalSeconds, List<PerfResult> resultsAsList) {
         log.info("Running for {} seconds", totalSeconds);
-        for (StagingPerfResult result : resultsAsList) {
+        for (PerfResult result : resultsAsList) {
             log.info(result.toString());
         }
     }
 
-    protected void testBatch(Batch batch, Map<String, StagingPerfResult> results) {
+    protected void testBatch(Batch batch, Map<String, PerfResult> results) {
         long ts = System.currentTimeMillis();
         StagingFileLock lock = stagingMgr.acquireFileLock(serverInfo, STAGE_PATH, batch.getStagedLocation(), batch.getBatchId());
         if (lock.isAcquired()) {
@@ -152,29 +152,29 @@ public class StagingPerf {
         }
     }
 
-    protected void increment(Map<String, StagingPerfResult> results, String statName, long millis) {
-        StagingPerfResult result = results.get(statName);
+    protected void increment(Map<String, PerfResult> results, String statName, long millis) {
+        PerfResult result = results.get(statName);
         if (result == null) {
-            result = new StagingPerfResult(statName);
+            result = new PerfResult(statName);
             results.put(statName, result);
         }
         result.incrementCount(1);
         result.incrementMillis(millis);
     }
 
-    public static List<StagingPerfResult> getEmptyResults() {
-        List<StagingPerfResult> list = new ArrayList<StagingPerfResult>();
-        list.add(new StagingPerfResult(STAT_LOCK_ACQUIRE));
-        list.add(new StagingPerfResult(STAT_BATCH_CREATE));
-        list.add(new StagingPerfResult(STAT_BATCH_WRITE));
-        list.add(new StagingPerfResult(STAT_BATCH_RENAME));
-        list.add(new StagingPerfResult(STAT_BATCH_FIND));
-        list.add(new StagingPerfResult(STAT_BATCH_READ));
+    public static List<PerfResult> getEmptyResults() {
+        List<PerfResult> list = new ArrayList<PerfResult>();
+        list.add(new PerfResult(STAT_LOCK_ACQUIRE));
+        list.add(new PerfResult(STAT_BATCH_CREATE));
+        list.add(new PerfResult(STAT_BATCH_WRITE));
+        list.add(new PerfResult(STAT_BATCH_RENAME));
+        list.add(new PerfResult(STAT_BATCH_FIND));
+        list.add(new PerfResult(STAT_BATCH_READ));
         return list;
     }
 
-    protected List<StagingPerfResult> getResultsAsList(Map<String, StagingPerfResult> results) {
-        List<StagingPerfResult> list = new ArrayList<StagingPerfResult>();
+    protected List<PerfResult> getResultsAsList(Map<String, PerfResult> results) {
+        List<PerfResult> list = new ArrayList<PerfResult>();
         updateRating(STAT_LOCK_ACQUIRE, results, list, 50, 8000);
         updateRating(STAT_BATCH_CREATE, results, list, 100, 12000);
         updateRating(STAT_BATCH_WRITE, results, list, 5, 200);
@@ -184,9 +184,9 @@ public class StagingPerf {
         return list;
     }
 
-    protected void updateRating(String statName, Map<String, StagingPerfResult> results, List<StagingPerfResult> list,
+    protected void updateRating(String statName, Map<String, PerfResult> results, List<PerfResult> list,
             long lowCount, long highCount) {
-        StagingPerfResult result = results.get(statName);
+        PerfResult result = results.get(statName);
         if (result != null) {
             long opSec = result.getOperationsPerSecond();
             if (opSec <= lowCount) {

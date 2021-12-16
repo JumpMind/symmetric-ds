@@ -20,20 +20,20 @@
  */
 package org.jumpmind.symmetric.io.stage;
 
-public class StagingPerfResult {
+public class PerfResult {
     private String name;
     private long count;
     private long millis;
     private float rating;
 
-    public StagingPerfResult(String name, long count, long millis, float rating) {
+    public PerfResult(String name, long count, long millis, float rating) {
         this.name = name;
         this.count = count;
         this.millis = millis;
         this.rating = rating;
     }
 
-    public StagingPerfResult(String name) {
+    public PerfResult(String name) {
         this.name = name;
     }
 
@@ -53,7 +53,7 @@ public class StagingPerfResult {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        StagingPerfResult other = (StagingPerfResult) obj;
+        PerfResult other = (PerfResult) obj;
         if (name == null) {
             if (other.name != null)
                 return false;
