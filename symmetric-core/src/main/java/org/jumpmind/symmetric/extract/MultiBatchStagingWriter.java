@@ -287,7 +287,8 @@ public class MultiBatchStagingWriter implements IDataWriter {
     public void end(Batch batch, boolean inError) {
         this.inError = inError;
         if (currentDataWriter != null) {
-            currentDataWriter.end(batch, inError);
+            // Use last batch we worked on instead of batch passed in, which is actually first batch 
+            currentDataWriter.end(this.batch, inError);
             closeCurrentDataWriter();
         }
     }
@@ -299,6 +300,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
             byteCount += outgoingBatch.getByteCount();
             engine.getStatisticManager().incrementDataBytesExtracted(outgoingBatch.getChannelId(), outgoingBatch.getByteCount());
             engine.getStatisticManager().incrementDataExtracted(outgoingBatch.getChannelId(), outgoingBatch.getDataRowCount());
+            engine.getStatisticManager().incrementTableRows(outgoingBatch.getTableLoadedCount(), false);
         }
         outgoingBatch = batches.remove(0);
         outgoingBatch.setDataRowCount(0);
