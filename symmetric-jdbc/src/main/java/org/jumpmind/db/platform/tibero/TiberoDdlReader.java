@@ -314,11 +314,14 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
 
         StringBuilder query = new StringBuilder();
 
-        query.append("SELECT a.INDEX_NAME, a.INDEX_TYPE, a.UNIQUENESS, b.COLUMN_NAME, b.COLUMN_POSITION FROM USER_INDEXES a, USER_IND_COLUMNS b WHERE ");
-        query.append("a.TABLE_NAME=? AND a.GENERATED_BY_SYSTEM=? AND a.TABLE_TYPE=? AND a.TABLE_NAME=b.TABLE_NAME AND a.INDEX_NAME=b.INDEX_NAME AND ");
-        query.append("a.INDEX_NAME NOT IN (SELECT DISTINCT c.CONSTRAINT_NAME FROM USER_CONSTRAINTS c WHERE c.CONSTRAINT_TYPE=? AND c.TABLE_NAME=a.TABLE_NAME");
+        query.append("SELECT a.INDEX_NAME, a.INDEX_TYPE, a.UNIQUENESS, b.COLUMN_NAME, b.COLUMN_POSITION FROM ALL_INDEXES a ");
+        query.append("JOIN ALL_IND_COLUMNS b ON a.table_name = b.table_name AND a.INDEX_NAME=b.INDEX_NAME AND a.TABLE_OWNER = b.TABLE_OWNER ");
+        query.append("WHERE a.TABLE_NAME = ? ");
+        query.append(" AND a.GENERATED_BY_SYSTEM = ? ");
+        query.append(" AND a.TABLE_TYPE = ? ");
+        query.append(" AND a.INDEX_NAME NOT IN (SELECT DISTINCT c.CONSTRAINT_NAME FROM ALL_CONSTRAINTS c WHERE c.CONSTRAINT_TYPE = ? AND c.TABLE_NAME=a.TABLE_NAME ");
         if (metaData.getSchemaPattern() != null) {
-            query.append(" AND c.OWNER LIKE ?) AND a.TABLE_OWNER LIKE ?");
+            query.append(" AND c.OWNER like ?) AND a.TABLE_OWNER like ? ");
         } else {
             query.append(")");
         }
