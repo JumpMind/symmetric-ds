@@ -46,7 +46,13 @@ public class Db2zOsDatabasePlatform extends Db2DatabasePlatform {
     @Override
     protected Db2DdlReader createDdlReader() {
         return new Db2zOsDdlReader(this);
-    }    
+    }   
+    
+    @Override
+    protected Db2DdlBuilder createDdlBuilder() {
+    	return new Db2zOsDdlBuilder();
+    }
+    
     
     @Override
     public boolean supportsLimitOffset() {
