@@ -226,8 +226,11 @@ public class FileSyncZipDataWriter implements IDataWriter {
                         LastEventType previousEventForEntry = entriesByLastEventType.get(entryName.toString());
                         boolean addFileToZip = true;
                         if (previousEventForEntry != null) {
+                            // There could be a delete between a MODIFY and a CREATE, but the delete is not added to the
+                            // entriesByLastEventType data structure
                             if ((previousEventForEntry == eventType)
-                                    || (previousEventForEntry == LastEventType.CREATE && eventType == LastEventType.MODIFY)) {
+                                    || (previousEventForEntry == LastEventType.CREATE && eventType == LastEventType.MODIFY)
+                                    || (previousEventForEntry == LastEventType.MODIFY && eventType == LastEventType.CREATE)) {
                                 addFileToZip = false;
                             }
                         }
