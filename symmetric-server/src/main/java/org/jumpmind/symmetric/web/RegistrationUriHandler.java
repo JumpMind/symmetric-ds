@@ -51,6 +51,30 @@ public class RegistrationUriHandler extends AbstractUriHandler {
         Node node = transform(req);
         try {
             OutputStream outputStream = res.getOutputStream();
+            String pushRegistration = ServletUtils.getParameter(req, WebConstants.PUSH_REGISTRATION);
+            if (Boolean.TRUE.toString().equals(pushRegistration)) {
+                node.setNodeId(ServletUtils.getParameter(req, WebConstants.NODE_ID));
+                if (registrationService.isRegisteredWithServer() && !registrationService.isRegistrationOpen()) {
+                    ServletUtils.sendError(res, WebConstants.REGISTRATION_NOT_OPEN, "Registration not open");
+                    return;
+                }
+                if (!StringUtils.equals(node.getSyncUrl(), parameterService.getRegistrationUrl())) {
+                    ServletUtils.sendError(res, WebConstants.REGISTRATION_NOT_OPEN, String.format("Not allowed to register with %s", node.getSyncUrl()));
+                    return;
+                }
+                boolean success = false;
+                if (WebConstants.METHOD_POST.equals(req.getMethod())) {
+                    log.info("Received push registration request from {}", node);
+                    success = registrationService.writeRegistrationProperties(outputStream);
+                } else if (WebConstants.METHOD_PUT.equals(req.getMethod())) {
+                    log.info("Loading push registration batch from {}", node);
+                    success = registrationService.loadRegistrationBatch(node, createInputStream(req), outputStream);
+                }
+                if (!success) {
+                    ServletUtils.sendError(res, WebConstants.SC_SERVICE_ERROR, "Error during registration");
+                }
+                return;
+            }
             String userId = ServletUtils.getParameter(req, WebConstants.REG_USER_ID);
             String password = ServletUtils.getParameter(req, WebConstants.REG_PASSWORD);
             if (!registerNode(node, getHostName(req), getIpAddress(req), outputStream, userId, password)) {

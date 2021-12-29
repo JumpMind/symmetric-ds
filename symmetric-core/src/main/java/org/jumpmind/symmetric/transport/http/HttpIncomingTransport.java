@@ -24,11 +24,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -219,20 +215,8 @@ public class HttpIncomingTransport implements IIncomingTransport {
         if (requestProperties != null) {
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
-            StringBuilder sb = new StringBuilder();
-            for (Map.Entry<String, String> requestProperty : requestProperties.entrySet()) {
-                if (sb.length() != 0) {
-                    sb.append("&");
-                }
-                sb.append(requestProperty.getKey()).append("=");
-                if (requestProperty.getValue() != null && !requestProperty.getValue().equals("")) {
-                    sb.append(URLEncoder.encode(requestProperty.getValue(), StandardCharsets.UTF_8.name()));
-                }
-            }
             try (OutputStream os = connection.getOutputStream()) {
-                PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
-                pw.println(sb.toString());
-                pw.flush();
+                httpTransportManager.writeRequestProperties(requestProperties, os);
             }
         }
     }

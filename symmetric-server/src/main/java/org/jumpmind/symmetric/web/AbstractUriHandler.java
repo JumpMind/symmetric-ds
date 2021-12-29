@@ -21,9 +21,13 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -47,6 +51,18 @@ abstract public class AbstractUriHandler implements IUriHandler {
             this.interceptors.add(i);
         }
         this.parameterService = parameterService;
+    }
+
+    protected InputStream createInputStream(HttpServletRequest req) throws IOException {
+        InputStream is = null;
+        String contentType = req.getHeader("Content-Type");
+        boolean useCompression = contentType != null && (contentType.equalsIgnoreCase("gzip")
+                || contentType.equalsIgnoreCase("application/gzip"));
+        is = req.getInputStream();
+        if (useCompression) {
+            is = new GZIPInputStream(is);
+        }
+        return is;
     }
 
     public void setUriPattern(String uriPattern) {

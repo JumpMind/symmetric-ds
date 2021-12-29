@@ -51,6 +51,7 @@ import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicati
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPushService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
@@ -62,6 +63,7 @@ import org.jumpmind.symmetric.web.WebConstants;
 public class PushService extends AbstractOfflineDetectorService implements IPushService, INodeCommunicationExecutor {
     private IDataExtractorService dataExtractorService;
     private IAcknowledgeService acknowledgeService;
+    private IRegistrationService registrationService;
     private ITransportManager transportManager;
     private INodeService nodeService;
     private IClusterService clusterService;
@@ -71,13 +73,14 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     private Map<String, Date> startTimesOfNodesBeingPushedTo = new HashMap<String, Date>();
 
     public PushService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
-            IDataExtractorService dataExtractorService, IAcknowledgeService acknowledgeService,
+            IDataExtractorService dataExtractorService, IAcknowledgeService acknowledgeService, IRegistrationService registrationService,
             ITransportManager transportManager, INodeService nodeService,
             IClusterService clusterService, INodeCommunicationService nodeCommunicationService, IStatisticManager statisticManager,
             IConfigurationService configrationService, IExtensionService extensionService) {
         super(parameterService, symmetricDialect, extensionService);
         this.dataExtractorService = dataExtractorService;
         this.acknowledgeService = acknowledgeService;
+        this.registrationService = registrationService;
         this.transportManager = transportManager;
         this.nodeService = nodeService;
         this.clusterService = clusterService;
@@ -182,22 +185,31 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 startTimesOfNodesBeingPushedTo.remove(node.getNodeId());
             }
         } else {
-            log.warn("Cannot push to node '{}' in the group '{}'.  The sync url is blank", node.getNodeId(), node.getNodeGroupId());
+            log.debug("Cannot push to node '{}' in the group '{}'.  The sync url is blank", node.getNodeId(), node.getNodeGroupId());
         }
     }
 
     private void pushToNode(Node remote, RemoteNodeStatus status) {
         Node identity = nodeService.findIdentity();
         NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId(), true);
+        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(remote.getNodeId(), true);
         IOutgoingWithResponseTransport transport = null;
         ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity
                 .getNodeId(), status.getQueue(), remote.getNodeId(), ProcessType.PUSH_JOB_EXTRACT));
         Map<String, String> requestProperties = new HashMap<String, String>();
         requestProperties.put(WebConstants.CHANNEL_QUEUE, status.getQueue());
         try {
-            transport = transportManager.getPushTransport(remote, identity,
-                    identitySecurity.getNodePassword(), requestProperties, parameterService.getRegistrationUrl());
-            List<OutgoingBatch> extractedBatches = dataExtractorService.extract(processInfo, remote, status.getQueue(), transport);
+            List<OutgoingBatch> extractedBatches = null;
+            if (nodeSecurity != null && nodeSecurity.isRegistrationEnabled()) {
+                if (identity.getNodeId().equals(nodeSecurity.getCreatedAtNodeId())) {
+                    transport = transportManager.getRegisterPushTransport(remote, identity);
+                	extractedBatches = registrationService.registerWithClient(remote, transport);
+                }
+            } else {
+                transport = transportManager.getPushTransport(remote, identity,
+                        identitySecurity.getNodePassword(), requestProperties, parameterService.getRegistrationUrl());
+            	extractedBatches = dataExtractorService.extract(processInfo, remote, status.getQueue(), transport);
+            }
             if (extractedBatches.size() > 0) {
                 log.info("Push data sent to {}", remote);
                 List<BatchAck> batchAcks = readAcks(extractedBatches, transport, transportManager, acknowledgeService, dataExtractorService);
@@ -212,11 +224,16 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         } catch (Exception ex) {
             processInfo.setStatus(ProcessStatus.ERROR);
             fireOffline(ex, remote, status);
-            if (isRegistrationRequired(ex) && !parameterService.isRegistrationServer() && parameterService.isRemoteNodeRegistrationServer(remote)) {
-                log.info("Removing identity because registration is required");
-                nodeService.deleteIdentity();
-                nodeService.deleteNodeSecurity(identity.getNodeId());
-                nodeService.deleteNode(identity.getNodeId(), false);
+            if (isRegistrationRequired(ex)) {
+                if (identity.getNodeId().equals(remote.getCreatedAtNodeId())) {
+                    log.info("Re-opening registration for {} because registration is required", remote);
+                    registrationService.reOpenRegistration(remote.getNodeId());
+                } else if (!parameterService.isRegistrationServer() && parameterService.isRemoteNodeRegistrationServer(remote)) {
+                    log.info("Removing identity because registration is required");
+                    nodeService.deleteIdentity();
+                    nodeService.deleteNodeSecurity(identity.getNodeId());
+                    nodeService.deleteNode(identity.getNodeId(), false);
+                }
             }
         } finally {
             try {

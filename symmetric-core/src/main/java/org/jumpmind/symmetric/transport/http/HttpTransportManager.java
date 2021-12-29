@@ -52,7 +52,6 @@ import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.web.WebConstants;
-import org.jumpmind.util.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -314,7 +313,20 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl, Map<String, String> requestProperties) throws IOException {
         return new HttpIncomingTransport(this, createGetConnectionFor(new URL(buildRegistrationUrl(
-                registrationUrl, node))), engine.getParameterService(), buildRegistrationRequestProperties(node, requestProperties));
+                registrationUrl, node))), engine.getParameterService(), TransportUtils.convertNodeToProperties(node, requestProperties));
+    }
+
+    public IOutgoingWithResponseTransport getRegisterPushTransport(Node remote, Node local) throws IOException {
+        StringBuilder builder = new StringBuilder(buildRegistrationUrl(remote.getSyncUrl(), remote)).append("?");
+        append(builder, WebConstants.PUSH_REGISTRATION, Boolean.TRUE);
+        append(builder, WebConstants.NODE_ID, local.getNodeId());
+        append(builder, WebConstants.NODE_GROUP_ID, local.getNodeGroupId());
+        append(builder, WebConstants.EXTERNAL_ID, local.getExternalId());
+        append(builder, WebConstants.SYNC_URL, local.getSyncUrl());
+        URL url = new URL(builder.toString());
+        return new HttpOutgoingTransport(this, url, getHttpTimeOutInMs(), getHttpConnectTimeOutInMs(), isUseCompression(remote),
+                getCompressionStrategy(), getCompressionLevel(), local.getNodeId(),
+                null, isOutputStreamEnabled(), getOutputStreamSize(), false);
     }
 
     @Override
@@ -333,24 +345,6 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         StringBuilder builder = new StringBuilder(baseUrl);
         builder.append("/registration");
         return builder.toString();
-    }
-
-    public static Map<String, String> buildRegistrationRequestProperties(Node node, Map<String, String> prop) {
-        if (prop == null) {
-            prop = new HashMap<String, String>();
-        }
-        prop.put(WebConstants.NODE_GROUP_ID, node.getNodeGroupId());
-        prop.put(WebConstants.EXTERNAL_ID, node.getExternalId());
-        prop.put(WebConstants.SYNC_URL, node.getSyncUrl());
-        prop.put(WebConstants.SCHEMA_VERSION, node.getSchemaVersion());
-        prop.put(WebConstants.DATABASE_TYPE, node.getDatabaseType());
-        prop.put(WebConstants.DATABASE_VERSION, node.getDatabaseVersion());
-        prop.put(WebConstants.DATABASE_NAME, node.getDatabaseName());
-        prop.put(WebConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
-        prop.put(WebConstants.DEPLOYMENT_TYPE, node.getDeploymentType());
-        prop.put(WebConstants.HOST_NAME, AppUtils.getHostName());
-        prop.put(WebConstants.IP_ADDRESS, AppUtils.getIpAddress());
-        return prop;
     }
 
     protected HttpConnection createGetConnectionFor(URL url, String nodeId, String securityToken) throws IOException {

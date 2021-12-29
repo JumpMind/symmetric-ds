@@ -88,6 +88,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                         int availableThreads = nodeCommunicationService.getAvailableThreads(CommunicationType.PULL);
                         boolean m2mLoadInProgress = configurationService.isMasterToMaster() && nodeService.isDataLoadStarted();
                         for (NodeCommunication nodeCommunication : nodes) {
+                        	NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeCommunication.getNodeId(), true);
                             boolean meetsMinimumTime = true;
                             if (minimumPeriodMs > 0 && nodeCommunication.getLastLockTime() != null &&
                                     (System.currentTimeMillis() - nodeCommunication.getLastLockTime().getTime()) < minimumPeriodMs) {
@@ -95,7 +96,6 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                             }
                             boolean m2mLockout = false;
                             if (m2mLoadInProgress) {
-                                NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeCommunication.getNodeId(), true);
                                 m2mLockout = identity.getCreatedAtNodeId() != null && "registration".equals(nodeSecurity.getInitialLoadCreateBy()) &&
                                         !identity.getCreatedAtNodeId().equals(nodeCommunication.getNodeId());
                                 if (m2mLockout) {
@@ -103,7 +103,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                                             .getCreatedAtNodeId());
                                 }
                             }
-                            if (availableThreads > 0 && meetsMinimumTime && !m2mLockout) {
+                            if (availableThreads > 0 && meetsMinimumTime && !m2mLockout && nodeSecurity != null && !nodeSecurity.isRegistrationEnabled()) {
                                 if (nodeCommunicationService.execute(nodeCommunication, statuses, this)) {
                                     availableThreads--;
                                 }

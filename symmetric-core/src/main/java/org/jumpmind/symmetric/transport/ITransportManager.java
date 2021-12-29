@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.transport;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,8 @@ public interface ITransportManager {
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl, Map<String, String> requestProperties) throws IOException;
 
+    public IOutgoingWithResponseTransport getRegisterPushTransport(Node remote, Node local) throws IOException;
+
     public IIncomingTransport getConfigTransport(Node remote, Node local, String securityToken,
             String symmetricVersion, String configVersion, String registrationUrl) throws IOException;
 
@@ -77,4 +80,8 @@ public interface ITransportManager {
     public int sendCopyRequest(Node local) throws IOException;
 
     public int sendStatusRequest(Node local, Map<String, String> statuses) throws IOException;
+
+    public void writeRequestProperties(Map<String, String> requestProperties, OutputStream os) throws IOException;
+        
+    public Map<String, String> readRequestProperties(InputStream is) throws IOException;
 }

@@ -106,13 +106,15 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                         + "inner join $(node_group_link) d on                                          "
                         + "  c.node_group_id = d.source_node_group_id where d.target_node_group_id = ? and   "
                         + "  (d.data_event_action = ? or d.is_reversible = 1) and c.node_id not in (select node_id from $(node_identity))          "
-                        + "and c.sync_enabled = 1");
+                        + "and (c.sync_enabled = 1 or c.node_id in (select node_id from $(node_security) where registration_enabled = 1 "
+                        + "and created_at_node_id = (select node_id from $(node_identity))))");
         putSql("findNodesWhoITargetSql",
                 ""
                         + "inner join $(node_group_link) d on                                          "
                         + "  c.node_group_id = d.target_node_group_id where d.source_node_group_id = ? and   "
                         + "  (d.data_event_action = ? or d.is_reversible = 1) and c.node_id not in (select node_id from $(node_identity))   "
-                        + "and c.sync_enabled = 1");
+                        + "and (c.sync_enabled = 1 or c.node_id in (select node_id from $(node_security) where registration_enabled = 1 "
+                        + "and created_at_node_id = (select node_id from $(node_identity))))");
         putSql("selectNodeHostPrefixSql",
                 ""
                         + "select node_id, host_name, instance_id, ip_address, os_user, os_name, os_arch, os_version, available_processors,        "

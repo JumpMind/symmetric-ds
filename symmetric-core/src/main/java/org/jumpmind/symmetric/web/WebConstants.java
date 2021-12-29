@@ -26,6 +26,8 @@ package org.jumpmind.symmetric.web;
 public class WebConstants {
     public static final String HEADER_ACCEPT_CHARSET = "Accept-Charset";
     public static final String METHOD_GET = "GET";
+    public static final String METHOD_POST = "POST";
+    public static final String METHOD_PUT = "PUT";
     public static final String METHOD_HEAD = "HEAD";
     public static final String INIT_PARAM_AUTO_START = "autoStart";
     public static final String INIT_PARAM_AUTO_CREATE = "autoCreate";
@@ -95,4 +97,5 @@ public class WebConstants {
     public static final String HEADER_SET_SESSION_ID = "Set-Session-ID";
     public static final String REG_USER_ID = "regUserId";
     public static final String REG_PASSWORD = "regPassword";
+    public static final String PUSH_REGISTRATION = "pushRegistration";
 }

@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.transport;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
@@ -110,6 +111,10 @@ public class MockTransportManager implements ITransportManager {
         return incomingTransport;
     }
 
+    public IOutgoingWithResponseTransport getRegisterPushTransport(Node remote, Node local) throws IOException {
+        return null;
+    }
+
     public List<BatchAck> readAcknowledgement(String parameterString) throws IOException {
         return null;
     }
@@ -143,6 +148,15 @@ public class MockTransportManager implements ITransportManager {
     public IOutgoingWithResponseTransport getBandwidthPushTransport(Node remote, Node local, String securityToken, Map<String, String> requestProperties,
             String registrationUrl)
             throws IOException {
+        return null;
+    }
+
+    @Override
+    public void writeRequestProperties(Map<String, String> requestProperties, OutputStream os) throws IOException {
+    }
+
+    @Override
+    public Map<String, String> readRequestProperties(InputStream is) throws IOException {
         return null;
     }
 }

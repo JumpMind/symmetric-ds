@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.web;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.zip.GZIPInputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -34,6 +33,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.RegistrationPendingException;
+import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 
 /**
@@ -74,23 +74,13 @@ public class PushUriHandler extends AbstractUriHandler {
             Node sourceNode = nodeService.findNode(sourceNodeId, true);
             dataLoaderService.loadDataFromPush(sourceNode, channelId, inputStream, outputStream);
         } catch (RegistrationPendingException e) {
-            return WebConstants.SC_SERVICE_BUSY;
+            return WebConstants.REGISTRATION_PENDING;
+        } catch (RegistrationRequiredException e) {
+            return WebConstants.REGISTRATION_REQUIRED;
         } finally {
             statisticManager.incrementNodesPushed(1);
             statisticManager.incrementTotalNodesPushedTime(System.currentTimeMillis() - ts);
         }
         return WebConstants.SC_OK;
-    }
-
-    protected InputStream createInputStream(HttpServletRequest req) throws IOException {
-        InputStream is = null;
-        String contentType = req.getHeader("Content-Type");
-        boolean useCompression = contentType != null && (contentType.equalsIgnoreCase("gzip")
-                || contentType.equalsIgnoreCase("application/gzip"));
-        is = req.getInputStream();
-        if (useCompression) {
-            is = new GZIPInputStream(is);
-        }
-        return is;
     }
 }

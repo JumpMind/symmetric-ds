@@ -23,12 +23,15 @@ package org.jumpmind.symmetric.service.impl;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +43,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
@@ -48,8 +52,10 @@ import org.jumpmind.symmetric.ext.INodeRegistrationListener;
 import org.jumpmind.symmetric.ext.IRegistrationRedirect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.RegistrationRequest;
 import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatus.Status;
@@ -67,8 +73,11 @@ import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
+import org.jumpmind.symmetric.transport.IIncomingTransport;
+import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.ServiceUnavailableException;
+import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.RandomTimeSlot;
@@ -236,6 +245,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             foundNode.setSymmetricVersion(nodePriorToRegistration.getSymmetricVersion());
             foundNode.setDeploymentType(nodePriorToRegistration.getDeploymentType());
             foundNode.setDatabaseName(nodePriorToRegistration.getDatabaseName());
+            foundNode.setConfigVersion(Version.version());
             nodeService.save(foundNode);
             log.info("Completed registration of node " + foundNode);
             /**
@@ -269,6 +279,16 @@ public class RegistrationService extends AbstractService implements IRegistratio
     public boolean registerNode(Node nodePriorToRegistration, String remoteHost,
             String remoteAddress, OutputStream out, String userId, String password, boolean isRequestedRegistration)
             throws IOException {
+        NodeGroupLink link = configurationService.getNodeGroupLinkFor(parameterService.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId(), false);
+        if (link != null && link.getDataEventAction() == NodeGroupLinkAction.P) {
+            String nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? extensionService.getExtensionPoint(INodeIdCreator.class).selectNodeId(
+                    nodePriorToRegistration, remoteHost, remoteAddress) : nodePriorToRegistration.getNodeId();
+            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
+            if (nodeSecurity != null && nodeSecurity.isRegistrationEnabled()) {
+                log.info("Pull of registration from {} is being ignored because group link is push", nodePriorToRegistration);
+                return true;
+            }
+        }
         Node processedNode = processRegistration(nodePriorToRegistration, remoteHost,
                 remoteAddress, userId, password, isRequestedRegistration);
         if (processedNode.isSyncEnabled()) {
@@ -545,6 +565,74 @@ public class RegistrationService extends AbstractService implements IRegistratio
         return registered;
     }
 
+    public List<OutgoingBatch> registerWithClient(Node remote, IOutgoingWithResponseTransport transport) {
+    	List<OutgoingBatch> extractedBatches = new ArrayList<OutgoingBatch>();
+    	Node identity = nodeService.findIdentity();
+    	if (identity != null) {
+	    	log.info("Node {} is unregistered.  Requesting to push registration to {}", remote.getNodeId(), remote.getSyncUrl());
+	    	IIncomingTransport reqTransport = null;
+	    	Node node = null;
+	    	try {
+		    	Map<String, String> prop = new HashMap<String, String>();
+		    	prop.put(WebConstants.PUSH_REGISTRATION, Boolean.TRUE.toString());
+	    		reqTransport = transportManager.getRegisterTransport(identity, remote.getSyncUrl(), prop);
+	    		Map<String, String> params = transportManager.readRequestProperties(reqTransport.openStream());
+	    		node = TransportUtils.convertPropertiesToNode(params);
+    			node = processRegistration(node, params.get(WebConstants.HOST_NAME), params.get(WebConstants.IP_ADDRESS), null, null, true);
+			} catch (Exception e) {
+			    if (log.isDebugEnabled()) {
+			        log.error("Failed to request push registration", e);
+			    } else {
+			        log.error("Failed to request push registration: {}: {}", e.getClass().getSimpleName(), StringUtils.trimToEmpty(e.getMessage()));
+			    }
+			} finally {
+				if (reqTransport != null) {
+					reqTransport.close();
+				}
+			}
+
+	    	if (node != null && node.isSyncEnabled()) {
+                OutgoingBatch batch = new OutgoingBatch(remote.getNodeId(), Constants.CHANNEL_CONFIG, OutgoingBatch.Status.LD);
+                batch.setBatchId(Constants.VIRTUAL_BATCH_FOR_REGISTRATION);
+                extractedBatches.add(batch);
+	    	    try {
+	                outgoingBatchService.markAllConfigAsSentForNode(remote.getNodeId());
+	                extractConfiguration(transport.openStream(), remote);
+	            } catch (Exception e) {
+	                if (log.isDebugEnabled()) {
+	                    log.error("Failed to push registration batch", e);
+	                } else {
+	                    log.error("Failed to push registration batch: {}: {}", e.getClass().getSimpleName(), StringUtils.trimToEmpty(e.getMessage()));
+	                }
+	            }
+	    	}
+    	}
+    	return extractedBatches;
+    }
+
+    public boolean writeRegistrationProperties(OutputStream os) {
+    	try {
+            Node local = new Node(parameterService, symmetricDialect, engine.getDatabasePlatform().getName());
+            local.setDeploymentType(engine.getDeploymentType());
+    		Map<String, String> requestProperties = TransportUtils.convertNodeToProperties(local, null);
+    		transportManager.writeRequestProperties(requestProperties, os);
+		} catch (IOException e) {
+			log.error("Failed to write response for push registration request", e);
+			return false;
+		}
+    	return true;
+    }
+
+    public boolean loadRegistrationBatch(Node node, InputStream is, OutputStream os) {
+        try {
+			dataLoaderService.loadDataFromPush(node, Constants.CHANNEL_DEFAULT, is, os);
+		} catch (IOException e) {
+			log.error("Failed to load batch from push registration", e);
+			return false;
+		}
+        return true;
+    }
+
     /**
      * @see IRegistrationService#reOpenRegistration(String)
      */
@@ -674,6 +762,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
             return security != null && security.isRegistrationEnabled();
         }
         return false;
+    }
+
+    public boolean isRegistrationOpen() {
+        Node node = nodeService.findIdentity();
+        NodeSecurity nodeSecurity = null;
+        if (node != null) {
+            nodeSecurity = nodeService.findNodeSecurity(node.getNodeId());
+        }
+        return nodeSecurity != null && nodeSecurity.isRegistrationEnabled();
     }
 
     public void requestNodeCopy() {

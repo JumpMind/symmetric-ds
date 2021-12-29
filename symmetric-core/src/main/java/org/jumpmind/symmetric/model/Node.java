@@ -294,6 +294,9 @@ public class Node implements Serializable, Comparable<Node> {
                 return true;
             }
             int[] currentVersion = getSymmetricVersionParts();
+            if (currentVersion == null) {
+                return false;
+            }
             for (int i = 0; i < currentVersion.length; i++) {
                 int j = currentVersion[i];
                 if (targetVersion.length > i) {

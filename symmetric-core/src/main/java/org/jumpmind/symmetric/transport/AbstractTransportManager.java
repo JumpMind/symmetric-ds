@@ -20,7 +20,13 @@
  */
 package org.jumpmind.symmetric.transport;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
@@ -154,7 +160,7 @@ abstract public class AbstractTransportManager {
     }
 
     public List<BatchAck> readAcknowledgement(String parameterString) throws IOException {
-        Map<String, Object> parameters = getParametersFromQueryUrl(parameterString.replace("\n", ""));
+        Map<String, String> parameters = getParametersFromQueryUrl(parameterString.replace("\n", ""));
         return readAcknowledgement(parameters);
     }
 
@@ -168,6 +174,28 @@ abstract public class AbstractTransportManager {
             }
         }
         return batches;
+    }
+
+    public void writeRequestProperties(Map<String, String> requestProperties, OutputStream os) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> requestProperty : requestProperties.entrySet()) {
+            if (sb.length() != 0) {
+                sb.append("&");
+            }
+            sb.append(requestProperty.getKey()).append("=");
+            if (requestProperty.getValue() != null && !requestProperty.getValue().equals("")) {
+                sb.append(URLEncoder.encode(requestProperty.getValue(), StandardCharsets.UTF_8.name()));
+            }
+        }
+        PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
+        pw.println(sb.toString());
+        pw.flush();
+    }
+        
+    public Map<String, String> readRequestProperties(InputStream is) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        String parameterString = reader.readLine();
+        return getParametersFromQueryUrl(parameterString);
     }
 
     private static BatchAck getBatchInfo(Map<String, ? extends Object> parameters, long batchId) {
@@ -205,8 +233,8 @@ abstract public class AbstractTransportManager {
         return batchInfo;
     }
 
-    protected static Map<String, Object> getParametersFromQueryUrl(String parameterString) throws IOException {
-        Map<String, Object> parameters = new HashMap<String, Object>();
+    protected Map<String, String> getParametersFromQueryUrl(String parameterString) throws IOException {
+        Map<String, String> parameters = new HashMap<String, String>();
         String[] tokens = parameterString.split("&");
         for (String param : tokens) {
             String[] nameValuePair = param.split("=");

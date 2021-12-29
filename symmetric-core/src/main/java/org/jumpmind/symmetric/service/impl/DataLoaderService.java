@@ -126,7 +126,6 @@ import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
-import org.jumpmind.symmetric.service.RegistrationPendingException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
@@ -382,17 +381,25 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     public void loadDataFromPush(Node sourceNode, String queue, InputStream in, OutputStream out)
             throws IOException {
         Node local = nodeService.findIdentity();
-        if (local != null && local.getNodeId() != null && sourceNode != null && sourceNode.getNodeId() != null) {
+        if (sourceNode != null && sourceNode.getNodeId() != null) {
             ProcessInfo transferInfo = statisticManager.newProcessInfo(new ProcessInfoKey(sourceNode
-                    .getNodeId(), queue, local.getNodeId(), PUSH_HANDLER_TRANSFER));
+                    .getNodeId(), queue, local != null ? local.getNodeId() : null, PUSH_HANDLER_TRANSFER));
             try {
                 List<IncomingBatch> batchList = loadDataFromTransport(transferInfo, sourceNode,
                         new InternalIncomingTransport(in), out);
                 logDataReceivedFromPush(sourceNode, batchList, transferInfo);
-                NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
-                transferInfo.setStatus(ProcessInfo.ProcessStatus.ACKING);
-                transportManager.writeAcknowledgement(out, sourceNode, batchList, local,
-                        security != null ? security.getNodePassword() : null);
+                if (local == null) {
+                    local = nodeService.findIdentity(false);
+                }
+                if (local != null && local.getNodeId() != null) {
+                    NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
+                    transferInfo.setStatus(ProcessInfo.ProcessStatus.ACKING);
+                    transportManager.writeAcknowledgement(out, sourceNode, batchList, local,
+                            security != null ? security.getNodePassword() : null);
+                } else {
+                    log.info("Could not load data because the node is not registered");
+                    throw new RegistrationRequiredException();
+                }
                 transferInfo.setStatus(ProcessInfo.ProcessStatus.OK);
                 purgeLoadBatchesFromStaging(batchList);
             } catch (Exception e) {
@@ -404,9 +411,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
                 throw new RuntimeException(e);
             }
-        } else {
-            log.info("Could not load data because the node is not registered");
-            throw new RegistrationPendingException();
         }
     }
 

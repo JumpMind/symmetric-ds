@@ -174,6 +174,10 @@ public class InternalTransportManager extends AbstractTransportManager implement
         return new InternalIncomingTransport(respIs);
     }
 
+    public IOutgoingWithResponseTransport getRegisterPushTransport(Node remote, Node local) throws IOException {
+        return null;
+    }
+
     @Override
     public int sendCopyRequest(Node local) throws IOException {
         return -1;

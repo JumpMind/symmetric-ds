@@ -21,11 +21,14 @@
 package org.jumpmind.symmetric.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.RegistrationRequest;
+import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 
 /**
  * This service provides an API that deals with {@link Node} registration
@@ -75,6 +78,8 @@ public interface IRegistrationService {
 
     public boolean isRegistrationOpen(String nodeGroupId, String externalId);
 
+    public boolean isRegistrationOpen();
+
     /**
      * Re-open registration for a single node that already exists in the database. A new password is generated and the registration_enabled flag is turned on.
      * The next node to try registering for this node group and external ID will be given this information.
@@ -99,6 +104,12 @@ public interface IRegistrationService {
     public boolean registerWithServer();
 
     /**
+     * Server method which attempts to register using the registration URL of a client node using a push to send configuration.
+     * Returns configuration batch sent with its status. 
+     */
+    public List<OutgoingBatch> registerWithClient(Node remote, IOutgoingWithResponseTransport transport);
+    
+    /**
      * Client method which attempts to register with the registration.url to pull configuration if the node has not already been registered. Returns true if
      * registered successfully
      */
@@ -122,4 +133,14 @@ public interface IRegistrationService {
     public void requestNodeCopy();
 
     public void setAllowClientRegistration(boolean enabled);
+
+    /**
+     * When server pushes to client asking to register it, the client responds with its registration request properties
+     */
+    public boolean writeRegistrationProperties(OutputStream os);
+
+    /**
+     * When server pushes to client asking to register it, the client loads the configuration batch and returns an acknowledgement 
+     */
+    public boolean loadRegistrationBatch(Node node, InputStream is, OutputStream os);
 }
