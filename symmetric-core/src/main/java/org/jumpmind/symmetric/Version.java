@@ -75,6 +75,10 @@ final public class Version {
         return version.isOlderMinorVersion(checkVersion, targetVersion);
     }
 
+    public static boolean isDevelopment(String version) {
+        return Version.version.isDevelopment(version);
+    }
+
     public static long getBuildTime() {
         return version.getBuildTime();
     }

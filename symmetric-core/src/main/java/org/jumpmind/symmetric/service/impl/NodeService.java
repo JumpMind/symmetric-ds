@@ -544,8 +544,8 @@ public class NodeService extends AbstractService implements INodeService {
             Map<String, NodeSecurity> nodeSecurities = findAllNodeSecurity(true);
             return nodeSecurities.get(nodeId);
         } else {
-            List<NodeSecurity> list = sqlTemplate.query(getSql("findNodeSecuritySql"), new NodeSecurityRowMapper(), new Object[] { nodeId },
-                    new int[] { Types.VARCHAR });
+            List<NodeSecurity> list = sqlTemplate.query(getSql("selectNodeSecuritySql", "findNodeSecurityByNodeIdSql"),
+                    new NodeSecurityRowMapper(), new Object[] { nodeId }, new int[] { Types.VARCHAR });
             return getFirstEntry(list);
         }
     }
@@ -591,7 +591,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     public List<NodeSecurity> findNodeSecurityWithLoadEnabled() {
         if (parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
-            return sqlTemplate.query(getSql("findNodeSecurityWithLoadEnabledSql"), new NodeSecurityRowMapper());
+            return sqlTemplate.query(getSql("selectNodeSecuritySql", "findNodeSecurityWithLoadEnabledSql"), new NodeSecurityRowMapper());
         } else {
             List<NodeSecurity> list = new ArrayList<NodeSecurity>();
             for (NodeSecurity nodeSecurity : findAllNodeSecurity(true).values()) {
@@ -607,7 +607,7 @@ public class NodeService extends AbstractService implements INodeService {
         long maxSecurityCacheTime = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_SECURITY_IN_MS);
         Map<String, NodeSecurity> all = securityCache;
         if (all == null || System.currentTimeMillis() - securityCacheTime >= maxSecurityCacheTime || securityCacheTime == 0 || !useCache) {
-            all = (Map<String, NodeSecurity>) sqlTemplate.queryForMap(getSql("findAllNodeSecuritySql"), new NodeSecurityRowMapper(),
+            all = (Map<String, NodeSecurity>) sqlTemplate.queryForMap(getSql("selectNodeSecuritySql"), new NodeSecurityRowMapper(),
                     "node_id");
             securityCache = all;
             securityCacheTime = System.currentTimeMillis();
@@ -675,6 +675,7 @@ public class NodeService extends AbstractService implements INodeService {
                 getSql("updateNodeSecuritySql"),
                 new Object[] { security.getNodePassword(),
                         security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
+                        security.getRegistrationNotBefore(), security.getRegistrationNotAfter(),
                         security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(), security.getInitialLoadEndTime(),
                         security.getCreatedAtNodeId(),
                         security.isRevInitialLoadEnabled() ? 1 : 0,
@@ -1017,6 +1018,8 @@ public class NodeService extends AbstractService implements INodeService {
             nodeSecurity.setNodePassword(filterPasswordOnRenderIfNeeded(rs.getString("node_password")));
             nodeSecurity.setRegistrationEnabled(rs.getBoolean("registration_enabled"));
             nodeSecurity.setRegistrationTime(rs.getDateTime("registration_time"));
+            nodeSecurity.setRegistrationNotBefore(rs.getDateTime("registration_not_before"));
+            nodeSecurity.setRegistrationNotAfter(rs.getDateTime("registration_not_after"));
             nodeSecurity.setInitialLoadEnabled(rs.getBoolean("initial_load_enabled"));
             nodeSecurity.setInitialLoadTime(rs.getDateTime("initial_load_time"));
             nodeSecurity.setInitialLoadEndTime(rs.getDateTime("initial_load_end_time"));

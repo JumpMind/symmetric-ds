@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.List;
 
 import org.jumpmind.symmetric.model.Node;
@@ -71,6 +72,8 @@ public interface IRegistrationService {
      * @return the node id
      */
     public String openRegistration(String nodeGroupId, String externalId);
+
+    public String openRegistration(String nodeGroup, String externalId, String syncUrl, Date notBefore, Date notAfter);
 
     public String openRegistration(String nodeGroup, String externalId, String remoteHost, String remoteAddress);
 

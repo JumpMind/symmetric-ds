@@ -223,16 +223,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     isRegistrationAuthenticated |= listener.authenticate(userId, password);
                 }
             }
-            if ((foundNode == null || security == null || !security.isRegistrationEnabled())
+            if ((foundNode == null || security == null || !security.isRegistrationEnabled() || !security.isRegistrationAllowedNow())
                     && (parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED) || isRegistrationAuthenticated)) {
-                openRegistration(nodePriorToRegistration, remoteHost, remoteAddress);
+                openRegistration(nodePriorToRegistration, remoteHost, remoteAddress, null, null);
                 nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? extensionService.getExtensionPoint(INodeIdCreator.class).selectNodeId(
                         nodePriorToRegistration, remoteHost,
                         remoteAddress) : nodePriorToRegistration.getNodeId();
                 security = nodeService.findNodeSecurity(nodeId);
                 foundNode = nodeService.findNode(nodeId);
-            } else if (foundNode == null || security == null
-                    || !security.isRegistrationEnabled()) {
+            } else if (foundNode == null || security == null || !security.isRegistrationEnabled() || !security.isRegistrationAllowedNow()) {
                 saveRegistrationRequest(new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.RQ, remoteHost, remoteAddress));
                 return processedNode;
@@ -285,7 +284,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     nodePriorToRegistration, remoteHost, remoteAddress) : nodePriorToRegistration.getNodeId();
             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
             if (nodeSecurity != null && nodeSecurity.isRegistrationEnabled()) {
-                log.info("Pull of registration from {} is being ignored because group link is push", nodePriorToRegistration);
+                log.debug("Pull of registration from {} is being ignored because group link is push", nodePriorToRegistration);
                 return true;
             }
         }
@@ -637,10 +636,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
      * @see IRegistrationService#reOpenRegistration(String)
      */
     public synchronized void reOpenRegistration(String nodeId) {
-        reOpenRegistration(nodeId, null, null);
+        reOpenRegistration(nodeId, null, null, null, null);
     }
 
-    protected synchronized void reOpenRegistration(String nodeId, String remoteHost, String remoteAddress) {
+    protected synchronized void reOpenRegistration(String nodeId, String remoteHost, String remoteAddress, Date notBefore, Date notAfter) {
         Node node = nodeService.findNode(nodeId);
         NodeSecurity security = nodeService.findNodeSecurity(nodeId);
         String password = null;
@@ -652,13 +651,13 @@ public class RegistrationService extends AbstractService implements IRegistratio
         password = filterPasswordOnSaveIfNeeded(password);
         if (node != null) {
             int updateCount = sqlTemplate.update(getSql("reopenRegistrationSql"), new Object[] {
-                    password, nodeId });
+                    password, notBefore, notAfter, nodeId });
             if (updateCount == 0 && nodeService.findNodeSecurity(nodeId) == null) {
                 // if the update count was 0, then we probably have a row in the
                 // node table, but not in node security.
                 // lets go ahead and try to insert into node security.
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
-                        nodeId, password, nodeService.findIdentityNodeId() });
+                        nodeId, password, notBefore, notAfter, nodeService.findIdentityNodeId() });
                 log.info("Registration was opened for {}", nodeId);
             } else if (updateCount == 0) {
                 log.warn("Registration was already enabled for {}.  No need to reenable it", nodeId);
@@ -689,18 +688,26 @@ public class RegistrationService extends AbstractService implements IRegistratio
         return openRegistration(node);
     }
 
+    public synchronized String openRegistration(String nodeGroup, String externalId, String syncUrl, Date notBefore, Date notAfter) {
+        Node node = new Node();
+        node.setExternalId(externalId);
+        node.setNodeGroupId(nodeGroup);
+        node.setSyncUrl(syncUrl);
+        return openRegistration(node, null, null, notBefore, notAfter);
+    }
+
     public synchronized String openRegistration(String nodeGroup, String externalId, String remoteHost, String remoteAddress) {
         Node node = new Node();
         node.setExternalId(externalId);
         node.setNodeGroupId(nodeGroup);
-        return openRegistration(node, remoteHost, remoteAddress);
+        return openRegistration(node, remoteHost, remoteAddress, null, null);
     }
 
     public synchronized String openRegistration(Node node) {
-        return openRegistration(node, null, null);
+        return openRegistration(node, null, null, null, null);
     }
 
-    protected String openRegistration(Node node, String remoteHost, String remoteAddress) {
+    protected String openRegistration(Node node, String remoteHost, String remoteAddress, Date notBefore, Date notAfter) {
         Node me = nodeService.findIdentity();
         if (me != null) {
             String nodeId = extensionService.getExtensionPoint(INodeIdCreator.class).generateNodeId(node, remoteHost, remoteAddress);
@@ -717,7 +724,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 String password = extensionService.getExtensionPoint(INodeIdCreator.class).generatePassword(node);
                 password = filterPasswordOnSaveIfNeeded(password);
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
-                        nodeId, password, me.getNodeId() });
+                        nodeId, password, notBefore, notAfter, me.getNodeId() });
                 if (isNotBlank(remoteHost)) {
                     NodeHost nodeHost = new NodeHost(node.getNodeId(), null);
                     nodeHost.setHeartbeatTime(new Date());
@@ -733,7 +740,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         "Just opened registration for external id of {} and a node group of {} and a node id of {}",
                         new Object[] { node.getExternalId(), node.getNodeGroupId(), nodeId });
             } else {
-                reOpenRegistration(nodeId, remoteHost, remoteAddress);
+                reOpenRegistration(nodeId, remoteHost, remoteAddress, notBefore, notAfter);
             }
             return nodeId;
         } else {
@@ -759,7 +766,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         Node node = nodeService.findNodeByExternalId(nodeGroupId, externalId);
         if (node != null) {
             NodeSecurity security = nodeService.findNodeSecurity(node.getNodeId());
-            return security != null && security.isRegistrationEnabled();
+            return security != null && security.isRegistrationEnabled() && security.isRegistrationAllowedNow();
         }
         return false;
     }
@@ -770,7 +777,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         if (node != null) {
             nodeSecurity = nodeService.findNodeSecurity(node.getNodeId());
         }
-        return nodeSecurity != null && nodeSecurity.isRegistrationEnabled();
+        return nodeSecurity != null && nodeSecurity.isRegistrationEnabled() && nodeSecurity.isRegistrationAllowedNow();
     }
 
     public void requestNodeCopy() {

@@ -187,6 +187,10 @@ abstract public class AbstractVersion {
         return StringUtils.isBlank(targetVersion) || "development".equals(targetVersion);
     }
 
+    public boolean isDevelopment(String version) {
+        return version == null || version.equals("development") || version.contains("SNAPSHOT");
+    }
+
     public boolean isOlderMinorVersion(String oldVersion) {
         return isOlderMinorVersion(version, version());
     }

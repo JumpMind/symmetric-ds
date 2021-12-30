@@ -32,6 +32,8 @@ public class NodeSecurity implements Serializable {
     private String nodePassword;
     private boolean registrationEnabled;
     private Date registrationTime;
+    private Date registrationNotBefore;
+    private Date registrationNotAfter;
     private boolean initialLoadEnabled;
     private Date initialLoadTime;
     private Date initialLoadEndTime;
@@ -74,6 +76,27 @@ public class NodeSecurity implements Serializable {
 
     public void setRegistrationTime(Date registrationTime) {
         this.registrationTime = registrationTime;
+    }
+
+    public Date getRegistrationNotBefore() {
+        return registrationNotBefore;
+    }
+
+    public void setRegistrationNotBefore(Date registrationNotBefore) {
+        this.registrationNotBefore = registrationNotBefore;
+    }
+
+    public Date getRegistrationNotAfter() {
+        return registrationNotAfter;
+    }
+
+    public void setRegistrationNotAfter(Date registrationNotAfter) {
+        this.registrationNotAfter = registrationNotAfter;
+    }
+
+    public boolean isRegistrationAllowedNow() {
+        Date now = new Date();
+        return (registrationNotBefore == null || !now.before(registrationNotBefore)) && (registrationNotAfter == null || !now.after(registrationNotAfter));
     }
 
     public boolean isInitialLoadEnabled() {

@@ -568,6 +568,8 @@
         <column name="node_password" type="VARCHAR" size="50" required="true"  description="The password used by the node to prove its identity during synchronization." />
         <column name="registration_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates whether registration is open for this node.  Re-registration may be forced for a node if this is set back to '1' in a parent database for the node_id that should be re-registred." />
         <column name="registration_time" type="TIMESTAMP" required="false"  description="The timestamp when this node was last registered." />
+        <column name="registration_not_before" type="TIMESTAMP" required="false"  description="Allow registration beginning at this timestamp." />
+        <column name="registration_not_after" type="TIMESTAMP" required="false"  description="Allow registration until this timestamp." />
         <column name="initial_load_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates whether an initial load will be sent to this node." />
         <column name="initial_load_time" type="TIMESTAMP" required="false"  description="The timestamp when an initial load was started for this node." />
         <column name="initial_load_end_time" type="TIMESTAMP" required="false"  description="The timestamp when an initial load was completed for this node." />
