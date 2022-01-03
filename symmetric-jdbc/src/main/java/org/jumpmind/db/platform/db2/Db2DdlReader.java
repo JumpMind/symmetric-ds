@@ -330,12 +330,13 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
     protected void removeGeneratedColumns(Connection connection, DatabaseMetaDataWrapper metaData, Table table) throws SQLException {
         Collection<Column> tempColumns = new ArrayList<Column>();
         boolean found = false;
-        for (int i = 0; i < table.getColumns().length; i++) {
-            if (table.getColumn(i).getMappedTypeCode() == Types.ROWID || table.getColumn(i).getName().equals("DB2_GENERATED_ROWID_FOR_LOBS")) {
+        Column[] columns = table.getColumns();
+        for (int i = 0; columns != null && i < columns.length; i++) {
+            if (columns[i].getMappedTypeCode() == Types.ROWID || columns[i].getName().equals("DB2_GENERATED_ROWID_FOR_LOBS")) {
                 found = true;
-                log.info("Found generated and/or rowid column on table " + table.getFullyQualifiedTableName() + ", column " + table.getColumn(i).getName());
+                log.info("Found generated and/or rowid column on table " + table.getFullyQualifiedTableName() + ", column " + columns[i].getName());
             } else {
-                tempColumns.add(table.getColumn(i));
+                tempColumns.add(columns[i]);
             }
         }
         if (found) {
