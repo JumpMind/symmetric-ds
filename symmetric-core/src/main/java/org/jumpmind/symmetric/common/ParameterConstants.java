@@ -103,6 +103,7 @@ final public class ParameterConstants {
     public final static String REGISTRATION_REOPEN_USE_SAME_PASSWORD = "registration.reopen.use.same.password";
     public final static String REGISTRATION_REQUIRE_NODE_GROUP_LINK = "registration.require.node.group.link";
     public final static String REGISTRATION_REQUIRE_INITIAL_LOAD = "registration.require.initial.load";
+    public final static String REGISTRATION_PUSH_CONFIG_ALLOWED = "registration.push.config.allowed";
     public final static String REGISTRATION_URL = "registration.url";
     public final static String SYNC_URL = "sync.url";
     public final static String ENGINE_NAME = "engine.name";

@@ -278,14 +278,16 @@ public class RegistrationService extends AbstractService implements IRegistratio
     public boolean registerNode(Node nodePriorToRegistration, String remoteHost,
             String remoteAddress, OutputStream out, String userId, String password, boolean isRequestedRegistration)
             throws IOException {
-        NodeGroupLink link = configurationService.getNodeGroupLinkFor(parameterService.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId(), false);
-        if (link != null && link.getDataEventAction() == NodeGroupLinkAction.P) {
-            String nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? extensionService.getExtensionPoint(INodeIdCreator.class).selectNodeId(
-                    nodePriorToRegistration, remoteHost, remoteAddress) : nodePriorToRegistration.getNodeId();
-            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
-            if (nodeSecurity != null && nodeSecurity.isRegistrationEnabled()) {
-                log.debug("Pull of registration from {} is being ignored because group link is push", nodePriorToRegistration);
-                return true;
+        if (parameterService.is(ParameterConstants.REGISTRATION_PUSH_CONFIG_ALLOWED)) {
+            NodeGroupLink link = configurationService.getNodeGroupLinkFor(parameterService.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId(), false);
+            if (link != null && link.getDataEventAction() == NodeGroupLinkAction.P) {
+                String nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? extensionService.getExtensionPoint(INodeIdCreator.class).selectNodeId(
+                        nodePriorToRegistration, remoteHost, remoteAddress) : nodePriorToRegistration.getNodeId();
+                NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
+                if (nodeSecurity != null && nodeSecurity.isRegistrationEnabled()) {
+                    log.debug("Pull of registration from {} is being ignored because group link is push", nodePriorToRegistration);
+                    return true;
+                }
             }
         }
         Node processedNode = processRegistration(nodePriorToRegistration, remoteHost,

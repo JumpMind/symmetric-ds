@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
@@ -54,6 +55,10 @@ public class RegistrationUriHandler extends AbstractUriHandler {
             String pushRegistration = ServletUtils.getParameter(req, WebConstants.PUSH_REGISTRATION);
             if (Boolean.TRUE.toString().equals(pushRegistration)) {
                 node.setNodeId(ServletUtils.getParameter(req, WebConstants.NODE_ID));
+                if (!parameterService.is(ParameterConstants.REGISTRATION_PUSH_CONFIG_ALLOWED)) {
+                    ServletUtils.sendError(res, WebConstants.REGISTRATION_NOT_OPEN, "Registration not allowed over push");
+                    return;                    
+                }
                 if (registrationService.isRegisteredWithServer() && !registrationService.isRegistrationOpen()) {
                     ServletUtils.sendError(res, WebConstants.REGISTRATION_NOT_OPEN, "Registration not open");
                     return;
