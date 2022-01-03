@@ -40,6 +40,16 @@ be compared to a threshold value.
 
 |log|Number of entries found in the log for the specified severity level.
 
+|block|Number of seconds that a transaction has been blocked for.
+
+ifdef::pro[]
+|licenseExpire|Percentage from 0 to 100 of the license usage, with expiration occurring at 100%.
+
+|certExpire|Percentage from 0 to 100 of of the TLS/SSL certificate usage, with expiration occurring at 100%.
+
+|licenseRows|Percentage from 0 to 100 of rows used out of the maximum number of rows allowed by the license.
+endif::pro[]
+
 |===
 
 Threshold:: When this threshold value is reached or exceeded, an event is recorded.
