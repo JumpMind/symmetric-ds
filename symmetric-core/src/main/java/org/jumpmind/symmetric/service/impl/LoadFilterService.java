@@ -182,7 +182,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         }
         clearCache();
     }
-    
+
     public void saveLoadFilterAsCopy(LoadFilterNodeGroupLink loadFilter) {
         String newId = loadFilter.getLoadFilterId();
         List<LoadFilterNodeGroupLink> loadFilters = sqlTemplate
@@ -195,7 +195,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         loadFilter.setLoadFilterId(newId + suffix);
         saveLoadFilter(loadFilter);
     }
-    
+
     public void renameLoadFilter(String oldId, LoadFilterNodeGroupLink loadFilter) {
         deleteLoadFilter(oldId);
         saveLoadFilter(loadFilter);

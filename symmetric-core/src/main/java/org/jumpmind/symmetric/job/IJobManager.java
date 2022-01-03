@@ -42,9 +42,9 @@ public interface IJobManager {
     public IJob getJob(String name);
 
     public void saveJob(JobDefinition jobDefinition);
-    
+
     public void saveJobAsCopy(JobDefinition jobDefinition);
-    
+
     public void renameJob(String oldName, JobDefinition jobDefinition);
 
     public void removeJob(String name);

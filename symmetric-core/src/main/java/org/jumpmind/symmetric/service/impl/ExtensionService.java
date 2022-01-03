@@ -290,7 +290,7 @@ public class ExtensionService extends AbstractService implements IExtensionServi
             refresh();
         }
     }
-    
+
     public void saveExtensionAsCopy(Extension extension) {
         String newId = extension.getExtensionId();
         List<Extension> extensions = sqlTemplate.query(getSql("selectAll", "whereExtensionIdLike"),
@@ -303,7 +303,7 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         extension.setExtensionId(newId + suffix);
         saveExtension(extension);
     }
-    
+
     public void renameExtension(String oldId, Extension extension) {
         deleteExtension(oldId);
         saveExtension(extension);

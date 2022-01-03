@@ -521,7 +521,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         BufferedWriter writer = transport.getWriter();
         extractInfo.setStatus(ProcessStatus.QUERYING);
         Callable<OutgoingBatches> getOutgoingBatches = () -> {
-        	MDC.put("engineName", engine.getParameterService().getEngineName());
+            MDC.put("engineName", engine.getParameterService().getEngineName());
             OutgoingBatches batches = null;
             if (queue != null) {
                 NodeGroupLink link = configurationService.getNodeGroupLinkFor(nodeService.findIdentity().getNodeGroupId(),

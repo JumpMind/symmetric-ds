@@ -107,11 +107,11 @@ public interface IRegistrationService {
     public boolean registerWithServer();
 
     /**
-     * Server method which attempts to register using the registration URL of a client node using a push to send configuration.
-     * Returns configuration batch sent with its status. 
+     * Server method which attempts to register using the registration URL of a client node using a push to send configuration. Returns configuration batch sent
+     * with its status.
      */
     public List<OutgoingBatch> registerWithClient(Node remote, IOutgoingWithResponseTransport transport);
-    
+
     /**
      * Client method which attempts to register with the registration.url to pull configuration if the node has not already been registered. Returns true if
      * registered successfully
@@ -143,7 +143,7 @@ public interface IRegistrationService {
     public boolean writeRegistrationProperties(OutputStream os);
 
     /**
-     * When server pushes to client asking to register it, the client loads the configuration batch and returns an acknowledgement 
+     * When server pushes to client asking to register it, the client loads the configuration batch and returns an acknowledgement
      */
     public boolean loadRegistrationBatch(Node node, InputStream is, OutputStream os);
 }

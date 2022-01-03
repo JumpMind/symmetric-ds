@@ -70,9 +70,9 @@ public interface IDataLoaderService {
     public void deleteAllConflicts();
 
     public void save(ConflictNodeGroupLink settings);
-    
+
     public void saveAsCopy(ConflictNodeGroupLink settings);
-    
+
     public void rename(String oldId, ConflictNodeGroupLink settings);
 
     public void clearCache();

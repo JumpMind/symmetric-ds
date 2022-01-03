@@ -784,7 +784,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     public void delete(ConflictNodeGroupLink settings) {
         delete(settings.getConflictId());
     }
-    
+
     private void delete(String id) {
         sqlTemplate.update(getSql("deleteConflictSettingsSql"), id);
     }
@@ -824,7 +824,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                     Types.VARCHAR, Types.VARCHAR });
         }
     }
-    
+
     public void saveAsCopy(ConflictNodeGroupLink settings) {
         String newId = settings.getConflictId();
         List<ConflictNodeGroupLink> conflicts = sqlTemplate.query(
@@ -837,7 +837,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         settings.setConflictId(newId + suffix);
         save(settings);
     }
-    
+
     public void rename(String oldId, ConflictNodeGroupLink setting) {
         delete(oldId);
         save(setting);

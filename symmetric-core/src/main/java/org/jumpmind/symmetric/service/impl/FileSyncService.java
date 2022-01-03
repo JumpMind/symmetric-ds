@@ -384,7 +384,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                             Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
         }
     }
-    
+
     public void saveFileTriggerAsCopy(String originalId, FileTrigger fileTrigger) {
         String newId = fileTrigger.getTriggerId();
         List<FileTrigger> fileTriggers = sqlTemplate.query(getSql("selectFileTriggersSql", "triggerIdWhereLike"),
@@ -402,7 +402,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             saveFileTriggerRouter(fileTriggerRouter);
         }
     }
-    
+
     public void renameFileTrigger(String oldId, FileTrigger fileTrigger) {
         saveFileTrigger(fileTrigger);
         sqlTemplate.update(getSql("updateFileTriggerIdSql"), fileTrigger.getTriggerId(), oldId);
@@ -439,7 +439,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         }
         clearCache();
     }
-    
+
     public void renameFileTriggerRouter(String oldTriggerId, String oldRouterId, FileTriggerRouter fileTriggerRouter) {
         deleteFileTriggerRouter(oldTriggerId, oldRouterId);
         saveFileTriggerRouter(fileTriggerRouter);
@@ -464,7 +464,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     public void deleteFileTrigger(FileTrigger fileTrigger) {
         deleteFileTrigger(fileTrigger.getTriggerId());
     }
-    
+
     private void deleteFileTrigger(String id) {
         sqlTemplate.update(getSql("deleteFileTriggerSql"), (Object) id);
     }

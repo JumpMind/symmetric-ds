@@ -82,6 +82,6 @@ public interface ITransportManager {
     public int sendStatusRequest(Node local, Map<String, String> statuses) throws IOException;
 
     public void writeRequestProperties(Map<String, String> requestProperties, OutputStream os) throws IOException;
-        
+
     public Map<String, String> readRequestProperties(InputStream is) throws IOException;
 }

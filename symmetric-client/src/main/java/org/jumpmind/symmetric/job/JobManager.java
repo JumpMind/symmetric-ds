@@ -202,7 +202,7 @@ public class JobManager extends AbstractService implements IJobManager {
             sqlTemplate.update(getSql("insertJobSql"), args);
         }
     }
-    
+
     @Override
     public void saveJobAsCopy(JobDefinition job) {
         String newName = job.getJobName();
@@ -214,7 +214,7 @@ public class JobManager extends AbstractService implements IJobManager {
         job.setJobName(newName + suffix);
         saveJob(job);
     }
-    
+
     @Override
     public void renameJob(String oldName, JobDefinition job) {
         removeJob(oldName);

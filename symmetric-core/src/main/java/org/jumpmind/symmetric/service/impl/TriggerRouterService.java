@@ -194,44 +194,44 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public void deleteTrigger(Trigger trigger) {
         deleteTrigger(trigger.getTriggerId());
     }
-    
+
     private void deleteTrigger(String id) {
         sqlTemplate.update(getSql("deleteTriggerSql"), (Object) id);
     }
 
     @Override
     public void deleteTriggers(Collection<Trigger> triggers) {
-    	List<TriggerRouter> triggerRouters = getTriggerRouters(true);
-    	List<TriggerRouter> triggerRoutersToDelete = new ArrayList<TriggerRouter>();
-    	for (TriggerRouter triggerRouter : triggerRouters) {
-    		if (triggers.contains(triggerRouter.getTrigger())) {
-    			triggerRoutersToDelete.add(triggerRouter);
-    		}
-    	}
-		ISqlTransaction transaction = null;
-		try {
-			int maxRowsToFlush = parameterService.getInt(ParameterConstants.DATA_FLUSH_JDBC_BATCH_SIZE);
-			transaction = sqlTemplate.startSqlTransaction();
-	    	deleteTriggerRouters(transaction, triggerRoutersToDelete);
-			transaction.prepare(getSql("deleteTriggerSql"));
-			int[] types = new int[] { Types.VARCHAR };
-			int rowCount = 0;
-			for (Trigger trigger : triggers) {
-				transaction.addRow(null, new Object[] { trigger.getTriggerId() }, types);
-				if (++rowCount > maxRowsToFlush) {
-					transaction.flush();
-				}
-			}
-			transaction.commit();
-		} catch (Exception e) {
-			if (transaction != null) {
-				transaction.rollback();
-			}
-			throw e;
-		} finally {
-			close(transaction);
-		}
-		clearCache();
+        List<TriggerRouter> triggerRouters = getTriggerRouters(true);
+        List<TriggerRouter> triggerRoutersToDelete = new ArrayList<TriggerRouter>();
+        for (TriggerRouter triggerRouter : triggerRouters) {
+            if (triggers.contains(triggerRouter.getTrigger())) {
+                triggerRoutersToDelete.add(triggerRouter);
+            }
+        }
+        ISqlTransaction transaction = null;
+        try {
+            int maxRowsToFlush = parameterService.getInt(ParameterConstants.DATA_FLUSH_JDBC_BATCH_SIZE);
+            transaction = sqlTemplate.startSqlTransaction();
+            deleteTriggerRouters(transaction, triggerRoutersToDelete);
+            transaction.prepare(getSql("deleteTriggerSql"));
+            int[] types = new int[] { Types.VARCHAR };
+            int rowCount = 0;
+            for (Trigger trigger : triggers) {
+                transaction.addRow(null, new Object[] { trigger.getTriggerId() }, types);
+                if (++rowCount > maxRowsToFlush) {
+                    transaction.flush();
+                }
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
+        } finally {
+            close(transaction);
+        }
+        clearCache();
     }
 
     public void dropTriggers() {
@@ -925,7 +925,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         return configs;
     }
-    
+
     public List<TriggerRouter> findTriggerRoutersByRouterId(String routerId, boolean refreshCache) {
         List<TriggerRouter> configs = (List<TriggerRouter>) sqlTemplate.query(
                 getTriggerRouterSql("selectTriggerRoutersByRouterIdSql"), new TriggerRouterMapper(), routerId);
@@ -1003,12 +1003,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         sqlTemplate.update(getSql("deleteTriggerRouterSql"), triggerId, routerId);
         clearCache();
     }
-    
+
     private void deleteTriggerRoutersByTriggerId(String triggerId) {
         sqlTemplate.update(getSql("deleteTriggerRoutersByTriggerIdSql"), triggerId);
         clearCache();
     }
-    
+
     private void deleteTriggerRoutersByRouterId(String routerId) {
         sqlTemplate.update(getSql("deleteTriggerRoutersByRouterIdSql"), routerId);
         clearCache();
@@ -1022,34 +1022,34 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     @Override
     public void deleteTriggerRouters(Collection<TriggerRouter> triggerRouters) {
-		ISqlTransaction transaction = null;
-		try {
-			transaction = sqlTemplate.startSqlTransaction();
-			deleteTriggerRouters(transaction, triggerRouters);
-			transaction.commit();
-		} catch (Exception e) {
-			if (transaction != null) {
-				transaction.rollback();
-			}
-			throw e;
-		} finally {
-			close(transaction);
-		}
-		clearCache();
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            deleteTriggerRouters(transaction, triggerRouters);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
+        } finally {
+            close(transaction);
+        }
+        clearCache();
     }
 
     protected void deleteTriggerRouters(ISqlTransaction transaction, Collection<TriggerRouter> triggerRouters) {
-		int maxRowsToFlush = parameterService.getInt(ParameterConstants.DATA_FLUSH_JDBC_BATCH_SIZE);
-		transaction.prepare(getSql("deleteTriggerRouterSql"));
-		int[] types = new int[] { Types.VARCHAR };
-		int rowCount = 0;
-		for (TriggerRouter triggerRouter : triggerRouters) {
-			transaction.addRow(null, new Object[] { triggerRouter.getTrigger().getTriggerId(), triggerRouter.getRouter().getRouterId() }, types);
-			if (++rowCount > maxRowsToFlush) {
-				transaction.flush();
-			}
-		}
-		transaction.flush();
+        int maxRowsToFlush = parameterService.getInt(ParameterConstants.DATA_FLUSH_JDBC_BATCH_SIZE);
+        transaction.prepare(getSql("deleteTriggerRouterSql"));
+        int[] types = new int[] { Types.VARCHAR };
+        int rowCount = 0;
+        for (TriggerRouter triggerRouter : triggerRouters) {
+            transaction.addRow(null, new Object[] { triggerRouter.getTrigger().getTriggerId(), triggerRouter.getRouter().getRouterId() }, types);
+            if (++rowCount > maxRowsToFlush) {
+                transaction.flush();
+            }
+        }
+        transaction.flush();
     }
 
     public void deleteAllTriggerRouters() {
@@ -1068,15 +1068,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             saveRouter(triggerRouter.getRouter());
         }
         triggerRouter.setLastUpdateTime(new Date());
-		if (0 >= sqlTemplate.update(getSql("updateTriggerRouterSql"), getTriggerRouterSqlValues(triggerRouter),
-				getTriggerRouterSqlTypes())) {
-			triggerRouter.setCreateTime(triggerRouter.getLastUpdateTime());
-			sqlTemplate.update(getSql("insertTriggerRouterSql"), getTriggerRouterSqlValues(triggerRouter),
-					getTriggerRouterSqlTypes());
-		}
+        if (0 >= sqlTemplate.update(getSql("updateTriggerRouterSql"), getTriggerRouterSqlValues(triggerRouter),
+                getTriggerRouterSqlTypes())) {
+            triggerRouter.setCreateTime(triggerRouter.getLastUpdateTime());
+            sqlTemplate.update(getSql("insertTriggerRouterSql"), getTriggerRouterSqlValues(triggerRouter),
+                    getTriggerRouterSqlTypes());
+        }
         clearCache();
     }
-    
+
     public void renameTriggerRouter(String oldTriggerId, String oldRouterId, TriggerRouter triggerRouter) {
         ISqlTransaction transaction = null;
         try {
@@ -1095,7 +1095,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             close(transaction);
         }
     }
-    
+
     private void renameTriggerRouters(String newTriggerId, String newRouterId, List<TriggerRouter> triggerRouters) {
         if (triggerRouters != null && !triggerRouters.isEmpty()) {
             if (newTriggerId != null) {
@@ -1120,63 +1120,63 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     @Override
     public void insertTriggerRouters(Collection<TriggerRouter> triggerRouters) {
-    	insertUpdateTriggerRouters(triggerRouters, true, null);
+        insertUpdateTriggerRouters(triggerRouters, true, null);
     }
 
     @Override
     public void insertTriggersAndTriggerRouters(Collection<Trigger> triggers, Collection<TriggerRouter> triggerRouters) {
-    	insertUpdateTriggerRouters(triggerRouters, true, triggers);
+        insertUpdateTriggerRouters(triggerRouters, true, triggers);
     }
 
     @Override
     public void updateTriggerRouters(Collection<TriggerRouter> triggerRouters) {
-    	insertUpdateTriggerRouters(triggerRouters, false, null);
+        insertUpdateTriggerRouters(triggerRouters, false, null);
     }
 
     protected void insertUpdateTriggerRouters(Collection<TriggerRouter> triggerRouters, boolean isInsert, Collection<Trigger> triggers) {
-		ISqlTransaction transaction = null;
-		try {
-			int maxRowsToFlush = parameterService.getInt(ParameterConstants.DATA_FLUSH_JDBC_BATCH_SIZE);
-			transaction = sqlTemplate.startSqlTransaction();
-			if (triggers != null) {
-				insertUpdateTriggers(transaction, triggers, isInsert);
-			}
-			transaction.prepare(isInsert ? getSql("insertTriggerRouterSql") : getSql("updateTriggerRouterSql"));
-			int[] types = getTriggerRouterSqlTypes();
-			int rowCount = 0;
-			for (TriggerRouter triggerRouter : triggerRouters) {
-		        triggerRouter.setLastUpdateTime(new Date());
-		        if (triggerRouter.getCreateTime() == null) {
-		        	triggerRouter.setCreateTime(triggerRouter.getLastUpdateTime());
-		        }
-				transaction.addRow(null, getTriggerRouterSqlValues(triggerRouter), types);
-				if (++rowCount > maxRowsToFlush) {
-					transaction.flush();
-				}
-			}
-			transaction.commit();
-		} catch (Exception e) {
-			if (transaction != null) {
-				transaction.rollback();
-			}
-			throw e;
-		} finally {
-			close(transaction);
-		}
-		clearCache();
+        ISqlTransaction transaction = null;
+        try {
+            int maxRowsToFlush = parameterService.getInt(ParameterConstants.DATA_FLUSH_JDBC_BATCH_SIZE);
+            transaction = sqlTemplate.startSqlTransaction();
+            if (triggers != null) {
+                insertUpdateTriggers(transaction, triggers, isInsert);
+            }
+            transaction.prepare(isInsert ? getSql("insertTriggerRouterSql") : getSql("updateTriggerRouterSql"));
+            int[] types = getTriggerRouterSqlTypes();
+            int rowCount = 0;
+            for (TriggerRouter triggerRouter : triggerRouters) {
+                triggerRouter.setLastUpdateTime(new Date());
+                if (triggerRouter.getCreateTime() == null) {
+                    triggerRouter.setCreateTime(triggerRouter.getLastUpdateTime());
+                }
+                transaction.addRow(null, getTriggerRouterSqlValues(triggerRouter), types);
+                if (++rowCount > maxRowsToFlush) {
+                    transaction.flush();
+                }
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
+        } finally {
+            close(transaction);
+        }
+        clearCache();
     }
-    
+
     protected int[] getTriggerRouterSqlTypes() {
-		return new int[] { Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.TIMESTAMP, Types.VARCHAR,
-				Types.TIMESTAMP, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR };
+        return new int[] { Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.TIMESTAMP, Types.VARCHAR,
+                Types.TIMESTAMP, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR };
     }
 
     protected Object[] getTriggerRouterSqlValues(TriggerRouter triggerRouter) {
-		return new Object[] { triggerRouter.getInitialLoadOrder(), triggerRouter.getInitialLoadSelect(),
-				triggerRouter.getInitialLoadDeleteStmt(), triggerRouter.isPingBackEnabled() ? 1 : 0,
-				triggerRouter.getCreateTime(), triggerRouter.getLastUpdateBy(), triggerRouter.getLastUpdateTime(),
-				triggerRouter.isEnabled() ? 1 : 0, triggerRouter.getTrigger().getTriggerId(),
-				triggerRouter.getRouter().getRouterId() };
+        return new Object[] { triggerRouter.getInitialLoadOrder(), triggerRouter.getInitialLoadSelect(),
+                triggerRouter.getInitialLoadDeleteStmt(), triggerRouter.isPingBackEnabled() ? 1 : 0,
+                triggerRouter.getCreateTime(), triggerRouter.getLastUpdateBy(), triggerRouter.getLastUpdateTime(),
+                triggerRouter.isEnabled() ? 1 : 0, triggerRouter.getTrigger().getTriggerId(),
+                triggerRouter.getRouter().getRouterId() };
     }
 
     protected void resetTriggerRouterCacheByNodeGroupId() {
@@ -1221,7 +1221,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         clearCache();
     }
-    
+
     public void saveRouterAsCopy(Router router) {
         String newId = router.getRouterId();
         List<Router> routers = sqlTemplate.query(
@@ -1235,7 +1235,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         router.setRouterId(newId + suffix);
         saveRouter(router);
     }
-    
+
     public void renameRouter(String oldId, Router router) {
         saveRouter(router);
         renameTriggerRouters(null, router.getRouterId(), findTriggerRoutersByRouterId(oldId, true));
@@ -1249,12 +1249,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void deleteRouter(Router router) {
         if (router != null) {
-        	sqlTemplate.update(getSql("deleteTriggerRoutersByRouterSql"), router.getRouterId());
-        	groupletService.deleteTriggerRouterGroupletsFor(router);
+            sqlTemplate.update(getSql("deleteTriggerRoutersByRouterSql"), router.getRouterId());
+            groupletService.deleteTriggerRouterGroupletsFor(router);
             sqlTemplate.update(getSql("deleteRouterSql"), router.getRouterId());
         }
     }
-    
+
     private void deleteRouter(String id) {
         sqlTemplate.update(getSql("deleteRouterSql"), (Object) id);
     }
@@ -1273,7 +1273,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         clearCache();
     }
-    
+
     public void saveTriggerAsCopy(String originalId, Trigger trigger) {
         String newId = trigger.getTriggerId();
         List<Trigger> triggers = sqlTemplate.query(
@@ -1291,7 +1291,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             saveTriggerRouter(triggerRouter, true);
         }
     }
-    
+
     public void renameTrigger(String oldId, Trigger trigger) {
         saveTrigger(trigger);
         renameTriggerRouters(trigger.getTriggerId(), null, findTriggerRoutersByTriggerId(oldId, true));
@@ -1300,76 +1300,76 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     @Override
     public void insertTriggers(Collection<Trigger> triggers) {
-    	insertUpdateTriggers(triggers, true);
+        insertUpdateTriggers(triggers, true);
     }
 
     @Override
     public void updateTriggers(Collection<Trigger> triggers) {
-    	insertUpdateTriggers(triggers, false);
+        insertUpdateTriggers(triggers, false);
     }
 
     protected void insertUpdateTriggers(Collection<Trigger> triggers, boolean isInsert) {
-		ISqlTransaction transaction = null;
-		try {
-			transaction = sqlTemplate.startSqlTransaction();
-			insertUpdateTriggers(transaction, triggers, isInsert);
-			transaction.commit();
-		} catch (Exception e) {
-			if (transaction != null) {
-				transaction.rollback();
-			}
-			throw e;
-		} finally {
-			close(transaction);
-		}
-		clearCache();
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            insertUpdateTriggers(transaction, triggers, isInsert);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
+        } finally {
+            close(transaction);
+        }
+        clearCache();
     }
 
     protected void insertUpdateTriggers(ISqlTransaction transaction, Collection<Trigger> triggers, boolean isInsert) {
-		int maxRowsToFlush = parameterService.getInt(ParameterConstants.DATA_FLUSH_JDBC_BATCH_SIZE);
-		transaction.prepare(isInsert ? getSql("insertTriggerSql") : getSql("updateTriggerSql"));
-		int[] types = getTriggerSqlTypes();
-		int rowCount = 0;
-		for (Trigger trigger : triggers) {
-	        trigger.setLastUpdateTime(new Date());
-	        trigger.nullOutBlankFields();
-	        if (trigger.getCreateTime() == null) {
-	        	trigger.setCreateTime(trigger.getLastUpdateTime());
-	        }
-			transaction.addRow(null, getTriggerSqlValues(trigger), types);
-			if (++rowCount > maxRowsToFlush) {
-				transaction.flush();
-			}
-		}
-		transaction.flush();
+        int maxRowsToFlush = parameterService.getInt(ParameterConstants.DATA_FLUSH_JDBC_BATCH_SIZE);
+        transaction.prepare(isInsert ? getSql("insertTriggerSql") : getSql("updateTriggerSql"));
+        int[] types = getTriggerSqlTypes();
+        int rowCount = 0;
+        for (Trigger trigger : triggers) {
+            trigger.setLastUpdateTime(new Date());
+            trigger.nullOutBlankFields();
+            if (trigger.getCreateTime() == null) {
+                trigger.setCreateTime(trigger.getLastUpdateTime());
+            }
+            transaction.addRow(null, getTriggerSqlValues(trigger), types);
+            if (++rowCount > maxRowsToFlush) {
+                transaction.flush();
+            }
+        }
+        transaction.flush();
     }
 
     protected int[] getTriggerSqlTypes() {
-		return new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
-				Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
-				Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-				Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-				Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
-				Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.VARCHAR };
+        return new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
+                Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
+                Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
+                Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.VARCHAR };
     }
 
-	protected Object[] getTriggerSqlValues(Trigger trigger) {
-		return new Object[] { trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-				trigger.getSourceTableName(), trigger.getChannelId(), trigger.getReloadChannelId(),
-				trigger.isSyncOnUpdate() ? 1 : 0, trigger.isSyncOnInsert() ? 1 : 0, trigger.isSyncOnDelete() ? 1 : 0,
-				trigger.isSyncOnIncomingBatch() ? 1 : 0, trigger.isUseStreamLobs() ? 1 : 0,
-				trigger.isUseCaptureLobs() ? 1 : 0, trigger.isUseCaptureOldData() ? 1 : 0,
-				trigger.isUseHandleKeyUpdates() ? 1 : 0, trigger.getNameForUpdateTrigger(),
-				trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
-				trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
-				trigger.getSyncOnDeleteCondition(), trigger.getCustomBeforeUpdateText(),
-				trigger.getCustomBeforeInsertText(), trigger.getCustomBeforeDeleteText(),
-				trigger.getCustomOnUpdateText(), trigger.getCustomOnInsertText(), trigger.getCustomOnDeleteText(),
-				trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getIncludedColumnNames(),
-				trigger.getSyncKeyNames(), trigger.getCreateTime(), trigger.getLastUpdateBy(), trigger.getLastUpdateTime(),
-				trigger.getExternalSelect(), trigger.getChannelExpression(), trigger.isStreamRow(),
-				trigger.getTriggerId() };
-	}
+    protected Object[] getTriggerSqlValues(Trigger trigger) {
+        return new Object[] { trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                trigger.getSourceTableName(), trigger.getChannelId(), trigger.getReloadChannelId(),
+                trigger.isSyncOnUpdate() ? 1 : 0, trigger.isSyncOnInsert() ? 1 : 0, trigger.isSyncOnDelete() ? 1 : 0,
+                trigger.isSyncOnIncomingBatch() ? 1 : 0, trigger.isUseStreamLobs() ? 1 : 0,
+                trigger.isUseCaptureLobs() ? 1 : 0, trigger.isUseCaptureOldData() ? 1 : 0,
+                trigger.isUseHandleKeyUpdates() ? 1 : 0, trigger.getNameForUpdateTrigger(),
+                trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
+                trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
+                trigger.getSyncOnDeleteCondition(), trigger.getCustomBeforeUpdateText(),
+                trigger.getCustomBeforeInsertText(), trigger.getCustomBeforeDeleteText(),
+                trigger.getCustomOnUpdateText(), trigger.getCustomOnInsertText(), trigger.getCustomOnDeleteText(),
+                trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getIncludedColumnNames(),
+                trigger.getSyncKeyNames(), trigger.getCreateTime(), trigger.getLastUpdateBy(), trigger.getLastUpdateTime(),
+                trigger.getExternalSelect(), trigger.getChannelExpression(), trigger.isStreamRow(),
+                trigger.getTriggerId() };
+    }
 
     public void syncTriggers() {
         syncTriggers(false);

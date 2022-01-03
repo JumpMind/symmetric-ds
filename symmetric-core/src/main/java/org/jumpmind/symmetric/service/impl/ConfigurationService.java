@@ -173,7 +173,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     link.getLastUpdateBy(), link.getCreateTime());
         }
     }
-    
+
     public void renameNodeGroupLink(String oldSourceId, String oldTargetId, NodeGroupLink link) {
         saveNodeGroupLink(link);
         ISqlTransaction transaction = null;
@@ -242,7 +242,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void deleteNodeGroupLink(NodeGroupLink link) {
         deleteNodeGroupLink(link.getSourceNodeGroupId(), link.getTargetNodeGroupId());
     }
-    
+
     private void deleteNodeGroupLink(String sourceId, String targetId) {
         sqlTemplate.update(getSql("deleteNodeGroupLinkSql"), sourceId, targetId);
     }
@@ -334,7 +334,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void saveChannel(NodeChannel nodeChannel, boolean reloadChannels) {
         saveChannel(nodeChannel.getChannel(), reloadChannels);
     }
-    
+
     public void saveChannelAsCopy(Channel channel, boolean reloadChannels) {
         String newId = channel.getChannelId();
         List<Channel> channels = sqlTemplate.query(getSql("selectChannelsSql", "whereChannelIdLikeSql"), new ChannelMapper(),
@@ -347,7 +347,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         channel.setChannelId(newId + suffix);
         saveChannel(channel, reloadChannels);
     }
-    
+
     public void renameChannel(String oldId, Channel channel) {
         saveChannel(channel, true);
         ISqlTransaction transaction = null;
@@ -396,7 +396,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void deleteChannel(Channel channel) {
         deleteChannel(channel.getChannelId());
     }
-    
+
     private void deleteChannel(String id) {
         sqlTemplate.update(getSql("deleteNodeChannelSql"), new Object[] { id });
         sqlTemplate.update(getSql("deleteChannelSql"), new Object[] { id });
@@ -693,7 +693,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             return nodeChannel;
         }
     }
-    
+
     static class ChannelMapper implements ISqlRowMapper<Channel> {
         public Channel mapRow(Row row) {
             Channel channel = new Channel();

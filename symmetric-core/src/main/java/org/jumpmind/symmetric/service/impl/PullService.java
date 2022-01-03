@@ -88,7 +88,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                         int availableThreads = nodeCommunicationService.getAvailableThreads(CommunicationType.PULL);
                         boolean m2mLoadInProgress = configurationService.isMasterToMaster() && nodeService.isDataLoadStarted();
                         for (NodeCommunication nodeCommunication : nodes) {
-                        	NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeCommunication.getNodeId(), true);
+                            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeCommunication.getNodeId(), true);
                             boolean meetsMinimumTime = true;
                             if (minimumPeriodMs > 0 && nodeCommunication.getLastLockTime() != null &&
                                     (System.currentTimeMillis() - nodeCommunication.getLastLockTime().getTime()) < minimumPeriodMs) {

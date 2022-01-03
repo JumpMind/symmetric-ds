@@ -127,9 +127,9 @@ public interface ITriggerRouterService {
     public void deleteAllRouters();
 
     public void saveRouter(Router router);
-    
+
     public void saveRouterAsCopy(Router router);
-    
+
     public void renameRouter(String oldId, Router router);
 
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId);
@@ -142,17 +142,17 @@ public interface ITriggerRouterService {
     public List<Trigger> getTriggers(boolean replaceTokens);
 
     public void saveTrigger(Trigger trigger);
-    
+
     public void insertTriggers(Collection<Trigger> triggers);
-    
+
     public void updateTriggers(Collection<Trigger> triggers);
 
     public void saveTriggerAsCopy(String originalId, Trigger trigger);
-    
+
     public void renameTrigger(String oldId, Trigger trigger);
 
     public void deleteTrigger(Trigger trigger);
-    
+
     public void deleteTriggers(Collection<Trigger> triggers);
 
     public void dropTriggers();
@@ -179,7 +179,7 @@ public interface ITriggerRouterService {
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId, boolean refreshCache);
 
     public List<TriggerRouter> findTriggerRoutersByTriggerId(String triggerId, boolean refreshCache);
-    
+
     public List<TriggerRouter> findTriggerRoutersByRouterId(String routerId, boolean refreshCache);
 
     public void inactivateTriggerHistory(TriggerHistory history);
@@ -218,11 +218,11 @@ public interface ITriggerRouterService {
     public void saveTriggerRouter(TriggerRouter triggerRouter, boolean updateTriggerRouterTableOnly);
 
     public void saveTriggerRouter(TriggerRouter triggerRouter);
-    
+
     public void renameTriggerRouter(String oldTriggerId, String oldRouterId, TriggerRouter TriggerRouter);
 
     public void insertTriggerRouters(Collection<TriggerRouter> triggerRouters);
-    
+
     public void insertTriggersAndTriggerRouters(Collection<Trigger> triggers, Collection<TriggerRouter> triggerRouters);
 
     public void updateTriggerRouters(Collection<TriggerRouter> triggerRouters);

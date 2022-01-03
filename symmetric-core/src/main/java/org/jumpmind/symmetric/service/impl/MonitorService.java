@@ -275,7 +275,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
                     monitor.getCreateTime(), monitor.getLastUpdateBy(), monitor.getLastUpdateTime());
         }
     }
-    
+
     @Override
     public void saveMonitorAsCopy(Monitor monitor) {
         String newId = monitor.getMonitorId();
@@ -289,7 +289,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
         monitor.setMonitorId(newId + suffix);
         saveMonitor(monitor);
     }
-    
+
     @Override
     public void renameMonitor(String oldId, Monitor monitor) {
         deleteMonitor(oldId);
@@ -409,7 +409,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
                     notification.getLastUpdateTime());
         }
     }
-    
+
     @Override
     public void saveNotificationAsCopy(Notification notification) {
         String newId = notification.getNotificationId();
@@ -423,7 +423,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
         notification.setNotificationId(newId + suffix);
         saveNotification(notification);
     }
-    
+
     @Override
     public void renameNotification(String oldId, Notification notification) {
         deleteNotification(oldId);

@@ -204,12 +204,12 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 if (identity.getNodeId().equals(nodeSecurity.getCreatedAtNodeId()) && nodeSecurity.isRegistrationAllowedNow() &&
                         parameterService.is(ParameterConstants.REGISTRATION_PUSH_CONFIG_ALLOWED)) {
                     transport = transportManager.getRegisterPushTransport(remote, identity);
-                	extractedBatches = registrationService.registerWithClient(remote, transport);
+                    extractedBatches = registrationService.registerWithClient(remote, transport);
                 }
             } else {
                 transport = transportManager.getPushTransport(remote, identity,
                         identitySecurity.getNodePassword(), requestProperties, parameterService.getRegistrationUrl());
-            	extractedBatches = dataExtractorService.extract(processInfo, remote, status.getQueue(), transport);
+                extractedBatches = dataExtractorService.extract(processInfo, remote, status.getQueue(), transport);
             }
             if (extractedBatches != null && extractedBatches.size() > 0) {
                 log.info("Push data sent to {}", remote);

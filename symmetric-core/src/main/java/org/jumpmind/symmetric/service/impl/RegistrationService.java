@@ -281,8 +281,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
         if (parameterService.is(ParameterConstants.REGISTRATION_PUSH_CONFIG_ALLOWED)) {
             NodeGroupLink link = configurationService.getNodeGroupLinkFor(parameterService.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId(), false);
             if (link != null && link.getDataEventAction() == NodeGroupLinkAction.P) {
-                String nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? extensionService.getExtensionPoint(INodeIdCreator.class).selectNodeId(
-                        nodePriorToRegistration, remoteHost, remoteAddress) : nodePriorToRegistration.getNodeId();
+                String nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? extensionService.getExtensionPoint(INodeIdCreator.class)
+                        .selectNodeId(
+                                nodePriorToRegistration, remoteHost, remoteAddress) : nodePriorToRegistration.getNodeId();
                 NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
                 if (nodeSecurity != null && nodeSecurity.isRegistrationEnabled()) {
                     log.debug("Pull of registration from {} is being ignored because group link is push", nodePriorToRegistration);
@@ -567,70 +568,69 @@ public class RegistrationService extends AbstractService implements IRegistratio
     }
 
     public List<OutgoingBatch> registerWithClient(Node remote, IOutgoingWithResponseTransport transport) {
-    	List<OutgoingBatch> extractedBatches = new ArrayList<OutgoingBatch>();
-    	Node identity = nodeService.findIdentity();
-    	if (identity != null) {
-	    	log.info("Node {} is unregistered.  Requesting to push registration to {}", remote.getNodeId(), remote.getSyncUrl());
-	    	IIncomingTransport reqTransport = null;
-	    	Node node = null;
-	    	try {
-		    	Map<String, String> prop = new HashMap<String, String>();
-		    	prop.put(WebConstants.PUSH_REGISTRATION, Boolean.TRUE.toString());
-	    		reqTransport = transportManager.getRegisterTransport(identity, remote.getSyncUrl(), prop);
-	    		Map<String, String> params = transportManager.readRequestProperties(reqTransport.openStream());
-	    		node = TransportUtils.convertPropertiesToNode(params);
-    			node = processRegistration(node, params.get(WebConstants.HOST_NAME), params.get(WebConstants.IP_ADDRESS), null, null, true);
-			} catch (Exception e) {
-			    if (log.isDebugEnabled()) {
-			        log.error("Failed to request push registration", e);
-			    } else {
-			        log.error("Failed to request push registration: {}: {}", e.getClass().getSimpleName(), StringUtils.trimToEmpty(e.getMessage()));
-			    }
-			} finally {
-				if (reqTransport != null) {
-					reqTransport.close();
-				}
-			}
-
-	    	if (node != null && node.isSyncEnabled()) {
+        List<OutgoingBatch> extractedBatches = new ArrayList<OutgoingBatch>();
+        Node identity = nodeService.findIdentity();
+        if (identity != null) {
+            log.info("Node {} is unregistered.  Requesting to push registration to {}", remote.getNodeId(), remote.getSyncUrl());
+            IIncomingTransport reqTransport = null;
+            Node node = null;
+            try {
+                Map<String, String> prop = new HashMap<String, String>();
+                prop.put(WebConstants.PUSH_REGISTRATION, Boolean.TRUE.toString());
+                reqTransport = transportManager.getRegisterTransport(identity, remote.getSyncUrl(), prop);
+                Map<String, String> params = transportManager.readRequestProperties(reqTransport.openStream());
+                node = TransportUtils.convertPropertiesToNode(params);
+                node = processRegistration(node, params.get(WebConstants.HOST_NAME), params.get(WebConstants.IP_ADDRESS), null, null, true);
+            } catch (Exception e) {
+                if (log.isDebugEnabled()) {
+                    log.error("Failed to request push registration", e);
+                } else {
+                    log.error("Failed to request push registration: {}: {}", e.getClass().getSimpleName(), StringUtils.trimToEmpty(e.getMessage()));
+                }
+            } finally {
+                if (reqTransport != null) {
+                    reqTransport.close();
+                }
+            }
+            if (node != null && node.isSyncEnabled()) {
                 OutgoingBatch batch = new OutgoingBatch(remote.getNodeId(), Constants.CHANNEL_CONFIG, OutgoingBatch.Status.LD);
                 batch.setBatchId(Constants.VIRTUAL_BATCH_FOR_REGISTRATION);
                 extractedBatches.add(batch);
-	    	    try {
-	                outgoingBatchService.markAllConfigAsSentForNode(remote.getNodeId());
-	                extractConfiguration(transport.openStream(), remote);
-	            } catch (Exception e) {
-	                if (log.isDebugEnabled()) {
-	                    log.error("Failed to push registration batch", e);
-	                } else {
-	                    log.error("Failed to push registration batch: {}: {}", e.getClass().getSimpleName(), StringUtils.trimToEmpty(e.getMessage()));
-	                }
-	            }
-	    	}
-    	}
-    	return extractedBatches;
+                try {
+                    outgoingBatchService.markAllConfigAsSentForNode(remote.getNodeId());
+                    extractConfiguration(transport.openStream(), remote);
+                } catch (Exception e) {
+                    if (log.isDebugEnabled()) {
+                        log.error("Failed to push registration batch", e);
+                    } else {
+                        log.error("Failed to push registration batch: {}: {}", e.getClass().getSimpleName(), StringUtils.trimToEmpty(e.getMessage()));
+                    }
+                }
+            }
+        }
+        return extractedBatches;
     }
 
     public boolean writeRegistrationProperties(OutputStream os) {
-    	try {
+        try {
             Node local = new Node(parameterService, symmetricDialect, engine.getDatabasePlatform().getName());
             local.setDeploymentType(engine.getDeploymentType());
-    		Map<String, String> requestProperties = TransportUtils.convertNodeToProperties(local, null);
-    		transportManager.writeRequestProperties(requestProperties, os);
-		} catch (IOException e) {
-			log.error("Failed to write response for push registration request", e);
-			return false;
-		}
-    	return true;
+            Map<String, String> requestProperties = TransportUtils.convertNodeToProperties(local, null);
+            transportManager.writeRequestProperties(requestProperties, os);
+        } catch (IOException e) {
+            log.error("Failed to write response for push registration request", e);
+            return false;
+        }
+        return true;
     }
 
     public boolean loadRegistrationBatch(Node node, InputStream is, OutputStream os) {
         try {
-			dataLoaderService.loadDataFromPush(node, Constants.CHANNEL_DEFAULT, is, os);
-		} catch (IOException e) {
-			log.error("Failed to load batch from push registration", e);
-			return false;
-		}
+            dataLoaderService.loadDataFromPush(node, Constants.CHANNEL_DEFAULT, is, os);
+        } catch (IOException e) {
+            log.error("Failed to load batch from push registration", e);
+            return false;
+        }
         return true;
     }
 

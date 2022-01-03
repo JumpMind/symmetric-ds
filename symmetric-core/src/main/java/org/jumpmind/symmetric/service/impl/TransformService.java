@@ -408,7 +408,7 @@ public class TransformService extends AbstractService implements ITransformServi
             clearCache();
         }
     }
-    
+
     public void saveTransformTableAsCopy(String originalId, TransformTableNodeGroupLink transformTable) {
         String newId = transformTable.getTransformId();
         List<TransformTableNodeGroupLink> transformTables = sqlTemplate
@@ -439,7 +439,7 @@ public class TransformService extends AbstractService implements ITransformServi
             }
         }
     }
-    
+
     public void renameTransformTable(String oldId, TransformTableNodeGroupLink transformTable) {
         saveTransformTable(transformTable, false);
         ISqlTransaction transaction = null;

@@ -191,7 +191,7 @@ abstract public class AbstractTransportManager {
         pw.println(sb.toString());
         pw.flush();
     }
-        
+
     public Map<String, String> readRequestProperties(InputStream is) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         String parameterString = reader.readLine();

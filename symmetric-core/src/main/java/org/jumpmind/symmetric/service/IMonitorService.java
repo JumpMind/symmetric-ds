@@ -38,9 +38,9 @@ public interface IMonitorService {
     public void deleteMonitor(String notificationId);
 
     public void saveMonitor(Monitor monitor);
-    
+
     public void saveMonitorAsCopy(Monitor monitor);
-    
+
     public void renameMonitor(String oldId, Monitor monitor);
 
     public List<MonitorEvent> getMonitorEvents();
@@ -60,9 +60,9 @@ public interface IMonitorService {
     public List<Notification> getActiveNotificationsForNodeFromDb(String nodeGroupId, String externalId);
 
     public void saveNotification(Notification notification);
-    
+
     public void saveNotificationAsCopy(Notification notification);
-    
+
     public void renameNotification(String oldId, Notification notification);
 
     public void deleteNotification(String notificationId);

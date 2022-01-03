@@ -42,7 +42,7 @@ public interface IConfigurationService {
     public void saveNodeGroup(NodeGroup group);
 
     public void saveNodeGroupLink(NodeGroupLink link);
-    
+
     public void renameNodeGroupLink(String oldSourceId, String oldTargetId, NodeGroupLink link);
 
     public void deleteNodeGroup(String nodeGroupId);
@@ -67,9 +67,9 @@ public interface IConfigurationService {
     public void saveChannel(Channel channel, boolean reloadChannels);
 
     public void saveChannel(NodeChannel channel, boolean reloadChannels);
-    
+
     public void saveChannelAsCopy(Channel channel, boolean reloadChannels);
-    
+
     public void renameChannel(String oldId, Channel channel);
 
     public void saveNodeChannel(NodeChannel channel, boolean reloadChannels);

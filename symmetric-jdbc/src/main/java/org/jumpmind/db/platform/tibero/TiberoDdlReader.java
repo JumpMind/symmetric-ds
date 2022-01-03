@@ -305,13 +305,13 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
         // being equal to the
         // name of the primary key of the table
         StringBuilder query = new StringBuilder();
-
         query.append("SELECT a.INDEX_NAME, a.INDEX_TYPE, a.UNIQUENESS, b.COLUMN_NAME, b.COLUMN_POSITION FROM ALL_INDEXES a ");
         query.append("JOIN ALL_IND_COLUMNS b ON a.table_name = b.table_name AND a.INDEX_NAME=b.INDEX_NAME AND a.TABLE_OWNER = b.TABLE_OWNER ");
         query.append("WHERE a.TABLE_NAME = ? ");
         query.append(" AND a.GENERATED_BY_SYSTEM = ? ");
         query.append(" AND a.TABLE_TYPE = ? ");
-        query.append(" AND a.INDEX_NAME NOT IN (SELECT DISTINCT c.CONSTRAINT_NAME FROM ALL_CONSTRAINTS c WHERE c.CONSTRAINT_TYPE = ? AND c.TABLE_NAME=a.TABLE_NAME ");
+        query.append(
+                " AND a.INDEX_NAME NOT IN (SELECT DISTINCT c.CONSTRAINT_NAME FROM ALL_CONSTRAINTS c WHERE c.CONSTRAINT_TYPE = ? AND c.TABLE_NAME=a.TABLE_NAME ");
         if (metaData.getSchemaPattern() != null) {
             query.append(" AND c.OWNER like ?) AND a.TABLE_OWNER like ? ");
         } else {

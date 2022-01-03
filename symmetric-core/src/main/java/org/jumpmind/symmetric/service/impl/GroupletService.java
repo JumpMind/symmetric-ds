@@ -246,7 +246,7 @@ public class GroupletService extends AbstractService implements IGroupletService
                                     Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR });
         }
     }
-    
+
     public void saveGroupletAsCopy(Grouplet grouplet) {
         String newId = grouplet.getGroupletId();
         List<Grouplet> grouplets = sqlTemplate.query(getSql("selectGroupletSql", "whereGroupletIdLike"),
@@ -259,7 +259,7 @@ public class GroupletService extends AbstractService implements IGroupletService
         grouplet.setGroupletId(newId + suffix);
         saveGrouplet(grouplet);
     }
-    
+
     public void renameGrouplet(Grouplet oldGrouplet, Grouplet newGrouplet) {
         deleteGrouplet(oldGrouplet);
         saveGrouplet(newGrouplet);
@@ -344,11 +344,11 @@ public class GroupletService extends AbstractService implements IGroupletService
                                         Types.VARCHAR });
     }
 
-	public void deleteTriggerRouterGroupletsFor(Router router) {
-		ISqlTemplate sqlTemplate = platform.getSqlTemplate();
-		sqlTemplate.update(getSql("deleteTriggerRouterGroupletsForRouterSql"), new Object[] { router.getRouterId() },
-				new int[] { Types.VARCHAR });
-	}
+    public void deleteTriggerRouterGroupletsFor(Router router) {
+        ISqlTemplate sqlTemplate = platform.getSqlTemplate();
+        sqlTemplate.update(getSql("deleteTriggerRouterGroupletsForRouterSql"), new Object[] { router.getRouterId() },
+                new int[] { Types.VARCHAR });
+    }
 
     public void deleteTriggerRouterGrouplet(Grouplet grouplet,
             TriggerRouterGrouplet triggerRouterGrouplet) {
@@ -361,14 +361,14 @@ public class GroupletService extends AbstractService implements IGroupletService
                                 triggerRouterGrouplet.getRouterId() }, new int[] { Types.VARCHAR,
                                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
     }
-    
+
     static class GroupletMapper implements ISqlRowMapper<Grouplet> {
         Map<String, Grouplet> groupletMap;
-        
+
         public GroupletMapper(Map<String, Grouplet> groupletMap) {
             this.groupletMap = groupletMap;
         }
-        
+
         public Grouplet mapRow(Row rs) {
             Grouplet grouplet = new Grouplet();
             grouplet.setGroupletId(rs.getString("grouplet_id"));

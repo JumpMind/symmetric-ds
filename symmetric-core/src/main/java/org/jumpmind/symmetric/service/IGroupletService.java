@@ -50,9 +50,9 @@ public interface IGroupletService {
     public boolean isTargetEnabled(TriggerRouter triggerRouter, Node targetNode);
 
     public void saveGrouplet(Grouplet grouplet);
-    
+
     public void saveGroupletAsCopy(Grouplet grouplet);
-    
+
     public void renameGrouplet(Grouplet oldGrouplet, Grouplet newGrouplet);
 
     public void saveGroupletLink(Grouplet grouplet, GroupletLink link);
@@ -64,6 +64,6 @@ public interface IGroupletService {
     public void deleteTriggerRouterGrouplet(Grouplet grouplet, TriggerRouterGrouplet triggerRouterGrouplet);
 
     public void deleteTriggerRouterGroupletsFor(TriggerRouter triggerRouter);
-    
+
     public void deleteTriggerRouterGroupletsFor(Router router);
 }

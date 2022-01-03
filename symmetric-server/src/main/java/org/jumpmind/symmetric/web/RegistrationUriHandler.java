@@ -57,7 +57,7 @@ public class RegistrationUriHandler extends AbstractUriHandler {
                 node.setNodeId(ServletUtils.getParameter(req, WebConstants.NODE_ID));
                 if (!parameterService.is(ParameterConstants.REGISTRATION_PUSH_CONFIG_ALLOWED)) {
                     ServletUtils.sendError(res, WebConstants.REGISTRATION_NOT_OPEN, "Registration not allowed over push");
-                    return;                    
+                    return;
                 }
                 if (registrationService.isRegisteredWithServer() && !registrationService.isRegistrationOpen()) {
                     ServletUtils.sendError(res, WebConstants.REGISTRATION_NOT_OPEN, "Registration not open");
