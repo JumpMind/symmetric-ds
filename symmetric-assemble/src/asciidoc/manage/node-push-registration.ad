@@ -1,0 +1,2 @@
+[role="help"]
+If the client is unable to pull from the server, it can register by having the server push to it instead.

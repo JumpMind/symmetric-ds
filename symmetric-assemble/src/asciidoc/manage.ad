@@ -46,6 +46,10 @@ include::manage/node-control.ad[]
 ==== Registration
 
 include::manage/node-registration.ad[]
+
+==== Push Registration
+
+include::manage/node-push-registration.ad[]
 		
 ==== Initial Loads
 
