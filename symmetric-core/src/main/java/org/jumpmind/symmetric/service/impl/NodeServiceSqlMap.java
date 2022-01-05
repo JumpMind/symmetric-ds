@@ -117,7 +117,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                         + " c.deployment_type, c.deployment_sub_type, c.config_version from   "
                         + "  $(node) c                                                                                                                                                                                                ");
         putSql("updateNodeSecuritySql", "update $(node_security) set node_password = ?, registration_enabled = ?, "
-                + "registration_time = ?, registration_not_before = ?, registration_not_after = ? "
+                + "registration_time = ?, registration_not_before = ?, registration_not_after = ?, "
                 + "initial_load_enabled = ?, initial_load_time = ?, initial_load_end_time = ?, created_at_node_id = ?, "
                 + "rev_initial_load_enabled=?, rev_initial_load_time=?, initial_load_id=?, "
                 + " initial_load_create_by=?, rev_initial_load_id=?, rev_initial_load_create_by=?, failed_logins=? "

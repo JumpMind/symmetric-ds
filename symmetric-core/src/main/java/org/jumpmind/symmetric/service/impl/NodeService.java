@@ -686,7 +686,7 @@ public class NodeService extends AbstractService implements INodeService {
                         security.getRevInitialLoadCreateBy(),
                         security.getFailedLogins(),
                         security.getNodeId() }, new int[] {
-                                Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER,
+                                Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP, Types.TIMESTAMP, Types.INTEGER,
                                 Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
                                 Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.INTEGER,
                                 Types.VARCHAR });
