@@ -1,2 +1,16 @@
 [role="help"]
 If the client is unable to pull from the server, it can register by having the server push to it instead.
+The group link for server to client should be set to push.
+
+ifdef::pro[]
+From the Manage Nodes screen on the server, click on the *Add* button and then select *Remote Node*.
+
+image::manage/manage-nodes-push-registration.png[role="help"]
+
+endif::pro[]
+
+You can open registration from the command line with the following command:
+
+`bin/symadmin open-registration --engine <engine name> <node group> <external id> <sync url>`
+
+The <node group>, <external id>, and <sync url> should match the `group.id`, `external.id`, and `sync.url` in the registering node's <<Node Properties File>>.

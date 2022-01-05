@@ -488,8 +488,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private void openRegistration(CommandLine line, List<String> args) {
         String nodeGroupId = popArg(args, "Node Group ID");
         String externalId = popArg(args, "External ID");
+        String syncUrl = args.size() > 0 ? args.remove(0) : null;
         IRegistrationService registrationService = getSymmetricEngine().getRegistrationService();
-        registrationService.openRegistration(nodeGroupId, externalId);
+        registrationService.openRegistration(nodeGroupId, externalId, syncUrl, null, null);
         System.out.println(String.format(
                 "Opened registration for node group of '%s' external ID of '%s'", nodeGroupId,
                 externalId));
