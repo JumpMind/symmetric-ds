@@ -57,7 +57,7 @@ class ClusterLockRefreshListener implements IDataProcessorListener {
     public void batchProgressUpdate(DataContext context) {
         clusterService.refreshLock(ClusterConstants.INITIAL_LOAD_EXTRACT);
     }
-    
+
     @Override
     public void dataRowProcessed() {
     }

@@ -109,7 +109,6 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
-        
         String sql = "SELECT "
                 + "schemaname, "
                 + "tabname, "
@@ -135,7 +134,6 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
                 return trigger;
             }
         }, tableName, schema);
-        
         return triggers;
     }
 

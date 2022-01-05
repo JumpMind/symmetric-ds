@@ -120,7 +120,7 @@ public class JdbcBatchBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         }
         super.end(batch, inError);
     }
-    
+
     @Override
     protected boolean requireNewStatement(DmlType currentType, CsvData data,
             boolean applyChangesOnly, boolean useConflictDetection,

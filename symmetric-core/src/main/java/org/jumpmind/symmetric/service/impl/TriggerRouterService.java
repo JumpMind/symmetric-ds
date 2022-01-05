@@ -396,7 +396,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     if ((StringUtils.isBlank(tableName) && StringUtils.isBlank(triggerHistory.getSourceTableName()))
                             || (StringUtils.isNotBlank(tableName) && tableName.equals(triggerHistory
                                     .getSourceTableName()))) {
-                    	if (StringUtils.isNotBlank(triggerId) && triggerId.equals(triggerHistory.getTriggerId())) {
+                        if (StringUtils.isNotBlank(triggerId) && triggerId.equals(triggerHistory.getTriggerId())) {
                             return triggerHistory;
                         }
                     }

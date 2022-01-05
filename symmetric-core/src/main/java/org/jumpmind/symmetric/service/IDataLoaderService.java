@@ -56,7 +56,7 @@ public interface IDataLoaderService {
     public List<String> getAvailableDataLoaderFactories();
 
     public List<IncomingBatch> loadDataBatch(String batchData);
-    
+
     public List<IncomingBatch> loadDataBatch(String batchData, IProcessInfoListener listener);
 
     public List<ConflictNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link, boolean refreshCache);
