@@ -128,7 +128,7 @@ public interface ITriggerRouterService {
 
     public void saveRouter(Router router);
 
-    public void saveRouterAsCopy(Router router);
+    public Router saveRouterAsCopy(Router router);
 
     public void renameRouter(String oldId, Router router);
 

@@ -1222,7 +1222,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         clearCache();
     }
 
-    public void saveRouterAsCopy(Router router) {
+    public Router saveRouterAsCopy(Router router) {
         String newId = router.getRouterId();
         List<Router> routers = sqlTemplate.query(
                 getSql("select ", "selectRoutersColumnList", "selectRoutersWhereRouterIdLikeSql"),
@@ -1234,6 +1234,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         router.setRouterId(newId + suffix);
         saveRouter(router);
+        return router;
     }
 
     public void renameRouter(String oldId, Router router) {
