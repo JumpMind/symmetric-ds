@@ -264,7 +264,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 || tableMatches(dataMetaData, TableConstants.SYM_NOTIFICATION)
                 || tableMatches(dataMetaData, TableConstants.SYM_JOB)
                 || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE)
-                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)) {
+                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)
+                || tableMatches(dataMetaData, TableConstants.SYM_DIAGRAM_GROUP)
+                || tableMatches(dataMetaData, TableConstants.SYM_DESIGN_DIAGRAM)) {
             Set<Node> targetNodes = new HashSet<Node>(possibleTargetNodes.size());
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
                 if (tableMatches(dataMetaData, TableConstants.SYM_JOB)) {
