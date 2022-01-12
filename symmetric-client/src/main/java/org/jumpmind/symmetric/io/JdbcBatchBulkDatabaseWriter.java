@@ -1,12 +1,14 @@
 package org.jumpmind.symmetric.io;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 
 public class JdbcBatchBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
@@ -102,5 +104,15 @@ public class JdbcBatchBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
     
     
+    @Override
+    protected boolean requireNewStatement(DmlType currentType, CsvData data,
+            boolean applyChangesOnly, boolean useConflictDetection,
+            Conflict.DetectConflict detectType) {
+        if (currentType == DmlType.DELETE) {
+            applyChangesOnly = false;
+        }
+        return super.requireNewStatement(currentType, data, applyChangesOnly, useConflictDetection, detectType);
+    }
+
 }
 
