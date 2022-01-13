@@ -11,12 +11,14 @@ buildscript {
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
         classpath 'io.spring.gradle:docbook-reference-plugin:0.3.1'
         classpath 'gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.15.0'
+        classpath 'com.bmuschko:gradle-docker-plugin:3.2.1'
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
+apply plugin: 'com.bmuschko.docker-remote-api'
 
 task develop {
     dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea
@@ -98,3 +100,38 @@ task releaseSymmetric {
 	description = 'Publish software to SourceForge website and online documentation to SymmetricDS website'
 }
 
+docker {
+    registryCredentials {
+        username = "$dockerUser".toString()
+        password = "$dockerPassword".toString()
+    }
+}
+
+task copyDockerReadme(type: Copy) {
+    from "Dockerfile.md"
+    into "../symmetric-server/build/distributions/README.md"
+}
+
+task copyDockerfile(type: Copy) {
+    dependsOn copyDockerReadme
+    from "Dockerfile"
+    into "../symmetric-server/build/distributions"
+}
+
+task buildImage(type: com.bmuschko.gradle.docker.tasks.image.DockerBuildImage) {
+    dependsOn copyDockerfile
+    inputDir = file("../symmetric-server/build/distributions")
+    tags = ["jumpmind/symmetricds:latest", "jumpmind/symmetricds:${version}".toString()]
+    buildArgs = ["SERVER_ZIP":"symmetric-server-${version}.zip"]
+}
+
+task publishDockerLatest(type: com.bmuschko.gradle.docker.tasks.image.DockerPushImage) {
+    dependsOn buildImage
+    imageName = "jumpmind/symmetricds:latest"
+}
+
+task publishDocker(type: com.bmuschko.gradle.docker.tasks.image.DockerPushImage) {
+    dependsOn publishDockerLatest
+    println "Pushing Docker Image to the jumpmind/symmetricds Repository"
+    imageName = "jumpmind/symmetricds:${version}".toString()
+}
