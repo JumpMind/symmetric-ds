@@ -182,13 +182,17 @@ public class ParameterService extends AbstractParameterService implements IParam
         }
     }
 
+    public List<DatabaseParameter> getDatabaseParametersForAll() {
+        return sqlTemplate.query(sql.getSql("selectParametersSql"), new DatabaseParameterMapper());
+    }
+
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey) {
         return sqlTemplate.query(sql.getSql("selectParametersByKeySql"),
                 new DatabaseParameterMapper(), paramKey);
     }
 
     public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId) {
-        return readParametersFromDatabase("selectParametersSql", externalId, nodeGroupId);
+        return readParametersFromDatabase("selectParametersByNodeGroupAndExternalIdSql", externalId, nodeGroupId);
     }
 
     public List<DatabaseParameter> getOfflineNodeParameters() {

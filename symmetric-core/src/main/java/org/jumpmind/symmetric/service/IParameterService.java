@@ -69,6 +69,8 @@ public interface IParameterService {
 
     public Date getLastTimeParameterWereCached();
 
+    public List<DatabaseParameter> getDatabaseParametersForAll();
+
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey);
 
     public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId);

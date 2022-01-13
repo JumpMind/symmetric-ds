@@ -72,6 +72,10 @@ public class MockParameterService extends AbstractParameterService implements IP
     public void deleteParameter(String externalId, String nodeGroupId, String key) {
     }
 
+    public List<DatabaseParameter> getDatabaseParametersForAll() {
+        return null;
+    }
+
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey) {
         return null;
     }
