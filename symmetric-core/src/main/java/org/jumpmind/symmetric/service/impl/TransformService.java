@@ -69,6 +69,7 @@ import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.transform.TrimColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ValueMapColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
+import org.jumpmind.symmetric.model.IModelObject;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -561,7 +562,8 @@ public class TransformService extends AbstractService implements ITransformServi
         }
     }
 
-    public static class TransformTableNodeGroupLink extends TransformTable {
+    public static class TransformTableNodeGroupLink extends TransformTable implements IModelObject {
+        private static final long serialVersionUID = 1L;
         protected NodeGroupLink nodeGroupLink;
         protected boolean bound;
 

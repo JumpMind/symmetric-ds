@@ -25,7 +25,9 @@ import java.util.Date;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jumpmind.symmetric.io.data.CsvData;
 
-public class JobDefinition {
+public class JobDefinition implements IModelObject {
+    private static final long serialVersionUID = 1L;
+
     public enum JobType {
         BUILT_IN, BSH, JAVA, SQL
     }

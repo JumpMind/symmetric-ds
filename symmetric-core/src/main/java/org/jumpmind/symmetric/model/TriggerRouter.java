@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +28,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 /**
  * Defines the trigger via which a table will be synchronized.
  */
-public class TriggerRouter implements Serializable, Cloneable {
+public class TriggerRouter implements IModelObject, Cloneable {
     private static final long serialVersionUID = 1L;
     private boolean enabled = true;
     /**

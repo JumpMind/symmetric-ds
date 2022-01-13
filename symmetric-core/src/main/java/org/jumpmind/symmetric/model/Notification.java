@@ -24,7 +24,8 @@ import java.util.Date;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 
-public class Notification {
+public class Notification implements IModelObject {
+    private static final long serialVersionUID = 1L;
     private String notificationId;
     private String nodeGroupId;
     private String externalId;

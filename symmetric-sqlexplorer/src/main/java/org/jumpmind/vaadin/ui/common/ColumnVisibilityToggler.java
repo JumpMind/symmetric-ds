@@ -63,6 +63,11 @@ public class ColumnVisibilityToggler extends Button {
         return column;
     }
 
+    public void removeColumn(Column<?> column) {
+        columnMap.remove(column);
+        rebuildMenuItems();
+    }
+
     public boolean isEmpty() {
         return columnMap.isEmpty();
     }

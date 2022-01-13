@@ -105,6 +105,7 @@ import org.jumpmind.symmetric.load.ILoadSyncLifecycleListener;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
+import org.jumpmind.symmetric.model.IModelObject;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingError;
 import org.jumpmind.symmetric.model.LoadFilter;
@@ -1126,7 +1127,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    public static class ConflictNodeGroupLink extends Conflict {
+    public static class ConflictNodeGroupLink extends Conflict implements IModelObject {
         private static final long serialVersionUID = 1L;
         protected NodeGroupLink nodeGroupLink;
 

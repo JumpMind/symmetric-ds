@@ -20,10 +20,9 @@
  */
 package org.jumpmind.symmetric.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
-public class LoadFilter implements Serializable {
+public class LoadFilter implements IModelObject {
     private static final long serialVersionUID = 1L;
 
     public enum LoadFilterType {

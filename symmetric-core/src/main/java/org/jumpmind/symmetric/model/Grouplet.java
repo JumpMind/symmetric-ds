@@ -26,7 +26,9 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Grouplet {
+public class Grouplet implements IModelObject {
+    private static final long serialVersionUID = 1L;
+
     public enum GroupletLinkPolicy {
         I, E
     };

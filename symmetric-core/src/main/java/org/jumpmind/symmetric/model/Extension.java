@@ -20,10 +20,9 @@
  */
 package org.jumpmind.symmetric.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
-public class Extension implements Serializable {
+public class Extension implements IModelObject {
     private static final long serialVersionUID = 1L;
     public static String EXTENSION_TYPE_JAVA = "java";
     public static String EXTENSION_TYPE_BSH = "bsh";

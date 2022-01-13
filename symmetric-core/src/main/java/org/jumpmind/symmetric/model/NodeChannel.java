@@ -20,14 +20,13 @@
  */
 package org.jumpmind.symmetric.model;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
 /**
  * A composite parent for {@link Channel} and {@link NodeChannelControl}
  */
-public class NodeChannel implements Serializable {
+public class NodeChannel implements IModelObject {
     private static final long serialVersionUID = 1L;
     private Channel channel;
     private NodeChannelControl nodeChannelControl;

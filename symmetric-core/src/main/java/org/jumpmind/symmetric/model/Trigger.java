@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -38,7 +37,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Defines the trigger via which a table will be synchronized.
  */
-public class Trigger implements Serializable, Cloneable {
+public class Trigger implements IModelObject, Cloneable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(Trigger.class);
     private static final String DEFAULT_CONDITION = "1=1";

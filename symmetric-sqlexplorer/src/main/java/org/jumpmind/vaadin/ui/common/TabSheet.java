@@ -67,6 +67,7 @@ public class TabSheet extends Div {
                     if (l != null && l.size() > 0) {
                         l.get(0).setVisible(true);
                     } else {
+                        component.setVisible(true);
                         content.add(component);
                     }
                 }

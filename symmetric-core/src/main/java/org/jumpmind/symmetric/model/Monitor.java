@@ -26,7 +26,8 @@ import java.util.Map;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 
-public class Monitor {
+public class Monitor implements IModelObject {
+    private static final long serialVersionUID = 1L;
     public static final int INFO = 100;
     public static final int WARNING = 200;
     public static final int SEVERE = 300;

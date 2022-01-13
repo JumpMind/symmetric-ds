@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +28,7 @@ import org.jumpmind.util.FormatUtils;
 /**
  * Metadata about how and when to route data to a node group or a specific node
  */
-public class Router implements Serializable, Cloneable {
+public class Router implements IModelObject, Cloneable {
     private static final long serialVersionUID = 1L;
     private static int maxRouterId;
     private String routerId;

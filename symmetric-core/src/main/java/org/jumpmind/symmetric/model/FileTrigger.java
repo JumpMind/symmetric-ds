@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,7 +34,7 @@ import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 
-public class FileTrigger implements Serializable {
+public class FileTrigger implements IModelObject {
     private static final long serialVersionUID = 1L;
     private String triggerId;
     private String channelId = Constants.CHANNEL_FILESYNC;

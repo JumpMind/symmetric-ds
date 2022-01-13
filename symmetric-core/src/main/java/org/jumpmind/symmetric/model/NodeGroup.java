@@ -20,10 +20,9 @@
  */
 package org.jumpmind.symmetric.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
-public class NodeGroup implements Serializable {
+public class NodeGroup implements IModelObject {
     private static final long serialVersionUID = 1L;
     private String nodeGroupId;
     private String description;
