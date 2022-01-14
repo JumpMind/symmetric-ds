@@ -136,7 +136,7 @@ public class DbCompare {
     }
 
     protected TableReport compareTables(DbCompareTables tables, OutputStream sqlDiffOutput) {
-        String sourceSelect = getSourceComparisonSQL(tables, sourceEngine.getDatabasePlatform());
+        String sourceSelect = getSourceComparisonSQL(tables, sourceEngine.getTargetDialect().getTargetPlatform());
         String targetSelect = getTargetComparisonSQL(tables, targetEngine.getTargetDialect().getTargetPlatform());
         //String targetSelect = getTargetComparisonSQL(tables, targetEngine.getDatabasePlatform());
 
@@ -347,14 +347,14 @@ public class DbCompare {
         for (int i = 0; i < filteredTablesNames.size(); i++) {
             String tableName = filteredTablesNames.get(i);
             Table sourceTable = null;
-            Map<String, String> tableNameParts = sourceEngine.getDatabasePlatform().parseQualifiedTableName(tableName);
+            Map<String, String> tableNameParts = sourceEngine.getTargetDialect().getTargetPlatform().parseQualifiedTableName(tableName);
             if (tableNameParts.size() == 1) {
-                sourceTable = sourceEngine.getDatabasePlatform().getTableFromCache(tableName, true);
+                sourceTable = sourceEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableName, true);
             } else {
-                sourceTable = sourceEngine.getDatabasePlatform().getTableFromCache(tableNameParts.get("catalog"), tableNameParts.get("schema"), tableNameParts
+                sourceTable = sourceEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableNameParts.get("catalog"), tableNameParts.get("schema"), tableNameParts
                         .get("table"), true);
                 if (sourceTable == null) {
-                    sourceTable = sourceEngine.getDatabasePlatform().getTableFromCache(tableNameParts.get("schema"), tableNameParts.get("catalog"),
+                    sourceTable = sourceEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableNameParts.get("schema"), tableNameParts.get("catalog"),
                             tableNameParts.get("table"), true);
                 }
             }
@@ -365,10 +365,10 @@ public class DbCompare {
             if (config.isUseSymmetricConfig()) {
                 String catalog = null;
                 String schema = null;
-                if (!StringUtils.equals(sourceEngine.getDatabasePlatform().getDefaultCatalog(), sourceTable.getCatalog())) {
+                if (!StringUtils.equals(sourceEngine.getTargetDialect().getTargetPlatform().getDefaultCatalog(), sourceTable.getCatalog())) {
                     catalog = sourceTable.getCatalog();
                 }
-                if (!StringUtils.equals(sourceEngine.getDatabasePlatform().getDefaultSchema(), sourceTable.getSchema())) {
+                if (!StringUtils.equals(sourceEngine.getTargetDialect().getTargetPlatform().getDefaultSchema(), sourceTable.getSchema())) {
                     schema = sourceTable.getSchema();
                 }
                 TriggerHistory hist = sourceEngine.getTriggerRouterService().findTriggerHistory(catalog, schema,
@@ -551,7 +551,7 @@ public class DbCompare {
         if (StringUtils.equalsIgnoreCase(sourceTableName, targetTableName)) {
             return true;
         } else {
-            Map<String, String> sourceTableNameParts = sourceEngine.getDatabasePlatform().parseQualifiedTableName(sourceTableName);
+            Map<String, String> sourceTableNameParts = sourceEngine.getTargetDialect().getTargetPlatform().parseQualifiedTableName(sourceTableName);
             Map<String, String> targetTableNameParts = targetEngine.getTargetDialect().getTargetPlatform().parseQualifiedTableName(targetTableName);
             return StringUtils.equalsIgnoreCase(sourceTableNameParts.get("table"), targetTableNameParts.get("table"));
         }
