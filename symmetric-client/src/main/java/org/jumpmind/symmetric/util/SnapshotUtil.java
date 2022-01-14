@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.TreeSet;
 
 import javax.management.MBeanServer;
@@ -114,7 +115,9 @@ public class SnapshotUtil {
         if (listener != null) {
             listener.checkpoint(engine.getEngineName(), 0, 5);
         }
-        String dirName = engine.getEngineName().replaceAll(" ", "-") + "-" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        String dirName = engine.getEngineName().replaceAll(" ", "-") + "-" + dateFormat.format(new Date());
         IParameterService parameterService = engine.getParameterService();
         File tmpDir = new File(parameterService.getTempDirectory(), dirName);
         tmpDir.mkdirs();
@@ -375,6 +378,7 @@ public class SnapshotUtil {
             try {
                 List<DataGap> gaps = engine.getRouterService().getDataGaps();
                 SimpleDateFormat dformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                dformat.setTimeZone(TimeZone.getTimeZone("GMT"));
                 fos = new FileOutputStream(new File(tmpDir, "sym_data_gap_cache.csv"));
                 fos.write("start_id,end_id,create_time\n".getBytes(Charset.defaultCharset()));
                 if (gaps != null) {
@@ -560,6 +564,8 @@ public class SnapshotUtil {
         File[] files = dir.listFiles();
         if (files != null) {
             Arrays.parallelSort(files, fileComparator);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+            dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
             for (File file : files) {
                 output.append("  ");
                 output.append(file.canRead() ? "r" : "-");
@@ -567,7 +573,7 @@ public class SnapshotUtil {
                 output.append(file.canExecute() ? "x" : "-");
                 output.append(StringUtils.leftPad(file.length() + "", 11));
                 output.append(" ");
-                output.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(file.lastModified())));
+                output.append(dateFormat.format(new Date(file.lastModified())));
                 output.append(" ");
                 output.append(file.getName());
                 output.append("\n");
