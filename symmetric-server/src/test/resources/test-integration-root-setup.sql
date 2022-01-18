@@ -27,9 +27,10 @@ insert into sym_node_group_link (source_node_group_id, target_node_group_id, dat
 insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action) values ('test-root-group','test-node-group', 'W');
 
 insert into sym_node (node_id, node_group_id, external_id, sync_enabled, sync_url, schema_version, symmetric_version, config_version, database_type, database_version, batch_to_send_count, batch_in_error_count, created_at_node_id, deployment_type, deployment_sub_type) 
-values ('00000', 'test-root-group', '00000', 1, null, '1', '2.0', '2.0', null, null, 0, 0, '00000', 'engine', null);
+values ('00000', 'test-root-group', '00000', 1, null, '1', 'test', 'test', null, null, 0, 0, '00000', 'engine', null);
+insert into sym_node_security (node_id, node_password, registration_enabled, registration_time, registration_not_before, registration_not_after, initial_load_enabled, initial_load_time, initial_load_end_time, initial_load_id, initial_load_create_by, rev_initial_load_enabled, rev_initial_load_time, rev_initial_load_id, rev_initial_load_create_by, failed_logins, created_at_node_id)
+values ('00000', 'secret', 0, current_timestamp, null, null, 0, current_timestamp, current_timestamp, 0, null, 0, null, 0, null, 0, '00000');
 insert into sym_node_identity values ('00000');
-
   
 insert into sym_router  (router_id,source_node_group_id, target_node_group_id,       create_time,  last_update_time) 
                   values(   '1000',   'test-root-group',    'test-node-group', current_timestamp, current_timestamp);
