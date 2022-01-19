@@ -29,9 +29,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.transport.TransportUtils;
 
 /**
  * Allow a node to pull the configuration. The symmetricVersion parameter is the version number of the software, which is used to filter configuration that is
@@ -58,7 +60,8 @@ public class ConfigurationUriHandler extends AbstractUriHandler {
         if (StringUtils.isBlank(configVersion) || Version.isOlderMinorVersion(configVersion, Version.version())) {
             log.info("Sending configuration to node ID " + remoteNode.getNodeId());
             OutputStream outputStream = res.getOutputStream();
-            dataExtractorService.extractConfigurationOnly(remoteNode, outputStream);
+            dataExtractorService.extractConfigurationStandalone(remoteNode, TransportUtils.toWriter(outputStream), TableConstants
+                    .getConfigTablesExcludedFromExport());
         }
     }
 }

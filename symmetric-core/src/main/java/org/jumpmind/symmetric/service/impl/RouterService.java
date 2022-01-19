@@ -794,7 +794,11 @@ public class RouterService extends AbstractService implements IRouterService {
     protected int routeData(ProcessInfo processInfo, Data data, ChannelRouterContext context) {
         int numberOfDataEventsInserted = 0;
         List<TriggerRouter> triggerRouters = getTriggerRoutersForData(data);
-        Table table = symmetricDialect.getTable(data.getTriggerHistory(), true);
+        Table table = null;
+        if (data.getTriggerHistory() != null) {
+            table = platform.getTableFromCache(data.getTriggerHistory().getSourceCatalogName(), data.getTriggerHistory().getSourceSchemaName(),
+                    data.getTriggerHistory().getSourceTableName(), false);
+        }
         if (table == null) {
             table = buildTableFromTriggerHistory(data.getTriggerHistory());
         }

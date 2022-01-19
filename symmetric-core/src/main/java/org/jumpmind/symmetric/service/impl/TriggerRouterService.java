@@ -105,7 +105,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private IStatisticManager statisticManager;
     private IGroupletService groupletService;
     private INodeService nodeService;
-    private List<String> extraConfigTables = new ArrayList<String>();
     private Date lastUpdateTime;
     private ICacheManager cacheManager;
     /**
@@ -236,9 +235,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void dropTriggers() {
         List<TriggerHistory> activeHistories = getActiveTriggerHistories();
+        Set<String> symTables = TableConstants.getTables(symmetricDialect.getTablePrefix());
         for (TriggerHistory history : activeHistories) {
-            if (!TableConstants.getTables(symmetricDialect.getTablePrefix()).contains(
-                    history.getSourceTableName())) {
+            if (!symTables.contains(history.getSourceTableName())) {
                 dropTriggers(history, (StringBuilder) null);
             }
         }
@@ -474,11 +473,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<Trigger> triggers = new ArrayList<Trigger>();
         List<String> tables = new ArrayList<String>(TableConstants.getConfigTables(symmetricDialect
                 .getTablePrefix()));
-        if (extraConfigTables != null) {
-            for (String extraTable : extraConfigTables) {
-                tables.add(extraTable);
-            }
-        }
         List<Trigger> definedTriggers = getTriggers();
         for (Trigger trigger : definedTriggers) {
             if (tables.remove(trigger.getSourceTableName())) {
@@ -497,17 +491,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 }
             }
         }
+        Set<String> configTablesWithoutCapture = TableConstants.getConfigTablesWithoutCapture(symmetricDialect.getTablePrefix());
         for (String tableName : tables) {
-            Trigger trigger = buildTriggerForSymmetricTable(tableName);
+            Trigger trigger = buildTriggerForSymmetricTable(tableName, configTablesWithoutCapture);
             triggers.add(trigger);
         }
         return triggers;
     }
 
-    protected Trigger buildTriggerForSymmetricTable(String tableName) {
-        boolean syncChanges = !TableConstants.getTablesThatDoNotSync(tablePrefix).contains(
-                tableName)
-                && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION);
+    protected Trigger buildTriggerForSymmetricTable(String tableName, Set<String> configTablesWithoutCapture) {
+        boolean syncChanges = !configTablesWithoutCapture.contains(tableName) && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION);
         // boolean syncOnIncoming = !configurationService.isMasterToMaster() && (parameterService.is(
         // ParameterConstants.AUTO_SYNC_CONFIGURATION_ON_INCOMING, true)
         // || tableName.equals(TableConstants.getTableName(tablePrefix,
@@ -2468,13 +2461,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             triggerRouter.setPingBackEnabled(rs.getBoolean("ping_back_enabled"));
             return triggerRouter;
         }
-    }
-
-    public void addExtraConfigTable(String table) {
-        if (this.extraConfigTables == null) {
-            this.extraConfigTables = new ArrayList<String>();
-        }
-        this.extraConfigTables.add(table);
     }
 
     public Map<Trigger, Exception> getFailedTriggers() {

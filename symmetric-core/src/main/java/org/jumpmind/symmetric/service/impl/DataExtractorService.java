@@ -26,7 +26,6 @@ import static org.jumpmind.symmetric.common.Constants.LOG_PROCESS_SUMMARY_THRESH
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -156,7 +155,6 @@ import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGr
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.BatchBufferedWriter;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
-import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.CustomizableThreadFactory;
 import org.jumpmind.util.ExceptionUtils;
@@ -210,23 +208,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         this.initialLoadService = engine.getInitialLoadService();
         setSqlMap(new DataExtractorServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
-    }
-
-    /**
-     * @see DataExtractorService#extractConfigurationStandalone(Node, Writer)
-     */
-    public void extractConfigurationStandalone(Node node, OutputStream out) {
-        this.extractConfigurationStandalone(node, TransportUtils.toWriter(out),
-                TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT);
-    }
-
-    public void extractConfigurationOnly(Node node, OutputStream out) {
-        this.extractConfigurationStandalone(node, TransportUtils.toWriter(out),
-                TableConstants.SYM_NODE, TableConstants.SYM_NODE_SECURITY,
-                TableConstants.SYM_NODE_IDENTITY, TableConstants.SYM_NODE_HOST, TableConstants.SYM_FILE_SNAPSHOT,
-                TableConstants.SYM_NODE_CHANNEL_CTL, TableConstants.SYM_CONSOLE_ROLE,
-                TableConstants.SYM_CONSOLE_USER, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE,
-                TableConstants.SYM_TABLE_RELOAD_REQUEST, TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT);
     }
 
     protected boolean filter(Node targetNode, String tableName) {

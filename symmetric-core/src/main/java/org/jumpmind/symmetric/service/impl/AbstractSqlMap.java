@@ -21,8 +21,8 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -75,7 +75,7 @@ abstract public class AbstractSqlMap implements ISqlMap {
 
     public static Map<String, String> mergeSqlReplacementTokens(Map<String, String> replacementTokens, String tablePrefix) {
         Map<String, String> map = new HashMap<String, String>();
-        List<String> tables = TableConstants.getTablesWithoutPrefix();
+        Set<String> tables = TableConstants.getTablesWithoutPrefix();
         for (String table : tables) {
             map.put(table, String.format("%s%s%s", tablePrefix, StringUtils.isNotBlank(tablePrefix) ? "_" : "", table));
         }

@@ -124,12 +124,7 @@ public class SnapshotUtil {
         log.info("Creating snapshot file in " + tmpDir.getAbsolutePath());
         try (FileWriter fwriter = new FileWriter(new File(tmpDir, "config-export.csv"))) {
             engine.getDataExtractorService().extractConfigurationStandalone(engine.getNodeService().findIdentity(),
-                    fwriter, TableConstants.SYM_NODE, TableConstants.SYM_NODE_SECURITY,
-                    TableConstants.SYM_NODE_IDENTITY, TableConstants.SYM_NODE_HOST,
-                    TableConstants.SYM_NODE_CHANNEL_CTL, TableConstants.SYM_CONSOLE_ROLE,
-                    TableConstants.SYM_CONSOLE_USER, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE,
-                    TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT,
-                    TableConstants.SYM_CONSOLE_USER_HIST);
+                    fwriter, TableConstants.getConfigTablesExcludedFromExport());
         } catch (Exception e) {
             log.warn("Failed to export symmetric configuration", e);
         }

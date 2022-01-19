@@ -51,8 +51,8 @@ import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.ext.IDatabaseInstallStatementListener;
+import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
@@ -427,15 +427,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected void prefixConfigDatabase(Database targetTables) {
         platform.prefixDatabase(parameterService.getTablePrefix(), targetTables);
-    }
-
-    public Table getTable(TriggerHistory triggerHistory, boolean useCache) {
-        if (triggerHistory != null) {
-            return platform.getTableFromCache(triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
-                    triggerHistory.getSourceTableName(), !useCache);
-        } else {
-            return null;
-        }
     }
 
     /*

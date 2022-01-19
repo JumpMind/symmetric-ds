@@ -245,8 +245,6 @@ public interface ITriggerRouterService {
 
     public void syncTriggers(StringBuilder sqlBuffer, boolean genAlways);
 
-    public void addExtraConfigTable(String table);
-
     public Map<Trigger, Exception> getFailedTriggers();
 
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(

@@ -307,7 +307,7 @@ public class DbCompare {
 
     protected List<DbCompareTables> loadTablesFromConfig() {
         List<Trigger> triggers = sourceEngine.getTriggerRouterService().getTriggersForCurrentNode(true);
-        List<String> configTables = TableConstants.getTables(sourceEngine.getTablePrefix());
+        Set<String> configTables = TableConstants.getTables(sourceEngine.getTablePrefix());
         List<String> tableNames = new ArrayList<String>();
         for (Trigger trigger : triggers) {
             if (!configTables.contains(trigger.getFullyQualifiedSourceTableName()) &&

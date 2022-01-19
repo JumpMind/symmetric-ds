@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.service;
 
-import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Date;
 import java.util.List;
@@ -40,11 +39,7 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
  * This service provides an API to extract and stream data from a source database.
  */
 public interface IDataExtractorService {
-    public void extractConfigurationStandalone(Node node, OutputStream out);
-
     public void extractConfigurationStandalone(Node node, Writer out, String... tablesToIgnore);
-
-    public void extractConfigurationOnly(Node node, OutputStream out);
 
     public List<OutgoingBatchWithPayload> extractToPayload(ProcessInfo processInfo, Node targetNode, PayloadType payloadType, boolean useJdbcTimestampFormat,
             boolean useUpsertStatements, boolean useDelimiterIdentifiers);

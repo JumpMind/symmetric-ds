@@ -175,8 +175,6 @@ public interface ISymmetricDialect {
      */
     public boolean isTransactionIdOverrideSupported();
 
-    public Table getTable(TriggerHistory triggerHistory, boolean useCache);
-
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId);
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier identifier, Object... args);

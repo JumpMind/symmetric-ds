@@ -46,6 +46,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.ext.INodeRegistrationAuthenticator;
 import org.jumpmind.symmetric.ext.INodeRegistrationListener;
@@ -141,7 +142,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
     }
 
     protected void extractConfiguration(OutputStream out, Node registeredNode) {
-        dataExtractorService.extractConfigurationStandalone(registeredNode, out);
+        dataExtractorService.extractConfigurationStandalone(registeredNode, TransportUtils.toWriter(out), TableConstants
+                .getConfigTablesExcludedFromRegistration());
     }
 
     protected Node processRegistration(Node nodePriorToRegistration, String remoteHost,
