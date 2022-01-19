@@ -982,20 +982,17 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         historyMap.put(newHistRecord.getTriggerHistoryId(), newHistRecord);
         sqlTemplate.update(
                 getSql("insertTriggerHistorySql"),
-                new Object[] { newHistRecord.getTriggerHistoryId(), newHistRecord.getTriggerId(), newHistRecord.getSourceTableName(),
-                        newHistRecord.getTableHash(), newHistRecord.getCreateTime(),
+                new Object[] { newHistRecord.getTriggerHistoryId(), newHistRecord.getTriggerId(),
+                        newHistRecord.getSourceTableName(), newHistRecord.getTableHash(), newHistRecord.getCreateTime(),
                         newHistRecord.getColumnNames(), newHistRecord.getPkColumnNames(),
-                        newHistRecord.getLastTriggerBuildReason().getCode(),
-                        newHistRecord.getNameForDeleteTrigger(),
-                        newHistRecord.getNameForInsertTrigger(),
-                        newHistRecord.getNameForUpdateTrigger(),
-                        newHistRecord.getSourceSchemaName(), newHistRecord.getSourceCatalogName(),
-                        newHistRecord.getTriggerRowHash(), newHistRecord.getTriggerTemplateHash(),
-                        newHistRecord.getErrorMessage() },
-                new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.TIMESTAMP,
-                        Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT,
-                        Types.VARCHAR });
+                        newHistRecord.isMissingPk() ? 1 : 0, newHistRecord.getLastTriggerBuildReason().getCode(),
+                        newHistRecord.getNameForDeleteTrigger(), newHistRecord.getNameForInsertTrigger(),
+                        newHistRecord.getNameForUpdateTrigger(), newHistRecord.getSourceSchemaName(),
+                        newHistRecord.getSourceCatalogName(), newHistRecord.getTriggerRowHash(),
+                        newHistRecord.getTriggerTemplateHash(), newHistRecord.getErrorMessage() },
+                new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.TIMESTAMP, Types.VARCHAR,
+                        Types.VARCHAR, Types.SMALLINT, Types.CHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR });
     }
 
     @Override
@@ -2315,6 +2312,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             hist.setCreateTime(rs.getDateTime("create_time"));
             hist.setPkColumnNames(rs.getString("pk_column_names"));
             hist.setColumnNames(rs.getString("column_names"));
+            hist.setIsMissingPk(rs.getBoolean("is_missing_pk"));
             hist.setLastTriggerBuildReason(TriggerReBuildReason.fromCode(rs
                     .getString("last_trigger_build_reason")));
             hist.setNameForDeleteTrigger(rs.getString("name_for_delete_trigger"));

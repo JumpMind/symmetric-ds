@@ -23,7 +23,9 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.Date;
+import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.csv.CsvReader;
@@ -49,6 +51,7 @@ public class TriggerHistory implements Serializable {
     private String[] parsedColumnNames;
     private String pkColumnNames;
     private String[] parsedPkColumnNames;
+    private boolean isMissingPk;
     private String nameForInsertTrigger;
     private String nameForUpdateTrigger;
     private String nameForDeleteTrigger;
@@ -82,6 +85,7 @@ public class TriggerHistory implements Serializable {
         this.sourceTableName = tableName;
         this.pkColumnNames = pkColumnNames;
         this.columnNames = columnNames;
+        this.isMissingPk = Objects.equals(pkColumnNames, columnNames) || StringUtils.isBlank(pkColumnNames);
     }
 
     public TriggerHistory(Table table, Trigger trigger, AbstractTriggerTemplate triggerTemplate) {
@@ -102,6 +106,7 @@ public class TriggerHistory implements Serializable {
         this.triggerId = trigger.getTriggerId();
         this.pkColumnNames = Table.getCommaDeliminatedColumns(trigger.filterExcludedAndIncludedColumns(trigger
                 .getSyncKeysColumnsForTable(table)));
+        this.isMissingPk = !table.hasPrimaryKey();
         this.triggerRowHash = trigger.toHashedValue();
         this.triggerTemplateHash = triggerTemplate.toHashedValue();
         this.tableHash = table.calculateTableHashcode();
@@ -214,6 +219,14 @@ public class TriggerHistory implements Serializable {
 
     public void setPkColumnNames(String pkColumnData) {
         this.pkColumnNames = pkColumnData;
+    }
+    
+    public boolean isMissingPk() {
+        return isMissingPk;
+    }
+    
+    public void setIsMissingPk(boolean isMissingPk) {
+        this.isMissingPk = isMissingPk;
     }
 
     public int getTriggerHistoryId() {
