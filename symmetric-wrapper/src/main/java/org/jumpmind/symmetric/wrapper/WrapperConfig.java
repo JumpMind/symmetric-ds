@@ -148,6 +148,10 @@ public class WrapperConfig {
     public String getRunAsUser() {
         return getProperty(prop, "wrapper.run.as.user", "");
     }
+    
+    public String getRunAsPassword() {
+        return getProperty(prop, "wrapper.run.as.password", "");
+    }
 
     public List<String> getApplicationParameters() {
         return getListProperty(prop, "wrapper.app.parameter");
