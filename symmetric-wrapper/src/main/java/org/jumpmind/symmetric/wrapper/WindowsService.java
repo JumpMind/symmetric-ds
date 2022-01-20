@@ -345,10 +345,18 @@ public class WindowsService extends WrapperService {
                     }
                     dependencies = sb.append("\0").toString();
                 }
+                String runAsUser = config.getRunAsUser();
+                if (runAsUser != null && runAsUser.trim().length() == 0) {
+                    runAsUser = null;
+                }
+                String runAsPassword = config.getRunAsPassword();
+                if (runAsPassword != null && runAsPassword.trim().length() == 0) {
+                    runAsPassword = null;
+                }
                 service = advapi.CreateService(manager, config.getName(), config.getDisplayName(), Winsvc.SERVICE_ALL_ACCESS,
                         WinsvcEx.SERVICE_WIN32_OWN_PROCESS, config.isAutoStart() || config.isDelayStart() ? WinsvcEx.SERVICE_AUTO_START
                                 : WinsvcEx.SERVICE_DEMAND_START, WinsvcEx.SERVICE_ERROR_NORMAL,
-                        commandToString(getWrapperCommand("init", true)), null, null, dependencies, null, null);
+                        commandToString(getWrapperCommand("init", true)), null, null, dependencies, runAsUser, runAsPassword);
                 if (service != null) {
                     Advapi32Ex.SERVICE_DESCRIPTION desc = new Advapi32Ex.SERVICE_DESCRIPTION(config.getDescription());
                     advapi.ChangeServiceConfig2(service, WinsvcEx.SERVICE_CONFIG_DESCRIPTION, desc);
