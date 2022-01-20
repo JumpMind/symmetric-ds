@@ -28,12 +28,11 @@ allprojects {
     group = 'org.jumpmind.symmetric'
     
     repositories {
-        jcenter()
-        maven { url "http://maven.jumpmind.com/repo" }
+        maven { url "https://maven.jumpmind.com/repo" }
         mavenCentral()
-        maven { url "http://maven.vaadin.com/vaadin-addons" }
+        maven { url "https://maven.vaadin.com/vaadin-addons" }
         maven { url 'https://plugins.gradle.org/m2' }
-        maven { url "http://packages.confluent.io/maven/" }
+        maven { url "https://packages.confluent.io/maven/" }
         maven { url "https://repository.mulesoft.org/nexus/content/repositories/public/" }
         maven { url "https://repo1.maven.org/maven2/" }
     }
