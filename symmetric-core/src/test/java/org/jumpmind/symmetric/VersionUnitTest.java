@@ -32,6 +32,10 @@ public class VersionUnitTest {
         assertFalse(Version.isOlderThanVersion("1.6.0", "1.6.0"));
         assertFalse(Version.isOlderThanVersion("1.6.1", "1.6.0"));
         assertFalse(Version.isOlderThanVersion("2.0.0", "1.6.0"));
+        assertFalse(Version.isOlderThanVersion("SNAPSHOT", "1.6.0"));
+        assertTrue(Version.isOlderThanVersion("2.0.0", "SNAPSHOT"));
+        assertFalse(Version.isOlderThanVersion("development", "1.6.0"));
+        assertTrue(Version.isOlderThanVersion("2.0.0", "development"));
     }
 
     @Test

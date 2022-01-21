@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.JobDefinition;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -64,10 +65,12 @@ public class ConfigurationChangedHelper {
     private static final String CTX_KEY_CLUSTER_NEEDED = "ClusterEnable." + SUFFIX;
     private ISymmetricEngine engine;
     private String tablePrefix;
+    private ConfigurationVersionHelper versionHelper;
 
     public ConfigurationChangedHelper(ISymmetricEngine engine) {
         this.engine = engine;
         tablePrefix = engine.getTablePrefix();
+        versionHelper = new ConfigurationVersionHelper(tablePrefix);
     }
 
     public void handleChange(Context context, Table table, CsvData data) {
@@ -317,5 +320,9 @@ public class ConfigurationChangedHelper {
 
     public void setSyncTriggersNeeded(Context context) {
         context.put(CTX_KEY_RESYNC_NEEDED, true);
+    }
+
+    public Set<Node> filterNodes(Set<Node> nodes, String tableName) {
+        return versionHelper.filterNodes(nodes, tableName);
     }
 }

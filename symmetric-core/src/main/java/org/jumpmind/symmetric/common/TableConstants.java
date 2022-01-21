@@ -22,8 +22,10 @@ package org.jumpmind.symmetric.common;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -81,7 +83,6 @@ public class TableConstants {
     public static final String SYM_CONSOLE_TABLE_STATS = "console_table_stats";
     public static final String SYM_DESIGN_DIAGRAM = "design_diagram";
     public static final String SYM_DIAGRAM_GROUP = "diagram_group";
-    public static final String SYM_DIAGRAM_GROUP_LINK = "diagram_group_link";
     public static final String SYM_EXTENSION = "extension";
     public static final String SYM_MONITOR = "monitor";
     public static final String SYM_MONITOR_EVENT = "monitor_event";
@@ -104,9 +105,18 @@ public class TableConstants {
                 SYM_REGISTRATION_REDIRECT, SYM_REGISTRATION_REQUEST, SYM_ROUTER, SYM_SEQUENCE, SYM_TABLE_RELOAD_REQUEST, SYM_TABLE_RELOAD_STATUS,
                 SYM_TRANSFORM_TABLE, SYM_TRANSFORM_COLUMN, SYM_TRIGGER, SYM_TRIGGER_HIST, SYM_TRIGGER_ROUTER, SYM_TRIGGER_ROUTER_GROUPLET);
         if (hasConsoleSchema) {
-            addPrefixToTableNames(tables, tablePrefix, SYM_CONSOLE_EVENT, SYM_CONSOLE_USER, SYM_CONSOLE_USER_HIST, SYM_CONSOLE_ROLE,
-                    SYM_CONSOLE_ROLE_PRIVILEGE, SYM_CONSOLE_TABLE_STATS, SYM_DESIGN_DIAGRAM, SYM_DIAGRAM_GROUP);
+            tables.addAll(getTablesForConsole(tablePrefix));
         }
+        return tables;
+    }
+
+    /**
+     * Set of all SymmetricDS configuration and runtime tables used in professional console.
+     */
+    public static final Set<String> getTablesForConsole(String tablePrefix) {
+        Set<String> tables = new HashSet<String>();
+        addPrefixToTableNames(tables, tablePrefix, SYM_CONSOLE_EVENT, SYM_CONSOLE_USER, SYM_CONSOLE_USER_HIST, SYM_CONSOLE_ROLE,
+                SYM_CONSOLE_ROLE_PRIVILEGE, SYM_CONSOLE_TABLE_STATS, SYM_DESIGN_DIAGRAM, SYM_DIAGRAM_GROUP);
         return tables;
     }
 
@@ -133,6 +143,23 @@ public class TableConstants {
     }
 
     /**
+     * Map with key of each configuration table and value of the SymmetricDS version when they were introduced.
+     */
+    public static final Map<String, String> getConfigTablesByVersion(String tablePrefix) {
+        Map<String, String> map = new HashMap<String, String>();
+        addPrefixToTableNames(map, tablePrefix, "3.3.0", SYM_GROUPLET, SYM_GROUPLET_LINK, SYM_TRIGGER_ROUTER_GROUPLET);
+        addPrefixToTableNames(map, tablePrefix, "3.5.0", SYM_FILE_TRIGGER, SYM_FILE_TRIGGER_ROUTER, SYM_FILE_SNAPSHOT, SYM_EXTRACT_REQUEST,
+                SYM_NODE_GROUP_CHANNEL_WND);
+        addPrefixToTableNames(map, tablePrefix, "3.7.0", SYM_EXTENSION);
+        addPrefixToTableNames(map, tablePrefix, "3.8.0", SYM_NOTIFICATION, SYM_MONITOR, SYM_MONITOR_EVENT, SYM_CONSOLE_EVENT);
+        addPrefixToTableNames(map, tablePrefix, "3.8.18", SYM_CONSOLE_USER_HIST);
+        addPrefixToTableNames(map, tablePrefix, "3.9.0", SYM_JOB);
+        addPrefixToTableNames(map, tablePrefix, "3.10.0", SYM_TABLE_RELOAD_STATUS);
+        addPrefixToTableNames(map, tablePrefix, "3.12.0", SYM_CONSOLE_ROLE, SYM_CONSOLE_ROLE_PRIVILEGE, SYM_DESIGN_DIAGRAM, SYM_DIAGRAM_GROUP);
+        return map;
+    }
+
+    /**
      * Which tables from getConfigTables() should not be sent during registration. These tables will still have a trigger installed for capturing and sending
      * changes.
      */
@@ -154,8 +181,8 @@ public class TableConstants {
      * Which tables from getConfigTables() should be excluded from a configuration export.
      */
     public static final String[] getConfigTablesExcludedFromExport() {
-        return new String[] { SYM_NODE, SYM_NODE_SECURITY, SYM_NODE_IDENTITY, SYM_NODE_HOST, SYM_NODE_CHANNEL_CTL, SYM_FILE_SNAPSHOT, SYM_CONSOLE_USER,
-                SYM_CONSOLE_ROLE, SYM_CONSOLE_ROLE_PRIVILEGE, SYM_CONSOLE_USER_HIST, SYM_TABLE_RELOAD_REQUEST, SYM_CONSOLE_EVENT, SYM_MONITOR_EVENT };
+        return new String[] { SYM_NODE, SYM_NODE_SECURITY, SYM_NODE_IDENTITY, SYM_NODE_HOST, SYM_FILE_SNAPSHOT, SYM_CONSOLE_USER,
+                SYM_CONSOLE_ROLE, SYM_CONSOLE_ROLE_PRIVILEGE, SYM_CONSOLE_USER_HIST, SYM_TABLE_RELOAD_REQUEST, SYM_MONITOR_EVENT };
     }
 
     /**
@@ -167,6 +194,12 @@ public class TableConstants {
             tables.remove(getTableName(tablePrefix, table));
         }
         return tables;
+    }
+
+    protected static final void addPrefixToTableNames(Map<String, String> map, String tablePrefix, String version, String... names) {
+        for (String name : names) {
+            map.put(getTableName(tablePrefix, name), version);
+        }
     }
 
     protected static final void addPrefixToTableNames(Collection<String> collection, String tablePrefix, String... names) {

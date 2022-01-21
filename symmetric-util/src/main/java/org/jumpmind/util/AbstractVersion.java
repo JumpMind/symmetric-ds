@@ -158,7 +158,9 @@ abstract public class AbstractVersion {
     }
 
     public boolean isOlderThanVersion(String checkVersion, String targetVersion) {
-        if (noVersion(targetVersion) || noVersion(checkVersion)) {
+        if (noVersion(targetVersion)) {
+            return true;
+        } else if (noVersion(checkVersion)) {
             return false;
         }
         int[] checkVersions = parseVersion(checkVersion);
@@ -184,7 +186,7 @@ abstract public class AbstractVersion {
     }
 
     protected boolean noVersion(String targetVersion) {
-        return StringUtils.isBlank(targetVersion) || "development".equals(targetVersion);
+        return StringUtils.isBlank(targetVersion) || "development".equals(targetVersion) || targetVersion.contains("SNAPSHOT");
     }
 
     public boolean isDevelopment(String version) {
