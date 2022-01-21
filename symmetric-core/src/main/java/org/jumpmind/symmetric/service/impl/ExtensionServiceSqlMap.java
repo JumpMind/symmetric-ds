@@ -34,10 +34,10 @@ public class ExtensionServiceSqlMap extends AbstractSqlMap {
                 "extension_text, create_time, last_update_by, last_update_time from $(extension)");
         putSql("insertExtensionSql", "insert into $(extension) (extension_type, interface_name, node_group_id, enabled, " +
                 "extension_order, extension_text, create_time, last_update_by, last_update_time, extension_id) " +
-                "values (?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp, ?)");
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         putSql("updateExtensionSql", "update $(extension) set extension_type = ?, interface_name = ?, " +
                 "node_group_id = ?, enabled = ?, extension_order = ?, extension_text = ?, last_update_by = ?, " +
-                "last_update_time = current_timestamp where extension_id = ?");
+                "last_update_time = ? where extension_id = ?");
         putSql("deleteExtensionSql", "delete from $(extension) where extension_id = ?");
         putSql("whereExtensionIdLike", "where extension_id like ?");
     }

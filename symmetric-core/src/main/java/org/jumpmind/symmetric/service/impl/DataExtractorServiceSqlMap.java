@@ -48,13 +48,13 @@ public class DataExtractorServiceSqlMap extends AbstractSqlMap {
                 "update $(extract_request) set parent_request_id = 0 where request_id = ?");
         
         putSql("insertExtractRequestSql", "insert into $(extract_request) (request_id, node_id, queue, status, start_batch_id, end_batch_id, trigger_id, router_id, load_id, table_name, total_rows, parent_request_id, last_update_time, create_time) "
-                + " values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp)");
+                + " values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
-        putSql("updateExtractRequestStatus", "update $(extract_request) set status=?, last_update_time=current_timestamp, extracted_rows=?, extracted_millis=? where request_id=?");
+        putSql("updateExtractRequestStatus", "update $(extract_request) set status=?, last_update_time=?, extracted_rows=?, extracted_millis=? where request_id=?");
         
-        putSql("updateExtractRequestLoadTime", "update $(extract_request) set loaded_time = (case when end_batch_id = ? then current_timestamp else null end), "
+        putSql("updateExtractRequestLoadTime", "update $(extract_request) set loaded_time = (case when end_batch_id = ? then ? else null end), "
                 + " loaded_rows = loaded_rows + ?, loaded_millis = loaded_millis + ?, last_loaded_batch_id = ?, "
-                + " last_update_time=current_timestamp where start_batch_id <= ? and end_batch_id >= ? and node_id=? and load_id=?");
+                + " last_update_time=? where start_batch_id <= ? and end_batch_id >= ? and node_id=? and load_id=?");
         
         putSql("updateExtractRequestTransferred", "update $(extract_request) set last_transferred_batch_id=?, transferred_rows = transferred_rows + ?, transferred_millis = ?"
                 + " where start_batch_id <= ? and end_batch_id >= ? and node_id=? and load_id=? and (last_transferred_batch_id is null or last_transferred_batch_id < ?)");
@@ -63,7 +63,7 @@ public class DataExtractorServiceSqlMap extends AbstractSqlMap {
                 + "last_loaded_batch_id = null, loaded_rows = 0, loaded_millis = 0, parent_request_id = 0, status = ? "
                 + "where request_id = ? and node_id = ?");
 
-        putSql("cancelExtractRequests", "update $(extract_request) set status=?, last_update_time=current_timestamp where load_id = ?");
+        putSql("cancelExtractRequests", "update $(extract_request) set status=?, last_update_time=? where load_id = ?");
 
         putSql("selectIncompleteTablesForExtractByLoadId", "select * from $(extract_request) where load_id = ? and loaded_time is null order by request_id");
         

@@ -40,14 +40,14 @@ public class SequenceServiceSqlMap extends AbstractSqlMap {
                 "select current_value from $(sequence) where sequence_name=?");     
         
         putSql("updateCurrentValueSql",
-                "update $(sequence) set current_value=?, last_update_time=current_timestamp " +
-                "  where sequence_name=? and current_value=?                                ");          
+                "update $(sequence) set current_value=?, last_update_time=? " +
+                "  where sequence_name=? and current_value=?                ");          
         
         putSql("insertSequenceSql",
                 "insert into $(sequence)                                               " +
                 "  (sequence_name, current_value, increment_by, min_value, max_value,  " + 
                 "   cycle_flag, cache_size, create_time, last_update_by, last_update_time)              " +
-                "   values(?,?,?,?,?,?,?,current_timestamp,?,current_timestamp)         ");     
+                "   values(?,?,?,?,?,?,?,?,?,?)                                        ");     
         
         putSql("maxOutgoingBatchSql", "select max(batch_id)+1 from $(outgoing_batch)");
         

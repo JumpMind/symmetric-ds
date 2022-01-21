@@ -955,8 +955,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                     ExtractRequest extractRequest = getExtractRequestForBatch(currentBatch);
                     if (extractRequest != null) {
-                        sqlTemplate.update(getSql("updateExtractRequestStatus"), ExtractStatus.OK.name(), currentBatch.getExtractRowCount(),
-                                currentBatch.getExtractMillis(), extractRequest.getRequestId());
+                        sqlTemplate.update(getSql("updateExtractRequestStatus"), ExtractStatus.OK.name(), new Date(),
+                                currentBatch.getExtractRowCount(), currentBatch.getExtractMillis(), extractRequest.getRequestId());
                         checkSendDeferredConstraints(extractRequest, null, targetNode);
                     }
                 }
@@ -1390,10 +1390,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     @Override
     public void updateExtractRequestLoadTime(ISqlTransaction transaction, Date loadTime, OutgoingBatch outgoingBatch) {
-        transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(),
+        transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), new Date(),
                 outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0,
-                outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(),
-                outgoingBatch.getNodeId(), outgoingBatch.getLoadId());
+                outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), new Date(), outgoingBatch.getBatchId(),
+                outgoingBatch.getBatchId(), outgoingBatch.getNodeId(), outgoingBatch.getLoadId());
         TableReloadStatus status = dataService.updateTableReloadStatusDataLoaded(transaction,
                 outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);
         if (status != null && status.isFullLoad() && (status.isCancelled() || status.isCompleted())) {
@@ -1427,7 +1427,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     @Override
     public int cancelExtractRequests(long loadId) {
-        return sqlTemplate.update(getSql("cancelExtractRequests"), ExtractStatus.OK.name(), loadId);
+        return sqlTemplate.update(getSql("cancelExtractRequests"), ExtractStatus.OK.name(), new Date(), loadId);
     }
 
     protected boolean writeBatchStats(BufferedWriter writer, char[] buffer, int bufferSize, String prevBuffer, OutgoingBatch batch)
@@ -1678,11 +1678,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             requestId = sequenceService.nextVal(transaction, Constants.SEQUENCE_EXTRACT_REQ);
         }
         transaction.prepareAndExecute(getSql("insertExtractRequestSql"),
-                new Object[] { requestId, nodeId, queue, ExtractStatus.NE.name(), startBatchId,
-                        endBatchId, triggerRouter.getTrigger().getTriggerId(),
-                        triggerRouter.getRouter().getRouterId(), loadId, table, rows, parentRequestId }, new int[] { Types.BIGINT, Types.VARCHAR,
-                                Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.VARCHAR,
-                                Types.BIGINT, Types.BIGINT });
+                new Object[] { requestId, nodeId, queue, ExtractStatus.NE.name(), startBatchId, endBatchId,
+                        triggerRouter.getTrigger().getTriggerId(), triggerRouter.getRouter().getRouterId(), loadId,
+                        table, rows, parentRequestId, new Date(), new Date() },
+                new int[] { Types.BIGINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT,
+                        Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.BIGINT,
+                        Types.TIMESTAMP, Types.TIMESTAMP });
         ExtractRequest request = new ExtractRequest();
         request.setRequestId(requestId);
         request.setNodeId(nodeId);
@@ -1700,7 +1701,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected void updateExtractRequestStatus(ISqlTransaction transaction, long extractId,
             ExtractStatus status, long extractedRows, long extractedMillis) {
-        transaction.prepareAndExecute(getSql("updateExtractRequestStatus"), status.name(), extractedRows, extractedMillis, extractId);
+        transaction.prepareAndExecute(getSql("updateExtractRequestStatus"), status.name(), new Date(), extractedRows, extractedMillis, extractId);
     }
 
     protected boolean canProcessExtractRequest(ExtractRequest request, CommunicationType communicationType) {

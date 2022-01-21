@@ -220,11 +220,11 @@ public class TriggerHistory implements Serializable {
     public void setPkColumnNames(String pkColumnData) {
         this.pkColumnNames = pkColumnData;
     }
-    
+
     public boolean isMissingPk() {
         return isMissingPk;
     }
-    
+
     public void setIsMissingPk(boolean isMissingPk) {
         this.isMissingPk = isMissingPk;
     }

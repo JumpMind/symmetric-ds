@@ -364,9 +364,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     new Object[] { request.getLastUpdateBy(), request.getLastUpdateTime(),
                             request.getRegisteredNodeId(), request.getStatus().name(), nodeGroupId,
                             externalId, request.getIpAddress(), request.getHostName(),
-                            request.getErrorMessage() }, new int[] { Types.VARCHAR, Types.TIMESTAMP,
+                            request.getErrorMessage(), new Date() }, new int[] { Types.VARCHAR, Types.TIMESTAMP,
                                     Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+                                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP });
         }
     }
 
@@ -395,7 +395,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
      * @see IRegistrationService#markNodeAsRegistered(Node)
      */
     public void markNodeAsRegistered(String nodeId) {
-        sqlTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { nodeId });
+        sqlTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { new Date(), nodeId });
         nodeService.flushNodeAuthorizedCache();
         List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
         for (INodeRegistrationListener l : registrationListeners) {
@@ -408,7 +408,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         try {
             transaction = sqlTemplate.startSqlTransaction();
             symmetricDialect.disableSyncTriggers(transaction, nodeId);
-            transaction.prepareAndExecute(getSql("registrationPendingSql"), nodeId);
+            transaction.prepareAndExecute(getSql("registrationPendingSql"), new Date(), nodeId);
             transaction.commit();
             nodeService.flushNodeAuthorizedCache();
         } catch (Error ex) {

@@ -180,13 +180,22 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public void updateNodeHost(NodeHost nodeHost) {
-        Object[] params = new Object[] { nodeHost.getIpAddress(), nodeHost.getInstanceId(), nodeHost.getOsUser(), nodeHost.getOsName(), nodeHost.getOsArch(),
-                nodeHost.getOsVersion(), nodeHost.getAvailableProcessors(), nodeHost.getFreeMemoryBytes(), nodeHost.getTotalMemoryBytes(),
-                nodeHost.getMaxMemoryBytes(), nodeHost.getJavaVersion(), nodeHost.getJavaVendor(), nodeHost.getJdbcVersion(),
-                nodeHost.getSymmetricVersion(), nodeHost.getTimezoneOffset(), nodeHost.getHeartbeatTime(), nodeHost.getLastRestartTime(),
-                nodeHost.getNodeId(), nodeHost.getHostName() };
-        if (sqlTemplate.update(getSql("updateNodeHostSql"), params) <= 0) {
-            sqlTemplate.update(getSql("insertNodeHostSql"), params);
+        if (sqlTemplate.update(getSql("updateNodeHostSql"),
+                new Object[] { nodeHost.getIpAddress(), nodeHost.getInstanceId(), nodeHost.getOsUser(),
+                        nodeHost.getOsName(), nodeHost.getOsArch(), nodeHost.getOsVersion(),
+                        nodeHost.getAvailableProcessors(), nodeHost.getFreeMemoryBytes(),
+                        nodeHost.getTotalMemoryBytes(), nodeHost.getMaxMemoryBytes(), nodeHost.getJavaVersion(),
+                        nodeHost.getJavaVendor(), nodeHost.getJdbcVersion(), nodeHost.getSymmetricVersion(),
+                        nodeHost.getTimezoneOffset(), nodeHost.getHeartbeatTime(), nodeHost.getLastRestartTime(),
+                        nodeHost.getNodeId(), nodeHost.getHostName() }) <= 0) {
+            sqlTemplate.update(getSql("insertNodeHostSql"),
+                    new Object[] { nodeHost.getIpAddress(), nodeHost.getInstanceId(), nodeHost.getOsUser(),
+                            nodeHost.getOsName(), nodeHost.getOsArch(), nodeHost.getOsVersion(),
+                            nodeHost.getAvailableProcessors(), nodeHost.getFreeMemoryBytes(),
+                            nodeHost.getTotalMemoryBytes(), nodeHost.getMaxMemoryBytes(), nodeHost.getJavaVersion(),
+                            nodeHost.getJavaVendor(), nodeHost.getJdbcVersion(), nodeHost.getSymmetricVersion(),
+                            nodeHost.getTimezoneOffset(), nodeHost.getHeartbeatTime(), nodeHost.getLastRestartTime(),
+                            new Date(), nodeHost.getNodeId(), nodeHost.getHostName() });
         }
     }
 
@@ -218,7 +227,7 @@ public class NodeService extends AbstractService implements INodeService {
                 transaction.prepareAndExecute(getSql("deleteExtractRequestSql"), new Object[] { nodeId });
                 transaction.prepareAndExecute(getSql("deleteNodeCommunicationSql"), new Object[] { nodeId });
                 transaction.prepareAndExecute(getSql("deleteTableReloadRequestSql"), new Object[] { nodeId, nodeId });
-                transaction.prepareAndExecute(getSql("cancelTableReloadStatusSql"), new Object[] { nodeId, nodeId });
+                transaction.prepareAndExecute(getSql("cancelTableReloadStatusSql"), new Object[] { new Date(), new Date(), nodeId, nodeId });
                 transaction.prepareAndExecute(getSql("setOutgoingBatchOkSql"), new Object[] { nodeId });
                 transaction.prepareAndExecute(getSql("deleteIncomingBatchSql"), new Object[] { nodeId });
             }

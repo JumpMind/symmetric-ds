@@ -36,12 +36,12 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("selectCountBatchesPrefixSql", "select count(*) from $(outgoing_batch)   ");
         putSql("cancelLoadBatchesSql",
                 "update $(outgoing_batch) set ignore_count=1, status=case when sent_count > 0 then 'IG' else 'OK' end, " +
-                        "error_flag=0, last_update_time=current_timestamp where load_id=? and status not in ('OK','IG')");
+                        "error_flag=0, last_update_time=? where load_id=? and status not in ('OK','IG')");
         putSql("insertOutgoingBatchSql",
                 "insert into $(outgoing_batch)                                                                                                                "
                         + "  (batch_id, node_id, channel_id, status, load_id, extract_job_flag, load_flag, common_flag, reload_row_count, other_row_count, "
                         + "  data_update_row_count, data_insert_row_count, data_delete_row_count, last_update_hostname, last_update_time, create_time, create_by, summary, data_row_count)   "
-                        + "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp, ?, ?, ?)                                                                         ");
+                        + "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)                                                                         ");
         putSql("updateOutgoingBatchSql",
                 "update $(outgoing_batch) set status=?, load_id=?, extract_job_flag=?, load_flag=?, error_flag=?,                                          "
                         + "  byte_count=?, extract_count=?, sent_count=?, load_count=?, data_row_count=?,                                 "
@@ -49,7 +49,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "  ignore_count=?, router_millis=?, network_millis=?, filter_millis=?,                                                            "
                         + "  load_millis=?, extract_millis=?, extract_start_time=?, transfer_start_time=?, load_start_time=?, "
                         + "  sql_state=?, sql_code=?, sql_message=?,                                       "
-                        + "  failed_data_id=?, failed_line_number=?, last_update_hostname=?, last_update_time=current_timestamp, summary=?, "
+                        + "  failed_data_id=?, failed_line_number=?, last_update_hostname=?, last_update_time=?, summary=?, "
                         + "  load_row_count=?, load_insert_row_count=?, load_update_row_count=?, load_delete_row_count=?, "
                         + "  fallback_insert_count=?, fallback_update_count=?, ignore_row_count=?, missing_delete_count=?, "
                         + "  skip_count=?, extract_row_count=?, extract_insert_row_count=?, extract_update_row_count=?, extract_delete_row_count=?, "
@@ -162,7 +162,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "  (batch_id, node_id, channel_id, status, load_id, extract_job_flag, load_flag, common_flag, reload_row_count, other_row_count,           "
                         + "  last_update_hostname, last_update_time, create_time, create_by)                                                                             "
                         + "  (select batch_id, ?, channel_id, 'NE', load_id, extract_job_flag, load_flag, common_flag, reload_row_count, other_row_count,          "
-                        + "   last_update_hostname, current_timestamp, create_time, 'copy' from $(outgoing_batch) where node_id=? and channel_id=? and batch_id > ?)     ");
+                        + "   last_update_hostname, ?, create_time, 'copy' from $(outgoing_batch) where node_id=? and channel_id=? and batch_id > ?)     ");
         putSql("getAllBatchesSql", "select batch_id from $(outgoing_batch)");
         putSql("whereInProgressStatusSql", "where status in (?, ?, ?, ?, ?) ");
     }

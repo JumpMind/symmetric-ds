@@ -109,8 +109,6 @@ import org.jumpmind.util.FormatUtils;
 public class DataService extends AbstractService implements IDataService {
     private ISymmetricEngine engine;
     private IExtensionService extensionService;
-    private String currentTimestampString = "current_timestamp";
-    private String scrubbedCurrentTimestampString;
 
     public DataService(ISymmetricEngine engine, IExtensionService extensionService) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -119,7 +117,6 @@ public class DataService extends AbstractService implements IDataService {
         extensionService.addExtensionPoint(new PushHeartbeatListener(engine));
         setSqlMap(new DataServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
-        scrubbedCurrentTimestampString = symmetricDialect.getPlatform().scrubSql(currentTimestampString);
     }
 
     protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
@@ -1892,15 +1889,16 @@ public class DataService extends AbstractService implements IDataService {
 
     public long insertData(ISqlTransaction transaction, final Data data) {
         String sql = getSql("insertIntoDataSql");
+        String dateString = new Date().toString();
         Object[] args = new Object[] { data.getTableName(), data.getDataEventType().getCode(), data.getRowData(),
                 data.getPkData(), data.getOldData(),
                 data.getTriggerHistory() != null ? data.getTriggerHistory().getTriggerHistoryId() : -1,
                 data.getChannelId(), data.getExternalData(), data.getNodeList(), data.isPreRouted() ? 1 : 0,
-                data.getTransactionId(), data.getSourceNodeId() };
+                data.getTransactionId(), data.getSourceNodeId(), dateString };
         int[] types = new int[] { Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR };
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP };
         if (data.getCreateTime() != null) {
-            sql = sql.replace(scrubbedCurrentTimestampString, "?");
+            sql = sql.replace(dateString, "?");
             args = ArrayUtils.add(args, data.getCreateTime());
             types = ArrayUtils.add(types, Types.TIMESTAMP);
         }
@@ -1917,7 +1915,7 @@ public class DataService extends AbstractService implements IDataService {
     protected void insertDataEvent(ISqlTransaction transaction, long dataId, long batchId) {
         try {
             transaction.prepareAndExecute(getSql("insertIntoDataEventSql"),
-                    new Object[] { dataId, batchId }, new int[] { Types.NUMERIC, Types.NUMERIC });
+                    new Object[] { dataId, batchId, new Date() }, new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP });
         } catch (RuntimeException ex) {
             throw new RuntimeException(String.format("Could not insert a data event: data_id=%s batch_id=%s",
                     dataId, batchId), ex);
@@ -1929,8 +1927,8 @@ public class DataService extends AbstractService implements IDataService {
             transaction.prepare(getSql("insertIntoDataEventSql"));
             for (DataEvent dataEvent : events) {
                 transaction.addRow(
-                        dataEvent, new Object[] { dataEvent.getDataId(), dataEvent.getBatchId() },
-                        new int[] { Types.NUMERIC, Types.NUMERIC });
+                        dataEvent, new Object[] { dataEvent.getDataId(), dataEvent.getBatchId(), new Date() },
+                        new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP });
             }
             transaction.flush();
         }

@@ -77,8 +77,8 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("deleteNodeChannelCtlSql", "delete from $(node_channel_ctl) where node_id = ?");
         putSql("deleteIncomingErrorSql", "delete from $(incoming_error) where node_id = ?");
         putSql("deleteTableReloadRequestSql", "delete from $(table_reload_request) where source_node_id = ? or target_node_id=?");
-        putSql("cancelTableReloadStatusSql", "update $(table_reload_status) set cancelled = 1, end_time = current_timestamp, "
-                + "last_update_time = current_timestamp where (source_node_id = ? or target_node_id = ?) and completed = 0 and cancelled = 0");
+        putSql("cancelTableReloadStatusSql", "update $(table_reload_status) set cancelled = 1, end_time = ?, "
+                + "last_update_time = ? where (source_node_id = ? or target_node_id = ?) and completed = 0 and cancelled = 0");
         putSql("deleteExtractRequestSql", "delete from $(extract_request) where node_id = ?");
         putSql("deleteNodeCommunicationSql", "delete from $(node_communication) where node_id = ?");
         putSql("setOutgoingBatchOkSql", "update $(outgoing_batch) set status='OK', error_flag=0 where node_id = ?");
@@ -128,7 +128,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("insertNodeHostSql",
                 "insert into $(node_host)                                                                                                                                                                                                                                            "
                         + "  (ip_address, instance_id, os_user, os_name, os_arch, os_version, available_processors, free_memory_bytes, total_memory_bytes, max_memory_bytes, java_version, java_vendor, jdbc_version, symmetric_version, timezone_offset, heartbeat_time, last_restart_time, create_time, node_id, host_name)"
-                        + "  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, current_timestamp,?,?)");
+                        + "  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
         putSql("updateNodeHostSql",
                 ""
                         + "update $(node_host) set                                                                                                          "

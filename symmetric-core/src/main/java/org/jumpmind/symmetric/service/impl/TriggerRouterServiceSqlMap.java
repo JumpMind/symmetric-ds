@@ -51,8 +51,8 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
 
         putSql("inactivateTriggerHistorySql",
                 ""
-                        + "update $(trigger_hist) set inactive_time = current_timestamp, error_message=? where   "
-                        + "  trigger_hist_id=?                                                                         ");
+                        + "update $(trigger_hist) set inactive_time = ?, error_message=? where   "
+                        + "  trigger_hist_id=?                                                   ");
 
         putSql("selectTriggersSql", "" + "from $(trigger) t order by trigger_id asc   ");
         

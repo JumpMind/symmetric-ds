@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.job;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -195,11 +196,14 @@ public class JobManager extends AbstractService implements IJobManager {
 
     @Override
     public void saveJob(JobDefinition job) {
-        Object[] args = { job.getDescription(), job.getJobType().toString(),
-                job.getJobExpression(), job.isDefaultAutomaticStartup() ? 1 : 0, job.getDefaultSchedule(),
-                job.getNodeGroupId(), job.getCreateBy(), job.getLastUpdateBy(), job.getJobName() };
-        if (sqlTemplate.update(getSql("updateJobSql"), args) <= 0) {
-            sqlTemplate.update(getSql("insertJobSql"), args);
+        if (sqlTemplate.update(getSql("updateJobSql"),
+                new Object[] { job.getDescription(), job.getJobType().toString(), job.getJobExpression(),
+                        job.isDefaultAutomaticStartup() ? 1 : 0, job.getDefaultSchedule(), job.getNodeGroupId(),
+                        job.getCreateBy(), job.getLastUpdateBy(), new Date(), job.getJobName() }) <= 0) {
+            sqlTemplate.update(getSql("insertJobSql"),
+                    new Object[] { job.getDescription(), job.getJobType().toString(), job.getJobExpression(),
+                            job.isDefaultAutomaticStartup() ? 1 : 0, job.getDefaultSchedule(), job.getNodeGroupId(),
+                            job.getCreateBy(), new Date(), job.getLastUpdateBy(), new Date(), job.getJobName() });
         }
     }
 

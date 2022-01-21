@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import java.util.Date;
+
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IContextService;
@@ -64,11 +66,11 @@ public class ContextService extends AbstractService implements IContextService {
     }
 
     public int insert(ISqlTransaction transaction, String name, String value) {
-        return transaction.prepareAndExecute(getSql("insertSql"), name, value);
+        return transaction.prepareAndExecute(getSql("insertSql"), name, value, new Date());
     }
 
     public int update(ISqlTransaction transaction, String name, String value) {
-        return transaction.prepareAndExecute(getSql("updateSql"), value, name);
+        return transaction.prepareAndExecute(getSql("updateSql"), value, new Date(), name);
     }
 
     public int delete(ISqlTransaction transaction, String name) {
@@ -90,9 +92,9 @@ public class ContextService extends AbstractService implements IContextService {
                 insert(transaction, name, value);
             }
         } else {
-            int count = sqlTemplate.update(getSql("updateSql"), value, name);
+            int count = sqlTemplate.update(getSql("updateSql"), value, new Date(), name);
             if (count <= 0) {
-                sqlTemplate.update(getSql("insertSql"), name, value);
+                sqlTemplate.update(getSql("insertSql"), name, value, new Date());
             }
         }
     }

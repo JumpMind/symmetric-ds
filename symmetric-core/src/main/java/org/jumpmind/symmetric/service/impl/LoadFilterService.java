@@ -165,20 +165,28 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
 
     public void saveLoadFilter(LoadFilterNodeGroupLink loadFilter) {
         loadFilter.setLastUpdateTime(new Date());
-        Object[] args = { loadFilter.getAfterWriteScript(), loadFilter.getBatchCommitScript(),
-                loadFilter.getBatchCompleteScript(), loadFilter.getBatchRollbackScript(),
-                loadFilter.getBeforeWriteScript(), loadFilter.getHandleErrorScript(),
-                loadFilter.getLoadFilterOrder(),
-                loadFilter.getLoadFilterType().name(),
-                loadFilter.getNodeGroupLink().getSourceNodeGroupId(),
-                loadFilter.getNodeGroupLink().getTargetNodeGroupId(),
-                loadFilter.getTargetCatalogName(), loadFilter.getTargetSchemaName(),
-                loadFilter.getTargetTableName(), loadFilter.isFilterOnInsert() ? 1 : 0,
-                loadFilter.isFilterOnUpdate() ? 1 : 0, loadFilter.isFilterOnDelete() ? 1 : 0,
-                loadFilter.isFailOnError() ? 1 : 0, loadFilter.getLastUpdateBy(),
-                loadFilter.getLastUpdateTime(), loadFilter.getLoadFilterId() };
-        if (sqlTemplate.update(getSql("updateLoadFilterSql"), args) <= 0) {
-            sqlTemplate.update(getSql("insertLoadFilterSql"), args);
+        if (sqlTemplate.update(getSql("updateLoadFilterSql"), new Object[] { loadFilter.getAfterWriteScript(),
+                loadFilter.getBatchCommitScript(), loadFilter.getBatchCompleteScript(),
+                loadFilter.getBatchRollbackScript(), loadFilter.getBeforeWriteScript(),
+                loadFilter.getHandleErrorScript(), loadFilter.getLoadFilterOrder(),
+                loadFilter.getLoadFilterType().name(), loadFilter.getNodeGroupLink().getSourceNodeGroupId(),
+                loadFilter.getNodeGroupLink().getTargetNodeGroupId(), loadFilter.getTargetCatalogName(),
+                loadFilter.getTargetSchemaName(), loadFilter.getTargetTableName(),
+                loadFilter.isFilterOnInsert() ? 1 : 0, loadFilter.isFilterOnUpdate() ? 1 : 0,
+                loadFilter.isFilterOnDelete() ? 1 : 0, loadFilter.isFailOnError() ? 1 : 0, loadFilter.getLastUpdateBy(),
+                loadFilter.getLastUpdateTime(), loadFilter.getLoadFilterId() }) <= 0) {
+            sqlTemplate.update(getSql("insertLoadFilterSql"),
+                    new Object[] { loadFilter.getAfterWriteScript(), loadFilter.getBatchCommitScript(),
+                            loadFilter.getBatchCompleteScript(), loadFilter.getBatchRollbackScript(),
+                            loadFilter.getBeforeWriteScript(), loadFilter.getHandleErrorScript(),
+                            loadFilter.getLoadFilterOrder(), loadFilter.getLoadFilterType().name(),
+                            loadFilter.getNodeGroupLink().getSourceNodeGroupId(),
+                            loadFilter.getNodeGroupLink().getTargetNodeGroupId(), loadFilter.getTargetCatalogName(),
+                            loadFilter.getTargetSchemaName(), loadFilter.getTargetTableName(),
+                            loadFilter.isFilterOnInsert() ? 1 : 0, loadFilter.isFilterOnUpdate() ? 1 : 0,
+                            loadFilter.isFilterOnDelete() ? 1 : 0, loadFilter.isFailOnError() ? 1 : 0,
+                            loadFilter.getLastUpdateBy(), loadFilter.getLastUpdateTime(), new Date(),
+                            loadFilter.getLoadFilterId() });
         }
         clearCache();
     }
