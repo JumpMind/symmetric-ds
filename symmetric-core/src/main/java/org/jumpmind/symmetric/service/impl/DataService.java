@@ -1889,18 +1889,17 @@ public class DataService extends AbstractService implements IDataService {
 
     public long insertData(ISqlTransaction transaction, final Data data) {
         String sql = getSql("insertIntoDataSql");
-        Date date = new Date();
         Object[] args = new Object[] { data.getTableName(), data.getDataEventType().getCode(), data.getRowData(),
                 data.getPkData(), data.getOldData(),
                 data.getTriggerHistory() != null ? data.getTriggerHistory().getTriggerHistoryId() : -1,
                 data.getChannelId(), data.getExternalData(), data.getNodeList(), data.isPreRouted() ? 1 : 0,
-                data.getTransactionId(), data.getSourceNodeId(), date };
+                data.getTransactionId(), data.getSourceNodeId() };
         int[] types = new int[] { Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP };
         if (data.getCreateTime() != null) {
-            sql = sql.replace(date.toString(), "?");
             args = ArrayUtils.add(args, data.getCreateTime());
-            types = ArrayUtils.add(types, Types.TIMESTAMP);
+        } else {
+            args = ArrayUtils.add(args, new Date());
         }
         long id = transaction.insertWithGeneratedKey(sql, symmetricDialect.getSequenceKeyName(SequenceIdentifier.DATA),
                 symmetricDialect.getSequenceName(SequenceIdentifier.DATA), args, types);
