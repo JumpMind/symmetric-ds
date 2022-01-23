@@ -888,6 +888,8 @@ public class DbFill {
                 objectValue = randomUUID();
             } else if ("TIME".equalsIgnoreCase(column.getJdbcTypeName())) {
                 objectValue = randomTimestamp();
+            } else if ("BIT".equalsIgnoreCase(column.getJdbcTypeName())) {
+                objectValue = randomBoolean() ? "1" : "0";
             } else {
                 int size = maxTextSize;
                 // Assume if the size is 0 there is no max size configured.
