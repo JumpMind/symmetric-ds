@@ -1,6 +1,5 @@
 buildscript {
     repositories {
-        jcenter()
         maven { url 'https://repo.spring.io/plugins-release' }
         maven { url 'https://plugins.gradle.org/m2/' }
     }
@@ -12,6 +11,7 @@ buildscript {
         classpath 'io.spring.gradle:docbook-reference-plugin:0.3.1'
 		classpath 'com.diffplug.spotless:spotless-plugin-gradle:5.14.2'
         classpath 'com.bmuschko:gradle-docker-plugin:3.2.1'
+        classpath 'co.riiid:gradle-github-plugin:0.4.2'
     }
 }
 
@@ -25,6 +25,7 @@ apply plugin: 'java-library'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'com.bmuschko.docker-remote-api'
+apply plugin: 'co.riiid.gradle'
 
 allprojects {
 	apply plugin: 'com.diffplug.spotless'
@@ -50,6 +51,16 @@ sonarqube {
 
 task develop {
     dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea
+}
+
+github {
+    owner = 'JumpMind'
+    repo = 'symmetric-ds'
+    token = githubToken
+    tagName = version
+    targetCommitish = scmBranch.substring(scmBranch.lastIndexOf('/')+1)
+    name = version
+    prerelease = false
 }
 
 idea {
@@ -160,6 +171,8 @@ task publishDockerLatest(type: com.bmuschko.gradle.docker.tasks.image.DockerPush
 
 task publishDocker(type: com.bmuschko.gradle.docker.tasks.image.DockerPushImage) {
     dependsOn publishDockerLatest
-    println "Pushing Docker Image to the jumpmind/symmetricds Repository"
     imageName = "jumpmind/symmetricds:${version}".toString()
+    doLast {
+        println "Pushing Docker Image to the jumpmind/symmetricds Repository"
+    }
 }
