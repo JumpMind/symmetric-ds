@@ -442,11 +442,11 @@ public class DataService extends AbstractService implements IDataService {
         transaction.prepareAndExecute(getSql("updateTableReloadStatusDataLoaded"),
                 new Object[] { batchId, batchCount, batchId, batchCount, batchId, batchCount,
                         batchId, batchCount, batchId, batchCount, batchId, batchCount, new Date(),
-                        batchId, batchCount, batchId, batchCount, batchId, batchCount, loadId, new Date(), loadId },
+                        batchId, batchCount, batchId, batchCount, batchId, batchCount, loadId, engine.getNodeId(), new Date(), loadId },
                 new int[] { idType, Types.NUMERIC, idType, Types.NUMERIC, idType, Types.NUMERIC,
                         idType, Types.NUMERIC, idType, Types.NUMERIC, idType, Types.NUMERIC, Types.TIMESTAMP,
                         idType, Types.NUMERIC, idType, Types.NUMERIC, idType, Types.NUMERIC, idType,
-                        Types.TIMESTAMP, idType });
+                        Types.VARCHAR, Types.TIMESTAMP, idType });
         List<TableReloadStatus> status = transaction.query(getSql("selectTableReloadStatusByLoadId"),
                 new TableReloadStatusMapper(), new Object[] { loadId }, new int[] { idType });
         if (status != null && status.size() > 0) {
@@ -2418,7 +2418,7 @@ public class DataService extends AbstractService implements IDataService {
         Data data = null;
         long startBatchId = batchId;
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
-            startBatchId = sqlTemplateDirty.queryForLong(getSql("selectStartBatchExtractRequest"), batchId, nodeId);
+            startBatchId = sqlTemplateDirty.queryForLong(getSql("selectStartBatchExtractRequest"), batchId, nodeId, engine.getNodeId());
             if (startBatchId == 0) {
                 startBatchId = batchId;
             }

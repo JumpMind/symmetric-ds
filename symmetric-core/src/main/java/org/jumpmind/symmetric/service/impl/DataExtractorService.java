@@ -1380,12 +1380,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     @Override
     public List<ExtractRequest> getPendingTablesForExtractByLoadId(long loadId) {
-        return sqlTemplate.query(getSql("selectIncompleteTablesForExtractByLoadId"), new ExtractRequestMapper(), loadId);
+        return sqlTemplate.query(getSql("selectIncompleteTablesForExtractByLoadId"), new ExtractRequestMapper(), loadId, engine.getNodeId());
     }
 
     @Override
     public List<ExtractRequest> getCompletedTablesForExtractByLoadId(long loadId) {
-        return sqlTemplate.query(getSql("selectCompletedTablesForExtractByLoadId"), new ExtractRequestMapper(), loadId);
+        return sqlTemplate.query(getSql("selectCompletedTablesForExtractByLoadId"), new ExtractRequestMapper(), loadId, engine.getNodeId());
     }
 
     @Override
@@ -1393,7 +1393,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), new Date(),
                 outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0,
                 outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), new Date(), outgoingBatch.getBatchId(),
-                outgoingBatch.getBatchId(), outgoingBatch.getNodeId(), outgoingBatch.getLoadId());
+                outgoingBatch.getBatchId(), outgoingBatch.getNodeId(), outgoingBatch.getLoadId(), engine.getNodeId());
         TableReloadStatus status = dataService.updateTableReloadStatusDataLoaded(transaction,
                 outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);
         if (status != null && status.isFullLoad() && (status.isCancelled() || status.isCompleted())) {
@@ -1408,7 +1408,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         try {
             transaction = sqlTemplate.startSqlTransaction();
             transaction.prepareAndExecute(getSql("updateExtractRequestTransferred"), batch.getBatchId(), batch.getDataRowCount(), transferMillis,
-                    batch.getBatchId(), batch.getBatchId(), batch.getNodeId(), batch.getLoadId(), batch.getBatchId());
+                    batch.getBatchId(), batch.getBatchId(), batch.getNodeId(), batch.getLoadId(), batch.getBatchId(), engine.getNodeId());
             transaction.commit();
         } catch (Error ex) {
             if (transaction != null) {
@@ -1427,7 +1427,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     @Override
     public int cancelExtractRequests(long loadId) {
-        return sqlTemplate.update(getSql("cancelExtractRequests"), ExtractStatus.OK.name(), new Date(), loadId);
+        return sqlTemplate.update(getSql("cancelExtractRequests"), ExtractStatus.OK.name(), new Date(), loadId, engine.getNodeId());
     }
 
     protected boolean writeBatchStats(BufferedWriter writer, char[] buffer, int bufferSize, String prevBuffer, OutgoingBatch batch)
@@ -1579,7 +1579,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public List<NodeQueuePair> getExtractRequestNodes() {
         return sqlTemplate.query(getSql("selectNodeIdsForExtractSql"), new NodeQueuePairMapper(),
-                ExtractStatus.NE.name());
+                ExtractStatus.NE.name(), engine.getNodeId());
     }
 
     private static class NodeQueuePair {
@@ -1616,19 +1616,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected List<ExtractRequest> getExtractRequestsForNode(NodeCommunication nodeCommunication) {
         return sqlTemplate.query(getSql("selectExtractRequestForNodeSql"),
                 new ExtractRequestMapper(), nodeCommunication.getNodeId(), nodeCommunication.getQueue(),
-                ExtractRequest.ExtractStatus.NE.name());
+                ExtractRequest.ExtractStatus.NE.name(), engine.getNodeId());
     }
 
     protected ExtractRequest getExtractRequestForBatch(OutgoingBatch batch) {
         return sqlTemplate.queryForObject(getSql("selectExtractRequestForBatchSql"),
-                new ExtractRequestMapper(), batch.getBatchId(), batch.getBatchId(), batch.getNodeId(), batch.getLoadId());
+                new ExtractRequestMapper(), batch.getBatchId(), batch.getBatchId(), batch.getNodeId(), batch.getLoadId(), engine.getNodeId());
     }
 
     protected Map<Long, List<ExtractRequest>> getExtractChildRequestsForNode(NodeCommunication nodeCommunication, List<ExtractRequest> parentRequests) {
         Map<Long, List<ExtractRequest>> requests = new HashMap<Long, List<ExtractRequest>>();
         List<ExtractRequest> childRequests = sqlTemplate.query(getSql("selectExtractChildRequestForNodeSql"),
                 new ExtractRequestMapper(), nodeCommunication.getNodeId(), nodeCommunication.getQueue(),
-                ExtractRequest.ExtractStatus.NE.name());
+                ExtractRequest.ExtractStatus.NE.name(), engine.getNodeId());
         for (ExtractRequest childRequest : childRequests) {
             List<ExtractRequest> childList = requests.get(childRequest.getParentRequestId());
             if (childList == null) {
@@ -1641,7 +1641,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected List<ExtractRequest> getExtractChildRequestsForNode(ExtractRequest parentRequest) {
-        return sqlTemplate.query(getSql("selectExtractChildRequestsByParentSql"), new ExtractRequestMapper(), parentRequest.getRequestId());
+        return sqlTemplate.query(getSql("selectExtractChildRequestsByParentSql"), new ExtractRequestMapper(), parentRequest.getRequestId(), engine.getNodeId());
     }
 
     @Override
@@ -1678,10 +1678,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             requestId = sequenceService.nextVal(transaction, Constants.SEQUENCE_EXTRACT_REQ);
         }
         transaction.prepareAndExecute(getSql("insertExtractRequestSql"),
-                new Object[] { requestId, nodeId, queue, ExtractStatus.NE.name(), startBatchId, endBatchId,
+                new Object[] { requestId, engine.getNodeId(), nodeId, queue, ExtractStatus.NE.name(), startBatchId, endBatchId,
                         triggerRouter.getTrigger().getTriggerId(), triggerRouter.getRouter().getRouterId(), loadId,
                         table, rows, parentRequestId, new Date(), new Date() },
-                new int[] { Types.BIGINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT,
+                new int[] { Types.BIGINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT,
                         Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.BIGINT,
                         Types.TIMESTAMP, Types.TIMESTAMP });
         ExtractRequest request = new ExtractRequest();
@@ -1911,7 +1911,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void releaseMissedExtractRequests() {
-        List<Long> requestIds = sqlTemplateDirty.query(getSql("selectExtractChildRequestIdsMissed"), new LongMapper(), Status.NE.name(), Status.OK.name());
+        List<Long> requestIds = sqlTemplateDirty.query(getSql("selectExtractChildRequestIdsMissed"), new LongMapper(), Status.NE.name(), Status.OK.name(),
+                engine.getNodeId());
         if (requestIds != null && requestIds.size() > 0) {
             log.info("Releasing {} child extract requests that missed processing by parent node", requestIds.size());
             for (Long requestId : requestIds) {

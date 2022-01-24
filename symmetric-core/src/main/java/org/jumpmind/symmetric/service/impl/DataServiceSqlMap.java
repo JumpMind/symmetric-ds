@@ -144,11 +144,11 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " data_batch_loaded = case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end, "
                 + " setup_batch_loaded = case when ? < start_data_batch_id then setup_batch_loaded + ? else setup_batch_loaded end, "
                 + " finalize_batch_loaded = case when ? > end_data_batch_id then finalize_batch_loaded + ? else finalize_batch_loaded end, "
-                + " rows_loaded = (select case when sum(loaded_rows) is null then 0 else sum(loaded_rows) end from $(extract_request) where load_id = ?), "
+                + " rows_loaded = (select case when sum(loaded_rows) is null then 0 else sum(loaded_rows) end from $(extract_request) where load_id = ? and source_node_id = ?), "
                 + " last_update_time = ? "
                 + " where load_id = ? and completed = 0");
         putSql("selectStartBatchExtractRequest",
-                "select start_batch_id from $(extract_request) where ? between start_batch_id and end_batch_id and node_id = ?");
+                "select start_batch_id from $(extract_request) where ? between start_batch_id and end_batch_id and node_id = ? and source_node_id = ?");
         putSql("updateTableReloadStatusFinalizeCount", "update $(table_reload_status) set "
                 + " finalize_batch_count = ?, last_update_time = ? "
                 + " where load_id = ?");
