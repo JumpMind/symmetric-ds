@@ -91,24 +91,28 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                  */
                 routeNodeTables(nodeIds, columnValues, rootNetworkedNode, me, routingContext,
                         dataMetaData, possibleTargetNodes, initialLoad);
-            } else if (tableMatches(dataMetaData, TableConstants.SYM_TABLE_RELOAD_REQUEST)) {
+            } else if (tableMatches(dataMetaData, TableConstants.SYM_TABLE_RELOAD_REQUEST)
+                    || tableMatches(dataMetaData, TableConstants.SYM_TABLE_RELOAD_STATUS)) {
                 String sourceNodeId = columnValues.get("SOURCE_NODE_ID");
                 String targetNodeId = columnValues.get("TARGET_NODE_ID");
                 for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                    if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo
-                            .getDeploymentType())
-                            && !nodeThatMayBeRoutedTo.requires13Compatiblity()
+                    if (notRestClient(nodeThatMayBeRoutedTo)
                             && (nodeThatMayBeRoutedTo.getNodeId().equals(sourceNodeId) ||
                                     nodeThatMayBeRoutedTo.getNodeId().equals(targetNodeId))) {
+                        nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
+                    }
+                }
+            } else if (tableMatches(dataMetaData, TableConstants.SYM_EXTRACT_REQUEST)) {
+                String targetNodeId = columnValues.get("NODE_ID");
+                for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
+                    if (notRestClient(nodeThatMayBeRoutedTo) && nodeThatMayBeRoutedTo.getNodeId().equals(targetNodeId)) {
                         nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
                     }
                 }
             } else {
                 IConfigurationService configurationService = engine.getConfigurationService();
                 for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                    if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo
-                            .getDeploymentType())
-                            && !nodeThatMayBeRoutedTo.requires13Compatiblity()
+                    if (notRestClient(nodeThatMayBeRoutedTo)
                             && (initialLoad || !isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo,
                                     rootNetworkedNode, me))) {
                         NodeGroupLink link = configurationService.getNodeGroupLinkFor(
@@ -207,11 +211,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         try {
             transaction = engine.getDatabasePlatform().getSqlTemplate().startSqlTransaction();
             for (Node targetNode : targetNodes) {
-                if (me.getNodeId().equalsIgnoreCase(targetNode.getNodeId())) {
-                    continue;
+                if (!me.getNodeId().equalsIgnoreCase(targetNode.getNodeId()) && notRestClient(targetNode)) {
+                    dataService.insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory, initialLoadSelect, false, -1l, "configRouter",
+                            Status.NE, 0l);
                 }
-                dataService.insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
-                        initialLoadSelect, false, -1l, "configRouter", Status.NE, 0l);
             }
             transaction.commit();
         } catch (Exception e) {
@@ -242,8 +245,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         if (dataMetaData.getData().getDataEventType() == DataEventType.DELETE) {
             String createAtNodeId = columnValues.get("CREATED_AT_NODE_ID");
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo
-                        .getDeploymentType())
+                if (notRestClient(nodeThatMayBeRoutedTo)
                         && !nodeIdForRecordBeingRouted.equals(nodeThatMayBeRoutedTo.getNodeId())
                         && !nodeThatMayBeRoutedTo.getNodeId().equals(createAtNodeId)
                         && !nodeIdForRecordBeingRouted.equals(me.getNodeId())
@@ -256,8 +258,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             IConfigurationService configurationService = engine.getConfigurationService();
             List<NodeGroupLink> nodeGroupLinks = getNodeGroupLinksFromContext(routingContext);
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo.getDeploymentType())
-                        && !nodeThatMayBeRoutedTo.requires13Compatiblity()
+                if (notRestClient(nodeThatMayBeRoutedTo)
                         && isLinked(nodeIdForRecordBeingRouted, nodeThatMayBeRoutedTo, rootNetworkedNode, me, nodeGroupLinks)
                         && (!isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo, rootNetworkedNode, me)
                                 || configurationService.isMasterToMaster())
@@ -373,6 +374,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     @Override
     public void contextCommitted(SimpleRouterContext routingContext) {
         helper.contextCommittedAndComplete(routingContext);
+    }
+
+    private boolean notRestClient(Node node) {
+        return !Constants.DEPLOYMENT_TYPE_REST.equals(node.getDeploymentType());
     }
 
     private String tableName(String tableName) {

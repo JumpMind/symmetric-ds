@@ -64,6 +64,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
     protected boolean isUpgradeFromPre38;
     protected boolean isUpgradeFrom38;
     protected boolean isUpgradeFromPre3125;
+    protected boolean isUpgradeFromPre314;
 
     @Override
     public String beforeUpgrade(ISymmetricDialect symmetricDialect, String tablePrefix, Database currentModel, Database desiredModel)
@@ -129,6 +130,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         if (isUpgradeFromPre3125(tablePrefix, currentModel, desiredModel)) {
             isUpgradeFromPre3125 = true;
         }
+        isUpgradeFromPre314 = isUpgradeFromPre314(tablePrefix, currentModel, desiredModel);
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.INFORMIX)) {
             Table triggerTable = desiredModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRIGGER);
             if (triggerTable != null) {
@@ -170,6 +172,11 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
 
     @Override
     public String afterUpgrade(ISymmetricDialect symmetricDialect, String tablePrefix, Database model) throws IOException {
+        if (isUpgradeFromPre314 && engine.getNodeId() != null) {
+            log.info("Fixing extract request table after upgrade");
+            engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_EXTRACT_REQUEST
+                    + " set source_node_id = ? where source_node_id = 'default'", engine.getNodeId());
+        }
         // Leave this first so triggers are put back in place before any DML is
         // done against SymmetricDS tables
         // Reinstall triggers on sym tables
@@ -322,6 +329,16 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         Table eventTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_NODE_SECURITY);
         if (eventTable != null && eventTable.findColumn("initial_load_end_time") == null) {
             log.info("Detected upgrade from pre-3.12.5 version.");
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected boolean isUpgradeFromPre314(String tablePrefix, Database currentModel, Database desiredModel) {
+        Table table = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_EXTRACT_REQUEST);
+        if (table != null && table.findColumn("source_node_id") == null) {
+            log.info("Detected upgrade from pre-3.14 version.");
             return true;
         } else {
             return false;

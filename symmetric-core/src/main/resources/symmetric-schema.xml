@@ -132,6 +132,7 @@
 
     <table name="extract_request" description="This table is used internally to request the extract of initial loads asynchronously when the initial load extract job is enabled.">
         <column name="request_id" type="BIGINT" required="true" primaryKey="true" description="Unique identifier for a request." />
+        <column name="source_node_id" type="VARCHAR" primaryKey="true" size="50" required="true" default="default" description="Unique identifier for the node that will be the source of the extract." />
         <column name="node_id" type="VARCHAR" size="50" required="true" description="The node_id of the batch being loaded." />
        	<column name="queue" type="VARCHAR" size="128" description="The channel queue name of the batch being loaded." />
         <column name="status" type="CHAR" size="2"  description="NE, OK" />

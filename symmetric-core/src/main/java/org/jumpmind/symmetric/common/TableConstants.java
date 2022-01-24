@@ -131,10 +131,11 @@ public class TableConstants {
      */
     public static final List<String> getConfigTables(String tablePrefix) {
         List<String> tables = new ArrayList<String>();
-        addPrefixToTableNames(tables, tablePrefix, SYM_NODE_GROUP, SYM_NODE_GROUP_LINK, SYM_NODE, SYM_NODE_HOST, SYM_NODE_SECURITY, SYM_PARAMETER,
-                SYM_CHANNEL, SYM_NODE_GROUP_CHANNEL_WND, SYM_TRIGGER, SYM_ROUTER, SYM_TRIGGER_ROUTER, SYM_TRANSFORM_TABLE, SYM_LOAD_FILTER,
-                SYM_TRANSFORM_COLUMN, SYM_CONFLICT, SYM_TABLE_RELOAD_REQUEST, SYM_GROUPLET, SYM_GROUPLET_LINK, SYM_TRIGGER_ROUTER_GROUPLET, SYM_FILE_TRIGGER,
-                SYM_FILE_TRIGGER_ROUTER, SYM_FILE_SNAPSHOT, SYM_NODE_IDENTITY, SYM_EXTENSION, SYM_MONITOR, SYM_MONITOR_EVENT, SYM_NOTIFICATION, SYM_JOB);
+        addPrefixToTableNames(tables, tablePrefix, SYM_NODE_GROUP, SYM_NODE_GROUP_LINK, SYM_NODE, SYM_NODE_HOST, SYM_NODE_IDENTITY, SYM_NODE_SECURITY,
+                SYM_PARAMETER, SYM_CHANNEL, SYM_NODE_GROUP_CHANNEL_WND, SYM_TRIGGER, SYM_ROUTER, SYM_TRIGGER_ROUTER, SYM_TRANSFORM_TABLE, SYM_LOAD_FILTER,
+                SYM_TRANSFORM_COLUMN, SYM_CONFLICT, SYM_GROUPLET, SYM_GROUPLET_LINK, SYM_TRIGGER_ROUTER_GROUPLET, SYM_FILE_TRIGGER, SYM_FILE_TRIGGER_ROUTER,
+                SYM_FILE_SNAPSHOT, SYM_EXTENSION, SYM_MONITOR, SYM_MONITOR_EVENT, SYM_NOTIFICATION, SYM_JOB, SYM_TABLE_RELOAD_REQUEST, SYM_TABLE_RELOAD_STATUS,
+                SYM_EXTRACT_REQUEST);
         if (hasConsoleSchema) {
             addPrefixToTableNames(tables, tablePrefix, SYM_CONSOLE_ROLE, SYM_CONSOLE_USER, SYM_CONSOLE_ROLE_PRIVILEGE, SYM_CONSOLE_USER_HIST,
                     SYM_DESIGN_DIAGRAM, SYM_DIAGRAM_GROUP);
@@ -148,14 +149,13 @@ public class TableConstants {
     public static final Map<String, String> getConfigTablesByVersion(String tablePrefix) {
         Map<String, String> map = new HashMap<String, String>();
         addPrefixToTableNames(map, tablePrefix, "3.3.0", SYM_GROUPLET, SYM_GROUPLET_LINK, SYM_TRIGGER_ROUTER_GROUPLET);
-        addPrefixToTableNames(map, tablePrefix, "3.5.0", SYM_FILE_TRIGGER, SYM_FILE_TRIGGER_ROUTER, SYM_FILE_SNAPSHOT, SYM_EXTRACT_REQUEST,
-                SYM_NODE_GROUP_CHANNEL_WND);
+        addPrefixToTableNames(map, tablePrefix, "3.5.0", SYM_FILE_TRIGGER, SYM_FILE_TRIGGER_ROUTER, SYM_FILE_SNAPSHOT, SYM_NODE_GROUP_CHANNEL_WND);
         addPrefixToTableNames(map, tablePrefix, "3.7.0", SYM_EXTENSION);
         addPrefixToTableNames(map, tablePrefix, "3.8.0", SYM_NOTIFICATION, SYM_MONITOR, SYM_MONITOR_EVENT, SYM_CONSOLE_EVENT);
         addPrefixToTableNames(map, tablePrefix, "3.8.18", SYM_CONSOLE_USER_HIST);
         addPrefixToTableNames(map, tablePrefix, "3.9.0", SYM_JOB);
-        addPrefixToTableNames(map, tablePrefix, "3.10.0", SYM_TABLE_RELOAD_STATUS);
         addPrefixToTableNames(map, tablePrefix, "3.12.0", SYM_CONSOLE_ROLE, SYM_CONSOLE_ROLE_PRIVILEGE, SYM_DESIGN_DIAGRAM, SYM_DIAGRAM_GROUP);
+        addPrefixToTableNames(map, tablePrefix, "3.14.0", SYM_TABLE_RELOAD_STATUS, SYM_EXTRACT_REQUEST);
         return map;
     }
 
@@ -164,7 +164,7 @@ public class TableConstants {
      * changes.
      */
     public static final String[] getConfigTablesExcludedFromRegistration() {
-        return new String[] { SYM_MONITOR_EVENT };
+        return new String[] { SYM_MONITOR_EVENT, SYM_TABLE_RELOAD_REQUEST, SYM_TABLE_RELOAD_STATUS, SYM_EXTRACT_REQUEST };
     }
 
     /**
@@ -181,8 +181,8 @@ public class TableConstants {
      * Which tables from getConfigTables() should be excluded from a configuration export.
      */
     public static final String[] getConfigTablesExcludedFromExport() {
-        return new String[] { SYM_NODE, SYM_NODE_SECURITY, SYM_NODE_IDENTITY, SYM_NODE_HOST, SYM_FILE_SNAPSHOT, SYM_CONSOLE_USER,
-                SYM_CONSOLE_ROLE, SYM_CONSOLE_ROLE_PRIVILEGE, SYM_CONSOLE_USER_HIST, SYM_TABLE_RELOAD_REQUEST, SYM_MONITOR_EVENT };
+        return new String[] { SYM_NODE, SYM_NODE_SECURITY, SYM_NODE_IDENTITY, SYM_NODE_HOST, SYM_FILE_SNAPSHOT, SYM_CONSOLE_USER, SYM_CONSOLE_ROLE,
+                SYM_CONSOLE_ROLE_PRIVILEGE, SYM_CONSOLE_USER_HIST, SYM_MONITOR_EVENT, SYM_TABLE_RELOAD_REQUEST, SYM_TABLE_RELOAD_STATUS, SYM_EXTRACT_REQUEST };
     }
 
     /**
