@@ -40,6 +40,12 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " from $(table_reload_request) "
                 + " where source_node_id=? and processed = 0 "
                 + " order by create_time, target_node_id");
+        putSql("selectTableReloadRequestToProcessByTarget", "select source_node_id, create_table, delete_first, reload_select, before_custom_sql, "
+                + " reload_time, channel_id, create_time, last_update_by, "
+                + " last_update_time, trigger_id, router_id, load_id "
+                + " from $(table_reload_request) "
+                + " where target_node_id=? and processed = 0 "
+                + " order by create_time, source_node_id");
         putSql("selectTableReloadRequests", "select source_node_id, target_node_id, load_id, "
                 + " trigger_id, router_id, create_time, create_table, delete_first, reload_select, "
                 + " before_custom_sql, reload_time, processed, channel_id, last_update_by, last_update_time "
@@ -69,8 +75,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " completed, cancelled, full_load, "
                 + " start_time, end_time, last_update_time, last_update_by, "
                 + " error_flag, sql_state, sql_code, sql_message "
-                + " from $(table_reload_status) "
-                + " order by load_id desc, completed, last_update_time desc");
+                + " from $(table_reload_status) ");
         putSql("selectActiveTableReloadStatus", "select source_node_id, target_node_id, load_id, "
                 + " end_data_batch_id, start_data_batch_id, "
                 + " setup_batch_count, data_batch_count, finalize_batch_count, "
@@ -80,8 +85,12 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " start_time, end_time, last_update_time, last_update_by, "
                 + " error_flag, sql_state, sql_code, sql_message "
                 + " from $(table_reload_status) "
-                + " where completed = 0 and cancelled = 0"
-                + " order by load_id desc, completed, last_update_time desc");
+                + " where completed = 0 and cancelled = 0");
+        putSql("orderTableReloadStatus", " order by load_id desc, completed, last_update_time desc");
+        putSql("whereSourceNodeId", " where source_node_id = ?");
+        putSql("whereTargetNodeId", " where target_node_id = ?");
+        putSql("andSourceNodeId", " and source_node_id = ?");
+        putSql("andTargetNodeId", " and target_node_id = ?");
         putSql("selectTableReloadStatusByLoadId", "select source_node_id, target_node_id, load_id, "
                 + " end_data_batch_id, start_data_batch_id, "
                 + " setup_batch_count, data_batch_count, finalize_batch_count, "

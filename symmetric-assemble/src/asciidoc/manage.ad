@@ -183,12 +183,21 @@ include::manage/installed-triggers.ad[]
 ifdef::pro[]
 === Outgoing Loads
 
-The Outgoing Loads screen shows the number of loads that have been queued.  It also lists loads that have had <<Outgoing Batches>> created.  The screens shows 
+The Outgoing Loads screen shows the number of outgoing loads that have been queued.  It also lists loads that have had <<Outgoing Batches>> created.  The screen shows 
 loads that are sourced from the current node.
 
 You can cancel a load that is in progress by selecting the load and pressing the _Cancel_ button.  
 
 image::manage/manage-outgoing-loads.png[]
+
+=== Incoming Loads
+
+The Incoming Loads screen shows the number of incoming loads that have been queued.  It also lists loads that have had <<Incoming Batches>> created.  The screen shows 
+loads that are targeted at the current node.
+
+You can cancel a load that is in progress by selecting the load and pressing the _Cancel_ button.  
+
+image::manage/manage-incoming-loads.png[]
 
 endif::pro[]
 

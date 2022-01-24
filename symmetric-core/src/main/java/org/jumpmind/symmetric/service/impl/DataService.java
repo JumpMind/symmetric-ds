@@ -328,6 +328,30 @@ public class DataService extends AbstractService implements IDataService {
                     }
                 }, sourceNodeId);
     }
+    
+    public List<TableReloadRequest> getTableReloadRequestToProcessByTarget(final String targetNodeId) {
+        return sqlTemplate.query(getSql("selectTableReloadRequestToProcessByTarget"),
+                new ISqlRowMapper<TableReloadRequest>() {
+                    public TableReloadRequest mapRow(Row rs) {
+                        TableReloadRequest request = new TableReloadRequest();
+                        request.setSourceNodeId(rs.getString("source_node_id"));
+                        request.setTargetNodeId(targetNodeId);
+                        request.setCreateTable(rs.getBoolean("create_table"));
+                        request.setDeleteFirst(rs.getBoolean("delete_first"));
+                        request.setReloadSelect(rs.getString("reload_select"));
+                        request.setReloadTime(rs.getDateTime("reload_time"));
+                        request.setBeforeCustomSql(rs.getString("before_custom_sql"));
+                        request.setChannelId(rs.getString("channel_id"));
+                        request.setTriggerId(rs.getString("trigger_id"));
+                        request.setRouterId(rs.getString("router_id"));
+                        request.setLoadId(rs.getLong("load_id"));
+                        request.setCreateTime(rs.getDateTime("create_time"));
+                        request.setLastUpdateBy(rs.getString("last_update_by"));
+                        request.setLastUpdateTime(rs.getDateTime("last_update_time"));
+                        return request;
+                    }
+                }, targetNodeId);
+    }
 
     public List<TableReloadRequest> getTableReloadRequests() {
         return sqlTemplateDirty.query(getSql("selectTableReloadRequests"),
@@ -335,13 +359,33 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public List<TableReloadStatus> getTableReloadStatus() {
-        return sqlTemplateDirty.query(getSql("selectTableReloadStatus"),
+        return sqlTemplateDirty.query(getSql("selectTableReloadStatus", "orderTableReloadStatus"),
                 new TableReloadStatusMapper());
     }
 
+    public List<TableReloadStatus> getOutgoingTableReloadStatus() {
+        return sqlTemplateDirty.query(getSql("selectTableReloadStatus", "whereSourceNodeId", "orderTableReloadStatus"),
+                new TableReloadStatusMapper(), engine.getNodeId());
+    }
+
+    public List<TableReloadStatus> getIncomingTableReloadStatus() {
+        return sqlTemplateDirty.query(getSql("selectTableReloadStatus", "whereTargetNodeId", "orderTableReloadStatus"),
+                new TableReloadStatusMapper(), engine.getNodeId());
+    }
+
     public List<TableReloadStatus> getActiveTableReloadStatus() {
-        return sqlTemplateDirty.query(getSql("selectActiveTableReloadStatus"),
+        return sqlTemplateDirty.query(getSql("selectActiveTableReloadStatus", "orderTableReloadStatus"),
                 new TableReloadStatusMapper());
+    }
+
+    public List<TableReloadStatus> getActiveOutgoingTableReloadStatus() {
+        return sqlTemplateDirty.query(getSql("selectActiveTableReloadStatus", "andSourceNodeId", "orderTableReloadStatus"),
+                new TableReloadStatusMapper(), engine.getNodeId());
+    }
+
+    public List<TableReloadStatus> getActiveIncomingTableReloadStatus() {
+        return sqlTemplateDirty.query(getSql("selectActiveTableReloadStatus", "andTargetNodeId", "orderTableReloadStatus"),
+                new TableReloadStatusMapper(), engine.getNodeId());
     }
 
     public TableReloadStatus getTableReloadStatusByLoadId(long loadId) {
