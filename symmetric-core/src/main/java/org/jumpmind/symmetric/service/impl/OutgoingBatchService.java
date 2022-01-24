@@ -86,7 +86,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     @Override
     public int cancelLoadBatches(long loadId) {
-        return sqlTemplate.update(getSql("cancelLoadBatchesSql"), loadId);
+        return sqlTemplate.update(getSql("cancelLoadBatchesSql"), new Date(), loadId);
     }
 
     public void markAllAsSentForNode(String nodeId, boolean includeConfigChannel) {
@@ -139,7 +139,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         log.info("Copying outgoing batches for channel '{}' from node '{}' to node '{}' starting at {}",
                 new Object[] { channelId, fromNodeId, toNodeId, startBatchId });
         sqlTemplate.update(getSql("deleteOutgoingBatchesForNodeSql"), toNodeId, channelId, fromNodeId, channelId);
-        int count = sqlTemplate.update(getSql("copyOutgoingBatchesSql"), toNodeId, fromNodeId, channelId, startBatchId);
+        int count = sqlTemplate.update(getSql("copyOutgoingBatchesSql"), toNodeId, new Date(), fromNodeId, channelId, startBatchId);
         log.info("Copied {} outgoing batches for channel '{}' from node '{}' to node '{}'",
                 new Object[] { count, channelId, fromNodeId, toNodeId });
     }
@@ -210,7 +210,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.getExtractStartTime(), outgoingBatch.getTransferStartTime(), outgoingBatch.getLoadStartTime(),
                         outgoingBatch.getSqlState(), outgoingBatch.getSqlCode(), FormatUtils.abbreviateForLogging(outgoingBatch.getSqlMessage()),
                         outgoingBatch.getFailedDataId(), outgoingBatch.getFailedLineNumber(),
-                        outgoingBatch.getLastUpdatedHostName(), outgoingBatch.getSummary(), outgoingBatch.getLoadRowCount(),
+                        outgoingBatch.getLastUpdatedHostName(), new Date(), outgoingBatch.getSummary(), outgoingBatch.getLoadRowCount(),
                         outgoingBatch.getLoadInsertRowCount(), outgoingBatch.getLoadUpdateRowCount(), outgoingBatch.getLoadDeleteRowCount(),
                         outgoingBatch.getFallbackInsertCount(), outgoingBatch.getFallbackUpdateCount(), outgoingBatch.getIgnoreRowCount(),
                         outgoingBatch.getMissingDeleteCount(), outgoingBatch.getSkipCount(), outgoingBatch.getExtractRowCount(),
@@ -221,7 +221,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.TIMESTAMP, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC,
-                        Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                        Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
@@ -232,7 +232,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                 Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                 Types.TIMESTAMP, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC,
-                Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                 Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                 Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                 symmetricDialect.getSqlTypeForIds(), Types.VARCHAR };
@@ -252,7 +252,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                             outgoingBatch.getExtractStartTime(), outgoingBatch.getTransferStartTime(), outgoingBatch.getLoadStartTime(),
                             outgoingBatch.getSqlState(), outgoingBatch.getSqlCode(), FormatUtils.abbreviateForLogging(outgoingBatch.getSqlMessage()),
                             outgoingBatch.getFailedDataId(), outgoingBatch.getFailedLineNumber(),
-                            outgoingBatch.getLastUpdatedHostName(), outgoingBatch.getSummary(), outgoingBatch.getLoadRowCount(),
+                            outgoingBatch.getLastUpdatedHostName(), new Date(), outgoingBatch.getSummary(), outgoingBatch.getLoadRowCount(),
                             outgoingBatch.getLoadInsertRowCount(), outgoingBatch.getLoadUpdateRowCount(), outgoingBatch.getLoadDeleteRowCount(),
                             outgoingBatch.getFallbackInsertCount(), outgoingBatch.getFallbackUpdateCount(), outgoingBatch.getIgnoreRowCount(),
                             outgoingBatch.getMissingDeleteCount(), outgoingBatch.getSkipCount(), outgoingBatch.getExtractRowCount(),
@@ -309,8 +309,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 outgoingBatch.getStatus().name(), outgoingBatch.getLoadId(), outgoingBatch.isExtractJobFlag() ? 1 : 0,
                 outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch.isCommonFlag() ? 1 : 0, outgoingBatch.getReloadRowCount(),
                 outgoingBatch.getOtherRowCount(), outgoingBatch.getDataUpdateRowCount(), outgoingBatch.getDataInsertRowCount(),
-                outgoingBatch.getDataDeleteRowCount(), outgoingBatch.getLastUpdatedHostName(), outgoingBatch.getCreateBy(),
-                outgoingBatch.getSummary(), outgoingBatch.getDataRowCount());
+                outgoingBatch.getDataDeleteRowCount(), outgoingBatch.getLastUpdatedHostName(), new Date(), new Date(),
+                outgoingBatch.getCreateBy(), outgoingBatch.getSummary(), outgoingBatch.getDataRowCount());
         outgoingBatch.setBatchId(batchId);
     }
 
@@ -330,11 +330,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             transaction.addRow(batch, new Object[] { batch.getBatchId(), batch.getNodeId(), batch.getChannelId(), batch.getStatus().name(),
                     batch.getLoadId(), batch.isExtractJobFlag() ? 1 : 0, batch.isLoadFlag() ? 1 : 0, batch.isCommonFlag() ? 1 : 0,
                     batch.getReloadRowCount(), batch.getOtherRowCount(), batch.getDataUpdateRowCount(), batch.getDataInsertRowCount(),
-                    batch.getDataDeleteRowCount(), batch.getLastUpdatedHostName(), batch.getCreateBy(), batch.getSummary(),
-                    batch.getDataRowCount() },
+                    batch.getDataDeleteRowCount(), batch.getLastUpdatedHostName(), new Date(), new Date(), batch.getCreateBy(),
+                    batch.getSummary(), batch.getDataRowCount() },
                     new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                            Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC });
+                            Types.NUMERIC, Types.VARCHAR, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC });
             if (!isCommon) {
                 batchId++;
             }

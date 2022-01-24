@@ -26,11 +26,11 @@ public class ParameterServiceSqlMap extends AbstractSqlMap {
     public ParameterServiceSqlMap(IDatabasePlatform platform, String tablePrefix) {
         super(platform, tablePrefix);
         putSql("updateParameterSql", "" +
-                "update $(parameter) set param_value=?, last_update_by=?, last_update_time=current_timestamp " +
+                "update $(parameter) set param_value=?, last_update_by=?, last_update_time=? " +
                 " where external_id=? and node_group_id=? and param_key=?");
         putSql("insertParameterSql", "" +
                 "insert into $(parameter) (external_id, node_group_id, param_key, param_value, last_update_by, create_time, last_update_time)   " +
-                "  values(?, ?, ?, ?, ?, current_timestamp, current_timestamp)                                                                  ");
+                "  values(?, ?, ?, ?, ?, ?, ?)                                                                  ");
         putSql("selectParametersByNodeGroupAndExternalIdSql", "" +
                 "select param_key, param_value from $(parameter) where external_id=? and   " +
                 "  node_group_id=?                                                                    ");

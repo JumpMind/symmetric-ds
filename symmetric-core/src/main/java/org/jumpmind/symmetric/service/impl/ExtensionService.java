@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -278,11 +279,14 @@ public class ExtensionService extends AbstractService implements IExtensionServi
     }
 
     public void saveExtension(Extension extension) {
-        Object[] args = { extension.getExtensionType(), extension.getInterfaceName(), extension.getNodeGroupId(),
-                extension.isEnabled() ? 1 : 0, extension.getExtensionOrder(), extension.getExtensionText(), extension.getLastUpdateBy(),
-                extension.getExtensionId() };
-        if (sqlTemplate.update(getSql("updateExtensionSql"), args) <= 0) {
-            sqlTemplate.update(getSql("insertExtensionSql"), args);
+        if (sqlTemplate.update(getSql("updateExtensionSql"),
+                new Object[] { extension.getExtensionType(), extension.getInterfaceName(), extension.getNodeGroupId(),
+                        extension.isEnabled() ? 1 : 0, extension.getExtensionOrder(), extension.getExtensionText(),
+                        extension.getLastUpdateBy(), new Date(), extension.getExtensionId() }) <= 0) {
+            sqlTemplate.update(getSql("insertExtensionSql"),
+                    new Object[] { extension.getExtensionType(), extension.getInterfaceName(), extension.getNodeGroupId(),
+                            extension.isEnabled() ? 1 : 0, extension.getExtensionOrder(), extension.getExtensionText(),
+                            new Date(), extension.getLastUpdateBy(), new Date(), extension.getExtensionId() });
             if (extension.isEnabled()) {
                 registerExtension(extension);
             }

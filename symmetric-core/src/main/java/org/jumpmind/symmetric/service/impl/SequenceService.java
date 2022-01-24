@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.sql.Types;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -172,7 +173,7 @@ public class SequenceService extends AbstractService implements ISequenceService
             nextVal = endVal;
         }
         int updateCount = transaction.prepareAndExecute(getSql("updateCurrentValueSql"), nextVal,
-                name, currVal);
+                new Date(), name, currVal);
         if (updateCount != 1) {
             nextVal = -1;
         } else if (range != null) {
@@ -294,9 +295,9 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     public void create(Sequence sequence) {
-        sqlTemplate.update(getSql("insertSequenceSql"), sequence.getSequenceName(),
-                sequence.getCurrentValue(), sequence.getIncrementBy(), sequence.getMinValue(),
-                sequence.getMaxValue(), sequence.isCycle() ? 1 : 0, sequence.getCacheSize(), sequence.getLastUpdateBy());
+        sqlTemplate.update(getSql("insertSequenceSql"), sequence.getSequenceName(), sequence.getCurrentValue(),
+                sequence.getIncrementBy(), sequence.getMinValue(), sequence.getMaxValue(), sequence.isCycle() ? 1 : 0,
+                sequence.getCacheSize(), new Date(), sequence.getLastUpdateBy(), new Date());
     }
 
     protected Sequence get(ISqlTransaction transaction, String name) {

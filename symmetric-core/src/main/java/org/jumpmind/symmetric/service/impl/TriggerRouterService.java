@@ -330,8 +330,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void inactivateTriggerHistory(TriggerHistory history) {
         sqlTemplate.update(getSql("inactivateTriggerHistorySql"),
-                new Object[] { history.getErrorMessage(), history.getTriggerHistoryId() },
-                new int[] { Types.VARCHAR, Types.INTEGER });
+                new Object[] { new Date(), history.getErrorMessage(), history.getTriggerHistoryId() },
+                new int[] { Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER });
     }
 
     public Map<Long, TriggerHistory> getHistoryRecords() {

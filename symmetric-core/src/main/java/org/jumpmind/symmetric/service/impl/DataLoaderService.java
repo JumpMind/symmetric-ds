@@ -805,10 +805,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         setting.getDetectType().name(), setting.getResolveType().name(),
                         setting.getPingBack().name(), setting.isResolveChangesOnly() ? 1 : 0,
                         setting.isResolveRowOnly() ? 1 : 0, setting.getDetectExpression(),
-                        setting.getLastUpdateBy(), setting.getConflictId() }, new int[] {
+                        setting.getLastUpdateBy(), new Date(), setting.getConflictId() }, new int[] {
                                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER,
-                                Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }) <= 0) {
+                                Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR }) <= 0) {
             sqlTemplate.update(
                     getSql("insertConflictSettingsSql"),
                     new Object[] { setting.getNodeGroupLink().getSourceNodeGroupId(),
@@ -817,12 +817,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             setting.getTargetSchemaName(), setting.getTargetTableName(),
                             setting.getDetectType().name(), setting.getResolveType().name(),
                             setting.getPingBack().name(), setting.isResolveChangesOnly() ? 1 : 0,
-                            setting.isResolveRowOnly() ? 1 : 0, setting.getDetectExpression(),
-                            setting.getLastUpdateBy(), setting.getConflictId() }, new int[] {
+                            setting.isResolveRowOnly() ? 1 : 0, setting.getDetectExpression(), new Date(),
+                            setting.getLastUpdateBy(), new Date(), setting.getConflictId() }, new int[] {
                                     Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                                     Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                                     Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
-                                    Types.VARCHAR, Types.VARCHAR });
+                                    Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR });
         }
     }
 

@@ -28,8 +28,8 @@ public class ContextServiceSqlMap extends AbstractSqlMap {
     public ContextServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
         putSql("selectSql", "select context_value from $(context) where name = ?");
-        putSql("updateSql", "update $(context) set context_value = ?, last_update_time = current_timestamp where name = ?");
-        putSql("insertSql", "insert into $(context) (name, context_value, create_time) values (?, ?, current_timestamp)");
+        putSql("updateSql", "update $(context) set context_value = ?, last_update_time = ? where name = ?");
+        putSql("insertSql", "insert into $(context) (name, context_value, create_time) values (?, ?, ?)");
         putSql("deleteSql", "delete from $(context) where name = ?");
     }
 }

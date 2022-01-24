@@ -35,7 +35,7 @@ public class DataLoaderServiceSqlMap extends AbstractSqlMap {
           "target_channel_id=?, target_catalog_name=?, target_schema_name=?, target_table_name=?,        " +
           "detect_type=?, resolve_type=?, ping_back=?, resolve_changes_only=?,                           " +
           "resolve_row_only=?, detect_expression=?,                                                      " +
-          "last_update_by=?, last_update_time=current_timestamp where conflict_id=?                      ");
+          "last_update_by=?, last_update_time=? where conflict_id=?                                      ");
         
         putSql("insertConflictSettingsSql", 
           "insert into $(conflict) (                                                                      " +
@@ -44,7 +44,7 @@ public class DataLoaderServiceSqlMap extends AbstractSqlMap {
           "detect_type, resolve_type, ping_back,                                                          " +
           "resolve_changes_only, resolve_row_only, detect_expression,                                     " +
           "create_time, last_update_by, last_update_time, conflict_id)                                    " +
-          "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp, ?)");
+          "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
         putSql("deleteConflictSettingsSql", "delete from $(conflict) where conflict_id=?");
         

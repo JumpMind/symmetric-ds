@@ -33,10 +33,10 @@ public class JobManagerSqlMap extends AbstractSqlMap {
         putSql("insertJobSql", "insert into $(job) (description, job_type, job_expression, "
                 + "default_auto_start, default_schedule, node_group_id, "
                 + "create_by, create_time, last_update_by, last_update_time, job_name) " +
-                "values (?, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp, ?)");
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         putSql("updateJobSql", "update $(job) set description = ?, job_type = ?, job_expression = ?, "
                 + "default_auto_start = ?, default_schedule = ?, node_group_id = ?, "
-                + "create_by = ?, last_update_by = ?, last_update_time = current_timestamp "
+                + "create_by = ?, last_update_by = ?, last_update_time = ? "
                 + "where job_name = ?");
         putSql("deleteJobSql", "delete from $(job) where job_name = ? and job_type <> 'BUILT_IN'");
     }

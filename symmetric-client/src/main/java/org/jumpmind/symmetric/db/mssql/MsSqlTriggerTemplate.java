@@ -92,7 +92,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with ex
 "         insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data \n" +
 "           (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
 "          select '$(targetTableName)','I', $(triggerHistoryId), $(columns), \n" +
-"                  $(channelExpression), $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), current_timestamp \n" +
+"                  $(channelExpression), $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), " + getCreateTimeExpression() + " \n" +
 "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
 "          from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) \n" +
 "       $(else:containsBlobClobColumns)                                                                                                                                    \n" +
@@ -120,7 +120,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with ex
 "         insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data \n" +
 "           (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
 "          select '$(targetTableName)','R', $(triggerHistoryId), $(newKeys), \n" +
-"                  $(channelExpression), $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), current_timestamp \n" +
+"                  $(channelExpression), $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), " + getCreateTimeExpression() + " \n" +
 "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
 "          from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) \n" +
 "       $(else:containsBlobClobColumns)                                                                                                                                    \n" +
@@ -169,7 +169,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "          select '$(targetTableName)','U', $(triggerHistoryId), $(columns), $(oldKeys), $(oldColumns),         \n" +
 "                   $(channelExpression),                                                                       \n" +
 "               $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), \n" +
-"                current_timestamp                                                                              \n" +
+"                " + getCreateTimeExpression() + "                                                              \n" +
 "       $(if:containsBlobClobColumns)                                                                           \n" +
 "          from inserted                                                                                        \n" +
 "          inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin)                  \n" +
@@ -188,7 +188,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "          select '$(targetTableName)','D', $(triggerHistoryId), $(oldKeys),                                    \n" +
 "            $(specialSqlServerSybaseChannelExpression), $(txIdExpression),                                     \n" +
              defaultCatalog + "dbo.$(prefixName)_node_disabled(),                                               \n" +
-"            $(externalSelect), current_timestamp                                                               \n" +
+"            $(externalSelect), " + getCreateTimeExpression() + "                                               \n" +
 "          from deleted                                                                                         \n" +
 "          where $(syncOnDeleteCondition)                                                                       \n" +
 "        insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data                                  \n" +
@@ -197,7 +197,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "          select '$(targetTableName)','I', $(triggerHistoryId), $(columns),                                    \n" +
 "            $(channelExpression), $(txIdExpression),                                                            \n" +
             defaultCatalog + "dbo.$(prefixName)_node_disabled(),                                                \n" +
-"           $(externalSelect), current_timestamp                                                                \n" +
+"           $(externalSelect), " + getCreateTimeExpression() + "                                                \n" +
 "       $(if:containsBlobClobColumns)                                                                           \n" +
 "          from inserted                                                                                        \n" +
 "          inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin)                  \n" +
@@ -216,7 +216,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "          select '$(targetTableName)','U', $(triggerHistoryId), $(columns), $(oldKeys), $(oldColumns),         \n" +
 "                   $(channelExpression),                                                                       \n" +
 "               $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), \n" +
-"                current_timestamp                                                                              \n" +
+"                " + getCreateTimeExpression() + "                                                              \n" +
 "       $(if:containsBlobClobColumns)                                                                           \n" +
 "          from inserted                                                                                        \n" +
 "          inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin)                  \n" +
@@ -263,7 +263,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "          select '$(targetTableName)','U', $(triggerHistoryId), $(columns), $(oldKeys), $(oldColumns),         \n" +
 "                   $(channelExpression),                                                                       \n" +
 "               $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), \n" +
-"                current_timestamp                                                                              \n" +
+"                " + getCreateTimeExpression() + "                                                              \n" +
 "       $(if:containsBlobClobColumns)                                                                           \n" +
 "          from inserted                                                                                        \n" +
 "          inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin)                  \n" +
@@ -282,7 +282,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "          select '$(targetTableName)','D', $(triggerHistoryId), $(oldKeys),                                    \n" +
 "              $(specialSqlServerSybaseChannelExpression),                                                      \n" +
 "              $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(),                     \n" +
-"              $(externalSelect), current_timestamp                                                             \n" +
+"              $(externalSelect), " + getCreateTimeExpression() + "                                             \n" +
 "          from deleted                                                                                         \n" +
 "          where $(syncOnDeleteCondition)                                                                       \n" +
 "        insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data                                  \n" +
@@ -291,7 +291,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "          select '$(targetTableName)','R', $(triggerHistoryId), $(newKeys),                                    \n" +
 "                  $(channelExpression), $(txIdExpression),                                                     \n" + 
                    defaultCatalog + "dbo.$(prefixName)_node_disabled(),                                         \n" +
-"                  $(externalSelect), current_timestamp                                                         \n" +
+"                  $(externalSelect), " + getCreateTimeExpression() + "                                         \n" +
 "       $(if:containsBlobClobColumns)                                                                           \n" +
 "          from inserted                                                                                        \n" +
 "          inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin)                  \n" +
@@ -308,7 +308,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "             source_node_id, external_data, create_time)                                                       \n" +
 "           select '$(targetTableName)','R', $(triggerHistoryId), $(oldKeys), $(channelExpression),             \n" +
 "               $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(),                    \n" +
-"               $(externalSelect), current_timestamp                                                            \n" +
+"               $(externalSelect), " + getCreateTimeExpression() + "                                            \n" +
 "       $(if:containsBlobClobColumns)                                                                           \n" +
 "           from inserted                                                                                       \n" +
 "           inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin)                 \n" +
@@ -339,7 +339,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with ex
 "    if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "        insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
 "        select '$(targetTableName)','D', $(triggerHistoryId), $(oldKeys), $(oldColumns), $(channelExpression), \n" +
-"              $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), current_timestamp\n" +
+"              $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), " + getCreateTimeExpression() + "\n" +
 "        from deleted where $(syncOnDeleteCondition)                                                                      \n" +
 "    end                                                                                                                                                                  \n" +
 "    $(custom_on_delete_text)                                                                                                                                              \n" +
@@ -364,7 +364,7 @@ getCreateTriggerString() + " $(triggerName) on database\n" +
 "  (table_name, event_type, trigger_hist_id, row_data, channel_id, source_node_id, create_time)\n" +
 "  values ('$(prefixName)_node', '" + DataEventType.SQL.getCode() + "', @histId,\n" +
 " '\"delimiter " + delimiter + ";' + CHAR(13) + char(10) + replace(replace(@data.value('(/EVENT_INSTANCE/TSQLCommand/CommandText)[1]', 'nvarchar(max)'),'\\','\\\\'),'\"','\\\"') + '\",ddl',\n" +
-"  'config', dbo.$(prefixName)_node_disabled(), current_timestamp)\n" +
+"  'config', dbo.$(prefixName)_node_disabled(), " + getCreateTimeExpression() + ")\n" +
 "end\n" + "---- go");
         
         sqlTemplates.put("initialLoadSqlTemplate" ,
@@ -456,6 +456,10 @@ getCreateTriggerString() + " $(triggerName) on database\n" +
             }
         }
         return prefix;
+    }
+    
+    protected String getCreateTimeExpression() {
+        return "current_timestamp";
     }
 
     @Override

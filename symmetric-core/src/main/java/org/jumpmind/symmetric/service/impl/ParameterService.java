@@ -91,10 +91,10 @@ public class ParameterService extends AbstractParameterService implements IParam
             }
         }
         int count = sqlTemplate.update(sql.getSql("updateParameterSql"), new Object[] { paramValue, lastUpdateBy,
-                externalId, nodeGroupId, key });
+                new Date(), externalId, nodeGroupId, key });
         if (count <= 0) {
             sqlTemplate.update(sql.getSql("insertParameterSql"), new Object[] { externalId,
-                    nodeGroupId, key, paramValue, lastUpdateBy });
+                    nodeGroupId, key, paramValue, lastUpdateBy, new Date(), new Date() });
         }
         rereadParameters();
     }
