@@ -21,7 +21,7 @@
     under the License.
 
 -->
-<!DOCTYPE database SYSTEM "database.dtd">
+<!DOCTYPE database SYSTEM "../../../../symmetric-assemble/database.dtd">
 
 <database name="symmetric">
 
@@ -96,8 +96,8 @@
         <column name="is_prerouted" type="BOOLEANINT" size="1" required="true" default="0" description="Set to true when routing should ignore this row because data_event and outgoing_batch rows are manually entered." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
         <unique name="idx_d_channel_id">
-            <index-column name="data_id"/>
-            <index-column name="channel_id"/>
+            <unique-column name="data_id"/>
+            <unique-column name="channel_id"/>
         </unique>
     </table>
 
