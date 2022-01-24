@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 public interface IDataProvider<T> {
-    public Collection<?> getRowItems();
+    public Collection<T> getRowItems();
 
     public List<?> getColumns();
 

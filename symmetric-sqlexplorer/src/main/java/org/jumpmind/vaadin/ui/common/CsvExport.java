@@ -28,23 +28,23 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CsvExport {
-    protected IDataProvider gridData = null;
+public class CsvExport<T> {
+    protected IDataProvider<T> gridData = null;
     protected String fileName;
     protected String title;
     protected StringBuilder cellData;
     protected final String csvMimeContentType = "text/csv";
     final Logger log = LoggerFactory.getLogger(getClass());
 
-    public CsvExport(final IDataProvider gridData) {
+    public CsvExport(final IDataProvider<T> gridData) {
         this(gridData, null, null);
     }
 
-    public CsvExport(final IDataProvider gridData, String fileName) {
+    public CsvExport(final IDataProvider<T> gridData, String fileName) {
         this(gridData, fileName, null);
     }
 
-    public CsvExport(final IDataProvider gridData, String fileName, String title) {
+    public CsvExport(final IDataProvider<T> gridData, String fileName, String title) {
         this.gridData = gridData;
         init(fileName, title);
     }
@@ -97,9 +97,9 @@ public class CsvExport {
     public void convertToCsv() {
         addTitle();
         addHeaders();
-        Iterator<?> iterator = gridData.getRowItems().iterator();
+        Iterator<T> iterator = gridData.getRowItems().iterator();
         while (iterator.hasNext()) {
-            Object rowItem = iterator.next();
+            T rowItem = iterator.next();
             Iterator<?> columnIterator = gridData.getColumns().iterator();
             while (columnIterator.hasNext()) {
                 Object col = columnIterator.next();

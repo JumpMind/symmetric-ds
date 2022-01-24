@@ -328,7 +328,7 @@ public class DataService extends AbstractService implements IDataService {
                     }
                 }, sourceNodeId);
     }
-    
+
     public List<TableReloadRequest> getTableReloadRequestToProcessByTarget(final String targetNodeId) {
         return sqlTemplate.query(getSql("selectTableReloadRequestToProcessByTarget"),
                 new ISqlRowMapper<TableReloadRequest>() {

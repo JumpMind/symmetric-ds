@@ -61,7 +61,7 @@ public interface IDataService {
     public TableReloadRequest getTableReloadRequest(long loadId, String triggerId, String routerId);
 
     public List<TableReloadRequest> getTableReloadRequestToProcess(final String sourceNodeId);
-    
+
     public List<TableReloadRequest> getTableReloadRequestToProcessByTarget(final String targetNodeId);
 
     public List<TableReloadStatus> getTableReloadStatus();

@@ -119,17 +119,16 @@ public abstract class AbstractClusterServiceTest extends AbstractServiceTest {
 
     @Test
     public void testGenerateInstanceId() {
-        ClusterService clusterService = (ClusterService) getClusterService();
         {
-            String instanceId = clusterService.generateInstanceId("looooooooooooooooooooooooooooooooooooooooooooong hostname.");
+            String instanceId = ClusterService.generateInstanceId("looooooooooooooooooooooooooooooooooooooooooooong hostname.");
             assertTrue((instanceId.length() <= 60), "");
         }
         {
-            String instanceId = clusterService.generateInstanceId("short hostname");
+            String instanceId = ClusterService.generateInstanceId("short hostname");
             assertTrue((instanceId.length() <= 60), "");
         }
         {
-            String instanceId = clusterService.generateInstanceId(null);
+            String instanceId = ClusterService.generateInstanceId(null);
             assertTrue((instanceId.length() <= 60), "");
         }
     }

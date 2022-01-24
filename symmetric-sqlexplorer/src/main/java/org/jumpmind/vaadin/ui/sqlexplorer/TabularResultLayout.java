@@ -318,9 +318,9 @@ public class TabularResultLayout extends VerticalLayout {
         downloadIcon.addClickListener(event -> {
             if (generateNewExport) {
                 IDataProvider<List<Object>> target = new GridDataProvider<List<Object>>(grid, valueProviderMap);
-                CsvExport csvExport = null;
+                CsvExport<List<Object>> csvExport = null;
                 if (target instanceof IDataProvider) {
-                    csvExport = new CsvExport(target);
+                    csvExport = new CsvExport<List<Object>>(target);
                     csvExport.setFileName(db.getName() + "-export.csv");
                     csvExport.setTitle(sql);
                     downloadAnchor.setHref(csvExport.getFileDownloader());

@@ -40,8 +40,8 @@ public class GridDataProvider<T> implements IDataProvider<T> {
     }
 
     @Override
-    public Collection<?> getRowItems() {
-        return (Collection<?>) grid.getDataProvider().fetch(new Query<>()).collect(Collectors.toList());
+    public Collection<T> getRowItems() {
+        return (Collection<T>) grid.getDataProvider().fetch(new Query<>()).collect(Collectors.toList());
     }
 
     @Override
