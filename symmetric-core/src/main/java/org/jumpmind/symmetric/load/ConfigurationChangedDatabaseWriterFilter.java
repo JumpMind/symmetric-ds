@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterFilterAdapter;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.model.TableReloadStatus;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
@@ -58,6 +59,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
     private static final String CTX_KEY_INITIAL_LOAD_LISTENER = "InitialLoadListener." + SUFFIX;
     private static final String CTX_KEY_MY_NODE_ID = "MyNodeId." + SUFFIX;
     private static final String CTX_KEY_MY_NODE_SECURITY = "MyNodeSecurity." + SUFFIX;
+    private static final String CTX_KEY_CANCEL_LOAD = "CancelLoad." + SUFFIX;
     private ISymmetricEngine engine;
     private ConfigurationChangedHelper helper;
 
@@ -130,6 +132,20 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         if (matchesTable(table, TableConstants.SYM_NODE_SECURITY)) {
             context.put(CTX_KEY_CHANGED_NODE_SECURITY, true);
         }
+        if (matchesTable(table, TableConstants.SYM_TABLE_RELOAD_STATUS) && data.getDataEventType() == DataEventType.UPDATE) {
+            Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+            boolean isCancelled = "1".equals(newData.get("cancelled"));
+            String loadId = newData.get("load_id");
+            if (isCancelled && loadId != null) {
+                @SuppressWarnings("unchecked")
+                List<Long> loadIds = (List<Long>) context.get(CTX_KEY_CANCEL_LOAD);
+                if (loadIds == null) {
+                    loadIds = new ArrayList<Long>();
+                    context.put(CTX_KEY_CANCEL_LOAD, loadIds);
+                }
+                loadIds.add(Long.parseLong(loadId));
+            }
+        }
     }
 
     private boolean hasClientReloadListener(DataContext context) {
@@ -176,6 +192,17 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
                 List<IClientReloadListener> listeners = engine.getExtensionService().getExtensionPointList(IClientReloadListener.class);
                 for (IClientReloadListener listener : listeners) {
                     listener.reloadCompleted();
+                }
+            }
+        }
+        @SuppressWarnings("unchecked")
+        List<Long> loadIds = (List<Long>) context.get(CTX_KEY_CANCEL_LOAD);
+        String identityId = (String) context.get(CTX_KEY_MY_NODE_ID);
+        if (loadIds != null && identityId != null) {
+            for (Long loadId : loadIds) {
+                TableReloadStatus status = engine.getDataService().getTableReloadStatusByLoadId(loadId);
+                if (status != null && identityId.equals(status.getSourceNodeId())) {
+                    engine.getInitialLoadService().cancelLoad(status);
                 }
             }
         }
