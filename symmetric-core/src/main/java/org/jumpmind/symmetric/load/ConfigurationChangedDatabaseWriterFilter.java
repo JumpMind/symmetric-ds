@@ -62,14 +62,21 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
     private static final String CTX_KEY_CANCEL_LOAD = "CancelLoad." + SUFFIX;
     private ISymmetricEngine engine;
     private ConfigurationChangedHelper helper;
+    private String tablePrefixLower;
+    private boolean matchesTablePrefix;
 
     public ConfigurationChangedDatabaseWriterFilter(ISymmetricEngine engine) {
         this.engine = engine;
         helper = new ConfigurationChangedHelper(engine);
+        tablePrefixLower = engine.getParameterService().getTablePrefix().toLowerCase();
     }
 
     @Override
     public boolean beforeWrite(DataContext context, Table table, CsvData data) {
+        matchesTablePrefix = table.getNameLowerCase().startsWith(tablePrefixLower);
+        if (!matchesTablePrefix) {
+            return true;
+        }
         if (context.getBatch().getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
             helper.setSyncTriggersAllowed(context, true);
         }
@@ -99,6 +106,9 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
 
     @Override
     public void afterWrite(DataContext context, Table table, CsvData data) {
+        if (!matchesTablePrefix) {
+            return;
+        }
         helper.handleChange(context, table, data);
         if (data.getDataEventType() == DataEventType.CREATE) {
             @SuppressWarnings("unchecked")
