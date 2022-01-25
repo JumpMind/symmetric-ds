@@ -1912,7 +1912,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public void releaseMissedExtractRequests() {
         List<Long> requestIds = sqlTemplateDirty.query(getSql("selectExtractChildRequestIdsMissed"), new LongMapper(), Status.NE.name(), Status.OK.name(),
-                engine.getNodeId());
+                engine.getNodeId(), engine.getNodeId());
         if (requestIds != null && requestIds.size() > 0) {
             log.info("Releasing {} child extract requests that missed processing by parent node", requestIds.size());
             for (Long requestId : requestIds) {

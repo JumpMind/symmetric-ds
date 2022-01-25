@@ -42,7 +42,7 @@ public class DataExtractorServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectExtractChildRequestIdsMissed",
                 "select request_id from $(extract_request) where status = ? and parent_request_id > 0 " 
-                + "and parent_request_id in (select request_id from $(extract_request) where parent_request_id = 0 and status = ?) and source_node_id = ?");
+                + "and parent_request_id in (select request_id from $(extract_request) where parent_request_id = 0 and status = ? and source_node_id = ?) and source_node_id = ?");
 
         putSql("releaseExtractChildRequestFromParent",
                 "update $(extract_request) set parent_request_id = 0 where request_id = ?");
