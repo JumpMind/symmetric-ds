@@ -481,12 +481,8 @@ public class SymmetricEngineHolder {
     }
 
     public boolean hasAnyEngineInitialized() {
-        if (enginesStarting.size() < engines.size()) {
-            return true;
-        }
-        for (EngineStarter starter : enginesStarting) {
-            ISymmetricEngine engine = starter.getEngine();
-            if (engine != null && engine.isInitialized()) {
+        for (ServerSymmetricEngine engine : engines.values()) {
+            if (engine.isInitialized()) {
                 return true;
             }
         }
