@@ -50,6 +50,8 @@ final public class ParameterConstants {
     public final static String DB_AWS_ACTIVE_KEY = "target.db.aws.active.key";
     public final static String DB_AWS_SECRET_KEY = "target.db.aws.secret.key";
     public final static String DB_AWS_REGION = "target.db.aws.region";
+    public final static String DB_AWS_BUCKET = "target.db.aws.bucket";
+    public final static String DB_AWS_FOLDER = "target.db.aws.folder";
     public final static String DB_USER = "db.user";
     public final static String DB_PASSWORD = "db.password";
     public final static String START_PULL_JOB = "start.pull.job";
@@ -455,6 +457,12 @@ final public class ParameterConstants {
     public final static String[] ALL_MONGODB_PARAMS = new String[] { MONGO_DEFAULT_DATABASE, MONGO_USE_MONGO_IDS };
     public final static String COSMOS_DEFAULT_DATABASE = "cosmosdb.default.database";
     public final static String[] ALL_COSMOS_PARAMS = new String[] { COSMOS_DEFAULT_DATABASE };
+
+    public final static String OPENSEARCH_LOAD_AWS_ACCESS_KEY = "opensearch.load.aws.access.key";
+    public final static String OPENSEARCH_LOAD_AWS_SECRET_KEY = "opensearch.load.aws.secret.key";
+    public final static String S3_LOAD_AWS_ACCESS_KEY = "s3.load.aws.access.key";
+    public final static String S3_LOAD_AWS_SECRET_KEY = "s3.load.aws.secret.key";
+    
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
