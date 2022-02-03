@@ -191,6 +191,7 @@ final public class ParameterConstants {
     public final static String ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED = "routing.data.reader.order.by.gap.id.enabled";
     public final static String ROUTING_DATA_READER_INTO_MEMORY_ENABLED = "routing.data.reader.into.memory.enabled";
     public final static String ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY = "routing.data.reader.threshold.gaps.to.use.greater.than.query";
+    public final static String ROUTING_DATA_READER_USE_MULTIPLE_QUERIES = "routing.data.reader.use.multiple.queries";
     public final static String ROUTING_LOG_STATS_ON_BATCH_ERROR = "routing.log.stats.on.batch.error";
     public final static String ROUTING_COLLECT_STATS_UNROUTED = "routing.collect.stats.unrouted";
     public final static String ROUTING_USE_FAST_GAP_DETECTOR = "routing.use.fast.gap.detector";
@@ -457,12 +458,10 @@ final public class ParameterConstants {
     public final static String[] ALL_MONGODB_PARAMS = new String[] { MONGO_DEFAULT_DATABASE, MONGO_USE_MONGO_IDS };
     public final static String COSMOS_DEFAULT_DATABASE = "cosmosdb.default.database";
     public final static String[] ALL_COSMOS_PARAMS = new String[] { COSMOS_DEFAULT_DATABASE };
-
     public final static String OPENSEARCH_LOAD_AWS_ACCESS_KEY = "opensearch.load.aws.access.key";
     public final static String OPENSEARCH_LOAD_AWS_SECRET_KEY = "opensearch.load.aws.secret.key";
     public final static String S3_LOAD_AWS_ACCESS_KEY = "s3.load.aws.access.key";
     public final static String S3_LOAD_AWS_SECRET_KEY = "s3.load.aws.secret.key";
-    
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

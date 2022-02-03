@@ -24,26 +24,19 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.jumpmind.symmetric.common.Constants.LOG_PROCESS_SUMMARY_THRESHOLD;
 
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlReadCursor;
-import org.jumpmind.db.sql.ISqlRowMapper;
-import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.ProcessInfo;
@@ -52,9 +45,9 @@ import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.AppUtils;
-import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * This class is responsible for reading data for the purpose of routing. It reads ahead and tries to keep a blocking queue populated for another thread to
@@ -76,9 +69,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
     protected boolean finishTransactionMode = false;
     protected boolean isEachGapQueried;
     protected boolean isOracleNoOrder;
-    protected boolean isSortInMemory;
     protected String lastTransactionId = null;
-    protected static Map<String, Boolean> lastSelectUsedGreaterThanQueryByEngineName = new HashMap<String, Boolean>();
     long lastStatsPrintOutBaselineInMs = System.currentTimeMillis();
 
     public DataGapRouteReader(ChannelRouterContext context, ISymmetricEngine engine) {
@@ -88,8 +79,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
         this.percentOfHeapToUse = (double) parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_MEMORY_THRESHOLD) / (double) 100;
         this.takeTimeout = engine.getParameterService().getInt(
                 ParameterConstants.ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS, 330);
-        this.isOracleNoOrder = parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false);
-        this.isSortInMemory = parameterService.is(ParameterConstants.ROUTING_DATA_READER_INTO_MEMORY_ENABLED, false);
         if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
             /* there will not be a separate thread to read a blocked queue so make sure the queue is big enough that it can be filled */
             this.dataQueue = new LinkedBlockingQueue<Data>();
@@ -97,15 +86,11 @@ public class DataGapRouteReader implements IDataToRouteReader {
             this.dataQueue = new LinkedBlockingQueue<Data>(peekAheadCount);
         }
         this.context = context;
-        String engineName = parameterService.getEngineName();
-        if (lastSelectUsedGreaterThanQueryByEngineName.get(engineName) == null) {
-            lastSelectUsedGreaterThanQueryByEngineName.put(engineName, Boolean.FALSE);
-        }
-        this.dataGaps = new ArrayList<DataGap>(context.getDataGaps());
     }
 
     public void run() {
         try {
+            MDC.put("engineName", engine.getParameterService().getEngineName());
             execute();
         } catch (Throwable ex) {
             log.error("", ex);
@@ -114,7 +99,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
     protected void execute() {
         ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
-        ISqlReadCursor<Data> cursor = null;
+        IDataGapRouteCursor cursor = null;
         processInfo = engine.getStatisticManager().newProcessInfo(
                 new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), null,
                         ProcessType.ROUTER_READER));
@@ -124,7 +109,21 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     .equals(NonTransactionalBatchAlgorithm.NAME)
                     || !symmetricDialect.supportsTransactionId();
             processInfo.setStatus(ProcessStatus.QUERYING);
-            cursor = prepareCursor();
+            if (engine.getParameterService().is(ParameterConstants.ROUTING_DATA_READER_USE_MULTIPLE_QUERIES)) {
+                cursor = new DataGapRouteMultiCursor(context, engine);
+            } else {
+                cursor = new DataGapRouteCursor(context, engine);
+            }
+            isOracleNoOrder = cursor.isOracleNoOrder();
+            isEachGapQueried = cursor.isEachGapQueried();
+            if (isOracleNoOrder) {
+                // for oracle no-order mode, it will use a read-only check that each data is in a gap
+                dataGaps = context.getDataGaps();
+            } else if (!isEachGapQueried) {
+                // for a wide-open query that uses only the first gap, it will check each gap in memory and remove it from the list
+                dataGaps = new ArrayList<DataGap>(context.getDataGaps());
+                currentGap = dataGaps.remove(0);
+            }
             processInfo.setStatus(ProcessStatus.EXTRACTING);
             if (transactional) {
                 executeTransactional(cursor);
@@ -234,12 +233,10 @@ public class DataGapRouteReader implements IDataToRouteReader {
         if (!finishTransactionMode
                 || (lastTransactionId != null && finishTransactionMode && lastTransactionId
                         .equals(data.getTransactionId()))) {
-            if (isOracleNoOrder) {
-                if (isEachGapQueried) {
-                    okToProcess = true;
-                } else {
-                    okToProcess = isInDataGap(dataId);
-                }
+            if (isEachGapQueried) {
+                okToProcess = true;
+            } else if (isOracleNoOrder) {
+                okToProcess = isInDataGap(dataId);
             } else {
                 while (!okToProcess && currentGap != null && dataId >= currentGap.getStartId()) {
                     if (dataId <= currentGap.getEndId()) {
@@ -289,127 +286,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
             }
         } while (data == null && reading);
         return data;
-    }
-
-    protected ISqlReadCursor<Data> prepareCursor() {
-        IParameterService parameterService = engine.getParameterService();
-        int numberOfGapsToQualify = parameterService.getInt(
-                ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL, 100);
-        int maxGapsBeforeGreaterThanQuery = parameterService.getInt(ParameterConstants.ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY, 100);
-        boolean useGreaterThanDataId = false;
-        if (maxGapsBeforeGreaterThanQuery > 0 && this.dataGaps.size() > maxGapsBeforeGreaterThanQuery) {
-            useGreaterThanDataId = true;
-        }
-        isEachGapQueried = !useGreaterThanDataId && this.dataGaps.size() <= numberOfGapsToQualify;
-        String channelId = context.getChannel().getChannelId();
-        String sql = null;
-        Boolean lastSelectUsedGreaterThanQuery = lastSelectUsedGreaterThanQueryByEngineName.get(parameterService.getEngineName());
-        if (lastSelectUsedGreaterThanQuery == null) {
-            lastSelectUsedGreaterThanQuery = Boolean.FALSE;
-        }
-        if (useGreaterThanDataId) {
-            sql = getSql("selectDataUsingStartDataId");
-            if (!lastSelectUsedGreaterThanQuery) {
-                log.info("Switching to select from the data table where data_id >= start gap because there were {} gaps found "
-                        + "which was more than the configured threshold of {}", dataGaps.size(), maxGapsBeforeGreaterThanQuery);
-                lastSelectUsedGreaterThanQueryByEngineName.put(parameterService.getEngineName(), Boolean.TRUE);
-            }
-        } else {
-            sql = qualifyUsingDataGaps(dataGaps, numberOfGapsToQualify, getSql("selectDataUsingGapsSql"));
-            if (lastSelectUsedGreaterThanQuery) {
-                log.info("Switching to select from the data table where data_id between gaps");
-                lastSelectUsedGreaterThanQueryByEngineName.put(parameterService.getEngineName(), Boolean.FALSE);
-            }
-        }
-        if (!isSortInMemory) {
-            if (isOracleNoOrder) {
-                sql = String.format("%s %s", sql, engine.getRouterService().getSql("orderByCreateTime"));
-            } else if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
-                sql = String.format("%s %s", sql, engine.getRouterService().getSql("orderByDataId"));
-            }
-        }
-        ISqlTemplate sqlTemplate = engine.getSymmetricDialect().getPlatform().getSqlTemplate();
-        Object[] args = null;
-        int[] types = null;
-        int dataIdSqlType = engine.getSymmetricDialect().getSqlTypeForIds();
-        if (useGreaterThanDataId) {
-            args = new Object[] { channelId, dataGaps.get(0).getStartId() };
-            types = new int[] { Types.VARCHAR, dataIdSqlType };
-        } else {
-            int numberOfArgs = 1 + 2 * (numberOfGapsToQualify < dataGaps.size() ? numberOfGapsToQualify
-                    : dataGaps.size());
-            args = new Object[numberOfArgs];
-            types = new int[numberOfArgs];
-            args[0] = channelId;
-            types[0] = Types.VARCHAR;
-            for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {
-                DataGap gap = dataGaps.get(i);
-                args[i * 2 + 1] = gap.getStartId();
-                types[i * 2 + 1] = dataIdSqlType;
-                if ((i + 1) == numberOfGapsToQualify && (i + 1) < dataGaps.size()) {
-                    /*
-                     * there were more gaps than we are going to use in the SQL. use the last gap as the end data id for the last range
-                     */
-                    args[i * 2 + 2] = dataGaps.get(dataGaps.size() - 1).getEndId();
-                } else {
-                    args[i * 2 + 2] = gap.getEndId();
-                }
-                types[i * 2 + 2] = dataIdSqlType;
-            }
-        }
-        if (!isOracleNoOrder) {
-            this.currentGap = dataGaps.remove(0);
-        }
-        ISqlRowMapper<Data> dataMapper = engine.getDataService().getDataMapper();
-        ISqlReadCursor<Data> cursor = null;
-        try {
-            cursor = sqlTemplate.queryForCursor(sql, dataMapper, args, types);
-        } catch (RuntimeException e) {
-            log.info("Failed to execute query, but will try again,", e);
-            AppUtils.sleep(1000);
-            cursor = sqlTemplate.queryForCursor(sql, dataMapper, args, types);
-        }
-        if (isSortInMemory) {
-            Comparator<Data> comparator = null;
-            if (isOracleNoOrder) {
-                comparator = DataMemoryCursor.SORT_BY_TIME;
-            } else if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
-                comparator = DataMemoryCursor.SORT_BY_ID;
-            }
-            cursor = new DataMemoryCursor(cursor, context, comparator);
-        }
-        return cursor;
-    }
-
-    protected String qualifyUsingDataGaps(List<DataGap> dataGaps, int numberOfGapsToQualify,
-            String sql) {
-        StringBuilder gapClause = new StringBuilder();
-        for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {
-            if (i == 0) {
-                gapClause.append(" and (");
-            } else {
-                gapClause.append(" or ");
-            }
-            gapClause.append("(d.data_id between ? and ?)");
-        }
-        gapClause.append(")");
-        return FormatUtils.replace("dataRange", gapClause.toString(), sql);
-    }
-
-    protected String getSql(String sqlName) {
-        String select = engine.getRouterService().getSql(sqlName);
-        Channel channel = context.getChannel().getChannel();
-        if (!channel.isUseOldDataToRoute() || context.isOnlyDefaultRoutersAssigned()) {
-            select = select.replace("d.old_data", "''");
-        }
-        if (!channel.isUseRowDataToRoute() || context.isOnlyDefaultRoutersAssigned()) {
-            select = select.replace("d.row_data", "''");
-        }
-        if (!channel.isUsePkDataToRoute() || context.isOnlyDefaultRoutersAssigned()) {
-            select = select.replace("d.pk_data", "''");
-        }
-        return engine.getSymmetricDialect().massageDataExtractionSql(
-                select, context.isOverrideContainsBigLob() || channel.isContainsBigLob());
     }
 
     protected boolean fillPeekAheadQueue(List<Data> peekAheadQueue, int peekAheadCount,

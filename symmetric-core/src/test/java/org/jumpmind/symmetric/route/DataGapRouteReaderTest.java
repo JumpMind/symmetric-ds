@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -301,24 +300,6 @@ public class DataGapRouteReaderTest {
             Data d = iter.next();
             assertEquals(ids[index], d.getDataId());
             index++;
-        }
-    }
-
-    static class ListReadCursor implements ISqlReadCursor<Data> {
-        Iterator<Data> iterator;
-
-        public ListReadCursor(List<Data> list) {
-            this.iterator = list.iterator();
-        }
-
-        public Data next() {
-            if (iterator.hasNext()) {
-                return iterator.next();
-            }
-            return null;
-        }
-
-        public void close() {
         }
     }
 }
