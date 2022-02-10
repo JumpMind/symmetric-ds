@@ -68,6 +68,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                         } else if (table.hasAutoIncrementColumn()) {
                             writer.allowInsertIntoAutoIncrementColumns(true, table);
                         }
+                        transformWriter.lastTransformedTable = table;
                         writer.start(table);
                         super.performFallbackToInsert(writer, newData, conflict, retransform);
                         writer.end(table);
@@ -97,6 +98,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
             for (TransformedData newlyTransformedData : newlyTransformedDatas) {
                 if (newlyTransformedData.hasSameKeyValues(transformedData.getKeyValues())) {
                     Table table = newlyTransformedData.buildTargetTable();
+                    transformWriter.lastTransformedTable = table;
                     writer.start(table);
                     super.performFallbackToUpdate(writer, newlyTransformedData.buildTargetCsvData(), conflict, retransform);
                     writer.end(table);
