@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 import org.jumpmind.properties.TypedProperties;
@@ -29,4 +30,10 @@ public interface ITypedPropertiesFactory {
     public void init(File propertiesFile, Properties properties);
 
     public TypedProperties reload();
+
+    public TypedProperties reload(File propFile);
+
+    public TypedProperties reload(Properties properties);
+
+    public void save(Properties props, File propFile, String comments) throws IOException;
 }

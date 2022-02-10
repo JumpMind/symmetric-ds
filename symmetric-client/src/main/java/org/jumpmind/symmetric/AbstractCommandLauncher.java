@@ -30,9 +30,6 @@ import java.net.MalformedURLException;
 import java.security.Provider;
 import java.security.Security;
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -51,6 +48,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
+import org.jumpmind.symmetric.util.PropertiesUtil;
 import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
 import org.jumpmind.util.AppUtils;
 import org.slf4j.Logger;
@@ -205,7 +203,7 @@ public abstract class AbstractCommandLauncher {
                         line.getOptionValue(OPTION_PROPERTIES_FILE));
             }
         } else if (line.hasOption(OPTION_ENGINE)) {
-            propertiesFile = findPropertiesFileForEngineWithName(line.getOptionValue(OPTION_ENGINE));
+            propertiesFile = PropertiesUtil.findPropertiesFileForEngineWithName(line.getOptionValue(OPTION_ENGINE));
             if (propertiesFile == null || (propertiesFile != null && !propertiesFile.exists())) {
                 throw new SymmetricException(
                         "Could not find the properties file for the engine specified: %s",
@@ -220,45 +218,8 @@ public abstract class AbstractCommandLauncher {
         }
     }
 
-    public static String getEnginesDir() {
-        String enginesDir = System.getProperty(SystemConstants.SYSPROP_ENGINES_DIR, AppUtils.getSymHome() + "/engines");
-        new File(enginesDir).mkdirs();
-        return enginesDir;
-    }
-
-    public static File findPropertiesFileForEngineWithName(String engineName) {
-        File[] files = findEnginePropertiesFiles();
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            Properties properties = new Properties();
-            try (FileInputStream is = new FileInputStream(file)) {
-                properties.load(is);
-                if (engineName.equals(properties.getProperty(ParameterConstants.ENGINE_NAME))) {
-                    return file;
-                }
-            } catch (IOException ex) {
-            }
-        }
-        return null;
-    }
-
-    public static File[] findEnginePropertiesFiles() {
-        List<File> propFiles = new ArrayList<>();
-        File enginesDir = new File(getEnginesDir());
-        File[] files = enginesDir.listFiles();
-        if (files != null) {
-            for (int i = 0; i < files.length; i++) {
-                File file = files[i];
-                if (file.getName().endsWith(".properties")) {
-                    propFiles.add(file);
-                }
-            }
-        }
-        return propFiles.toArray(new File[propFiles.size()]);
-    }
-
     public File findSingleEnginesPropertiesFile() {
-        File[] files = findEnginePropertiesFiles();
+        File[] files = PropertiesUtil.findEnginePropertiesFiles();
         if (files.length == 1) {
             return files[0];
         } else {
@@ -314,7 +275,8 @@ public abstract class AbstractCommandLauncher {
             if (testConnection) {
                 testConnection();
             }
-            TypedProperties properties = new TypedProperties(propertiesFile);
+            ITypedPropertiesFactory factory = PropertiesUtil.createTypedPropertiesFactory(propertiesFile, null);
+            TypedProperties properties = factory.reload(propertiesFile);
             if (properties.is(ParameterConstants.NODE_LOAD_ONLY, false)) {
                 TypedProperties copiedProperties = new TypedProperties();
                 String prefix = ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX;
@@ -335,7 +297,8 @@ public abstract class AbstractCommandLauncher {
     }
 
     protected TypedProperties getTypedProperties() {
-        return new TypedProperties(propertiesFile);
+        ITypedPropertiesFactory factory = PropertiesUtil.createTypedPropertiesFactory(propertiesFile, null);
+        return factory.reload(propertiesFile);
     }
 
     protected void buildOptions(Options options) {

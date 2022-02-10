@@ -483,9 +483,9 @@ abstract public class AbstractTriggerTemplate {
                         trigger).toString() : "null", ddl);
         String oldddl = null;
         for (oldddl = null; ddl != null && !ddl.equals(oldddl); ddl = this
-				.eval(columnString.isBlobClob && !trigger.isUseStreamLobs(), "containsBlobClobColumns", ddl)) {
-			oldddl = ddl;
-		}
+                .eval(columnString.isBlobClob && !trigger.isUseStreamLobs(), "containsBlobClobColumns", ddl)) {
+            oldddl = ddl;
+        }
         oldddl = null;
         // some column templates need tableName and schemaName
         ddl = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), ddl);

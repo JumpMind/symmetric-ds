@@ -71,6 +71,22 @@ public class AndroidTypedPropertiesFactory implements ITypedPropertiesFactory {
     }
 
     @Override
+    public TypedProperties reload(File propFile) {
+        TypedProperties typedProperties = new TypedProperties(propFile);
+        return typedProperties;
+    }
+
+    @Override
+    public TypedProperties reload(Properties properties) {
+        TypedProperties typedProperties = new TypedProperties(properties);
+        return typedProperties;
+    }
+
+    @Override
     public void init(File propertiesFile, Properties properties) {
+    }
+
+    @Override
+    public void save(Properties props, File propFile, String comments) throws IOException {
     }
 }

@@ -43,9 +43,8 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
     public static final String JDBC_DRIVER = "net.sourceforge.jtds.jdbc.Driver";
     /* The sub protocol used by the standard SQL Server driver. */
     public static final String JDBC_SUBPROTOCOL = "jtds";
-
     int engineEdition = -1;
-	
+
     /*
      * Creates a new platform instance.
      */
@@ -151,16 +150,16 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
         result.setStatus(Status.FAIL);
         return result;
     }
-    
+
     public int getEngineEdition() {
-    	if (engineEdition < 0) {
-    		try {
-    			engineEdition = this.sqlTemplate.queryForInt("SELECT CAST(SERVERPROPERTY('EngineEdition') AS INT)");
-    		} catch (Exception e) {
-    			engineEdition = 0;
-    			// Not supported until MSSQL 2016
-    		}
-    	} 
-    	return engineEdition;
+        if (engineEdition < 0) {
+            try {
+                engineEdition = this.sqlTemplate.queryForInt("SELECT CAST(SERVERPROPERTY('EngineEdition') AS INT)");
+            } catch (Exception e) {
+                engineEdition = 0;
+                // Not supported until MSSQL 2016
+            }
+        }
+        return engineEdition;
     }
 }

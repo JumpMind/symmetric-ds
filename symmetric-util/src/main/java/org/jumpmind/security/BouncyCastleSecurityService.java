@@ -76,6 +76,26 @@ public class BouncyCastleSecurityService extends SecurityService {
         return kpGen.generateKeyPair();
     }
 
+    @Override
+    public boolean supportsExportCertificate() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsImportCertificate() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsBackupCertificate() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsGenerateSelfSignedCertificate() {
+        return true;
+    }
+
     /**
      * Bouncy Castle library is needed for signing a public key to generate a certificate
      */

@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.web;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -50,9 +49,8 @@ import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
-import org.jumpmind.symmetric.AbstractCommandLauncher;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.SymmetricAdmin;
+import org.jumpmind.symmetric.ITypedPropertiesFactory;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -65,6 +63,7 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.util.PropertiesUtil;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.CustomizableThreadFactory;
 import org.slf4j.Logger;
@@ -104,7 +103,7 @@ public class SymmetricEngineHolder {
             if (autoCreate) {
                 log.info("Current directory is {}", System.getProperty("user.dir"));
                 if (isMultiServerMode()) {
-                    String enginesDirname = AbstractCommandLauncher.getEnginesDir();
+                    String enginesDirname = PropertiesUtil.getEnginesDir();
                     log.info("Starting in multi-server mode with engines directory at {}", enginesDirname);
                     File enginesDir = new File(enginesDirname);
                     File[] files = null;
@@ -184,7 +183,8 @@ public class SymmetricEngineHolder {
     }
 
     public ISymmetricEngine install(Properties passedInProperties, IDatabaseInstallStatementListener listener) throws Exception {
-        TypedProperties properties = new TypedProperties(passedInProperties);
+        ITypedPropertiesFactory factory = PropertiesUtil.createTypedPropertiesFactory(null, passedInProperties);
+        TypedProperties properties = factory.reload(passedInProperties);
         String password = properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
         if (StringUtils.isNotBlank(password) && !password.startsWith(SecurityConstants.PREFIX_ENC)) {
             try {
@@ -207,6 +207,7 @@ public class SymmetricEngineHolder {
         }
         String engineName = validateRequiredProperties(properties);
         passedInProperties.setProperty(ParameterConstants.ENGINE_NAME, engineName);
+        properties = factory.reload(properties);
         if (engines.get(engineName) != null) {
             try {
                 engines.get(engineName).stop();
@@ -215,12 +216,12 @@ public class SymmetricEngineHolder {
             }
             engines.remove(engineName);
         }
-        File enginesDir = new File(AbstractCommandLauncher.getEnginesDir());
+        File enginesDir = new File(PropertiesUtil.getEnginesDir());
         File symmetricProperties = new File(enginesDir, engineName + ".properties");
-        try (FileOutputStream fileOs = new FileOutputStream(symmetricProperties)) {
+        try {
             SortedProperties sortedProperties = new SortedProperties();
             sortedProperties.putAll(properties);
-            sortedProperties.store(fileOs, "Updated by SymmetricDS Pro");
+            factory.save(sortedProperties, symmetricProperties, "Updated by SymmetricDS Pro");
         } catch (IOException ex) {
             throw new RuntimeException("Failed to write symmetric.properties to engine directory", ex);
         }
@@ -288,7 +289,7 @@ public class SymmetricEngineHolder {
     public void uninstallEngine(ISymmetricEngine engine) {
         Node node = engine.getNodeService().getCachedIdentity();
         String engineName = engine.getEngineName();
-        File file = SymmetricAdmin.findPropertiesFileForEngineWithName(engineName);
+        File file = PropertiesUtil.findPropertiesFileForEngineWithName(engineName);
         engine.uninstall();
         engine.destroy();
         if (file != null) {
@@ -395,7 +396,7 @@ public class SymmetricEngineHolder {
             engineName = engineName.replaceAll(" ", "_");
             String engineExt = "";
             int engineNumber = 0;
-            while (new File(AbstractCommandLauncher.getEnginesDir(), engineName + engineExt + ".properties").exists()) {
+            while (new File(PropertiesUtil.getEnginesDir(), engineName + engineExt + ".properties").exists()) {
                 engineNumber++;
                 engineExt = "-" + engineNumber;
             }
