@@ -482,9 +482,9 @@ abstract public class AbstractTriggerTemplate {
                         oldTriggerValue, oldColumnPrefix, table, orderedColumns, dml, true, channel,
                         trigger).toString() : "null", ddl);
         String oldddl = null;
-        while (ddl != null && (!ddl.equals(oldddl))) {
+        for (oldddl = null; ddl != null && !ddl.equals(oldddl); ddl = this
+                .eval(columnString.isBlobClob && !trigger.isUseStreamLobs(), "containsBlobClobColumns", ddl)) {
             oldddl = ddl;
-            ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
         }
         oldddl = null;
         // some column templates need tableName and schemaName

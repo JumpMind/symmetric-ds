@@ -70,6 +70,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.util.PropertiesUtil;
 import org.jumpmind.symmetric.util.ModuleException;
 import org.jumpmind.symmetric.util.ModuleManager;
 import org.jumpmind.util.AppUtils;
@@ -383,10 +384,10 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     }
 
     private void listEngines(CommandLine line, List<String> args) {
-        System.out.println("Engines directory is " + new File(getEnginesDir()).getAbsolutePath());
+        System.out.println("Engines directory is " + new File(PropertiesUtil.getEnginesDir()).getAbsolutePath());
         System.out.println("The following engines and properties files are available:");
         int count = 0;
-        File[] files = findEnginePropertiesFiles();
+        File[] files = PropertiesUtil.findEnginePropertiesFiles();
         for (File file : files) {
             Properties properties = new Properties();
             try (FileInputStream is = new FileInputStream(file)) {
@@ -469,7 +470,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     }
 
     private ISecurityService createSecurityService() {
-        TypedProperties properties = ClientSymmetricEngine.createTypedPropertiesFactory(propertiesFile, new Properties()).reload();
+        TypedProperties properties = PropertiesUtil.createTypedPropertiesFactory(propertiesFile, new Properties()).reload();
         return SecurityServiceFactory.create(SecurityServiceType.SERVER, properties);
     }
 
@@ -523,7 +524,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             }
         }
         List<String> listOfDirs = new ArrayList<String>();
-        listOfDirs.add(AbstractCommandLauncher.getEnginesDir());
+        listOfDirs.add(PropertiesUtil.getEnginesDir());
         listOfDirs.add(AppUtils.getSymHome() + "/conf");
         listOfDirs.add(AppUtils.getSymHome() + "/patches");
         listOfDirs.add(AppUtils.getSymHome() + "/security");

@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,25 @@ public class TypedPropertiesFactory implements ITypedPropertiesFactory {
             return properties;
         } catch (IOException e) {
             throw new IoException(e);
+        }
+    }
+
+    @Override
+    public TypedProperties reload(File propFile) {
+        TypedProperties typedProperties = new TypedProperties(propFile);
+        return typedProperties;
+    }
+
+    @Override
+    public TypedProperties reload(Properties properties) {
+        TypedProperties typedProperties = new TypedProperties(properties);
+        return typedProperties;
+    }
+
+    @Override
+    public void save(Properties props, File propFile, String comments) throws IOException {
+        try (FileOutputStream os = new FileOutputStream(propFile)) {
+            props.store(os, comments);
         }
     }
 

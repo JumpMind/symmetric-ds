@@ -22,10 +22,9 @@ package org.jumpmind.properties;
 
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Properties;
 import java.util.Vector;
 
-public class SortedProperties extends Properties {
+public class SortedProperties extends TypedProperties {
     private static final long serialVersionUID = 1L;
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

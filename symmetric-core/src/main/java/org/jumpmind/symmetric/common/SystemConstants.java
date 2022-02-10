@@ -40,4 +40,5 @@ public class SystemConstants {
     public static final String SYSPROP_REST_PROPERTIES_FILE = "sym.rest.properties.file";
     public static final String SYSPROP_KEYSTORE_TYPE = SecurityConstants.SYSPROP_KEYSTORE_TYPE;
     public static final String SYSPROP_KEYSTORE_CERT_ALIAS = SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS;
+    public static final String SYSPROP_KEYSTORE_PARAMETERS = "symmetric.parameters.saved.in.keystore";
 }

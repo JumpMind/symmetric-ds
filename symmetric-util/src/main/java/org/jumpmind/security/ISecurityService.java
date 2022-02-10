@@ -71,4 +71,18 @@ public interface ISecurityService {
     public void saveTrustStore(KeyStore ks) throws Exception;
 
     public Cipher getCipher(int cipherMode) throws Exception;
+
+    public String getKeystoreEntry(String key) throws Exception;
+
+    public void setKeystoreEntry(String alias, String value) throws Exception;
+
+    public void deleteKeystoreEntry(String alias) throws Exception;
+
+    public boolean supportsExportCertificate();
+
+    public boolean supportsImportCertificate();
+
+    public boolean supportsBackupCertificate();
+
+    public boolean supportsGenerateSelfSignedCertificate();
 }
