@@ -54,6 +54,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IUpdateService;
 import org.jumpmind.util.AppUtils;
+import org.slf4j.MDC;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
@@ -82,6 +83,7 @@ public class UpdateService extends AbstractService implements IUpdateService {
         if (sendUsage || checkUpdates) {
             sleepThread = new Thread() {
                 public void run() {
+                    MDC.put("engineName", engine.getEngineName());
                     log.debug("Starting thread to check for updates, running every {} millis", MILLIS_BETWEEN_CHECKS);
                     while (!stopped) {
                         try {
