@@ -47,7 +47,13 @@ import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.nuodb.NuoDbSymmetricDialect;
+import org.jumpmind.symmetric.io.data.transform.ColumnPolicy;
+import org.jumpmind.symmetric.io.data.transform.ConstantColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.TransformColumn;
+import org.jumpmind.symmetric.io.data.transform.TransformPoint;
+import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.model.OutgoingBatches;
@@ -57,6 +63,8 @@ import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.ITransformService;
+import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.util.AppUtils;
 import org.junit.Assert;
@@ -1009,6 +1017,65 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 }
                 AppUtils.sleep(1000);
             }
+        });
+    }
+
+    @Test
+    public void test32TransformsWithUpdateFirstAndIncludeOn() {
+        Assertions.assertTimeout(Duration.ofMinutes(5), () -> {
+            logTestRunning();
+            NodeGroupLink groupLink = getClient().getConfigurationService().getNodeGroupLinkFor("test-root-group",
+                    "test-node-group", false);
+            TransformTableNodeGroupLink extractTransform = new TransformTableNodeGroupLink();
+            extractTransform.setTransformId("test_transform_extract");
+            extractTransform.setSourceTableName("test_transform");
+            extractTransform.setTargetTableName("test_transform");
+            extractTransform.setTransformPoint(TransformPoint.EXTRACT);
+            extractTransform.setColumnPolicy(ColumnPolicy.SPECIFIED);
+            extractTransform.setUpdateFirst(true);
+            extractTransform.setNodeGroupLink(groupLink);
+            TransformColumn idColumn = new TransformColumn("id", "id", true);
+            idColumn.setTransformId("test_transform_extract");
+            idColumn.setTransformOrder(1);
+            extractTransform.addTransformColumn(idColumn);
+            TransformColumn dataColumn = new TransformColumn("data", "data", false);
+            dataColumn.setTransformId("test_transform_extract");
+            dataColumn.setTransformOrder(2);
+            extractTransform.addTransformColumn(dataColumn);
+            TransformTableNodeGroupLink loadTransform = new TransformTableNodeGroupLink();
+            loadTransform.setTransformId("test_transform_load");
+            loadTransform.setSourceTableName("test_transform");
+            loadTransform.setTargetTableName("test_transform");
+            loadTransform.setTransformPoint(TransformPoint.LOAD);
+            loadTransform.setNodeGroupLink(groupLink);
+            TransformColumn insertOnlyColumn = new TransformColumn("", "insert_only", false, ConstantColumnTransform.NAME, "1");
+            insertOnlyColumn.setTransformId("test_transform_load");
+            insertOnlyColumn.setIncludeOn(IncludeOnType.INSERT);
+            loadTransform.addTransformColumn(insertOnlyColumn);
+            ITransformService transformService = getServer().getTransformService();
+            transformService.saveTransformTable(extractTransform, true);
+            transformService.saveTransformTable(loadTransform, true);
+            clientPull();
+            getServer().getSqlTemplate().update("insert into test_transform (id, data, insert_only) values (0, 'test0', 123)");
+            getServer().getSqlTemplate().update("insert into test_transform (id, data, insert_only) values (1, 'test1', 321)");
+            assertEquals("Target table is empty to begin with", getClient().getSqlTemplate().queryForInt(
+                    "select count(*) from test_transform where insert_only=1"), 0);
+            clientPull();
+            assertEquals("Inserted rows sync to target table with insert_only value specified in transform",
+                    getClient().getSqlTemplate().queryForInt(
+                            "select count(*) from test_transform where insert_only=1"), 2);
+            getClient().getSqlTemplate().update("delete from test_transform");
+            assertEquals("Target table is empty after a delete", getClient().getSqlTemplate().queryForInt(
+                    "select count(*) from test_transform where insert_only=1"), 0);
+            getServer().getSqlTemplate().update("update test_transform set data='test'");
+            clientPull();
+            assertEquals("Updated rows sync to target table with insert_only value specified in transform when target table is empty",
+                    getClient().getSqlTemplate().queryForInt(
+                            "select count(*) from test_transform where data='test' and insert_only=1"), 2);
+            getServer().getSqlTemplate().update("update test_transform set insert_only=2");
+            clientPull();
+            assertEquals("insert_only value in target table doesn't change on an update", getClient().getSqlTemplate().queryForInt(
+                    "select count(*) from test_transform where insert_only=1"), 2);
         });
     }
 
