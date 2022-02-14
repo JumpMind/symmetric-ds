@@ -1038,11 +1038,9 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     targetTables.put(tableNameKey, table);
                 }
             } catch (SqlException sqle) {
-                log.warn("Unable to read target table because {}", sqle.getMessage());
-            }
-            if (table == null && this instanceof DynamicDefaultDatabaseWriter) {
-                if (((DynamicDefaultDatabaseWriter) this).isLoadOnly()) {
-                    table = sourceTable;
+                // TODO: is there really a "does not exist" exception or should this be removed? copied from AbstractJdbcDdlReader.readTable()
+                if (sqle.getMessage() == null || !StringUtils.containsIgnoreCase(sqle.getMessage(), "does not exist")) {
+                    throw sqle;
                 }
             }
         }
