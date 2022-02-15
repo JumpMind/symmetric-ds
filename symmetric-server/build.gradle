@@ -56,7 +56,7 @@ apply from: symAssembleDir + '/asciidoc.gradle'
 
     distributions {
         server {
-            baseName = 'symmetric-server'
+            distributionBaseName = 'symmetric-server'
             contents {
                 from { 'COPYING' }
                 from { 'CREDITS' }

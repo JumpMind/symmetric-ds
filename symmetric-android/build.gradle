@@ -16,7 +16,7 @@ apply from: symAssembleDir + '/common.gradle'
 
     distributions {
         android {
-            baseName = 'symmetric-android'
+            distributionBaseName = 'symmetric-android'
             contents {
                 exclude ("**/slf4j-api*.jar")
                 exclude ("**/jul-to-slf4j*.jar")
