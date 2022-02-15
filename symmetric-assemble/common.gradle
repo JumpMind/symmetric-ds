@@ -205,9 +205,9 @@ subprojects { subproject ->
     jar {
         manifest {
             attributes("Implementation-Title": project.name,
-                       "Implementation-Version": version,
+                       "Implementation-Version": archiveVersion,
                        "Project-Artifact": project.name,                       
-                       "Build-Version": version,
+                       "Build-Version": archiveVersion,
                        "Build-Time": new SimpleDateFormat("yyyyMMdd-HHmm").format(new Date()),
                        "Build-Scm-Version": scmVersion)
         }    
