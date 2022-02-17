@@ -188,4 +188,29 @@ public class Monitor {
     public void setTargetNode(String targetNode) {
         this.targetNode = targetNode;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((monitorId == null) ? 0 : monitorId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Monitor other = (Monitor) obj;
+        if (monitorId == null) {
+            if (other.monitorId != null)
+                return false;
+        } else if (!monitorId.equals(other.monitorId))
+            return false;
+        return true;
+    }
 }

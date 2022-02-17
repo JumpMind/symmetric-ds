@@ -117,4 +117,29 @@ public class Extension implements Serializable {
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((extensionId == null) ? 0 : extensionId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Extension other = (Extension) obj;
+        if (extensionId == null) {
+            if (other.extensionId != null)
+                return false;
+        } else if (!extensionId.equals(other.extensionId))
+            return false;
+        return true;
+    }
 }

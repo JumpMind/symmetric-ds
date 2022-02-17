@@ -139,4 +139,29 @@ public class Notification {
     public void setTargetNode(String targetNode) {
         this.targetNode = targetNode;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((notificationId == null) ? 0 : notificationId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Notification other = (Notification) obj;
+        if (notificationId == null) {
+            if (other.notificationId != null)
+                return false;
+        } else if (!notificationId.equals(other.notificationId))
+            return false;
+        return true;
+    }
 }

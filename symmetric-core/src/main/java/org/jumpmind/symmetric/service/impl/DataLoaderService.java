@@ -1118,6 +1118,37 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         public NodeGroupLink getNodeGroupLink() {
             return nodeGroupLink;
         }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((getConflictId() == null) ? 0 : getConflictId().hashCode());
+            result = prime * result + ((nodeGroupLink == null) ? 0 : nodeGroupLink.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            ConflictNodeGroupLink other = (ConflictNodeGroupLink) obj;
+            if (getConflictId() == null) {
+                if (other.getConflictId() != null)
+                    return false;
+            } else if (!getConflictId().equals(other.getConflictId()))
+                return false;
+            if (nodeGroupLink == null) {
+                if (other.nodeGroupLink != null)
+                    return false;
+            } else if (!nodeGroupLink.equals(other.nodeGroupLink))
+                return false;
+            return true;
+        }
     }
 
     public static String filterDataLoaderType(String dataLoaderType) {
