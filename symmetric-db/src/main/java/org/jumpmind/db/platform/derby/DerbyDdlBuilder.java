@@ -53,7 +53,7 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "LONG VARCHAR FOR BIT DATA");
-        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "CLOB", Types.LONGVARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "CLOB", Types.CLOB);
         databaseInfo.addNativeTypeMapping(Types.NULL, "LONG VARCHAR FOR BIT DATA", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.OTHER, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.REF, "LONG VARCHAR FOR BIT DATA", Types.LONGVARBINARY);
