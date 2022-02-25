@@ -24,7 +24,7 @@ NOTE: The Java SDK is required to compile and run the kafka extension in this ex
 NOTE: Java based extension points require a full JDK (not just the JRE).
 
 ifdef::pro[]
-image::examples/extension-kafka.png[]
+image::images/examples/extension-kafka.png[]
 
 * After creating the extension, select it and hit the "Edit Script" button to copy and paste in the implementation below.
 [source, Java]

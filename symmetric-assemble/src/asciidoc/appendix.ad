@@ -8,14 +8,14 @@ SymmetricDS configuration is entered by the user into the data model to control 
 synchronized to which nodes.
 
 .Configuration Data Model
-image::data-model-config.gif[]
+image::images/data-model-config.gif[]
 
 At runtime, the configuration is used to capture data changes and route them to nodes. The data changes are placed 
 together in a single unit called a batch that can be loaded by another node. Outgoing batches are delivered to nodes 
 and acknowledged. Incoming batches are received and loaded. History is recorded for batch status changes and statistics.
 
 .Runtime Data Model
-image::data-model-runtime.gif[]
+image::images/data-model-runtime.gif[]
 
 include::generated/schema.ad[]
 
@@ -96,7 +96,7 @@ IMPORTANT: Stop SymmetricDS and close the SymmetricDS Pro Control Center before 
 [.float-group]
 --
 [.left.text-left]
-image::install/install1.png[]
+image::images/install/install1.png[]
 
 The first screen shows the SymmetricDS Pro software version.
 The setup program will ask a series of questions before writing files to disk.
@@ -108,7 +108,7 @@ To begin selecting options, click *Next*.
 [.float-group]
 --
 [.left.text-left]
-image::install/install2.png[]
+image::images/install/install2.png[]
 
 Carefully read the SymmetricDS Pro License Agreement.
 
@@ -119,7 +119,7 @@ If you accept, select *I accept the terms of this license agreement* and click *
 [.float-group]
 --
 [.left.text-left]
-image::upgrade/upgrade-1.png[]
+image::images/upgrade/upgrade-1.png[]
 
 Specify *Upgrade existing software* to upgrade an existing version of SymmetricDS to a newer version.
 
@@ -132,7 +132,7 @@ Click *Next* to continue.
 [.float-group]
 --
 [.left.text-left]
-image::upgrade/upgrade-2.png[]
+image::images/upgrade/upgrade-2.png[]
 
 Provide the directory of the existing installation.
 The directory will be verified as a valid installation of SymmetricDS
@@ -145,7 +145,7 @@ Choose the directory path, then click *Next* to continue.
 [.float-group]
 --
 [.left.text-left]
-image::install/install5.png[]
+image::images/install/install5.png[]
 
 Select the packages you want to upgrade and verify disk space requirements are met.
 By default, all packages are selected.
@@ -159,7 +159,7 @@ After selecting packages, click *Next*.
 [.float-group]
 --
 [.left.text-left]
-image::install/install10.png[]
+image::images/install/install10.png[]
 
 Confirm your upgrade settings look correct.
 
@@ -170,7 +170,7 @@ Click *Next* to begin upgrading and installing files.
 [.float-group]
 --
 [.left.text-left]
-image::install/install11.png[]
+image::images/install/install11.png[]
 
 The packages you selected are upgraded or installed to disk.
 For some upgrades, it may add or adjust settings in the "conf" subdirectory to accommodate the new version.
@@ -182,7 +182,7 @@ After it finishes, click *Next*.
 [.float-group]
 --
 [.left.text-left]
-image::upgrade/upgrade-3.png[]
+image::images/upgrade/upgrade-3.png[]
 
 During the finish step, it will upgrade the module system 
 (optional packages that were installed outside of the setup program) and perform any cleanup. 
@@ -194,7 +194,7 @@ After it finishes, click *Next*.
 [.float-group]
 --
 [.left.text-left]
-image::install/install13.png[]
+image::images/install/install13.png[]
 
 The upgrade is now complete.  Choose if you want to open the SymmetricDS Pro Control Center where
 you can view the server status and open a web console.
@@ -206,7 +206,7 @@ Click *Done* to exit the setup program.
 [.float-group]
 --
 [.left.text-left]
-image::install/install14.png[]
+image::images/install/install14.png[]
 
 From the SymmetricDS Pro Control Center, you can start the server again.
 On the first startup after an upgrade, the server will make any required alterations

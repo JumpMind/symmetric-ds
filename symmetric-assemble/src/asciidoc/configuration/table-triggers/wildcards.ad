@@ -18,5 +18,5 @@ The entire expression is processed as wildcarded when an odd number of consecuti
 
 ifdef::pro[]
 .Sample wildcard trigger for all tables that start with "sale" or " item"
-image::triggers/trigger-wildcard.png[]
+image::images/triggers/trigger-wildcard.png[]
 endif::pro[]

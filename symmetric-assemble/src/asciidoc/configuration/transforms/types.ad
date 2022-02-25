@@ -38,7 +38,7 @@ insert into SYM_TRANSFORM_COLUMN (
 endif::pro[]
 
 ifdef::pro[]
-image::transforms/transform-type-copy.png[]
+image::images/transforms/transform-type-copy.png[]
 endif::pro[]
 
 
@@ -63,7 +63,7 @@ insert into SYM_TRANSFORM_COLUMN (
 endif::pro[]
 
 ifdef::pro[]
-image::transforms/transform-type-remove.png[]
+image::images/transforms/transform-type-remove.png[]
 endif::pro[]
 
 ===== Constant Transform
@@ -86,7 +86,7 @@ insert into SYM_TRANSFORM_COLUMN (
 endif::pro[]
 
 ifdef::pro[]
-image::transforms/transform-type-const.png[]
+image::images/transforms/transform-type-const.png[]
 endif::pro[]
 
 ===== Variable Transform
@@ -123,7 +123,7 @@ insert into SYM_TRANSFORM_COLUMN (
 endif::pro[]
 
 ifdef::pro[]
-image::transforms/transform-type-variable.png[]
+image::images/transforms/transform-type-variable.png[]
 endif::pro[]
 
 ===== Additive Transform
@@ -157,7 +157,7 @@ insert into SYM_TRANSFORM_COLUMN (
 endif::pro[]
 
 ifdef::pro[]
-image::transforms/transform-type-additive.png[]
+image::images/transforms/transform-type-additive.png[]
 endif::pro[]
 
 ===== Substring Transform
@@ -183,7 +183,7 @@ insert into SYM_TRANSFORM_COLUMN (
 endif::pro[]
 
 ifdef::pro[]
-image::transforms/transform-type-substring.png[]
+image::images/transforms/transform-type-substring.png[]
 endif::pro[]
 
 ===== Left Transform
@@ -219,7 +219,7 @@ insert into SYM_TRANSFORM_COLUMN (
 endif::pro[]
 
 ifdef::pro[]
-image::transforms/transform-type-lookup.png[]
+image::images/transforms/transform-type-lookup.png[]
 endif::pro[]
 
 ===== Multiply Transform
@@ -270,6 +270,7 @@ Some variables are provided to the script:
 
 .Transform Expression Example Returning a String
 ====
+
 ----
 if (currentValue > oldValue) { 
 	return currentValue * .9;
@@ -281,6 +282,7 @@ if (currentValue > oldValue) {
 
 .Transform Expression Example Returning a NewAndOldValue object
 ====
+
 ----
 if (currentValue != null && currentValue.length() == 0) { 
 	return org.jumpmind.symmetric.io.data.transform.NewAndOldValue(null, oldValue);
@@ -292,6 +294,7 @@ if (currentValue != null && currentValue.length() == 0) {
 
 .Transform Expression Example Accessing Old/New Values for the Additional Column 'path'
 ====
+
 ----
 String newFilePath = PATH;
 String oldFilePath = null;
@@ -321,7 +324,7 @@ insert into SYM_TRANSFORM_COLUMN (
 endif::pro[]
 
 ifdef::pro[]
-image::transforms/transform-type-beanshell.png[]
+image::images/transforms/transform-type-beanshell.png[]
 endif::pro[]
 
 
@@ -348,7 +351,7 @@ insert into SYM_TRANSFORM_COLUMN (
 endif::pro[]
 
 ifdef::pro[]
-image::transforms/transform-type-identity.png[]
+image::images/transforms/transform-type-identity.png[]
 endif::pro[]
 
 
@@ -366,11 +369,11 @@ are provided to the script:
 |===
 
 .Transform Expression Example
-====
-----
-#{currentValue} - #{oldValue} * #{PRICE}
-----
-====
+//====
+//|===
+//|#{currentValue} - #{oldValue} * #{PRICE}
+//|===
+//====
 ifndef::pro[]
 [source, SQL]
 ----
@@ -387,7 +390,7 @@ insert into SYM_TRANSFORM_COLUMN (
 endif::pro[]
 
 ifdef::pro[]
-image::transforms/transform-type-math.png[]
+image::images/transforms/transform-type-math.png[]
 endif::pro[]
 
 
@@ -441,10 +444,10 @@ endif::pro[]
 
 ifdef::pro[]
 .If values are equal, ignore only the *COLUMN*
-image::transforms/transform-type-copy-if-change.png[]
+image::images/transforms/transform-type-copy-if-change.png[]
 
 .If values are equal, ignore the entire *ROW*
-image::transforms/transform-type-copy-if-change-blank.png[]
+image::images/transforms/transform-type-copy-if-change-blank.png[]
 
 endif::pro[]
 
@@ -470,7 +473,7 @@ is not found. Otherwise, if no default value is found, the result will be null.
 |s1=t1 s2=t2 s3=t3 *=t4|s5|t4
 |s1=t1 s2=t2 s3=t3 *=t4|null|t4
 
-====
+|===
 
 ifndef::pro[]
 [source, SQL]
@@ -488,9 +491,10 @@ insert into SYM_TRANSFORM_COLUMN (
 endif::pro[]
 
 ifdef::pro[]
-image::transforms/transform-type-valueMap.png[]
+image::images/transforms/transform-type-valueMap.png[]
 endif::pro[]
 
+====
 
 ===== Clarion Date Time
 

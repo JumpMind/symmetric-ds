@@ -3,7 +3,7 @@
 
 Additional users may be set up to access the SymmetricDS web console.
 
-image::users.png[]
+image::images/users.png[]
 
 ifdef::pro[]
 .Required Fields
@@ -32,4 +32,4 @@ Authentication Method:: Method to authenticate the user.
 
 |===            
 
-image::users-add.png[]
+image::images/users-add.png[]

@@ -4,7 +4,7 @@
 In SymmetricDS, jobs are tasks that are scheduled to run by a job manager. These jobs do the majority of synchronization work for SymmetricDS. In addition to the built in jobs, you can create custom jobs in Configuration to run for specified node groups.
 
 ifdef::pro[]
-image::configuration/customJob.png[]
+image::images/configuration/customJob.png[]
 endif::pro[]
 
 .Required Fields
@@ -127,7 +127,7 @@ insert into ITEM (ITEM_ID, NAME) values (0,'tesing');
 ifdef::pro[]
 To add your job expression/script navigate to the Configure Jobs page, select your job and click the button "Edit Script". The following editor will appear.
 
-image::configuration/editScript.png[]
+image::images/configuration/editScript.png[]
 endif::pro[]
 
 ifndef::pro[]

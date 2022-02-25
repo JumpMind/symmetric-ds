@@ -17,7 +17,7 @@ of the *Auto Create* button.
 [.float-group]
 --
 [.left.text-left]
-image::file-routing/auto-create-1-triggers.png[]
+image::images/file-routing/auto-create-1-triggers.png[]
 
 The default entry point for the auto creation is from the file triggers perspective.  This will allow you to select file triggers first then routers.
 
@@ -29,7 +29,7 @@ Click *Next* to select from available routers.
 [.float-group]
 --
 [.left.text-left]
-image::file-routing/auto-create-2-routers.png[]
+image::images/file-routing/auto-create-2-routers.png[]
 
 
 Select the routers (direction) to associate with the previously selected file triggers.
@@ -43,7 +43,7 @@ result in the same file routing.
 [.float-group]
 --
 [.left.text-left]
-image::file-routing/auto-create-1-routers.png[]
+image::images/file-routing/auto-create-1-routers.png[]
 
 Select from available routers.
 
@@ -54,7 +54,7 @@ Click *Next* to select from available file triggers.
 [.float-group]
 --
 [.left.text-left]
-image::file-routing/auto-create-2-triggers.png[]
+image::images/file-routing/auto-create-2-triggers.png[]
 
 Select the file triggers to associate with the previously selected routers.
 
@@ -67,7 +67,7 @@ IMPORTANT: SymmetricDS will not create file triggers until they are associated w
 
 NOTE: Once a file routing relationship is created changes on the base directory will be captured and file sync will begin.
 
-image::file-routing/file-routing-new.png[]
+image::images/file-routing/file-routing-new.png[]
 endif::pro[]
 
 ifdef::pro[]

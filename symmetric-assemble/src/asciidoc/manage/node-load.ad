@@ -79,11 +79,11 @@ ifdef::pro[]
 As of 3.8 loading data has been consolidated into a single wizard.  
 Request a load by clicking the *Load Data* button on the manage nodes screen.
 
-image::manage/manage-load-data.png[]
+image::images/manage/manage-load-data.png[]
 
 This will open a new window that will walk through the steps screen by screen to build the load needed.  If there were no selected rows on the manage nodes screen when this button was clicked the first screen will prompt for a source and target set of nodes.  Multiple selections can be made here as long as all source nodes or all target nodes belong to the same group. 
 
-image::manage/manage-load-data-source-target.png[]
+image::images/manage/manage-load-data-source-target.png[]
 
 The next screen allows for a selection of all tables configured (full load) or a subset of tables configured (partial load).   Note, this will be the first screen provided if rows were already selected on the manage nodes screen when the load data button was selected.
 
@@ -104,7 +104,7 @@ The second option on this screen is to determine what "before action" should occ
 
 |===
 
-image::manage/manage-load-data-full-partial-before.png[]
+image::images/manage/manage-load-data-full-partial-before.png[]
 
 Partial loads will then see a table selection screen.  Full loads will immediately be taken to the summary screen.  The table selection screen allows individual tables to be selected as part of the load.   There is also the ability to provide a where clause to be used to extract the data for a load.  This allows control over what data should be loaded for a given table.   
 
@@ -115,11 +115,11 @@ Partial loads will then see a table selection screen.  Full loads will immediate
 
 See <<Variables>>.
 
-image::manage/manage-load-data-tables.png[]
+image::images/manage/manage-load-data-tables.png[]
 
 Finally a summary screen is presented to review all the settings for the load prior to adding it to the request queue.  Loads are checked by the routing process so once the load has been saved it will be picked up and begin processing on the next run of the routing job.
 
-image::manage/manage-load-data-summary.png[]
+image::images/manage/manage-load-data-summary.png[]
 
 A load's progress can be monitored on the <<Outgoing Loads>> screen or the <<Outgoing Batches>> screen. 
 

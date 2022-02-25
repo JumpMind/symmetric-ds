@@ -11,7 +11,7 @@ specified.  The default channel is called 'default'.
 Channels can be disabled, suspended, or scheduled as needed.  
 
 ifdef::pro[]
-image::channel.png[]
+image::images/channel.png[]
 endif::pro[]
 
 WARNING:  Transactions will NOT be preserved across channels so its important to setup channels to contain all tables that participate in a given transaction.

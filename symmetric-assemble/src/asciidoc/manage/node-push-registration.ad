@@ -5,7 +5,7 @@ The group link for server to client should be set to push.
 ifdef::pro[]
 From the Manage Nodes screen on the server, click on the *Add* button and then select *Remote Node*.
 
-image::manage/manage-nodes-push-registration.png[role="help"]
+image::images/manage/manage-nodes-push-registration.png[role="help"]
 
 endif::pro[]
 

@@ -5,7 +5,7 @@ which node groups will synchronize data to other node groups and within that exc
 initiate the conversation for that exchange.
 
 ifdef::pro[]
-image::group-link.png[]
+image::images/group-link.png[]
 endif::pro[]
 
 ifdef::pro[]
@@ -55,16 +55,16 @@ ifdef::pro[]
 
 [horizontal]
 Basic:: Common two tier corp and store store bi-directional setup
-image::group-link-basic.png[]
+image::images/group-link-basic.png[]
 
 Firewall:: All communication is initiated from corp group.  This is a common way to setup synchronization when the corp group is behind a firewall.
-image::group-link-firewall.png[]
+image::images/group-link-firewall.png[]
 
 Peer to Peer::  Allows a node to sync to all other nodes in the same group.
-image::group-link-same.png[]
+image::images/group-link-same.png[]
 
 Loop:: Turn sync configuration off on group link c to a so that configuration does not loop.
-image::group-link-config.png[]
+image::images/group-link-config.png[]
 
 endif::pro[]
 ====

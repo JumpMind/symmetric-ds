@@ -13,11 +13,11 @@ Send changes from your relational database to Elasticsearch in a variety of form
 
 Setup the Elasticsearch node by using the <<Add Node>> wizard and selecting Elasticsearch as the type.   The URL will be the connection point to Elasticsearch.  If your Elasticsearch database has security enabled, please enter your username and password.
 
-image::appendix/elasticsearch-node-setup.png[]
+image::images/appendix/elasticsearch-node-setup.png[]
 
 After hitting next you can setup advanced options for your Elasticsearch node.
 
-image::appendix/elasticsearch-advanced-settings.png[]
+image::images/appendix/elasticsearch-advanced-settings.png[]
 
 
 ==== Loading Data Into Elasticsearch

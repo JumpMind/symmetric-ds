@@ -18,7 +18,7 @@ element is described in the following sections of this guide.
 Configuration can also be imported from and exported to external files by pressing the <<Import>> and <<Export>> buttons 
 from the Configure Overview screen.  
 
-image::configure-overview.png[]
+image::images/configure-overview.png[]
 
 include::configuration/import.ad[]
 include::configuration/export.ad[]

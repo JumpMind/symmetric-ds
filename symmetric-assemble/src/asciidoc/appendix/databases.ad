@@ -7,7 +7,7 @@ by database.
 
 .Support by Database
 [cols="15,13,^12,^12,^12,^12,^12,^12,^12,^12", options="header"]
-|====
+|===
 |Database
 |Versions
 |Transaction Identifier
@@ -328,7 +328,7 @@ by database.
 | 
 |
                    
-|====
+|===
 
 Database *:: Asterisk (*) next to database indicates the database support is available in https://www.jumpmind.com/products/symmetricds/symmetricds-overview[SymmetricDS Pro] only.
 
@@ -533,32 +533,32 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 |select sys_context('USERENV', 'CURRENT_SCHEMA') from dual
 
 |===
-include::bigquery.ad[]
-include::db2.ad[]
-include::derby.ad[]
-include::elasticsearch.ad[]
-include::firebird.ad[]
-include::greenplum.ad[]
-include::h2.ad[]
-include::hbase.ad[]
-include::hsqldb.ad[]
-include::ignite.ad[]
-include::informix.ad[]
-include::ingres.ad[]
-include::interbase.ad[]
-include::kafka.ad[]
-include::mariadb.ad[]
-include::mongodb.ad[]
-include::mssqlserver.ad[]
-include::mysql.ad[]
-include::opensearch.ad[]
-include::oracle.ad[]
-include::postgresql.ad[]
-include::redshift.ad[]
-include::snowflake.ad[]
-include::sqlite.ad[]
-include::sybase-ase.ad[]
-include::sybase-sqlanywhere.ad[]
-include::S3.ad[]
-include::teradata.ad[]
-include::tibero.ad[]
+include::{includedir}/appendix/bigquery.ad[]
+include::{includedir}/appendix/db2.ad[]
+include::{includedir}/appendix/derby.ad[]
+include::{includedir}/appendix/elasticsearch.ad[]
+include::{includedir}/appendix/firebird.ad[]
+include::{includedir}/appendix/greenplum.ad[]
+include::{includedir}/appendix/h2.ad[]
+include::{includedir}/appendix/hbase.ad[]
+include::{includedir}/appendix/hsqldb.ad[]
+include::{includedir}/appendix/ignite.ad[]
+include::{includedir}/appendix/informix.ad[]
+include::{includedir}/appendix/ingres.ad[]
+include::{includedir}/appendix/interbase.ad[]
+include::{includedir}/appendix/kafka.ad[]
+include::{includedir}/appendix/mariadb.ad[]
+include::{includedir}/appendix/mongodb.ad[]
+include::{includedir}/appendix/mssqlserver.ad[]
+include::{includedir}/appendix/mysql.ad[]
+include::{includedir}/appendix/opensearch.ad[]
+include::{includedir}/appendix/oracle.ad[]
+include::{includedir}/appendix/postgresql.ad[]
+include::{includedir}/appendix/redshift.ad[]
+include::{includedir}/appendix/snowflake.ad[]
+include::{includedir}/appendix/sqlite.ad[]
+include::{includedir}/appendix/sybase-ase.ad[]
+include::{includedir}/appendix/sybase-sqlanywhere.ad[]
+include::{includedir}/appendix/S3.ad[]
+include::{includedir}/appendix/teradata.ad[]
+include::{includedir}/appendix/tibero.ad[]

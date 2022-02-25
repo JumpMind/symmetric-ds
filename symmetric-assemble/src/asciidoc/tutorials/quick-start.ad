@@ -43,7 +43,7 @@ ifdef::pro[]
 Open the control center to verify SymmetricDS server is running.  If it is not start the server using the start server button.   Then open the web console using the open web console button.  
 
 .SymmetricDS Control Center
-image::tutorials/control-center.png[]
+image::images/tutorials/control-center.png[]
 
 TIP: Depending on your operating system a program shortcut for the control center might have been setup.  Otherwise you can find it directly in the /bin directory of your
 SymmetricDS installation.  The executable file is named *symcc*.
@@ -172,7 +172,7 @@ TIP: For complete instructions creating the master node click link:user-guide.ht
 endif::pro[]
 
 ifdef::pro[]
-image::wizard-node-setup.png[]
+image::images/wizard-node-setup.png[]
 
 . Select "Master Node" from the node setup wizard
 . Provide JDBC connection information for your source database, hit next
@@ -258,9 +258,9 @@ The Quick Config wizard will be displayed by default when configuration is missi
 [.float-group]
 --
 [.left]
-image::wizard-config/wizard-config-start.png[]
+image::images/wizard-config/wizard-config-start.png[]
 [.left]
-image::wizard-config/wizard-config-client-server.png[]
+image::images/wizard-config/wizard-config-client-server.png[]
 --
 
 . Welcome, hit next
@@ -294,7 +294,7 @@ endif::pro[]
 ifdef::pro[]
 The Add Node wizard will be displayed by default when only one node has been configured.  If it is closed or not visible it can be opened by hitting the "Add" button on the Nodes screen of the Manage tab. 
 
-image::wizard-connect/wizard-connect-menu.png[]
+image::images/wizard-connect/wizard-connect-menu.png[]
 
 . Select Local Node, hit next
 . Provide JDBC connection information for your target database, hit next

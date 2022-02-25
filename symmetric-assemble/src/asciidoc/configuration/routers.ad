@@ -5,7 +5,7 @@ nodes in a target node group, routers define more specifically which captured da
 specific nodes in a target node group, all within the context of the node group link.  
 
 ifdef::pro[]
-image::router.png[]
+image::images/router.png[]
 
 .Required Fields
 endif::pro[]
@@ -67,12 +67,12 @@ Target Table:: Optional name for a target table.  Only use this if the target ta
 ifdef::pro[]
 .Sample Routers
 ====
-image::routers/routers-examples.png[]
+image::images/routers/routers-examples.png[]
 
-* image:routers/link_break.png[] A router that is not linked to any triggers.
-* image:routers/table.png[] A router that is linked to a single trigger.
-* image:routers/table_multiple.png[] A router that is linked to multiple triggers.
+* image:images/routers/link_break.png[] A router that is not linked to any triggers.
+* image:images/routers/table.png[] A router that is linked to a single trigger.
+* image:images/routers/table_multiple.png[] A router that is linked to multiple triggers.
 ====
 endif::pro[]
 
-include::routers/types.ad[]
+include::{includedir}/configuration/routers/types.ad[]

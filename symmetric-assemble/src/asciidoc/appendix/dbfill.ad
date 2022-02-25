@@ -6,11 +6,11 @@ ifdef::pro[]
 
 DBFill allows for any of a nodes tables to be filled with random tables.  The popup window is accessible from the explore tab of the pro console.
 
-image::appendix/dbfill/dbfill-tab.png[width=600]
+image::images/appendix/dbfill/dbfill-tab.png[width=600]
 
 The window asks for the Catalog, Schema, and selection of tables to fill.
 
-image::appendix/dbfill/dbfill-settings.png[width=600]
+image::images/appendix/dbfill/dbfill-settings.png[width=600]
 
 The next window allows for a count of rows as well as the interval between execution.  Insert, update, and, delete statements can also be specified along with options to ignore errors, and fill dependent tables.
 

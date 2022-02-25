@@ -6,7 +6,7 @@ ifdef::pro[]
 
 Consider a csv file that needs to be routed to a target table. To specify the target table, click on "Show Advanced Options" and enter your table name.
 
-image::csv-router.png[]
+image::images/csv-router.png[]
 
 endif::pro[]
 

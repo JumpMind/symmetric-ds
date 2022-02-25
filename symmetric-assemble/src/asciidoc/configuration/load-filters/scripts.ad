@@ -14,7 +14,7 @@ or more of these execution points.
 
 ifdef::pro[]
 .Edit load filter scripts by selecting the load filter and clicking the Edit Scripts button.
-image::load-filters/load-filter-edit-scripts.png[]
+image::images/load-filters/load-filter-edit-scripts.png[]
 endif::pro[]
 
 .Available Load Filter Scripts
@@ -70,10 +70,10 @@ insert into sym_load_filter
 endif::pro[]
 ifdef::pro[]
 .Create new load filter
-image::load-filters/load-filter-example-1.png[]
+image::images/load-filters/load-filter-example-1.png[]
 
 .Provide a "Before Write" bsh script.
-image::load-filters/load-filter-example-1-bsh.png[]
+image::images/load-filters/load-filter-example-1-bsh.png[]
 
 endif::pro[]
 ====
@@ -132,10 +132,10 @@ endif::pro[]
 
 ifdef::pro[]
 .Create new load filter
-image::load-filters/load-filter-example.png[]
+image::images/load-filters/load-filter-example.png[]
 
 .Select filter and hit "Edit Scripts" button, then select "Handle Error Script" and enter the bsh script below.
-image::load-filters/load-filter-example-bsh.png[]
+image::images/load-filters/load-filter-example-bsh.png[]
 
 .Beanshell Expression
 [source, Java]

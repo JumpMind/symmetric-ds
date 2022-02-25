@@ -1,4 +1,4 @@
-=== Load Only Node 
+=== Load Only Node
 
 Load only nodes can be configured for nodes that are only designed to load data into the database.   This prevents any triggers or runtime tables from being installed on this database but still allow data to be replicated to it.
 
@@ -23,7 +23,7 @@ ifdef::pro[]
 ===== Setup Load Only Node For Supported Databases
 * On the database setup screen of the add node wizard, select load only after selecting your database type.
 
-image::manage/manage-load-only.png[]
+image::images/manage/manage-load-only.png[]
 
 * The remaining steps in the add node wizard are the same as if adding a full node so continue through the remainder of the node setup wizard to complete the configuration.
 
@@ -31,7 +31,7 @@ image::manage/manage-load-only.png[]
 
 * Click the Add Driver... button to setup a new JDBC driver to support a load only node.
 
-image::manage/manage-load-only-driver.png[]
+image::images/manage/manage-load-only-driver.png[]
 
 * Enter the information for the new JDBC driver 
 

@@ -6,13 +6,13 @@ Send changes from your relational database to Snowflake.
 
 ==== Setup
 
-Snowflake is only supported as a load only node in SymmetricDS.  See <<Load Only Node >> for details on setting up a load only node in SymmetricDS.
+Snowflake is only supported as a load only node in SymmetricDS.  See <<Load Only Node>> for details on setting up a load only node in SymmetricDS.
 
 
 ifdef::pro[]
 Setup the Snowflake node by using the <<Add Node>> wizard and selecting Snowflake as the type.  
 
-image::appendix/snowflake-database-settings.png[]
+image::images/appendix/snowflake-database-settings.png[]
 
 After hitting next you can setup advanced options for your Snowflake node.
 
@@ -60,7 +60,7 @@ SymmetricDS will create and send CSV files to the a desired storage location (se
       
 SNOWFLAKE MANAGED:: Use a Snowflake managed internal stage.
 ifdef::pro[]
-image::appendix/snowflake-advanced-settings-snowflake-managed.png[]
+image::images/appendix/snowflake-advanced-settings-snowflake-managed.png[]
 endif::pro[]
 ifndef::pro[] 
 [source, properties]
@@ -73,7 +73,7 @@ endif::pro[]
 
 AWS S3:: Use an existing AWS S3 cloud storage.
 ifdef::pro[]
-image::appendix/snowflake-advanced-settings-aws-s3.png[]
+image::images/appendix/snowflake-advanced-settings-aws-s3.png[]
 endif::pro[]
 ifndef::pro[] 
 [source, properties]
@@ -88,7 +88,7 @@ endif::pro[]
 
 AZURE Storage Account:: Use an existing Azure Storage Account.
 ifdef::pro[]
-image::appendix/snowflake-advanced-settings-azure.png[]
+image::images/appendix/snowflake-advanced-settings-azure.png[]
 endif::pro[]
 ifndef::pro[] 
 [source, properties]

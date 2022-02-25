@@ -7,7 +7,7 @@ number of concurrent pulls you want to occur per period on each SymmetricDS inst
 ifdef::pro[]
 This screen shows pull activity for both table and file synchronization.
 
-image::manage/pull-threads.png[]
+image::images/manage/pull-threads.png[]
 endif::pro[]
 
 Pull activity is recorded in the <<NODE_COMMUNICATION>>

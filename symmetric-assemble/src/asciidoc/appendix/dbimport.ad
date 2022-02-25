@@ -8,7 +8,7 @@ The DbImport wizard is available from the explore tab of the pro console.
 The popup window asks for the file format, catalog, schema, and tables to import to the database.
 It also asks for the number of rows to commit, as well as multiple more specific options for the import.
 
-image::appendix/dbimport/dbimport-tab.png[width=600]
+image::images/appendix/dbimport/dbimport-tab.png[width=600]
 
 Input files can be in SQL, XML, CSV, CSV_DQUOTE, or SYM_XML file formats.
 

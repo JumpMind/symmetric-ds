@@ -19,15 +19,15 @@ console.auth.ldap.searchAttribute::  LDAP attribute to search for.
 
 These parameters can be set on the Configure LDAP page by filling out the form and clicking *Save*.
 
-image::ldap/ldap-save.png[]
+image::images/ldap/ldap-save.png[]
 
 These parameters can also be set by manually by entering the desired values in Configure->Parameters.
 
-image::ldap/ldap-parameters.png[]
+image::images/ldap/ldap-parameters.png[]
                             
 You may test the values that have been input into the form to test the connection to your LDAP directory.  
 To do this, click the *Test* button, enter the user credentials and click *Test* to test the authentication.  If the authentication succeeded, save the form.
 
-image::ldap/ldap-authentication.png[]
+image::images/ldap/ldap-authentication.png[]
 
 IMPORTANT: You must have values for all three of the parameter fields or the test will fail.

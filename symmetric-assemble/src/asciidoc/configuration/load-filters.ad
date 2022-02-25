@@ -8,7 +8,7 @@ NOTE: Load filters run for each row of data being loaded.
 
 
 ifdef::pro[]
-image::load-filters/load-filter.png[]
+image::images/load-filters/load-filter.png[]
 
 .Required Fields
 endif::pro[]
@@ -34,5 +34,5 @@ Fail On Error:: Whether we should fail the batch if the filter fails.
 Target Catalog:: The name of the target catalog for which you would like to watch for changes.
 Target Schema:: The name of the target schema for which you would like to watch for changes.
 
-include::load-filters/scripts.ad[]
-include::load-filters/custom.ad[]
+include::{includedir}/configuration/load-filters/scripts.ad[]
+include::{includedir}/configuration/load-filters/custom.ad[]

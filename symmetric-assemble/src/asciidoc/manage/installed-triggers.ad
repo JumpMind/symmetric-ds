@@ -11,7 +11,7 @@ The Installed Triggers Screen is used to view tables that have successfully been
 This screen allows you to *Rebuild* an individual database trigger or *Rebuild All* database triggers.  It also allows you to *Drop* triggers.  Only reason 
 you might need to drop triggers to alter a table or perform a batch job where you don't want data to be captured.
 
-image::manage/manage-installed-triggers.png[]
+image::images/manage/manage-installed-triggers.png[]
 endif::pro[]
 
 The <<TRIGGER_HIST>> table records the reason a trigger was rebuilt. The following reasons

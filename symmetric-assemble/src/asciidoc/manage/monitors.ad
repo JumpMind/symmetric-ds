@@ -9,7 +9,7 @@ Events are listed in descending order by event time, but the order can be change
 The remove button will clear the event from the table on the current node.  Events are purged automatically each night
 using the `purge.retention.minutes` parameter to remove by event time.
 
-image::manage/manage-monitors.png[]
+image::images/manage/manage-monitors.png[]
 
 endif::pro[]
 

@@ -1,12 +1,12 @@
 
 ==== Router Types
 
-include::default.ad[]
-include::column.ad[]
-include::audit.ad[]
-include::lookuptable.ad[]
-include::subselect.ad[]
-include::convertToReload.ad[]
-include::bsh.ad[]
-include::csv.ad[]
-include::dbf.ad[]
+include::{includedir}/configuration/routers/default.ad[]
+include::{includedir}/configuration/routers/column.ad[]
+include::{includedir}/configuration/routers/audit.ad[]
+include::{includedir}/configuration/routers/lookuptable.ad[]
+include::{includedir}/configuration/routers/subselect.ad[]
+include::{includedir}/configuration/routers/convertToReload.ad[]
+include::{includedir}/configuration/routers/bsh.ad[]
+include::{includedir}/configuration/routers/csv.ad[]
+include::{includedir}/configuration/routers/dbf.ad[]

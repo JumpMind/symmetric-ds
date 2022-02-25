@@ -6,7 +6,7 @@ Configuring a node as offline will still allow changes to be captured and batche
 
 ifdef::pro[]
 .Configure the offline jobs to run
-image::advanced/offline-start-jobs.png[]
+image::images/advanced/offline-start-jobs.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -26,7 +26,7 @@ endif::pro[]
 
 ifdef::pro[]
 .Configure the offline parameter for the node that will be offline
-image::advanced/offline-node-parameter.png[]
+image::images/advanced/offline-node-parameter.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -42,11 +42,11 @@ endif::pro[]
 
 * At the offline store node, the parameter immediately affects the behavior of the push and pull jobs, so outgoing batches intended for CORP are now written as files. Other nodes are unaffected. All outstanding batches for CORP are immediately written to files. As new changes occur going forward, any batches for CORP will also be written as files. In this example, two batches of data are written.
 
-image::advanced/offline_sync_node1_before.png[]
+image::images/advanced/offline_sync_node1_before.png[]
 
 * Finally, move the batch files to their respective incoming folder. After moving the files, the folders will contain the files depicted below.
 
-image::advanced/offline_sync.png[]
+image::images/advanced/offline_sync.png[]
 
 ==== Turn offline node online again
 

@@ -8,11 +8,11 @@ Send changes from your relational database to Kafka in a variety of formats.  A 
 ifdef::pro[]
 Setup the Kafka node by using the <<Add Node>> wizard and selecting Kafka as the type.   The URL will be the connection point to Kafka.  User and password are not needed (or used).
 
-image::appendix/kafka-node-setup.png[]
+image::images/appendix/kafka-node-setup.png[]
 
 After hitting next you can setup advanced options for your Kafka node.
 
-image::appendix/kafka-advanced-settings.png[]
+image::images/appendix/kafka-advanced-settings.png[]
 endif::pro[]
 
 ==== Output Message Format

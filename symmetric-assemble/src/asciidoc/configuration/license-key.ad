@@ -22,5 +22,5 @@ will require a new valid key before allowing access, but data synchronization an
 will continue to function normally.
 
 ifdef::pro[]
-image::configuration/license-key.png[]
+image::images/configuration/license-key.png[]
 endif::pro[]

@@ -13,5 +13,5 @@ being leveraged, then the general rules for for SLF4J logging apply.
 ifdef::pro[]
 You can use the logging screen to dynamically adjust the log level in order to help triage issues.  When developing transforms it is useful to turn on *Log Sync Details*.
 
-image::manage/logging.png[]
+image::images/manage/logging.png[]
 endif::pro[]

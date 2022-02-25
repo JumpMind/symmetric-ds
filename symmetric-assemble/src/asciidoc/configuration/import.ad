@@ -7,7 +7,7 @@ In order to import in SQL format you would run the SQL script via database speci
 . During the creation of the master node, while selecting a configuration
 +
 .Import Existing configuration during the node creation
-image::import-wizard-profile.png[]
+image::images/import-wizard-profile.png[]
 +
 . Import a configuration through the web console
 +

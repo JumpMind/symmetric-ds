@@ -13,7 +13,7 @@ by other SymmetricDS processes.
 ====
 ifdef::pro[]
 .Create two transforms, one for extract and one for target using different group links
-image::transforms/transform-virtual-columns.png[]
+image::images/transforms/transform-virtual-columns.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -43,7 +43,7 @@ endif::pro[]
 
 ifdef::pro[]
 .Create lookup transform for the extract transform to create a new virtual column to be sent to target.
-image::transforms/transform-virtual-columns-extract.png[]
+image::images/transforms/transform-virtual-columns-extract.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -63,7 +63,7 @@ endif::pro[]
 
 ifdef::pro[]
 .Create copy transform for the load transform to populate the cost column from the virtual column that was sent over.
-image::transforms/transform-virtual-columns-load.png[]
+image::images/transforms/transform-virtual-columns-load.png[]
 endif::pro[]
 
 ifndef::pro[]

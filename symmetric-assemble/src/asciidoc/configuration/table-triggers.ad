@@ -25,13 +25,13 @@ button.  A summary will be presented at the end of the configuration.  Click *Fi
 The Auto Create functionality can be used repeatedly to select different table, router and channel combinations.  If you are configuring a new set of tables triggers that should use an independent 
 Trigger definition be sure to enter values for either the _Trigger Prefix_ or the _Trigger Suffix_ fields.  These will be used to create a unique _Trigger Id_.   
 
-image::triggers/triggers-auto-create.png[]
+image::images/triggers/triggers-auto-create.png[]
 
 For each table selected in the Auto Create wizard, a corresponding Table Trigger configuration element will be added that can be
 maintained within the Table Triggers list screen.  New Table Trigger configuration elements can also be created manually from this
 screen.
 
-image::trigger.png[]
+image::images/trigger.png[]
 
 endif::pro[]
 
@@ -96,7 +96,7 @@ insert into SYM_TRIGGER (trigger_id, source_table_name,
 ----
 endif::pro[]
 ifdef::pro[]
-image::triggers/triggers-examples.png[]
+image::images/triggers/triggers-examples.png[]
 endif::pro[]
 ====
 
@@ -127,10 +127,10 @@ trigger.update.capture.changed.data.only.enabled=false
 This property is currently only supported on MySQL, DB2, SQL Server, and Oracle.
 ====
 
-include::table-triggers/wildcards.ad[]
-include::table-triggers/external-select.ad[]
-include::table-triggers/trigger-variables.ad[]
-include::table-triggers/load-only.ad[]
+include::{includedir}/configuration/table-triggers/wildcards.ad[]
+include::{includedir}/configuration/table-triggers/external-select.ad[]
+include::{includedir}/configuration/table-triggers/trigger-variables.ad[]
+include::{includedir}/configuration/table-triggers/load-only.ad[]
 ifdef::pro[]
-include::table-triggers/expandable.ad[]
+include::{includedir}/configuration/table-triggers/expandable.ad[]
 endif::pro[]

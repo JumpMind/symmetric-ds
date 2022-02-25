@@ -21,7 +21,7 @@ The simplest way to set up Table Routing is to use the *Auto Create...* button.
 [.float-group]
 --
 [.left.text-left]
-image::table-routing/auto-create-1-triggers.png[]
+image::images/table-routing/auto-create-1-triggers.png[]
 
 The default entry point for the auto creation is from the triggers perspective.  This will allow you to select table triggers first then routers.
 
@@ -33,7 +33,7 @@ Clicking *Next* to select from available routers.
 [.float-group]
 --
 [.left.text-left]
-image::table-routing/auto-create-2-routers.png[]
+image::images/table-routing/auto-create-2-routers.png[]
 
 
 Select the routers (direction) to associate with the previously selected triggers.
@@ -47,7 +47,7 @@ result in the same table routing.
 [.float-group]
 --
 [.left.text-left]
-image::table-routing/auto-create-1-routers.png[]
+image::images/table-routing/auto-create-1-routers.png[]
 
 Select from available routers.
 
@@ -58,7 +58,7 @@ Clicking *Next* to select from available table triggers.
 [.float-group]
 --
 [.left.text-left]
-image::table-routing/auto-create-2-triggers.png[]
+image::images/table-routing/auto-create-2-triggers.png[]
 
 Select the table triggers to associate with the previously selected routers.
 
@@ -72,7 +72,7 @@ IMPORTANT: SymmetricDS will not install table triggers on the database until the
 
 NOTE: Once a table routing relationship is created data capture will begin.
 
-image::table-routing/table-routing-new.png[]
+image::images/table-routing/table-routing-new.png[]
 endif::pro[]
 
 ifdef::pro[]

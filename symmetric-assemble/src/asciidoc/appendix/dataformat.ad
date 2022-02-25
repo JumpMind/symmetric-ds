@@ -85,6 +85,6 @@ catalog,
 table, item_selling_price
 update, 55, 0.75, 0.65, 55
 commit, 100
-----      
+----
 ====
 

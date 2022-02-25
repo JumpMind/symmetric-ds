@@ -7,19 +7,19 @@ target node groups).  The Quick Config wizard simplifies this process by walking
 
 The Quick Config Wizard can be found under the Configure->Overview screen.
 
-image::configure-overview.png[]
+image::images/configure-overview.png[]
 
 NOTE: The quick config wizard will show a screen for each router that is in place.  The below example
 shows the `Two Tier` configuration option with a client and server.
 
-image::wizard-config/wizard-config-start.png[]
+image::images/wizard-config/wizard-config-start.png[]
 
 ==== Router: Client to Server
 
 [.float-group]
 --
 [.left.text-left]
-image::wizard-config/wizard-config-client-server.png[]
+image::images/wizard-config/wizard-config-client-server.png[]
 
 Select all tables that should be synchronized in the direction
 stated in the header, in this case from `CLIENT` to the `SERVER`
@@ -30,7 +30,7 @@ stated in the header, in this case from `CLIENT` to the `SERVER`
 [.float-group]
 --
 [.left.text-left]
-image::wizard-config/wizard-config-server-client.png[]
+image::images/wizard-config/wizard-config-server-client.png[]
 
 Next we will select tables to sync from the `SERVER` to the `CLIENT`. 
 
@@ -46,7 +46,7 @@ will be configured for bi-directional sync.
 [.float-group]
 --
 [.left.text-left]
-image::wizard-config/wizard-config-verify.png[]
+image::images/wizard-config/wizard-config-verify.png[]
 
 The summary of the configuration made by the wizard.
 

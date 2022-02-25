@@ -8,7 +8,7 @@ This section will talk about how to manage and monitor SymmetricDS.
 ifdef::pro[]
 Nodes can be added and managed in the Nodes screen under the Manage tab.
 
-image::manage/manage-nodes.png[]
+image::images/manage/manage-nodes.png[]
 endif::pro[]
     
     
@@ -29,7 +29,7 @@ ifdef::pro[]
 Add nodes to your synchronization scenario by using the Node Setup Wizard.  This wizard is automatically shown when less the 2 nodes are configured.  
 It can also be accessed from the Manage Nodes screen by clicking the *Add* button. 
 
-image::wizard-connect/wizard-connect-menu.png[]
+image::images/wizard-connect/wizard-connect-menu.png[]
 
 include::manage/node-add.ad[]
 
@@ -155,7 +155,7 @@ the frequency a job runs across a group or for everyone, you modify the paramete
 A job can also be _stopped_ and _restarted_.  If a job is scheduled to run infrequently and the job is needed to run immediately 
 you can select job and click *Run Now*.
 
-image::manage/manage-jobs.png[]
+image::images/manage/manage-jobs.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -188,7 +188,7 @@ loads that are sourced from the current node.
 
 You can cancel a load that is in progress by selecting the load and pressing the _Cancel_ button.  
 
-image::manage/manage-outgoing-loads.png[]
+image::images/manage/manage-outgoing-loads.png[]
 
 === Incoming Loads
 
@@ -197,7 +197,7 @@ loads that are targeted at the current node.
 
 You can cancel a load that is in progress by selecting the load and pressing the _Cancel_ button.  
 
-image::manage/manage-incoming-loads.png[]
+image::images/manage/manage-incoming-loads.png[]
 
 endif::pro[]
 
@@ -207,7 +207,7 @@ ifdef::pro[]
 
 The Outgoing Batches screens allows you to monitor data that has been <<_route_job,routed>>.
 
-image::manage/manage-outgoing-batches.png[]
+image::images/manage/manage-outgoing-batches.png[]
 
 endif::pro[]
 
@@ -242,7 +242,7 @@ ifdef::pro[]
 
 The Incoming Batches screens allows you to monitor batches that have been delivered to the target node.
 
-image::manage/manage-incoming-batches.png[]
+image::images/manage/manage-incoming-batches.png[]
 
 endif::pro[]
 

@@ -36,8 +36,8 @@ public class ReleaseNotesConstants {
     public static final String OVERVIEW_HEADER = "== Overview";
     public static final String OVERVIEW_DESC = "SymmetricDS @appMajorVersion@ release includes %d features, %d improvements, and %d bug fixes.";
     public static final String OVERVIEW_PRO_DESC = "SymmetricDS Pro @appMajorVersion@ release includes %d features, %d improvements, and %d bug fixes.";
-    public static final String INCLUDE_FORMAT_GENERATED = "include::%s[]";
-    public static final String INCLUDE_FORMAT_WRITTEN = "include::../release-notes/%s[]";
+    public static final String INCLUDE_FORMAT_GENERATED = "include::%s/%s[]";
+    public static final String INCLUDE_FORMAT_WRITTEN = "include::%s/release-notes/%s[]";
     public static final String PARAMETER_SEC_HEADER = "== Parameters";
     public static final String PARAMETER_SEC_DESC = "The following changes were made to add new parameters, modify their default value, modify their "
             + "description, or remove them from use.";

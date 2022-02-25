@@ -22,7 +22,7 @@ A third option will perform the *Setup Demo* installation, which does the follow
 --
 [.left.text-left]
 .Node selection.
-image::wizard-node-setup.png[]
+image::images/wizard-node-setup.png[]
 
 Select whether the node will setup a new replication, join an existing replication, or run a demonstration.
 

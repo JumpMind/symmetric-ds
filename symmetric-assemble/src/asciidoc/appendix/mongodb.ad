@@ -19,23 +19,23 @@ MongoDB can be setup as a load only or a log based node.
 
 Obtain the connection url from MongoDB.  On their dashboard select "Connect".
 
-image::appendix/mongodb-setup-1.png[]
+image::images/appendix/mongodb-setup-1.png[]
 
 Select the "Connect your application"
 
-image::appendix/mongodb-setup-2.png[]
+image::images/appendix/mongodb-setup-2.png[]
 
 Choose the Java driver to produce the proper connection string for driver used by SymmetricDS
 
-image::appendix/mongodb-setup-3.png[]
+image::images/appendix/mongodb-setup-3.png[]
 
 Add a new node to SymmetricDS
 
-image::appendix/mongodb-setup-4.png[]
+image::images/appendix/mongodb-setup-4.png[]
 
 On the advanced options you can setup bulk loading and a database to use.  If no database is used it will create and use one named "symmetricds".
 
-image::appendix/mongodb-setup-5.png[]
+image::images/appendix/mongodb-setup-5.png[]
 
 
 ==== Supported Operations for CDC

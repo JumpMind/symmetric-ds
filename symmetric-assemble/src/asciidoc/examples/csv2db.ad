@@ -4,7 +4,7 @@
 * Create or choose a target table for your target node group. For this example, we will create a table, person, for the "corp" node group. 
 
 ifdef::pro[]
-image::examples/createTable.png[]
+image::images/examples/createTable.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -26,7 +26,7 @@ endif::pro[]
 IMPORTANT: FileSync needs to be enabled for each node group to create file triggers.
 
 ifdef::pro[]
-image::examples/createFileTrigger.png[]
+image::images/examples/createFileTrigger.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -49,7 +49,7 @@ endif::pro[]
 * After the file trigger is created, a router should be created so that the changes can be routed to the correct location. The communication link needs to be specified as well as the router type and target table. In this example, "store" is the source node group which communicates to the target node group,"corp". The router type is csv and person is the target table.
 
 ifdef::pro[]
-image::examples/createRouter.png[]
+image::images/examples/createRouter.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -68,7 +68,7 @@ endif::pro[]
 * Finally, a file routing link should be created between the file trigger and router.
 
 ifdef::pro[]
-image::examples/createFileRouting.png[]
+image::images/examples/createFileRouting.png[]
 endif::pro[]
 
 ifndef::pro[]

@@ -8,7 +8,7 @@ column.
 ifdef::pro[]
 To see a transform's columns, select the transform and click "Edit Columns".
 
-image::transforms/transform-edit-columns.png[]
+image::images/transforms/transform-edit-columns.png[]
 
 endif::pro[]
 

@@ -24,7 +24,7 @@ should occur on the Extract step or the Load step (transform_point).
 endif::pro[]
 
 ifdef::pro[]
-image::transforms/transform.png[]
+image::images/transforms/transform.png[]
 
 .Required Fields
 endif::pro[]
@@ -134,8 +134,8 @@ insert into SYM_TRANSFORM_TABLE (
 ====
 endif::pro[]
 
-include::transforms/operation-change.ad[]
-include::transforms/columns.ad[]
-include::transforms/types.ad[]
-include::transforms/virtual-columns.ad[]
+include::{includedir}/configuration/transforms/operation-change.ad[]
+include::{includedir}/configuration/transforms/columns.ad[]
+include::{includedir}/configuration/transforms/types.ad[]
+include::{includedir}/configuration/transforms/virtual-columns.ad[]
 

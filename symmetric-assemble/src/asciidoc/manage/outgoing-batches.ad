@@ -65,16 +65,16 @@ The first step in analyzing the cause of a failed batch is to locate information
 ifdef::pro[]
 To show only batches in error, select the status of _Error_:
 
-image::manage/manage-outgoing-batches-error.png[]
+image::images/manage/manage-outgoing-batches-error.png[]
 
 In order to view the error message, click the *magnifying glass* link in the details column of the outgoing batch row of interest.
 
-image::manage/manage-outgoing-batches-error-show.png[]
+image::images/manage/manage-outgoing-batches-error-show.png[]
 
 In order to view the data row in error, click the *Sent Data* tab on the captured batch data screen.  The row that is in error will be red.  
 You can view the data that changed at the bottom of the dialog.
 
-image::manage/manage-outgoing-batches-error-data.png[]
+image::images/manage/manage-outgoing-batches-error-data.png[]
 
 The error message and the data should give the user clues as to why the batch failed.
 
@@ -189,7 +189,7 @@ ifdef::pro[]
 * Causing SymmetricDS to skip the batch completely can be accomplished from the user interface.  Select the batch that should be 
 ignored.  Click *Change* and select *Ignore Batch*.
 + 
-image::manage/manage-outgoing-batches-error-ignore.png[]
+image::images/manage/manage-outgoing-batches-error-ignore.png[]
 
 endif::pro[]
 

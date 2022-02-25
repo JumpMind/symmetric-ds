@@ -9,7 +9,7 @@ applied to the node group versus the individual nodes in order to simplify the c
 individual field office node, just how the field office nodes sync with the corporate office node).
 
 ifdef::pro[]
-image::group.png[]
+image::images/group.png[]
 endif::pro[]
 
 .Required Fields

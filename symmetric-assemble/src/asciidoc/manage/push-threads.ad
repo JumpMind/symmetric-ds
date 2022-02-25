@@ -7,7 +7,7 @@ number of concurrent pushes you want to occur per period on each SymmetricDS ins
 ifdef::pro[]
 This screen shows pull activity for both table and file synchronization.
 
-image::manage/push-threads.png[]
+image::images/manage/push-threads.png[]
 endif::pro[]
 
 Push activity is recorded in the <<NODE_COMMUNICATION>>

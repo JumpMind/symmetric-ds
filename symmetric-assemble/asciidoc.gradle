@@ -1,4 +1,4 @@
-apply plugin: 'org.asciidoctor.gradle.asciidoctor'
+apply plugin: 'org.asciidoctor.jvm.convert'
 apply plugin: 'docbook-reference'
 
 configurations{ 
@@ -249,9 +249,12 @@ task publishDoc {
 }
 
 asciidoctor { (1)
-    backends = docFormat.split ","
+	baseDirFollowsSourceDir()
     sourceDir = file(symAssembleDir + '/src/asciidoc')
-    outputDir = file("$buildDir/src/asciidoc")
+    outputDir = file("$buildDir/src/asciidoc/" + docFormat)
+	outputOptions {
+        backends docFormat
+    }
     options = [
         doctype: 'book',
         sourceDocumentNames: [
@@ -260,12 +263,12 @@ asciidoctor { (1)
             symAssembleDir + 'tutorials/tutorials.ad',
             symAssembleDir + 'operations/operations.ad']
     ]    
-    attributes = [
+    attributes \
         'source-highlighter':'coderay',
         'data-uri':'true'
-    ]
+    
     if (project.properties.containsKey('pro')) {
-       attributes['pro'] = 'true'  
+       attributes 'pro':'true'
     }     
 }
 

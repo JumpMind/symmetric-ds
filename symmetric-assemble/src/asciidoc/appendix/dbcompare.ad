@@ -6,11 +6,11 @@ ifdef::pro[]
 The dbcompare wizard is accessible for multi-homed nodes from the explore tab of the pro console.  
 The pop-up window asks for source and target engines for the comparison as well as the the tables to be compared.  
 
-image::appendix/dbcompare/dbcompare-tab.png[width=600]
+image::images/appendix/dbcompare/dbcompare-tab.png[width=600]
 
 The next window allows specific tables to be selected for comparison.
 
-image::appendix/dbcompare/dbcompare-table-select.png[width=600]
+image::images/appendix/dbcompare/dbcompare-table-select.png[width=600]
 
 The results of the compare can be presented in four ways:
 
@@ -21,11 +21,11 @@ The results of the compare can be presented in four ways:
 
 The *Show Report* option will open a new tab in the SQL editor showing the results of the compare.
 
-image::appendix/dbcompare/dbcompare-results-table.png[]
+image::images/appendix/dbcompare/dbcompare-results-table.png[]
 
 The *Write Differences to SQL Editor* option will write all the required SQL to get the tables in sync and copy it to the current instance of the SQL editor.
 
-image::appendix/dbcompare/dbcompare-write-sql.png[]
+image::images/appendix/dbcompare/dbcompare-write-sql.png[]
 
 The *Write Differences to File* option will write the required SQL to get the tables in sync to the file system.
 
@@ -50,7 +50,7 @@ Possible options include:
 
 ** Example of config properties file:
 
-image::appendix/dbcompare/dbcompare-config.png[width=1000]
+image::images/appendix/dbcompare/dbcompare-config.png[width=1000]
 
 - *--date-time-format <arg>*: The format to be used when comparing date time values. For example, using the format 'yyyy-MM-dd HH:mm:ss' would convert date time values into yyyy-MM-dd HH:mm:ss and then compare.
 - *--exclude <arg>* : A comma-separated list of table names to exclude from comparison.
@@ -63,7 +63,7 @@ image::appendix/dbcompare/dbcompare-config.png[width=1000]
 
 An example DbCompare results table is shown below:
 
-image::appendix/dbcompare/dbcompare-results.png[width=1000]
+image::images/appendix/dbcompare/dbcompare-results.png[width=1000]
 
 The results table gives info from the compare as table columns.  The data includes the number of rows *Matched*, *Different*, *Missing*, and *Extra* between the two source and target tables.
 

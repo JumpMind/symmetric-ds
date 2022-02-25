@@ -6,11 +6,11 @@ ifdef::pro[]
 The DbExport wizard is available from the explore tab of the pro console.  
 The popup window asks for the catalog, schema, and specific table(s) to export to a file.
 
-image::appendix/dbexport/dbexport-database-export-tab.png[width=600]
+image::images/appendix/dbexport/dbexport-database-export-tab.png[width=600]
 
 The next tab allows for specific choices for the format and content of the exported file.  
 
-image::appendix/dbexport/dbexport-format-screen.png[width=600]
+image::images/appendix/dbexport/dbexport-format-screen.png[width=600]
 
 The format option allows for choices between *SQL*, *XML*, *CSV*, *CSV_DQUOTE*, and *SYM_XML*.
 The Compatibility tab allows for a choice between any of the supported SQL dialects.

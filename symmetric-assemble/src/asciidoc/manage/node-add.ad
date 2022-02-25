@@ -3,7 +3,7 @@
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-second.png[]
+image::images/wizard-connect/wizard-connect-second.png[]
 
 SymmetricDS uses HTTP protocol to send data between nodes and uses JDBC to connect to databases. 
 HTTP is designed to for sending across networks and will perform better than JDBC connections. As a result the 
@@ -23,7 +23,7 @@ advantage of HTTPS to be sure your data is safe
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-remote.png[]
+image::images/wizard-connect/wizard-connect-remote.png[]
 
 Remote nodes require that another installation of SymmetricDS be installed on a remote machine.
 The registration url shown on this screen will be used by the remote node during its installation 
@@ -41,7 +41,7 @@ intervention.
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-database-2.png[]
+image::images/wizard-connect/wizard-connect-database-2.png[]
 
 Provide database credentials to connect the node to a database.
 
@@ -54,7 +54,7 @@ host name, port, and database name if necessary (varies by type).
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-reg-url.png[]
+image::images/wizard-connect/wizard-connect-reg-url.png[]
 
 Provide the registration url in order to register the node on the SymmetricDS network. 
 
@@ -66,7 +66,7 @@ This url is the sync url of the Master Node.
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-group.png[]
+image::images/wizard-connect/wizard-connect-group.png[]
 
 The list of groups will be provided from the Master Node.  
 
@@ -80,7 +80,7 @@ occur.
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-external.png[]
+image::images/wizard-connect/wizard-connect-external.png[]
 
 This is a unique identifier for the node.   
 
@@ -93,7 +93,7 @@ For example, in retail examples this might be a register number when the node is
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-host-2.png[]
+image::images/wizard-connect/wizard-connect-host-2.png[]
 
 If your network will be accessing the web console through a proxy or a different host 
 name that the one shown in the first bullet you can override the hostname to be used.
@@ -108,7 +108,7 @@ You can also select HTTPS or HTTP to be used for transferring data.
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-install.png[]
+image::images/wizard-connect/wizard-connect-install.png[]
 
 The node is now ready to be installed.
 --

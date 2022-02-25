@@ -150,9 +150,9 @@ public class ReleaseNotesGenerator {
         writer.println();
         for (String section : sections) {
             if (Arrays.asList(writtenSections).contains(section)) {
-                writer.println(String.format(ReleaseNotesConstants.INCLUDE_FORMAT_WRITTEN, section));
+                writer.println(String.format(ReleaseNotesConstants.INCLUDE_FORMAT_WRITTEN, "{includedir}", section));
             } else {
-                writer.println(String.format(ReleaseNotesConstants.INCLUDE_FORMAT_GENERATED, section));
+                writer.println(String.format(ReleaseNotesConstants.INCLUDE_FORMAT_GENERATED, "{includedir}/generated", section));
             }
         }
     }

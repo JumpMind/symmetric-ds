@@ -53,7 +53,7 @@ Run the setup program:
 [.float-group]
 --
 [.left.text-left]
-image::install/install1.png[]
+image::images/install/install1.png[]
 
 The first screen shows the SymmetricDS Pro software version.
 The setup program will ask a series of questions before writing files to disk.
@@ -65,7 +65,7 @@ To begin selecting options, click *Next*.
 [.float-group]
 --
 [.left.text-left]
-image::install/install2.png[]
+image::images/install/install2.png[]
 
 Carefully read the SymmetricDS Pro License Agreement.
 
@@ -76,7 +76,7 @@ If you accept, select _I accept the terms of this license agreement_ and click *
 [.float-group]
 --
 [.left.text-left]
-image::install/install3.png[]
+image::images/install/install3.png[]
 
 Specify _Install new software_ to install a new version of SymmetricDS for the first time.
 
@@ -89,7 +89,7 @@ Click *Next* to continue.
 [.float-group]
 --
 [.left.text-left]
-image::install/install4.png[]
+image::images/install/install4.png[]
 
 Choose the installation path where SymmetricDS will either be installed or upgraded.
 If the directory does not already exist, it will be created for you.  Make sure your user has permission
@@ -102,7 +102,7 @@ After entering the directory path, click *Next*.
 [.float-group]
 --
 [.left.text-left]
-image::install/install5.png[]
+image::images/install/install5.png[]
 
 Select the packages you want to install and verify disk space requirements are met.
 By default, all packages are selected.
@@ -116,7 +116,7 @@ After selecting packages, click *Next*.
 [.float-group]
 --
 [.left.text-left]
-image::install/install6.png[]
+image::images/install/install6.png[]
 
 SymmetricDS can either be run automatically by the system or manually by the user.
 Select the _Install service to run automatically_ checkbox to install a Windows service or Unix daemon that will
@@ -132,7 +132,7 @@ After selecting options, click *Next*.
 [.float-group]
 --
 [.left.text-left]
-image::install/install7.png[]
+image::images/install/install7.png[]
 
 HTTPS and HTTPS/2 protocols are recommended for protecting data security.
 For testing without security or encryption, the HTTP protocol can be enabled.
@@ -149,7 +149,7 @@ Click *Next* to continue.
 [.float-group]
 --
 [.left.text-left]
-image::install/install8.png[]
+image::images/install/install8.png[]
 Specify how much memory to use for sending and receive data changes.
 More memory is needed to communicate with multiple clients and when data contains large objects (LOB). 
 Estimate an extra 5 MB of memory for each client and each 500 MB/hour of data transfer.
@@ -161,7 +161,7 @@ Click *Next* to continue.
 [.float-group]
 --
 [.left.text-left]
-image::install/install9.png[]
+image::images/install/install9.png[]
 Specify disk space options for temporarily staging incoming and outgoing data changes.
 Using staging helps the overall performance of the system and minimizes use of the database.
 The default location is the "tmp" sub-directory of the installation directory.
@@ -174,7 +174,7 @@ Click *Next* to continue.
 [.float-group]
 --
 [.left.text-left]
-image::install/install10.png[]
+image::images/install/install10.png[]
 
 Confirm your installation settings look correct.
 
@@ -185,7 +185,7 @@ Click *Next* to begin installing files.
 [.float-group]
 --
 [.left.text-left]
-image::install/install11.png[]
+image::images/install/install11.png[]
 
 The packages you selected are installed to disk.
 
@@ -196,7 +196,7 @@ After it finishes, click *Next*.
 [.float-group]
 --
 [.left.text-left]
-image::install/install12.png[]
+image::images/install/install12.png[]
 
 During the finish step, it will install the service and start the service if you selected those options.
 
@@ -207,7 +207,7 @@ After it finishes, click *Next*.
 [.float-group]
 --
 [.left.text-left]
-image::install/install13.png[]
+image::images/install/install13.png[]
 
 The installation is now complete.  Choose if you want to open the SymmetricDS Pro Control Center where
 you can view the server status and open a web console.
@@ -219,7 +219,7 @@ Click *Done* to exit the setup program.
 [.float-group]
 --
 [.left.text-left]
-image::install/install14.png[]
+image::images/install/install14.png[]
 
 From the SymmetricDS Pro Control Center, 
 you can start/stop the server, open the web console, and install/uninstall the service.
@@ -341,7 +341,7 @@ file in the `WEB-INF` folder, an appropriately configured `symmetric.properties`
 and the required JAR files in the `WEB-INF/lib` folder.
 
 .War
-image::symmetric_war.gif[]
+image::images/symmetric_war.gif[]
 
 A war file can be generated using the standalone installation's `symadmin` utility and the
 `create-war` subcommand.  The command requires the name of the war file to generate.  It

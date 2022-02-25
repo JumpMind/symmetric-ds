@@ -17,7 +17,7 @@ the transform execution will be the same operation applied to the target.  There
 ===== Update First
 ifdef::pro[]
 .Check the "Update First" box to attempt an update before an insert on the target when an insert occurs from the target.
-image::transforms/transform-update-first.png[]
+image::images/transforms/transform-update-first.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -39,7 +39,7 @@ endif::pro[]
 ===== Delete Action
 ifdef::pro[]
 .Select "UPDATE_COL" for the delete action to initiate updates on the target based on the transform columns configuration, see <<Columns>>.
-image::transforms/transform-update-col.png[]
+image::images/transforms/transform-update-col.png[]
 endif::pro[]
 
 ifndef::pro[]

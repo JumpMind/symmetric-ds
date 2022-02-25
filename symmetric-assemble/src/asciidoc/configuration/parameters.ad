@@ -13,7 +13,7 @@ ifdef::pro[]
 Parameters can be set for a given node or node group to allow more flexibility in configuration.
 
 .Setting parameters by target
-image::parameters/parameters-target.png[]
+image::images/parameters/parameters-target.png[]
 
 NOTE: Only certain parameters can be edited on this screen.  To edit a SymmetricDS startup parameter, you must go to the Manage->Startup Parameters screen or locate and edit the engine.properties file.
 
@@ -22,6 +22,6 @@ NOTE: Only certain parameters can be edited on this screen.  To edit a Symmetric
 Parameters can be filtered in order to help find specific parameters or parameters named a certain way.
 
 .Filter parameters by typing in a portion of the parameter name
-image::parameters/parameters-filter.png[]
+image::images/parameters/parameters-filter.png[]
 
 endif::pro[]

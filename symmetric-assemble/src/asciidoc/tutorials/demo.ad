@@ -6,7 +6,7 @@ system looks like.
 Three nodes, which represent three embedded databases, will be installed.  One node will represent a centralized corporate database and the 
 other two nodes will represent two individual retail store databases.
 
-image::tutorials/quickstart-two-tier.png[]
+image::images/tutorials/quickstart-two-tier.png[]
 
 === Installation
 
@@ -19,7 +19,7 @@ The Demo button will automatically install three `nodes` with synchronization pr
 you to see a working model of SymmetricDS.
 
 .Open the web console and click Demo.
-image::wizard-node-setup.png[]
+image::images/wizard-node-setup.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -139,7 +139,7 @@ Next, we will make a change to the item data in the central office corp node dat
 Create data in corp for all stores to pull.
 
 ifdef::pro[]
-Navigate to the SQL Explorer for the corp node and execute (image:explore-execute-all.png[title="Run As Script"]) the following scripts.
+Navigate to the SQL Explorer for the corp node and execute (image:images/explore-execute-all.png[title="Run As Script"]) the following scripts.
 endif::pro[]
 ifndef::pro[]
 Open an interactive SQL session with the corp database and add a new item for sale, with different prices at store 001 and store 002.
@@ -155,7 +155,7 @@ insert into item_selling_price (item_id, store_id, price)
 ----
 
 ifdef::pro[]
-image::tutorials/new-demo-pull-sql.png[]
+image::images/tutorials/new-demo-pull-sql.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -166,7 +166,7 @@ endif::pro[]
 
 ifdef::pro[]
 .Verify the outgoing batches were created and sent (status of `OK`).
-image::tutorials/new-demo-pull-verify-outgoing-batch.png[]
+image::images/tutorials/new-demo-pull-verify-outgoing-batch.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -183,7 +183,7 @@ endif::pro[]
 
 ifdef::pro[]
 .Verify the incoming batches were received (status of `OK`).
-image::tutorials/demo-pull-verify-incoming-batch.png[]
+image::images/tutorials/demo-pull-verify-incoming-batch.png[]
 
 endif::pro[]
 
@@ -208,7 +208,7 @@ select * from item_selling_price
 
 ifdef::pro[]
 .Verify the new price for store 002 is 1.00
-image::tutorials/demo-pull-verify-explore.png[]
+image::images/tutorials/demo-pull-verify-explore.png[]
 endif::pro[]
 
 IMPORTANT:  Make sure you have selected either store-001 or store-002 to run your query against.
@@ -222,7 +222,7 @@ We will now simulate a sale at the store and observe how SymmetricDS pushes the 
 Create data in a store to be pushed to corp.  
 ifdef::pro[]
 Navigate to the SQL Explorer for the store node 
-and execute (image:explore-execute-all.png[title="Run As Script"]) the following scripts.
+and execute (image:images/explore-execute-all.png[title="Run As Script"]) the following scripts.
 endif::pro[]
 
 ifndef::pro[]
@@ -239,7 +239,7 @@ insert into sale_return_line_item (tran_id, item_id, price, quantity)
 ----
 
 ifdef::pro[]
-image::tutorials/demo-push-sql.png[]
+image::images/tutorials/demo-push-sql.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -250,7 +250,7 @@ endif::pro[]
 
 ifdef::pro[]
 .Verify the outgoing batches were created and sent (status of `OK`).
-image::tutorials/demo-push-verify-outgoing-batch.png[]
+image::images/tutorials/demo-push-verify-outgoing-batch.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -266,7 +266,7 @@ endif::pro[]
 ==== Verify Incoming Batches
 ifdef::pro[]
 .Verify the incoming batches were received (status of `OK`).
-image::tutorials/demo-push-verify-incoming-batch.png[]
+image::images/tutorials/demo-push-verify-incoming-batch.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -290,7 +290,7 @@ select * from sale_transaction;
 
 ifdef::pro[]
 .Verify the sale transaction from store 001 is present
-image::tutorials/demo-push-verify-explore-1.png[]
+image::images/tutorials/demo-push-verify-explore-1.png[]
 endif::pro[]
 
 [source, SQL]
@@ -300,7 +300,7 @@ select * from sale_return_line_item;
 
 ifdef::pro[]
 .Verify the sale return line item from store 001 is present
-image::tutorials/demo-push-verify-explore-2.png[]
+image::images/tutorials/demo-push-verify-explore-2.png[]
 endif::pro[]
 
 IMPORTANT:  Make sure you have selected corp-000 to run your query against.

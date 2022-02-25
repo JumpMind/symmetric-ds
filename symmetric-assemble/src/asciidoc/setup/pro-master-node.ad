@@ -6,7 +6,7 @@
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-database.png[]
+image::images/wizard-connect/wizard-connect-database.png[]
 
 The first step in setting up a master node is to connect it to the database it will be responsible for synchronizing.  This
 database will also be used to store the SymmetricDS configuration. 
@@ -24,7 +24,7 @@ database name if necessary (varies by database type)
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-permissions.png[]
+image::images/wizard-connect/wizard-connect-permissions.png[]
 
 This screen shows the permissions required to install the Symmetric System tables for the provided user and database.
 
@@ -60,7 +60,7 @@ Import existing configuration:: Allows you to import an existing SymmetricDS con
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-config.png[]
+image::images/wizard-connect/wizard-connect-config.png[]
 
 Select the option and click *Next*.
 --
@@ -70,7 +70,7 @@ Select the option and click *Next*.
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-host.png[]
+image::images/wizard-connect/wizard-connect-host.png[]
 
 Provide the URL that other SymmetricDS nodes will use to connect to this master node.  
 The default option provided should be used unless the master node will be accessed
@@ -85,7 +85,7 @@ You can also select HTTPS or HTTP to be used for transferring data.
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-user.png[]
+image::images/wizard-connect/wizard-connect-user.png[]
 
 By default SymmetricDS uses an internal security scheme for protecting the SymmetricDS application. The admin user is
 the administrative user for the SymmetricDS web console.  Provide a password for this user and click *Next*.
@@ -100,7 +100,7 @@ SymmetricDS can also use LDAP to secure the SymmetricDS application.  For more i
 [.float-group]
 --
 [.left.text-left]
-image::wizard-connect/wizard-connect-ready.png[]
+image::images/wizard-connect/wizard-connect-ready.png[]
 
 The node is now ready to be installed.  Click the *Finish* button.
 --

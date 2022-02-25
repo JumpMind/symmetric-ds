@@ -47,7 +47,7 @@ The user populates configuration tables to define the synchronization and the ru
 The tables to sync can be located in any <<Catalog and Schema>> that are accessible from the connection, while the files to sync
 can be located in any directory that is accessible on the local server.
 
-image::overview.png[]
+image::images/overview.png[]
 
 At startup, SymmetricDS looks for <<Node Properties File,Node Properties Files>> and starts a node for each file it finds, 
 which allows multiple nodes to run in the same instance and share resources.
@@ -71,7 +71,7 @@ Data flows through the system in the following steps:
 . *Transform* into the rows, columns, and values needed for the incoming batch  
 . *Load* data and return an acknowledgment to the source node
 
-image::architecture.png[]
+image::images/architecture.png[]
 
 Capture:: Change Data Capture (CDC) for tables uses database triggers that fire and record changes as comma-separated values into
 a runtime table called <<DATA>>.  For file sync, a similar mechanism is used, except changes to the metadata about files are captured.

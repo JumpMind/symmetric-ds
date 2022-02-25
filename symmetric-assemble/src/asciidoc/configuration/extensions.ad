@@ -39,7 +39,7 @@ and applies only to the "corp" node group.
 ifdef::pro[]
 Click the *New* button to create a new extension.
 
-image::extensions/extension-new.png[]
+image::images/extensions/extension-new.png[]
 
 Click the *Edit Script* button to edit the script for the extension.
 

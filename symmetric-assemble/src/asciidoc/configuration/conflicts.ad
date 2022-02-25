@@ -6,7 +6,7 @@ being consistent with the data at the source prior to the insert/update/delete.
 Without any overriding configuration, the system uses a detection of USE_CHANGED_DATA and a resolution of NEWER_WINS by default.
 
 ifdef::pro[]
-image::conflict.png[]
+image::images/conflict.png[]
 endif::pro[]
 
 .Conflicts are broken into 3 key components in SymmetricDS:

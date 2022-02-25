@@ -2,13 +2,13 @@
 === File Triggers
 
 In addition to supporting database synchronization, SymmetricDS also supports 
-<<File Synchronization>>.  Similar to database synchronization which allows configuring <<Table 
-Triggers>>, SymmetricDS also supports setting up File Triggers.  A file trigger is equivalent
+<<File Synchronization>>.  Similar to database synchronization which allows configuring <<Table Triggers>>,
+SymmetricDS also supports setting up File Triggers.  A file trigger is equivalent
 to specifying a directory structure or path that should be "watched" for files that need to be
 synchronized.
 
 ifdef::pro[]
-image::file-trigger.png[]
+image::images/file-trigger.png[]
 endif::pro[]
 
 ifdef::pro[]
@@ -53,4 +53,4 @@ endif::pro[]
 
 
 
-include::file-triggers/scripts.ad[]
+include::{includedir}/configuration/file-triggers/scripts.ad[]
