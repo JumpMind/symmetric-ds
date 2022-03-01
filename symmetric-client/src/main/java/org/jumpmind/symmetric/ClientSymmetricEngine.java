@@ -74,9 +74,9 @@ import org.jumpmind.symmetric.service.impl.NodeService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
+import org.jumpmind.symmetric.util.PropertiesUtil;
 import org.jumpmind.symmetric.util.SnapshotUtil;
 import org.jumpmind.symmetric.util.SymmetricUtils;
-import org.jumpmind.symmetric.util.TypedPropertiesFactory;
 import org.jumpmind.util.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +93,6 @@ import org.xml.sax.InputSource;
 public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     private static final Logger log = LoggerFactory.getLogger(ClientSymmetricEngine.class);
     public static final String DEPLOYMENT_TYPE_CLIENT = "client";
-    public static final String PROPERTIES_FACTORY_CLASS_NAME = "properties.factory.class.name";
     protected File propertiesFile;
     protected Properties properties;
     protected DataSource dataSource;
@@ -285,7 +284,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     }
 
     public static BasicDataSource createBasicDataSource(File propsFile) {
-        TypedProperties properties = createTypedPropertiesFactory(propsFile, null).reload();
+        TypedProperties properties = PropertiesUtil.createTypedPropertiesFactory(propsFile, null).reload();
         return BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
     }
 
@@ -472,23 +471,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected ITypedPropertiesFactory createTypedPropertiesFactory() {
-        return createTypedPropertiesFactory(propertiesFile, properties);
-    }
-
-    protected static ITypedPropertiesFactory createTypedPropertiesFactory(File propFile, Properties prop) {
-        String propFactoryClassName = System.getProperties().getProperty(PROPERTIES_FACTORY_CLASS_NAME);
-        ITypedPropertiesFactory factory = null;
-        if (propFactoryClassName != null) {
-            try {
-                factory = (ITypedPropertiesFactory) Class.forName(propFactoryClassName).getDeclaredConstructor().newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            factory = new TypedPropertiesFactory();
-        }
-        factory.init(propFile, prop);
-        return factory;
+        return PropertiesUtil.createTypedPropertiesFactory(propertiesFile, properties);
     }
 
     @Override

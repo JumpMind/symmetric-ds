@@ -138,11 +138,12 @@ public class DbCompare {
     protected TableReport compareTables(DbCompareTables tables, OutputStream sqlDiffOutput) {
         String sourceSelect = getSourceComparisonSQL(tables, sourceEngine.getTargetDialect().getTargetPlatform());
         String targetSelect = getTargetComparisonSQL(tables, targetEngine.getTargetDialect().getTargetPlatform());
-        //String targetSelect = getTargetComparisonSQL(tables, targetEngine.getDatabasePlatform());
-
-        CountingSqlReadCursor sourceCursor = new CountingSqlReadCursor(sourceEngine.getTargetDialect().getTargetPlatform().getSqlTemplateDirty().queryForCursor(sourceSelect,
+        // String targetSelect = getTargetComparisonSQL(tables, targetEngine.getDatabasePlatform());
+        CountingSqlReadCursor sourceCursor = new CountingSqlReadCursor(sourceEngine.getTargetDialect().getTargetPlatform().getSqlTemplateDirty().queryForCursor(
+                sourceSelect,
                 defaultRowMapper));
-        CountingSqlReadCursor targetCursor = new CountingSqlReadCursor(targetEngine.getTargetDialect().getTargetPlatform().getSqlTemplateDirty().queryForCursor(targetSelect,
+        CountingSqlReadCursor targetCursor = new CountingSqlReadCursor(targetEngine.getTargetDialect().getTargetPlatform().getSqlTemplateDirty().queryForCursor(
+                targetSelect,
                 defaultRowMapper));
         TableReport tableReport = new TableReport();
         tableReport.setSourceTable(tables.getSourceTable().getName());
@@ -351,10 +352,12 @@ public class DbCompare {
             if (tableNameParts.size() == 1) {
                 sourceTable = sourceEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableName, true);
             } else {
-                sourceTable = sourceEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableNameParts.get("catalog"), tableNameParts.get("schema"), tableNameParts
-                        .get("table"), true);
+                sourceTable = sourceEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableNameParts.get("catalog"), tableNameParts.get("schema"),
+                        tableNameParts
+                                .get("table"), true);
                 if (sourceTable == null) {
-                    sourceTable = sourceEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableNameParts.get("schema"), tableNameParts.get("catalog"),
+                    sourceTable = sourceEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableNameParts.get("schema"), tableNameParts.get(
+                            "catalog"),
                             tableNameParts.get("table"), true);
                 }
             }
@@ -460,10 +463,12 @@ public class DbCompare {
             if (tableNameParts.size() == 1) {
                 targetTable = targetEngine.getTargetDialect().getTargetPlatform().getTableFromCache(targetTableName, true);
             } else {
-                targetTable = targetEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableNameParts.get("catalog"), tableNameParts.get("schema"), tableNameParts
-                        .get("table"), true);
+                targetTable = targetEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableNameParts.get("catalog"), tableNameParts.get("schema"),
+                        tableNameParts
+                                .get("table"), true);
                 if (targetTable == null) {
-                    targetTable = targetEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableNameParts.get("schema"), tableNameParts.get("catalog"),
+                    targetTable = targetEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableNameParts.get("schema"), tableNameParts.get(
+                            "catalog"),
                             tableNameParts.get("table"), true);
                 }
             }
@@ -507,8 +512,9 @@ public class DbCompare {
     }
 
     protected Table loadTargetTableUsingTransform(TransformTableNodeGroupLink transform) {
-        Table targetTable = targetEngine.getTargetDialect().getTargetPlatform().getTableFromCache(transform.getTargetCatalogName(), transform.getTargetSchemaName(), transform
-                .getTargetTableName(), true);
+        Table targetTable = targetEngine.getTargetDialect().getTargetPlatform().getTableFromCache(transform.getTargetCatalogName(), transform
+                .getTargetSchemaName(), transform
+                        .getTargetTableName(), true);
         return targetTable;
     }
 

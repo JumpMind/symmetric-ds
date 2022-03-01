@@ -66,6 +66,8 @@ public interface ITriggerRouterService {
 
     public TriggerRouter getTriggerRouterForCurrentNode(String triggerId, String routerId, boolean refreshCache);
 
+    public List<TriggerRouter> getTriggerRoutersForTargetNode(String targetNodeGroupId);
+
     /**
      * Returns a list of triggers that should be active for the current node.
      * 
@@ -196,19 +198,19 @@ public interface ITriggerRouterService {
 
     public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force, boolean verifyTrigger);
 
-    public void syncTriggers(List<Trigger> triggers, ITriggerCreationListener listener, boolean force, boolean verifyInDatabase);
+    public boolean syncTriggers(List<Trigger> triggers, ITriggerCreationListener listener, boolean force, boolean verifyInDatabase);
 
-    public void syncTriggers(Table table, boolean genAlways);
+    public boolean syncTriggers(Table table, boolean genAlways);
 
-    public void syncTriggers(List<Table> tables, boolean genAlways);
+    public boolean syncTriggers(List<Table> tables, boolean genAlways);
 
     public void dropTriggers(TriggerHistory history);
 
-    public void syncTriggers(boolean genAlways);
+    public boolean syncTriggers(boolean genAlways);
 
-    public void syncTriggers();
+    public boolean syncTriggers();
 
-    public void syncTriggers(StringBuilder sqlBuffer, boolean genAlways);
+    public boolean syncTriggers(StringBuilder sqlBuffer, boolean genAlways);
 
     public void addExtraConfigTable(String table);
 

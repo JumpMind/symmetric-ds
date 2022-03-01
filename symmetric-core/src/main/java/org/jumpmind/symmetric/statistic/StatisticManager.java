@@ -491,7 +491,9 @@ public class StatisticManager implements IStatisticManager {
                         }
                         stats.setEndTime(endTime);
                         saveAdditionalStats(endTime, stats);
-                        statisticService.save(stats);
+                        if (stats.isNonZero()) {
+                            statisticService.save(stats);
+                        }
                     }
                 }
                 resetChannelStats(true);
@@ -519,7 +521,7 @@ public class StatisticManager implements IStatisticManager {
         if (hostStats != null) {
             hostStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
             try {
-                if (recordStatistics) {
+                if (recordStatistics && hostStats.isNonZero()) {
                     if (hostStats.getNodeId().equals(UNKNOWN)) {
                         Node node = nodeService.getCachedIdentity();
                         if (node != null) {

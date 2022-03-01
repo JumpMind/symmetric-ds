@@ -33,6 +33,7 @@ public class SecurityConstants {
     public final static String CLASS_NAME_SECURITY_SERVICE = "security.service.class.name";
     public static final String PREFIX_ENC = "enc:";
     public static final String PREFIX_OBF = "obf:";
+    public static final String PREFIX_KEYSTORE_STORAGE = "ks:";
     public static final String PASSWORD_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     public static final String[] CIPHERS = new String[] { "AES/GCM/PKCS5Padding", "AES/GCM/PKCS5Padding",
             "DESede/ECB/PKCS5Padding", "DES/ECB/PKCS5Padding" };
@@ -47,4 +48,6 @@ public class SecurityConstants {
     public static final String ALIAS_SYM_PRIVATE_KEY = "sym";
     public static final String ALIAS_SYM_SECRET_KEY = "sym.secret";
     public static final String EMBEDDED_WEBSERVER_DEFAULT_ROLE = "symmetric";
+    public static final String AZURE_KEYVAULT_URI = "azure.keyvault.uri";
+    public static final String AZURE_CREDENTIAL_BUILDER_CLASSNAME = "azure.credential.builder.classname";
 }

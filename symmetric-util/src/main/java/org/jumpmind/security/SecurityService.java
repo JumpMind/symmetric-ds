@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStore.TrustedCertificateEntry;
 import java.security.KeyStoreException;
@@ -55,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * @see ISecurityService
  */
 public class SecurityService implements ISecurityService {
-    protected Logger log = LoggerFactory.getLogger(SecurityService.class);
+    protected Logger log = LoggerFactory.getLogger(getClass());
     protected static volatile SecretKey secretKey;
     protected static String keyStoreFileName;
     protected static URL keyStoreURL;
@@ -205,6 +206,26 @@ public class SecurityService implements ISecurityService {
         throw new NotImplementedException();
     }
 
+    @Override
+    public boolean supportsExportCertificate() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsImportCertificate() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsBackupCertificate() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsGenerateSelfSignedCertificate() {
+        return false;
+    }
+
     protected void checkThatKeystoreFileExists() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         if (!hasInitKeyStore) {
             synchronized (SecurityService.class) {
@@ -342,6 +363,35 @@ public class SecurityService implements ISecurityService {
                 }
             }
         }
+    }
+
+    @Override
+    public String getKeystoreEntry(String alias) throws Exception {
+        String password = getKeyStorePassword();
+        KeyStore ks = getKeyStore();
+        Key entry = ks.getKey(alias, password.toCharArray());
+        return entry == null ? null : new String(entry.getEncoded());
+    }
+
+    @Override
+    public void setKeystoreEntry(String alias, String value) throws Exception {
+        String password = getKeyStorePassword();
+        SecretKey mySecretKey = new SecretKeySpec(value.getBytes(), "AES");
+        KeyStore ks = getKeyStore();
+        ks.setKeyEntry(alias, mySecretKey, password.toCharArray(), null);
+        saveKeyStore(ks, password);
+    }
+
+    @Override
+    public void deleteKeystoreEntry(String alias) throws Exception {
+        String password = getKeyStorePassword();
+        KeyStore ks = getKeyStore();
+        try {
+            ks.deleteEntry(alias);
+        } catch (KeyStoreException e) {
+            log.info("Unable to delete keystore entry with name {}", alias);
+        }
+        saveKeyStore(ks, password);
     }
 
     public String nextSecureHexString(int len) {

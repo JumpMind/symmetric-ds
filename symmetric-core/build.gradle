@@ -8,6 +8,7 @@ apply from: symAssembleDir + '/common.gradle'
         compile "com.sun.mail:javax.mail:$javaMailVersion"
         compile "com.google.code.gson:gson:$gsonVersion"
         compile "org.springframework:spring-core:$springVersion"
+        compile "org.springframework:spring-beans:$springVersion"
 
         compileOnly "org.eclipse.jetty:jetty-alpn-conscrypt-server:$jettyVersion"
         // force okhttp3 to use newer version of kotlin

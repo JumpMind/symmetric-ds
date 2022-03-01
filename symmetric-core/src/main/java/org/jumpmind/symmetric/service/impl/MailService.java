@@ -152,7 +152,7 @@ public class MailService extends AbstractService implements IMailService {
             Session session = Session.getInstance(getJavaMailProperties(prop));
             transport = session.getTransport(prop.get(ParameterConstants.SMTP_TRANSPORT, "smtp"));
             if (prop.is(ParameterConstants.SMTP_USE_AUTH, false)) {
-                transport.connect("email-smtp.us-east-1.amazonaws.com", prop.get(ParameterConstants.SMTP_USER),
+                transport.connect(prop.get(ParameterConstants.SMTP_USER),
                         decryptPassword(prop.get(ParameterConstants.SMTP_PASSWORD)));
             } else {
                 transport.connect();

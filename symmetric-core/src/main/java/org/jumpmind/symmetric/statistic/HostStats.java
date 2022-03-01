@@ -71,6 +71,12 @@ public class HostStats extends AbstractNodeHostStats {
         triggersRemovedCount += stats.getTriggersRemovedCount();
     }
 
+    public boolean isNonZero() {
+        return restarted > 0 || nodesPulled > 0 || totalNodesPullTime > 0 || nodesPushed > 0 || totalNodesPushTime > 0 || nodesRejected > 0
+                || nodesRegistered > 0 || nodesLoaded > 0 || nodesDisabled > 0 || purgedDataRows > 0 || purgedDataEventRows > 0 || purgedBatchOutgoingRows > 0
+                || purgedBatchIncomingRows > 0 || triggersCreatedCount > 0 || triggersRebuiltCount > 0 || triggersRemovedCount > 0;
+    }
+
     public long getRestarted() {
         return restarted;
     }

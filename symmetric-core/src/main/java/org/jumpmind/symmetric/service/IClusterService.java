@@ -58,6 +58,8 @@ public interface IClusterService {
 
     public boolean isInfiniteLocked(String action);
 
+    public boolean isLocked(String action);
+
     public void persistToTableForSnapshot();
 
     public String getInstanceId();

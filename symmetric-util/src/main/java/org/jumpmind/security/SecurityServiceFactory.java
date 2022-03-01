@@ -21,8 +21,12 @@
 package org.jumpmind.security;
 
 import org.jumpmind.properties.TypedProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SecurityServiceFactory {
+    protected static Logger log = LoggerFactory.getLogger(SecurityServiceFactory.class);
+
     public enum SecurityServiceType {
         CLIENT, SERVER
     }
@@ -37,9 +41,11 @@ public class SecurityServiceFactory {
                 properties = new TypedProperties(System.getProperties());
             }
             String className = properties.get(SecurityConstants.CLASS_NAME_SECURITY_SERVICE);
+            log.debug("security class name from properties: {}", className == null ? "null" : className);
             if (className == null || className.trim().equals("")) {
                 className = serviceType == SecurityServiceType.SERVER ? "org.jumpmind.security.BouncyCastleSecurityService" : SecurityService.class.getName();
             }
+            log.debug("Instantiating security using class name: {}", className);
             ISecurityService securityService = (ISecurityService) Class.forName(className).getDeclaredConstructor().newInstance();
             securityService.init();
             return securityService;

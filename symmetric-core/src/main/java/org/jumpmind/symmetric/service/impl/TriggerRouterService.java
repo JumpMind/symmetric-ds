@@ -928,6 +928,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerRouters;
     }
 
+    public List<TriggerRouter> getTriggerRoutersForTargetNode(String targetNodeGroupId) {
+        List<TriggerRouter> triggerRouters = enhanceTriggerRouters(sqlTemplate.query(getTriggerRouterSql("activeTriggersForTargetNodeGroupSql"),
+                new TriggerRouterMapper(), targetNodeGroupId));
+        return triggerRouters;
+    }
+
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(
             String sourceNodeGroupId, String targetNodeGroupId) {
         return enhanceTriggerRouters(sqlTemplate.query(
@@ -1210,15 +1216,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         clearCache();
     }
 
-    public void syncTriggers() {
-        syncTriggers(false);
+    public boolean syncTriggers() {
+        return syncTriggers(false);
     }
 
-    public void syncTriggers(boolean force) {
-        syncTriggers((StringBuilder) null, force);
+    public boolean syncTriggers(boolean force) {
+        return syncTriggers((StringBuilder) null, force);
     }
 
-    public void syncTriggers(StringBuilder sqlBuffer, boolean force) {
+    public boolean syncTriggers(StringBuilder sqlBuffer, boolean force) {
         if ((parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) || isCalledFromSymmetricAdminTool())) {
             synchronized (this) {
                 if (clusterService.lock(ClusterConstants.SYNC_TRIGGERS)) {
@@ -1284,11 +1290,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         log.info(
                                 "Sync triggers was locked by the cluster service but lock details were not found. Perhaps the lock was released in the meantime.");
                     }
+                    return false;
                 }
             }
         } else {
             log.info("Not synchronizing triggers.  {} is set to false", ParameterConstants.AUTO_SYNC_TRIGGERS);
         }
+        return true;
     }
 
     public void clearCache() {
@@ -1548,41 +1556,45 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return false;
     }
 
-    public void syncTriggers(Table table, boolean force) {
-        syncTriggers(Arrays.asList(table), force);
+    public boolean syncTriggers(Table table, boolean force) {
+        return syncTriggers(Arrays.asList(table), force);
     }
 
-    public void syncTriggers(List<Table> tables, boolean force) {
-        boolean ignoreCase = this.parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE);
-        List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
-        List<TriggerHistory> activeTriggerHistories = getActiveTriggerHistories();
-        Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(triggersForCurrentNode,
-                activeTriggerHistories, true);
-        for (Table table : tables) {
-            /* Re-lookup just in case the table was just altered */
-            table = platform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(), true);
-            for (Trigger trigger : triggersForCurrentNode) {
-                if (trigger.matches(table, platform.getDefaultCatalog(), platform.getDefaultSchema(), ignoreCase) &&
-                        (!trigger.isSourceTableNameWildCarded() || !trigger.isSourceTableNameExpanded()
-                                || !containsExactMatchForSourceTableName(table, triggersForCurrentNode, ignoreCase))) {
-                    List<TriggerTableSupportingInfo> triggerTableSupportingInfoList = triggerToTableSupportingInfo.get(trigger.getTriggerId());
-                    TriggerTableSupportingInfo triggerTableSupportingInfo = null;
-                    for (TriggerTableSupportingInfo t : triggerTableSupportingInfoList) {
-                        if (t.getTable().getFullyQualifiedTableName().equals(table.getFullyQualifiedTableName())) {
-                            triggerTableSupportingInfo = t;
-                            break;
+    public boolean syncTriggers(List<Table> tables, boolean force) {
+        if (clusterService.lock(ClusterConstants.SYNC_TRIGGERS)) {
+            boolean ignoreCase = this.parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE);
+            List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
+            List<TriggerHistory> activeTriggerHistories = getActiveTriggerHistories();
+            Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(triggersForCurrentNode,
+                    activeTriggerHistories, true);
+            for (Table table : tables) {
+                /* Re-lookup just in case the table was just altered */
+                table = platform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(), true);
+                for (Trigger trigger : triggersForCurrentNode) {
+                    if (trigger.matches(table, platform.getDefaultCatalog(), platform.getDefaultSchema(), ignoreCase) &&
+                            (!trigger.isSourceTableNameWildCarded() || !trigger.isSourceTableNameExpanded()
+                                    || !containsExactMatchForSourceTableName(table, triggersForCurrentNode, ignoreCase))) {
+                        List<TriggerTableSupportingInfo> triggerTableSupportingInfoList = triggerToTableSupportingInfo.get(trigger.getTriggerId());
+                        TriggerTableSupportingInfo triggerTableSupportingInfo = null;
+                        for (TriggerTableSupportingInfo t : triggerTableSupportingInfoList) {
+                            if (t.getTable().getFullyQualifiedTableName().equals(table.getFullyQualifiedTableName())) {
+                                triggerTableSupportingInfo = t;
+                                break;
+                            }
                         }
-                    }
-                    if (triggerTableSupportingInfo != null) {
-                        log.info("Synchronizing triggers for {}", table.getFullyQualifiedTableName());
-                        updateOrCreateDatabaseTriggers(trigger, table, null, force, true, activeTriggerHistories, triggerTableSupportingInfo);
-                        log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
-                    } else {
-                        log.warn("Can't find table {} for trigger {}, make sure table exists.", table.getFullyQualifiedTableName(), trigger.getTriggerId());
+                        if (triggerTableSupportingInfo != null) {
+                            log.info("Synchronizing triggers for {}", table.getFullyQualifiedTableName());
+                            updateOrCreateDatabaseTriggers(trigger, table, null, force, true, activeTriggerHistories, triggerTableSupportingInfo);
+                            log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
+                        } else {
+                            log.warn("Can't find table {} for trigger {}, make sure table exists.", table.getFullyQualifiedTableName(), trigger.getTriggerId());
+                        }
                     }
                 }
             }
+            return true;
         }
+        return false;
     }
 
     protected void updateOrCreateDdlTriggers(StringBuilder sqlBuffer) {
@@ -1762,70 +1774,74 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         syncTriggers(Collections.singletonList(trigger), listener, force, verifyInDatabase);
     }
 
-    public void syncTriggers(List<Trigger> triggers, ITriggerCreationListener listener, boolean force, boolean verifyInDatabase) {
-        StringBuilder sqlBuffer = new StringBuilder();
-        clearCache();
-        List<Trigger> triggersForCurrentNode = null;
-        if (verifyInDatabase) {
-            triggersForCurrentNode = getTriggersForCurrentNode();
-        } else {
-            triggersForCurrentNode = new ArrayList<Trigger>();
-            triggersForCurrentNode.addAll(triggers);
-        }
-        try {
-            if (listener != null) {
-                extensionService.addExtensionPoint(listener);
+    public boolean syncTriggers(List<Trigger> triggers, ITriggerCreationListener listener, boolean force, boolean verifyInDatabase) {
+        if (clusterService.lock(ClusterConstants.SYNC_TRIGGERS)) {
+            StringBuilder sqlBuffer = new StringBuilder();
+            clearCache();
+            List<Trigger> triggersForCurrentNode = null;
+            if (verifyInDatabase) {
+                triggersForCurrentNode = getTriggersForCurrentNode();
+            } else {
+                triggersForCurrentNode = new ArrayList<Trigger>();
+                triggersForCurrentNode.addAll(triggers);
             }
-            log.info("Synchronizing {} triggers", triggers.size());
-            triggersToSync = triggers.size();
-            triggersSynced = 0;
-            for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                l.syncTriggersStarted();
-            }
-            List<TriggerHistory> allHistories = getActiveTriggerHistories();
-            Map<String, List<TriggerHistory>> activeHistoryByTriggerId = new HashMap<String, List<TriggerHistory>>();
-            for (TriggerHistory hist : allHistories) {
-                List<TriggerHistory> list = activeHistoryByTriggerId.get(hist.getTriggerId());
-                if (list == null) {
-                    list = new ArrayList<TriggerHistory>();
-                    activeHistoryByTriggerId.put(hist.getTriggerId(), list);
+            try {
+                if (listener != null) {
+                    extensionService.addExtensionPoint(listener);
                 }
-                list.add(hist);
-            }
-            for (Trigger trigger : triggers) {
-                if (triggersForCurrentNode.contains(trigger)) {
-                    if (!trigger.isSourceTableNameWildCarded() && !trigger.isSourceTableNameExpanded()) {
-                        List<TriggerHistory> activeHistories = activeHistoryByTriggerId.get(trigger.getTriggerId());
-                        if (activeHistories != null) {
-                            for (TriggerHistory triggerHistory : activeHistories) {
-                                if (!triggerHistory.getFullyQualifiedSourceTableName().equals(trigger.getFullyQualifiedSourceTableName())) {
-                                    dropTriggers(triggerHistory, sqlBuffer);
+                log.info("Synchronizing {} triggers", triggers.size());
+                triggersToSync = triggers.size();
+                triggersSynced = 0;
+                for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                    l.syncTriggersStarted();
+                }
+                List<TriggerHistory> allHistories = getActiveTriggerHistories();
+                Map<String, List<TriggerHistory>> activeHistoryByTriggerId = new HashMap<String, List<TriggerHistory>>();
+                for (TriggerHistory hist : allHistories) {
+                    List<TriggerHistory> list = activeHistoryByTriggerId.get(hist.getTriggerId());
+                    if (list == null) {
+                        list = new ArrayList<TriggerHistory>();
+                        activeHistoryByTriggerId.put(hist.getTriggerId(), list);
+                    }
+                    list.add(hist);
+                }
+                for (Trigger trigger : triggers) {
+                    if (triggersForCurrentNode.contains(trigger)) {
+                        if (!trigger.isSourceTableNameWildCarded() && !trigger.isSourceTableNameExpanded()) {
+                            List<TriggerHistory> activeHistories = activeHistoryByTriggerId.get(trigger.getTriggerId());
+                            if (activeHistories != null) {
+                                for (TriggerHistory triggerHistory : activeHistories) {
+                                    if (!triggerHistory.getFullyQualifiedSourceTableName().equals(trigger.getFullyQualifiedSourceTableName())) {
+                                        dropTriggers(triggerHistory, sqlBuffer);
+                                    }
                                 }
                             }
                         }
-                    }
-                    Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(
-                            Collections.singletonList(trigger), allHistories, true);
-                    updateOrCreateDatabaseTrigger(trigger, triggersForCurrentNode, sqlBuffer,
-                            force, verifyInDatabase, allHistories, false, triggerToTableSupportingInfo);
-                } else {
-                    List<TriggerHistory> activeHistories = activeHistoryByTriggerId.get(trigger.getTriggerId());
-                    if (activeHistories != null) {
-                        for (TriggerHistory triggerHistory : activeHistories) {
-                            dropTriggers(triggerHistory, sqlBuffer);
+                        Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(
+                                Collections.singletonList(trigger), allHistories, true);
+                        updateOrCreateDatabaseTrigger(trigger, triggersForCurrentNode, sqlBuffer,
+                                force, verifyInDatabase, allHistories, false, triggerToTableSupportingInfo);
+                    } else {
+                        List<TriggerHistory> activeHistories = activeHistoryByTriggerId.get(trigger.getTriggerId());
+                        if (activeHistories != null) {
+                            for (TriggerHistory triggerHistory : activeHistories) {
+                                dropTriggers(triggerHistory, sqlBuffer);
+                            }
                         }
                     }
                 }
+            } finally {
+                for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                    l.syncTriggersEnded();
+                }
+                if (listener != null) {
+                    extensionService.removeExtensionPoint(listener);
+                }
+                log.info("Done synchronizing {} triggers", triggers.size());
             }
-        } finally {
-            for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                l.syncTriggersEnded();
-            }
-            if (listener != null) {
-                extensionService.removeExtensionPoint(listener);
-            }
-            log.info("Done synchronizing {} triggers", triggers.size());
+            return true;
         }
+        return false;
     }
 
     protected void updateOrCreateDatabaseTriggers(Trigger trigger, Table table,

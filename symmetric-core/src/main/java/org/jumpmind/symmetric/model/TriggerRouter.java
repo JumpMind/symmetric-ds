@@ -206,6 +206,37 @@ public class TriggerRouter implements Serializable, Cloneable {
     }
 
     @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((router == null) ? 0 : router.hashCode());
+        result = prime * result + ((trigger == null) ? 0 : trigger.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        TriggerRouter other = (TriggerRouter) obj;
+        if (router == null) {
+            if (other.router != null)
+                return false;
+        } else if (!router.equals(other.router))
+            return false;
+        if (trigger == null) {
+            if (other.trigger != null)
+                return false;
+        } else if (!trigger.equals(other.trigger))
+            return false;
+        return true;
+    }
+
+    @Override
     public String toString() {
         return (trigger != null ? trigger.toString() : "") + ":"
                 + (router != null ? router.toString() : "");
