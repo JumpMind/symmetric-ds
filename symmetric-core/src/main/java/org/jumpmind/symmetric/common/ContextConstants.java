@@ -34,4 +34,5 @@ final public class ContextConstants {
     public static final String PURGE_LAST_BATCH_ID = "purge.last.batch.id";
     public static final String LOG_MINER_NEXT_ID = "log.miner.next.id";
     public static final String LOG_MINER_OPEN_TRANSACTIONS = "log.miner.open.transactions";
+    public static final String LOG_MINER_LOG_FILE_NAME = "log.miner.log.file.name";
 }

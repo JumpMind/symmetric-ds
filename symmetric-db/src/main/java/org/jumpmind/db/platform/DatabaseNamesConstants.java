@@ -68,4 +68,5 @@ final public class DatabaseNamesConstants {
     public final static String ELASTIC = "elasticsearch";
     public final static String OPENSEARCH = "opensearch";
     public final static String COSMOS = "cosmos";
+    public final static String SINGLE_STORE = "singlestore";
 }

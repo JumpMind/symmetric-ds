@@ -251,6 +251,16 @@ by database.
 |
 |
 
+|SingleStore
+|All
+|
+|✔
+|
+|✔
+|✔
+|
+|✔
+
 |SQL Anywhere
 |9
 |✔
@@ -468,6 +478,13 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 |✔
 |select current_schema()                   
 
+|SingleStore
+| 
+|✔
+|select database()
+|
+|
+
 |SQL Anywhere
 |
 |✔
@@ -555,6 +572,7 @@ include::opensearch.ad[]
 include::oracle.ad[]
 include::postgresql.ad[]
 include::redshift.ad[]
+include::singlestore.ad[]
 include::snowflake.ad[]
 include::sqlite.ad[]
 include::sybase-ase.ad[]

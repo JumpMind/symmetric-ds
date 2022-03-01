@@ -216,6 +216,7 @@ final public class ParameterConstants {
     public final static String DATA_LOADER_SLEEP_TIME_AFTER_EARLY_COMMIT = "dataloader.sleep.time.after.early.commit";
     public final static String DATA_LOADER_TREAT_DATETIME_AS_VARCHAR = "db.treat.date.time.as.varchar.enabled";
     public final static String DATA_LOADER_USE_PRIMARY_KEYS_FROM_SOURCE = "dataloader.use.primary.keys.from.source";
+    public final static String DATA_LOADER_IGNORE_SQL_EVENT_ERRORS = "dataloader.ignore.sql.event.errors";
     public final static String DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL = "datareload.batch.insert.transactional";
     public final static String DATA_EXTRACTOR_ENABLED = "dataextractor.enable";
     public final static String DATA_EXTRACTOR_TEXT_COLUMN_EXPRESSION = "dataextractor.text.column.expression";
@@ -453,7 +454,8 @@ final public class ParameterConstants {
     public final static String[] ALL_COSMOS_PARAMS = new String[] { COSMOS_DEFAULT_DATABASE };
     public final static String OPENSEARCH_LOAD_AWS_ACCESS_KEY = "opensearch.load.aws.access.key";
     public final static String OPENSEARCH_LOAD_AWS_SECRET_KEY = "opensearch.load.aws.secret.key";
-
+    public final static String SINGLESTORE_AUDIT_LOG_DIR = "single.store.audit.log.dir";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

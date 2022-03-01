@@ -669,13 +669,17 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     if (newTransaction != null) {
                         newTransaction.rollback();
                     }
-                    throw ex;
+                    if (!writerSettings.isIgnoreSqlDataEventFailures()) {
+                    	throw ex;
+                    }
                 } catch (RuntimeException ex) {
                     log.error("Failed to run the following sql: {}", sql);
                     if (newTransaction != null) {
                         newTransaction.rollback();
                     }
-                    throw ex;
+                    if (!writerSettings.isIgnoreSqlDataEventFailures()) {
+                    	throw ex;
+                    }
                 } finally {
                     if (newTransaction != null) {
                         newTransaction.close();
