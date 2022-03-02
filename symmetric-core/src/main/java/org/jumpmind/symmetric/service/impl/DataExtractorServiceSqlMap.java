@@ -64,7 +64,7 @@ public class DataExtractorServiceSqlMap extends AbstractSqlMap {
                 + "last_loaded_batch_id = null, loaded_rows = 0, loaded_millis = 0, parent_request_id = 0, status = ? "
                 + "where request_id = ? and node_id = ?");
 
-        putSql("cancelExtractRequests", "update $(extract_request) set status=?, last_update_time=? where load_id = ? and source_node_id = ?");
+        putSql("cancelExtractRequests", "update $(extract_request) set status=?, last_update_time=? where load_id = ? and source_node_id = ? and status != ?");
 
         putSql("selectIncompleteTablesForExtractByLoadId", "select * from $(extract_request) where load_id = ? and loaded_time is null and source_node_id = ? order by request_id");
         

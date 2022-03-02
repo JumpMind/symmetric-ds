@@ -143,8 +143,10 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             context.put(CTX_KEY_CHANGED_NODE_SECURITY, true);
         }
         if (matchesTable(table, TableConstants.SYM_TABLE_RELOAD_STATUS) && data.getDataEventType() == DataEventType.UPDATE) {
+            Map<String, String> oldData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.OLD_DATA);
             Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
-            boolean isCancelled = "1".equals(newData.get("cancelled"));
+            boolean isCancelled = "1".equals(newData.get("cancelled")) && (oldData.get("cancelled") == null || "0".equals(oldData.get("cancelled"))) &&
+                    context.get(CTX_KEY_MY_NODE_ID).equals(newData.get("source_node_id"));
             String loadId = newData.get("load_id");
             if (isCancelled && loadId != null) {
                 @SuppressWarnings("unchecked")

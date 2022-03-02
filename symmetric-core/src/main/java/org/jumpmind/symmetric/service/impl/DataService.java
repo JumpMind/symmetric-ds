@@ -439,7 +439,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public TableReloadStatus updateTableReloadStatusDataLoaded(ISqlTransaction transaction, long loadId, long batchId, int batchCount) {
         int idType = symmetricDialect.getSqlTypeForIds();
-        transaction.prepareAndExecute(getSql("updateTableReloadStatusDataLoaded"),
+        int count = transaction.prepareAndExecute(getSql("updateTableReloadStatusDataLoaded"),
                 new Object[] { batchId, batchCount, batchId, batchCount, batchId, batchCount,
                         batchId, batchCount, batchId, batchCount, batchId, batchCount, new Date(),
                         batchId, batchCount, batchId, batchCount, batchId, batchCount, loadId, engine.getNodeId(), new Date(), loadId },
@@ -449,7 +449,7 @@ public class DataService extends AbstractService implements IDataService {
                         Types.VARCHAR, Types.TIMESTAMP, idType });
         List<TableReloadStatus> status = transaction.query(getSql("selectTableReloadStatusByLoadId"),
                 new TableReloadStatusMapper(), new Object[] { loadId }, new int[] { idType });
-        if (status != null && status.size() > 0) {
+        if (status != null && status.size() > 0 && count > 0) {
             return status.get(0);
         }
         return null;

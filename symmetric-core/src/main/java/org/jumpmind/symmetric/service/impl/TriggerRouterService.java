@@ -528,6 +528,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_TABLE_RELOAD_STATUS).equals(tableName) ||
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_EXTRACT_REQUEST).equals(tableName)) {
             trigger.setChannelId(Constants.CHANNEL_MONITOR);
+            trigger.setUseCaptureOldData(true);
         } else if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT)
                 .equals(tableName)) {
             trigger.setChannelId(Constants.CHANNEL_DYNAMIC);

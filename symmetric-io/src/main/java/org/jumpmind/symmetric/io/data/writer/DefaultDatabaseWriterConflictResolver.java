@@ -154,8 +154,9 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             }
             String sql = "select source_node_id, create_time from " + databaseWriter.getTablePrefix() +
                     "_data where table_name = ? and ((event_type = 'I' and row_data like ?) or " +
-                    "(event_type in ('U', 'D') and pk_data like ?)) and create_time >= ? order by create_time desc";
-            Object[] args = new Object[] { targetTable.getName(), pkCsv + "%", pkCsv, loadingTs };
+                    "(event_type in ('U', 'D') and pk_data like ?)) and create_time >= ? " +
+                    "and source_node_id != ? order by create_time desc";
+            Object[] args = new Object[] { targetTable.getName(), pkCsv + "%", pkCsv, loadingTs, writer.getBatch().getSourceNodeId() };
             Row row = null;
             if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions()) {
                 // we may have waited for another transaction to commit, so query with a new transaction

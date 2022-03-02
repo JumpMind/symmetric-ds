@@ -1437,7 +1437,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     @Override
     public int cancelExtractRequests(long loadId) {
-        return sqlTemplate.update(getSql("cancelExtractRequests"), ExtractStatus.OK.name(), new Date(), loadId, engine.getNodeId());
+        return sqlTemplate.update(getSql("cancelExtractRequests"), ExtractStatus.OK.name(), new Date(), loadId, engine.getNodeId(), ExtractStatus.OK.name());
     }
 
     protected boolean writeBatchStats(BufferedWriter writer, char[] buffer, int bufferSize, String prevBuffer, OutgoingBatch batch)
