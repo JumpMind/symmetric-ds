@@ -157,8 +157,6 @@ public class TabularResultLayout extends VerticalLayout {
         getStyle().set("padding-bottom", "0");
         createMenuBar();
         try {
-            grid = putResultsInGrid(settings.getProperties().getInt(SQL_EXPLORER_MAX_RESULTS));
-            grid.setSizeFull();
             columnNameMap = new HashMap<Integer, String>();
             for (int i = 0; i < meta.getColumnCount(); i++) {
                 String realColumnName = meta.getColumnName(i + 1);
@@ -169,6 +167,8 @@ public class TabularResultLayout extends VerticalLayout {
                 }
                 columnNameMap.put(i, columnName);
             }
+            grid = putResultsInGrid(settings.getProperties().getInt(SQL_EXPLORER_MAX_RESULTS));
+            grid.setSizeFull();
             ContextMenu menu = new ContextMenu(grid);
             menu.addItem(ACTION_SELECT, event -> handleAction(ACTION_SELECT));
             menu.addItem(ACTION_INSERT, event -> handleAction(ACTION_INSERT));
