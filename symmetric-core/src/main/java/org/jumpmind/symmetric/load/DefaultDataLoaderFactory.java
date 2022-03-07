@@ -160,7 +160,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                         List<TriggerHistory> hists = engine.getTriggerRouterService().getActiveTriggerHistories(tableName);
                         if (hists != null && hists.size() > 0 && loadingTs != null) {
                             TriggerHistory hist = hists.get(0);
-                            Data data = new Data(tableName, csvData.getDataEventType(),
+                            Data data = new Data(hist.getSourceTableName(), csvData.getDataEventType(),
                                     csvData.getCsvData(CsvData.ROW_DATA), csvData.getCsvData(CsvData.PK_DATA), hist,
                                     csvData.getAttribute(CsvData.ATTRIBUTE_CHANNEL_ID), null, csvData.getAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID));
                             data.setOldData(csvData.getCsvData(CsvData.OLD_DATA));
