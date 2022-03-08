@@ -11,7 +11,8 @@ configurations {
 configurations.all {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
         if (details.requested.group == 'org.ow2.asm') {
-            details.useVersion '5.2'
+            details.useVersion '7.2'
+            //details.useVersion '5.2'
         }
     }
 }
@@ -26,7 +27,16 @@ allprojects {
     apply plugin: 'idea'
 
     group = 'org.jumpmind.symmetric'
-    
+         sonarqube {
+  		properties {
+		    property "sonar.organization", "jumpmind"
+		    property "sonar.host.url", "https://sonarcloud.io"
+		    property "sonar.exclusions", "**/*.doc,**/*.docx,**/*.ipch"
+		    property "sonar.junit.reportPaths","${project.buildDir}/test-results/test"
+		    property "sonar.coverage.jacoco.htmlReportPaths", "${project.buildDir}/reports/jacoco.html"
+		    property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco.xml"
+		    }
+	}
     repositories {
         maven {
             url "https://maven.jumpmind.com/repo"
@@ -79,6 +89,7 @@ subprojects { subproject ->
     apply plugin: 'propdeps-maven'
     apply plugin: 'propdeps-eclipse'
     apply plugin: 'maven'
+    apply plugin: 'jacoco'
     
     configurations { deployerJars }
     configurations { testArtifacts.extendsFrom testRuntime }
@@ -96,6 +107,52 @@ subprojects { subproject ->
     compileTestJava {
     	options.compilerArgs += '-Xlint:deprecation'
     }
+    
+    
+    if(!project.name.contains("symmetric-android") && !project.name.contains("symmetric-csv") && !project.name.contains("symmetric-sqlexplorer")
+		    && !project.name.contains("symmetric-swagger-ui") && !project.name.contains("symmetric-wrapper")){
+		task coverageMerge(type: JacocoMerge) {
+	  destinationFile file("${rootProject.buildDir}/jacoco/testing.exec")
+	  executionData(file("${project.buildDir}/jacoco/test.exec"),
+                  file("${project.buildDir}/jacoco/integrationTest.exec"))
+		}
+		
+	}
+	
+	jacoco {
+  		toolVersion = "0.8.5"
+	}
+	
+	jacocoTestReport {
+		executionData(file("${project.buildDir}/jacoco/test.exec"),
+                  file("${project.buildDir}/jacoco/integrationTest.exec"))
+    	reports {
+        	xml.enabled=true
+        	html.enabled=true
+        	//for XML
+    		html.destination=file("${buildDir}/reports/jacoco.html")
+    		xml.destination=file("${buildDir}/reports/jacoco.xml")
+    	}
+	}
+	
+	sonarqube {
+        properties {
+	        if(project.properties.containsKey('pro')){
+	        	if(("${project.buildDir}").contains("symmetric-ds")){
+	            	property "sonar.projectBaseDir","${project.buildDir}"
+	            }
+	       	    property "sonar.coverage.jacoco.htmlReportPaths", "${project.buildDir}/reports/jacoco.html"
+	            property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco.xml"
+	            property "sonar.junit.reportPaths","${project.buildDir}/test-results/*"
+	        } else {
+	       	    property "sonar.coverage.jacoco.htmlReportPaths", "${project.buildDir}/reports/jacoco.html"
+	            property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco.xml"
+	            property "sonar.junit.reportPaths","${project.buildDir}/test-results/*"
+	        }
+	    }
+    }
+	
+    
     
     eclipse {   
         classpath {
@@ -186,6 +243,7 @@ subprojects { subproject ->
         useJUnitPlatform {
             excludeTags("integration")
         }
+        finalizedBy jacocoTestReport
     }
 
     def integrationTest = tasks.register("integrationTest", Test) {
@@ -200,6 +258,7 @@ subprojects { subproject ->
         useJUnitPlatform {
             includeTags("integration")
         }
+        finalizedBy jacocoTestReport
     }
         
     jar {
@@ -212,6 +271,8 @@ subprojects { subproject ->
                        "Build-Scm-Version": scmVersion)
         }    
     }
+    
+
 
     artifacts { testArtifacts testJar }
 
