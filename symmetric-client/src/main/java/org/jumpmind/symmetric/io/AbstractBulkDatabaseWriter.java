@@ -21,9 +21,12 @@
 package org.jumpmind.symmetric.io;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.sql.TableNotFoundException;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
 import org.slf4j.Logger;
@@ -56,6 +59,20 @@ public abstract class AbstractBulkDatabaseWriter extends DynamicDefaultDatabaseW
     }
 
     public final void write(CsvData data) {
+        if (data.requiresTable() && data.getDataEventType() != DataEventType.SQL) {
+            if (sourceTable == null) {
+                throw new SqlException("The target table was not specified");
+            } else if (targetTable == null) {
+                String qualifiedName = sourceTable.getFullyQualifiedTableName();
+                if (writerSettings.isIgnoreMissingTables() || batch.getBatchId() == IoConstants.IGNORE_TABLES_BATCH) {
+                    if (missingTables.add(qualifiedName)) {
+                        log.info("Did not find the {} table in the target database", qualifiedName);
+                    }
+                } else {
+                    throw new TableNotFoundException(String.format("Could not find the target table '%s'", qualifiedName));
+                }
+            }
+        }
         if (isFallBackToDefault()) {
             writeDefault(data);
         } else {
