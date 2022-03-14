@@ -23,6 +23,8 @@ package org.jumpmind.util;
 import java.sql.Timestamp;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -53,7 +55,10 @@ public final class FormatUtils {
     };
     public static final FastDateFormat TIMESTAMP_FORMATTER = FastDateFormat
             .getInstance("yyyy-MM-dd HH:mm:ss.SSS");
+    public static final DateTimeFormatter TIMESTAMP9_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnnnn").withZone(ZoneId.from(
+            ZoneOffset.UTC));
     public static final FastDateFormat TIME_FORMATTER = FastDateFormat.getInstance("HH:mm:ss.SSS");
+    public static final DateTimeFormatter TIME9_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.nnnnnnnnn").withZone(ZoneId.from(ZoneOffset.UTC));
     /* special characters for wildcard triggers */
     public final static String WILDCARD = "*";
     public final static String WILDCARD_SEPARATOR = ",";

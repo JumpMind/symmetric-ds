@@ -24,6 +24,8 @@ import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.Date;
@@ -165,9 +167,19 @@ public class LogSqlBuilder {
                 }
             }
         }
-        if (type == Types.TIME) {
+        if (object instanceof Timestamp) {
+            if (type == Types.TIME) {
+                return (useJdbcTimestampFormat ? "{t " : "")
+                        + "'" + FormatUtils.TIME9_FORMATTER.format(((Timestamp) object).toInstant()) + "'"
+                        + (useJdbcTimestampFormat ? "}" : "");                
+            }
             return (useJdbcTimestampFormat ? "{ts " : "")
-                    + "'" + FormatUtils.TIME_FORMATTER.format(date) + "'"
+                    + "'" + FormatUtils.TIMESTAMP9_FORMATTER.format(((Timestamp) object).toInstant()) + "'"
+                    + (useJdbcTimestampFormat ? "}" : "");
+
+        } else if (object instanceof Time) {
+            return (useJdbcTimestampFormat ? "{t " : "")
+                    + "'" + FormatUtils.TIME9_FORMATTER.format(((Time) object).toInstant()) + "'"
                     + (useJdbcTimestampFormat ? "}" : "");
         } else {
             return (useJdbcTimestampFormat ? "{ts " : "")
