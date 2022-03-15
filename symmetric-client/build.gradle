@@ -18,6 +18,7 @@ apply from: symAssembleDir + '/common.gradle'
         provided "org.postgresql:postgresql:$postgresqlVersion"
         provided "jdbc:ojdbc8:18.3.0.0"
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
+        provided "jdbc.sqlserver:sqljdbc:4.0"
 
         compileOnly "org.apache.derby:derby:$derbyVersion"
         compileOnly "org.hsqldb:hsqldb:$hsqldbVersion"

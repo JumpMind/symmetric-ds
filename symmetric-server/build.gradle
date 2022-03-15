@@ -25,6 +25,7 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         provided "org.postgresql:postgresql:$postgresqlVersion"
         provided "jdbc:ojdbc8:18.3.0.0"
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
+        provided "jdbc.sqlserver:sqljdbc:4.0"
 
         compile "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
         compile "org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion"        
