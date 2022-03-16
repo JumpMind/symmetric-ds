@@ -171,12 +171,11 @@ public class LogSqlBuilder {
             if (type == Types.TIME) {
                 return (useJdbcTimestampFormat ? "{t " : "")
                         + "'" + FormatUtils.TIME9_FORMATTER.format(((Timestamp) object).toInstant()) + "'"
-                        + (useJdbcTimestampFormat ? "}" : "");                
+                        + (useJdbcTimestampFormat ? "}" : "");
             }
             return (useJdbcTimestampFormat ? "{ts " : "")
                     + "'" + FormatUtils.TIMESTAMP9_FORMATTER.format(((Timestamp) object).toInstant()) + "'"
                     + (useJdbcTimestampFormat ? "}" : "");
-
         } else if (object instanceof Time) {
             return (useJdbcTimestampFormat ? "{t " : "")
                     + "'" + FormatUtils.TIME9_FORMATTER.format(((Time) object).toInstant()) + "'"

@@ -63,6 +63,22 @@ set global log_bin_trust_function_creators=1;
 If you can not log into the server as root, then you can set the parameter in a new parameter group on the Relational Database Services
 (RDS) web console. See the documentation from RDS for details.
 
+ifdef::pro[]
+
+If you are using log-based capture, then you must start MySQL using the `+--log-bin+` option. In addition, you must set the following system variables:
+
+----
+binlog_format=ROW
+enforce_gtid_consistency=ON
+gtid_mode=ON
+----
+
+Note that there are four possible values for `+gtid_mode+` and it must be set one step at a time. If `+gtid_mode+` is set to "OFF", then it must be set to
+"OFF_PERMISSIVE" and then "ON_PERMISSIVE" before it can be set to "ON". Also note that in versions earlier than MySQL 5.7.6, the `+gtid_mode+` variable must
+be set by starting the server with the `+--gtid-mode=ON+` option. Prior to MySQL 5.7.5, the `+--log-slave-updates+` option must also be used at startup.
+
+endif::pro[]
+
 .Supported Data Types
 |===
 |Data Type|Supported?
