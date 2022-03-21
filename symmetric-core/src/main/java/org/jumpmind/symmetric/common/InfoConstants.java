@@ -31,4 +31,5 @@ final public class InfoConstants {
     public final static String DEPLOYMENT_TYPE = "deployment.type";
     public final static String TIMEZONE_OFFSET = "timezone.offset";
     public final static String SYMMETRIC_VERSION = "symmetric.version";
+    public final static String BULK_LOADER_ENABLED = "bulk.loader.enabled";
 }

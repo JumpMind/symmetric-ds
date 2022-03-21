@@ -92,6 +92,7 @@ public class InfoUriHandler extends AbstractUriHandler {
                 properties.setProperty(InfoConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
             }
         }
+        properties.setProperty(InfoConstants.BULK_LOADER_ENABLED, String.valueOf(configurationService.isBulkLoaderEnabled()));
         properties.store(res.getOutputStream(), "SymmetricDS");
         res.flushBuffer();
     }
