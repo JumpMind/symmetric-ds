@@ -41,18 +41,21 @@ public class DataMemoryCursor implements ISqlReadCursor<Data> {
         ArrayList<Data> datas = new ArrayList<Data>();
         Data data = null;
         long ts = System.currentTimeMillis();
-        while ((data = cursor.next()) != null) {
-            datas.add(data);
-            long totalTimeInMs = System.currentTimeMillis() - ts;
-            if (totalTimeInMs > LOG_PROCESS_SUMMARY_THRESHOLD) {
-                log.info(
-                        "Reading data to route for channel '{}' has been processing for {} seconds. The following stats have been gathered: dataCount={}",
-                        context.getChannel().getChannelId(), (System.currentTimeMillis() - context.getCreatedTimeInMs()) / 1000,
-                        datas.size());
-                ts = System.currentTimeMillis();
+        try {
+            while ((data = cursor.next()) != null) {
+                datas.add(data);
+                long totalTimeInMs = System.currentTimeMillis() - ts;
+                if (totalTimeInMs > LOG_PROCESS_SUMMARY_THRESHOLD) {
+                    log.info(
+                            "Reading data to route for channel '{}' has been processing for {} seconds. The following stats have been gathered: dataCount={}",
+                            context.getChannel().getChannelId(), (System.currentTimeMillis() - context.getCreatedTimeInMs()) / 1000,
+                            datas.size());
+                    ts = System.currentTimeMillis();
+                }
             }
+        } finally {
+            cursor.close();
         }
-        cursor.close();
         if (comparator != null) {
             log.debug("Sorting in memory with {}", comparator.getClass().getSimpleName());
             datas.sort(comparator);
