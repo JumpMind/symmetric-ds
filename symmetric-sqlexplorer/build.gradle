@@ -47,7 +47,7 @@ dependencies {
     
     compile "org.springframework:spring-webmvc:$springVersion"
     
-    compile "de.f0rce:ace:1.3.0"
+    compile "de.f0rce:ace:2.0.1"
     compile "com.vaadin:vaadin-context-menu:3.0.0"
     
     testCompile "com.h2database:h2:$h2Version"
@@ -55,8 +55,8 @@ dependencies {
     testCompile "org.eclipse.jetty:jetty-webapp:$jettyVersion"
     testCompile "org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion"    
 	
-	implementation "com.vaadin:vaadin-core:22.+"
-	implementation "com.vaadin:vaadin-dev-server:9.0.0"
+	implementation "com.vaadin:vaadin-core:23.+"
+	//implementation "com.vaadin:vaadin-dev-server:9.0.0"
 }
 
 assemble.dependsOn jar

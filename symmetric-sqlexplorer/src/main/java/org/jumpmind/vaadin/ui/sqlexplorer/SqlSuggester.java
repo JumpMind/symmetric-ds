@@ -120,14 +120,14 @@ public class SqlSuggester {
 
     private int getCursorPosition() {
         String value = editor.getValue();
-        int[] cursorCoordinates = editor.getCursorPosition();
+        // int[] cursorCoordinates = editor.getCursorPosition();
         int row = 0;
         int column = 0;
         int index = 0;
         for (char c : value.toCharArray()) {
-            if (row == cursorCoordinates[0] && column == cursorCoordinates[1]) {
-                return index;
-            }
+            // if (row == cursorCoordinates[0] && column == cursorCoordinates[1]) {
+            // return index;
+            // }
             if (c == '\n') {
                 row++;
                 column = 0;
@@ -136,9 +136,9 @@ public class SqlSuggester {
             }
             index++;
         }
-        if (row == cursorCoordinates[0] && column == cursorCoordinates[1]) {
-            return index;
-        }
+        // if (row == cursorCoordinates[0] && column == cursorCoordinates[1]) {
+        // return index;
+        // }
         return -1;
     }
 
