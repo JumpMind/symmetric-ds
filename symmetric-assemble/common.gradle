@@ -124,6 +124,7 @@ subprojects { subproject ->
 	}
 	
 	jacocoTestReport {
+		if(!project.name.contains("oracle-log-miner") && !project.name.contains("symmetric-client")){
 		executionData(file("${project.buildDir}/jacoco/test.exec"),
                   file("${project.buildDir}/jacoco/integrationTest.exec"))
     	reports {
@@ -133,6 +134,7 @@ subprojects { subproject ->
     		html.destination=file("${buildDir}/reports/jacoco.html")
     		xml.destination=file("${buildDir}/reports/jacoco.xml")
     	}
+		}
 	}
 	
 	sonarqube {
@@ -243,7 +245,7 @@ subprojects { subproject ->
         useJUnitPlatform {
             excludeTags("integration")
         }
-        finalizedBy jacocoTestReport
+        //finalizedBy jacocoTestReport
     }
 
     def integrationTest = tasks.register("integrationTest", Test) {
@@ -258,7 +260,7 @@ subprojects { subproject ->
         useJUnitPlatform {
             includeTags("integration")
         }
-        finalizedBy jacocoTestReport
+        //finalizedBy jacocoTestReport
     }
         
     jar {
