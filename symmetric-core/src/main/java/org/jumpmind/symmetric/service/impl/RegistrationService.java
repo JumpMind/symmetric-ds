@@ -267,9 +267,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 }
             }
             
-            saveRegistrationRequest(new RegistrationRequest(foundNode, RegistrationStatus.OK,
-                    remoteHost, remoteAddress));
-            markNodeAsRegistrationPending(nodeId);
+            Lock lock = NamedMutex.getCanonicalLock(foundNode + remoteHost + remoteAddress);
+            lock.lock();
+            try {
+                saveRegistrationRequest(new RegistrationRequest(foundNode, RegistrationStatus.OK,
+                        remoteHost, remoteAddress));
+                markNodeAsRegistrationPending(nodeId);
+            }finally {
+                lock.unlock();
+            }
 
             statisticManager.incrementNodesRegistered(1);
 
