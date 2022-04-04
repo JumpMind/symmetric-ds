@@ -19,7 +19,15 @@ Or enable logging on an existing database, like this:
 ondblog mydb unbuf log
 ontape -s -L 0
 ----
-     
+
+Make sure your user has permission to connect and create objects in the database:
+
+[source, SQL]
+----
+GRANT CONNECT TO SYMMETRIC;
+GRANT RESOURCE TO SYMMETRIC;
+----
+
 The following features are not yet implemented:
 
 . Syncing of Binary and Character Large Objects (LOB) is disabled.
