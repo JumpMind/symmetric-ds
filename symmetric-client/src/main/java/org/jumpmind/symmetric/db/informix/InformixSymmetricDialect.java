@@ -54,23 +54,26 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
         Database database = super.readSymmetricSchemaFromXml();
         String prefix = parameterService.getTablePrefix() + "_";
         if (pageSize == 2048) {
-            Table table = database.findTable(prefix + TableConstants.SYM_FILE_SNAPSHOT);
-            if (table != null) {
-                Column column = table.findColumn("relative_dir");
-                if (column != null) {
-                    column.setSize("55");
-                }
-                column = table.findColumn("file_name");
-                if (column != null) {
-                    column.setSize("55");
-                }
-            }
-            table = database.findTable(prefix + TableConstants.SYM_REGISTRATION_REQUEST);
+            reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_SNAPSHOT, "relative_dir", "55");
+            reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_SNAPSHOT, "file_name", "55");
+            reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_INCOMING, "relative_dir", "55");
+            reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_INCOMING, "file_name", "55");
+            Table table = database.findTable(prefix + TableConstants.SYM_REGISTRATION_REQUEST);
             if (table != null) {
                 table.removeIndex(0);
             }
         }
         return database;
+    }
+
+    protected void reconfigureTableColumn(Database database, String prefix, String tableName, String columnName, String size) {
+        Table table = database.findTable(prefix + tableName);
+        if (table != null) {
+            Column column = table.findColumn(columnName);
+            if (column != null) {
+                column.setSize(size);
+            }
+        }
     }
 
     @Override
