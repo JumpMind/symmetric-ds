@@ -56,7 +56,6 @@ public class DatabaseWriterSettings {
     protected IAlterDatabaseInterceptor[] alterDatabaseInterceptors;
     protected Set<String> conflictLosingParentRows;
     protected boolean ignoreSqlDataEventFailures = false;
-    
 
     public void setAlterDatabaseInterceptors(IAlterDatabaseInterceptor[] alterDatabaseInterceptors) {
         this.alterDatabaseInterceptors = alterDatabaseInterceptors;
@@ -297,13 +296,11 @@ public class DatabaseWriterSettings {
         this.conflictLosingParentRows = conflictLosingParentRows;
     }
 
-	public boolean isIgnoreSqlDataEventFailures() {
-		return ignoreSqlDataEventFailures;
-	}
+    public boolean isIgnoreSqlDataEventFailures() {
+        return ignoreSqlDataEventFailures;
+    }
 
-	public void setIgnoreSqlDataEventFailures(boolean ignoreSqlDataEventFailures) {
-		this.ignoreSqlDataEventFailures = ignoreSqlDataEventFailures;
-	}
-    
-    
+    public void setIgnoreSqlDataEventFailures(boolean ignoreSqlDataEventFailures) {
+        this.ignoreSqlDataEventFailures = ignoreSqlDataEventFailures;
+    }
 }

@@ -68,18 +68,18 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
  * The SQL Builder for MySQL.
  */
 public class MySqlDdlBuilder extends AbstractDdlBuilder {
-	public MySqlDdlBuilder(String databaseName) {
-		super(databaseName);
-		init();
+    public MySqlDdlBuilder(String databaseName) {
+        super(databaseName);
+        init();
     }
-	
+
     public MySqlDdlBuilder() {
         super(DatabaseNamesConstants.MYSQL);
         init();
     }
 
     protected void init() {
-    	databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
+        databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         databaseInfo.setMaxIdentifierLength(64);
         databaseInfo.setNullAsDefaultValueRequired(true);
         databaseInfo.setDefaultValuesForLongTypesSupported(false);
@@ -145,7 +145,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         addEscapedCharSequence("\t", "\\t");
         addEscapedCharSequence("\u001A", "\\Z");
     }
-    
+
     @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         ddl.append("DROP TABLE IF EXISTS ");

@@ -670,7 +670,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         newTransaction.rollback();
                     }
                     if (!writerSettings.isIgnoreSqlDataEventFailures()) {
-                    	throw ex;
+                        throw ex;
                     }
                 } catch (RuntimeException ex) {
                     log.error("Failed to run the following sql: {}", sql);
@@ -678,7 +678,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         newTransaction.rollback();
                     }
                     if (!writerSettings.isIgnoreSqlDataEventFailures()) {
-                    	throw ex;
+                        throw ex;
                     }
                 } finally {
                     if (newTransaction != null) {

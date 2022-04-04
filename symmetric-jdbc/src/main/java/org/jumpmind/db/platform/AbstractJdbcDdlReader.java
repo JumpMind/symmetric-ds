@@ -1250,9 +1250,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
              */
             if (!foundMetaDataDescriptor) {
                 try {
-                	values.put(columnName, resultSet.getObject(i));
+                    values.put(columnName, resultSet.getObject(i));
                 } catch (Exception e) {
-                	values.put(columnName, resultSet.getString(i));
+                    values.put(columnName, resultSet.getString(i));
                 }
             }
         }

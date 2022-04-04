@@ -458,7 +458,7 @@ final public class ParameterConstants {
     public final static String OPENSEARCH_LOAD_AWS_ACCESS_KEY = "opensearch.load.aws.access.key";
     public final static String OPENSEARCH_LOAD_AWS_SECRET_KEY = "opensearch.load.aws.secret.key";
     public final static String SINGLESTORE_AUDIT_LOG_DIR = "single.store.audit.log.dir";
-    
+
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
