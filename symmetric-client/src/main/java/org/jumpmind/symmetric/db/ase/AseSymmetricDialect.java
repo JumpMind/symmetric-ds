@@ -28,6 +28,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.IConnectionCallback;
@@ -54,6 +56,8 @@ import org.jumpmind.symmetric.service.IParameterService;
 public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
     static final String SQL_DROP_FUNCTION = "drop function dbo.$(functionName)";
     static final String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))";
+    static final String SQL_PAGE_SIZE = "select @@maxpagesize";
+    private int pageSize = 2048;
 
     public AseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
@@ -61,6 +65,39 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
             this.triggerTemplate = new Ase16TriggerTemplate(this);
         } else {
             this.triggerTemplate = new AseTriggerTemplate(this);
+        }
+        try {
+            pageSize = platform.getSqlTemplate().queryForInt(SQL_PAGE_SIZE);
+            log.info("Page size is {}", pageSize);
+        } catch (Exception e) {
+            log.debug("Unable to query page size", e);
+        }
+    }
+
+    @Override
+    public Database readSymmetricSchemaFromXml() {
+        Database database = super.readSymmetricSchemaFromXml();
+        if (pageSize == 2048) {
+            String prefix = parameterService.getTablePrefix() + "_";
+            reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_SNAPSHOT, "relative_dir", "55");
+            reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_SNAPSHOT, "file_name", "55");
+            reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_INCOMING, "relative_dir", "55");
+            reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_INCOMING, "file_name", "55");
+            Table table = database.findTable(prefix + TableConstants.SYM_REGISTRATION_REQUEST);
+            if (table != null) {
+                table.removeIndex(0);
+            }
+        }
+        return database;
+    }
+
+    protected void reconfigureTableColumn(Database database, String prefix, String tableName, String columnName, String size) {
+        Table table = database.findTable(prefix + tableName);
+        if (table != null) {
+            Column column = table.findColumn(columnName);
+            if (column != null) {
+                column.setSize(size);
+            }
         }
     }
 
