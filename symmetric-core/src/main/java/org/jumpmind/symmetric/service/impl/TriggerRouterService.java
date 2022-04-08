@@ -2393,10 +2393,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 } else if (intialLoadOrder1 > intialLoadOrder2) {
                     return 1;
                 }
-                Table table1 = platform.getTableFromCache(o1.getSourceCatalogName(),
+                Table table1 = getTargetPlatform().getTableFromCache(o1.getSourceCatalogName(),
                         o1.getSourceSchemaName(), o1.getSourceTableName(), false);
-                Table table2 = platform.getTableFromCache(o2.getSourceCatalogName(),
+                if (table1 == null) {
+                	platform.getTableFromCache(o1.getSourceCatalogName(),
+                            o1.getSourceSchemaName(), o1.getSourceTableName(), false);
+                }
+                Table table2 = getTargetPlatform().getTableFromCache(o2.getSourceCatalogName(),
                         o2.getSourceSchemaName(), o2.getSourceTableName(), false);
+                if (table2 == null) {
+                	platform.getTableFromCache(o2.getSourceCatalogName(),
+                            o2.getSourceSchemaName(), o2.getSourceTableName(), false);
+                }
+                
                 return Integer.valueOf(sortedTables.indexOf(table1)).compareTo(Integer.valueOf(sortedTables
                         .indexOf(table2)));
             };
@@ -2438,9 +2447,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public List<Table> getTablesFor(List<TriggerHistory> histories) {
         List<Table> tables = new ArrayList<Table>(histories.size());
         for (TriggerHistory triggerHistory : histories) {
-            Table table = platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
+            Table table = getTargetPlatform().getTableFromCache(triggerHistory.getSourceCatalogName(),
                     triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
                     false);
+            if (table == null) {
+            	table = platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
+                        triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
+                        false);
+            }
             if (table != null) {
                 tables.add(table);
             }
