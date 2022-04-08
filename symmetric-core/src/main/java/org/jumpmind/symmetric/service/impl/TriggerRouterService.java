@@ -2396,16 +2396,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 Table table1 = getTargetPlatform().getTableFromCache(o1.getSourceCatalogName(),
                         o1.getSourceSchemaName(), o1.getSourceTableName(), false);
                 if (table1 == null) {
-                	platform.getTableFromCache(o1.getSourceCatalogName(),
+                    platform.getTableFromCache(o1.getSourceCatalogName(),
                             o1.getSourceSchemaName(), o1.getSourceTableName(), false);
                 }
                 Table table2 = getTargetPlatform().getTableFromCache(o2.getSourceCatalogName(),
                         o2.getSourceSchemaName(), o2.getSourceTableName(), false);
                 if (table2 == null) {
-                	platform.getTableFromCache(o2.getSourceCatalogName(),
+                    platform.getTableFromCache(o2.getSourceCatalogName(),
                             o2.getSourceSchemaName(), o2.getSourceTableName(), false);
                 }
-                
                 return Integer.valueOf(sortedTables.indexOf(table1)).compareTo(Integer.valueOf(sortedTables
                         .indexOf(table2)));
             };
@@ -2451,7 +2450,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
                     false);
             if (table == null) {
-            	table = platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
+                table = platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
                         triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
                         false);
             }
