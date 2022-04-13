@@ -95,4 +95,5 @@ public class WebConstants {
     public static final String HEADER_SET_SESSION_ID = "Set-Session-ID";
     public static final String REG_USER_ID = "regUserId";
     public static final String REG_PASSWORD = "regPassword";
+    public static final String API_KEY_HEADER = "X-REST-API-KEY";
 }

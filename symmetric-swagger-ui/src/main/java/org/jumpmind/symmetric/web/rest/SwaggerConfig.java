@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.web.WebConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -49,7 +50,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 public class SwaggerConfig {
     private static final String API_KEY_NAME = "SymmetricDS REST";
-    public static final String API_KEY_HEADER = "X-REST-API-KEY";
 
     @Bean
     public Docket api() {
@@ -64,7 +64,7 @@ public class SwaggerConfig {
     }
 
     private ApiKey apiKey() {
-        return new ApiKey(API_KEY_NAME, API_KEY_HEADER, "header");
+        return new ApiKey(API_KEY_NAME, WebConstants.API_KEY_HEADER, "header");
     }
 
     private SecurityContext securityContext() {
