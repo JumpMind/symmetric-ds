@@ -100,12 +100,12 @@ public class ColumnsAccordingToTriggerHistory {
             if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetCatalogName())) {
                 table.setCatalog(null);
             } else if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
-                table.setCatalog(replaceVariables(sourceNode, targetNode, router.getTargetCatalogName()));
+                table.setCatalog(replaceVariables(sourceNode, targetNode, triggerHistory, router.getTargetCatalogName()));
             }
             if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetSchemaName())) {
                 table.setSchema(null);
             } else if (StringUtils.isNotBlank(router.getTargetSchemaName())) {
-                table.setSchema(replaceVariables(sourceNode, targetNode, router.getTargetSchemaName()));
+                table.setSchema(replaceVariables(sourceNode, targetNode, triggerHistory, router.getTargetSchemaName()));
             }
             if (StringUtils.isNotBlank(router.getTargetTableName())) {
                 table.setName(router.getTargetTableName());
@@ -114,13 +114,15 @@ public class ColumnsAccordingToTriggerHistory {
         return table;
     }
 
-    protected String replaceVariables(Node sourceNode, Node targetNode, String str) {
+    protected String replaceVariables(Node sourceNode, Node targetNode, TriggerHistory triggerHistory, String str) {
         str = FormatUtils.replace("sourceNodeId", sourceNode.getNodeId(), str);
         str = FormatUtils.replace("sourceExternalId", sourceNode.getExternalId(), str);
         str = FormatUtils.replace("sourceNodeGroupId", sourceNode.getNodeGroupId(), str);
         str = FormatUtils.replace("targetNodeId", targetNode.getNodeGroupId(), str);
         str = FormatUtils.replace("targetExternalId", targetNode.getExternalId(), str);
         str = FormatUtils.replace("targetNodeGroupId", targetNode.getNodeGroupId(), str);
+        str = FormatUtils.replace("sourceCatalogName", StringUtils.trimToEmpty(triggerHistory.getSourceCatalogName()), str);
+        str = FormatUtils.replace("sourceSchemaName", StringUtils.trimToEmpty(triggerHistory.getSourceSchemaName()), str);
         return str;
     }
 
