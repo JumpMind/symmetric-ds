@@ -73,7 +73,8 @@ public class DbImportDialog extends ResizableDialog {
     private Scroller importLayout;
     private ComboBox<DbImportFormat> formatSelect;
     private Checkbox force;
-    private Checkbox ignore;
+    private Checkbox ignoreConflicts;
+    private Checkbox ignoreMissingTables;
     private Checkbox replace;
     private ComboBox<String> schemaSelect;
     private ComboBox<String> catalogSelect;
@@ -116,26 +117,24 @@ public class DbImportDialog extends ResizableDialog {
         formatSelect.addValueChangeListener((e) -> {
             DbImportFormat format = (DbImportFormat) formatSelect.getValue();
             switch (format) {
-                case SQL:
-                    listOfTablesSelect.setEnabled(false);
-                    alter.setEnabled(false);
-                    alterCase.setEnabled(false);
-                    break;
                 case XML:
                     listOfTablesSelect.setEnabled(false);
                     alter.setEnabled(true);
                     alterCase.setEnabled(true);
+                    ignoreConflicts.setEnabled(false);
+                    ignoreMissingTables.setEnabled(false);
+                    replace.setEnabled(false);
                     break;
+                case SQL:
+                case SYM_XML:
                 case CSV:
                 case CSV_DQUOTE:
                     listOfTablesSelect.setEnabled(true);
                     alter.setEnabled(false);
                     alterCase.setEnabled(false);
-                    break;
-                case SYM_XML:
-                    listOfTablesSelect.setEnabled(false);
-                    alter.setEnabled(false);
-                    alterCase.setEnabled(false);
+                    ignoreConflicts.setEnabled(true);
+                    ignoreMissingTables.setEnabled(true);
+                    replace.setEnabled(true);
                     break;
             }
         });
@@ -179,17 +178,21 @@ public class DbImportDialog extends ResizableDialog {
         commitField.setValueChangeTimeout(200);
         commitField.setValue("10000");
         formLayout.add(commitField);
-        force = new Checkbox("Force");
+        force = new Checkbox("Ignore any errors and continue");
         formLayout.add(force);
-        ignore = new Checkbox("Ignore");
-        formLayout.add(ignore);
-        replace = new Checkbox("Replace");
+        ignoreConflicts = new Checkbox("Skip rows with conflicts");
+        formLayout.add(ignoreConflicts);
+        ignoreMissingTables = new Checkbox("Skip rows with missing tables");
+        formLayout.add(ignoreMissingTables);
+        replace = new Checkbox("Replace rows with conflicts");
         formLayout.add(replace);
-        alter = new Checkbox("Alter");
+        alter = new Checkbox("Alter existing tables, if needed");
         alter.setEnabled(false);
+        alter.setValue(true);
         formLayout.add(alter);
-        alterCase = new Checkbox("Alter Case");
+        alterCase = new Checkbox("Match default case of database");
         alterCase.setEnabled(false);
+        alterCase.setValue(true);
         formLayout.add(alterCase);
         upload = new Upload(new Receiver() {
             private static final long serialVersionUID = 1L;
@@ -267,8 +270,8 @@ public class DbImportDialog extends ResizableDialog {
         dbImport.setSchema((String) schemaSelect.getValue());
         dbImport.setCommitRate(Long.parseLong(commitField.getValue()));
         dbImport.setForceImport(force.getValue());
-        dbImport.setIgnoreCollisions(ignore.getValue());
-        dbImport.setIgnoreMissingTables(ignore.getValue());
+        dbImport.setIgnoreCollisions(ignoreConflicts.getValue());
+        dbImport.setIgnoreMissingTables(ignoreMissingTables.getValue());
         dbImport.setAlterTables(alter.getValue());
         dbImport.setAlterCaseToMatchDatabaseDefaultCase(alterCase.getValue());
     }
