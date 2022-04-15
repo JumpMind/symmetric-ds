@@ -56,8 +56,11 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
     private final static String[] TEST_KEYS_GRANDCHILD = { "id" };
 
     private final static String[] TEST_COLUMNS_GRANDCHILD = { "id", "pid" };
+    private final static String TEST_TABLE_CHILD_NOPK = "test_dataloader_child_nopk";
+    private final static String[] TEST_KEYS_CHILD_NOPK = { "id", "pid" };
+    private final static String[] TEST_COLUMNS_CHILD_NOPK = { "id", "pid" };
     
-    private enum WhichTable { PARENT, CHILD, GRANDCHILD };
+    private enum WhichTable { PARENT, CHILD, GRANDCHILD, CHILD_NOPK };
     
     private WhichTable whichTable;
     
@@ -260,6 +263,15 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
         whichTable = WhichTable.PARENT;
         delete(firstId, firstId, "deleteparent", null);
     }
+    
+    @Test
+    public void testDeleteFkViolationChildTableNoPk() throws Exception {
+        String firstId = insert(getNextId(), "deleteparentnopk", null);
+        whichTable = WhichTable.CHILD_NOPK;
+        insert(getNextId(), firstId);
+        whichTable = WhichTable.PARENT;
+        delete(firstId, firstId, "deleteparentnopk", null);
+    }
 
     private String insert(String ...values) {
         if (shouldTest) {
@@ -313,7 +325,16 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {
         String sql = "select " + getSelect(getTestColumns()) + " from " + getTestTable() + " where "
                 + getWhere(getTestKeys());
-        Map<String, Object> results = platform.getSqlTemplate().queryForMap(sql, Long.valueOf(testTableId));
+        Map<String, Object> results = null;
+        if (whichTable != WhichTable.CHILD_NOPK) {
+            results = platform.getSqlTemplate().queryForMap(sql, Long.valueOf(testTableId));
+        } else {
+            Long[] l = new Long[expectedValues.length];
+            for (int i = 0; i < expectedValues.length; i++) {
+                l[i] = Long.valueOf(expectedValues[i]);
+            }
+            results = platform.getSqlTemplate().queryForMap(sql, (Object[]) l);
+        }
         assertEquals(getTestColumns(), expectedValues, results);
     }
 
@@ -321,6 +342,9 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
     protected String getTestTable() {
         if (whichTable == WhichTable.CHILD) return TEST_TABLE_CHILD;
         else if (whichTable == WhichTable.GRANDCHILD) return TEST_TABLE_GRANDCHILD; 
+        else if (whichTable == WhichTable.CHILD_NOPK) {
+            return TEST_TABLE_CHILD_NOPK;
+        }
         else return TEST_TABLE;
     }
     
@@ -328,6 +352,9 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
     protected String[] getTestKeys() {
         if (whichTable == WhichTable.CHILD) return TEST_KEYS_CHILD;
         else if (whichTable == WhichTable.GRANDCHILD) return TEST_KEYS_GRANDCHILD; 
+        else if (whichTable == WhichTable.CHILD_NOPK) {
+            return TEST_KEYS_CHILD_NOPK;
+        }
         else return TEST_KEYS;
     }
     
@@ -335,6 +362,9 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
     protected String[] getTestColumns() {
         if (whichTable == WhichTable.CHILD) return TEST_COLUMNS_CHILD;
         else if (whichTable == WhichTable.GRANDCHILD) return TEST_COLUMNS_GRANDCHILD; 
+        else if (whichTable == WhichTable.CHILD_NOPK) {
+            return TEST_COLUMNS_CHILD_NOPK;
+        }
         else return TEST_COLUMNS;
     }
 

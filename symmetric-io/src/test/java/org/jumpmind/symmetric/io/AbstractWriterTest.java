@@ -261,7 +261,7 @@ abstract public class AbstractWriterTest {
     protected String getWhere(String[] columns) {
         StringBuilder str = new StringBuilder();
         for (int i = 0; i < columns.length; i++) {
-            str.append(columns[i]).append(" = ?").append(i + 1 < columns.length ? "," : "");
+            str.append(columns[i]).append(" = ?").append(i + 1 < columns.length ? " AND " : "");
         }
         return str.toString();
     }
