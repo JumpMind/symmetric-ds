@@ -293,6 +293,8 @@ public class SqlSuggester {
                 }
             }
             return tempText;
+        } catch (StringIndexOutOfBoundsException e) {
+            return "";
         } catch (Exception e) {
             logger.warn("", e);
             return "";
