@@ -1715,9 +1715,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 activeTriggerHistories, true);
         for (Table table : tables) {
             /* Re-lookup just in case the table was just altered */
-            table = platform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(), true);
+            IDatabasePlatform targetPlatform = symmetricDialect.getTargetPlatform(table.getName());
+            table = targetPlatform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(), true);
             for (Trigger trigger : triggersForCurrentNode) {
-                if (trigger.matches(table, platform.getDefaultCatalog(), platform.getDefaultSchema(), ignoreCase) &&
+                if (trigger.matches(table, targetPlatform.getDefaultCatalog(), targetPlatform.getDefaultSchema(), ignoreCase) &&
                         (!trigger.isSourceTableNameWildCarded() || !trigger.isSourceTableNameExpanded()
                                 || !containsExactMatchForSourceTableName(table, triggersForCurrentNode, ignoreCase))) {
                     List<TriggerTableSupportingInfo> triggerTableSupportingInfoList = triggerToTableSupportingInfo.get(trigger.getTriggerId());
