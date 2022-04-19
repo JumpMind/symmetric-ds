@@ -31,10 +31,12 @@ import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionResult;
-import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.platform.PermissionResult.Status;
+import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.jumpmind.db.sql.mapper.StringMapper;
 
 public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
     public static final String JDBC_DRIVER = "com.informix.jdbc.IfxDriver";
@@ -71,8 +73,7 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
 
     public String getDefaultCatalog() {
         // if (StringUtils.isBlank(defaultCatalog)) {
-        // defaultCatalog = getSqlTemplate().queryForObject("select trim(sqc_currdb) from sysmaster:syssqlcurall where sqc_sessionid = dbinfo('sessionid')",
-        // String.class);
+        // getSqlTemplate().queryForString("select trim(dbinfo('dbname')) from sysmaster:sysdual");
         // }
         return defaultCatalog;
     }
@@ -96,11 +97,34 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
 
     @Override
     public PermissionResult getCreateSymTriggerPermission() {
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, null);
+        ISqlReadCursor<String> cursor = null;
+        String catalog = null;
+        try {
+            String sql = "select dbinfo('dbname') from sysmaster:sysdual";
+            result.setTestDetails(sql);
+            catalog = getSqlTemplate().queryForString(sql);
+            sql = "select 1 from sysmaster:sysdual";
+            result.setTestDetails(sql);
+            cursor = getSqlTemplate().queryForCursor(sql, new StringMapper());
+        } catch (Exception e) {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (e instanceof SqlException && ((SqlException)e).getErrorCode() == -79746) {
+                result.setStatus(Status.FAIL);
+                result.setSolution("Logging required: ondblog buf " + catalog + "; ontape -s -L 0");
+                return result;                
+            }
+            result.setSolution("Problem during check of logging");
+            result.setStatus(Status.FAIL);
+            return result;
+        }
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
         String triggerSql = "CREATE TRIGGER TEST_TRIGGER DELETE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
                 + " FOR EACH ROW(DELETE FROM " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " WHERE TEST_ID IS NULL)";
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
+        result.setTestDetails(triggerSql);
         try {
             getSqlTemplate().update(triggerSql);
             result.setStatus(Status.PASS);
