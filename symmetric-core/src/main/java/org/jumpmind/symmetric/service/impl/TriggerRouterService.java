@@ -1569,7 +1569,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     activeTriggerHistories, true);
             for (Table table : tables) {
                 /* Re-lookup just in case the table was just altered */
-                table = platform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(), true);
+                table = symmetricDialect.getTargetPlatform(table.getName()).getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(), true);
                 for (Trigger trigger : triggersForCurrentNode) {
                     if (trigger.matches(table, platform.getDefaultCatalog(), platform.getDefaultSchema(), ignoreCase) &&
                             (!trigger.isSourceTableNameWildCarded() || !trigger.isSourceTableNameExpanded()
