@@ -15,7 +15,7 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         compile "org.jdom:jdom2:$jdomVersion"
         compile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
         
-        compile "io.swagger:swagger-annotations:1.5.20"
+        compile "io.swagger:swagger-annotations:1.6.6"
 
         provided project(":symmetric-wrapper")
         provided "javax.jms:jms-api:1.1-rev-1"
@@ -25,7 +25,7 @@ apply from: symAssembleDir + '/asciidoc.gradle'
             exclude group: "com.google.protobuf"
         }
         provided "org.postgresql:postgresql:$postgresqlVersion"
-        provided "jdbc:ojdbc8:18.3.0.0"
+        provided "com.oracle.database.jdbc:ojdbc8:21.5.0.0"
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
         provided "com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre8"
 

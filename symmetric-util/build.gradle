@@ -12,32 +12,32 @@ apply from: symAssembleDir + '/common.gradle'
         compileOnly "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
         compileOnly "org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion"
         compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
-        compileOnly ("com.azure:azure-security-keyvault-secrets:4.3.6") {
+        compileOnly ("com.azure:azure-security-keyvault-secrets:4.4.1") {
             exclude group: "com.google.guava"
             exclude group: "com.azure", module: "azure-core-http-netty"
             exclude group: "io.netty", module: "netty-tcnative-boringssl-static"
         }
-        compileOnly ("com.azure:azure-security-keyvault-keys:4.3.6") {
+        compileOnly ("com.azure:azure-security-keyvault-keys:4.4.1") {
             exclude group: "com.google.guava"
             exclude group: "com.azure", module: "azure-core-http-netty"
             exclude group: "io.netty", module: "netty-tcnative-boringssl-static"
         }
-        compileOnly ("com.azure:azure-security-keyvault-certificates:4.2.6") {
+        compileOnly ("com.azure:azure-security-keyvault-certificates:4.3.1") {
             exclude group: "com.google.guava"
             exclude group: "com.azure", module: "azure-core-http-netty"
             exclude group: "io.netty", module: "netty-tcnative-boringssl-static"
         }
-        compileOnly ("com.azure:azure-security-keyvault-jca:2.5.0") {
+        compileOnly ("com.azure:azure-security-keyvault-jca:2.6.0") {
             exclude group: "com.google.guava"
             exclude group: "com.azure", module: "azure-core-http-netty"
             exclude group: "io.netty", module: "netty-tcnative-boringssl-static"
         }
-        compileOnly ("com.azure:azure-identity:1.4.3") {
+        compileOnly ("com.azure:azure-identity:1.5.0") {
             exclude group: "com.google.guava"
             exclude group: "com.azure", module: "azure-core-http-netty"
             exclude group: "io.netty", module: "netty-tcnative-boringssl-static"
         }
-        compileOnly ("com.azure:azure-core-http-okhttp:1.7.9") {
+        compileOnly ("com.azure:azure-core-http-okhttp:1.8.0") {
             exclude group: "com.azure", module: "azure-core"
         }
     }

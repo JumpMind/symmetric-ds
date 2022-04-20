@@ -34,7 +34,7 @@ configurations.archives.with {
 }
 
 dependencies {
-    deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
+    deployerJars "org.apache.maven.wagon:wagon-ssh:3.5.1"
     
     compile project(":symmetric-jdbc")
     compile project(":symmetric-io")
