@@ -85,11 +85,6 @@ public class DbTreeNode implements Serializable {
         this.type = type;
     }
 
-    @Override
-    public String toString() {
-        return name;
-    }
-
     public boolean hasChildren() {
         return children.size() > 0;
     }
