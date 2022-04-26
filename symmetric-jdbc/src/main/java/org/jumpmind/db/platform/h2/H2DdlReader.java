@@ -43,6 +43,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -95,6 +96,15 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
             column.setScale(scale);
             column.findPlatformColumn(platform.getName()).setDecimalDigits(
                     scale);
+        }
+        if (column.getMappedTypeCode() == Types.TIMESTAMP) {
+            resetColumnSize(column, String.valueOf(column.getScale()));
+        }
+        if (column.getMappedTypeCode() == Types.TIME) {
+            resetColumnSize(column, "0");
+        }
+        if (column.getMappedTypeCode() == Types.DATE) {
+            removeColumnSize(column);
         }
         if (TypeMap.isTextType(column.getMappedTypeCode())
                 && (column.getDefaultValue() != null)) {

@@ -41,6 +41,7 @@ package org.jumpmind.db.platform.derby;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +85,15 @@ public class DerbyDdlReader extends AbstractJdbcDdlReader {
             } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
                 column.setDefaultValue(unescape(defaultValue, "'", "''"));
             }
+        }
+        if (column.getJdbcTypeCode() == Types.TIMESTAMP) {
+            resetColumnSize(column, "6");
+            removePlatformColumnSize(column);
+        } else if (column.getJdbcTypeCode() == Types.TIME) {
+            resetColumnSize(column, "0");
+            removePlatformColumnSize(column);
+        } else if (column.getJdbcTypeCode() == Types.DATE) {
+            removeColumnSize(column);
         }
         return column;
     }

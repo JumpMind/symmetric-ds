@@ -197,6 +197,12 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
                 column.setDefaultValue(unescape(defaultValue, "'", "''"));
             }
         }
+        if (column.getJdbcTypeCode() == Types.TIMESTAMP || column.getJdbcTypeCode() == Types.TIME) {
+            resetColumnSize(column, String.valueOf(column.getScale()));
+        }
+        if (column.getJdbcTypeCode() == Types.DATE) {
+            removeColumnSize(column);
+        }
         return column;
     }
 

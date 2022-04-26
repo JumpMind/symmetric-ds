@@ -71,6 +71,8 @@ public interface IDdlBuilder {
 
     public String getColumnTypeDdl(Table table, Column column);
 
+    public String getSqlType(Column column);
+
     public boolean areColumnSizesTheSame(Column sourceColumn, Column targetColumn);
 
     public List<IModelChange> getDetectedChanges(Database currentModel, Database desiredModel, IAlterDatabaseInterceptor... alterDatabaseInterceptors);

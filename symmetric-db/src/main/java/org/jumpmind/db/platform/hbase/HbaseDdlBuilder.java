@@ -20,11 +20,13 @@
  */
 package org.jumpmind.db.platform.hbase;
 
+import java.sql.Types;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -32,6 +34,10 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 public class HbaseDdlBuilder extends AbstractDdlBuilder {
     public HbaseDdlBuilder() {
         super(DatabaseNamesConstants.HBASE);
+        databaseInfo.setHasSize(Types.TIMESTAMP, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMESTAMPTZ, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMESTAMPLTZ, true);
+        databaseInfo.setMaxSize("TIMESTAMP", 9);
     }
 
     @Override

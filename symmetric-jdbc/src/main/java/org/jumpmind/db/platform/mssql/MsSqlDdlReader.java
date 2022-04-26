@@ -40,7 +40,6 @@ package org.jumpmind.db.platform.mssql;
  */
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.jumpmind.db.model.ColumnTypes.MAPPED_TIMESTAMPTZ;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -58,9 +57,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.CompressionTypes;
 import org.jumpmind.db.model.IIndex;
-import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.PlatformIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
@@ -240,11 +239,13 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
             } else if (typeName.toUpperCase().equals("SQL_VARIANT")) {
                 return Types.BINARY;
             } else if (typeName.equalsIgnoreCase("DATETIMEOFFSET")) {
-                return MAPPED_TIMESTAMPTZ;
+                return ColumnTypes.TIMESTAMPTZ;
             } else if (typeName.equalsIgnoreCase("datetime2")) {
                 return Types.TIMESTAMP;
             } else if (typeName.equalsIgnoreCase("DATE")) {
                 return Types.DATE;
+            } else if (typeName.equalsIgnoreCase("TIME")) {
+                return Types.TIME;
             } else if (typeName.equalsIgnoreCase("VARBINARY") && size > 8000) {
                 return Types.BLOB;
             }
@@ -305,21 +306,25 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
         if (column.getJdbcTypeName() != null &&
                 (column.getJdbcTypeName().equals("smallmoney")
                         || column.getJdbcTypeName().equals("money")
-                        || column.getJdbcTypeName().equals("timestamp")
                         || column.getJdbcTypeName().equals("uniqueidentifier")
-                        || column.getJdbcTypeName().equals("time")
-                        || column.getJdbcTypeName().equals("datetime2")
                         || column.getJdbcTypeName().equals("date"))) {
-            removePlatformSizeAndDecimal(column);
+            removePlatformColumnSize(column);
+        }
+        if (column.getJdbcTypeName() != null) {
+            if (column.getJdbcTypeName().equalsIgnoreCase("datetime2")) {
+                adjustColumnSize(column, -20);
+            } else if (column.getJdbcTypeName().equalsIgnoreCase("datetime")) {
+                column.setSize("3");
+                removePlatformColumnSize(column);
+            } else if (column.getJdbcTypeName().equalsIgnoreCase("time")) {
+                adjustColumnSize(column, -9);
+            } else if (column.getJdbcTypeName().equalsIgnoreCase("datetimeoffset")) {
+                adjustColumnSize(column, -27);
+            } else if (column.getJdbcTypeName().equalsIgnoreCase("date") || column.getJdbcTypeName().equalsIgnoreCase("smalldatetime")) {
+                removeColumnSize(column);
+            }
         }
         return column;
-    }
-
-    protected void removePlatformSizeAndDecimal(Column column) {
-        for (PlatformColumn platformColumn : column.getPlatformColumns().values()) {
-            platformColumn.setSize(-1);
-            platformColumn.setDecimalDigits(-1);
-        }
     }
 
     @Override

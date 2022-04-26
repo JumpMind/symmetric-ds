@@ -35,9 +35,9 @@ import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
@@ -82,6 +82,7 @@ public class RaimaDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
+        databaseInfo.setMaxSize("TIMESTAMP", 4);
         databaseInfo.setNonBlankCharColumnSpacePadded(false);
         databaseInfo.setBlankCharColumnSpacePadded(false);
         databaseInfo.setCharColumnSpaceTrimmed(false);

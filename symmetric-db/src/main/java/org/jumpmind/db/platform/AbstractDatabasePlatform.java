@@ -79,6 +79,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Transaction;
@@ -976,6 +977,13 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             }
             if (table.getSchema() == null) {
                 table.setSchema(getDefaultSchema());
+            }
+            for (Column column : table.getColumns()) {
+                PlatformColumn platformColumn = column.findPlatformColumn(getName());
+                if (platformColumn == null) {
+                    platformColumn = new PlatformColumn(getName(), ddlBuilder.getSqlType(column), column.getDefaultValue());
+                    column.addPlatformColumn(platformColumn);
+                }
             }
         }
     }

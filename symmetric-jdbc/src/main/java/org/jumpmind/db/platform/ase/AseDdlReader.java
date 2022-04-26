@@ -61,8 +61,8 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
-import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.Trigger.TriggerType;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -106,6 +106,10 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.toUpperCase().startsWith("TEXT")) {
             return Types.LONGVARCHAR;
+        } else if (typeName != null && typeName.equalsIgnoreCase("BIGDATETIME")) {
+            return Types.TIMESTAMP;
+        } else if (typeName != null && typeName.equalsIgnoreCase("BIGTIME")) {
+            return Types.TIME;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
@@ -142,6 +146,15 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
                 }
             } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
                 column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
+            }
+        }
+        String typeName = column.getJdbcTypeName();
+        if (typeName != null) {
+            if (typeName.equalsIgnoreCase("date")) {
+                removeColumnSize(column);
+            } else if (typeName.equalsIgnoreCase("datetime") || typeName.equalsIgnoreCase("smalldatetime") ||
+                    typeName.equalsIgnoreCase("bigdatetime") || typeName.equalsIgnoreCase("time") || typeName.equalsIgnoreCase("bigtime")) {
+                resetColumnSize(column, String.valueOf(column.getScale()));
             }
         }
         return column;

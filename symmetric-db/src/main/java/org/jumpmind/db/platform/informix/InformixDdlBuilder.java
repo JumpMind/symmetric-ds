@@ -26,10 +26,11 @@ import java.util.Map;
 import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemovePrimaryKeyChange;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
@@ -40,7 +41,10 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "LVARCHAR", Types.LONGVARCHAR);
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME YEAR TO FRACTION", Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMESTAMPTZ, "DATETIME YEAR TO FRACTION");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMESTAMPLTZ, "DATETIME YEAR TO FRACTION");
         databaseInfo.addNativeTypeMapping(Types.TIME, "DATETIME YEAR TO FRACTION", Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMETZ, "DATETIME YEAR TO FRACTION", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.BINARY, "BYTE", Types.BINARY);
         databaseInfo.addNativeTypeMapping(Types.VARBINARY, "BYTE", Types.BINARY);
         databaseInfo.addNativeTypeMapping(Types.BIT, "BOOLEAN", Types.BOOLEAN);
@@ -48,6 +52,14 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "FLOAT", Types.DOUBLE);
         databaseInfo.setDefaultSize(Types.VARCHAR, 255);
         databaseInfo.setDefaultSize(Types.CHAR, 255);
+        databaseInfo.setDefaultSize(Types.TIMESTAMP, 5);
+        databaseInfo.setHasSize(Types.TIMESTAMP, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMESTAMPTZ, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMESTAMPLTZ, true);
+        databaseInfo.setHasSize(Types.TIME, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMETZ, true);
+        databaseInfo.setMaxSize("DATETIME YEAR TO FRACTION", 5);
+        databaseInfo.setMaxSize("INTERVAL", 5);
         databaseInfo.setAlterTableForDropUsed(true);
         databaseInfo.setSystemIndicesReturned(true);
         databaseInfo.setCatalogSeparator(":");
@@ -56,6 +68,7 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setAutoIncrementUpdateAllowed(false);
+        databaseInfo.setRequiresAutoCommitForDdl(true);
         Map<String, String> env = System.getenv();
         String clientIdentifierMode = env.get("DELIMIDENT");
         if (clientIdentifierMode != null && clientIdentifierMode.equalsIgnoreCase("y")) {
@@ -66,6 +79,16 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
             databaseInfo.setDelimitedIdentifiersSupported(false);
             delimitedIdentifierModeOn = false;
         }
+    }
+
+    @Override
+    public String getSqlType(Column column) {
+        String sqlType = super.getSqlType(column);
+        int typeCode = column.getMappedTypeCode();
+        if (typeCode == Types.TIMESTAMP || typeCode == ColumnTypes.TIMESTAMPTZ || typeCode == ColumnTypes.TIMESTAMPLTZ || typeCode == Types.TIME) {
+            sqlType = sqlType.replace("DATETIME YEAR TO FRACTION(0)", "DATETIME YEAR TO SECOND");
+        }
+        return sqlType;
     }
 
     @Override

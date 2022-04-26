@@ -78,6 +78,11 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.DATE, "DATE");
         databaseInfo.addNativeTypeMapping(Types.TIME, "TIME");
         databaseInfo.addNativeTypeMapping(ColumnTypes.NCHAR, "NATIONAL CHARACTER");
+        databaseInfo.setHasSize(Types.TIMESTAMP, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMESTAMPTZ, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMESTAMPLTZ, true);
+        databaseInfo.setMaxSize("TIMESTAMP", 9);
+        databaseInfo.setMaxSize("TIME", 9);
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
         databaseInfo.setDefaultSize(Types.BINARY, 254);
@@ -292,7 +297,7 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected String getSqlType(Column column) {
+    public String getSqlType(Column column) {
         String sqlType = super.getSqlType(column);
         if ("ENUM".equalsIgnoreCase(column.getJdbcTypeName())) {
             PlatformColumn pc = column.getPlatformColumns().get(DatabaseNamesConstants.NUODB);

@@ -144,6 +144,13 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
+        if (column.getMappedTypeCode() == Types.TIMESTAMP) {
+            adjustColumnSize(column, -20);
+        } else if (column.getMappedTypeCode() == Types.TIME) {
+            adjustColumnSize(column, -9);
+        } else if (column.getMappedTypeCode() == Types.DATE) {
+            removeColumnSize(column);
+        }
         // MySQL converts illegal date/time/timestamp values to
         // "0000-00-00 00:00:00", but this
         // is an illegal ISO value, so we replace it with NULL

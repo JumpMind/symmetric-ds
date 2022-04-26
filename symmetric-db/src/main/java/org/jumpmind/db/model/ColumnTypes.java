@@ -35,5 +35,7 @@ final public class ColumnTypes {
     public static final int TIBERO_TIMESTAMPLTZ = -102;
     public static final int MSSQL_SQL_VARIANT = -150;
     public static final int MSSQL_NTEXT = -10;
-    public static final int MAPPED_TIMESTAMPTZ = ORACLE_TIMESTAMPTZ;
+    public static final int TIMESTAMPTZ = -101;
+    public static final int TIMESTAMPLTZ = -102;
+    public static final int TIMETZ = -103;
 }

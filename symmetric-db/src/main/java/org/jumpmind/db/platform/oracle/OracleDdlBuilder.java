@@ -61,10 +61,10 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PlatformUtils;
@@ -102,7 +102,8 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.REF, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.SMALLINT, "NUMBER(5)", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.BLOB);
-        databaseInfo.addNativeTypeMapping(Types.TIME, "DATE", Types.DATE);
+        databaseInfo.addNativeTypeMapping(Types.TIME, "TIMESTAMP", Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMETZ, "TIMESTAMP", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP");
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "NUMBER(3)", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.VARBINARY, "RAW");
@@ -111,10 +112,21 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping("DATALINK", "BLOB", "BLOB");
         databaseInfo.addNativeTypeMapping(ColumnTypes.NVARCHAR, "NVARCHAR2", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(ColumnTypes.LONGNVARCHAR, "NVARCHAR2", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.ORACLE_TIMESTAMPTZ, "TIMESTAMP WITH TIME ZONE");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.ORACLE_TIMESTAMPLTZ, "TIMESTAMP WITH LOCAL TIME ZONE");
+        databaseInfo.setHasSize(Types.TIMESTAMP, true);
+        databaseInfo.setHasSize(ColumnTypes.ORACLE_TIMESTAMPTZ, true);
+        databaseInfo.setHasSize(ColumnTypes.ORACLE_TIMESTAMPLTZ, true);
+        databaseInfo.setHasSize(Types.TIME, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMETZ, true);
+        databaseInfo.setDefaultSize(Types.TIMESTAMP, 6);
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
+        databaseInfo.setMaxSize("TIMESTAMP", 9);
+        databaseInfo.setMaxSize("TIMESTAMP WITH TIME ZONE", 9);
+        databaseInfo.setMaxSize("TIMESTAMP WITH LOCAL TIME ZONE", 9);
         databaseInfo.setPrimaryKeyEmbedded(false);
         databaseInfo.setDateOverridesToTimestamp(true);
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
@@ -546,11 +558,15 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected String getSqlType(Column column) {
+    public String getSqlType(Column column) {
         PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
         if (platformColumn != null && platformColumn.getType() != null
                 && platformColumn.getType().equals(ROWID_TYPE)) {
             return ROWID_TYPE;
+        } else if (column.getJdbcTypeCode() == ColumnTypes.ORACLE_TIMESTAMPTZ || column.getMappedTypeCode() == ColumnTypes.ORACLE_TIMESTAMPTZ) {
+            return "TIMESTAMP(" + column.getSizeAsInt() + ") WITH TIME ZONE";
+        } else if (column.getJdbcTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ || column.getMappedTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ) {
+            return "TIMESTAMP(" + column.getSizeAsInt() + ") WITH LOCAL TIME ZONE";
         } else {
             return super.getSqlType(column);
         }

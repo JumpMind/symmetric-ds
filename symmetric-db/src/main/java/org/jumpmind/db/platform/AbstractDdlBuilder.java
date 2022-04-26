@@ -1688,7 +1688,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      *            The column
      * @return The full SQL type string including the size
      */
-    protected String getSqlType(Column column) {
+    public String getSqlType(Column column) {
         PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
         String nativeType = getNativeType(column);
         if (platformColumn != null) {
@@ -1700,8 +1700,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         Integer size = column.getSizeAsInt();
         if (platformColumn != null) {
             size = platformColumn.getSize();
-        }
-        if ((size == null || size == 0) && platformColumn == null) {
+        } else if (column.getSize() == null || (size == 0 && !TypeMap.isDateTimeType(column.getMappedTypeCode()))) {
             size = databaseInfo.getDefaultSize(column.getMappedTypeCode());
         }
         int scale = column.getScale();
@@ -1709,12 +1708,15 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             scale = platformColumn.getDecimalDigits();
         }
         if (size != null && size >= 0) {
-            if (databaseInfo.hasSize(column.getMappedTypeCode())) {
-                if (size > 0) {
-                    sqlType.append("(");
-                    sqlType.append(size);
-                    sqlType.append(")");
-                }
+            int maxSize = databaseInfo.getMaxSize(nativeType);
+            if (maxSize > 0 && size > maxSize) {
+                log.warn("Source column '{}' with size of {} exceeds maximum of {} for type {}", column.getName(), size, maxSize, nativeType);
+                size = maxSize;
+            }
+            if (hasSize(column)) {
+                sqlType.append("(");
+                sqlType.append(size);
+                sqlType.append(")");
             } else if (databaseInfo.hasPrecisionAndScale(column.getMappedTypeCode())) {
                 StringBuilder precisionAndScale = new StringBuilder();
                 precisionAndScale.append("(");
@@ -1732,6 +1734,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         sqlType.append(sizePos >= 0 ? nativeType.substring(sizePos + SIZE_PLACEHOLDER.length()) : "");
         filterColumnSqlType(sqlType);
         return sqlType.toString();
+    }
+
+    protected boolean hasSize(Column column) {
+        return databaseInfo.hasSize(column.getMappedTypeCode());
     }
 
     protected void filterColumnSqlType(StringBuilder sqlType) {
@@ -1916,9 +1922,18 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     public boolean areColumnSizesTheSame(Column sourceColumn, Column targetColumn) {
-        boolean sizeMatters = databaseInfo.hasSize(targetColumn.getMappedTypeCode());
+        boolean sizeMatters = hasSize(targetColumn);
         boolean scaleMatters = databaseInfo.hasPrecisionAndScale(targetColumn.getMappedTypeCode());
         String targetSize = targetColumn.getSize();
+        int targetScale = targetColumn.getScale();
+        PlatformColumn platformTargetColumn = targetColumn.findPlatformColumn(databaseName);
+        if (platformTargetColumn != null) {
+            targetSize = String.valueOf(platformTargetColumn.getSize());
+            targetScale = platformTargetColumn.getDecimalDigits();
+            if (scaleMatters) {
+                targetSize += "," + targetScale;
+            }
+        }
         if (targetSize == null) {
             Integer defaultSize = databaseInfo
                     .getDefaultSize(databaseInfo.getTargetJdbcType(targetColumn.getMappedTypeCode()));
@@ -1928,13 +1943,22 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 targetSize = "0";
             }
         }
-        if (sizeMatters && !StringUtils.equals(sourceColumn.getSize(), targetSize)) {
+        String sourceSize = sourceColumn.getSize();
+        int sourceScale = sourceColumn.getScale();
+        PlatformColumn platformSourceColumn = sourceColumn.findPlatformColumn(databaseName);
+        if (platformSourceColumn != null) {
+            sourceSize = String.valueOf(platformSourceColumn.getSize());
+            sourceScale = platformSourceColumn.getDecimalDigits();
+            if (scaleMatters) {
+                sourceSize += "," + sourceScale;
+            }
+        }
+        if (sizeMatters && !StringUtils.equals(sourceSize, targetSize)) {
             return false;
-        } else if (scaleMatters && (!StringUtils.equals(sourceColumn.getSize(), targetSize) ||
+        } else if (scaleMatters && (!StringUtils.equals(sourceSize, targetSize) ||
         // ojdbc6.jar returns -127 for the scale of NUMBER that was not given a
         // size or precision
-                (!(sourceColumn.getScale() < 0 && targetColumn.getScale() == 0)
-                        && sourceColumn.getScale() != targetColumn.getScale()))) {
+                (!(sourceScale < 0 && targetScale == 0) && sourceScale != targetScale))) {
             return false;
         }
         return true;

@@ -26,5 +26,7 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 public class CassandraDdlBuilder extends AbstractDdlBuilder {
     public CassandraDdlBuilder() {
         super(DatabaseNamesConstants.CASSANDRA);
+        databaseInfo.setMaxSize("TIMESTAMP", 3);
+        databaseInfo.setMaxSize("TIME", 3);
     }
 }

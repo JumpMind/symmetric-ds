@@ -59,6 +59,7 @@ import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.RemovePrimaryKeyChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
@@ -103,6 +104,8 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.STRUCT, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.TIME, "DATETIME", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME", Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMESTAMPTZ, "DATETIME");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMESTAMPLTZ, "DATETIME");
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
         databaseInfo.addNativeTypeMapping("BOOLEAN", "SMALLINT", "SMALLINT");
         databaseInfo.addNativeTypeMapping("DATALINK", "IMAGE", "LONGVARBINARY");
@@ -110,6 +113,10 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
+        databaseInfo.setMaxSize("DATETIME", 3);
+        databaseInfo.setMaxSize("TIME", 3);
+        databaseInfo.setMaxSize("BIGDATETIME", 6);
+        databaseInfo.setMaxSize("BIGTIME", 6);
         databaseInfo.setDateOverridesToTimestamp(true);
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);

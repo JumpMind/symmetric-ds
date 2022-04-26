@@ -69,10 +69,10 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PlatformUtils;
@@ -109,6 +109,8 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.STRUCT, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.TIME, "DATETIME", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMESTAMPTZ, "DATETIME");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMESTAMPLTZ, "DATETIME");
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
         databaseInfo.addNativeTypeMapping("BOOLEAN", "BIT", "BIT");
         databaseInfo.addNativeTypeMapping("DATALINK", "IMAGE", "LONGVARBINARY");
@@ -116,6 +118,8 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
+        databaseInfo.setDefaultSize(Types.TIMESTAMP, 3);
+        databaseInfo.setMaxSize("DATETIME", 3);
         databaseInfo.setDateOverridesToTimestamp(true);
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
@@ -686,10 +690,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                 sqlType.replace(parensIndex, sqlType.length(), "");
             }
         }
-        if (sqlType.indexOf("datetimeoffset") >= 0) {
-            sqlType.setLength(0);
-            sqlType.append("datetimeoffset");
-        } else if (sqlType.toString().equalsIgnoreCase("varchar")) {
+        if (sqlType.toString().equalsIgnoreCase("varchar")) {
             sqlType.setLength(0);
             sqlType.append("varchar(max)");
         } else if (sqlType.toString().equalsIgnoreCase("varbinary")) {

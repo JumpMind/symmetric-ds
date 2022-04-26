@@ -26,6 +26,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.Trigger.TriggerType;
@@ -111,8 +113,20 @@ public class InformixDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
+        PlatformColumn platformColumn = column.findPlatformColumn(platform.getName());
         if ("SERIAL".equalsIgnoreCase(column.getJdbcTypeName()) || "BIGSERIAL".equalsIgnoreCase(column.getJdbcTypeName())) {
             column.setAutoIncrement(true);
+        } else if (column.getMappedTypeCode() == Types.TIMESTAMP) {
+            adjustColumnSize(column, -20);
+            if (platformColumn != null) {
+                if (column.getSizeAsInt() == 0) {
+                    platformColumn.setType("DATETIME YEAR TO SECOND");
+                } else {
+                    platformColumn.setType("DATETIME YEAR TO FRACTION");
+                }
+            }
+        } else if (column.getMappedTypeCode() == Types.DATE) {
+            removeColumnSize(column);
         }
         return column;
     }

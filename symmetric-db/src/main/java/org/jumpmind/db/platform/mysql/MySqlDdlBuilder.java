@@ -105,6 +105,8 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         // here to DATETIME
         // TODO: Make this configurable
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMESTAMPTZ, "DATETIME", Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMESTAMPLTZ, "DATETIME", Types.TIMESTAMP);
         // In MySql, TINYINT has only a range of -128 to 127
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
         databaseInfo.addNativeTypeMapping("BOOLEAN", "BIT", "BIT");
@@ -116,6 +118,14 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
+        databaseInfo.setHasSize(Types.TIMESTAMP, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMESTAMPTZ, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMESTAMPLTZ, true);
+        databaseInfo.setHasSize(Types.TIME, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMETZ, true);
+        databaseInfo.setMaxSize("DATETIME", 6);
+        databaseInfo.setMaxSize("TIMESTAMP", 6);
+        databaseInfo.setMaxSize("TIME", 6);
         databaseInfo.setNonBlankCharColumnSpacePadded(false);
         databaseInfo.setBlankCharColumnSpacePadded(false);
         databaseInfo.setCharColumnSpaceTrimmed(true);
@@ -333,7 +343,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected String getSqlType(Column column) {
+    public String getSqlType(Column column) {
         String sqlType = super.getSqlType(column);
         if (column.isAutoIncrement()
                 && (column.getMappedTypeCode() == Types.DECIMAL || column.getMappedTypeCode() == Types.NUMERIC)) {

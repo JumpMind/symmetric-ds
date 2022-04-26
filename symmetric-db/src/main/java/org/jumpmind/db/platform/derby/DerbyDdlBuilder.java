@@ -49,10 +49,10 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PlatformUtils;
@@ -71,7 +71,7 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "LONG VARCHAR FOR BIT DATA");
-        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "CLOB", Types.LONGVARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "CLOB", Types.CLOB);
         databaseInfo.addNativeTypeMapping(Types.NULL, "LONG VARCHAR FOR BIT DATA", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.OTHER, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.REF, "LONG VARCHAR FOR BIT DATA", Types.LONGVARBINARY);
@@ -89,6 +89,7 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "DOUBLE");
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
+        databaseInfo.setMaxSize("TIMESTAMP", 6);
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);

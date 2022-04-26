@@ -65,12 +65,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -92,6 +93,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
      * The regular expression pattern for the Oracle conversion of ISO timestamps.
      */
     private Pattern oracleIsoTimestampPattern;
+    private String REGEX_FRACTIONAL_SECOND_PRECISION = "\\([0-9]\\)";
 
     public OracleDdlReader(IDatabasePlatform platform) {
         super(platform);
@@ -217,7 +219,9 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                     break;
             }
         } else if ((column.getMappedTypeCode() == Types.DATE)
-                || (column.getMappedTypeCode() == Types.TIMESTAMP)) {
+                || (column.getMappedTypeCode() == Types.TIMESTAMP)
+                || column.getMappedTypeCode() == ColumnTypes.ORACLE_TIMESTAMPTZ
+                || column.getMappedTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ) {
             // we also reverse the ISO-format adaptation, and adjust the default
             // value to timestamp
             if (column.getDefaultValue() != null) {
@@ -241,6 +245,19 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 }
                 if (timestamp != null) {
                     column.setDefaultValue(timestamp.toString());
+                }
+            }
+            if (column.getMappedTypeCode() == Types.DATE) {
+                column.setSize("0");
+                removePlatformColumnSize(column);
+            } else {
+                column.setJdbcTypeName(column.getJdbcTypeName().replaceAll(REGEX_FRACTIONAL_SECOND_PRECISION, ""));
+                column.setSize(String.valueOf(column.getScale()));
+                PlatformColumn platformColumn = column.findPlatformColumn(platform.getName());
+                if (platformColumn != null) {
+                    platformColumn.setType(platformColumn.getType().replaceAll(REGEX_FRACTIONAL_SECOND_PRECISION, ""));
+                    platformColumn.setSize(column.getSizeAsInt());
+                    platformColumn.setDecimalDigits(0);
                 }
             }
         } else if (TypeMap.isTextType(column.getMappedTypeCode())) {

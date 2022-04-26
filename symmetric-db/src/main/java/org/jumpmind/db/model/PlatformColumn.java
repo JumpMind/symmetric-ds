@@ -39,6 +39,36 @@ public class PlatformColumn implements Serializable, Cloneable {
         this.defaultValue = defaultValue;
     }
 
+    public PlatformColumn(String name, String sqlType, String defaultValue) {
+        this.name = name;
+        this.defaultValue = defaultValue;
+        String spec = null;
+        int startIndex = sqlType.indexOf("(");
+        if (startIndex == -1) {
+            type = sqlType;
+        } else {
+            type = sqlType.substring(0, startIndex).trim();
+            int endIndex = sqlType.indexOf(")", startIndex);
+            if (endIndex != -1) {
+                spec = sqlType.substring(startIndex + 1, endIndex);
+                if (++endIndex < sqlType.length()) {
+                    type += sqlType.substring(endIndex);
+                }
+            }
+        }
+        if (spec != null && !spec.trim().equals("")) {
+            int index = spec.indexOf(",");
+            if (index == -1) {
+                size = Integer.valueOf(spec.trim());
+            } else {
+                size = Integer.valueOf(spec.substring(0, index).trim());
+                if (++index < spec.length()) {
+                    decimalDigits = Integer.valueOf(spec.substring(index).trim());
+                }
+            }
+        }
+    }
+
     public PlatformColumn() {
     }
 

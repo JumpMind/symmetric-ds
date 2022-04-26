@@ -107,6 +107,7 @@ public abstract class TypeMap {
     public static final String TIMESTAMP = "TIMESTAMP";
     public static final String TIMESTAMPTZ = "TIMESTAMPTZ";
     public static final String TIMESTAMPLTZ = "TIMESTAMPLTZ";
+    public static final String TIMETZ = "TIMETZ";
     /** The string representation of the {@link java.sql.Types#TINYINT} constant. */
     public static final String TINYINT = "TINYINT";
     /** The string representation of the {@link java.sql.Types#VARBINARY} constant. */
@@ -168,6 +169,7 @@ public abstract class TypeMap {
         registerJdbcType(Types.VARCHAR, VARCHAR, JdbcTypeCategory.TEXTUAL);
         registerJdbcType(ColumnTypes.ORACLE_TIMESTAMPTZ, TIMESTAMPTZ, JdbcTypeCategory.DATETIME);
         registerJdbcType(ColumnTypes.ORACLE_TIMESTAMPLTZ, TIMESTAMPLTZ, JdbcTypeCategory.DATETIME);
+        registerJdbcType(ColumnTypes.TIMETZ, TIMETZ, JdbcTypeCategory.DATETIME);
         registerJdbcType(ColumnTypes.SQLXML, SQLXML, JdbcTypeCategory.TEXTUAL);
         registerJdbcType(ColumnTypes.NCHAR, NCHAR, JdbcTypeCategory.TEXTUAL);
         registerJdbcType(ColumnTypes.NCLOB, NCLOB, JdbcTypeCategory.TEXTUAL);

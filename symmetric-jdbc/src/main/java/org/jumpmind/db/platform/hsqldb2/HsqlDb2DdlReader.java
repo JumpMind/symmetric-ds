@@ -52,8 +52,8 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
-import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.Trigger.TriggerType;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -82,6 +82,15 @@ public class HsqlDb2DdlReader extends AbstractJdbcDdlReader {
         String autoIncrement = (String) values.get("IS_AUTOINCREMENT");
         if (autoIncrement != null) {
             column.setAutoIncrement("YES".equalsIgnoreCase(autoIncrement.trim()));
+        }
+        if (column.getMappedTypeCode() == Types.TIMESTAMP) {
+            adjustColumnSize(column, -20, 3);
+        }
+        if (column.getMappedTypeCode() == Types.TIME) {
+            adjustColumnSize(column, -9, 3);
+        }
+        if (column.getMappedTypeCode() == Types.DATE) {
+            removeColumnSize(column);
         }
         return column;
     }

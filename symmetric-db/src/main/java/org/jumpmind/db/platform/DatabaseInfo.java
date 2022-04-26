@@ -199,6 +199,10 @@ public class DatabaseInfo {
      */
     private Map<Integer, Integer> typesDefaultSizes = new HashMap<Integer, Integer>();
     /**
+     * Contains the maximum sizes for those JDBC types whose corresponding native types require a size.
+     */
+    private Map<String, Integer> nativeTypeMaxSizes = new HashMap<String, Integer>();
+    /**
      * Contains those JDBC types whose corresponding native types are types that have precision and scale on this platform.
      */
     private HashSet<Integer> typesWithPrecisionAndScale = new HashSet<Integer>();
@@ -236,6 +240,12 @@ public class DatabaseInfo {
         this.typesWithSize.add(Integer.valueOf(ColumnTypes.NVARCHAR));
         this.typesWithPrecisionAndScale.add(Integer.valueOf(Types.DECIMAL));
         this.typesWithPrecisionAndScale.add(Integer.valueOf(Types.NUMERIC));
+        this.nativeTypes.put(Integer.valueOf(ColumnTypes.TIMESTAMPTZ), "TIMESTAMP");
+        this.nativeTypes.put(Integer.valueOf(ColumnTypes.TIMESTAMPLTZ), "TIMESTAMP");
+        this.nativeTypes.put(Integer.valueOf(ColumnTypes.TIMETZ), "TIME");
+        this.targetJdbcTypes.put(Integer.valueOf(ColumnTypes.TIMESTAMPTZ), Types.TIMESTAMP);
+        this.targetJdbcTypes.put(Integer.valueOf(ColumnTypes.TIMESTAMPLTZ), Types.TIMESTAMP);
+        this.targetJdbcTypes.put(Integer.valueOf(ColumnTypes.TIMETZ), Types.TIME);
     }
     // properties influencing the definition of columns
 
@@ -1044,6 +1054,15 @@ public class DatabaseInfo {
             // ignore -> won't be defined
             this.log.warn("Cannot add default size for undefined jdbc type " + jdbcTypeName, ex);
         }
+    }
+
+    public int getMaxSize(String nativeType) {
+        Integer maxSize = nativeTypeMaxSizes.get(nativeType);
+        return maxSize == null ? 0 : maxSize;
+    }
+
+    public void setMaxSize(String nativeType, int defaultSize) {
+        nativeTypeMaxSizes.put(nativeType, defaultSize);
     }
 
     /**

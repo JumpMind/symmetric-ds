@@ -86,7 +86,7 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
     }
 
     @Override
-    protected String getSqlType(Column column) {
+    public String getSqlType(Column column) {
         String sqlType = super.getSqlType(column);
         if (column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() > 8000) {
             sqlType = "VARBINARY(MAX)";

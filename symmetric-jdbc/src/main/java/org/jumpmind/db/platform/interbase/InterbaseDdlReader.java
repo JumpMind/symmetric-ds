@@ -102,6 +102,15 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
                 column.setMappedTypeCode(Types.LONGVARCHAR);
             }
         }
+        if (column.getJdbcTypeCode() == Types.TIMESTAMP) {
+            resetColumnSize(column, "4");
+        }
+        if (column.getJdbcTypeCode() == Types.TIME) {
+            resetColumnSize(column, "4");
+        }
+        if (column.getJdbcTypeCode() == Types.DATE) {
+            removeColumnSize(column);
+        }
         return column;
     }
 

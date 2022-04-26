@@ -20,27 +20,6 @@
  */
 package org.jumpmind.db.platform.postgresql;
 
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
-import static org.jumpmind.db.model.ColumnTypes.MAPPED_TIMESTAMPTZ;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -52,13 +31,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
-import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.Trigger.TriggerType;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -131,8 +111,9 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
         if (typeName != null && typeName.equalsIgnoreCase("ABSTIME")) {
             return Types.TIMESTAMP;
         } else if (typeName != null && typeName.equalsIgnoreCase("TIMESTAMPTZ")) {
-            // lets use the same type code that oracle uses
-            return MAPPED_TIMESTAMPTZ;
+            return ColumnTypes.TIMESTAMPTZ;
+        } else if (typeName != null && typeName.equalsIgnoreCase("TIMETZ")) {
+            return ColumnTypes.TIMETZ;
         } else if (PostgreSqlDatabasePlatform.isBlobStoredByReference(typeName)) {
             return Types.BLOB;
         } else if (type != null && (type == Types.STRUCT || type == Types.OTHER)) {
@@ -193,6 +174,13 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                     platformColumn.setDecimalDigits(-1);
                 }
             }
+        }
+        if (column.getJdbcTypeCode() == Types.TIMESTAMP || column.getJdbcTypeCode() == Types.TIME || column.getJdbcTypeCode() == ColumnTypes.TIMESTAMPTZ
+                || column.getJdbcTypeCode() == ColumnTypes.TIMETZ) {
+            resetColumnSize(column, String.valueOf(column.getScale()));
+        }
+        if (column.getJdbcTypeCode() == Types.DATE) {
+            removeColumnSize(column);
         }
         String defaultValue = column.getDefaultValue();
         if ((defaultValue != null) && (defaultValue.length() > 0)) {

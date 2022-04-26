@@ -41,6 +41,7 @@ package org.jumpmind.db.platform.hsqldb;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -50,8 +51,8 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
-import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.Trigger.TriggerType;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -92,6 +93,15 @@ public class HsqlDbDdlReader extends AbstractJdbcDdlReader {
         Column column = super.readColumn(metaData, values);
         if (TypeMap.isTextType(column.getMappedTypeCode()) && (column.getDefaultValue() != null)) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
+        }
+        if (column.getMappedTypeCode() == Types.TIMESTAMP) {
+            adjustColumnSize(column, -20, 3);
+        }
+        if (column.getMappedTypeCode() == Types.TIME) {
+            adjustColumnSize(column, -9, 3);
+        }
+        if (column.getMappedTypeCode() == Types.DATE) {
+            removeColumnSize(column);
         }
         return column;
     }

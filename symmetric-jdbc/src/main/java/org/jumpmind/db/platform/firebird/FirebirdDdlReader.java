@@ -120,6 +120,15 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
         } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }
+        if (column.getJdbcTypeCode() == Types.TIMESTAMP) {
+            resetColumnSize(column, "3");
+            removePlatformColumnSize(column);
+        } else if (column.getJdbcTypeCode() == Types.TIME) {
+            resetColumnSize(column, "0");
+            removePlatformColumnSize(column);
+        } else if (column.getJdbcTypeCode() == Types.DATE) {
+            removeColumnSize(column);
+        }
         return column;
     }
 

@@ -24,6 +24,7 @@ import java.sql.Types;
 
 import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
@@ -38,6 +39,16 @@ public class IngresDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "LONG BYTE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "FLOAT", Types.DOUBLE);
         databaseInfo.addNativeTypeMapping(Types.BIT, "BOOLEAN");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMESTAMPTZ, "TIMESTAMP WITH TIME ZONE");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMESTAMPLTZ, "TIMESTAMP WITH LOCAL TIME ZONE");
+        databaseInfo.addNativeTypeMapping(Types.TIME, "TIMESTAMP", Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMETZ, "TIMESTAMP", Types.TIMESTAMP);
+        databaseInfo.setHasSize(Types.TIMESTAMP, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMESTAMPTZ, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMESTAMPLTZ, true);
+        databaseInfo.setMaxSize("TIMESTAMP", 9);
+        databaseInfo.setMaxSize("TIMESTAMP WITH TIME ZONE", 9);
+        databaseInfo.setMaxSize("TIMESTAMP WITH LOCAL TIME ZONE", 9);
         databaseInfo.setNonPKIdentityColumnsSupported(true);
         databaseInfo.setDefaultValueUsedForIdentitySpec(false);
         databaseInfo.setNonBlankCharColumnSpacePadded(true);

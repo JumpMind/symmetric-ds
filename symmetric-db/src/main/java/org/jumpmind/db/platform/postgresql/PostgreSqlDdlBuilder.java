@@ -99,8 +99,25 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(ColumnTypes.NVARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(ColumnTypes.LONGNVARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(ColumnTypes.NCHAR, "CHAR", Types.CHAR);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMESTAMPTZ, "TIMESTAMPTZ");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMESTAMPLTZ, "TIMESTAMPTZ", ColumnTypes.TIMESTAMPTZ);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMETZ, "TIMETZ");
+        databaseInfo.setHasSize(Types.TIMESTAMP, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMESTAMPTZ, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMESTAMPLTZ, true);
+        databaseInfo.setHasSize(Types.TIME, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMETZ, true);
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
+        databaseInfo.setDefaultSize(Types.TIMESTAMP, 6);
+        databaseInfo.setDefaultSize(ColumnTypes.TIMESTAMPTZ, 6);
+        databaseInfo.setDefaultSize(ColumnTypes.TIMESTAMPLTZ, 6);
+        databaseInfo.setDefaultSize(Types.TIME, 6);
+        databaseInfo.setDefaultSize(ColumnTypes.TIMETZ, 6);
+        databaseInfo.setMaxSize("TIMESTAMP", 6);
+        databaseInfo.setMaxSize("TIMESTAMPTZ", 6);
+        databaseInfo.setMaxSize("TIME", 6);
+        databaseInfo.setMaxSize("TIMETZ", 6);
         // no support for specifying the size for these types (because they are
         // mapped to BYTEA which back-maps to BLOB)
         databaseInfo.setHasSize(Types.BINARY, false);
@@ -472,7 +489,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected String getSqlType(Column column) {
+    public String getSqlType(Column column) {
         String type = super.getSqlType(column);
         if (type.startsWith("CHAR") && column.getPlatformColumns() != null) {
             if (isMapCharToJson()) {

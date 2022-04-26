@@ -1734,4 +1734,44 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
         return allNullValues;
     }
+
+    protected void resetColumnSize(Column column, String size) {
+        column.setSize(size);
+        PlatformColumn platformColumn = column.findPlatformColumn(platform.getName());
+        if (platformColumn != null) {
+            platformColumn.setSize(column.getSizeAsInt());
+            if (size != null && size.indexOf(",") != -1) {
+                platformColumn.setDecimalDigits(column.getScale());
+            } else {
+                platformColumn.setDecimalDigits(-1);
+            }
+        }
+    }
+
+    protected void adjustColumnSize(Column column, int amount) {
+        adjustColumnSize(column, amount, 0);
+    }
+
+    protected void adjustColumnSize(Column column, int amount, int maxSize) {
+        int size = column.getSizeAsInt() + amount;
+        if (size < 0) {
+            size = 0;
+        } else if (maxSize > 0 && size > maxSize) {
+            size = maxSize;
+        }
+        resetColumnSize(column, String.valueOf(size));
+    }
+
+    protected void removeColumnSize(Column column) {
+        column.setSize(null);
+        removePlatformColumnSize(column);
+    }
+
+    protected void removePlatformColumnSize(Column column) {
+        PlatformColumn platformColumn = column.findPlatformColumn(platform.getName());
+        if (platformColumn != null) {
+            platformColumn.setSize(-1);
+            platformColumn.setDecimalDigits(-1);
+        }
+    }
 }

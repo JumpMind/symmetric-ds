@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
@@ -41,6 +42,7 @@ public class VoltDbDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setMaxIdentifierLength(-1);
         databaseInfo.addNativeTypeMapping(Types.DATE, "TIMESTAMP", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.TIME, "TIMESTAMP", Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMETZ, "TIMESTAMP", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.BIT, "TINYINT", Types.TINYINT);
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "DECIMAL", Types.DECIMAL);
         databaseInfo.addNativeTypeMapping(Types.CLOB, "VARCHAR(100000)", Types.VARCHAR);
@@ -52,6 +54,7 @@ public class VoltDbDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "VARCHAR", Types.VARCHAR);
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
+        databaseInfo.setMaxSize("TIMESTAMP", 6);
     }
 
     @Override

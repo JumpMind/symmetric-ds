@@ -24,9 +24,11 @@ import java.sql.Types;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.StringUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.CompressionTypes;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.PlatformIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -41,7 +43,34 @@ public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.TIME, "TIME", Types.TIME);
         databaseInfo.addNativeTypeMapping(ColumnTypes.MSSQL_SQL_VARIANT, "SQL_VARIANT", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME2");
-        databaseInfo.addNativeTypeMapping(ColumnTypes.MAPPED_TIMESTAMPTZ, "DATETIMEOFFSET");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMESTAMPTZ, "DATETIMEOFFSET");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.TIMESTAMPLTZ, "DATETIMEOFFSET", ColumnTypes.TIMESTAMPTZ);
+        databaseInfo.setHasSize(Types.TIMESTAMP, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMESTAMPTZ, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMESTAMPLTZ, true);
+        databaseInfo.setHasSize(Types.TIME, true);
+        databaseInfo.setHasSize(ColumnTypes.TIMETZ, true);
+        databaseInfo.setDefaultSize(Types.TIMESTAMP, 7);
+        databaseInfo.setDefaultSize(Types.TIME, 7);
+        databaseInfo.setDefaultSize(ColumnTypes.TIMESTAMPTZ, 7);
+        databaseInfo.setMaxSize("DATETIME2", 7);
+        databaseInfo.setMaxSize("TIME", 7);
+        databaseInfo.setMaxSize("DATETIMEOFFSET", 7);
+    }
+
+    @Override
+    protected boolean hasSize(Column column) {
+        if (column.getMappedTypeCode() == Types.TIMESTAMP) {
+            PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
+            String nativeType = getNativeType(column);
+            if (platformColumn != null) {
+                nativeType = platformColumn.getType();
+            }
+            if (nativeType.equalsIgnoreCase("DATETIME") || nativeType.equalsIgnoreCase("SMALLDATETIME")) {
+                return false;
+            }
+        }
+        return super.hasSize(column);
     }
 
     @Override
