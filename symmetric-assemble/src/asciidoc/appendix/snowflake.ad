@@ -2,11 +2,10 @@
 
 Use `symadmin module install snowflake` to install driver files, or copy your own files into the `lib` sub-directory.
 
-Send changes from your relational database to Snowflake.  
-
 ==== Setup
 
-Snowflake is only supported as a load only node in SymmetricDS.  See <<Load Only Node>> for details on setting up a load only node in SymmetricDS.
+Snowflake supports running as a load only node in SymmetricDS.  See <<Load Only Node>> for details on setting up a load only node in SymmetricDS.
+Snowflake can also be set up to capture changes using log-mining.
 
 
 ifdef::pro[]
@@ -47,6 +46,25 @@ Update any reload channels that will be used on the table triggers that will cap
 update sym_channel set data_loader_type='bulk', max_batch_size=500000 where channel_id='reload'
 ----
 endif::pro[]
+
+If you have SymmetricDS create the tables to synchronize into Snowflake, SymmetricDS creates the tables with a cluster
+column specification based on the primary key of the table. If you do not want SymmetricDS to create the clustered columns,
+set the following property in the symmetric-server.properties file in the conf directory and restart the instance:
+[source,properties]
+----
+snowflake.cluster.primary.keys=false
+----
+
+If you do not have SymmetricDS create the tables, and you want clustered columns to be specified, you will have to define
+the cluster specification yourself. Here is an example statement of a clustered column specification for a primary key column
+called ID on table TABLE1:
+[source,SQL]
+----
+ALTER TABLE TABLE1 CLUSTER BY (ID);
+----
+
+When defining the triggers, make sure to specify the source catalog (which would be the Snowflake database value) and the source
+schema for each table.
 
 ===== Choose a bulk load storage option
 
@@ -100,3 +118,30 @@ cloud.bulk.load.azure.blob.container=<defaults to symmetricds>
 cloud.bulk.load.azure.sas.token=
 ----
 endif::pro[]
+
+==== Database Permissions
+.Log Miner Permissions
+If the tables that are being tracked for change data capture using log mining are already created, each table needs to be altered
+to add change data tracking to it. An example DDL statement to turn this on is shown:
+[source,SQL]
+----
+ALTER TABLE TABLE1 SET CHANGE_TRACKING=TRUE;
+----
+
+Permissions must also be added to the database user ID that is used to access the Snowflake database. Assuming that you
+wanted to use a role called SYMMETRIC and a user called SYMMETRIC, here are the set of permissions that must be set in
+order for SymmetricDS to successfully run the log mining (called Streams in Snowflake) functionality (replace <warehouse>,
+<database>, and <schema> with real values):
+[source,SQL]
+----
+CREATE ROLE SYMMETRIC;
+GRANT USAGE ON WAREHOUSE <warehouse> TO ROLE SYMMETRIC;
+GRANT USAGE ON DATABASE <database> TO ROLE SYMMETRIC;
+GRANT USAGE ON SCHEMA <database>.<schema> TO ROLE SYMMETRIC;
+GRANT CREATE STREAM ON SCHEMA <database>.<schema> TO ROLE SYMMETRIC;
+GRANT SELECT ON ALL TABLES IN DATABASE <database> TO ROLE SYMMETRIC;
+GRANT CREATE TABLE ON SCHEMA <database>.<schema> TO ROLE SYMMETRIC;
+GRANT CREATE FILE FORMAT ON SCHEMA SYMMETRIC_TEST.SYMMETRIC_TEST TO ROLE SYMMETRIC;
+CREATE USER SYMMETRIC PASSWORD = 'symmetric' DEFAULT_ROLE = 'SYMMETRIC';
+GRANT ROLE SYMMETRIC TO USER SYMMETRIC;
+----

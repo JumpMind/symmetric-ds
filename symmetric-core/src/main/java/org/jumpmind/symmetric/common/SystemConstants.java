@@ -41,4 +41,5 @@ public class SystemConstants {
     public static final String SYSPROP_KEYSTORE_TYPE = SecurityConstants.SYSPROP_KEYSTORE_TYPE;
     public static final String SYSPROP_KEYSTORE_CERT_ALIAS = SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS;
     public static final String SYSPROP_KEYSTORE_PARAMETERS = "symmetric.parameters.saved.in.keystore";
+    public static final String SYSPROP_SNOWFLAKE_CLUSTER_PRIMARY_KEYS = "snowflake.cluster.primary.keys";
 }

@@ -778,10 +778,16 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public String getDriverName() {
+        if (targetDialect != this) {
+            return targetDialect.getDriverName();
+        }
         return driverName;
     }
 
     public String getDriverVersion() {
+        if (targetDialect != this) {
+            return targetDialect.getDriverVersion();
+        }
         return driverVersion;
     }
 
