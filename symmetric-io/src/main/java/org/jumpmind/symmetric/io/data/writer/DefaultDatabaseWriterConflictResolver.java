@@ -34,13 +34,16 @@ import java.util.Set;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
@@ -117,7 +120,6 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         DynamicDefaultDatabaseWriter databaseWriter = (DynamicDefaultDatabaseWriter) writer;
         Table targetTable = writer.getTargetTable();
         String[] pkData = data.getPkData(targetTable);
-        String pkCsv = CsvUtils.escapeCsvData(pkData);
         Timestamp loadingTs = data.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME);
         Date existingTs = null;
         String existingNodeId = null;
@@ -152,11 +154,14 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                     }
                 }
             }
+            modifyTimestampsForPrecision(databaseWriter.getPlatform(targetTable.getName()), targetTable, pkData);
+            String pkCsv = CsvUtils.escapeCsvData(pkData);
             String sql = "select source_node_id, create_time from " + databaseWriter.getTablePrefix() +
                     "_data where table_name = ? and ((event_type = 'I' and row_data like ?) or " +
                     "(event_type in ('U', 'D') and pk_data like ?)) and create_time >= ? " +
-                    "and source_node_id != ? order by create_time desc";
+                    "and (source_node_id is null or source_node_id != ?) order by create_time desc";
             Object[] args = new Object[] { targetTable.getName(), pkCsv + "%", pkCsv, loadingTs, writer.getBatch().getSourceNodeId() };
+            log.debug("Querying capture time for CSV {}", pkCsv);
             Row row = null;
             if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions()) {
                 // we may have waited for another transaction to commit, so query with a new transaction
@@ -194,6 +199,47 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                     existingTs, loadingTs, targetTable.getName(), ArrayUtils.toString(pkData));
         }
         return isWinner;
+    }
+
+    protected void modifyTimestampsForPrecision(IDatabasePlatform platform, Table table, String[] pkData) {
+        boolean checkDatetime = platform.getName().startsWith(DatabaseNamesConstants.MSSQL) || platform.getName().startsWith(DatabaseNamesConstants.ASE);
+        Column[] pkColumns = table.getPrimaryKeyColumns();
+        for (int i = 0; i < pkColumns.length && i < pkData.length; i++) {
+            int type = pkColumns[i].getMappedTypeCode();
+            if (type == Types.TIMESTAMP || type == Types.TIME || type == ColumnTypes.TIMESTAMPTZ || type == ColumnTypes.TIMESTAMPLTZ
+                    || type == ColumnTypes.TIMETZ) {
+                int startIndex = pkData[i].indexOf(".") + 1;
+                int endIndex = pkData[i].indexOf(" ", startIndex);
+                if (endIndex == -1) {
+                    endIndex = pkData[i].length();
+                }
+                if (startIndex != 0 && startIndex < pkData[i].length()) {
+                    String fractional = pkData[i].substring(startIndex, endIndex);
+                    boolean modified = false;
+                    int fractionalPrecision = pkColumns[i].getSizeAsInt();
+                    int fractionalAccuracy = fractionalPrecision;
+                    if (checkDatetime) {
+                        PlatformColumn platformColumn = pkColumns[i].findPlatformColumn(platform.getName());
+                        if (platformColumn != null && platformColumn.getType().equalsIgnoreCase("datetime")) {
+                            fractionalAccuracy = 2;
+                        }
+                    }
+                    if (fractional.length() > fractionalAccuracy) {
+                        log.debug("Reducing fsp from {} to {}", fractional.length(), fractionalAccuracy);
+                        fractional = fractional.substring(0, fractionalAccuracy);
+                        modified = true;
+                    }
+                    if (fractional.length() < fractionalPrecision) {
+                        log.debug("Padding fsp of {} to match {}", fractional.length(), fractionalPrecision);
+                        fractional += "%";
+                        modified = true;
+                    }
+                    if (modified) {
+                        pkData[i] = pkData[i].substring(0, startIndex) + fractional + pkData[i].substring(endIndex);
+                    }
+                }
+            }
+        }
     }
 
     protected boolean primaryKeyUpdateAllowed(DynamicDefaultDatabaseWriter databaseWriter, Table targetTable) {
