@@ -420,8 +420,15 @@ final public class ParameterConstants {
     public final static String KAFKA_TOPIC_BY = "kafka.topic.by";
     public final static String KAFKA_CONFLUENT_REGISTRY_URL = "kafka.confluent.registry.url";
     public final static String KAFKA_AVRO_JAVA_PACKAGE = "kafka.avro.java.package";
+    public final static String KAFKACLIENT_SECURITY_PROTOCOL = "kafkaclient.security.protocol";
+    public final static String KAFKACLIENT_SSL_KEYSTORE_LOCATION = "kafkaclient.ssl.keystore.location";
+    public final static String KAFKACLIENT_SSL_KEYSTORE_PASSWORD = "kafkaclient.ssl.keystore.password";
+    public final static String KAFKACLIENT_SSL_TRUSTSTORE_LOCATION = "kafkaclient.ssl.truststore.location";
+    public final static String KAFKACLIENT_SSL_KEYSTORE_TYPE = "kafkaclient.ssl.keystore.type";
     public final static String[] ALL_KAFKA_PARAMS = new String[] { KAFKA_PRODUCER, KAFKA_FORMAT, KAFKA_MESSAGE_BY,
-            KAFKA_TOPIC_BY, KAFKA_CONFLUENT_REGISTRY_URL, KAFKA_AVRO_JAVA_PACKAGE };
+            KAFKA_TOPIC_BY, KAFKA_CONFLUENT_REGISTRY_URL, KAFKA_AVRO_JAVA_PACKAGE, KAFKACLIENT_SECURITY_PROTOCOL,
+            KAFKACLIENT_SSL_KEYSTORE_LOCATION, KAFKACLIENT_SSL_KEYSTORE_PASSWORD, KAFKACLIENT_SSL_TRUSTSTORE_LOCATION,
+            KAFKACLIENT_SSL_KEYSTORE_TYPE };
     public final static String SNOWFLAKE_STAGING_TYPE = "snowflake.staging.type";
     public final static String SNOWFLAKE_INTERNAL_STAGE_NAME = "snowflake.internal.stage.name";
     public final static String CLOUD_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH = "cloud.bulk.load.max.rows.before.flush";
