@@ -24,6 +24,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -206,7 +207,7 @@ public class FtpDataWriter implements IDataWriter {
                 FileSystemOptions opts = new FileSystemOptions();
                 FtpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(opts, true);
                 SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
-                SftpFileSystemConfigBuilder.getInstance().setSessionTimeoutMillis(opts, 60000);
+                SftpFileSystemConfigBuilder.getInstance().setSessionTimeout(opts, Duration.ofMillis(60000));
                 Collection<FileInfo> fileInfos = fileInfoByTable.values();
                 for (FileInfo fileInfo : fileInfos) {
                     FileObject fileObject = manager.resolveFile(
