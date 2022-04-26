@@ -215,6 +215,8 @@ public interface IDatabasePlatform {
 
     public List<PermissionResult> checkSymTablePermissions(PermissionType... permissionTypes);
 
+    public PermissionResult getLogMinePermission();
+
     public boolean isUseMultiThreadSyncTriggers();
 
     public boolean supportsTransactions();

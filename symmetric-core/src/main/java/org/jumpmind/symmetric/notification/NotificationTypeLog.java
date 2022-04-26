@@ -28,8 +28,10 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Notification;
+import org.jumpmind.symmetric.model.Notification.LogExpression;
+import org.jumpmind.symmetric.util.SymmetricUtils;
+import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,15 +40,14 @@ public class NotificationTypeLog implements INotificationType, ISymmetricEngineA
     protected ISymmetricEngine engine;
 
     public void notify(Notification notification, List<MonitorEvent> monitorEvents) {
-        Map<String, Node> nodes = engine.getNodeService().findAllNodesAsMap();
+        LogExpression expression = notification.getLogExpression();
         for (MonitorEvent monitorEvent : monitorEvents) {
-            Node node = nodes.get(monitorEvent.getNodeId());
-            String nodeString = node != null ? node.toString() : monitorEvent.getNodeId();
-            String message = "Monitor " + monitorEvent.getType() + " on " + nodeString;
+            Map<String, String> replacements = SymmetricUtils.getReplacementsForMonitorEvent(engine, monitorEvent);
+            String message;
             if (monitorEvent.isResolved()) {
-                message += " is resolved";
+                message = FormatUtils.replaceTokens(expression.getResolved(), replacements, true);
             } else {
-                message += " reached threshold of " + monitorEvent.getThreshold() + " with a value of " + monitorEvent.getValue();
+                message = FormatUtils.replaceTokens(expression.getUnresolved(), replacements, true);
             }
             if (monitorEvent.getSeverityLevel() >= Monitor.SEVERE) {
                 log.error(message);

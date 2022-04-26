@@ -96,6 +96,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     @Override
+    public boolean isBulkLoaderEnabled() {
+        List<Channel> channelList = sqlTemplate.query(getSql("selectChannelsSql", "whereBulkLoaderEnabledSql"), new ChannelMapper());
+        return channelList != null && !channelList.isEmpty();
+    }
+
+    @Override
     public boolean isMasterToMaster() {
         boolean masterToMaster = false;
         Node me = nodeService.findIdentity();

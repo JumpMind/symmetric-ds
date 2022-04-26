@@ -287,7 +287,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
     public void end(Batch batch, boolean inError) {
         this.inError = inError;
         if (currentDataWriter != null) {
-            // Use last batch we worked on instead of batch passed in, which is actually first batch 
+            // Use last batch we worked on instead of batch passed in, which is actually first batch
             currentDataWriter.end(this.batch, inError);
             closeCurrentDataWriter();
         }

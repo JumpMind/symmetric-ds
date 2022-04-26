@@ -21,24 +21,22 @@
 package org.jumpmind.symmetric.notification;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Notification;
+import org.jumpmind.symmetric.model.Notification.EmailExpression;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.monitor.BatchErrorWrapper;
+import org.jumpmind.symmetric.util.SymmetricUtils;
+import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.LogSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,84 +49,49 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
     protected ISymmetricEngine engine;
 
     public void notify(Notification notification, List<MonitorEvent> monitorEvents) {
-        String subject = null;
-        if (monitorEvents.size() == 1) {
-            MonitorEvent event = monitorEvents.get(0);
-            subject = "Monitor event for " + event.getType() + " from node " + event.getNodeId();
-        } else {
-            Set<String> nodeIds = new HashSet<String>();
-            Set<String> types = new HashSet<String>();
-            for (MonitorEvent event : monitorEvents) {
-                nodeIds.add(event.getNodeId());
-                types.add(event.getType());
-            }
-            StringBuilder typesString = new StringBuilder();
-            Iterator<String> iter = types.iterator();
-            while (iter.hasNext()) {
-                typesString.append(iter.next());
-                if (iter.hasNext()) {
-                    typesString.append(", ");
-                }
-            }
-            subject = "Monitor events for " + typesString + " from " + nodeIds.size() + " nodes";
-        }
-        Map<String, Node> nodes = engine.getNodeService().findAllNodesAsMap();
+        Map<String, String> eventListReplacements = SymmetricUtils.getReplacementsForMonitorEventList(engine,
+                monitorEvents);
+        EmailExpression expression = notification.getEmailExpression();
+        String subject = FormatUtils.replaceTokens(expression.getSubject(), eventListReplacements, true);
+        Map<String, String> templateMap = expression.getTemplateMap();
         StringBuilder text = new StringBuilder();
+        if (!StringUtils.isBlank(expression.getBodyBefore())) {
+            text.append(FormatUtils.replaceTokens(expression.getBodyBefore(), eventListReplacements, true) + "\n");
+        }
         for (MonitorEvent event : monitorEvents) {
-            Node node = nodes.get(event.getNodeId());
-            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String nodeString = node != null ? node.toString() : event.getNodeId();
-            text.append(dateFormatter.format(event.getEventTime())).append(" [");
-            text.append(Monitor.getSeverityLevelNames().get(event.getSeverityLevel())).append("] [");
-            text.append(nodeString).append("] [");
-            text.append(event.getHostName()).append("] ");
-            text.append("Monitor event for ").append(event.getType());
-            if (event.isResolved()) {
-                text.append(" is resolved\n");
-                continue;
-            } else {
-                text.append(" reached threshold of ").append(event.getThreshold());
-                text.append(" with a value of ").append(event.getValue()).append("\n");
-            }
             try {
-                StringBuilder stackTrace = new StringBuilder();
+                Map<String, String> eventReplacements = SymmetricUtils.getReplacementsForMonitorEvent(engine, event);
                 if (event.getType().equals("log")) {
-                    stackTrace = getLogDetails(event);
+                    eventReplacements.put("eventDetails", getLogDetails(event));
                 } else if (event.getType().equals("batchError")) {
-                    stackTrace = getBatchDetails(event);
+                    eventReplacements.put("eventDetails", getBatchDetails(event));
                 } else if (event.getType().equals("offlineNodes")) {
-                    stackTrace = getOfflineDetails(event);
-                } else if (event.getType().equals("batchUnsent")) {
-                    stackTrace.append(event.getValue()).append(" batches unsent.").append("\n");
-                } else if (event.getType().equals("dataUnrouted")) {
-                    stackTrace.append(event.getValue()).append(" unrouted data rows.").append("\n");
-                } else if (event.getType().equals("dataGap")) {
-                    stackTrace.append(event.getValue()).append(" data gap(s) recorded.").append("\n");
-                } else if (event.getType().equals("cpu")) {
-                    String details = event.getDetails();
-                    if (details == null || details.length() == 0) {
-                        details = "CPU usage is at " + event.getValue() + "%\n";
-                    }
-                    stackTrace.append(details);
-                } else if (event.getType().equals("memory")) {
-                    String details = event.getDetails();
-                    if (details == null || details.length() == 0) {
-                        details = "Memory usage is at " + event.getValue() + "%\n";
-                    }
-                    stackTrace.append(details);
-                } else if (event.getType().equals("disk")) {
-                    stackTrace.append("Disk usage is at ").append(event.getValue()).append("%\n");
+                    eventReplacements.put("eventDetails", getOfflineDetails(event));
                 }
-                if (!stackTrace.toString().isEmpty()) {
-                    text.append("\nDetails: ");
-                    text.append(stackTrace.toString());
+                if (monitorEvents.indexOf(event) > 0) {
                     text.append("\n");
+                }
+                if (event.isResolved()) {
+                    text.append(FormatUtils.replaceTokens(expression.getResolved(), eventReplacements, true));
+                    continue;
+                } else {
+                    text.append(FormatUtils.replaceTokens(expression.getUnresolved(), eventReplacements, true));
+                }
+                String template = templateMap.get(event.getType());
+                if (template == null) {
+                    template = templateMap.get("default");
+                }
+                if (template != null) {
+                    text.append("\n" + FormatUtils.replaceTokens(template, eventReplacements, true));
                 }
             } catch (Exception e) {
                 log.debug("", e);
             }
         }
-        String recipients = notification.getExpression();
+        if (!StringUtils.isBlank(expression.getBodyAfter())) {
+            text.append("\n" + FormatUtils.replaceTokens(expression.getBodyAfter(), eventListReplacements, true));
+        }
+        String recipients = String.join(",", expression.getEmails());
         if (recipients != null) {
             log.info("Sending email with subject '" + subject + "' to " + recipients);
             engine.getMailService().sendEmail(subject, text.toString(), recipients);
@@ -137,16 +100,16 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
         }
     }
 
-    protected static StringBuilder getOfflineDetails(MonitorEvent event) throws IOException {
+    protected static String getOfflineDetails(MonitorEvent event) throws IOException {
         StringBuilder stackTrace = new StringBuilder();
         stackTrace.append("\n");
         for (String node : deserializeOfflineNodes(event)) {
             stackTrace.append("Node ").append(node).append(" is offline.").append("\n");
         }
-        return stackTrace;
+        return stackTrace.toString();
     }
 
-    protected static StringBuilder getBatchDetails(MonitorEvent event) throws IOException {
+    protected static String getBatchDetails(MonitorEvent event) throws IOException {
         StringBuilder stackTrace = new StringBuilder();
         BatchErrorWrapper errors = deserializeBatches(event);
         if (errors != null) {
@@ -161,10 +124,10 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
                 stackTrace.append(" failed: ").append(b.getSqlMessage()).append("\n");
             }
         }
-        return stackTrace;
+        return stackTrace.toString();
     }
 
-    protected static StringBuilder getLogDetails(MonitorEvent event) throws IOException {
+    protected static String getLogDetails(MonitorEvent event) throws IOException {
         StringBuilder stackTrace = new StringBuilder();
         int count = 0;
         for (LogSummary summary : deserializeLogSummary(event)) {
@@ -180,7 +143,7 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
         if (count > 0) {
             stackTrace.append("\n");
         }
-        return stackTrace;
+        return stackTrace.toString();
     }
 
     protected static List<String> deserializeOfflineNodes(MonitorEvent event) throws IOException {

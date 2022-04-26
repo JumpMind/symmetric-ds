@@ -156,6 +156,35 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     @Override
+    public PermissionResult getLogMinePermission() {
+        final PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "Use LogMiner");
+        StringBuilder solution = new StringBuilder();
+        Row row = getSqlTemplate().queryForRow("show variables like 'log_bin'");
+        if (row == null || !StringUtils.equalsIgnoreCase(row.getString("Value"), "ON")) {
+            solution.append("Use the --log-bin option at startup. ");
+        }
+        row = getSqlTemplate().queryForRow("show variables like 'binlog_format'");
+        if (row == null || !StringUtils.equalsIgnoreCase(row.getString("Value"), "ROW")) {
+            solution.append("Set the binlog_format system variable to \"ROW\". ");
+        }
+        row = getSqlTemplate().queryForRow("show variables like 'enforce_gtid_consistency'");
+        if (row == null || !StringUtils.equalsIgnoreCase(row.getString("Value"), "ON")) {
+            solution.append("Set the enforce_gtid_consistency system variable to \"ON\". ");
+        }
+        row = getSqlTemplate().queryForRow("show variables like 'gtid_mode'");
+        if (row == null || !StringUtils.equalsIgnoreCase(row.getString("Value"), "ON")) {
+            solution.append("Set the gtid_mode system variable to \"ON\".");
+        }
+        if (solution.length() > 0) {
+            result.setStatus(Status.FAIL);
+            result.setSolution(solution.toString());
+        } else {
+            result.setStatus(Status.PASS);
+        }
+        return result;
+    }
+
+    @Override
     public void makePlatformSpecific(Database database) {
         for (Table table : database.getTables()) {
             for (Column column : table.getColumns()) {

@@ -98,4 +98,5 @@ public class WebConstants {
     public static final String REG_USER_ID = "regUserId";
     public static final String REG_PASSWORD = "regPassword";
     public static final String PUSH_REGISTRATION = "pushRegistration";
+    public static final String API_KEY_HEADER = "X-REST-API-KEY";
 }

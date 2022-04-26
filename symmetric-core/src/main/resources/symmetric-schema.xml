@@ -386,6 +386,38 @@
         <column name="last_locking_server_id" type="VARCHAR" size="255"  description="The server id of the process that last did work on this batch." />
     </table>
 
+    <table name="monitor" description="Defines monitors that will run periodically to look for problems in the system.">
+        <column name="monitor_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a monitor." />
+        <column name="node_group_id" type="VARCHAR" size="50" required="true" default="ALL" description="Target a specific node group to run this monitor.  Target all groups, use a value of 'ALL'." />
+        <column name="external_id" type="VARCHAR" size="255" required="true" default="ALL" description="Target a specific node by its external ID to run this monitor.  Target all nodes, use a value of 'ALL'. "/>
+        <column name="type" type="VARCHAR" size="50" required="true" description="Monitor type to execute.  Built-in types are cpu, disk, memory, batchError, batchUnsent, dataGap, dataUnrouted, and log." />
+        <column name="expression" type="LONGVARCHAR" description="An expression used by the monitor to set options specific to the monitor type." />
+        <column name="threshold" type="BIGINT" required="true" default="0" description="The minimum value returned when the monitor runs that will cause a monitor event to be recorded." />
+        <column name="run_period" type="INTEGER" required="true" default="0" description="Run this monitor periodically every number of seconds." />        
+        <column name="run_count" type="INTEGER" required="true" default="0" description="Average the value across a number of runs before checking threshold." />
+        <column name="severity_level" type="INTEGER" required="true" default="0" description="" />
+        <column name="enabled" type="BOOLEANINT" size="1" required="true" default="0" description="Whether or not this monitor is enabled for execution." />
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
+    </table>
+
+    <table name="monitor_event" description="Records an event of when a system problem occurred.">
+        <column name="monitor_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a monitor that caused the event." />
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the node that created the event." />
+        <column name="event_time" type="TIMESTAMP" required="true" primaryKey="true" description="Timestamp when the event was created." />
+        <column name="host_name" type="VARCHAR" size="60" description="Host name of the node that created the event." />
+        <column name="type" type="VARCHAR" size="50" required="true" description="Monitor type that detected the value recorded." />
+        <column name="threshold" type="BIGINT" required="true" default="0" description="Minimum value for the monitor to cause an event." />
+        <column name="event_value" type="BIGINT" required="true" default="0" description="Actual value detected by the monitor." />
+        <column name="event_count" type="INTEGER" required="true" default="0" description="Number of times this event has occurred and been updated." />
+        <column name="severity_level" type="INTEGER" required="true" default="0" description="Severity level configured for the monitor." />
+        <column name="is_resolved" type="BOOLEANINT" required="true" default="0" description="Whether an event is resolved because its value dropped below the threshold." />
+        <column name="is_notified" type="BOOLEANINT" required="true" default="0" description="Whether a notification was run." />
+        <column name="details" type="LONGVARCHAR" description="JSON formatted details about the event" />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when the event was last updated." />
+    </table>
+
     <table name="node" description="Representation of an instance of SymmetricDS that synchronizes data with one or more additional nodes. Each node has a unique identifier (nodeId) that is used when communicating, as well as a domain-specific identifier (externalId) that provides context within the local system.">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="A unique identifier for a node." />
         <column name="node_group_id" type="VARCHAR" size="50" required="true" description="The node group that this node belongs to, such as 'store'." />
@@ -405,6 +437,14 @@
         <column name="deployment_sub_type" type="VARCHAR" size="50" description="An indicator as to the deployment sub type of the node.  Possible values are, but not limited to: load-only" />
     </table>
 
+    <table name="node_channel_ctl" description="Used to ignore or suspend a channel. A channel that is ignored will have its data_events batched and they will immediately be marked as 'OK' without sending them. A channel that is suspended is skipped when batching data_events.">
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a node." />
+        <column name="channel_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="The name of the channel_id that is being controlled." />
+        <column name="suspend_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates if this channel is suspended, which prevents batches from being sent, although new batches can still be created." />
+        <column name="ignore_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates if this channel is ignored, which marks batches with a status of OK like they were actually processed." />
+        <column name="last_extract_time" type="TIMESTAMP"  description="Record the last time data was extract for a node and a channel." />
+    </table>
+
     <table name="node_communication" description="This table is used to coordinate communication with other nodes.">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a node." />
         <column name="queue" type="VARCHAR" size="25" required="true" default="default" primaryKey="true" description="The queue name to use in relation to the channel." />
@@ -422,14 +462,6 @@
         <column name="total_fail_millis" type="BIGINT"  default="0" description="The total amount of time spent during failed communication attempts with the node." />
         <column name="batch_to_send_count" type="BIGINT"  default="0" description="The number of batches this node has queued for pull." />
         <column name="node_priority" type="INTEGER"  default="0" description="Used to order nodes when initiating a pull operation. Can be used to move a node to the top of the list to pull from it as quickly as possible." />
-    </table>
-
-    <table name="node_channel_ctl" description="Used to ignore or suspend a channel. A channel that is ignored will have its data_events batched and they will immediately be marked as 'OK' without sending them. A channel that is suspended is skipped when batching data_events.">
-        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a node." />
-        <column name="channel_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="The name of the channel_id that is being controlled." />
-        <column name="suspend_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates if this channel is suspended, which prevents batches from being sent, although new batches can still be created." />
-        <column name="ignore_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates if this channel is ignored, which marks batches with a status of OK like they were actually processed." />
-        <column name="last_extract_time" type="TIMESTAMP"  description="Record the last time data was extract for a node and a channel." />
     </table>
 
     <table name="node_group" description="A category of Nodes that synchronizes data with one or more NodeGroups. A common use of NodeGroup is to describe a level in a hierarchy of data synchronization.">
@@ -593,38 +625,6 @@
         <foreign-key foreignTable="node" name="fk_sec_2_node">
             <reference local="node_id" foreign="node_id" />
         </foreign-key>
-    </table>
-
-    <table name="monitor" description="Defines monitors that will run periodically to look for problems in the system.">
-        <column name="monitor_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a monitor." />
-        <column name="node_group_id" type="VARCHAR" size="50" required="true" default="ALL" description="Target a specific node group to run this monitor.  Target all groups, use a value of 'ALL'." />
-        <column name="external_id" type="VARCHAR" size="255" required="true" default="ALL" description="Target a specific node by its external ID to run this monitor.  Target all nodes, use a value of 'ALL'. "/>
-        <column name="type" type="VARCHAR" size="50" required="true" description="Monitor type to execute.  Built-in types are cpu, disk, memory, batchError, batchUnsent, dataGap, dataUnrouted, and log." />
-        <column name="expression" type="LONGVARCHAR" description="An expression used by the monitor to set options specific to the monitor type." />
-        <column name="threshold" type="BIGINT" required="true" default="0" description="The minimum value returned when the monitor runs that will cause a monitor event to be recorded." />
-        <column name="run_period" type="INTEGER" required="true" default="0" description="Run this monitor periodically every number of seconds." />        
-        <column name="run_count" type="INTEGER" required="true" default="0" description="Average the value across a number of runs before checking threshold." />
-        <column name="severity_level" type="INTEGER" required="true" default="0" description="" />
-        <column name="enabled" type="BOOLEANINT" size="1" required="true" default="0" description="Whether or not this monitor is enabled for execution." />
-        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
-    </table>
-
-    <table name="monitor_event" description="Records an event of when a system problem occurred.">
-        <column name="monitor_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a monitor that caused the event." />
-        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the node that created the event." />
-        <column name="event_time" type="TIMESTAMP" required="true" primaryKey="true" description="Timestamp when the event was created." />
-        <column name="host_name" type="VARCHAR" size="60" description="Host name of the node that created the event." />
-        <column name="type" type="VARCHAR" size="50" required="true" description="Monitor type that detected the value recorded." />
-        <column name="threshold" type="BIGINT" required="true" default="0" description="Minimum value for the monitor to cause an event." />
-        <column name="event_value" type="BIGINT" required="true" default="0" description="Actual value detected by the monitor." />
-        <column name="event_count" type="INTEGER" required="true" default="0" description="Number of times this event has occurred and been updated." />
-        <column name="severity_level" type="INTEGER" required="true" default="0" description="Severity level configured for the monitor." />
-        <column name="is_resolved" type="BOOLEANINT" required="true" default="0" description="Whether an event is resolved because its value dropped below the threshold." />
-        <column name="is_notified" type="BOOLEANINT" required="true" default="0" description="Whether a notification was run." />
-        <column name="details" type="LONGVARCHAR" description="JSON formatted details about the event" />
-        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when the event was last updated." />
     </table>
 
     <table name="notification" description="Defines what notification to send when a monitor detects a problem in the system.">
@@ -831,6 +831,21 @@
         <column name="last_update_time" type="TIMESTAMP" required="true" description="Timestamp when a user or the system last updated this entry." />
     </table>
     
+    <table name="transform_column" description="Defines the column mappings and optional data transformation for a data loader transformation.">
+        <column name="transform_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific transform." />
+        <column name="include_on" type="CHAR" size="1" required="true" default="*" primaryKey="true" description="Indicates whether this mapping is included during an insert (I), update (U), delete (D) operation at the target based on the dml type at the source.  A value of * represents the fact that you want to map the column for all operations."/>
+        <column name="target_column_name" type="VARCHAR" size="128" required="true" primaryKey="true" description="Name of the target column." />
+        <column name="source_column_name" type="VARCHAR" size="128" description="Name of the source column." />
+        <column name="pk" type="BOOLEANINT" size="1" default="0" description="Indicates whether this mapping defines a primary key to be used to identify the target row.  At least one row must be defined as a pk for each transform_id."/>
+        <column name="transform_type" type="VARCHAR" size="50" default="copy"  description="The name of a specific type of transform.  Custom transformers can be configured as extension points." />
+        <column name="transform_expression" type="LONGVARCHAR" description="An expression that is specific to the type of transform that is configured in transform_type.  See the documentation for each transformer for more details." />
+        <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
+        <column name="description" type="LONGVARCHAR" description="Optional notes and comments for transform_column" />
+    </table>
+
     <table name="transform_table" description="Defines a data loader transformation which can be used to map arbitrary tables and columns to other tables and columns.">
         <column name="transform_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific transform." />
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes are captured." />
@@ -855,21 +870,6 @@
             <reference local="source_node_group_id" foreign="source_node_group_id" />
             <reference local="target_node_group_id" foreign="target_node_group_id" />
         </foreign-key>
-    </table>
-
-    <table name="transform_column" description="Defines the column mappings and optional data transformation for a data loader transformation.">
-        <column name="transform_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier of a specific transform." />
-        <column name="include_on" type="CHAR" size="1" required="true" default="*" primaryKey="true" description="Indicates whether this mapping is included during an insert (I), update (U), delete (D) operation at the target based on the dml type at the source.  A value of * represents the fact that you want to map the column for all operations."/>
-        <column name="target_column_name" type="VARCHAR" size="128" required="true" primaryKey="true" description="Name of the target column." />
-        <column name="source_column_name" type="VARCHAR" size="128" description="Name of the source column." />
-        <column name="pk" type="BOOLEANINT" size="1" default="0" description="Indicates whether this mapping defines a primary key to be used to identify the target row.  At least one row must be defined as a pk for each transform_id."/>
-        <column name="transform_type" type="VARCHAR" size="50" default="copy"  description="The name of a specific type of transform.  Custom transformers can be configured as extension points." />
-        <column name="transform_expression" type="LONGVARCHAR" description="An expression that is specific to the type of transform that is configured in transform_type.  See the documentation for each transformer for more details." />
-        <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>
-        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
-        <column name="description" type="LONGVARCHAR" description="Optional notes and comments for transform_column" />
     </table>
 
     <table name="trigger" description="Configures database triggers that capture changes in the database. Configuration of which triggers are generated for which tables is stored here.  Triggers are created in a node's database if the source_node_group_id of a router is mapped to a row in this table.">

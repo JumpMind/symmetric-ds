@@ -250,7 +250,7 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     @Override
-    protected PermissionResult getLogMinePermission() {
+    public PermissionResult getLogMinePermission() {
         PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "UNIMPLEMENTED");
         String walLevel = getSqlTemplate().queryForString("select current_setting('wal_level')");
         if ("logical".equals(walLevel)) {

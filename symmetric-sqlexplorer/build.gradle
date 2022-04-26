@@ -34,7 +34,7 @@ configurations.archives.with {
 }
 
 dependencies {
-    deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
+    deployerJars "org.apache.maven.wagon:wagon-ssh:3.5.1"
     
     compile project(":symmetric-jdbc")
     compile project(":symmetric-io")
@@ -48,7 +48,7 @@ dependencies {
     compile "org.springframework:spring-webmvc:$springVersion"
     
     compile "de.f0rce:ace:1.3.0"
-    compile "com.vaadin:vaadin-context-menu:3.0.0"
+    compile "com.vaadin:vaadin-context-menu:3.1.0"
     
     testCompile "com.h2database:h2:$h2Version"
     testCompile "javax.websocket:javax.websocket-api:$websocketVersion"    

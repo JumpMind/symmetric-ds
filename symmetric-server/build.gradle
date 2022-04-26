@@ -15,16 +15,19 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         compile "org.jdom:jdom2:$jdomVersion"
         compile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
         
-        compile "io.swagger:swagger-annotations:1.5.20"
+        compile "io.swagger:swagger-annotations:1.6.6"
 
         provided project(":symmetric-wrapper")
         provided "javax.jms:jms-api:1.1-rev-1"
         
         provided "com.h2database:h2:$h2Version"
-        provided "mysql:mysql-connector-java:$mysqlVersion"
+        provided ("mysql:mysql-connector-java:$mysqlVersion") {
+            exclude group: "com.google.protobuf"
+        }
         provided "org.postgresql:postgresql:$postgresqlVersion"
-        provided "jdbc:ojdbc8:18.3.0.0"
+        provided "com.oracle.database.jdbc:ojdbc8:21.5.0.0"
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
+        provided "com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre8"
 
         compile "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
         compile "org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion"        

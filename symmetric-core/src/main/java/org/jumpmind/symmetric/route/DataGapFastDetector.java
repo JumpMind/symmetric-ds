@@ -413,7 +413,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                         dataService.deleteDataGap(transaction, curGap);
                         gapsCopy.remove(i--);
                     } else {
-                        if (lastGap == null && curGap.gapSize() >= maxDataToSelect - 1) {
+                        if (lastGap == null && curGap.gapSize() >= maxDataToSelect - 1 && gapsCopy.get(gapsCopy.size() - 1).gapSize() < maxDataToSelect - 1) {
                             lastGap = curGap;
                         }
                         if (prevGap != null) {

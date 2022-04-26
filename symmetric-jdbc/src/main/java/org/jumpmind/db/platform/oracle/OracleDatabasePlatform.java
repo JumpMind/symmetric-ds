@@ -165,7 +165,7 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     @Override
-    protected PermissionResult getLogMinePermission() {
+    public PermissionResult getLogMinePermission() {
         final PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "Use LogMiner");
         try {
             StringBuilder missingGrants = new StringBuilder();

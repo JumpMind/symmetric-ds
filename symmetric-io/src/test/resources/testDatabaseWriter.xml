@@ -75,5 +75,13 @@
         <column name="string_value" type="VARCHAR" size="50" />
         <column name="blob_value" type="BLOB" />
     </table>    
+    
+    <table name="test_dataloader_child_nopk">
+        <column name="id" type="INTEGER" required="true" />
+        <column name="pid" type="INTEGER" />
+        <foreign-key foreignTable="test_dataloader_parent" name="fk_test_dataloader_child_nopk_pid">
+            <reference local="pid" foreign="id" />
+        </foreign-key>
+    </table>
 
 </database>

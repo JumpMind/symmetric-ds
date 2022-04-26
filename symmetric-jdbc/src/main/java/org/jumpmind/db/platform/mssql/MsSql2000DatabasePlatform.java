@@ -144,7 +144,7 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     @Override
-    protected PermissionResult getLogMinePermission() {
+    public PermissionResult getLogMinePermission() {
         final PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "");
         result.setSolution("Change Tracking not available");
         result.setStatus(Status.FAIL);

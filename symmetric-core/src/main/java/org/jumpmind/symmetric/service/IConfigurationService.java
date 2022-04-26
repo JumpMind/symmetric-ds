@@ -123,6 +123,8 @@ public interface IConfigurationService {
      */
     public Map<String, String> getRegistrationRedirectMap();
 
+    public boolean isBulkLoaderEnabled();
+
     /**
      * Indicates that this node participates in a master to master link
      * 
