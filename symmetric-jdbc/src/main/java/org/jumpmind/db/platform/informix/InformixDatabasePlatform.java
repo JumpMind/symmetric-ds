@@ -72,9 +72,6 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
     }
 
     public String getDefaultCatalog() {
-        // if (StringUtils.isBlank(defaultCatalog)) {
-        // getSqlTemplate().queryForString("select trim(dbinfo('dbname')) from sysmaster:sysdual");
-        // }
         return defaultCatalog;
     }
 
@@ -111,10 +108,10 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
             if (cursor != null) {
                 cursor.close();
             }
-            if (e instanceof SqlException && ((SqlException)e).getErrorCode() == -79746) {
+            if (e instanceof SqlException && ((SqlException) e).getErrorCode() == -79746) {
                 result.setStatus(Status.FAIL);
                 result.setSolution("Logging required: ondblog buf " + catalog + "; ontape -s -L 0");
-                return result;                
+                return result;
             }
             result.setSolution("Problem during check of logging");
             result.setStatus(Status.FAIL);
