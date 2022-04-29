@@ -113,6 +113,15 @@ task generateAppendixes {
 					'asciidoc'        		
         		]
         	}
+        	
+	        javaexec {
+	            main = 'org.jumpmind.db.io.DatabaseXmlAsciiDocBuilder'
+	            classpath = configurations.generateAppendixesDependencies
+	            args = [
+	                symAssembleDir + '/../symmetric-core/src/main/resources/symmetric-schema.xml,' + symAssembleDir + '/../../symmetric-pro/symmetric-pro/src/main/resources/console-schema.xml',
+	                symAssembleDir + '/src/asciidoc/generated/schema.ad'
+	            ]
+	        }
         } else {
         	javaexec {
             	main = 'org.jumpmind.properties.DefaultParameterParser'
@@ -129,22 +138,23 @@ task generateAppendixes {
             	main = 'org.jumpmind.properties.DefaultParameterParser'
             	classpath = configurations.generateAppendixesDependencies
             	args = [
-             	   symAssembleDir + '/../symmetric-core/src/main/resources/symmetric-default.properties',
-             	   symAssembleDir + '/src/asciidoc/generated/runtime-parameters.ad',
-             	   'true',
-            	   'asciidoc'
+             	    symAssembleDir + '/../symmetric-core/src/main/resources/symmetric-default.properties',
+             	    symAssembleDir + '/src/asciidoc/generated/runtime-parameters.ad',
+             	    'true',
+            	    'asciidoc'
            	 	]
-       		 }
+       		}
+       		
+	        javaexec {
+	            main = 'org.jumpmind.db.io.DatabaseXmlAsciiDocBuilder'
+	            classpath = configurations.generateAppendixesDependencies
+	            args = [
+	                symAssembleDir + '/../symmetric-core/src/main/resources/symmetric-schema.xml',
+	                symAssembleDir + '/src/asciidoc/generated/schema.ad'
+	            ]
+	        }
         }
 
-        javaexec {
-            main = 'org.jumpmind.db.io.DatabaseXmlAsciiDocBuilder'
-            classpath = configurations.generateAppendixesDependencies
-            args = [
-                symAssembleDir + '/../symmetric-core/src/main/resources/symmetric-schema.xml',
-                symAssembleDir + '/src/asciidoc/generated/schema.ad'
-            ]
-        }
     }
 }
 

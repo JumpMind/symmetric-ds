@@ -25,6 +25,9 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -38,10 +41,15 @@ public class DatabaseXmlAsciiDocBuilder {
             System.err.println("Usage: <input_xml_file> <output_asciidoc_file>");
             System.exit(-1);
         }
-        Database db = DatabaseXmlUtil.read(new File(args[0]));
+        String[] paths = args[0].split(",");
+        List<Table> allTables = new ArrayList<Table>();
+        for (String path : paths) {
+            Database db = DatabaseXmlUtil.read(new File(path));
+            allTables.addAll(Arrays.asList(db.getTables()));
+        }
+        allTables.sort(null);
         PrintWriter out = new PrintWriter(new FileWriter(args[1]));
-        Table[] tables = db.getTables();
-        for (Table table : tables) {
+        for (Table table : allTables) {
             out.println("=== " + table.getName().toUpperCase());
             out.println();
             if (isNotBlank(table.getDescription())) {
