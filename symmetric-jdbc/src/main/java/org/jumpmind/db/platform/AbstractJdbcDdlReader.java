@@ -1605,12 +1605,23 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                                 List<Row> rows = transaction.query(selectSt.getSql(), new RowMapper(), selectValues, selectSt.getTypes());
                                 if (rows != null) {
                                     for (Row row : rows) {
-                                        // Return a TableRow with a where statement that can access this foreign table row by its primary key
-                                        DmlStatement whereSt = platform.createDmlStatement(DmlType.WHERE, foreignTable.getCatalog(),
-                                                foreignTable.getSchema(), foreignTable.getName(), foreignTable.getPrimaryKeyColumns(),
-                                                foreignTable.getColumns(), nullValues, null);
-                                        String whereSql = whereSt.buildDynamicSql(BinaryEncoding.HEX, row, false, true,
-                                                foreignTable.getPrimaryKeyColumns()).substring(6);
+                                        DmlStatement whereSt = null;
+                                        String whereSql = null;
+                                        if (foreignTable.getPrimaryKeyColumns() == null || foreignTable.getPrimaryKeyColumns().length == 0) {
+                                            // No primary keys, create a where clause using the foreign key columns
+                                            whereSt = platform.createDmlStatement(DmlType.WHERE, foreignTable.getCatalog(),
+                                                    foreignTable.getSchema(), foreignTable.getName(), keyColumns,
+                                                    foreignTable.getColumns(), nullValues, null);
+                                            whereSql = whereSt.buildDynamicSql(BinaryEncoding.HEX, row, false, true,
+                                                    keyColumns).substring(6);
+                                        } else {
+                                            // Return a TableRow with a where statement that can access this foreign table row by its primary key
+                                            whereSt = platform.createDmlStatement(DmlType.WHERE, foreignTable.getCatalog(),
+                                                    foreignTable.getSchema(), foreignTable.getName(), foreignTable.getPrimaryKeyColumns(),
+                                                    foreignTable.getColumns(), nullValues, null);
+                                            whereSql = whereSt.buildDynamicSql(BinaryEncoding.HEX, row, false, true,
+                                                    foreignTable.getPrimaryKeyColumns()).substring(6);
+                                        }
                                         String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
                                         if (delimiter != null && delimiter.length() > 0) {
                                             whereSql = whereSql.substring(0, whereSql.length() - delimiter.length());

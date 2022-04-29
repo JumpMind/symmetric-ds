@@ -1082,6 +1082,7 @@ abstract public class AbstractTriggerTemplate {
             }
             Field[] fields = getClass().getSuperclass().getDeclaredFields();
             for (Field field : fields) {
+                field.setAccessible(true);
                 if (field.getType().equals(String.class)) {
                     try {
                         String value = (String) field.get(this);
