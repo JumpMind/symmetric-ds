@@ -586,9 +586,9 @@ public class SnapshotUtil {
             }
             Runtime rt = Runtime.getRuntime();
             DecimalFormat df = new DecimalFormat("#,###");
-            runtimeProperties.setProperty("memory.free", df.format(rt.freeMemory()));
-            runtimeProperties.setProperty("memory.used", df.format(rt.totalMemory() - rt.freeMemory()));
-            runtimeProperties.setProperty("memory.max", df.format(rt.maxMemory()));
+            runtimeProperties.setProperty("memory.jvm.free", df.format(rt.freeMemory()));
+            runtimeProperties.setProperty("memory.jvm.used", df.format(rt.totalMemory() - rt.freeMemory()));
+            runtimeProperties.setProperty("memory.jvm.max", df.format(rt.maxMemory()));
             List<MemoryPoolMXBean> memoryPools = new ArrayList<MemoryPoolMXBean>(ManagementFactory.getMemoryPoolMXBeans());
             long usedHeapMemory = 0;
             for (MemoryPoolMXBean memoryPool : memoryPools) {
@@ -600,6 +600,12 @@ public class SnapshotUtil {
                 }
             }
             runtimeProperties.setProperty("memory.heap.total", df.format(usedHeapMemory));
+            try {
+                Method method = ManagementFactory.getOperatingSystemMXBean().getClass().getMethod("getTotalPhysicalMemorySize");
+                method.setAccessible(true);
+                runtimeProperties.setProperty("memory.system.total", df.format((Long) method.invoke(ManagementFactory.getOperatingSystemMXBean())));
+            } catch (Exception ignore) {
+            }
             OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
             runtimeProperties.setProperty("os.name", System.getProperty("os.name") + " (" + System.getProperty("os.arch") + ")");
             runtimeProperties.setProperty("os.processors", String.valueOf(osBean.getAvailableProcessors()));
@@ -632,6 +638,7 @@ public class SnapshotUtil {
             RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
             List<String> arguments = runtimeMxBean.getInputArguments();
             runtimeProperties.setProperty("jvm.arguments", arguments.toString());
+            runtimeProperties.setProperty("jvm.bits", System.getProperty("sun.arch.data.model", System.getProperty("com.ibm.vm.bitmode")));
             runtimeProperties.setProperty("hostname", AppUtils.getHostName());
             runtimeProperties.setProperty("instance.id", engine.getClusterService().getInstanceId());
             runtimeProperties.setProperty("server.id", engine.getClusterService().getServerId());
