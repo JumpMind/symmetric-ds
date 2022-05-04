@@ -238,6 +238,59 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         return null;
     }
 
+    protected Set<Node> filterOutNodesByDeploymentType(DataMetaData dataMetaData, Set<Node> possibleTargetNodes) {
+        if (tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_USER)
+                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_USER_HIST)
+                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE)
+                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)
+                || tableMatches(dataMetaData, TableConstants.SYM_DESIGN_DIAGRAM)
+                || tableMatches(dataMetaData, TableConstants.SYM_DIAGRAM_GROUP)) {
+            Set<Node> targetNodes = new HashSet<Node>(possibleTargetNodes.size());
+            for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
+                boolean isTargetProfessional = StringUtils.equals(nodeThatMayBeRoutedTo.getDeploymentType(),
+                        Constants.DEPLOYMENT_TYPE_PROFESSIONAL);
+                if (isTargetProfessional) {
+                    targetNodes.add(nodeThatMayBeRoutedTo);
+                }
+            }
+            return targetNodes;
+        } else {
+            return possibleTargetNodes;
+        }
+    }
+
+    protected Set<Node> filterOutOlderNodes(DataMetaData dataMetaData, Set<Node> possibleTargetNodes) {
+        if (tableMatches(dataMetaData, TableConstants.SYM_MONITOR)
+                || tableMatches(dataMetaData, TableConstants.SYM_MONITOR_EVENT)
+                || tableMatches(dataMetaData, TableConstants.SYM_NOTIFICATION)
+                || tableMatches(dataMetaData, TableConstants.SYM_JOB)
+                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE)
+                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)
+                || tableMatches(dataMetaData, TableConstants.SYM_DIAGRAM_GROUP)
+                || tableMatches(dataMetaData, TableConstants.SYM_DESIGN_DIAGRAM)) {
+            Set<Node> targetNodes = new HashSet<Node>(possibleTargetNodes.size());
+            for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
+                if (tableMatches(dataMetaData, TableConstants.SYM_JOB)) {
+                    if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 9, 0)) {
+                        targetNodes.add(nodeThatMayBeRoutedTo);
+                    }
+                } else if (tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE)
+                        || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)
+                        || tableMatches(dataMetaData, TableConstants.SYM_DIAGRAM_GROUP)
+                        || tableMatches(dataMetaData, TableConstants.SYM_DESIGN_DIAGRAM)) {
+                    if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 12, 0)) {
+                        targetNodes.add(nodeThatMayBeRoutedTo);
+                    }
+                } else if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 8, 0)) {
+                    targetNodes.add(nodeThatMayBeRoutedTo);
+                }
+            }
+            return targetNodes;
+        } else {
+            return possibleTargetNodes;
+        }
+    }
+
     protected void routeNodeTables(Set<String> nodeIds, Map<String, String> columnValues,
             NetworkedNode rootNetworkedNode, Node me, SimpleRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> possibleTargetNodes, boolean initialLoad) {

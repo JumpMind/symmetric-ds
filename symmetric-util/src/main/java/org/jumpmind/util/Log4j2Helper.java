@@ -129,11 +129,6 @@ public class Log4j2Helper {
         }
     }
 
-    public Level convertLevel(org.slf4j.event.Level level) {
-        Level log4jLevel = Level.ERROR;
-        return log4jLevel;
-    }
-
     public File getLogDir() {
         Map<File, Layout<?>> fileLayouts = getLogFileLayout();
         if (fileLayouts != null && fileLayouts.size() > 0) {

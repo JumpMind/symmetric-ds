@@ -145,6 +145,20 @@ final public class SymmetricUtils {
         replacements.put("eventTypes", String.join(", ", types));
         return replacements;
     }
+    
+    public static String replaceNodeVariables(Node sourceNode, Node targetNode, String str) {
+        if (sourceNode != null) {
+            str = FormatUtils.replace("sourceNodeId", sourceNode.getNodeId(), str);
+            str = FormatUtils.replace("sourceExternalId", sourceNode.getExternalId(), str);
+            str = FormatUtils.replace("sourceNodeGroupId", sourceNode.getNodeGroupId(), str);
+        }
+        if (targetNode != null) {
+            str = FormatUtils.replace("targetNodeId", targetNode.getNodeGroupId(), str);
+            str = FormatUtils.replace("targetExternalId", targetNode.getExternalId(), str);
+            str = FormatUtils.replace("targetNodeGroupId", targetNode.getNodeGroupId(), str);
+        }
+        return str;
+    }
 
     public static void logNotices() {
         synchronized (SymmetricUtils.class) {

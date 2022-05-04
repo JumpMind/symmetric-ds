@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,8 +33,8 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.cache.ICacheManager;
+import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.model.Node;
@@ -59,6 +60,9 @@ import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.util.AppUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class MonitorService extends AbstractService implements IMonitorService {
     protected String hostName;
@@ -117,16 +121,28 @@ public class MonitorService extends AbstractService implements IMonitorService {
                 }
             }
             if (clusterService.lock(ClusterConstants.MONITOR)) {
-                Lock lock = clusterService.findLocks().get(ClusterConstants.MONITOR);
-                long clusterLastCheckTime = lock.getLastLockTime() != null ? lock.getLastLockTime().getTime() : 0;
                 try {
+                    Gson gson = new Gson();
+                    Type mapType = new TypeToken<Map<String, Long>>() {
+                    }.getType();
+                    String json = contextService.getString(ContextConstants.MONITOR_LAST_CHECK_TIMES);
+                    Map<String, Long> clusteredCheckTimesByType = new HashMap<String, Long>();
+                    if (json != null && json.length() > 0) {
+                        clusteredCheckTimesByType = gson.fromJson(json, mapType);
+                    }
                     for (Monitor monitor : activeMonitors) {
                         IMonitorType monitorType = monitorTypes.get(monitor.getType());
-                        if (monitorType != null && monitorType.requiresClusterLock() &&
-                                (System.currentTimeMillis() - clusterLastCheckTime) / 1000 >= monitor.getRunPeriod()) {
-                            updateMonitor(monitor, monitorType, identity, unresolved);
+                        if (monitorType != null && monitorType.requiresClusterLock()) {
+                            Long lastCheckTimeLong = clusteredCheckTimesByType.get(monitor.getMonitorId());
+                            long lastCheckTime = lastCheckTimeLong != null ? lastCheckTimeLong : 0;
+                            if (lastCheckTime == 0 || (System.currentTimeMillis() - lastCheckTime) / 1000 >= monitor.getRunPeriod()) {
+                                clusteredCheckTimesByType.put(monitor.getMonitorId(), System.currentTimeMillis());
+                                updateMonitor(monitor, monitorType, identity, unresolved);
+                            }
                         }
                     }
+                    json = gson.toJson(clusteredCheckTimesByType, mapType);
+                    contextService.save(ContextConstants.MONITOR_LAST_CHECK_TIMES, json);
                     int minSeverityLevel = Integer.MAX_VALUE;
                     List<Notification> notifications = getActiveNotificationsForNode(identity.getNodeGroupId(), identity.getExternalId());
                     if (notifications.size() > 0) {

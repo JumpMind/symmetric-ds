@@ -320,6 +320,13 @@
 		<column name="DECIMAL_D" type="DECIMAL" />
 	</table>	
 
+	<table name="test_transform">
+		<column name="id" type="INTEGER" required="true"
+			autoIncrement="true" primaryKey="true" />
+		<column name="data" type="VARCHAR" size="50" />
+		<column name="insert_only" type="INTEGER" />
+	</table>
+
     <table name="test_a">
         <column name="id" type="VARCHAR" size="10" required="true" primaryKey="true"/>
     </table>

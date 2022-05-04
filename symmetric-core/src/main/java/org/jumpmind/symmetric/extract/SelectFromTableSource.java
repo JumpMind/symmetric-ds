@@ -166,7 +166,7 @@ public class SelectFromTableSource extends SelectFromSource {
                 if (overrideSelectSql != null && overrideSelectSql.trim().toUpperCase().startsWith("WHERE")) {
                     overrideSelectSql = overrideSelectSql.trim().substring(5);
                 }
-                if (parameterService.is(ParameterConstants.INITIAL_LOAD_RECURSION_SELF_FK)) {
+                if (parameterService.is(ParameterConstants.INITIAL_LOAD_RECURSION_SELF_FK) && StringUtils.isBlank(overrideSelectSql)) {
                     ForeignKey fk = sourceTable.getSelfReferencingForeignKey();
                     if (fk != null) {
                         Reference[] refs = fk.getReferences();
@@ -233,11 +233,7 @@ public class SelectFromTableSource extends SelectFromSource {
         ISymmetricDialect symmetricDialectToUse = getSymmetricDialect();
         String selectSql = overrideSelectSql;
         if (isSelfReferencingFk) {
-            if (selectSql == null) {
-                selectSql = "";
-            } else if (StringUtils.isNotBlank(selectSql)) {
-                selectSql += " and ";
-            }
+            selectSql = "";
             if (selfRefLevel == 0) {
                 selectSql += "(" + selfRefParentColumnName + " is null or " + selfRefParentColumnName + " = " + selfRefChildColumnName + ") ";
             } else {

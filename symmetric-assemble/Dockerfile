@@ -1,17 +1,17 @@
-FROM openjdk:alpine
+FROM openjdk:8-jdk
+
+# Input the server zip file used to install SymmetricDS
+# This file must be in the Docker context (i.e. working directory)
+ARG SERVER_ZIP
 
 WORKDIR /app
+COPY $SERVER_ZIP /app/symmetric-ds.zip
 COPY README.md /app
 
-# Install editors for easy configuration
-RUN apk add --no-cache nano
-RUN apk add --no-cache vim
-
 # Install SymmetricDS
-RUN wget https://sourceforge.net/projects/symmetricds/files/latest/download -P /app -O symmetric-ds.zip
 RUN unzip /app/symmetric-ds.zip
 RUN rm -f /app/symmetric-ds.zip
-RUN mkdir /opt/
+RUN mkdir -p /opt/
 RUN mv symmetric-server* /opt/symmetric-ds
 RUN chmod -R u=rwX,g=,o= /opt/symmetric-ds/security
 

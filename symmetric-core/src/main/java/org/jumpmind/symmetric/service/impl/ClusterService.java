@@ -499,6 +499,13 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     @Override
+    public boolean isLocked(String action) {
+        Map<String, Lock> locks = findLocks();
+        Lock lock = locks.get(action);
+        return lock != null && lock.getLockTime() != null;
+    }
+
+    @Override
     public boolean isInfiniteLocked(String action) {
         Map<String, Lock> locks = findLocks();
         Lock lock = locks.get(action);

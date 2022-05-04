@@ -1,0 +1,16 @@
+=== SinglStore
+
+SingleStore is only available in the professional version of SymmetricDS.  Supports bi-directional replication with SingleStore using log based data capture from the audit logs.  
+
+==== Requirements
+
+User provided to connect SymmetricDS to the SingleStore database must be different than the user account used by applications writing to SingleStore.  This is required for configurations where SingleStore is used as a source.
+
+Several database variables need to to be setup to support audit logging when SingleStore is a source node.   These variables can be set using the sdb-admin tool.
+
+.Setting variables
+----
+sdb-admin update-config --key auditlog_level --value ALL-QUERIES-PLAINTEXT --all
+sdb-admin update-config --key auditlog_disk_sync --value ON --all
+sdb-admin update-config --key auditlog_retention_period --value 7 --all
+----

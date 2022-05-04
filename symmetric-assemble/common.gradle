@@ -45,6 +45,7 @@ allprojects {
                 artifact()
             }
         }
+
         mavenCentral()
         maven { url "https://maven.vaadin.com/vaadin-addons" }
         maven { url 'https://plugins.gradle.org/m2' }

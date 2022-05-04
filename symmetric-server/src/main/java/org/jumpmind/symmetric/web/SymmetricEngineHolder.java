@@ -160,12 +160,22 @@ public class SymmetricEngineHolder {
     public synchronized void restart(String engineName) {
         FailedEngineInfo info = enginesFailed.get(engineName);
         if (info != null) {
+            ISymmetricEngine engine = engines.get(engineName);
+            if (engine != null) {
+                try {
+                    engine.destroy();
+                } catch (Exception e) {
+                    log.warn("Destroy of engine failed", e);
+                }
+                engines.remove(engineName);
+            }
             enginesFailed.remove(engineName);
             if (restartExecutor == null) {
                 int poolSize = Integer.parseInt(System.getProperty(SystemConstants.SYSPROP_CONCURRENT_ENGINES_STARTING_COUNT, "5"));
                 restartExecutor = Executors.newFixedThreadPool(poolSize, new CustomizableThreadFactory("symmetric-engine-restart"));
             }
             SymmetricEngineStarter starter = new SymmetricEngineStarter(info.getPropertyFileName(), this);
+            enginesStarting.add(starter);
             restartExecutor.execute(starter);
         }
     }

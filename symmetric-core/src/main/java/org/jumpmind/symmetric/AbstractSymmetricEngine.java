@@ -844,14 +844,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return pushService.pushData(true);
     }
 
-    public void syncTriggers() {
+    public boolean syncTriggers() {
         MDC.put("engineName", getEngineName());
-        triggerRouterService.syncTriggers();
+        return triggerRouterService.syncTriggers();
     }
 
-    public void forceTriggerRebuild() {
+    public boolean forceTriggerRebuild() {
         MDC.put("engineName", getEngineName());
-        triggerRouterService.syncTriggers(true);
+        return triggerRouterService.syncTriggers(true);
     }
 
     public NodeStatus getNodeStatus() {

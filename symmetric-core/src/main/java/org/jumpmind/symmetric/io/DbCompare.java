@@ -348,9 +348,9 @@ public class DbCompare {
         for (int i = 0; i < filteredTablesNames.size(); i++) {
             String tableName = filteredTablesNames.get(i);
             Table sourceTable = null;
-            Map<String, String> tableNameParts = sourceEngine.getDatabasePlatform().parseQualifiedTableName(tableName);
+            Map<String, String> tableNameParts = sourceEngine.getTargetDialect().getTargetPlatform().parseQualifiedTableName(tableName);
             if (tableNameParts.size() == 1) {
-                sourceTable = sourceEngine.getDatabasePlatform().getTableFromCache(tableName, true);
+                sourceTable = sourceEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableName, true);
             } else {
                 sourceTable = sourceEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableNameParts.get("catalog"), tableNameParts.get("schema"),
                         tableNameParts
@@ -368,10 +368,10 @@ public class DbCompare {
             if (config.isUseSymmetricConfig()) {
                 String catalog = null;
                 String schema = null;
-                if (!StringUtils.equals(sourceEngine.getDatabasePlatform().getDefaultCatalog(), sourceTable.getCatalog())) {
+                if (!StringUtils.equals(sourceEngine.getTargetDialect().getTargetPlatform().getDefaultCatalog(), sourceTable.getCatalog())) {
                     catalog = sourceTable.getCatalog();
                 }
-                if (!StringUtils.equals(sourceEngine.getDatabasePlatform().getDefaultSchema(), sourceTable.getSchema())) {
+                if (!StringUtils.equals(sourceEngine.getTargetDialect().getTargetPlatform().getDefaultSchema(), sourceTable.getSchema())) {
                     schema = sourceTable.getSchema();
                 }
                 TriggerHistory hist = sourceEngine.getTriggerRouterService().findTriggerHistory(catalog, schema,
@@ -445,8 +445,8 @@ public class DbCompare {
                 targetTable = loadTargetTableUsingTransform(transform);
                 tables.setTransform(transform);
             } else {
-                String catalog = targetEngine.getDatabasePlatform().getDefaultCatalog();
-                String schema = targetEngine.getDatabasePlatform().getDefaultSchema();
+                String catalog = targetEngine.getTargetDialect().getTargetPlatform().getDefaultCatalog();
+                String schema = targetEngine.getTargetDialect().getTargetPlatform().getDefaultSchema();
                 String tableName = tables.getSourceTable().getName();
                 TriggerRouter triggerRouter = getTriggerRouterFor(tables.getSourceTable());
                 if (triggerRouter != null) {
@@ -456,12 +456,12 @@ public class DbCompare {
                         tableName = triggerRouter.getTargetTable(null);
                     }
                 }
-                targetTable = targetEngine.getDatabasePlatform().getTableFromCache(catalog, schema, tableName, true);
+                targetTable = targetEngine.getTargetDialect().getTargetPlatform().getTableFromCache(catalog, schema, tableName, true);
             }
         } else {
-            Map<String, String> tableNameParts = targetEngine.getDatabasePlatform().parseQualifiedTableName(targetTableName);
+            Map<String, String> tableNameParts = targetEngine.getTargetDialect().getTargetPlatform().parseQualifiedTableName(targetTableName);
             if (tableNameParts.size() == 1) {
-                targetTable = targetEngine.getDatabasePlatform().getTableFromCache(targetTableName, true);
+                targetTable = targetEngine.getTargetDialect().getTargetPlatform().getTableFromCache(targetTableName, true);
             } else {
                 targetTable = targetEngine.getTargetDialect().getTargetPlatform().getTableFromCache(tableNameParts.get("catalog"), tableNameParts.get("schema"),
                         tableNameParts
@@ -557,8 +557,8 @@ public class DbCompare {
         if (StringUtils.equalsIgnoreCase(sourceTableName, targetTableName)) {
             return true;
         } else {
-            Map<String, String> sourceTableNameParts = sourceEngine.getDatabasePlatform().parseQualifiedTableName(sourceTableName);
-            Map<String, String> targetTableNameParts = targetEngine.getDatabasePlatform().parseQualifiedTableName(targetTableName);
+            Map<String, String> sourceTableNameParts = sourceEngine.getTargetDialect().getTargetPlatform().parseQualifiedTableName(sourceTableName);
+            Map<String, String> targetTableNameParts = targetEngine.getTargetDialect().getTargetPlatform().parseQualifiedTableName(targetTableName);
             return StringUtils.equalsIgnoreCase(sourceTableNameParts.get("table"), targetTableNameParts.get("table"));
         }
     }
