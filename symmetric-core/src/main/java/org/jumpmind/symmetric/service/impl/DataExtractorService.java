@@ -998,7 +998,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return lock;
     }
 
-    protected StagingFileLock acquireStagingFileLock(OutgoingBatch batch) {
+    public StagingFileLock acquireStagingFileLock(OutgoingBatch batch) {
         boolean stagingFileAcquired = false;
         StagingFileLock fileLock = null;
         int iterations = 0;
