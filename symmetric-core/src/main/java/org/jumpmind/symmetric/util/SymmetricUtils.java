@@ -145,7 +145,7 @@ final public class SymmetricUtils {
         replacements.put("eventTypes", String.join(", ", types));
         return replacements;
     }
-    
+
     public static String replaceNodeVariables(Node sourceNode, Node targetNode, String str) {
         if (sourceNode != null) {
             str = FormatUtils.replace("sourceNodeId", sourceNode.getNodeId(), str);

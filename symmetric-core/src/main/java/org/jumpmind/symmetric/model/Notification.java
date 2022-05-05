@@ -318,7 +318,7 @@ public class Notification implements IModelObject {
             this.template = template;
         }
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;

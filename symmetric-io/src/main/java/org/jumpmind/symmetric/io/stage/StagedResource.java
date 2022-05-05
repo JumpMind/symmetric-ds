@@ -298,7 +298,7 @@ public class StagedResource implements IStagedResource {
             closeInputStreamsMap();
         }
     }
-    
+
     public void closeReaders() {
         if (readers != null) {
             for (BufferedReader reader : readers.values()) {

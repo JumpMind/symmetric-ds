@@ -46,7 +46,7 @@ public interface IStagedResource {
     public File getFile();
 
     public void close();
-    
+
     public void closeReaders();
 
     public long getSize();

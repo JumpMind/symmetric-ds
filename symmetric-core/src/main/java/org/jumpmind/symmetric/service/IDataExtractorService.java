@@ -68,7 +68,7 @@ public interface IDataExtractorService {
     public void resetExtractRequest(OutgoingBatch batch);
 
     public void removeBatchFromStaging(OutgoingBatch batch);
-    
+
     public StagingFileLock acquireStagingFileLock(OutgoingBatch batch);
 
     public List<ExtractRequest> getPendingTablesForExtractByLoadId(long loadId);

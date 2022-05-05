@@ -1372,7 +1372,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 trigger.getTriggerId() };
     }
 
-
     public boolean syncTriggers() {
         return syncTriggers(false);
     }
