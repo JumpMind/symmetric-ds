@@ -363,7 +363,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 if (lookupKeys.size() == 0) {
                     String msg = "There are no keys defined for "
                             + targetTable.getFullyQualifiedTableName()
-                            + ".  Cannot build an update statement.  ";
+                            + ".  Cannot build a delete statement.  ";
                     if (lookupKeyCountBeforeColumnRemoval > 0) {
                         msg += "The only keys defined are binary and they have been removed.";
                     }
