@@ -120,8 +120,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                             isNewError = outgoingBatch.getFailedDataId() == 0 || outgoingBatch.getFailedDataId() != failedDataId;
                             outgoingBatch.setFailedDataId(failedDataId);
                         }
-                        outgoingBatch.setFailedLineNumber(batch.getErrorLine());
                     }
+                    outgoingBatch.setFailedLineNumber(batch.getErrorLine());
                 }
                 if (status == Status.ER) {
                     boolean suppressError = false;

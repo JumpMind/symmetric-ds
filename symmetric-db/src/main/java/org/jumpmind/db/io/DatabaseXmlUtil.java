@@ -555,8 +555,8 @@ public class DatabaseXmlUtil {
                     for (PlatformColumn platformColumn : platformColumns) {
                         output.write("\t\t\t<platform-column name=\""
                                 + platformColumn.getName() + "\"");
-                        output.write(" type=\"" + platformColumn.getType() + "\"");
-                        if (platformColumn.getSize() >= 0) {
+                        output.write(" type=\"" + StringEscapeUtils.escapeXml10(platformColumn.getType()) + "\"");
+                        if (platformColumn.getSize() > 0) {
                             output.write(" size=\"" + platformColumn.getSize() + "\"");
                         }
                         if (platformColumn.getDecimalDigits() > 0) {

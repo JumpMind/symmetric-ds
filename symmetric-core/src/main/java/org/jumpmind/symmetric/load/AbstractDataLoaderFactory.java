@@ -56,6 +56,7 @@ public abstract class AbstractDataLoaderFactory {
         settings.setApplyChangesOnly(parameterService.is(ParameterConstants.DATA_LOADER_APPLY_CHANGES_ONLY, true));
         settings.setUsePrimaryKeysFromSource(
                 parameterService.is(ParameterConstants.DATA_LOADER_USE_PRIMARY_KEYS_FROM_SOURCE));
+        settings.setIgnoreSqlDataEventFailures(parameterService.is(ParameterConstants.DATA_LOADER_IGNORE_SQL_EVENT_ERRORS, false));
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();
         boolean multipleDefaultSettingsFound = false;

@@ -135,6 +135,11 @@ insert into sym_trigger (trigger_id, source_table_name, channel_id,    last_upda
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order, last_update_time,  create_time)
                         values ('test_b',   '1000',    1,                  current_timestamp, current_timestamp);
 
+insert into sym_trigger (trigger_id, source_table_name, channel_id,    last_update_time,  create_time)
+                 values ('test_transform',   'test_transform',          'testchannel', current_timestamp, current_timestamp);
+insert into sym_trigger_router (trigger_id, router_id, initial_load_order, last_update_time,  create_time)
+                        values ('test_transform',   '1000',    1,                  current_timestamp, current_timestamp);
+
                          
 insert into test_customer
 (customer_id, name, is_active, address, city, state, zip, entry_timestamp, entry_time)

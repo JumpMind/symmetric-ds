@@ -52,6 +52,7 @@
         <Logger name="com.vaadin.server.DefaultDeploymentConfiguration" level="ERROR" />
         <Logger name="com.vaadin.event.ConnectorActionManager" level="ERROR" />
         <Logger name="com.vaadin.server.communication" level="FATAL" />
+        <Logger name="com.vaadin.flow.server.communication.rpc.AbstractRpcInvocationHandler" level="ERROR" />
         <Logger name="org.atmosphere" level="FATAL" />
         <Logger name="io.confluent.kafka.serializers.KafkaAvroSerializerConfig" level="WARN" />
         <Logger name="org.atmosphere.cpr.AtmosphereFramework" level="ERROR" />

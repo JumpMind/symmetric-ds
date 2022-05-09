@@ -68,8 +68,17 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
  * The SQL Builder for MySQL.
  */
 public class MySqlDdlBuilder extends AbstractDdlBuilder {
+    public MySqlDdlBuilder(String databaseName) {
+        super(databaseName);
+        init();
+    }
+
     public MySqlDdlBuilder() {
         super(DatabaseNamesConstants.MYSQL);
+        init();
+    }
+
+    protected void init() {
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         databaseInfo.setMaxIdentifierLength(64);
         databaseInfo.setNullAsDefaultValueRequired(true);

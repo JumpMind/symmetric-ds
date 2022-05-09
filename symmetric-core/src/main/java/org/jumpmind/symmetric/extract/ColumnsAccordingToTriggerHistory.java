@@ -34,7 +34,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.util.FormatUtils;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 
 public class ColumnsAccordingToTriggerHistory {
     private Map<CacheKey, Table> cache = new HashMap<CacheKey, Table>();
@@ -100,30 +100,18 @@ public class ColumnsAccordingToTriggerHistory {
             if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetCatalogName())) {
                 table.setCatalog(null);
             } else if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
-                table.setCatalog(replaceVariables(sourceNode, targetNode, triggerHistory, router.getTargetCatalogName()));
+                table.setCatalog(SymmetricUtils.replaceNodeVariables(sourceNode, targetNode, router.getTargetCatalogName()));
             }
             if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetSchemaName())) {
                 table.setSchema(null);
             } else if (StringUtils.isNotBlank(router.getTargetSchemaName())) {
-                table.setSchema(replaceVariables(sourceNode, targetNode, triggerHistory, router.getTargetSchemaName()));
+                table.setSchema(SymmetricUtils.replaceNodeVariables(sourceNode, targetNode, router.getTargetSchemaName()));
             }
             if (StringUtils.isNotBlank(router.getTargetTableName())) {
                 table.setName(router.getTargetTableName());
             }
         }
         return table;
-    }
-
-    protected String replaceVariables(Node sourceNode, Node targetNode, TriggerHistory triggerHistory, String str) {
-        str = FormatUtils.replace("sourceNodeId", sourceNode.getNodeId(), str);
-        str = FormatUtils.replace("sourceExternalId", sourceNode.getExternalId(), str);
-        str = FormatUtils.replace("sourceNodeGroupId", sourceNode.getNodeGroupId(), str);
-        str = FormatUtils.replace("targetNodeId", targetNode.getNodeGroupId(), str);
-        str = FormatUtils.replace("targetExternalId", targetNode.getExternalId(), str);
-        str = FormatUtils.replace("targetNodeGroupId", targetNode.getNodeGroupId(), str);
-        str = FormatUtils.replace("sourceCatalogName", StringUtils.trimToEmpty(triggerHistory.getSourceCatalogName()), str);
-        str = FormatUtils.replace("sourceSchemaName", StringUtils.trimToEmpty(triggerHistory.getSourceSchemaName()), str);
-        return str;
     }
 
     protected IDatabasePlatform getTargetPlatform(String tableName) {

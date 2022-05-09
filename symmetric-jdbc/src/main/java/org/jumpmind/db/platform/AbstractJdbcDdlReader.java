@@ -1249,7 +1249,11 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
              * Put all metadata values into the map for easy debugging of drivers that return nonstandard names
              */
             if (!foundMetaDataDescriptor) {
-                values.put(columnName, resultSet.getObject(i));
+                try {
+                    values.put(columnName, resultSet.getObject(i));
+                } catch (Exception e) {
+                    values.put(columnName, resultSet.getString(i));
+                }
             }
         }
         for (MetaDataColumnDescriptor metaDataColumnDescriptor : columnDescriptors) {

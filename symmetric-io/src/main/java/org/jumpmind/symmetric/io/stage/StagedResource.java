@@ -299,6 +299,18 @@ public class StagedResource implements IStagedResource {
         }
     }
 
+    public void closeReaders() {
+        if (readers != null) {
+            for (BufferedReader reader : readers.values()) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                }
+            }
+            readers = null;
+        }
+    }
+
     public OutputStream getOutputStream() {
         refreshLastUpdateTime();
         try {

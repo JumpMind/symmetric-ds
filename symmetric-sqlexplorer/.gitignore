@@ -22,3 +22,4 @@ hs_err_pid*
 
 # build stuff
 /target/
+/package-lock.json

@@ -6,22 +6,25 @@ buildscript {
 
     dependencies {
         classpath 'org.asciidoctor:asciidoctorj-pdf:1.6.2'
-        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
+        classpath 'org.asciidoctor:asciidoctor-gradle-jvm:3.3.2'
         classpath 'io.spring.gradle:docbook-reference-plugin:0.3.1'
 		classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.4.2'
+		classpath 'com.bmuschko:gradle-docker-plugin:3.2.1'
+        classpath 'co.riiid:gradle-github-plugin:0.4.2'
     }
 }
 
 plugins {
     id "org.sonarqube" version "3.3"
 	id "com.github.hierynomus.license" version "0.15.0"
-	id 'com.vaadin' version '0.14.6.0' apply false
-	id 'org.asciidoctor.jvm.convert' version '3.3.2' apply false
+	id 'com.vaadin' version '0.14.8.1' apply false
 }
 
 apply plugin: 'java-library'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
+apply plugin: 'com.bmuschko.docker-remote-api'
+apply plugin: 'co.riiid.gradle'
 
 allprojects {
 	apply plugin: 'com.diffplug.spotless'
@@ -46,6 +49,16 @@ sonarqube {
 
 task develop {
     dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea
+}
+
+github {
+    owner = 'JumpMind'
+    repo = 'symmetric-ds'
+    token = githubToken
+    tagName = version
+    targetCommitish = scmBranch.substring(scmBranch.lastIndexOf('/')+1)
+    name = version
+    prerelease = false
 }
 
 idea {
@@ -124,3 +137,40 @@ task releaseSymmetric {
 	description = 'Publish software to SourceForge website and online documentation to SymmetricDS website'
 }
 
+docker {
+    registryCredentials {
+        username = "$dockerUser".toString()
+        password = "$dockerPassword".toString()
+    }
+}
+
+task copyDockerReadme(type: Copy) {
+    from "Dockerfile.md"
+    into "../symmetric-server/build/distributions/README.md"
+}
+
+task copyDockerfile(type: Copy) {
+    dependsOn copyDockerReadme
+    from "Dockerfile"
+    into "../symmetric-server/build/distributions"
+}
+
+task buildImage(type: com.bmuschko.gradle.docker.tasks.image.DockerBuildImage) {
+    dependsOn copyDockerfile
+    inputDir = file("../symmetric-server/build/distributions")
+    tags = ["jumpmind/symmetricds:latest", "jumpmind/symmetricds:${version}".toString()]
+    buildArgs = ["SERVER_ZIP":"symmetric-server-${version}.zip"]
+}
+
+task publishDockerLatest(type: com.bmuschko.gradle.docker.tasks.image.DockerPushImage) {
+    dependsOn buildImage
+    imageName = "jumpmind/symmetricds:latest"
+}
+
+task publishDocker(type: com.bmuschko.gradle.docker.tasks.image.DockerPushImage) {
+    dependsOn publishDockerLatest
+    imageName = "jumpmind/symmetricds:${version}".toString()
+    doLast {
+        println "Pushing Docker Image to the jumpmind/symmetricds Repository"
+    }
+}

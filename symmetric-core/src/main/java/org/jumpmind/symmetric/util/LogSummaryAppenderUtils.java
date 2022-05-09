@@ -129,13 +129,13 @@ public class LogSummaryAppenderUtils {
     public static List<LogSummary> getLogSummaries(String engineName, Level level) {
         LogSummaryAppender appender = getLogSummaryAppender();
         if (appender != null) {
-            return appender.getLogSummaries(engineName, helper.convertLevel(level));
+            return appender.getLogSummaries(engineName, helper.convertToLevel(level));
         } else {
             return EMPTY_LIST;
         }
     }
 
-    public File getLogDir() {
+    public static File getLogDir() {
         if (helper != null) {
             helper.getLogDir();
         }

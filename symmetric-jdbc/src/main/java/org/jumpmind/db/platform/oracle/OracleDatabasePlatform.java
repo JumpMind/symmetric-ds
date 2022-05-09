@@ -189,12 +189,28 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
                     missingGrants.append(name);
                 }
             }
+            String[] dbaSystemPrivs = new String[] { "SELECT ANY TRANSACTION" };
+            for (String name : dbaSystemPrivs) {
+                if (!hasDbaSystemPrivilege(name)) {
+                    if (missingGrants.length() > 0) {
+                        missingGrants.append(", ");
+                    }
+                    missingGrants.append(name);
+                }
+            }
             if (missingGrants.length() > 0) {
                 log.error("Missing privileges: {}", missingGrants.toString());
                 result.setSolution("Grant " + missingGrants.toString());
                 result.setStatus(Status.FAIL);
             } else {
                 result.setStatus(Status.PASS);
+            }
+            String supplementalLogging = sqlTemplate.queryForString("select SUPPLEMENTAL_LOG_DATA_ALL from v$database");
+            if ("NO".equals(supplementalLogging)) {
+                log.error("Missing Oracle log miner alter for supplemental log data.");
+                result.setSolution("alter database add supplemental log data (all) columns");
+                result.setStatus(Status.FAIL);
+                return result;
             }
         } catch (Exception e) {
             log.error("Error checking privileges", e);
@@ -207,6 +223,10 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     private boolean hasSystemPrivilege(String name) {
         return getSqlTemplate().queryForInt("select count(*) from user_sys_privs where privilege = ?", name) > 0;
+    }
+
+    private boolean hasDbaSystemPrivilege(String name) {
+        return getSqlTemplate().queryForInt("select count(*) from dba_sys_privs where privilege = ?", name) > 0;
     }
 
     private boolean hasPrivilege(String name) {
