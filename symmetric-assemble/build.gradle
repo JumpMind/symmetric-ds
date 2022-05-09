@@ -7,7 +7,6 @@ buildscript {
     dependencies {
         classpath 'org.asciidoctor:asciidoctorj-pdf:1.6.2'
         classpath 'org.asciidoctor:asciidoctor-gradle-jvm:3.3.2'
-        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
         classpath 'io.spring.gradle:docbook-reference-plugin:0.3.1'
 		classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.4.2'
 		classpath 'com.bmuschko:gradle-docker-plugin:3.2.1'

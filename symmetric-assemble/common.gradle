@@ -86,17 +86,40 @@ subprojects { subproject ->
 
     apply plugin: 'com.github.hierynomus.license'
     apply plugin: 'java-library'
-    apply plugin: 'propdeps'
-    apply plugin: 'propdeps-maven'
-    apply plugin: 'propdeps-eclipse'
     apply plugin: 'maven'
     apply plugin: 'jacoco'
     
     configurations { deployerJars }
     configurations { testArtifacts.extendsFrom testRuntime }
 
-    configurations.provided.transitive = true
-    configurations.optional.transitive = false
+    configurations {
+    	provided {
+    		canBeResolved = true
+        	canBeConsumed = true
+        	visible = false
+        	transitive = true
+        	allDependencies.all {
+				dep -> configurations.default.exclude(group: dep.group, module: dep.name)
+			}
+        }
+        api.extendsFrom(provided)
+        project.conf2ScopeMappings.addMapping(300 + 1,
+			project.configurations.provided, "provided")
+		// Ensure only the compile configuration is exported
+		project.eclipse.classpath.file {
+			whenMerged { classpath ->
+				def resolved = project.configurations.compile.resolve()
+				classpath.entries.findAll{it.kind == 'lib'}.each {
+					it.exported = resolved.contains(project.file(it.path))
+				}
+			}
+		}
+		project.idea.module {
+			// IDEA internally deals with 4 scopes : COMPILE, TEST, PROVIDED, RUNTIME
+			// but only PROVIDED seems to be picked up
+			scopes.PROVIDED.plus += [project.configurations.provided]
+		}
+    }
 
     sourceCompatibility=1.8
     targetCompatibility=1.8
