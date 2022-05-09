@@ -580,7 +580,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             outWriter.flush();
                         }
                     } catch (Exception ex) {
-                        log.warn("Failed to send keep alives to " + sourceNode + " " + ex);
+                        log.info("Could not send keep alives to " + sourceNode + " " + ex);
                         awaitTermination(executor);
                     }
                 } else {
