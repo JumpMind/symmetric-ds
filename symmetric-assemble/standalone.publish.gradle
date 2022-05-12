@@ -3,34 +3,28 @@
  * Modify file path and pom info: ./gradlew -b standalone.publish.gradle uploadAllJars
  */
 
-apply plugin:'maven'
+apply plugin:'maven-publish'
 
-configurations{ allJars }
+publishing {
+    	publications {
+        	myLibrary(MavenPublication) {
+            	artifact ("/Users/philipmarzullo/symmetric-workspaces/symmetric-workspace-3.14/git/symmetric-ds/symmetric-assemble/phil.jar")
+            	groupId "phil.test"
+            	artifactId "phil"
+            	version "1.1.1"
+        	}
+    	}
+    	repositories {
+        	maven {
+	    		credentials {
+	                username deployUser
+	                password deployPassword
+	            }
+            	url = deployUploadUrl
+        	}
+    	}
+	}
 
-artifacts{ allJars file("/Users/cshenso/Dropbox/Jdbc/postgresql-9.4.1212.jre7.jar") }
-
-configurations { deployerJars }
-
-repositories {
-    mavenCentral()
-}
-
-uploadAllJars {
-    repositories {
-        mavenDeployer {
-            configuration = configurations.deployerJars
-            repository(url: deployUploadUrl) {
-                authentication(userName: deployUser, password: deployPassword)
-            }
-            pom.version = "9.4-1212.jre7"
-            pom.artifactId = "postgresql"
-            pom.groupId = "jdbc.postgresql"
-        }
-    }
-
-}
-
-dependencies {
-    deployerJars "org.apache.maven.wagon:wagon-ssh:3.5.1"
-    
+task uploadAllJars {
+	dependsOn tasks.publish
 }

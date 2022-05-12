@@ -17,10 +17,6 @@ plugins {
 
 apply from: symAssembleDir + '/common.gradle'
 
-apply plugin: 'maven'
-
-configurations { deployerJars }
-    
 artifacts {
    archives file("$buildDir/libs/${jar.archiveBaseName.get()}-${jar.archiveVersion.get()}.${jar.archiveExtension.get()}")
 }
@@ -30,8 +26,6 @@ configurations.archives.with {
 }
 
 dependencies {
-    deployerJars "org.apache.maven.wagon:wagon-ssh:3.5.1"
-    
     compile project(":symmetric-jdbc")
     compile project(":symmetric-io")
     
