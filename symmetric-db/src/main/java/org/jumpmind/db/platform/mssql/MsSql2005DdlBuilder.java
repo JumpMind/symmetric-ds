@@ -90,6 +90,8 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
         String sqlType = super.getSqlType(column);
         if (column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() > 8000) {
             sqlType = "VARBINARY(MAX)";
+        } else if (column.getMappedTypeCode() == Types.VARCHAR && column.getSizeAsInt() > 8000) {
+            sqlType = "VARCHAR(MAX)";
         }
         return sqlType;
     }
