@@ -1,0 +1,25 @@
+
+== Table Group Hierarchies
+Table group hierarchies
+
+ID:: Unique identifier for a table group hierarchy.
+Table Group ID:: Unique identifier for the table group associated with this table in the hierarchy.
+Source Catalog:: Optional name for the catalog the configured table is in.
+Source Schema:: Optional name for the schema the configured table is in.
+Source Table:: The name of the source table that will be a part of this table group.
+Parent ID:: Unique identifier for the parent of this table in the hierarchy.
+Parent Relation Type:: 
+
+[cols="<2,<7", options="header"]
+|===
+|Type
+|Description
+
+|Object|
+
+|Array|
+
+|===
+
+Primary Key Column Names:: A comma-separated list of the configured table's primary keys
+Foreign Key Column Names:: A comma-separated list of the configured table's foreign keys
