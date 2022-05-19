@@ -27,7 +27,7 @@ apply from: symAssembleDir + '/common.gradle'
                 from { 'CREDITS' }
                 from { 'NOTICE' }
                 into('libs') {
-                    from configurations.runtime - configurations.provided
+                    from configurations.runtimeClasspath - configurations.provided
                     from jar
                 }
             }

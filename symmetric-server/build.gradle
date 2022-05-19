@@ -50,11 +50,11 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         provided "org.mortbay.jetty.alpn:alpn-boot:$alpnBootVersion"
         compileOnly "org.eclipse.jetty.alpn:alpn-api:$alpnApiVersion"
     
-        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-io', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-core', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-client', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-util', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-io', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-core', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-client', configuration: 'testArtifacts')
     }
 
     distributions {

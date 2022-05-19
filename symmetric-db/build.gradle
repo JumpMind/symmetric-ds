@@ -16,5 +16,5 @@ apply from: symAssembleDir + '/common.gradle'
             exclude group: 'io.netty'
         }
 
-        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-util', configuration: 'testArtifacts')
     }
