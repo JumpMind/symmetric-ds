@@ -3,12 +3,12 @@ apply from: symAssembleDir + '/common.gradle'
     description = 'SymmetricDS Client library for Android clients'
 
     dependencies {
-        compile (project(":symmetric-core")) {
+        api (project(":symmetric-core")) {
             exclude group:'org.slf4j'
             exclude group:'log4j'
             exclude group:'net.sf.kxml'
         }
-        compile "org.slf4j:slf4j-android:1.6.1-RC1"
+        api "org.slf4j:slf4j-android:1.6.1-RC1"
         compileOnly "com.google.android:android:2.1.2"
     }
 

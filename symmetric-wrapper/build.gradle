@@ -3,8 +3,8 @@ apply from: symAssembleDir + '/common.gradle'
     description = 'General purpose cross platform service wrapper'
 
     dependencies {
-        compile "net.java.dev.jna:jna:$jnaVersion"
-        compile "net.java.dev.jna:jna-platform:$jnaVersion"
+        api "net.java.dev.jna:jna:$jnaVersion"
+        api "net.java.dev.jna:jna-platform:$jnaVersion"
         compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
     }
 
@@ -12,6 +12,6 @@ apply from: symAssembleDir + '/common.gradle'
         manifest {
             attributes(
                     "Main-Class": "org.jumpmind.symmetric.wrapper.Wrapper",
-                    "Class-Path": configurations.compile.collect { it.getName() }.join(' '))
+                    "Class-Path": configurations.runtimeClasspath.collect { it.getName() }.join(' '))
         }
     }

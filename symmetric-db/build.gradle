@@ -3,9 +3,9 @@ apply from: symAssembleDir + '/common.gradle'
     description = 'Database classes that are used by several Symmetric libraries'
 
     dependencies {
-        compile project(":symmetric-util")
-        compile "net.sf.kxml:kxml2:2.3.0" // Used by ddlutils / DatabaseXmlUtil
-        compile ("commons-beanutils:commons-beanutils:$commonsBeanUtilsVersion") {
+        api project(":symmetric-util")
+        api "net.sf.kxml:kxml2:2.3.0" // Used by ddlutils / DatabaseXmlUtil
+        api ("commons-beanutils:commons-beanutils:$commonsBeanUtilsVersion") {
             exclude group: "commons-collections"
             exclude group: 'commons-logging'
         }
