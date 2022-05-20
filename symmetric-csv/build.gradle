@@ -2,5 +2,5 @@ apply from: symAssembleDir + '/common.gradle'
 
     description = 'General purpose csv parser'
     dependencies {
-        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-util', configuration: 'testArtifacts')
     }

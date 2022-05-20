@@ -36,6 +36,6 @@ apply from: symAssembleDir + '/common.gradle'
             exclude group: 'org.slf4j'
         }
 
-        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-util', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
     }

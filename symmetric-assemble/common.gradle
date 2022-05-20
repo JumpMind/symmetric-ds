@@ -90,7 +90,9 @@ subprojects { subproject ->
     apply plugin: 'jacoco'
     
     configurations { deployerJars }
-    configurations { testArtifacts.extendsFrom testRuntime }
+    configurations {
+    	testArtifacts.extendsFrom testRuntimeClasspath
+    }
 
     configurations {
     	provided {
@@ -362,14 +364,14 @@ subprojects { subproject ->
         compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
         compileOnly "com.github.spotbugs:spotbugs-annotations:$spotBugsVersion"
 
-        testCompile fileTree(dir: System.getProperty("user.home") + '/.symmetricds/lib', include: '*.jar')
-        testCompile "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+        testImplementation fileTree(dir: System.getProperty("user.home") + '/.symmetricds/lib', include: '*.jar')
+        testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
         
-        testCompile "org.hamcrest:hamcrest-all:$hamcrestVersion"
-        testCompile "org.mockito:mockito-core:$mockitoVersion"
-        testCompile "org.powermock:powermock-api-mockito2:$powerMockVersion"
-        testCompile "org.powermock:powermock-module-junit4:$powerMockVersion"
+        testImplementation "org.hamcrest:hamcrest-all:$hamcrestVersion"
+        testImplementation "org.mockito:mockito-core:$mockitoVersion"
+        testImplementation "org.powermock:powermock-api-mockito2:$powerMockVersion"
+        testImplementation "org.powermock:powermock-module-junit4:$powerMockVersion"
         
         deployerJars "org.apache.maven.wagon:wagon-ssh:3.5.1"        
     }    
