@@ -187,4 +187,9 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
         PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER };
         return permissions;
     }
+    
+    @Override
+    public String getDatabaseTimeSQL() {
+    	return "select current_timestamp from dual";
+    }
 }

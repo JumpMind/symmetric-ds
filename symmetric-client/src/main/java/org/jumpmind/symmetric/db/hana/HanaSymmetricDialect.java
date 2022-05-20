@@ -118,4 +118,9 @@ public class HanaSymmetricDialect extends AbstractSymmetricDialect {
             transaction.execute(sql);
         }
     }
+    
+    @Override
+    public String getDatabaseTimeSQL() {
+    	return "select current_timestamp from dummy";
+    }
 }

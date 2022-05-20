@@ -250,12 +250,12 @@ public class SnapshotUtil {
         if (nodeSecurities != null && channels != null && nodeSecurities.size() * channels.size() < maxNodeChannels) {
             byChannelId = "channel_id ,";
         }
-        extractQuery(targetPlatform.getSqlTemplate(), tmpDir + File.separator + "sym_outgoing_batch_summary.csv",
+        extractQuery(engine.getSymmetricDialect().getPlatform().getSqlTemplate(), tmpDir + File.separator + "sym_outgoing_batch_summary.csv",
                 "select node_id, " + byChannelId + "status, count(*), sum(data_row_count), sum(byte_count), sum(error_flag), min(create_time), " +
                         "sum(router_millis), sum(extract_millis), sum(network_millis), sum(filter_millis), sum(load_millis), " +
                         "sum(fallback_insert_count), sum(fallback_update_count), sum(missing_delete_count), sum(skip_count), sum(ignore_count) " +
                         "from sym_outgoing_batch group by node_id, " + byChannelId + "status");
-        extractQuery(targetPlatform.getSqlTemplate(), tmpDir + File.separator + "sym_incoming_batch_summary.csv",
+        extractQuery(engine.getSymmetricDialect().getPlatform().getSqlTemplate(), tmpDir + File.separator + "sym_incoming_batch_summary.csv",
                 "select node_id, " + byChannelId + "status, count(*), sum(data_row_count), sum(byte_count), sum(error_flag), min(create_time), " +
                         "sum(router_millis), sum(extract_millis), sum(network_millis), sum(filter_millis), sum(load_millis), " +
                         "sum(fallback_insert_count), sum(fallback_update_count), sum(missing_delete_count), sum(skip_count), sum(ignore_count) " +

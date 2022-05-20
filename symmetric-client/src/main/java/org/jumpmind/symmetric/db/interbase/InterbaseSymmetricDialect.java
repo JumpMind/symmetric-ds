@@ -237,4 +237,9 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
         description.setSize("1024");
         return db;
     }
+    
+    @Override
+    public String getDatabaseTimeSQL() {
+    	return "select current_timestamp from rdb$database";
+    }
 }

@@ -195,4 +195,9 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     public String getSourceNodeExpression() {
         return parameterService.getTablePrefix() + VAR_SOURCE_NODE_ID;
     }
+    
+    @Override
+    public String getDatabaseTimeSQL() {
+    	return "select current_timestamp from sysibm.sysdummy1";
+    }
 }

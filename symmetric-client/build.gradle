@@ -3,15 +3,15 @@ apply from: symAssembleDir + '/common.gradle'
     description = 'SymmetricDS Client library for JDBC clients'
 
     dependencies {
-        compile project(":symmetric-core")
-        compile project(":symmetric-jdbc")
-        compile "org.springframework:spring-context:$springVersion"
-        compile "commons-cli:commons-cli:$commonsCliVersion"
-        compile ("org.apache.commons:commons-vfs2:$commonsVfs") {
+        api project(":symmetric-core")
+        api project(":symmetric-jdbc")
+        api "org.springframework:spring-context:$springVersion"
+        api "commons-cli:commons-cli:$commonsCliVersion"
+        api ("org.apache.commons:commons-vfs2:$commonsVfs") {
             exclude group: "org.apache.hadoop"
             exclude group: 'commons-logging'
         }
-        compile "org.jdom:jdom2:$jdomVersion"
+        api "org.jdom:jdom2:$jdomVersion"
 
         provided "com.h2database:h2:$h2Version"
         provided ("mysql:mysql-connector-java:$mysqlVersion") {

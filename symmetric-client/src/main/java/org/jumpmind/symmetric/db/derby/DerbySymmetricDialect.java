@@ -226,4 +226,9 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
     public boolean needsToSelectLobData() {
         return true;
     }
+    
+    @Override
+    public String getDatabaseTimeSQL() {
+    	return "values current_timestamp";
+    }
 }

@@ -106,14 +106,6 @@ subprojects { subproject ->
         }
         api.extendsFrom(provided)
 		// Ensure only the compile configuration is exported
-		project.eclipse.classpath.file {
-			whenMerged { classpath ->
-				def resolved = project.configurations.compile.resolve()
-				classpath.entries.findAll{it.kind == 'lib'}.each {
-					it.exported = resolved.contains(project.file(it.path))
-				}
-			}
-		}
 		project.idea.module {
 			// IDEA internally deals with 4 scopes : COMPILE, TEST, PROVIDED, RUNTIME
 			// but only PROVIDED seems to be picked up
@@ -355,13 +347,13 @@ subprojects { subproject ->
     }
 
     dependencies {
-        compile "org.apache.logging.log4j:log4j-core:$log4jVersion"
-        compile "org.apache.logging.log4j:log4j-api:$log4jVersion"
-        compile "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
-        compile "org.apache.logging.log4j:log4j-web:$log4jVersion"
-        compile "org.slf4j:slf4j-api:$slf4jVersion"
-        compile "org.slf4j:jul-to-slf4j:$slf4jVersion"
-        compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+        api "org.apache.logging.log4j:log4j-core:$log4jVersion"
+        api "org.apache.logging.log4j:log4j-api:$log4jVersion"
+        api "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
+        api "org.apache.logging.log4j:log4j-web:$log4jVersion"
+        api "org.slf4j:slf4j-api:$slf4jVersion"
+        api "org.slf4j:jul-to-slf4j:$slf4jVersion"
+        api "org.slf4j:jcl-over-slf4j:$slf4jVersion"
         compileOnly "com.github.spotbugs:spotbugs-annotations:$spotBugsVersion"
 
         testImplementation fileTree(dir: System.getProperty("user.home") + '/.symmetricds/lib', include: '*.jar')
@@ -417,6 +409,6 @@ subprojects { subproject ->
             (w3c) : ['The W3C Software License', 'W3C Software Copyright Notice and License']
         ]
     
-        dependencyConfiguration = 'compile'
+        dependencyConfiguration = 'api'
     }    
 }
