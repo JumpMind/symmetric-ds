@@ -169,4 +169,9 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     public long getCurrentSequenceValue(SequenceIdentifier identifier) {
         return platform.getSqlTemplate().queryForLong("select gen_id(GEN_" + getSequenceName(identifier) + ", 0) from rdb$database");
     }
+    
+    @Override
+    public String getDatabaseTimeSQL() {
+    	return "select current_timestamp from rdb$database";
+    }
 }
