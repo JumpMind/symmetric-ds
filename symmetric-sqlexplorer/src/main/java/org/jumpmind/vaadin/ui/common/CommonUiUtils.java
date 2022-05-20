@@ -66,8 +66,10 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.tabs.TabsVariant;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.theme.lumo.Lumo;
 
 import de.f0rce.ace.AceEditor;
@@ -144,15 +146,34 @@ public final class CommonUiUtils {
         Page page = UI.getCurrent().getPage();
         if (page != null) {
             HorizontalLayout layout = new HorizontalLayout();
-            layout.getStyle().set("max-width", "400px");
             Notification notification = new Notification(layout);
-            Label label;
-            if (!StringUtils.isBlank(caption)) {
-                label = new Label(caption + "<hr>" + contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
+            
+            if (message.length() <= 250) {
+                layout.getStyle().set("max-width", "400px");
+                Label label;
+                if (!StringUtils.isBlank(caption)) {
+                    label = new Label(caption + "<hr>" + contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
+                } else {
+                    label = new Label(contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
+                }
+                layout.add(label);
             } else {
-                label = new Label(contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
+                layout.setWidth("700px");
+                VerticalLayout vLayout = new VerticalLayout();
+                vLayout.setWidthFull();
+                if (!StringUtils.isBlank(caption)) {
+                    Label label = new Label(caption + "<hr>");
+                    label.setWidthFull();
+                    vLayout.add(label);
+                }
+                TextArea textArea = new TextArea();
+                textArea.setWidthFull();
+                textArea.setHeight("400px");
+                textArea.setValue(message);
+                textArea.setReadOnly(true);
+                vLayout.add(textArea);
+                layout.add(vLayout);
             }
-            layout.add(label);
             Icon closeIcon = new Icon(VaadinIcon.CLOSE_CIRCLE_O);
             closeIcon.setSize("36px");
             closeIcon.getStyle().set("min-width", "36px");
