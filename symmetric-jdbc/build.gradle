@@ -3,11 +3,11 @@ apply from: symAssembleDir + '/common.gradle'
     description = 'Library that contains the jdbc implementation for symmetric-db'
 
     dependencies {
-        compile project(":symmetric-db")
-        compile ("org.apache.commons:commons-dbcp2:$commonsDbcpVersion") {
+        api project(":symmetric-db")
+        api ("org.apache.commons:commons-dbcp2:$commonsDbcpVersion") {
             exclude group: 'commons-logging'
         }
-        compile "org.springframework:spring-jdbc:$springVersion"
+        api "org.springframework:spring-jdbc:$springVersion"
 
         compileOnly "com.h2database:h2:$h2Version"
         compileOnly "jdbc.sybase:jconnect:7.7"
