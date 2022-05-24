@@ -194,7 +194,7 @@ public interface ISymmetricDialect {
     public String preProcessTriggerSqlClause(String sqlClause);
 
     public void truncateTable(String tableName);
-    
+
     public String getDatabaseTimeSQL();
 
     public long getDatabaseTime();

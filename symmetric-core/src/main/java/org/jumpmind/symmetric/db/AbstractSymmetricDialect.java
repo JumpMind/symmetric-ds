@@ -728,9 +728,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public String getDatabaseTimeSQL() {
-    	return "select current_timestamp";
+        return "select current_timestamp";
     }
-    
+
     public long getDatabaseTime() {
         try {
             Date dateTime = this.platform.getSqlTemplate().queryForObject(getDatabaseTimeSQL(), java.util.Date.class);

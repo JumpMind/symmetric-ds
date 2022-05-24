@@ -26,6 +26,8 @@ import org.jumpmind.util.Context;
 
 public interface IConfigurationChangedListener {
     public void handleChange(Context context, Table table, CsvData data);
+
     public void contextCommitted(Context context);
+
     public void contextComplete(Context context);
 }

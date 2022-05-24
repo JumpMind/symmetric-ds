@@ -288,10 +288,16 @@ public class DataService extends AbstractService implements IDataService {
 
     @Override
     public TableReloadRequest getTableReloadRequest(long loadId) {
+        List<TableReloadRequest> collapsedRequests = getTableReloadRequests(loadId);
+        return collapsedRequests == null || collapsedRequests.size() == 0 ? null : collapsedRequests.get(0);
+    }
+
+    @Override
+    public List<TableReloadRequest> getTableReloadRequests(long loadId) {
         List<TableReloadRequest> requests = sqlTemplate.query(getSql("selectTableReloadRequestsByLoadId"),
                 new TableReloadRequestMapper(), loadId);
         List<TableReloadRequest> collapsedRequests = collapseTableReloadRequestsByLoadId(requests);
-        return collapsedRequests == null || collapsedRequests.size() == 0 ? null : collapsedRequests.get(0);
+        return collapsedRequests;
     }
 
     @Override
@@ -424,10 +430,8 @@ public class DataService extends AbstractService implements IDataService {
                 summary.setLoadId(request.getLoadId());
                 summary.setProcessed(request.isProcessed());
                 summary.setChannelId(request.getChannelId());
-                if (request.isFullLoadRequest()) {
-                    summary.setTriggerId(request.getTriggerId());
-                    summary.setRouterId(request.getRouterId());
-                }
+                summary.setTriggerId(request.getTriggerId());
+                summary.setRouterId(request.getRouterId());
             }
             previousLoadId = request.getLoadId();
         }

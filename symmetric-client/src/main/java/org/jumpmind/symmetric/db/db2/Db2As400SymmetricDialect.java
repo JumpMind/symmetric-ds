@@ -83,9 +83,9 @@ public class Db2As400SymmetricDialect extends Db2SymmetricDialect implements ISy
     protected String getSystemSchemaName() {
         return "QSYS2";
     }
-    
+
     @Override
     public String getDatabaseTimeSQL() {
-    	return "select current_timestamp from sysibm.sysdummy1";
+        return "select current_timestamp from sysibm.sysdummy1";
     }
 }

@@ -439,9 +439,9 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
                 PermissionType.EXECUTE };
         return permissions;
     }
-    
+
     @Override
     public String getDatabaseTimeSQL() {
-    	return "select current_timestamp from dual";
+        return "select current_timestamp from dual";
     }
 }
