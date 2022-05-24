@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.ext.IConfigurationChangedListener;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.job.IJobManager;
@@ -37,6 +38,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,11 +68,13 @@ public class ConfigurationChangedHelper {
     private ISymmetricEngine engine;
     private String tablePrefix;
     private ConfigurationVersionHelper versionHelper;
+    private IConfigurationChangedListener listener;
 
     public ConfigurationChangedHelper(ISymmetricEngine engine) {
         this.engine = engine;
         tablePrefix = engine.getTablePrefix();
         versionHelper = new ConfigurationVersionHelper(tablePrefix);
+        listener = AppUtils.newInstance(IConfigurationChangedListener.class, null, new Object[] { engine }, new Class[] { ISymmetricEngine.class });
     }
 
     public void handleChange(Context context, Table table, CsvData data) {
@@ -114,6 +118,9 @@ public class ConfigurationChangedHelper {
             if (triggerId != null) {
                 triggers.add(triggerId);
             }
+        }
+        if (listener != null) {
+            listener.handleChange(context, table, data);
         }
     }
 
@@ -167,6 +174,9 @@ public class ConfigurationChangedHelper {
         if (context.remove(CTX_KEY_CLUSTER_NEEDED) != null) {
             engine.getClusterService().refreshLockEntries();
         }
+        if (listener != null) {
+            listener.contextCommitted(context);
+        }
     }
 
     public void contextComplete(Context context) {
@@ -193,6 +203,9 @@ public class ConfigurationChangedHelper {
         }
         if (context.remove(CTX_KEY_FILE_SYNC_NEEDED) != null) {
             enableDisableFileSync(context);
+        }
+        if (listener != null) {
+            listener.contextComplete(context);
         }
     }
 

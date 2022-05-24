@@ -279,13 +279,15 @@ public class AppUtils {
     public static <T> T newInstance(Class<T> clazz, Class<?> defaultClass, Object[] args, Class<?>[] argTypes) {
         T instance = null;
         String propertyName = clazz.getSimpleName();
-        String className = implProp.getProperty(propertyName, defaultClass.getName());
-        try {
-            Constructor<T> cons = (Constructor<T>) Class.forName(className).getDeclaredConstructor(argTypes);
-            cons.setAccessible(true);
-            instance = (T) cons.newInstance(args);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        String className = implProp.getProperty(propertyName, defaultClass == null ? null : defaultClass.getName());
+        if (className != null) {
+            try {
+                Constructor<T> cons = (Constructor<T>) Class.forName(className).getDeclaredConstructor(argTypes);
+                cons.setAccessible(true);
+                instance = (T) cons.newInstance(args);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
         return instance;
     }
