@@ -144,8 +144,8 @@ subprojects { subproject ->
 		executionData(file("${project.buildDir}/jacoco/test.exec"),
                   file("${project.buildDir}/jacoco/integrationTest.exec"))
     	reports {
-        	xml.enabled=true
-        	html.enabled=true
+        	xml.required=true
+        	html.required=true
         	//for XML
     		html.destination=file("${buildDir}/reports/jacoco.html")
     		xml.destination=file("${buildDir}/reports/jacoco.xml")
