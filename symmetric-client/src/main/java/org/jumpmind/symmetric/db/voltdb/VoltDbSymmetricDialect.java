@@ -75,4 +75,9 @@ public class VoltDbSymmetricDialect extends AbstractSymmetricDialect {
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return false;
     }
+
+    @Override
+    public String getDatabaseTimeSQL() {
+        return "";
+    }
 }

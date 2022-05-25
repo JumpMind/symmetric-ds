@@ -3,12 +3,12 @@ apply from: symAssembleDir + '/common.gradle'
     description = 'Data input/output libraries'
 
     dependencies {
-        compile project(":symmetric-csv")
-        compile project(":symmetric-db")
-        compile "org.apache-extras.beanshell:bsh:$bshVersion"
-        compile "net.sourceforge.jeval:jeval:0.9.4"
-        compile "com.google.code.gson:gson:$gsonVersion"
-        compile "org.springframework:spring-core:$springVersion"
+        api project(":symmetric-csv")
+        api project(":symmetric-db")
+        api "org.apache-extras.beanshell:bsh:$bshVersion"
+        api "net.sourceforge.jeval:jeval:0.9.4"
+        api "com.google.code.gson:gson:$gsonVersion"
+        api "org.springframework:spring-core:$springVersion"
         compileOnly ("com.datastax.cassandra:cassandra-driver-core:3.11.1") {
             exclude group: 'org.slf4j'
             exclude group: 'com.google.guava'
@@ -22,6 +22,6 @@ apply from: symAssembleDir + '/common.gradle'
             exclude group: 'com.fasterxml.jackson.databind'
         }
 
-        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')        
+        testImplementation project(path: ':symmetric-util', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-jdbc', configuration: 'testArtifacts')        
     }

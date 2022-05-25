@@ -80,6 +80,8 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.extract.ExtractDataReaderFactory;
+import org.jumpmind.symmetric.extract.IExtractDataReaderFactory;
 import org.jumpmind.symmetric.extract.MultiBatchStagingWriter;
 import org.jumpmind.symmetric.extract.SelectFromSymDataSource;
 import org.jumpmind.symmetric.extract.SelectFromTableEvent;
@@ -1076,7 +1078,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         IExtractDataReaderSource source = AppUtils.newInstance(IExtractDataReaderSource.class, SelectFromSymDataSource.class,
                 new Object[] { engine, currentBatch, sourceNode, targetNode, processInfo, containsBigLob },
                 new Class[] { ISymmetricEngine.class, OutgoingBatch.class, Node.class, Node.class, ProcessInfo.class, boolean.class });
-        return new ExtractDataReader(symmetricDialect.getPlatform(), source);
+        IExtractDataReaderFactory factory = AppUtils.newInstance(IExtractDataReaderFactory.class, ExtractDataReaderFactory.class,
+                new Object[] { engine }, new Class[] { ISymmetricEngine.class });
+        return factory.getReader(platform, source, sourceNode, targetNode);
     }
 
     protected Statistics getExtractStats(IDataWriter writer, OutgoingBatch currentBatch) {

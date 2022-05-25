@@ -385,6 +385,15 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         if ("TINYBLOB".equalsIgnoreCase(column.getJdbcTypeName())) {
             // For some reason, MySql driver returns BINARY type for TINYBLOB instead of BLOB type
             sqlType = "TINYBLOB";
+        } else if (pc == null && (column.getMappedTypeCode() == Types.CHAR || column.getMappedTypeCode() == Types.NCHAR) && column.getSizeAsInt() > 255) {
+            if (column.getSizeAsInt() <= 8000) {
+                // max row size and column size is 65,535, but calculating row size would be tough
+                sqlType = "VARCHAR(" + column.getSizeAsInt() + ")";
+            } else if (column.getSizeAsInt() <= 16777216) {
+                sqlType = "MEDIUMTEXT";
+            } else {
+                sqlType = "LONGTEXT";
+            }
         }
         return sqlType;
     }

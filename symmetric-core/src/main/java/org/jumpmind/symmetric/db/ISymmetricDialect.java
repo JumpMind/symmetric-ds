@@ -195,6 +195,8 @@ public interface ISymmetricDialect {
 
     public void truncateTable(String tableName);
 
+    public String getDatabaseTimeSQL();
+
     public long getDatabaseTime();
 
     public boolean areDatabaseTransactionsPendingSince(long time);

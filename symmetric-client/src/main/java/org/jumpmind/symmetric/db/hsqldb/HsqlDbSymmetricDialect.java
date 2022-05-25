@@ -193,4 +193,9 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
     public boolean canGapsOccurInCapturedDataIds() {
         return false;
     }
+
+    @Override
+    public String getDatabaseTimeSQL() {
+        return "SELECT current_timestamp FROM INFORMATION_SCHEMA.SYSTEM_USERS";
+    }
 }

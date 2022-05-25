@@ -727,11 +727,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         throw new UnsupportedOperationException();
     }
 
+    public String getDatabaseTimeSQL() {
+        return "select current_timestamp";
+    }
+
     public long getDatabaseTime() {
         try {
-            String sql = "select current_timestamp from " + this.parameterService.getTablePrefix() + "_node_identity";
-            sql = FormatUtils.replaceTokens(sql, platform.getSqlScriptReplacementTokens(), false);
-            Date dateTime = this.platform.getSqlTemplate().queryForObject(sql, java.util.Date.class);
+            Date dateTime = this.platform.getSqlTemplate().queryForObject(getDatabaseTimeSQL(), java.util.Date.class);
             if (dateTime != null) {
                 return dateTime.getTime();
             } else {

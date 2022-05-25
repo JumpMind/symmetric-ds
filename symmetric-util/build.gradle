@@ -3,12 +3,12 @@ apply from: symAssembleDir + '/common.gradle'
     description = 'Utility classes that are used by several Symmetric libraries'
 
     dependencies {
-        compile "org.apache.commons:commons-lang3:$commonsLangVersion"
-        compile "org.apache.commons:commons-text:$commonsTextVersion"
-        compile "commons-io:commons-io:$commonsIoVersion"
-        compile "commons-codec:commons-codec:$commonsCodecVersion"
-        compile "org.apache.commons:commons-collections4:$commonsCollectionVersion"
-        compile "com.google.code.gson:gson:$gsonVersion"
+        api "org.apache.commons:commons-lang3:$commonsLangVersion"
+        api "org.apache.commons:commons-text:$commonsTextVersion"
+        api "commons-io:commons-io:$commonsIoVersion"
+        api "commons-codec:commons-codec:$commonsCodecVersion"
+        api "org.apache.commons:commons-collections4:$commonsCollectionVersion"
+        api "com.google.code.gson:gson:$gsonVersion"
         compileOnly "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
         compileOnly "org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion"
         compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"

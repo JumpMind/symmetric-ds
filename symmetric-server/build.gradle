@@ -6,16 +6,16 @@ apply from: symAssembleDir + '/asciidoc.gradle'
     apply plugin: 'distribution'
 
     dependencies {
-        compile project(":symmetric-client")
+        api project(":symmetric-client")
         compileOnly project(":symmetric-swagger-ui")
-        compile "org.springframework:spring-jms:$springVersion"
-        compile "org.springframework:spring-web:$springVersion"
-        compile "org.springframework:spring-webmvc:$springVersion"
-        compile "javax.xml.bind:jaxb-api:$jaxbVersion"
-        compile "org.jdom:jdom2:$jdomVersion"
-        compile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
+        api "org.springframework:spring-jms:$springVersion"
+        api "org.springframework:spring-web:$springVersion"
+        api "org.springframework:spring-webmvc:$springVersion"
+        api "javax.xml.bind:jaxb-api:$jaxbVersion"
+        api "org.jdom:jdom2:$jdomVersion"
+        api "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
         
-        compile "io.swagger:swagger-annotations:1.6.6"
+        api "io.swagger:swagger-annotations:1.6.6"
 
         provided project(":symmetric-wrapper")
         provided "javax.jms:jms-api:1.1-rev-1"
@@ -29,8 +29,8 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
         provided "com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre8"
 
-        compile "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
-        compile "org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion"        
+        api "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
+        api "org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion"        
                 
         compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
         
@@ -50,11 +50,11 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         provided "org.mortbay.jetty.alpn:alpn-boot:$alpnBootVersion"
         compileOnly "org.eclipse.jetty.alpn:alpn-api:$alpnApiVersion"
     
-        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-io', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-core', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-client', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-util', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-io', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-core', configuration: 'testArtifacts')
+        testImplementation project(path: ':symmetric-client', configuration: 'testArtifacts')
     }
 
     distributions {
@@ -107,7 +107,7 @@ apply from: symAssembleDir + '/asciidoc.gradle'
                 }
                 into('web/WEB-INF/lib') {
                     from project(":symmetric-server").jar
-                    from configurations.compile.filter {  a ->
+                    from configurations.runtimeClasspath.filter {  a ->
                                 (!configurations.provided.contains(a) &&
                                 !project(':symmetric-server').configurations.provided.contains(a)) ||
                                 (a.name.contains('slf4j-api') || a.name.contains('to-slf4j') || a.name.contains('over-slf4j'))

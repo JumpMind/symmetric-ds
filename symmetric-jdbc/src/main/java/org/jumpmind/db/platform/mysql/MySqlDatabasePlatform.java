@@ -223,6 +223,8 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         ISqlTemplate template = getSqlTemplate();
         String transactionString = "trx";
         String lockWaitsString = "information_schema.innodb_lock_waits";
+        // TODO: Check if this is equivalent table, then add this to singlestore method or check if singlestore
+        // String lockWaitsString = "information_schema.mv_blocked_queries";
         if (template.getDatabaseMajorVersion() >= 8) {
             transactionString = "engine_transaction";
             lockWaitsString = "performance_schema.data_lock_waits";

@@ -59,7 +59,11 @@ public class PlatformColumn implements Serializable, Cloneable {
         if (spec != null && !spec.trim().equals("")) {
             int index = spec.indexOf(",");
             if (index == -1) {
-                size = Integer.valueOf(spec.trim());
+                if (spec.equalsIgnoreCase("max")) {
+                    size = Integer.MAX_VALUE;
+                } else {
+                    size = Integer.valueOf(spec.trim());
+                }
             } else {
                 size = Integer.valueOf(spec.substring(0, index).trim());
                 if (++index < spec.length()) {

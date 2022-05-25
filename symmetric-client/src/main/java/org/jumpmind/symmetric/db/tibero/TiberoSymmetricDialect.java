@@ -386,4 +386,9 @@ public class TiberoSymmetricDialect extends AbstractSymmetricDialect implements 
                 PermissionType.EXECUTE };
         return permissions;
     }
+
+    @Override
+    public String getDatabaseTimeSQL() {
+        return "select current_timestamp from dual";
+    }
 }

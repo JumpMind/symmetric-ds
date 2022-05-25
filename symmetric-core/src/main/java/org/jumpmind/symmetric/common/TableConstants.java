@@ -90,6 +90,8 @@ public class TableConstants {
     public static final String SYM_CONTEXT = "context";
     public static final String SYM_JOB = "job";
     public static final String SYM_TABLE_RELOAD_STATUS = "table_reload_status";
+    public static final String SYM_TABLE_GROUP = "table_group";
+    public static final String SYM_TABLE_GROUP_HIER = "table_group_hier";
     protected static boolean hasConsoleSchema = TableConstants.class.getResourceAsStream("/console-schema.xml") != null;
 
     /**
@@ -116,7 +118,7 @@ public class TableConstants {
     public static final Set<String> getTablesForConsole(String tablePrefix) {
         Set<String> tables = new HashSet<String>();
         addPrefixToTableNames(tables, tablePrefix, SYM_CONSOLE_EVENT, SYM_CONSOLE_USER, SYM_CONSOLE_USER_HIST, SYM_CONSOLE_ROLE,
-                SYM_CONSOLE_ROLE_PRIVILEGE, SYM_CONSOLE_TABLE_STATS, SYM_DESIGN_DIAGRAM, SYM_DIAGRAM_GROUP);
+                SYM_CONSOLE_ROLE_PRIVILEGE, SYM_CONSOLE_TABLE_STATS, SYM_DESIGN_DIAGRAM, SYM_DIAGRAM_GROUP, SYM_TABLE_GROUP, SYM_TABLE_GROUP_HIER);
         return tables;
     }
 
@@ -138,7 +140,7 @@ public class TableConstants {
                 SYM_EXTRACT_REQUEST);
         if (hasConsoleSchema) {
             addPrefixToTableNames(tables, tablePrefix, SYM_CONSOLE_ROLE, SYM_CONSOLE_USER, SYM_CONSOLE_ROLE_PRIVILEGE, SYM_CONSOLE_USER_HIST,
-                    SYM_DESIGN_DIAGRAM, SYM_DIAGRAM_GROUP);
+                    SYM_DESIGN_DIAGRAM, SYM_DIAGRAM_GROUP, SYM_TABLE_GROUP, SYM_TABLE_GROUP_HIER);
         }
         return tables;
     }
@@ -155,7 +157,7 @@ public class TableConstants {
         addPrefixToTableNames(map, tablePrefix, "3.8.18", SYM_CONSOLE_USER_HIST);
         addPrefixToTableNames(map, tablePrefix, "3.9.0", SYM_JOB);
         addPrefixToTableNames(map, tablePrefix, "3.12.0", SYM_CONSOLE_ROLE, SYM_CONSOLE_ROLE_PRIVILEGE, SYM_DESIGN_DIAGRAM, SYM_DIAGRAM_GROUP);
-        addPrefixToTableNames(map, tablePrefix, "3.14.0", SYM_TABLE_RELOAD_STATUS, SYM_EXTRACT_REQUEST);
+        addPrefixToTableNames(map, tablePrefix, "3.14.0", SYM_TABLE_RELOAD_STATUS, SYM_EXTRACT_REQUEST, SYM_TABLE_GROUP, SYM_TABLE_GROUP_HIER);
         return map;
     }
 
