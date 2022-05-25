@@ -38,4 +38,6 @@ apply from: symAssembleDir + '/common.gradle'
 
         testImplementation project(path: ':symmetric-util', configuration: 'testArtifacts')
         testImplementation project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
+        testImplementation project(':symmetric-jdbc').sourceSets.test.output
+        testImplementation project(':symmetric-jdbc').sourceSets.main.output
     }

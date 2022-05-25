@@ -16,7 +16,7 @@ buildscript {
 
 plugins {
     id "org.sonarqube" version "3.3"
-	id "com.github.hierynomus.license" version "0.15.0"
+	id "com.github.hierynomus.license" version "0.16.1"
 	id 'com.vaadin' version '0.14.8.1' apply false
 }
 

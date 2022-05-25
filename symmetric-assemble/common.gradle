@@ -91,7 +91,7 @@ subprojects { subproject ->
     
     configurations { deployerJars }
     configurations {
-    	testArtifacts.extendsFrom testRuntimeClasspath
+    	testArtifacts.extendsFrom testImplementation
     }
 
     configurations {
