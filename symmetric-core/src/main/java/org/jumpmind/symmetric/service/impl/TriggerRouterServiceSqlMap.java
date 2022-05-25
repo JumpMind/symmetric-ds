@@ -112,6 +112,9 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                 ""
                         + "select trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,is_missing_pk,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,trigger_template_hash,error_message   "
                         + "  from $(trigger_hist)                                                                                                                                                                                                                                                      ");
+        putSql("allTriggerHistBackwardsCompatibleSql",
+                        "select trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,trigger_template_hash,error_message " +
+                        "from $(trigger_hist) ");
         putSql("activeTriggerHistSqlByTriggerId", ""
                 + "where trigger_id=? and inactive_time is null   ");
         

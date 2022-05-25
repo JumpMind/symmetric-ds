@@ -429,6 +429,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     listener.upgrade(databaseVersion, softwareVersion);
                 }
             }
+            parameterService.setDatabaseHasBeenSetup(true);
             setup = true;
         }
     }

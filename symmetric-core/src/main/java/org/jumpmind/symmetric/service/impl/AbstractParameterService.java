@@ -48,6 +48,7 @@ abstract public class AbstractParameterService {
     private long lastTimeParameterWereCached;
     protected Properties systemProperties;
     protected boolean databaseHasBeenInitialized = false;
+    protected boolean databaseHasBeenSetup = false;
     protected String externalId = null;
     protected String engineName = null;
     protected String nodeGroupId = null;
@@ -261,6 +262,14 @@ abstract public class AbstractParameterService {
             this.databaseHasBeenInitialized = databaseHasBeenInitialized;
             this.parameters = null;
         }
+    }
+
+    public synchronized void setDatabaseHasBeenSetup(boolean databaseHasBeenSetup) {
+        this.databaseHasBeenSetup = databaseHasBeenSetup;
+    }
+
+    public synchronized boolean hasDatabaseBeenSetup() {
+        return databaseHasBeenSetup;
     }
 
     abstract public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId);
