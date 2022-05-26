@@ -369,7 +369,7 @@ subprojects { subproject ->
     }    
 
     task develop {
-        dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea
+        dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea, tasks.compileTestJava
         
         doLast {
             def wstFacetXml = "$projectDir/.settings/org.eclipse.wst.common.project.facet.core.xml"

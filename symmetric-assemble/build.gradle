@@ -48,7 +48,7 @@ sonarqube {
 }
 
 task develop {
-    dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea
+    dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea, tasks.compileTestJava
 }
 
 github {
