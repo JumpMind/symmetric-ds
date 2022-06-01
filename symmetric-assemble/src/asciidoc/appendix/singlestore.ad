@@ -1,4 +1,4 @@
-=== SinglStore
+=== SingleStore
 
 SingleStore is only available in the professional version of SymmetricDS.  Supports bi-directional replication with SingleStore using log based data capture from the audit logs.  
 

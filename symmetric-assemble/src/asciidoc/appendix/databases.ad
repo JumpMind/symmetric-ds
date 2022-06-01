@@ -12,100 +12,99 @@ by database.
 |Versions
 |Transaction Identifier
 |Data Capture
+|Log Mining
 |Conditional Sync
 |Update Loop Prevention
 |BLOB Sync
 |CLOB Sync
 |Transactional DDL
-|Load Only
 
 |BigQuery *
 |All
 |
 |
 |
-|✔
-|
-|
 |
 |✔
+|
+|
+|
 
 |DB2
 |9.5
 |
 |✔
-|✔
-|✔
-|✔
-|✔
-|✔  
 |
+|✔
+|✔
+|✔
+|✔
+|✔
 
 |DB2
 |10,11
 |✔
 |✔
+|
 |✔
 |✔
 |✔
 |✔ 
-|✔                   
-|
+|✔
 
 |DB2 for IBM i *
 |6
 |
 |✔
+|
 |✔
 |
 |✔
 |✔
-|                    
 |
 
 |DB2 for IBM z/OS *
 |10
 |
 |✔
+|
 |✔
 |
 |✔
 |✔
-|                    
 |
 
 |Derby
 |10.3.2.1
 |✔
 |✔
+|
 |✔
 |✔
 |✔
 |✔
 |
-|
 
-
-|Elasticsearch
+|Elasticsearch *
 |7.13.2
 |
 |
 |
-|✔
-|
-|
 |
 |✔
+|
+|
+|
 
 |Firebird
 |2.0
 |✔
 |✔
-|✔
-|✔
-|✔
-|✔
 |
+|✔
+|✔
+|✔
+|✔
 |
 
 |Greenplum
@@ -113,8 +112,8 @@ by database.
 |
 |
 |
-|✔
 |
+|✔
 |
 |
 |
@@ -123,134 +122,135 @@ by database.
 |1.x
 |✔
 |✔
-|✔
-|✔
-|✔
-|✔
 |
+|✔
+|✔
+|✔
+|✔
 |
 
 |HSQLDB
 |1.8
 |✔
 |✔
-|✔
-|✔
-|✔
-|✔
 |
+|✔
+|✔
+|✔
+|✔
 |
  
 |HSQLDB
 |2.0
 |
 |✔
-|✔
-|✔
-|✔
-|✔
 |
+|✔
+|✔
+|✔
+|✔
 |
 
 |Informix
 |11
 |
 |✔
+|
 |✔
 |✔
 |
 |
-|                    
-|                    
+|
 
 |Ingres
 |11 and above
 |✔
 |✔
-|✔
-|✔
-|✔
-|✔
 |
+|✔
+|✔
+|✔
+|✔
 |
 
 |Interbase
 |9.0
 |
 |✔
-|✔
-|✔
-|✔
-|✔
 |
+|✔
+|✔
+|✔
+|✔
 |
 
 |MySQL
 |5.0.2 and above
 |✔
 |✔
-|✔
-|✔
-|✔
-|✔
 |
+|✔
+|✔
+|✔
+|✔
 |
 
 |MariaDB
 |5.1 and above
 |✔
 |✔
-|✔
-|✔
-|✔
-|✔
 |
+|✔
+|✔
+|✔
+|✔
 |
 
-|uoDB
+|NuoDB
 |2.6 and above
 |✔
 |✔
+|
 |✔
 |✔
 |
 |✔
-|
 |
                     
 |Oracle
 |10g and above
 |✔
 |✔
+|✔ 11g and above
 |✔
 |✔
 |✔
 |✔
-|
 |
  
 |PostgreSQL
 |8.2.5 and above
-|✔ (8.3 and above only)
+|✔ 8.3 and above
+|✔
+|✔ 9.4 and above
 |✔
 |✔
 |✔
 |✔
 |✔
-|✔
-|
 
 |Redshift
 |1.0
 |
 |
 |
+|
 |✔
 |
 |
 |
-|
 
+<<<<<<< HEAD
 |Snowflake *
 |6.13 and above
 |
@@ -263,90 +263,94 @@ by database.
 |
 
 |SingleStore
+=======
+|SingleStore *
+>>>>>>> 2490c8609... fix typos, add log mining
 |All
 |
 |✔
 |
+|
+|
 |✔
 |✔
 |
-|✔
 
 |SQL Anywhere
 |9
 |✔
 |✔
-|✔
-|✔
-|✔
-|✔
 |
+|✔
+|✔
+|✔
+|✔
 |
 
 |SQL Server
 |2005 and above
 |✔
 |✔
+|✔ 2008 and above
 |✔
 |✔
 |✔
 |✔
 |✔
-|
  
 |SQL Server Azure
 |Tested on 11.00.2065
 |✔
 |✔
+|
 |✔
 |✔
 |✔
 |
-|                    
 |
  
 |SQLite
 |3.x
 |
 |✔
-|✔
-|✔
-|✔
-|✔
 |
+|✔
+|✔
+|✔
+|✔
 |
  
 |Sybase ASE
 |12.5
 |✔
 |✔
-|✔
-|✔
-|✔
-|✔
 |
+|✔
+|✔
+|✔
+|✔
 |
  
 |Teradata
 |15.10 and above
 |✔
-|✔
+|
+|
 |✔
 |
 |
 |
-|  
-|✔
+|
    
 |Tibero
 |6 and above
 |✔
 |✔
+|
 |✔
 |✔
 |✔
 |✔
-| 
 |
                    
 |===
@@ -357,6 +361,8 @@ Transaction Identifier:: A transaction identifier is recorded in the SYM_DATA ta
 together for commit within a batch.
 
 Data Capture:: Changes to tables can be captured using database triggers.
+
+Log Mining:: Changes to tables can be captured using log mining.  This feature is available in https://www.jumpmind.com/products/symmetricds/symmetricds-overview[SymmetricDS Pro] only
 
 Conditional Sync:: Conditions can be specified on SYM_TRIGGER, which are compiled into the trigger to decide if a change should be captured.
 
@@ -468,7 +474,7 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 |
 |
 
-|uoDB
+|NuoDB
 |
 |
 |
