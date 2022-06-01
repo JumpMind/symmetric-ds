@@ -238,6 +238,9 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                                 pkCsvData = csvData.getCsvData(CsvData.ROW_DATA);
                             }
                         }
+                        if (pkCsvData != null) {
+                            pkCsvData = pkCsvData.replace("\n", "\\n").replace("\r", "\\r");
+                        }
                         return pkCsvData;
                     }
                 }, buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
