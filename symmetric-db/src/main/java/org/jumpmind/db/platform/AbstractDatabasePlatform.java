@@ -710,9 +710,19 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public Table makeAllColumnsPrimaryKeys(Table table) {
         Table result = table.copy();
-        for (Column column : result.getColumns()) {
-            if (!isLob(column.getMappedTypeCode())) {
-                column.setPrimaryKey(true);
+        IIndex[] indices = result.getUniqueIndices();
+        if (indices != null && indices.length > 0) {
+            for (IndexColumn indexColumn : indices[0].getColumns()) {
+                Column column = result.getColumnWithName(indexColumn.getName());
+                if (column != null) {
+                    column.setPrimaryKey(true);
+                }
+            }
+        } else {
+            for (Column column : result.getColumns()) {
+                if (!isLob(column.getMappedTypeCode())) {
+                    column.setPrimaryKey(true);
+                }
             }
         }
         return result;
