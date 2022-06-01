@@ -477,7 +477,8 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                 } 
             } catch (Exception e) {
                 log.warn("Unable to write batch to Kafka " + batchFileName, e);
-                e.printStackTrace();
+                throw new RuntimeException(e);
+//                e.printStackTrace();
             } finally {
                 context.put(KAFKA_TEXT_CACHE, new HashMap<String, List<String>>());
                 tableNameCache.clear();
