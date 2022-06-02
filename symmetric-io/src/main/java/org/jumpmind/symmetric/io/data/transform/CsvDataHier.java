@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.CsvData;
-import org.jumpmind.symmetric.io.data.transform.TableGroupHier.RelationType;
 
 public class CsvDataHier {
     private CsvData csvData;
@@ -33,14 +32,14 @@ public class CsvDataHier {
     private String catalog;
     private String schema;
     private String table;
-    private RelationType parentRelationType;
+    private String relationType;
 
-    public CsvDataHier(CsvData csvData, Table table, RelationType parentRelationType) {
+    public CsvDataHier(CsvData csvData, Table table, String relationType) {
         this.csvData = csvData;
         this.catalog = table.getCatalog();
         this.schema = table.getSchema();
         this.table = table.getName();
-        this.parentRelationType = parentRelationType;
+        this.relationType = relationType;
     }
 
     public CsvData getCsvData() {
@@ -90,11 +89,11 @@ public class CsvDataHier {
         this.table = table;
     }
 
-    public RelationType getParentRelationType() {
-        return parentRelationType;
+    public String getRelationType() {
+        return relationType;
     }
 
-    public void setParentRelationType(RelationType parentRelationType) {
-        this.parentRelationType = parentRelationType;
+    public void setRelationType(String relationType) {
+        this.relationType = relationType;
     }
 }
