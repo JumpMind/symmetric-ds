@@ -91,7 +91,7 @@ subprojects { subproject ->
     
     configurations { deployerJars }
     configurations {
-    	testArtifacts.extendsFrom testRuntimeClasspath
+    	testArtifacts.extendsFrom testImplementation
     }
 
     configurations {
@@ -144,8 +144,8 @@ subprojects { subproject ->
 		executionData(file("${project.buildDir}/jacoco/test.exec"),
                   file("${project.buildDir}/jacoco/integrationTest.exec"))
     	reports {
-        	xml.enabled=true
-        	html.enabled=true
+        	xml.required=true
+        	html.required=true
         	//for XML
     		html.destination=file("${buildDir}/reports/jacoco.html")
     		xml.destination=file("${buildDir}/reports/jacoco.xml")
@@ -369,7 +369,7 @@ subprojects { subproject ->
     }    
 
     task develop {
-        dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea
+        dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea, tasks.compileTestJava
         
         doLast {
             def wstFacetXml = "$projectDir/.settings/org.eclipse.wst.common.project.facet.core.xml"

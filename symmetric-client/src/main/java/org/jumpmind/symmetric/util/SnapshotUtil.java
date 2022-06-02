@@ -250,16 +250,18 @@ public class SnapshotUtil {
         if (nodeSecurities != null && channels != null && nodeSecurities.size() * channels.size() < maxNodeChannels) {
             byChannelId = "channel_id ,";
         }
-        extractQuery(engine.getSymmetricDialect().getPlatform().getSqlTemplate(), tmpDir + File.separator + "sym_outgoing_batch_summary.csv",
+        extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "sym_outgoing_batch_summary.csv",
                 "select node_id, " + byChannelId + "status, count(*), sum(data_row_count), sum(byte_count), sum(error_flag), min(create_time), " +
                         "sum(router_millis), sum(extract_millis), sum(network_millis), sum(filter_millis), sum(load_millis), " +
                         "sum(fallback_insert_count), sum(fallback_update_count), sum(missing_delete_count), sum(skip_count), sum(ignore_count) " +
-                        "from sym_outgoing_batch group by node_id, " + byChannelId + "status");
-        extractQuery(engine.getSymmetricDialect().getPlatform().getSqlTemplate(), tmpDir + File.separator + "sym_incoming_batch_summary.csv",
+                        "from " + TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH) +
+                        " group by node_id, " + byChannelId + "status");
+        extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "sym_incoming_batch_summary.csv",
                 "select node_id, " + byChannelId + "status, count(*), sum(data_row_count), sum(byte_count), sum(error_flag), min(create_time), " +
                         "sum(router_millis), sum(extract_millis), sum(network_millis), sum(filter_millis), sum(load_millis), " +
                         "sum(fallback_insert_count), sum(fallback_update_count), sum(missing_delete_count), sum(skip_count), sum(ignore_count) " +
-                        "from sym_incoming_batch group by node_id, " + byChannelId + "status");
+                        "from " + TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH) +
+                        " group by node_id, " + byChannelId + "status");
         try {
             outputSymDataForBatchesInError(engine, tmpDir);
         } catch (Exception e) {
@@ -479,6 +481,7 @@ public class SnapshotUtil {
             List<Row> rows = sqlTemplate.query(sql);
             writer = new CsvWriter(fileName);
             writer.setEscapeMode(CsvWriter.ESCAPE_MODE_DOUBLED);
+            writer.setForceQualifier(true);
             boolean isFirstRow = true;
             for (Row row : rows) {
                 if (isFirstRow) {

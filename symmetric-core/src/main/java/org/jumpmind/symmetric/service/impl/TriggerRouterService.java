@@ -461,7 +461,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public List<TriggerHistory> getActiveTriggerHistories(String tableName) {
         if (tableName != null) {
-            return sqlTemplate.query(getSql("allTriggerHistSql", "triggerHistBySourceTableWhereSql"),
+            String sqlKey = "allTriggerHistSql";
+            if (!parameterService.hasDatabaseBeenSetup()) {
+                sqlKey = "allTriggerHistBackwardsCompatibleSql";
+            }
+            return sqlTemplate.query(getSql(sqlKey, "triggerHistBySourceTableWhereSql"),
                     new TriggerHistoryMapper(), tableName, tableName.toLowerCase(), tableName.toUpperCase());
         } else {
             return new ArrayList<TriggerHistory>();
@@ -2308,6 +2312,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     static class TriggerHistoryMapper implements ISqlRowMapper<TriggerHistory> {
+        IParameterService parameterService;
         Map<Long, TriggerHistory> retMap = null;
 
         TriggerHistoryMapper() {
@@ -2326,7 +2331,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             hist.setCreateTime(rs.getDateTime("create_time"));
             hist.setPkColumnNames(rs.getString("pk_column_names"));
             hist.setColumnNames(rs.getString("column_names"));
-            hist.setIsMissingPk(rs.getBoolean("is_missing_pk"));
+            if (rs.containsKey("is_missing_pk")) {
+                hist.setIsMissingPk(rs.getBoolean("is_missing_pk"));
+            }
             hist.setLastTriggerBuildReason(TriggerReBuildReason.fromCode(rs
                     .getString("last_trigger_build_reason")));
             hist.setNameForDeleteTrigger(rs.getString("name_for_delete_trigger"));

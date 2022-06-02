@@ -1855,7 +1855,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void printDefaultValue(String defaultValue, int typeCode, StringBuilder ddl) {
         boolean isNull = false;
-        if (defaultValue == null || defaultValue.equalsIgnoreCase("null")) {
+        if (defaultValue == null || defaultValue.equalsIgnoreCase("null") || defaultValue.equalsIgnoreCase("(null)")) {
             isNull = true;
         }
         String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
