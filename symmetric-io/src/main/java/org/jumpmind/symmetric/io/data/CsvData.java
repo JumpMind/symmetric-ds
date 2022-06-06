@@ -34,7 +34,7 @@ import org.jumpmind.util.LinkedCaseInsensitiveMap;
  * Holder for references to both parsed and unparsed CSV data.
  */
 public class CsvData {
-    public static final int MAX_DATA_SIZE_TO_PRINT_TO_LOG = 1024 * 1000;
+    public static final int MAX_DATA_SIZE_TO_PRINT_TO_LOG = 32768;
     public static final String OLD_DATA = "oldData";
     public static final String ROW_DATA = "rowData";
     public static final String PK_DATA = "pkData";
@@ -253,7 +253,7 @@ public class CsvData {
         String rowData = getCsvData(CsvData.PK_DATA);
         if (StringUtils.isNotBlank(rowData)) {
             message.append("Failed pk data was: ");
-            message.append(rowData);
+            message.append(StringUtils.abbreviate(rowData, MAX_DATA_SIZE_TO_PRINT_TO_LOG));
             message.append("\n");
         }
         rowData = getCsvData(CsvData.ROW_DATA);
