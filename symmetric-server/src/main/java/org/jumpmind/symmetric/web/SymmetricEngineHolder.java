@@ -60,6 +60,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroup;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
+import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
@@ -256,17 +257,29 @@ public class SymmetricEngineHolder {
                         }
                         if (!foundGroup) {
                             configurationService.saveNodeGroup(new NodeGroup(clientNodeGroupId));
-                        }
-                        boolean foundLink = false;
-                        List<NodeGroupLink> links = configurationService.getNodeGroupLinksFor(serverNodeGroupId, false);
-                        for (NodeGroupLink nodeGroupLink : links) {
-                            if (nodeGroupLink.getTargetNodeGroupId().equals(clientNodeGroupId)) {
-                                foundLink = true;
-                            }
-                        }
-                        if (!foundLink) {
-                            configurationService.saveNodeGroupLink(new NodeGroupLink(serverNodeGroupId, clientNodeGroupId, NodeGroupLinkAction.W));
+                            NodeGroupLink serverToClientLink = new NodeGroupLink(serverNodeGroupId, clientNodeGroupId, NodeGroupLinkAction.W);
+                            configurationService.saveNodeGroupLink(serverToClientLink);
+                            NodeGroupLink clientToServerLink = new NodeGroupLink(clientNodeGroupId, serverNodeGroupId, NodeGroupLinkAction.P);
+                            configurationService.saveNodeGroupLink(clientToServerLink);
+                            Router serverToClientRouter = new Router("", serverToClientLink);
+                            serverToClientRouter.setRouterId(serverToClientRouter.createDefaultName());
+                            Router clientToServerRouter = new Router("", clientToServerLink);
+                            clientToServerRouter.setRouterId(clientToServerRouter.createDefaultName());
+                            triggerRouterService.saveRouter(serverToClientRouter);
+                            triggerRouterService.saveRouter(clientToServerRouter);
                             triggerRouterService.syncTriggers();
+                        } else {
+                            boolean foundLink = false;
+                            List<NodeGroupLink> links = configurationService.getNodeGroupLinksFor(serverNodeGroupId, false);
+                            for (NodeGroupLink nodeGroupLink : links) {
+                                if (nodeGroupLink.getTargetNodeGroupId().equals(clientNodeGroupId)) {
+                                    foundLink = true;
+                                }
+                            }
+                            if (!foundLink) {
+                                configurationService.saveNodeGroupLink(new NodeGroupLink(serverNodeGroupId, clientNodeGroupId, NodeGroupLinkAction.W));
+                                triggerRouterService.syncTriggers();
+                            }
                         }
                         IRegistrationService registrationService = currentEngine.getRegistrationService();
                         if (!registrationService.isAutoRegistration() && !registrationService.isRegistrationOpen(clientNodeGroupId, externalId)) {
