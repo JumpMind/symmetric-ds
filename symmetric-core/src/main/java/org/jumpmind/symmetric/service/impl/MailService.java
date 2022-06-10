@@ -222,11 +222,11 @@ public class MailService extends AbstractService implements IMailService {
         prop.setProperty(JAVAMAIL_USE_AUTH, String.valueOf(typedProp.is(ParameterConstants.SMTP_USE_AUTH, false)));
         prop.setProperty(JAVAMAIL_TRUST_HOST, typedProp.is(ParameterConstants.SMTP_ALLOW_UNTRUSTED_CERT, false) ? "*" : "");
         prop.setProperty(JAVAMAIL_TRUST_HOST_SSL, typedProp.is(ParameterConstants.SMTP_ALLOW_UNTRUSTED_CERT, false) ? "*" : "");
-        if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.SMTP_SOCKET_FACTORY_CLASS))) {
-            prop.setProperty(JAVAMAIL_SOCKET_FACTORY_CLASS, parameterService.getString(ParameterConstants.SMTP_SOCKET_FACTORY_CLASS));
+        if (StringUtils.isNotBlank(typedProp.get(ParameterConstants.SMTP_SOCKET_FACTORY_CLASS))) {
+            prop.setProperty(JAVAMAIL_SOCKET_FACTORY_CLASS, typedProp.get(ParameterConstants.SMTP_SOCKET_FACTORY_CLASS));
         }
-        if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.SMTP_SSL_PROTOCOLS))) {
-            prop.setProperty(JAVAMAIL_SSL_PROTOCOLS, parameterService.getString(ParameterConstants.SMTP_SSL_PROTOCOLS));
+        if (StringUtils.isNotBlank(typedProp.get(ParameterConstants.SMTP_SSL_PROTOCOLS))) {
+            prop.setProperty(JAVAMAIL_SSL_PROTOCOLS, typedProp.get(ParameterConstants.SMTP_SOCKET_FACTORY_CLASS));
         }
         return prop;
     }
