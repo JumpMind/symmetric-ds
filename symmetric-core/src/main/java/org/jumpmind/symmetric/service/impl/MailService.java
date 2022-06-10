@@ -53,6 +53,8 @@ public class MailService extends AbstractService implements IMailService {
     protected static final String JAVAMAIL_USE_AUTH = "mail.smtp.auth";
     protected static final String JAVAMAIL_TRUST_HOST = "mail.smtp.ssl.trust";
     protected static final String JAVAMAIL_TRUST_HOST_SSL = "mail.smtps.ssl.trust";
+    protected static final String JAVAMAIL_SOCKET_FACTORY_CLASS = "mail.smtp.socketFactory.class";
+    protected static final String JAVAMAIL_SSL_PROTOCOLS = "mail.smtp.ssl.protocols";
 
     public MailService(IParameterService parameterService, ISecurityService securityService, ISymmetricDialect symmetricDialect) {
         super(parameterService, symmetricDialect);
@@ -149,7 +151,10 @@ public class MailService extends AbstractService implements IMailService {
         String error = null;
         Transport transport = null;
         try {
-            Session session = Session.getInstance(getJavaMailProperties(prop));
+            log.debug("SMTP parameters: {}", prop);
+            Properties javaMailProps = getJavaMailProperties(prop);
+            log.debug("JavaMail properties: {}", javaMailProps);
+            Session session = Session.getInstance(javaMailProps);
             transport = session.getTransport(prop.get(ParameterConstants.SMTP_TRANSPORT, "smtp"));
             if (prop.is(ParameterConstants.SMTP_USE_AUTH, false)) {
                 transport.connect(prop.get(ParameterConstants.SMTP_USER),
@@ -159,8 +164,10 @@ public class MailService extends AbstractService implements IMailService {
             }
         } catch (NoSuchProviderException e) {
             error = getNestedErrorMessage(e);
+            log.warn("Test of mail service failed:", e);
         } catch (MessagingException e) {
             error = getNestedErrorMessage(e);
+            log.warn("Test of mail service failed:", e);
         } finally {
             try {
                 if (transport != null) {
@@ -195,6 +202,13 @@ public class MailService extends AbstractService implements IMailService {
         prop.setProperty(JAVAMAIL_USE_AUTH, parameterService.getString(ParameterConstants.SMTP_USE_AUTH, "false"));
         prop.setProperty(JAVAMAIL_TRUST_HOST, parameterService.is(ParameterConstants.SMTP_ALLOW_UNTRUSTED_CERT, false) ? "*" : "");
         prop.setProperty(JAVAMAIL_TRUST_HOST_SSL, parameterService.is(ParameterConstants.SMTP_ALLOW_UNTRUSTED_CERT, false) ? "*" : "");
+        prop.setProperty(JAVAMAIL_USE_AUTH, parameterService.getString(ParameterConstants.SMTP_USE_AUTH, "false"));
+        if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.SMTP_SOCKET_FACTORY_CLASS))) {
+            prop.setProperty(JAVAMAIL_SOCKET_FACTORY_CLASS, parameterService.getString(ParameterConstants.SMTP_SOCKET_FACTORY_CLASS));
+        }
+        if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.SMTP_SSL_PROTOCOLS))) {
+            prop.setProperty(JAVAMAIL_SSL_PROTOCOLS, parameterService.getString(ParameterConstants.SMTP_SSL_PROTOCOLS));
+        }
         return prop;
     }
 
@@ -208,6 +222,12 @@ public class MailService extends AbstractService implements IMailService {
         prop.setProperty(JAVAMAIL_USE_AUTH, String.valueOf(typedProp.is(ParameterConstants.SMTP_USE_AUTH, false)));
         prop.setProperty(JAVAMAIL_TRUST_HOST, typedProp.is(ParameterConstants.SMTP_ALLOW_UNTRUSTED_CERT, false) ? "*" : "");
         prop.setProperty(JAVAMAIL_TRUST_HOST_SSL, typedProp.is(ParameterConstants.SMTP_ALLOW_UNTRUSTED_CERT, false) ? "*" : "");
+        if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.SMTP_SOCKET_FACTORY_CLASS))) {
+            prop.setProperty(JAVAMAIL_SOCKET_FACTORY_CLASS, parameterService.getString(ParameterConstants.SMTP_SOCKET_FACTORY_CLASS));
+        }
+        if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.SMTP_SSL_PROTOCOLS))) {
+            prop.setProperty(JAVAMAIL_SSL_PROTOCOLS, parameterService.getString(ParameterConstants.SMTP_SSL_PROTOCOLS));
+        }
         return prop;
     }
 

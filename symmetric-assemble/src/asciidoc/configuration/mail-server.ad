@@ -9,6 +9,7 @@ Transport:: The transport mechanism is either SMTP (Simple Mail Transfer Protoco
 Port:: The default port for SMTP is 25, while the default port for SMTPS is 465.
 Use StartTLS:: After connecting over SMTP, the TLS protocol is used to encrypt content.
 Use Authentication:: The mail server requires a login and password before email can be sent.
+Use SSL Authentication:: The mail server requires SSL authentication (Gmail, AWS).
 User:: The user login to use for authentication.
 Password:: The login password to use for authentication.
 
