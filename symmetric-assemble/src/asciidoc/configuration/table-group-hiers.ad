@@ -2,13 +2,13 @@
 == Table Group Hierarchies
 Table group hierarchies
 
-ID:: Unique identifier for a table group hierarchy.
+ID:: Unique identifier for the table group hierarchy.
 Table Group ID:: Unique identifier for the table group associated with this table in the hierarchy.
 Source Catalog:: Optional name for the catalog the configured table is in.
 Source Schema:: Optional name for the schema the configured table is in.
 Source Table:: The name of the source table that will be a part of this table group.
 Parent ID:: Unique identifier for the parent of this table in the hierarchy.
-Parent Relation Type:: 
+Relation Type:: When writer type is non-default, this defines the structure of data in hierarchy when writing output: O=object, A=array, R=rows to array, C=columns to array.
 
 [cols="<2,<7", options="header"]
 |===
@@ -19,7 +19,12 @@ Parent Relation Type::
 
 |Array|
 
+|Rows to array|
+
+|Columns to array|
+
 |===
 
-Primary Key Column Names:: A comma-separated list of the configured table's primary keys
-Foreign Key Column Names:: A comma-separated list of the configured table's foreign keys
+Primary Column Names:: The primary key column names on this table that uniquely identify a row, comma-separated.
+Local Column Names:: The local column names on this table that reference a parent table, comma-separated.
+Parent Column Names:: The parent column names on the parent that join with local columns, comma-separated.

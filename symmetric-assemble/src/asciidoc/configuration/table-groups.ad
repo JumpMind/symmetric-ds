@@ -2,8 +2,10 @@
 == Table Groups
 Table groups
 
-ID:: Unique identifier for a table group.
-Writer Type:: 
+ID:: Unique identifier for the table group.
+Source Node Group ID:: The node group where data changes are captured.
+Target Node Group ID:: The node group where data changes will be sent.
+Writer Type:: Type of writer: D=default, J=JSON.
 
 [cols="<2,<7", options="header"]
 |===
@@ -12,6 +14,11 @@ Writer Type::
 
 |Default|
 
-|Json|
+|JSON|
 
 |===
+
+ifdef::pro[]
+.Advanced Options
+endif::pro[]
+Description:: Description of the table group that is available through the console.

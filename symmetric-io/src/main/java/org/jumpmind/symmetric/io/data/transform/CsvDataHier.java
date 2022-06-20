@@ -69,6 +69,10 @@ public class CsvDataHier {
         return catalog;
     }
 
+    public String getCatalogLowerCase() {
+        return catalog != null ? catalog.toLowerCase() : null;
+    }
+
     public void setCatalog(String catalog) {
         this.catalog = catalog;
     }
@@ -77,12 +81,20 @@ public class CsvDataHier {
         return schema;
     }
 
+    public String getSchemaLowerCase() {
+        return schema != null ? schema.toLowerCase() : null;
+    }
+
     public void setSchema(String schema) {
         this.schema = schema;
     }
 
     public String getTable() {
         return table;
+    }
+
+    public String getTableLowerCase() {
+        return table != null ? table.toLowerCase() : null;
     }
 
     public void setTable(String table) {
