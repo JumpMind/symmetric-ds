@@ -91,7 +91,7 @@ subprojects { subproject ->
     
     configurations { deployerJars }
     configurations {
-    	testArtifacts.extendsFrom testRuntimeClasspath
+    	testArtifacts.extendsFrom testImplementation
     }
 
     configurations {
@@ -144,8 +144,8 @@ subprojects { subproject ->
 		executionData(file("${project.buildDir}/jacoco/test.exec"),
                   file("${project.buildDir}/jacoco/integrationTest.exec"))
     	reports {
-        	xml.enabled=true
-        	html.enabled=true
+        	xml.required=true
+        	html.required=true
         	//for XML
     		html.destination=file("${buildDir}/reports/jacoco.html")
     		xml.destination=file("${buildDir}/reports/jacoco.xml")
@@ -334,7 +334,7 @@ subprojects { subproject ->
         powerMockVersion = '2.0.9'
         mysqlVersion = '8.0.28'
         servletVersion = '4.0.1'
-        springVersion = '5.3.18'
+        springVersion = '5.3.20'
         jtdsVersion = '1.3.1'
         bouncyCastleVersion = '1.70'
         animalSnifferVersion = '1.21'
@@ -369,7 +369,7 @@ subprojects { subproject ->
     }    
 
     task develop {
-        dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea
+        dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea, tasks.compileTestJava
         
         doLast {
             def wstFacetXml = "$projectDir/.settings/org.eclipse.wst.common.project.facet.core.xml"

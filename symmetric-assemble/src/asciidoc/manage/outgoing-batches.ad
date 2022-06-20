@@ -170,11 +170,11 @@ data itself, you do have several options, including:
 ifndef::pro[]
           
 * Causing SymmetricDS to skip the batch completely.  This is accomplished by setting the
-batch's status to 'OK', as in:
+batch's status to 'IG' (ignore), as in:
 +
 [source, sql]  
 ----
-update sym_outgoing_batch set status='OK' where batch_id='XXXXXX'
+update sym_outgoing_batch set status='IG' where batch_id='XXXXXX'
 ----
 +                
 where XXXXXX is the failing batch. On the next pull or push, SymmetricDS will skip this batch since

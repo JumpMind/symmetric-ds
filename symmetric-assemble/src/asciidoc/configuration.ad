@@ -27,6 +27,12 @@ endif::pro[]
 
 include::configuration/groups.ad[]
 include::configuration/group-links.ad[]
+
+ifdef::pro[]
+include::configuration/table-groups.ad[]
+include::configuration/table-group-hiers.ad[]
+endif::pro[]
+
 include::configuration/routers.ad[]
 include::configuration/channels.ad[]
 include::configuration/table-triggers.ad[]

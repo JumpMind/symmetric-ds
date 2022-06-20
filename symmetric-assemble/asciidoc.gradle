@@ -63,7 +63,7 @@ task generateReleaseNotes {
 	dependsOn project(":symmetric-db").jar
 	doFirst{
 		javaexec {
-			main = 'org.jumpmind.db.io.ReleaseNotesGenerator'
+			mainClass = 'org.jumpmind.db.io.ReleaseNotesGenerator'
 			classpath = configurations.generateReleaseNotesDependencies
 			args = [
 				symAssembleDir + '/build/docJars/core-' + latestPreviousVersion + "/symmetric-default.properties",
@@ -81,7 +81,7 @@ task generateAppendixes {
     dependsOn project(":symmetric-db").jar
     doLast{
         javaexec {
-            main = 'org.jumpmind.properties.DefaultParameterParser'
+            mainClass = 'org.jumpmind.properties.DefaultParameterParser'
             classpath = configurations.generateAppendixesDependencies
             args = [
                 symAssembleDir + '/../symmetric-server/src/main/deploy/conf/symmetric-server.properties',
@@ -93,7 +93,7 @@ task generateAppendixes {
 
         if (project.properties.containsKey('pro')) {
         	javaexec {
-        		main = 'org.jumpmind.properties.DefaultParameterParser'
+        		mainClass = 'org.jumpmind.properties.DefaultParameterParser'
         		classpath = configurations.generateAppendixesDependencies
         		args = [
 					symAssembleDir + '/../symmetric-core/src/main/resources/symmetric-default.properties,' + symAssembleDir + '/../../symmetric-pro/symmetric-pro/src/main/resources/symmetric-console-default.properties',
@@ -104,7 +104,7 @@ task generateAppendixes {
         	}
         	
         	javaexec {
-        		main = 'org.jumpmind.properties.DefaultParameterParser'
+        		mainClass = 'org.jumpmind.properties.DefaultParameterParser'
         		classpath = configurations.generateAppendixesDependencies
         		args = [
 					symAssembleDir + '/../symmetric-core/src/main/resources/symmetric-default.properties,' + symAssembleDir + '/../../symmetric-pro/symmetric-pro/src/main/resources/symmetric-console-default.properties',
@@ -115,7 +115,7 @@ task generateAppendixes {
         	}
         	
 	        javaexec {
-	            main = 'org.jumpmind.db.io.DatabaseXmlAsciiDocBuilder'
+	            mainClass = 'org.jumpmind.db.io.DatabaseXmlAsciiDocBuilder'
 	            classpath = configurations.generateAppendixesDependencies
 	            args = [
 	                symAssembleDir + '/../symmetric-core/src/main/resources/symmetric-schema.xml,' + symAssembleDir + '/../../symmetric-pro/symmetric-pro/src/main/resources/console-schema.xml',
@@ -124,7 +124,7 @@ task generateAppendixes {
 	        }
         } else {
         	javaexec {
-            	main = 'org.jumpmind.properties.DefaultParameterParser'
+            	mainClass = 'org.jumpmind.properties.DefaultParameterParser'
             	classpath = configurations.generateAppendixesDependencies
             	args = [
                 	symAssembleDir + '/../symmetric-core/src/main/resources/symmetric-default.properties',
@@ -135,7 +135,7 @@ task generateAppendixes {
         	}
 
         	javaexec {
-            	main = 'org.jumpmind.properties.DefaultParameterParser'
+            	mainClass = 'org.jumpmind.properties.DefaultParameterParser'
             	classpath = configurations.generateAppendixesDependencies
             	args = [
              	    symAssembleDir + '/../symmetric-core/src/main/resources/symmetric-default.properties',
@@ -146,7 +146,7 @@ task generateAppendixes {
        		}
        		
 	        javaexec {
-	            main = 'org.jumpmind.db.io.DatabaseXmlAsciiDocBuilder'
+	            mainClass = 'org.jumpmind.db.io.DatabaseXmlAsciiDocBuilder'
 	            classpath = configurations.generateAppendixesDependencies
 	            args = [
 	                symAssembleDir + '/../symmetric-core/src/main/resources/symmetric-schema.xml',

@@ -2517,6 +2517,9 @@ public class DataService extends AbstractService implements IDataService {
 
     public void sendNewerDataToNode(ISqlTransaction transaction, String targetNodeId, String tableName, String pkCsvData,
             Date minCreateTime, String winningNodeId) {
+        if (pkCsvData != null) {
+            pkCsvData = pkCsvData.replace("\\n", "\n").replace("\\r", "\r");
+        }
         List<Data> datas = transaction.query(getSql("selectData", "whereNewerData"), getDataMapper(),
                 new Object[] { tableName, pkCsvData + "%", pkCsvData, minCreateTime },
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP });

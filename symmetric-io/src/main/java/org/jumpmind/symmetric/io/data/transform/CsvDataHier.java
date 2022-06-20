@@ -20,16 +20,26 @@
  */
 package org.jumpmind.symmetric.io.data.transform;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.CsvData;
 
 public class CsvDataHier {
     private CsvData csvData;
     private List<CsvDataHier> children;
+    private String catalog;
+    private String schema;
+    private String table;
+    private String relationType;
 
-    public CsvDataHier(CsvData csvData) {
+    public CsvDataHier(CsvData csvData, Table table, String relationType) {
         this.csvData = csvData;
+        this.catalog = table.getCatalog();
+        this.schema = table.getSchema();
+        this.table = table.getName();
+        this.relationType = relationType;
     }
 
     public CsvData getCsvData() {
@@ -49,6 +59,41 @@ public class CsvDataHier {
     }
 
     public void addChild(CsvDataHier csvDataHier) {
+        if (children == null) {
+            children = new ArrayList<CsvDataHier>();
+        }
         children.add(csvDataHier);
+    }
+
+    public String getCatalog() {
+        return catalog;
+    }
+
+    public void setCatalog(String catalog) {
+        this.catalog = catalog;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
+
+    public String getTable() {
+        return table;
+    }
+
+    public void setTable(String table) {
+        this.table = table;
+    }
+
+    public String getRelationType() {
+        return relationType;
+    }
+
+    public void setRelationType(String relationType) {
+        this.relationType = relationType;
     }
 }

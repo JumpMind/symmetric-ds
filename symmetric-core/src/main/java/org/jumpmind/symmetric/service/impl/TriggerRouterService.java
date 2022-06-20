@@ -461,7 +461,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public List<TriggerHistory> getActiveTriggerHistories(String tableName) {
         if (tableName != null) {
-            return sqlTemplate.query(getSql("allTriggerHistSql", "triggerHistBySourceTableWhereSql"),
+            String sqlKey = "allTriggerHistSql";
+            if (!parameterService.hasDatabaseBeenSetup()) {
+                sqlKey = "allTriggerHistBackwardsCompatibleSql";
+            }
+            return sqlTemplate.query(getSql(sqlKey, "triggerHistBySourceTableWhereSql"),
                     new TriggerHistoryMapper(), tableName, tableName.toLowerCase(), tableName.toUpperCase());
         } else {
             return new ArrayList<TriggerHistory>();
@@ -1721,11 +1725,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
             List<TriggerHistory> activeTriggerHistories = getActiveTriggerHistories();
             Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(triggersForCurrentNode,
-                    activeTriggerHistories, true);
+                    activeTriggerHistories, false);
             for (Table table : tables) {
-                /* Re-lookup just in case the table was just altered */
                 IDatabasePlatform targetPlatform = symmetricDialect.getTargetPlatform(table.getName());
-                table = targetPlatform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(), true);
                 for (Trigger trigger : triggersForCurrentNode) {
                     if (trigger.matches(table, targetPlatform.getDefaultCatalog(), targetPlatform.getDefaultSchema(), ignoreCase) &&
                             (!trigger.isSourceTableNameWildCarded() || !trigger.isSourceTableNameExpanded()
@@ -1740,7 +1742,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         }
                         if (triggerTableSupportingInfo != null) {
                             log.info("Synchronizing triggers for {}", table.getFullyQualifiedTableName());
-                            updateOrCreateDatabaseTriggers(trigger, table, null, force, true, activeTriggerHistories, triggerTableSupportingInfo);
+                            updateOrCreateDatabaseTriggers(trigger, triggerTableSupportingInfo.getTable(), null, force, true, activeTriggerHistories,
+                                    triggerTableSupportingInfo);
                             log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
                         } else {
                             log.warn("Can't find table {} for trigger {}, make sure table exists.", table.getFullyQualifiedTableName(), trigger.getTriggerId());
@@ -2308,6 +2311,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     static class TriggerHistoryMapper implements ISqlRowMapper<TriggerHistory> {
+        IParameterService parameterService;
         Map<Long, TriggerHistory> retMap = null;
 
         TriggerHistoryMapper() {
@@ -2326,7 +2330,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             hist.setCreateTime(rs.getDateTime("create_time"));
             hist.setPkColumnNames(rs.getString("pk_column_names"));
             hist.setColumnNames(rs.getString("column_names"));
-            hist.setIsMissingPk(rs.getBoolean("is_missing_pk"));
+            if (rs.containsKey("is_missing_pk")) {
+                hist.setIsMissingPk(rs.getBoolean("is_missing_pk"));
+            }
             hist.setLastTriggerBuildReason(TriggerReBuildReason.fromCode(rs
                     .getString("last_trigger_build_reason")));
             hist.setNameForDeleteTrigger(rs.getString("name_for_delete_trigger"));
