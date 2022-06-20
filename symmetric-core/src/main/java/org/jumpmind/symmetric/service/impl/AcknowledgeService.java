@@ -78,6 +78,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 }
                 boolean isFirstTimeAsOkStatus = outgoingBatch.getStatus() != Status.OK && status == Status.OK;
                 outgoingBatch.setStatus(status);
+                outgoingBatch.setBulkLoadFlag(batch.isBulkLoaderFlag());
                 outgoingBatch.setErrorFlag(status == Status.ER);
                 outgoingBatch.setNetworkMillis(batch.getNetworkMillis());
                 outgoingBatch.setFilterMillis(batch.getFilterMillis());

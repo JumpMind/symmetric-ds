@@ -53,7 +53,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "  load_row_count=?, load_insert_row_count=?, load_update_row_count=?, load_delete_row_count=?, "
                         + "  fallback_insert_count=?, fallback_update_count=?, ignore_row_count=?, missing_delete_count=?, "
                         + "  skip_count=?, extract_row_count=?, extract_insert_row_count=?, extract_update_row_count=?, extract_delete_row_count=?, "
-                        + "  transform_extract_millis=?, transform_load_millis=? "
+                        + "  transform_extract_millis=?, transform_load_millis=?, bulk_loader_flag=? "
                         + "  where batch_id=? and node_id=?");
         putSql("statusNotOk", " and status not in ('OK', 'IG')");
         putSql("updateOutgoingBatchStatusSql",

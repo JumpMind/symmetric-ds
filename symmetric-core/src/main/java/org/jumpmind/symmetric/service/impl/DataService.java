@@ -441,16 +441,16 @@ public class DataService extends AbstractService implements IDataService {
         return collapsedRequests;
     }
 
-    public TableReloadStatus updateTableReloadStatusDataLoaded(ISqlTransaction transaction, long loadId, long batchId, int batchCount) {
+    public TableReloadStatus updateTableReloadStatusDataLoaded(ISqlTransaction transaction, long loadId, long batchId, int batchCount, boolean isBulkLoaded) {
         int idType = symmetricDialect.getSqlTypeForIds();
         int count = transaction.prepareAndExecute(getSql("updateTableReloadStatusDataLoaded"),
                 new Object[] { batchId, batchCount, batchId, batchCount, batchId, batchCount,
                         batchId, batchCount, batchId, batchCount, batchId, batchCount, new Date(),
-                        batchId, batchCount, batchId, batchCount, batchId, batchCount, loadId, engine.getNodeId(), new Date(), loadId },
+                        batchId, batchCount, batchId, batchCount, batchId, batchCount, loadId, engine.getNodeId(), new Date(), batchId, isBulkLoaded, loadId },
                 new int[] { idType, Types.NUMERIC, idType, Types.NUMERIC, idType, Types.NUMERIC,
                         idType, Types.NUMERIC, idType, Types.NUMERIC, idType, Types.NUMERIC, Types.TIMESTAMP,
                         idType, Types.NUMERIC, idType, Types.NUMERIC, idType, Types.NUMERIC, idType,
-                        Types.VARCHAR, Types.TIMESTAMP, idType });
+                        Types.VARCHAR, Types.TIMESTAMP, idType, Types.NUMERIC, idType});
         List<TableReloadStatus> status = transaction.query(getSql("selectTableReloadStatusByLoadId"),
                 new TableReloadStatusMapper(), new Object[] { loadId }, new int[] { idType });
         if (status != null && status.size() > 0 && count > 0) {
@@ -692,6 +692,7 @@ public class DataService extends AbstractService implements IDataService {
             request.setEndTime(rs.getDateTime("end_time"));
             request.setLastUpdateTime(rs.getDateTime("last_update_time"));
             request.setLastUpdatedBy(rs.getString("last_update_by"));
+            request.setNumBatchesBulkLoaded(rs.getInt("batch_bulk_load_count"));
             return request;
         }
     }

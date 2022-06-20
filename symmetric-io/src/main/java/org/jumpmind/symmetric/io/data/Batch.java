@@ -55,7 +55,17 @@ public class Batch {
     protected BatchType batchType;
     protected Statistics statistics;
     protected boolean invalidRetry = false;
-    protected Map<String, Long> timers = new HashMap<String, Long>();
+    protected boolean bulkLoaderFlag;
+    
+    public boolean isBulkLoaderFlag() {
+		return bulkLoaderFlag;
+	}
+
+	public void setBulkLoaderFlag(boolean bulkLoaderFlag) {
+		this.bulkLoaderFlag = bulkLoaderFlag;
+	}
+
+	protected Map<String, Long> timers = new HashMap<String, Long>();
 
     public Batch(BatchType batchType, long batchId, String channelId, BinaryEncoding binaryEncoding, String sourceNodeId, String targetNodeId, boolean common) {
         this.batchType = batchType;

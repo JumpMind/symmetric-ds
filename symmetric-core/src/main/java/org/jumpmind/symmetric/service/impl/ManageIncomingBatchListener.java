@@ -139,6 +139,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
         Batch batch = context.getBatch();
         this.currentBatch.setValues(context.getReader().getStatistics().get(batch), context
                 .getWriter().getStatistics().get(batch), true);
+        this.currentBatch.setBulkLoadFlag(batch.isBulkLoaderFlag());
         statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(),
                 this.currentBatch.getLoadRowCount());
         statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
@@ -183,8 +184,9 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                 throw ex;
             }
             if (context.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE) != null && context.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE).equals("bulk")) {
+            	currentBatch.setBulkLoadFlag(false);
                 log.info("Bulk loading failed for this batch " + context.getBatch().getBatchId() + ", falling back to default loading. (" + ex + ")");
-                log.debug("Bulk loading error.", ex);
+                log.debug("Bulk loading error.", ex);               
             } else {
                 /*
                  * Reread batch to make sure it wasn't set to IG or OK

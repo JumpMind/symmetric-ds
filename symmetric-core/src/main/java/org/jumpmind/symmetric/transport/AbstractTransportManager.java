@@ -110,6 +110,7 @@ abstract public class AbstractTransportManager {
                 append(builder, WebConstants.ACK_IGNORE_ROW_COUNT + batchId, batch.getIgnoreRowCount());
                 append(builder, WebConstants.ACK_MISSING_DELETE_COUNT + batchId, batch.getMissingDeleteCount());
                 append(builder, WebConstants.ACK_SKIP_COUNT + batchId, batch.getSkipCount());
+                append(builder, WebConstants.ACK_BULK_LOADER_FLAG + batchId, batch.isBulkLoadFlag());
                 if (batch.getIgnoreCount() > 0) {
                     append(builder, WebConstants.ACK_IGNORE_COUNT + batchId, batch.getIgnoreCount());
                 }
@@ -199,7 +200,7 @@ abstract public class AbstractTransportManager {
     }
 
     private static BatchAck getBatchInfo(Map<String, ? extends Object> parameters, long batchId) {
-        BatchAck batchInfo = new BatchAck(batchId);
+        BatchAck batchInfo = new BatchAck(batchId);        
         String nodeId = getParam(parameters, WebConstants.ACK_NODE_ID + batchId);
         if (StringUtils.isBlank(nodeId)) {
             nodeId = getParam(parameters, WebConstants.NODE_ID);
@@ -220,6 +221,7 @@ abstract public class AbstractTransportManager {
         batchInfo.setMissingDeleteCount(getParamAsNum(parameters, WebConstants.ACK_MISSING_DELETE_COUNT + batchId));
         batchInfo.setSkipCount(getParamAsNum(parameters, WebConstants.ACK_SKIP_COUNT + batchId));
         batchInfo.setIgnored(getParamAsBoolean(parameters, WebConstants.ACK_IGNORE_COUNT + batchId));
+        batchInfo.setBulkLoaderFlag(Boolean.parseBoolean(getParam(parameters, WebConstants.ACK_BULK_LOADER_FLAG + batchId)));
         String status = getParam(parameters, WebConstants.ACK_BATCH_NAME + batchId, "").trim();
         batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK) || status.equalsIgnoreCase(WebConstants.ACK_BATCH_RESEND));
         batchInfo.setResend(status.equalsIgnoreCase(WebConstants.ACK_BATCH_RESEND));

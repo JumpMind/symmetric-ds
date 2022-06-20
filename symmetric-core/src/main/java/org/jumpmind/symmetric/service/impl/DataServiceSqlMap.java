@@ -74,7 +74,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " table_count, rows_loaded, rows_count, "
                 + " completed, cancelled, full_load, "
                 + " start_time, end_time, last_update_time, last_update_by, "
-                + " error_flag, sql_state, sql_code, sql_message "
+                + " error_flag, sql_state, sql_code, sql_message, batch_bulk_load_count "
                 + " from $(table_reload_status) ");
         putSql("selectActiveTableReloadStatus", "select source_node_id, target_node_id, load_id, "
                 + " end_data_batch_id, start_data_batch_id, "
@@ -83,7 +83,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " table_count, rows_loaded, rows_count, "
                 + " completed, cancelled, full_load, "
                 + " start_time, end_time, last_update_time, last_update_by, "
-                + " error_flag, sql_state, sql_code, sql_message "
+                + " error_flag, sql_state, sql_code, sql_message, batch_bulk_load_count "
                 + " from $(table_reload_status) "
                 + " where completed = 0 and cancelled = 0");
         putSql("orderTableReloadStatus", " order by load_id desc, completed, last_update_time desc");
@@ -98,7 +98,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " table_count, rows_loaded, rows_count, "
                 + " completed, cancelled, full_load, "
                 + " start_time, end_time, last_update_time, last_update_by, "
-                + " error_flag, sql_state, sql_code, sql_message "
+                + " error_flag, sql_state, sql_code, sql_message, batch_bulk_load_count "
                 + " from $(table_reload_status) "
                 + " where load_id = ?");
         putSql("selectTableReloadStatusByTargetNodeId", "select source_node_id, target_node_id, load_id, "
@@ -108,7 +108,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " table_count, rows_loaded, rows_count, "
                 + " completed, cancelled, full_load, "
                 + " start_time, end_time, last_update_time, last_update_by, "
-                + " error_flag, sql_state, sql_code, sql_message "
+                + " error_flag, sql_state, sql_code, sql_message, batch_bulk_load_count "
                 + " from $(table_reload_status) "
                 + " where target_node_id = ?");
         putSql("updateProcessedTableReloadRequest",
@@ -141,11 +141,12 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + "    setup_batch_count <= (case when ? < start_data_batch_id then setup_batch_loaded + ? else setup_batch_loaded end) and "
                 + "    finalize_batch_loaded <= (case when ? > end_data_batch_id then finalize_batch_loaded + ? else finalize_batch_loaded end)) "
                 + "    then ? else end_time end, "
-                + " data_batch_loaded = case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end, "
+                + " data_batch_loaded = case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end, " 
                 + " setup_batch_loaded = case when ? < start_data_batch_id then setup_batch_loaded + ? else setup_batch_loaded end, "
                 + " finalize_batch_loaded = case when ? > end_data_batch_id then finalize_batch_loaded + ? else finalize_batch_loaded end, "
                 + " rows_loaded = (select case when sum(loaded_rows) is null then 0 else sum(loaded_rows) end from $(extract_request) where load_id = ? and source_node_id = ?), "
-                + " last_update_time = ? "
+                + " last_update_time = ?, "
+                + " batch_bulk_load_count = case when ? between start_data_batch_id and end_data_batch_id then batch_bulk_load_count + ? else batch_bulk_load_count end "
                 + " where load_id = ? and completed = 0");
         putSql("selectStartBatchExtractRequest",
                 "select start_batch_id from $(extract_request) where ? between start_batch_id and end_batch_id and node_id = ? and source_node_id = ?");

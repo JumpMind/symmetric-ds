@@ -53,6 +53,7 @@ public class WebConstants {
     public static final String ACK_BATCH_NAME = "batch-";
     public static final String ACK_BATCH_OK = "ok";
     public static final String ACK_BATCH_RESEND = "resend";
+    public static final String ACK_BULK_LOADER_FLAG = "bulkLoader-";
     public static final String ACK_NODE_ID = "nodeId-";
     public static final String ACK_NETWORK_MILLIS = "network-";
     public static final String ACK_FILTER_MILLIS = "filter-";

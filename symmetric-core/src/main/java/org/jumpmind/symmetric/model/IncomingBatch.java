@@ -73,6 +73,7 @@ public class IncomingBatch extends AbstractBatch {
         setNodeId(batch.getSourceNodeId());
         setChannelId(batch.getChannelId());
         setStatus(Status.LD);
+        setBulkLoadFlag(batch.isBulkLoaderFlag());
     }
 
     public void setValues(Statistics readerStatistics, Statistics writerStatistics, boolean isSuccess) {

@@ -215,7 +215,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.getFallbackInsertCount(), outgoingBatch.getFallbackUpdateCount(), outgoingBatch.getIgnoreRowCount(),
                         outgoingBatch.getMissingDeleteCount(), outgoingBatch.getSkipCount(), outgoingBatch.getExtractRowCount(),
                         outgoingBatch.getExtractInsertRowCount(), outgoingBatch.getExtractUpdateRowCount(),
-                        outgoingBatch.getExtractDeleteRowCount(), outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(),
+                        outgoingBatch.getExtractDeleteRowCount(), outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(), outgoingBatch.isBulkLoadFlag(),
                         outgoingBatch.getBatchId(), outgoingBatch.getNodeId() },
                 new int[] { Types.CHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
@@ -223,7 +223,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         Types.TIMESTAMP, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC,
                         Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                        Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                        Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 
@@ -257,7 +257,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                             outgoingBatch.getFallbackInsertCount(), outgoingBatch.getFallbackUpdateCount(), outgoingBatch.getIgnoreRowCount(),
                             outgoingBatch.getMissingDeleteCount(), outgoingBatch.getSkipCount(), outgoingBatch.getExtractRowCount(),
                             outgoingBatch.getExtractInsertRowCount(), outgoingBatch.getExtractUpdateRowCount(),
-                            outgoingBatch.getExtractDeleteRowCount(), outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(),
+                            outgoingBatch.getExtractDeleteRowCount(), outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(), outgoingBatch.isBulkLoadFlag(),
                             outgoingBatch.getBatchId(), outgoingBatch.getNodeId() }, types);
             if (++count >= flushSize) {
                 transaction.flush();

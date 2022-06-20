@@ -1409,7 +1409,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), new Date(), outgoingBatch.getBatchId(),
                 outgoingBatch.getBatchId(), outgoingBatch.getNodeId(), outgoingBatch.getLoadId(), engine.getNodeId());
         TableReloadStatus status = dataService.updateTableReloadStatusDataLoaded(transaction,
-                outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);
+                outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1, outgoingBatch.isBulkLoadFlag());
         if (status != null && status.isFullLoad() && (status.isCancelled() || status.isCompleted())) {
             log.info("Initial load ended for node {}", outgoingBatch.getNodeId());
             nodeService.setInitialLoadEnded(transaction, outgoingBatch.getNodeId());
@@ -1862,7 +1862,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 // back out statistics from table reload request
                 if (batchLoadedCount > 0 || rowLoadedCount > 0) {
                     dataService.updateTableReloadStatusDataLoaded(transaction, extractRequest.getLoadId(), extractRequest.getStartBatchId(),
-                            (int) batchLoadedCount * -1);
+                            (int) batchLoadedCount * -1, false);
                 }
                 // set status of batches back to requested
                 outgoingBatchService.updateOutgoingBatchStatus(transaction, Status.RQ, extractRequest.getNodeId(), extractRequest.getStartBatchId(),

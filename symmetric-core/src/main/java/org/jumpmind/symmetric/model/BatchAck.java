@@ -43,6 +43,7 @@ public class BatchAck implements Serializable {
     private String sqlState;
     private int sqlCode;
     private boolean ignored = false;
+    private boolean bulkLoaderFlag;
     private String sqlMessage;
     private long loadRowCount;
     private long loadInsertRowCount;
@@ -257,4 +258,13 @@ public class BatchAck implements Serializable {
     public long getTransformLoadMillis() {
         return transformLoadMillis;
     }
+
+	public boolean isBulkLoaderFlag() {
+		return bulkLoaderFlag;
+	}
+
+	public void setBulkLoaderFlag(boolean bulkLoaderFlag) {
+		this.bulkLoaderFlag = bulkLoaderFlag;
+	}
+    
 }

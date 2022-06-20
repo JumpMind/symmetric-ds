@@ -45,6 +45,7 @@ public class OutgoingBatch extends AbstractBatch {
         setChannelId(channelId);
         setStatus(status);
         setCreateTime(new Date());
+        setBulkLoadFlag(isBulkLoadFlag());
     }
 
     @Override

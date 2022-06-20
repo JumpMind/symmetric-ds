@@ -304,6 +304,7 @@
 		<column name="failed_row_number" type="INTEGER" required="true" default="0" description="This numbered data event that failed as read from the CSV." />
         <column name="failed_line_number" type="INTEGER" required="true" default="0" description="The current line number in the CSV for this batch that failed." />
         <column name="failed_data_id" type="BIGINT" required="true" default="0" description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
+        <column name="bulk_loader_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch did or did not use the bulk loader." />
         <index name="idx_ib_time_status">
             <index-column name="create_time" />
             <index-column name="status" />
@@ -698,6 +699,7 @@
 		<column name="failed_data_id" type="BIGINT" required="true" default="0" description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
 		<column name="failed_line_number" type="BIGINT" required="true" default="0" description="The current line number in the CSV for this batch that failed." />
         <column name="create_by" type="VARCHAR" size="255" description="The user that created the batch.  A null value means that the system created the batch." />
+        <column name="bulk_loader_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch did or did not use the bulk loader." />
         <index name="idx_ob_node_status">
             <index-column name="node_id" />
             <index-column name="status" />
@@ -829,6 +831,8 @@
         <column name="sql_message" type="LONGVARCHAR" description="For a request in error, this is the error message that describes the error." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true" description="Timestamp when a user or the system last updated this entry." />
+        <column name="batch_bulk_load_count" type="BIGINT" required="true" default="0" description="The number of batches that were loaded with the bulk loader."/>
+        
     </table>
     
     <table name="transform_column" description="Defines the column mappings and optional data transformation for a data loader transformation.">

@@ -92,6 +92,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
 
     public void start(Batch batch) {
         this.batch = batch;
+        this.batch.setBulkLoaderFlag(false);
         this.statistics.put(batch, new Statistics());
         this.statistics.get(batch).set(DataWriterStatisticConstants.STARTTIME, new Date().getTime());
     }

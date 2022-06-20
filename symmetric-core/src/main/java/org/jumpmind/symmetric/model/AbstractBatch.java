@@ -98,6 +98,7 @@ public class AbstractBatch implements Serializable {
     private long oldNetworkMillis = 0;
     private long loadId = -1;
     private boolean commonFlag;
+    private boolean bulkLoadFlag;
     private long fallbackInsertCount;
     private long fallbackUpdateCount;
     private long ignoreRowCount;
@@ -701,4 +702,13 @@ public class AbstractBatch implements Serializable {
     public void setTableExtractedCount(Map<String, Map<String, Long>> tableExtractedCount) {
         this.tableExtractedCount = tableExtractedCount;
     }
+
+	public boolean isBulkLoadFlag() {
+		return bulkLoadFlag;
+	}
+
+	public void setBulkLoadFlag(boolean bulkLoadFlag) {
+		this.bulkLoadFlag = bulkLoadFlag;
+	}
+    
 }

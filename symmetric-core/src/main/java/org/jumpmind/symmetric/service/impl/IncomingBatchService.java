@@ -384,7 +384,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             batch.getOtherRowCount(), batch.getDataRowCount(), batch.getDataInsertRowCount(), batch.getDataUpdateRowCount(),
                             batch.getDataDeleteRowCount(), batch.getExtractRowCount(), batch.getExtractInsertRowCount(),
                             batch.getExtractUpdateRowCount(), batch.getExtractDeleteRowCount(), batch.getLoadInsertRowCount(),
-                            batch.getLoadUpdateRowCount(), batch.getLoadDeleteRowCount(), batch.getFailedDataId(), batch.getBatchId(),
+                            batch.getLoadUpdateRowCount(), batch.getLoadDeleteRowCount(), batch.getFailedDataId(), batch.isBulkLoadFlag(), batch.getBatchId(),
                             batch.getNodeId() },
                     new int[] { Types.CHAR, Types.SMALLINT, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
@@ -392,7 +392,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
         }
         return count;
     }
