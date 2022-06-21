@@ -56,16 +56,16 @@ public class Batch {
     protected Statistics statistics;
     protected boolean invalidRetry = false;
     protected boolean bulkLoaderFlag;
-    
+
     public boolean isBulkLoaderFlag() {
-		return bulkLoaderFlag;
-	}
+        return bulkLoaderFlag;
+    }
 
-	public void setBulkLoaderFlag(boolean bulkLoaderFlag) {
-		this.bulkLoaderFlag = bulkLoaderFlag;
-	}
+    public void setBulkLoaderFlag(boolean bulkLoaderFlag) {
+        this.bulkLoaderFlag = bulkLoaderFlag;
+    }
 
-	protected Map<String, Long> timers = new HashMap<String, Long>();
+    protected Map<String, Long> timers = new HashMap<String, Long>();
 
     public Batch(BatchType batchType, long batchId, String channelId, BinaryEncoding binaryEncoding, String sourceNodeId, String targetNodeId, boolean common) {
         this.batchType = batchType;

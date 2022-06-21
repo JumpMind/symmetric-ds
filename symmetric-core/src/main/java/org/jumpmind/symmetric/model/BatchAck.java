@@ -259,12 +259,11 @@ public class BatchAck implements Serializable {
         return transformLoadMillis;
     }
 
-	public boolean isBulkLoaderFlag() {
-		return bulkLoaderFlag;
-	}
+    public boolean isBulkLoaderFlag() {
+        return bulkLoaderFlag;
+    }
 
-	public void setBulkLoaderFlag(boolean bulkLoaderFlag) {
-		this.bulkLoaderFlag = bulkLoaderFlag;
-	}
-    
+    public void setBulkLoaderFlag(boolean bulkLoaderFlag) {
+        this.bulkLoaderFlag = bulkLoaderFlag;
+    }
 }

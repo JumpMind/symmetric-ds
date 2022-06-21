@@ -450,7 +450,7 @@ public class DataService extends AbstractService implements IDataService {
                 new int[] { idType, Types.NUMERIC, idType, Types.NUMERIC, idType, Types.NUMERIC,
                         idType, Types.NUMERIC, idType, Types.NUMERIC, idType, Types.NUMERIC, Types.TIMESTAMP,
                         idType, Types.NUMERIC, idType, Types.NUMERIC, idType, Types.NUMERIC, idType,
-                        Types.VARCHAR, Types.TIMESTAMP, idType, Types.NUMERIC, idType});
+                        Types.VARCHAR, Types.TIMESTAMP, idType, Types.NUMERIC, idType });
         List<TableReloadStatus> status = transaction.query(getSql("selectTableReloadStatusByLoadId"),
                 new TableReloadStatusMapper(), new Object[] { loadId }, new int[] { idType });
         if (status != null && status.size() > 0 && count > 0) {

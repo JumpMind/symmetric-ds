@@ -703,12 +703,11 @@ public class AbstractBatch implements Serializable {
         this.tableExtractedCount = tableExtractedCount;
     }
 
-	public boolean isBulkLoadFlag() {
-		return bulkLoadFlag;
-	}
+    public boolean isBulkLoadFlag() {
+        return bulkLoadFlag;
+    }
 
-	public void setBulkLoadFlag(boolean bulkLoadFlag) {
-		this.bulkLoadFlag = bulkLoadFlag;
-	}
-    
+    public void setBulkLoadFlag(boolean bulkLoadFlag) {
+        this.bulkLoadFlag = bulkLoadFlag;
+    }
 }

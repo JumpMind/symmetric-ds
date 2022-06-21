@@ -50,7 +50,7 @@ public class TableReloadStatus {
     protected Date lastUpdateTime = new Date();
     protected int numBatchesBulkLoaded;
 
-	@Override
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -307,12 +307,12 @@ public class TableReloadStatus {
     public int getTotalBatchLoaded() {
         return this.setupBatchLoaded + this.dataBatchLoaded + this.finalizeBatchLoaded;
     }
-    
-    public int getNumBatchesBulkLoaded() {
-		return numBatchesBulkLoaded;
-	}
 
-	public void setNumBatchesBulkLoaded(int numBatchesBulkLoaded) {
-		this.numBatchesBulkLoaded = numBatchesBulkLoaded;
-	}
+    public int getNumBatchesBulkLoaded() {
+        return numBatchesBulkLoaded;
+    }
+
+    public void setNumBatchesBulkLoaded(int numBatchesBulkLoaded) {
+        this.numBatchesBulkLoaded = numBatchesBulkLoaded;
+    }
 }

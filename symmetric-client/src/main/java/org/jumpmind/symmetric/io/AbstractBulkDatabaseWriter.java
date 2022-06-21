@@ -49,7 +49,7 @@ public abstract class AbstractBulkDatabaseWriter extends DynamicDefaultDatabaseW
         super.start(batch);
         batch.setBulkLoaderFlag(true);
         if (isFallBackToDefault()) {
-        	batch.setBulkLoaderFlag(false);
+            batch.setBulkLoaderFlag(false);
             getTransaction().setInBatchMode(false);
             getTransaction().clearBatch();
             log.debug("Writing batch " + batch.getBatchId() + " on channel " + batch.getChannelId() + " to node " + batch.getTargetNodeId()
