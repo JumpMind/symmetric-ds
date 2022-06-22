@@ -63,8 +63,6 @@ public class SelectFromSymDataSource extends SelectFromSource {
     protected OutgoingBatch outgoingBatch;
     protected TriggerHistory lastTriggerHistory;
     protected String lastRouterId;
-    protected Table lastSourceTable;
-    protected Table lastTargetTable;
     protected boolean requiresLobSelectedFromSource;
     protected ISqlReadCursor<Data> cursor;
     protected SelectFromTableSource reloadSource;
@@ -139,8 +137,7 @@ public class SelectFromSymDataSource extends SelectFromSource {
                     Trigger trigger = triggerRouter.getTrigger();
                     boolean isFileParserRouter = triggerHistory.getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER);
                     if (lastTriggerHistory == null || lastTriggerHistory.getTriggerHistoryId() != triggerHistory.getTriggerHistoryId() ||
-                            lastRouterId == null || !lastRouterId.equals(routerId) || lastSourceTable == null ||
-                            !lastSourceTable.equals(sourceTable) || lastTargetTable == null || !lastTargetTable.equals(targetTable)) {
+                            lastRouterId == null || !lastRouterId.equals(routerId)) {
                         sourceTable = columnsAccordingToTriggerHistory.lookup(routerId, triggerHistory, false, !isFileParserRouter);
                         targetTable = columnsAccordingToTriggerHistory.lookup(routerId, triggerHistory, true, false);
                         if (trigger != null && trigger.isUseStreamLobs() || (data.getRowData() != null && hasLobsThatNeedExtract(sourceTable, data))) {
@@ -174,8 +171,6 @@ public class SelectFromSymDataSource extends SelectFromSource {
                 if (data != null) {
                     lastTriggerHistory = data.getTriggerHistory();
                     lastRouterId = routerId;
-                    lastSourceTable = sourceTable;
-                    lastTargetTable = targetTable;
                 }
             } else {
                 closeCursor();
