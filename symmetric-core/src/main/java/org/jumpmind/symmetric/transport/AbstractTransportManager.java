@@ -200,7 +200,7 @@ abstract public class AbstractTransportManager {
     }
 
     private static BatchAck getBatchInfo(Map<String, ? extends Object> parameters, long batchId) {
-        BatchAck batchInfo = new BatchAck(batchId);        
+        BatchAck batchInfo = new BatchAck(batchId);
         String nodeId = getParam(parameters, WebConstants.ACK_NODE_ID + batchId);
         if (StringUtils.isBlank(nodeId)) {
             nodeId = getParam(parameters, WebConstants.NODE_ID);
