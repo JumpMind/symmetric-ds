@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data.transform;
 
+import java.text.DecimalFormat;
 import java.util.Map;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -63,7 +64,11 @@ public class MathColumnTransform implements ISingleNewAndOldValueColumnTransform
             // Truncate the decimal place if not needed so the number can be inserted into an integer column.
             String result = eval.evaluate(transformExpression);
             Double dblResult = Double.valueOf(result);
-            if (dblResult == Math.floor(dblResult)) {
+            if (result.contains("E")) {
+                DecimalFormat format = new DecimalFormat("#");
+                format.setMaximumFractionDigits(340);
+                result = format.format(dblResult);
+            } else if (dblResult == Math.floor(dblResult)) {
                 result = result.substring(0, result.length() - 2);
             }
             return new NewAndOldValue(column, data, result);
