@@ -6,7 +6,7 @@ feature coverage in SymmetricDS.  The following table shows which features are a
 by database.
 
 .Support by Database
-[cols="15,13,^12,^12,^12,^12,^12,^12,^12,^12", options="header"]
+[cols="15,13,^12,^12,^12,^12,^12,^12,^12,^12,^12,^12", options="header"]
 |===
 |Database
 |Versions
@@ -18,6 +18,8 @@ by database.
 |BLOB Sync
 |CLOB Sync
 |Transactional DDL
+|Supports Bulk Loading
+|Supports Bulk Replace
 
 |BigQuery *
 |All
@@ -29,6 +31,8 @@ by database.
 |
 |
 |
+|?
+|?
 
 |DB2
 |9.5
@@ -40,6 +44,8 @@ by database.
 |✔
 |✔
 |✔
+|?
+|?
 
 |DB2
 |10,11
@@ -51,6 +57,8 @@ by database.
 |✔
 |✔ 
 |✔
+|?
+|?
 
 |DB2 for IBM i *
 |6
@@ -62,6 +70,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
 
 |DB2 for IBM z/OS *
 |10
@@ -73,6 +83,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
 
 |Derby
 |10.3.2.1
@@ -84,6 +96,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
 
 |Elasticsearch *
 |7.13.2
@@ -95,6 +109,8 @@ by database.
 |
 |
 |
+|?
+|?
 
 |Firebird
 |2.0
@@ -106,6 +122,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
 
 |Greenplum
 |8.2.15 and above
@@ -117,6 +135,8 @@ by database.
 |
 |
 |
+|?
+|?
 
 |H2
 |1.x
@@ -128,6 +148,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
 
 |HSQLDB
 |1.8
@@ -139,6 +161,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
  
 |HSQLDB
 |2.0
@@ -150,6 +174,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
 
 |Informix
 |11
@@ -161,6 +187,8 @@ by database.
 |
 |
 |
+|?
+|?
 
 |Ingres
 |11 and above
@@ -172,6 +200,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
 
 |Interbase
 |9.0
@@ -183,6 +213,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
 
 |MySQL
 |5.0.2 and above
@@ -194,6 +226,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
 
 |MariaDB
 |5.1 and above
@@ -205,6 +239,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
 
 |NuoDB
 |2.6 and above
@@ -216,6 +252,8 @@ by database.
 |
 |✔
 |
+|?
+|?
                     
 |Oracle
 |10g and above
@@ -227,12 +265,16 @@ by database.
 |✔
 |✔
 |
+|?
+|?
  
 |PostgreSQL
 |8.2.5 and above
 |✔ 8.3 and above
 |✔
 |✔ 9.4 and above
+|✔
+|✔
 |✔
 |✔
 |✔
@@ -249,8 +291,9 @@ by database.
 |
 |
 |
+|?
+|?
 
-<<<<<<< HEAD
 |Snowflake *
 |6.13 and above
 |
@@ -261,11 +304,11 @@ by database.
 |
 |
 |
+|✔
+|✔
 
-|SingleStore
-=======
+
 |SingleStore *
->>>>>>> 2490c8609... fix typos, add log mining
 |All
 |
 |✔
@@ -275,6 +318,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
 
 |SQL Anywhere
 |9
@@ -286,12 +331,16 @@ by database.
 |✔
 |✔
 |
+|?
+|?
 
 |SQL Server
 |2005 and above
 |✔
 |✔
 |✔ 2008 and above
+|✔
+|✔
 |✔
 |✔
 |✔
@@ -308,6 +357,8 @@ by database.
 |✔
 |
 |
+|?
+|?
  
 |SQLite
 |3.x
@@ -319,6 +370,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
  
 |Sybase ASE
 |12.5
@@ -330,6 +383,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
  
 |Teradata
 |15.10 and above
@@ -341,6 +396,8 @@ by database.
 |
 |
 |
+|?
+|?
    
 |Tibero
 |6 and above
@@ -352,6 +409,8 @@ by database.
 |✔
 |✔
 |
+|?
+|?
                    
 |===
 
@@ -590,7 +649,6 @@ include::{includedir}/appendix/interbase.ad[]
 include::{includedir}/appendix/kafka.ad[]
 include::{includedir}/appendix/mariadb.ad[]
 include::{includedir}/appendix/mongodb.ad[]
-include::{includedir}/appendix/mssqlserver.ad[]
 include::{includedir}/appendix/mysql.ad[]
 include::{includedir}/appendix/opensearch.ad[]
 include::{includedir}/appendix/oracle.ad[]
@@ -599,6 +657,7 @@ include::{includedir}/appendix/redshift.ad[]
 include::{includedir}/appendix/singlestore.ad[]
 include::{includedir}/appendix/snowflake.ad[]
 include::{includedir}/appendix/sqlite.ad[]
+include::{includedir}/appendix/mssqlserver.ad[]
 include::{includedir}/appendix/sybase-ase.ad[]
 include::{includedir}/appendix/sybase-sqlanywhere.ad[]
 include::{includedir}/appendix/S3.ad[]

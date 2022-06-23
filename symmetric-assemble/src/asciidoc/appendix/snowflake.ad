@@ -30,7 +30,7 @@ target.db.password=<snowflake_password>
 
 endif::pro[]
 
-==== Loading Data Into Snowflake
+==== Loading Data
 
 
 

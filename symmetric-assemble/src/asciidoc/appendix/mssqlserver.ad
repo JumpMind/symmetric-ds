@@ -121,3 +121,7 @@ endif::pro[]
 |Image|Yes
 |Spatial Data Types|No
 |===
+
+==== Loading Data
+
+When registering a SQL Server database with Symmetric, bulk loading will be be checked by default. In order to make use of bulk loading, the user must provide a path to a bcp executable (installation for this executable is linked in the Add Database Wizard when asked about bulk loading).

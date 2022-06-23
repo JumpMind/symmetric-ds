@@ -86,3 +86,6 @@ endif::pro[]
 |Enum|No
 |Point, Lseg, Box, Path, Polygon, Circle|Yes
 |===
+
+==== Loading Data
+When registering a PostgreSQL database with Symmetric, bulk loading will be checked by default. If you wish to bulk load with PostgreSQL, all the user must do is leave this checked upon setup.

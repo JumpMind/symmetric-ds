@@ -50,7 +50,7 @@ then set `use_capture_lobs` to 1 in the <<TRIGGER>> table and `contains_big_lobs
 sym_data is cast to a clob which prevents truncation at 4k.  There is overhead for both of these settings
 * When multiple triggers are defined on the same table, then the order in which the triggers occur appears to be arbitrary
 
-==== Bulk Loader
+==== Loading Data
 SymmetricDS has bulk loading capability available for Oracle. SymmetricDS specifies data loader types on a channel by channel basis. 
 To utilize Oracle Bulk loading versus straight JDBC insert, specify the Oracle Bulk Loader ("bulk") in the data_loader_type column of sym_channel.
 
