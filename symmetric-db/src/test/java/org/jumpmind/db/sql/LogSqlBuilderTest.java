@@ -22,6 +22,8 @@ package org.jumpmind.db.sql;
 
 import static org.junit.Assert.assertEquals;
 
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
 
@@ -75,14 +77,16 @@ public class LogSqlBuilderTest {
 
     @Test
     public void testTypes() {
-        final String SQL = "update sym_data set data = ? where data_id =? and create_time > ? and table_name = ? and time>=? and blob_colum = ?";
+        final String SQL = "update sym_data set data = ? where data_id =? and create_time > ? and create_time <= ? and table_name = ? and time>=? and blob_colum = ?";
         LogSqlBuilder builder = new LogSqlBuilder();
         Date date = FormatUtils.parseDate("2016-04-20 17:12:57", FormatUtils.TIMESTAMP_PATTERNS);
-        String result = builder.buildDynamicSqlForLog(SQL, new Object[] { "\"002\",\"hostname\"", 21, date, "sym_node_host", date, new byte[] { 0, 2, 8 } },
-                new int[] { Types.CLOB, Types.BIGINT, Types.TIMESTAMP, Types.VARCHAR, Types.TIME, Types.BINARY });
+        Timestamp ts = new Timestamp(date.getTime());
+        Time time = new Time(date.getTime());
+        String result = builder.buildDynamicSqlForLog(SQL, new Object[] { "\"002\",\"hostname\"", 21, date, ts, "sym_node_host", time, new byte[] { 0, 2, 8 } },
+                new int[] { Types.CLOB, Types.BIGINT, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.TIME, Types.BINARY });
         System.out.println(result);
         assertEquals(
-                "update sym_data set data = '\"002\",\"hostname\"' where data_id =21 and create_time > {ts '2016-04-20 17:12:57.000'} and table_name = 'sym_node_host' and time>={ts '17:12:57.000'} and blob_colum = '000208'",
+                "update sym_data set data = '\"002\",\"hostname\"' where data_id =21 and create_time > {ts '2016-04-20 17:12:57.000'} and create_time <= {ts '2016-04-20 17:12:57.000000000'} and table_name = 'sym_node_host' and time>={t '17:12:57.000000000'} and blob_colum = '000208'",
                 result);
     }
 
