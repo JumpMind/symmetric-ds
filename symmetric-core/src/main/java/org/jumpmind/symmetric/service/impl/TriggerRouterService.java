@@ -451,7 +451,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
      * Get a list of trigger histories that are currently active
      */
     public List<TriggerHistory> getActiveTriggerHistories() {
-        List<TriggerHistory> histories = sqlTemplate.query(getSql("allTriggerHistSql", "activeTriggerHistSql"),
+        String sqlKey = "allTriggerHistSql";
+        if (!parameterService.hasDatabaseBeenSetup()) {
+            sqlKey = "allTriggerHistBackwardsCompatibleSql";
+        }
+        List<TriggerHistory> histories = sqlTemplate.query(getSql(sqlKey, "activeTriggerHistSql"),
                 new TriggerHistoryMapper());
         for (TriggerHistory triggerHistory : histories) {
             historyMap.put(triggerHistory.getTriggerHistoryId(), triggerHistory);
@@ -1411,7 +1415,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         boolean createTriggersForTables = false;
                         String nodeId = nodeService.findIdentityNodeId();
                         if (StringUtils.isNotBlank(nodeId)) {
-                            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
+                            NodeSecurity nodeSecurity = null;
+                            if (!force) {
+                                nodeSecurity = nodeService.findNodeSecurity(nodeId);
+                            }
                             if (nodeSecurity != null && (nodeSecurity.isInitialLoadEnabled() || nodeSecurity.getInitialLoadEndTime() == null)) {
                                 createTriggersForTables = parameterService.is(ParameterConstants.TRIGGER_CREATE_BEFORE_INITIAL_LOAD);
                                 if (!createTriggersForTables) {
