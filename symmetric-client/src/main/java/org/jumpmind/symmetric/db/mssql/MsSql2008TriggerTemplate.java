@@ -65,9 +65,4 @@ public class MsSql2008TriggerTemplate extends MsSqlTriggerTemplate {
         }
         return builder.toString();
     }
-
-    @Override
-    protected String getCreateTimeExpression() {
-        return "getutcdate()";
-    }
 }

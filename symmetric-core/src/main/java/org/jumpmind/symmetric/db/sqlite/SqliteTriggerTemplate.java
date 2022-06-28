@@ -68,7 +68,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "    values(    \n" + "      '$(targetTableName)',    \n" + "      'I',    \n"
                                 + "      $(triggerHistoryId),                                          \n"
                                 + "      $(columns),    \n" + "      $(channelExpression), null," + sourceNodeExpression + ",    \n"
-                                + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now')    \n" + "    );    \n"
+                                + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now','localtime')    \n" + "    );    \n"
                                 + "        $(custom_on_insert_text)                                                                            \n"
                                 + "end");
         sqlTemplates
@@ -81,7 +81,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "    values(    \n" + "      '$(targetTableName)',    \n" + "      'R',    \n"
                                 + "      $(triggerHistoryId),                                          \n"
                                 + "      $(newKeys),    \n" + "      $(channelExpression), null," + sourceNodeExpression + ",    \n"
-                                + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now')    \n" + "    );    \n"
+                                + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now','localtime')    \n" + "    );    \n"
                                 + "        $(custom_on_insert_text)                                                                            \n"
                                 + "end");
         sqlTemplates
@@ -95,7 +95,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "      $(triggerHistoryId),   \n" + "      $(oldKeys),   \n"
                                 + "      $(columns),   \n" + "      $(oldColumns),   \n"
                                 + "      $(channelExpression), null," + sourceNodeExpression + ",   \n" + "      $(externalSelect),   \n"
-                                + "      strftime('%Y-%m-%d %H:%M:%f','now')  \n" + "    );   \n"
+                                + "      strftime('%Y-%m-%d %H:%M:%f','now','localtime')  \n" + "    );   \n"
                                 + "      $(custom_on_update_text)                                                                            \n"
                                 + "end  ");
         sqlTemplates
@@ -108,7 +108,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "    values(   \n" + "      '$(targetTableName)',   \n" + "      'R',   \n"
                                 + "      $(triggerHistoryId),   \n" + "      $(oldKeys),   \n"
                                 + "      $(channelExpression), null," + sourceNodeExpression + ",   \n" + "      $(externalSelect),   \n"
-                                + "      strftime('%Y-%m-%d %H:%M:%f','now')  \n" + "    );   \n"
+                                + "      strftime('%Y-%m-%d %H:%M:%f','now','localtime')  \n" + "    );   \n"
                                 + "      $(custom_on_update_text)                                                                            \n"
                                 + "end  ");
         sqlTemplates
@@ -121,7 +121,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "    values(    \n" + "      '$(targetTableName)',    \n" + "      'D',    \n"
                                 + "      $(triggerHistoryId),    \n" + "      $(oldKeys),    \n"
                                 + "       $(oldColumns),    \n" + "      $(channelExpression), null," + sourceNodeExpression + ",    \n"
-                                + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now') \n" + "    );     \n"
+                                + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now','localtime') \n" + "    );     \n"
                                 + "      $(custom_on_delete_text)                                                                            \n"
                                 + "end");
         sqlTemplates.put("initialLoadSqlTemplate",
