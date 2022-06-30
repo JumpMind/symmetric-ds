@@ -1,6 +1,16 @@
 
-== Table Groups
-Table groups
+=== Table Groups
+Table groups are used to define collections of tables that will synchronize their data at the same time. When one
+row from a table in a table group is changed on the source, all corresponding rows from other tables in the same
+group will also be synchronized to the target.
+
+ifdef::pro[]
+image::images/table-group.png[]
+endif::pro[]
+
+ifdef::pro[]
+.Required Fields
+endif::pro[]
 
 ID:: Unique identifier for the table group.
 Source Node Group ID:: The node group where data changes are captured.
@@ -12,13 +22,14 @@ Writer Type:: Type of writer: D=default, J=JSON.
 |Type
 |Description
 
-|Default|
+|Default|The source data will remain relational on the target.
 
-|JSON|
+|JSON|The source data will be converted to JSON documents on the target. The target database must be MongoDB, Azure Cosmos DB, or Elasticsearch.
 
 |===
 
 ifdef::pro[]
 .Advanced Options
 endif::pro[]
+
 Description:: Description of the table group that is available through the console.
