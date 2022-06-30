@@ -229,7 +229,7 @@ subprojects { subproject ->
         javaMailVersion = '1.6.2'
         jdomVersion = '2.0.6.1'
         jaxbVersion = '2.3.1'
-        gsonVersion = '2.8.6'
+        gsonVersion = '2.9.0'
         jacksonVersion = '2.13.2.2'
         guavaVersion = '31.1-android'
         junitVersion = '5.7.2'
