@@ -106,7 +106,11 @@ The second option on this screen is to determine what "before action" should occ
 
 image::images/manage/manage-load-data-full-partial-before.png[]
 
-Partial loads will then see a table selection screen.  Full loads will immediately be taken to the summary screen.  The table selection screen allows individual tables to be selected as part of the load.   There is also the ability to provide a where clause to be used to extract the data for a load.  This allows control over what data should be loaded for a given table.   
+Partial loads will then see a table selection screen.  Full loads will immediately be taken to the summary screen.  The table selection screen allows individual tables to be selected as part of the load.
+
+image::images/manage/manage-load-data-tables.png[]
+
+There is also the ability to provide a where clause to be used to extract the data for a load.  This allows control over what data should be loaded for a given table.   
 
 .Where clause variable replacements
 * $(groupId)
@@ -115,7 +119,7 @@ Partial loads will then see a table selection screen.  Full loads will immediate
 
 See <<Variables>>.
 
-image::images/manage/manage-load-data-tables.png[]
+image::images/manage/manage-load-data-where-clauses.png[]
 
 Finally a summary screen is presented to review all the settings for the load prior to adding it to the request queue.  Loads are checked by the routing process so once the load has been saved it will be picked up and begin processing on the next run of the routing job.
 

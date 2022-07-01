@@ -1,15 +1,15 @@
 
-=== Quick Config Wizard
+=== Add Table(s) Wizard
 
 Once the SymmetricDS software is installed, an instance of it is running, and a master node is setup, the synchronization
 scenario must be configured (i.e. what tables and/or files do I want to synchronize from which source node groups to which
-target node groups).  The Quick Config wizard simplifies this process by walking you through several simple configuration steps.
+target node groups).  The Add Table(s) Wizard simplifies this process by walking you through several simple configuration steps.
 
-The Quick Config Wizard can be found under the Configure->Overview screen.
+The Add Table(s) Wizard can be found under the Configure->Overview screen.
 
 image::images/configure-overview.png[]
 
-NOTE: The quick config wizard will show a screen for each router that is in place.  The below example
+NOTE: The add table(s) wizard will show a screen for each router that is in place.  The below example
 shows the `Two Tier` configuration option with a client and server.
 
 image::images/wizard-config/wizard-config-start.png[]
@@ -52,6 +52,6 @@ The summary of the configuration made by the wizard.
 
 --
 
-TIP: Once the quick config wizard has completed your setup you can still navigate
+TIP: Once the add table(s) wizard has completed your setup you can still navigate
 to the specific components created to provide customizations beyond the default 
 settings.  

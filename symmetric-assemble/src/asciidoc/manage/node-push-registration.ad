@@ -3,7 +3,7 @@ If the client is unable to pull from the server, it can register by having the s
 The group link for server to client should be set to push.
 
 ifdef::pro[]
-From the Manage Nodes screen on the server, click on the *Add* button and then select *Remote Node*.
+From the Manage Nodes screen on the server, click on the *Add* button and then select *Remote*.
 
 image::images/manage/manage-nodes-push-registration.png[role="help"]
 

@@ -11,7 +11,7 @@ Use `symadmin module install opensearch` to install driver files, or copy your o
 
 Send changes from your relational database to OpenSearch in a variety of formats.  An OpenSearch node can be setup as a <<Load Only Node>> to receive changes from another node that is capturing changes.
 
-Setup the OpenSearch node by using the <<Add Node>> wizard and selecting OpenSearch as the type.   The URL will be the connection point to OpenSearch.  User and password are not needed (or used).
+Setup the OpenSearch node by using the <<Add Node,Add Database>> wizard and selecting OpenSearch as the type.   The URL will be the connection point to OpenSearch.  User and password are not needed (or used).
 
 image::images/appendix/opensearch-node-setup.png[]
 

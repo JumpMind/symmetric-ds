@@ -11,7 +11,7 @@ configured for each element.  As an example, in the sample screenshot below, the
 defined, 2 Routers defined, 9 Channels, defined, etc.  Certain configuration elements are required to configure the 
 synchronization scenario.  If these elements are not configured, a warning symbol will be displayed next to the element name.
 
-In addition to using the <<Quick Config Wizard>> to configure the synchronization solution, you can also configure SymmetricDS
+In addition to using the <<Add Table(s) Wizard>> to configure the synchronization solution, you can also configure SymmetricDS
 configuration elements one by one using the links on the left hand side of the Configure Overview screen.  Each configuration
 element is described in the following sections of this guide.
 
