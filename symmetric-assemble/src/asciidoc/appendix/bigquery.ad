@@ -35,7 +35,7 @@ target.db.driver=google
 
 endif::pro[]
 
-==== Loading Data Into BigQuery
+==== Loading Data
 
 
 

@@ -20,7 +20,7 @@ After hitting next you can setup advanced options for your Elasticsearch node.
 image::images/appendix/elasticsearch-advanced-settings.png[]
 
 
-==== Loading Data Into Elasticsearch
+==== Loading Data
 
 
 ===== Setup reload channels for bulk loading.

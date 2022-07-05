@@ -96,3 +96,25 @@ endif::pro[]
 |Set|No
 |Geometry, Point, LineString, Polygon, GeometryCollection, MultiPoint, MultiLinestring, MultiPolygon|No
 |===
+
+==== Loading Data
+When registering a MySQL database with Symmetric, bulk loading will be checked by default.
+
+image::images/appendix/mysql-enable-bulk-loading.png[]
+
+To succesfully bulk load, once your MySQL database is registered with Symmetric, go to the top of the screen and select the MySQL node you want to bulk load from the drop down list of your nodes.
+
+image::images/appendix/mysql-selecting-node-1.png[]
+image::images/appendix/mysql-selecting-node-2.png[]
+
+Then, go to the Manage tab, and go to Startup Parameters and set mysql.bulk.load.local to true, and restart Symmetric.
+
+image::images/appendix/mysql-bulk-load-local-true.png[]
+
+In order to bulk load, your MySQL database must have the local_infile variable set to ON. In order to set this, you can run the query below to set the variable and have it remain on, even upon the restarting of your database.
+
+----
+SET PERSIST local_infile=1;
+----
+
+After completing these steps, your MySQL database should be configured to bulk load. 
