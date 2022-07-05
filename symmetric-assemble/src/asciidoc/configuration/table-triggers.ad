@@ -108,8 +108,8 @@ If you have additional triggers beyond those SymmetricDS installs on your table,
 there will be issues with the ordering of the triggers.
 
 ifdef::pro[]
-.Quick Config Wizard
-TIP: Use the <<Quick Config Wizard>> to setup a complete synchronization scenario with default trigger settings.
+.Add Table(s) Wizard
+TIP: Use the <<Add Table(s) Wizard>> to setup a complete synchronization scenario with default trigger settings.
 
 .Auto Create Triggers
 TIP: By using the "Auto Create" button the on the "Table Triggers" screen you can create all your triggers through a single dialog.

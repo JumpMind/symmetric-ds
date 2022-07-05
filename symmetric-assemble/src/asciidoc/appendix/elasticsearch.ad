@@ -11,13 +11,9 @@ Use `symadmin module install elasticsearch` to install driver files, or copy you
 
 Send changes from your relational database to Elasticsearch in a variety of formats.  An Elasticsearch node can be setup as a <<Load Only Node>> to receive changes from another node that is capturing changes.
 
-Setup the Elasticsearch node by using the <<Add Node>> wizard and selecting Elasticsearch as the type.   The URL will be the connection point to Elasticsearch.  If your Elasticsearch database has security enabled, please enter your username and password. When selecting an Elasticsearch User, make sure that the minimum permissions given to the user are all of the Index level permissions. This can be done by creating a custom role with those permissions, and assigning that role to the user.
+Setup the Elasticsearch node by using the <<Add Node,Add Database>> wizard and selecting Elasticsearch as the type.   The URL will be the connection point to Elasticsearch.  If your Elasticsearch database has security enabled, please enter your username and password. When selecting an Elasticsearch User, make sure that the minimum permissions given to the user are all of the Index level permissions. This can be done by creating a custom role with those permissions, and assigning that role to the user.
 
 image::images/appendix/elasticsearch-node-setup.png[]
-
-After hitting next you can setup advanced options for your Elasticsearch node.
-
-image::images/appendix/elasticsearch-advanced-settings.png[]
 
 
 ==== Loading Data

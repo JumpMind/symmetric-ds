@@ -1,6 +1,17 @@
 
-== Table Group Hierarchies
-Table group hierarchies
+=== Table Group Hierarchies
+Table group hierarchies define the tables that belong to a table group and their relationships to each other,
+with each hierarchy representing a single table. Each table group hierarchy can have a parent, but it is not
+necessary for every hierarchy to have a parent. It is possible to configure multiple table group hierarchies
+for a single table if the table has multiple parents.
+
+ifdef::pro[]
+image::images/table-group-hier.png[]
+endif::pro[]
+
+ifdef::pro[]
+.Required Fields
+endif::pro[]
 
 ID:: Unique identifier for the table group hierarchy.
 Table Group ID:: Unique identifier for the table group associated with this table in the hierarchy.
@@ -8,20 +19,16 @@ Source Catalog:: Optional name for the catalog the configured table is in.
 Source Schema:: Optional name for the schema the configured table is in.
 Source Table:: The name of the source table that will be a part of this table group.
 Parent ID:: Unique identifier for the parent of this table in the hierarchy.
-Relation Type:: When writer type is non-default, this defines the structure of data in hierarchy when writing output: O=object, A=array, R=rows to array, C=columns to array.
+Relation Type:: When writer type is non-default, this defines the structure of data in hierarchy when writing output: O=object, A=array.
 
 [cols="<2,<7", options="header"]
 |===
 |Type
 |Description
 
-|Object|
+|Object|The data will be in the form of a single object containing one key/value pair for each column in the source table.
 
-|Array|
-
-|Rows to array|
-
-|Columns to array|
+|Array|The data will be in the form of an array of objects with each object containing one key/value pair for each column in the source table.
 
 |===
 

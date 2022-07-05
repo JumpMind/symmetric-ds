@@ -60,7 +60,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                       ),                                                                                                                                                              \n" +
 "                                      $(channelExpression), $(txIdExpression), @sync_node_disabled,                                                                                                        \n" +
 "                                      $(externalSelect),                                                                                                                                               \n" +
-"                                      UTC_TIMESTAMP()                                                                                                                                                \n" +
+"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
 "                                    );                                                                                                                                                                 \n" +
 "                                  end if;                                                                                                                                                              \n" +
 "                                  $(custom_on_insert_text)                                                                                                                                                \n" +
@@ -79,7 +79,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      concat($(newKeys)),                                                                                                                                             \n" +
 "                                      $(channelExpression), $(txIdExpression), @sync_node_disabled,                                                                                                        \n" +
 "                                      $(externalSelect),                                                                                                                                               \n" +
-"                                      UTC_TIMESTAMP()                                                                                                                                                \n" +
+"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
 "                                    );                                                                                                                                                                 \n" +
 "                                  end if;                                                                                                                                                              \n" +
 "                                  $(custom_on_insert_text)                                                                                                                                                \n" +
@@ -106,7 +106,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                          var_old_data,                                                                                                                                                   \n" +
 "                                          $(channelExpression), $(txIdExpression), @sync_node_disabled,                                                                                                       \n" +
 "                                          $(externalSelect),                                                                                                                                              \n" +
-"                                          UTC_TIMESTAMP()                                                                                                                                               \n" +
+"                                          CURRENT_TIMESTAMP                                                                                                                                               \n" +
 "                                        );                                                                                                                                                                \n" +
 "                                    end if;                                                                                                                                                               \n" +
 "                                  end if;                                                                                                                                                                \n" +
@@ -128,7 +128,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                          ),                                                                                                                                            \n" +
 "                                         $(channelExpression), $(txIdExpression), @sync_node_disabled,                                                                                                       \n" +
 "                                         $(externalSelect),                                                                                                                                              \n" +
-"                                         UTC_TIMESTAMP()                                                                                                                                               \n" +
+"                                         CURRENT_TIMESTAMP                                                                                                                                               \n" +
 "                                       );                                                                                                                                                                \n" +
 "                                   end if;                                                                                                                                                               \n" +
 "                                  end if;                                                                                                                                                                \n" +
@@ -151,7 +151,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                       ),                                                                                                                                                              \n" +
 "                                      $(channelExpression), $(txIdExpression), @sync_node_disabled,                                                                                                        \n" +
 "                                      $(externalSelect),                                                                                                                                               \n" +
-"                                      UTC_TIMESTAMP()                                                                                                                                                \n" +
+"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
 "                                    );                                                                                                                                                                 \n" +
 "                                  end if;                                                                                                                                                              \n" +
 "                                  $(custom_on_delete_text)                                                                                                                                                \n" +

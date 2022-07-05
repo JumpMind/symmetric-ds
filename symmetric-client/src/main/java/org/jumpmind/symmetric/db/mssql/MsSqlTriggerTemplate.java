@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.FormatUtils;
 
@@ -139,12 +140,20 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with ex
         // join the deleted record with the original record from the table.
         // This occurs for column types like blob, clob, varbinary and binary because those are captured using blobTemplate
         // and need access to the original data
-        sqlTemplates.put("updateTriggerTemplate" ,
+        IParameterService parameterService = symmetricDialect.getParameterService();
+        if (parameterService.is(ParameterConstants.TRIGGER_USE_INSERT_DELETE_FOR_PRIMARY_KEY_CHANGES, true)) {
+            sqlTemplates.put("updateTriggerTemplate" ,
 getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)                                                     \n" +
 "       with execute as "+triggerExecuteAs+" after update as                                                    \n" +
 "begin                                                                                                          \n" +
 "  declare @LOCALROWCOUNT int                                                                                   \n" + 
+"  declare @LOCALPKCHANGED int                                                                                  \n" +
 "  set @LOCALROWCOUNT=@@ROWCOUNT                                                                                \n" +
+"  set @LOCALPKCHANGED = 0                                                                                      \n" +
+"  if ($(hasPrimaryKeysDefined))                                                                                \n" +
+"  begin                                                                                                        \n" +
+"    select @LOCALPKCHANGED = count(*) from inserted, deleted where $(oldNewPrimaryKeyJoin)                     \n" +
+"  end                                                                                                          \n" +
 "  declare @NCT int                                                                                             \n" +
 "  set @NCT = @@OPTIONS & 512                                                                                   \n" +
 "  set nocount on                                                                                               \n" +
@@ -158,7 +167,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "  $(custom_before_update_text)                                                                                 \n" +
 "  if ($(syncOnIncomingBatchCondition))                                                                         \n" +
 "  begin                                                                                                        \n" +
-"    if ($(hasPrimaryKeysDefined) $(primaryKeysUpdated) )                                                       \n" +
+"    if ($(hasPrimaryKeysDefined) $(primaryKeysUpdated) AND @LOCALROWCOUNT <> @LOCALPKCHANGED)                  \n" +
 "    begin                                                                                                      \n" +
 "      if (@LOCALROWCOUNT = 1)                                                                                  \n" +
 "      begin                                                                                                    \n" +
@@ -233,12 +242,18 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "end                                                                                                            \n" +
 "---- go");
         
-        sqlTemplates.put("updateReloadTriggerTemplate" ,
+            sqlTemplates.put("updateReloadTriggerTemplate" ,
 getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)                                                     \n" +
 "       with execute as "+triggerExecuteAs+" after update as                                                    \n" +
 "begin                                                                                                          \n" +
 "  declare @LOCALROWCOUNT int                                                                                   \n" + 
 "  set @LOCALROWCOUNT=@@ROWCOUNT                                                                                \n" +
+"  declare @LOCALPKCHANGED int                                                                                  \n" +
+"  set @LOCALPKCHANGED = 0                                                                                      \n" +
+"  if ($(hasPrimaryKeysDefined))                                                                                \n" +
+"  begin                                                                                                        \n" +
+"    select @LOCALPKCHANGED = count(*) from inserted, deleted where $(oldNewPrimaryKeyJoin)                     \n" +
+"  end                                                                                                          \n" +
 "  declare @NCT int                                                                                             \n" +
 "  set @NCT = @@OPTIONS & 512                                                                                   \n" +
 "  set nocount on                                                                                               \n" +
@@ -252,7 +267,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "  $(custom_before_update_text)                                                                                 \n" +
 "  if ($(syncOnIncomingBatchCondition))                                                                         \n" +
 "  begin                                                                                                        \n" +
-"    if ($(hasPrimaryKeysDefined) $(primaryKeysUpdated) )                                                       \n" +
+"    if ($(hasPrimaryKeysDefined) $(primaryKeysUpdated AND @LOCALROWCOUNT <> @LOCALPKCHANGED) )                                                       \n" +
 "    begin                                                                                                      \n" +
 "      if (@LOCALROWCOUNT = 1)                                                                                  \n" +
 "      begin                                                                                                    \n" +
@@ -324,6 +339,62 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "  if (@NCT = 0) set nocount off                                                                                \n" +
 "end                                                                                                            \n" +
 "---- go");
+        } else {
+            sqlTemplates.put("updateTriggerTemplate" ,
+                    "create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after update as                                                                                                                             \n" +
+                    "   begin                                                                                                                                                                  \n" +
+                    "     declare @NCT int \n" +
+                    "     set @NCT = @@OPTIONS & 512 \n" +
+                    "     set nocount on                                                                                                                                                       \n" +
+                    "     declare @TransactionId varchar(1000)                                                                                                                                 \n" +
+                    "                                                                                                                                                                          \n" +
+                    "     if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +
+                    "       select @TransactionId = convert(VARCHAR(1000),transaction_id) from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                                            \n" +
+                    "     end                                                                                                                                                                  \n" +
+                    "     $(custom_before_update_text) \n" +
+                    "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
+                    "         insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
+                    "             select '$(targetTableName)','U', $(triggerHistoryId), $(columns), $(oldKeys), $(oldColumns), $(channelExpression), "+
+                    "               $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), current_timestamp\n" +
+                    "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
+                    "          from (select $(nonBlobColumns), row_number() over (order by (select 1)) as __row_num from inserted) inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join (select $(nonBlobColumns), row_number() over (order by (select 1)) as __row_num from deleted)deleted on (inserted.__row_num = deleted.__row_num)\n" +
+                    "       $(else:containsBlobClobColumns)                                                                                                                                    \n" +
+                    "          from (select *, row_number() over (order by (select 1)) as __row_num from inserted) inserted inner join (select *, row_number() over (order by (select 1)) as __row_num from deleted) deleted on (inserted.__row_num = deleted.__row_num)                                    \n" +
+                    "       $(end:containsBlobClobColumns)                                                                                                                                     \n" +
+                    "          where $(syncOnUpdateCondition) and ($(dataHasChangedCondition))                                                                     \n" +
+                    "       end                                                                                                                                                                \n" +
+                    "       $(custom_on_update_text)                                                                                                                                             \n" +
+                    "     if (@NCT = 0) set nocount off                                                                                                                                        \n" +
+                    "   end                                                                                                                                                                    \n" +
+                    "---- go");
+
+            sqlTemplates.put("updateReloadTriggerTemplate" ,
+                    "create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after update as                                                                                                \n" +
+                    "   begin                                                                                                                                                                  \n" +
+                    "     declare @NCT int \n" +
+                    "     set @NCT = @@OPTIONS & 512 \n" +
+                    "     set nocount on                                                                                                                                                       \n" +
+                    "     declare @TransactionId varchar(1000)                                                                                                                                 \n" +
+                    "     if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +
+                    "       select @TransactionId = convert(VARCHAR(1000),transaction_id) from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                     \n" +
+                    "     end                                                                                                                                                                  \n" +
+                    "     $(custom_before_update_text) \n" +
+                    "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
+                    "         insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
+                    "             select '$(targetTableName)','R', $(triggerHistoryId), $(oldKeys), $(channelExpression), "+
+                    "               $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), current_timestamp\n" +
+                    "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
+                    "          from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) \n" +
+                    "       $(else:containsBlobClobColumns)                                                                                                                                    \n" +
+                    "          from inserted inner join deleted on $(oldNewPrimaryKeyJoin)                                   \n" +
+                    "       $(end:containsBlobClobColumns)                                                                                                                                     \n" +
+                    "          where $(syncOnUpdateCondition) and ($(dataHasChangedCondition))                                                    \n" +
+                    "       end                                                                                                                                                                \n" +
+                    "       $(custom_on_update_text)                                                                                                                                             \n" +
+                    "     if (@NCT = 0) set nocount off                                                                                                                                        \n" +
+                    "   end                                                                                                                                                                    \n" +
+                    "---- go");
+        }
 
         sqlTemplates.put("deleteTriggerTemplate" ,
 getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after delete as                                                                                                                             \n" +

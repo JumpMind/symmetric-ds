@@ -1,6 +1,6 @@
 === Node Properties File
 ifdef::pro[]
-The node setup wizard generates a properties file that contains all the information a node needs to bootstrap itself.
+The add database wizard generates a properties file that contains all the information a node needs to bootstrap itself.
 endif::pro[]
 
 Each node that is deployed to a server is represented by a properties file that allows it to connect to a database and

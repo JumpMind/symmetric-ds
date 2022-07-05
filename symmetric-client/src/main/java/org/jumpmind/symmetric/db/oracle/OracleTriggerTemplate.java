@@ -262,7 +262,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
     protected final String getCreateTimeExpression(ISymmetricDialect symmetricDialect) {
         String timezone = symmetricDialect.getParameterService().getString(ParameterConstants.DATA_CREATE_TIME_TIMEZONE);
         if (StringUtils.isEmpty(timezone)) {
-            return "CURRENT_TIMESTAMP AT TIME ZONE '0:0'";
+            return "CURRENT_TIMESTAMP";
         } else {
             return String.format("CURRENT_TIMESTAMP AT TIME ZONE '%s'", timezone);
         }

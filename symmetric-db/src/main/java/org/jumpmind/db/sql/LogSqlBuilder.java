@@ -180,7 +180,7 @@ public class LogSqlBuilder {
                     + (useJdbcTimestampFormat ? "}" : "");
         } else if (object instanceof Time) {
             return (useJdbcTimestampFormat ? "{t " : "")
-                    + "'" + FormatUtils.TIME9_FORMATTER.format(((Time) object).toInstant()) + "'"
+                    + "'" + FormatUtils.TIME9_FORMATTER.format(new Date(((Time) object).getTime()).toInstant()) + "'"
                     + (useJdbcTimestampFormat ? "}" : "");
         } else {
             return (useJdbcTimestampFormat ? "{ts " : "")
