@@ -280,8 +280,10 @@ public class TransformedData implements Cloneable {
         return table;
     }
 
-    public CsvData buildTargetCsvData() {
+    public CsvData buildTargetCsvData(Map<String, Object> attributes) {
         CsvData data = new CsvData(this.targetDmlType);
+        data.setAttributes(attributes);
+        
         if (transformation != null) {
             data.putAttribute(CsvData.ATTRIBUTE_TABLE_NAME, transformation.getSourceTableName());
         }
