@@ -32,6 +32,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.util.FormatUtils;
@@ -40,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 public class LogSqlBuilder {
     private final static Logger log = LoggerFactory.getLogger(LogSqlBuilder.class);
+    public static final int MAX_FIELD_SIZE_TO_PRINT_TO_LOG = 8000;
     protected BinaryEncoding encoding = BinaryEncoding.HEX;
     protected boolean useJdbcTimestampFormat = true;
     protected int logSlowSqlThresholdMillis = 20000;
@@ -119,13 +121,13 @@ public class LogSqlBuilder {
             return "null";
         }
         if (TypeMap.isTextType(type)) {
-            return formatStringValue(object);
+            return StringUtils.abbreviate(formatStringValue(object), MAX_FIELD_SIZE_TO_PRINT_TO_LOG);
         } else if (TypeMap.isDateTimeType(type)) {
             return formatDateTimeValue(object, type);
         } else if (TypeMap.isBinaryType(type)) {
-            return formatBinaryValue(object);
+            return StringUtils.abbreviate(formatBinaryValue(object), MAX_FIELD_SIZE_TO_PRINT_TO_LOG);
         } else {
-            return formatUnknownType(object);
+            return StringUtils.abbreviate(formatUnknownType(object), MAX_FIELD_SIZE_TO_PRINT_TO_LOG);
         }
     }
 

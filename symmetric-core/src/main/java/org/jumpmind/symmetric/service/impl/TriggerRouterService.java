@@ -1566,11 +1566,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
             List<TriggerHistory> activeTriggerHistories = getActiveTriggerHistories();
             Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(triggersForCurrentNode,
-                    activeTriggerHistories, true);
+                    activeTriggerHistories, false);
             for (Table table : tables) {
-                /* Re-lookup just in case the table was just altered */
                 IDatabasePlatform targetPlatform = symmetricDialect.getTargetPlatform(table.getName());
-                table = targetPlatform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(), true);
                 for (Trigger trigger : triggersForCurrentNode) {
                     if (trigger.matches(table, targetPlatform.getDefaultCatalog(), targetPlatform.getDefaultSchema(), ignoreCase) &&
                             (!trigger.isSourceTableNameWildCarded() || !trigger.isSourceTableNameExpanded()
@@ -1585,7 +1583,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         }
                         if (triggerTableSupportingInfo != null) {
                             log.info("Synchronizing triggers for {}", table.getFullyQualifiedTableName());
-                            updateOrCreateDatabaseTriggers(trigger, table, null, force, true, activeTriggerHistories, triggerTableSupportingInfo);
+                            updateOrCreateDatabaseTriggers(trigger, triggerTableSupportingInfo.getTable(), null, force, true, activeTriggerHistories,
+                                    triggerTableSupportingInfo);
                             log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
                         } else {
                             log.warn("Can't find table {} for trigger {}, make sure table exists.", table.getFullyQualifiedTableName(), trigger.getTriggerId());
