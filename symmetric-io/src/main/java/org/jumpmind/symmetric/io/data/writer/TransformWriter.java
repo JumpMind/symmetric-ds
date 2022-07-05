@@ -178,7 +178,7 @@ public class TransformWriter extends NestedDataWriter {
                 
                 for (TransformedData transformedData : dataThatHasBeenTransformed) {
                     Table transformedTable = transformedData.buildTargetTable();
-                    CsvData csvData = transformedData.buildTargetCsvData();
+                    CsvData csvData = transformedData.buildTargetCsvData(data.getAttributes());
                     boolean processData = true;
                     if (lastTransformedTable == null || transformedTable == null || !lastTransformedTable.equalsByName(transformedTable)) {
                         if (lastTransformedTable != null) {

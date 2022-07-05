@@ -58,7 +58,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                             || newlyTransformedData.isGeneratedIdentityNeeded()) {
                         matchedTransform = true;
                         Table table = newlyTransformedData.buildTargetTable();
-                        CsvData newData = newlyTransformedData.buildTargetCsvData();
+                        CsvData newData = newlyTransformedData.buildTargetCsvData(data.getAttributes());
                         if (newlyTransformedData.isGeneratedIdentityNeeded()) {
                             if (log.isDebugEnabled()) {
                                 log.debug("Enabling generation of identity for {}",
@@ -102,7 +102,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                 if (newlyTransformedData.hasSameKeyValues(transformedData.getKeyValues())) {
                     Table table = newlyTransformedData.buildTargetTable();
                     writer.start(table);
-                    super.performFallbackToUpdate(writer, newlyTransformedData.buildTargetCsvData(), conflict, retransform);
+                    super.performFallbackToUpdate(writer, newlyTransformedData.buildTargetCsvData(data.getAttributes()), conflict, retransform);
                     writer.end(table);
                 }
             }
