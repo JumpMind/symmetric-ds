@@ -23,3 +23,16 @@ See MySQL notes.  You can use either the MySQL or MariaDB driver for this dialec
 |Date, Time, DateTime, TimeStamp, Year|Yes
 |Point, LineString, Polygon, MultiPoint, MultiLinestring, MultiPolygon, GeometryCollection, Geometry| No
 |===
+
+==== Loading Data
+When registering a Maria database with Symmetric, bulk loading will be checked by default.
+
+image::images/appendix/mysql-enable-bulk-loading.png[]
+
+To succesfully bulk load, once your MySQL database is registered with Symmetric, go to the top of the screen and select the MySQL node you want to bulk load from the drop down list of your nodes.
+
+Then, go to the Manage tab, and go to Startup Parameters and set mysql.bulk.load.local to true, and restart Symmetric.
+
+image::images/appendix/mysql-bulk-load-local-true.png[]
+
+After completing this step, your Maria database should be configured to bulk load. 
