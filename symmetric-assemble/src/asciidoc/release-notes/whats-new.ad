@@ -2,57 +2,61 @@
 
 ifdef::pro[]
 
-=== User Interface Refresh
+=== Snowflake Change Data Capture
 --
-The web console was given a new look and feel, with the option to switch between light and dark modes.
-The underlying UI architecture was upgraded to a progressive web application library
-based on standard Web Components.
---
-
-=== Log Mining for PostgreSQL
---
-Log mining is available for PostgreSQL database in additional to trigger-based change capture.
-It is based on logical replication slots provided by PostgreSQL 9.4 and newer.
+Snowflake support was expanded to include change data capture using Snowflake's table streams.
+New configuration items were added for converting relational data into JSON documents suitable for Snowflake.
+Table groups identify which tables to send together in the JSON document, so that a change
+in one table will bring related rows into the document.  Table group hierarchies arrange the
+tables into a parent-child hierarchy using relational join information.
 --
 
-=== Cosmos
+=== SingleStore Replication
 --
-Azure Cosmos non-relational database is now supported for change capture, as well as load-only and extract-only replication.
-Tables and rows from relational databases are mapped to containers and items on Cosmos.
+SingleStore database was added as a bi-directional replication platform.
+Change data capture is based on log mining of SingleStore's audit log.
+
 --
 
-=== Elasticseach
+=== MySQL Log-based Replication
 --
-Elasticsearch and Amazon OpensSearch document databases are now supported for load-only replication.
-Tables and rows from relational databases are mapped to indexes and JSON documents.
+MySQL support was expanded to include log mining in additional to trigger-based change capture.
+It is based on parsing statements from the binlog provided by MySQL 5.0 and newer.
 --
 
-=== MongoDB
+=== Amazon S3 Integration
 --
-MongoDB support is enhanced to include change capture, as well as load-only and extract-only replication.
-Tables and rows from relational databases are mapped to collections and JSON documents.
+Amazon S3 can now be used as a target endpoint for receiving change data as comma-separated value (CSV) files.
+Amazon Web Services (AWS), such as Relational Database Services (RDS), Lambda, and Cloud Watch have
+integration with S3 to use data for loading databases, driving business logic, and monitoring data events.
+--
+
+=== SQL Server BCP Bulk Loader
+--
+The bulk loader for SQL-Server is now based on the BCP (bulk copy program) command line utility.
+The BCP automatically handles transfer of data files to a remote server, which supports both SQL Server
+and Azure SQL Server.
+--
+
+=== UI Improvements
+--
+The web console was enhanced to improve the user’s flow of connecting to databases, enabling change capture, and sending initial loads.
+Notification messages for data replication events can be customized with a screen that edits a notification template.
+Screens now support renaming the ID of an item being edited or using a “Save As Copy” button to copy it as a new item.
+Screens for table triggers and table routing were modified to use JDBC batch mode for faster save performance.
+New user settings include display mode, preferred date and time format, and timezone.
 --
 
 endif::pro[]
 
-=== Faster Startup
+=== Operational Improvements
 --
-The startup time is improved by skipping the steps for checking runtime tables and synchronizing triggers.
-The step for altering runtime tables is still performed when the software version has changed from the last startup.
-The step for synchronizing triggers is still performed when a configuration change requires it.
-The old behavior is still available by setting parameter auto.config.database.fast to false
-and auto.sync.triggers.at.startup to true, respectively.
---
-
-=== Cleaner Shutdown
---
-A shutdown hook was added to properly clean up resources by stopping jobs and closing connections.
-A cleaner shutdown should help reclaim resources and avoid corruption when using embedded databases.
+For large deployments, new endpoints can be scheduled to register automatically.
+Registration works across push links, in addition to pull links.
+Initial loads can now be monitored at the endpoint with the same level of detail that was previously only available at the source.
+Creation of tables now includes fractional second precision of time and timestamp columns.
+Routing query performance was improved when a large number of gaps is present.
+SQL-Server and Sybase trigger procedures were optimized for the case of a primary key changing, and a parameter
+of trigger.use.insert.delete.for.primary.key.changes was added to revert to the old behavior.
 --
 
-=== Purging
---
-Purge was added for trigger history, with a default retention of 30 days.
-The parameter purge.trigger.hist.retention.minutes was added to control retention.
-Purge for extract requests was improved to be more efficient for large systems.
---
