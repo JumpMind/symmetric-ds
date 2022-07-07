@@ -26,7 +26,7 @@ alter database add supplemental log data (all) columns;
 If using Oracle 11g without CDB, use the following permissions:
 
 [source, SQL]
-grant create session, alter session, select any dictionary, execute_catalog_role to symmetric;
+grant create session, alter session, select any dictionary, select any transaction, execute_catalog_role to symmetric;
 
 If using Oracle 12c without CDB, use the following permissions:
 
@@ -52,7 +52,30 @@ sym_data is cast to a clob which prevents truncation at 4k.  There is overhead f
 
 ==== Loading Data
 SymmetricDS has bulk loading capability available for Oracle. SymmetricDS specifies data loader types on a channel by channel basis. 
-To utilize Oracle Bulk loading versus straight JDBC insert, specify the Oracle Bulk Loader ("bulk") in the data_loader_type column of sym_channel.
+
+To utilize bulk loading with Oracle, you should create a user that is not the default system user of the database. Whatever user you end up using, make sure it also has the permissions mentioned above in the Database Permission section, as well as the ones mentioned below. It's important to note that SQL Loader (what Oracle uses to bulk load) will not work if either your user name or password contains a '@' symbol, so make sure to avoid this in both your username and password.
+
+----
+create user yourusername identified by "yourpassword";
+----
+
+Once your user is created, make sure to add the following permissions to the user to make sure that Symmetric has the correct permissions to bulk load with your database. (Again, make sure your user has the permissions mentioned in the Database Permission section as well)
+
+----
+GRANT CREATE SESSION TO yourusername;
+GRANT CREATE TABLE TO yourusername;
+alter user yourusername quota unlimited on system;
+GRANT CONNECT TO yourusername;
+GRANT RESOURCE TO yourusername;
+GRANT CREATE ANY TRIGGER TO yourusername;
+GRANT EXECUTE ON UTL_RAW To yourusername;
+----
+
+Register your Oracle database with Symmetric using the user you've just created. Once you have done that, when you get to the Bulk Loading screen on the Add Database Wizard you will need to provide a path to your SQL Loader installation. If you do not have SQL Loader installed, there is a link provided in the Add Database Wizard where you can go to get this installed.
+
+Once you have your database registered, to utilize Oracle Bulk loading versus straight JDBC insert, specify the Oracle Bulk Loader ("bulk") in the data_loader_type column of sym_channel table.
+
+Once these steps are complete your database should be configured to bulk load with SymmetricDS.
 
 ==== Optional - Partitioning
 Partitioning the DATA table by channel can help insert, routing and extraction performance on concurrent, high throughput systems. 

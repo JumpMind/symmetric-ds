@@ -1,9 +1,6 @@
 
 === PostgreSQL
 
-SymmetricDS has bulk loading capability available for Postgres. SymmetricDS specifies data loader types on a channel by channel basis.
-To utilize Postgres Bulk loading versus straight JDBC insert, specify the Postgres Bulk Loader ("postgres_bulk") in the data_loader_type column of sym_channel.
-
 Starting with PostgreSQL 8.3, SymmetricDS supports the transaction identifier.
 Binary Large Object (BLOB) replication is supported for both byte array (BYTEA) and object ID (OID) data types.
 
@@ -88,4 +85,6 @@ endif::pro[]
 |===
 
 ==== Loading Data
-When registering a PostgreSQL database with Symmetric, bulk loading will be checked by default. If you wish to bulk load with PostgreSQL, all the user must do is leave this checked upon setup.
+
+SymmetricDS has bulk loading capability available for Postgres, when registering a PostgreSQL database with SymmetricDS, bulk loading will be checked by default. SymmetricDS specifies data loader types on a channel by channel basis.
+To utilize Postgres Bulk loading versus straight JDBC insert, specify the Postgres Bulk Loader ("postgres_bulk") in the data_loader_type column of sym_channel.
