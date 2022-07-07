@@ -110,7 +110,7 @@ public class SecurityService implements ISecurityService {
     public KeyStore getKeyStore() {
         try {
             checkThatKeystoreFileExists();
-            String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE, SecurityConstants.KEYSTORE_TYPE);
+            String keyStoreType = getKeyStoreType();
             KeyStore ks = KeyStore.getInstance(keyStoreType);
             if (keyStoreFileName != null) {
                 log.debug("Loading keystore from file {}", keyStoreFileName);
@@ -131,6 +131,33 @@ public class SecurityService implements ISecurityService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected String getKeyStoreType() {
+        String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE);
+        if (keyStoreType == null) {
+            byte[] buffer = new byte[2];
+            if (keyStoreFileName != null) {
+                try (InputStream is = new FileInputStream(keyStoreFileName)) {
+                    is.read(buffer, 0, 2);
+                } catch (IOException e) {
+                }
+            } else if (keyStoreURL != null) {
+                try (InputStream is = keyStoreURL.openStream()) {
+                    is.read(buffer, 0, 2);
+                } catch (IOException e) {
+                }
+            }
+            if (Byte.toUnsignedInt(buffer[0]) == 0xCE && Byte.toUnsignedInt(buffer[1]) == 0xCE) {
+                keyStoreType = SecurityConstants.KEYSTORE_TYPE;
+            } else if (Byte.toUnsignedInt(buffer[0]) == 0xFE && Byte.toUnsignedInt(buffer[1]) == 0xED) {
+                keyStoreType = SecurityConstants.KEYSTORE_TYPE_JKS;
+            }
+        }
+        if (keyStoreType == null) {
+            keyStoreType = SecurityConstants.KEYSTORE_TYPE_PKCS12;
+        }
+        return keyStoreType;
     }
 
     @Override
@@ -230,7 +257,7 @@ public class SecurityService implements ISecurityService {
         if (!hasInitKeyStore) {
             synchronized (SecurityService.class) {
                 if (!hasInitKeyStore && keyStoreFileName != null && !new File(keyStoreFileName).exists()) {
-                    String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE, SecurityConstants.KEYSTORE_TYPE);
+                    String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE, SecurityConstants.KEYSTORE_TYPE_PKCS12);
                     KeyStore ks = KeyStore.getInstance(keyStoreType);
                     ks.load(null, getKeyStorePassword().toCharArray());
                     try (FileOutputStream os = new FileOutputStream(keyStoreFileName)) {

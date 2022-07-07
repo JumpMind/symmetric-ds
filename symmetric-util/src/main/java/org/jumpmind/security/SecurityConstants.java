@@ -43,6 +43,8 @@ public class SecurityConstants {
     public static final String CHARSET = "UTF8";
     public static final String KEYSTORE_PASSWORD = "changeit";
     public static final String KEYSTORE_TYPE = "JCEKS";
+    public static final String KEYSTORE_TYPE_PKCS12 = "PKCS12";
+    public static final String KEYSTORE_TYPE_JKS = "JKS";
     public static final byte[] SALT = { (byte) 0x01, (byte) 0x03, (byte) 0x05, (byte) 0x07, (byte) 0xA2,
             (byte) 0xB4, (byte) 0xC6, (byte) 0xD8 };
     public static final String ALIAS_SYM_PRIVATE_KEY = "sym";
