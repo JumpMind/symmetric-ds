@@ -177,7 +177,7 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
                     missingGrants.append(name);
                 }
             }
-            String[] systemPrivs = new String[] { "SELECT ANY DICTIONARY", "ALTER SESSION" };
+            String[] systemPrivs = new String[] { "SELECT ANY DICTIONARY", "ALTER SESSION", "SELECT ANY TRANSACTION" };
             if (sqlTemplate.getDatabaseMajorVersion() >= 12) {
                 systemPrivs = ArrayUtils.add(systemPrivs, "LOGMINING");
             }
@@ -189,15 +189,16 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
                     missingGrants.append(name);
                 }
             }
-            String[] dbaSystemPrivs = new String[] { "SELECT ANY TRANSACTION" };
-            for (String name : dbaSystemPrivs) {
-                if (!hasDbaSystemPrivilege(name)) {
-                    if (missingGrants.length() > 0) {
-                        missingGrants.append(", ");
-                    }
-                    missingGrants.append(name);
-                }
-            }
+            
+          String logMode = getSqlTemplate().queryForString("SELECT LOG_MODE FROM V$DATABASE");
+          if (!logMode.equals("ARCHIVELOG")) {
+        	  if (missingGrants.length() > 0) {
+        		  missingGrants.append(", ");
+              }
+              missingGrants.append("DATABASE MUST BE IN ARCHIVE LOG MODE"); 
+          }    
+           
+            
             if (missingGrants.length() > 0) {
                 log.error("Missing privileges: {}", missingGrants.toString());
                 result.setSolution("Grant " + missingGrants.toString());
@@ -224,10 +225,10 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     private boolean hasSystemPrivilege(String name) {
         return getSqlTemplate().queryForInt("select count(*) from user_sys_privs where privilege = ?", name) > 0;
     }
-
+/*
     private boolean hasDbaSystemPrivilege(String name) {
         return getSqlTemplate().queryForInt("select count(*) from dba_sys_privs where privilege = ?", name) > 0;
-    }
+    }*/
 
     private boolean hasPrivilege(String name) {
         return getSqlTemplate().queryForInt("select count(*) from user_role_privs where granted_role = ?", name) > 0;
