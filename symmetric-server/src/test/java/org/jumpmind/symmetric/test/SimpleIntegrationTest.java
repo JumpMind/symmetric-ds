@@ -1053,8 +1053,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             transformService.saveTransformTable(extractTransform, true);
             transformService.saveTransformTable(loadTransform, true);
             clientPull();
-            getServer().getSqlTemplate().update("insert into test_transform (id, data, insert_only) values (0, 'test0', 123)");
-            getServer().getSqlTemplate().update("insert into test_transform (id, data, insert_only) values (1, 'test1', 321)");
+            getServer().getSqlTemplate().update("insert into test_transform (id, data, insert_only) values (1, 'test1', 123)");
+            getServer().getSqlTemplate().update("insert into test_transform (id, data, insert_only) values (2, 'test2', 321)");
             assertEquals("Target table is empty to begin with", getClient().getSqlTemplate().queryForInt(
                     "select count(*) from test_transform where insert_only=1"), 0);
             clientPull();
