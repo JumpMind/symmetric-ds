@@ -88,6 +88,7 @@ subprojects { subproject ->
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
     apply plugin: 'jacoco'
+    apply plugin: 'signing'
     
     configurations { deployerJars }
     configurations {
@@ -234,23 +235,29 @@ subprojects { subproject ->
     
     artifacts { archives sourcesJar }    
     
-    publishing {
-    	publications {
-        	symmetricLibrary(MavenPublication) {
-            	from components.java
-        	}
-    	}
-    	repositories {
-        	maven {
-        		name = "jumpmindMaven"
-	    		credentials {
-	                username deployUser
-	                password deployPassword
-	            }
-            	url = deployUploadUrl
-        	}
-    	}
-	}
+    if (!project.name.contains("log-miner")) {
+        publishing {
+	    	publications {
+	        	symmetricLibrary(MavenPublication) {
+	            	from components.java
+	        	}
+	    	}
+	    	repositories {
+	        	maven {
+	        		name = "jumpmindMaven"
+		    		credentials {
+		                username deployUser
+		                password deployPassword
+		            }
+	            	url = deployUploadUrl
+	        	}
+	    	}
+		}
+		
+		signing {
+			sign publishing.publications.symmetricLibrary
+		}
+    }
 
     task deploy {
         description 'Shortcut for Maven users'
