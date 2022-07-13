@@ -505,6 +505,12 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("channelExpression", symmetricDialect.preProcessTriggerSqlClause(
                 getChannelExpression(trigger, history, originalTable)), ddl);
         
+        ddl = FormatUtils.replace("externalSelectForDelete", (StringUtils.isBlank(trigger.getExternalSelect()) ? "null"
+                : "(" + convertExternalSelectToDelete(symmetricDialect.preProcessTriggerSqlClause(trigger.getExternalSelect()))
+                        + ")"), ddl);
+        ddl = FormatUtils.replace("externalSelectForInsert", (StringUtils.isBlank(trigger.getExternalSelect()) ? "null"
+                : "(" + convertExternalSelectToInsert(symmetricDialect.preProcessTriggerSqlClause(trigger.getExternalSelect()))
+                        + ")"), ddl);
         ddl = FormatUtils.replace("externalSelect", (StringUtils.isBlank(trigger.getExternalSelect()) ? "null"
                 : "(" + symmetricDialect.preProcessTriggerSqlClause(trigger.getExternalSelect())
                         + ")"), ddl);
@@ -674,6 +680,18 @@ abstract public class AbstractTriggerTemplate {
                 break;
         }
         return ddl;
+    }
+    
+    private String convertExternalSelectToDelete(String externalSelect) {
+        externalSelect = FormatUtils.replace("curTriggerValue", oldTriggerValue, externalSelect);
+        externalSelect = FormatUtils.replace("curColumnPrefix", oldColumnPrefix, externalSelect);
+        return externalSelect;
+    }
+    
+    private String convertExternalSelectToInsert(String externalSelect) {
+        externalSelect = FormatUtils.replace("curTriggerValue", newTriggerValue, externalSelect);
+        externalSelect = FormatUtils.replace("curColumnPrefix", newColumnPrefix, externalSelect);
+        return externalSelect;
     }
     
     private String getChannelExpression() {
