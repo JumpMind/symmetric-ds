@@ -26,7 +26,7 @@ endif::pro[]
 
 ifdef::pro[]
 
-Add nodes to your synchronization scenario by using the Add Database Wizard.  This wizard is automatically shown when less the 2 nodes are configured.  
+Add nodes to your synchronization scenario by using the Connect Database Wizard.  This wizard is automatically shown when less the 2 nodes are configured.  
 It can also be accessed from the Manage Nodes screen by clicking the *Add* button. 
 
 image::images/wizard-connect/wizard-connect-menu.png[]

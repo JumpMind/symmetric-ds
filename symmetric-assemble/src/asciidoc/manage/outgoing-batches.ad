@@ -67,7 +67,7 @@ To show only batches in error, select the status of _Error_:
 
 image::images/manage/manage-outgoing-batches-error.png[]
 
-In order to view the error message, click the *magnifying glass* link in the details column of the outgoing batch row of interest.
+In order to view the error message, click the *bar chart* link in the details column of the outgoing batch row of interest.
 
 image::images/manage/manage-outgoing-batches-error-show.png[]
 

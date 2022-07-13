@@ -71,7 +71,7 @@ GRANT CREATE ANY TRIGGER TO yourusername;
 GRANT EXECUTE ON UTL_RAW To yourusername;
 ----
 
-Register your Oracle database with Symmetric using the user you've just created. Once you have done that, when you get to the Bulk Loading screen on the Add Database Wizard you will need to provide a path to your SQL Loader installation. If you do not have SQL Loader installed, there is a link provided in the Add Database Wizard where you can go to get this installed.
+Register your Oracle database with Symmetric using the user you've just created. Once you have done that, when you get to the Bulk Loading screen on the Connect Database Wizard you will need to provide a path to your SQL Loader installation. If you do not have SQL Loader installed, there is a link provided in the Connect Database Wizard where you can go to get this installed.
 
 Once you have your database registered, to utilize Oracle Bulk loading versus straight JDBC insert, specify the Oracle Bulk Loader ("bulk") in the data_loader_type column of sym_channel table.
 

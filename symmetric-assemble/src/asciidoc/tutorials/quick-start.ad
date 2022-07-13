@@ -174,7 +174,7 @@ endif::pro[]
 ifdef::pro[]
 image::images/wizard-node-setup.png[]
 
-. Select "Master Node" from the add database wizard
+. Select "Master Node" from the connect database wizard
 . Provide JDBC connection information for your source database, hit next
 . Select "Standard 2 Tier" profile, hit next
 . Use the default sync url, hit next
@@ -292,7 +292,7 @@ TIP: For complete instructions creating the target node click link:user-guide.ht
 endif::pro[]
 
 ifdef::pro[]
-The Add Database Wizard will be displayed by default when only one node has been configured.  If it is closed or not visible it can be opened by hitting the "Add" button on the Nodes screen of the Manage tab. 
+The Connect Database Wizard will be displayed by default when only one node has been configured.  If it is closed or not visible it can be opened by hitting the "Add" button on the Nodes screen of the Manage tab. 
 
 image::images/wizard-connect/wizard-connect-menu.png[]
 

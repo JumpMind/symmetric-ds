@@ -9,7 +9,7 @@ Snowflake can also be set up to capture changes using log-mining.
 
 
 ifdef::pro[]
-Setup the Snowflake node by using the <<Add Node,Add Database>> wizard and selecting Snowflake as the type.  
+Setup the Snowflake node by using the <<Add Node,Connect Database>> wizard and selecting Snowflake as the type.  
 
 image::images/appendix/snowflake-database-settings.png[]
 
