@@ -125,7 +125,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       fetch DeleteDataCursor into @OldPk, @OldDataRow $(oldKeyVariables), @ChannelId                                                                                          \n" +
 "                                       while @@sqlstatus = 0 begin                                                                                                                                  \n" +
 "                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-"                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, @ChannelId, @txid, @clientname, $(externalSelect), getdate())\n" +
+"                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, @ChannelId, @txid, @clientname, $(externalSelectForDelete), getdate())\n" +
 "                                         fetch DeleteDataCursor into @OldPk,@OldDataRow $(oldKeyVariables), @ChannelId                                                                                         \n" +
 "                                       end                                                                                                                                                             \n" +
 "                                       close DeleteDataCursor                                                                                                                                                \n" +
@@ -140,7 +140,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       fetch InsertDataCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                     \n" +
 "                                       while @@sqlstatus = 0 begin                                                                                                                                  \n" +
 "                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-"                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, @ChannelId, @txid, @clientname, $(externalSelect), getdate())                                   \n" +
+"                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, @ChannelId, @txid, @clientname, $(externalSelectForInsert), getdate())                                   \n" +
 "                                           fetch InsertDataCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                 \n" +
 "                                       end                                                                                                                                                             \n" +
 "                                       close InsertDataCursor                                                                                                                                                \n" +
