@@ -188,7 +188,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "          select '$(targetTableName)','D', $(triggerHistoryId), $(oldKeys),                                    \n" +
 "            $(specialSqlServerSybaseChannelExpression), $(txIdExpression),                                     \n" +
              defaultCatalog + "dbo.$(prefixName)_node_disabled(),                                               \n" +
-"            $(externalSelect), current_timestamp                                                               \n" +
+"            $(externalSelectForDelete), current_timestamp                                                               \n" +
 "          from deleted                                                                                         \n" +
 "          where $(syncOnDeleteCondition)                                                                       \n" +
 "        insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data                                  \n" +
@@ -197,7 +197,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "          select '$(targetTableName)','I', $(triggerHistoryId), $(columns),                                    \n" +
 "            $(channelExpression), $(txIdExpression),                                                            \n" +
             defaultCatalog + "dbo.$(prefixName)_node_disabled(),                                                \n" +
-"           $(externalSelect), current_timestamp                                                                \n" +
+"           $(externalSelectForInsert), current_timestamp                                                                \n" +
 "       $(if:containsBlobClobColumns)                                                                           \n" +
 "          from inserted                                                                                        \n" +
 "          inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin)                  \n" +
@@ -282,7 +282,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "          select '$(targetTableName)','D', $(triggerHistoryId), $(oldKeys),                                    \n" +
 "              $(specialSqlServerSybaseChannelExpression),                                                      \n" +
 "              $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(),                     \n" +
-"              $(externalSelect), current_timestamp                                                             \n" +
+"              $(externalSelectForDelete), current_timestamp                                                             \n" +
 "          from deleted                                                                                         \n" +
 "          where $(syncOnDeleteCondition)                                                                       \n" +
 "        insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data                                  \n" +
@@ -291,7 +291,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "          select '$(targetTableName)','R', $(triggerHistoryId), $(newKeys),                                    \n" +
 "                  $(channelExpression), $(txIdExpression),                                                     \n" + 
                    defaultCatalog + "dbo.$(prefixName)_node_disabled(),                                         \n" +
-"                  $(externalSelect), current_timestamp                                                         \n" +
+"                  $(externalSelectForInsert), current_timestamp                                                         \n" +
 "       $(if:containsBlobClobColumns)                                                                           \n" +
 "          from inserted                                                                                        \n" +
 "          inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin)                  \n" +
