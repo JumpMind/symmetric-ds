@@ -189,11 +189,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected void init() {
-        String standalone = System.getProperty(SystemConstants.SYSPROP_STANDALONE_WEB);
-        if (standalone != null && standalone.equals("true")) {
-            Thread shutdownHook = new Thread(() -> destroy());
-            Runtime.getRuntime().addShutdownHook(shutdownHook);
-        }
+        Thread shutdownHook = new Thread(() -> destroy());
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
         try {
             LogSummaryAppenderUtils.initialize();
             if (getSecurityServiceType() == SecurityServiceType.CLIENT) {
