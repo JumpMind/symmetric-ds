@@ -565,13 +565,13 @@ abstract public class AbstractTriggerTemplate {
         }
         return ddl;
     }
-    
+
     private String convertExternalSelectToDelete(String externalSelect) {
         externalSelect = FormatUtils.replace("curTriggerValue", oldTriggerValue, externalSelect);
         externalSelect = FormatUtils.replace("curColumnPrefix", oldColumnPrefix, externalSelect);
         return externalSelect;
     }
-    
+
     private String convertExternalSelectToInsert(String externalSelect) {
         externalSelect = FormatUtils.replace("curTriggerValue", newTriggerValue, externalSelect);
         externalSelect = FormatUtils.replace("curColumnPrefix", newColumnPrefix, externalSelect);
