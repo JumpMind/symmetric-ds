@@ -55,6 +55,8 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.writer.StructureDataWriter.PayloadType;
 import org.jumpmind.symmetric.job.IJob;
 import org.jumpmind.symmetric.job.IJobManager;
+import org.jumpmind.symmetric.job.NodeOnlineDetectorJob;
+import org.jumpmind.symmetric.job.ping.NodeOnlineStatus;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.BatchAckResult;
@@ -72,38 +74,12 @@ import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.service.IAcknowledgeService;
-import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.IDataExtractorService;
-import org.jumpmind.symmetric.service.IDataLoaderService;
-import org.jumpmind.symmetric.service.IDataService;
-import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IOutgoingBatchService;
-import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.service.*;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.web.ServerSymmetricEngine;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
-import org.jumpmind.symmetric.web.rest.model.Batch;
-import org.jumpmind.symmetric.web.rest.model.BatchAckResults;
-import org.jumpmind.symmetric.web.rest.model.BatchResult;
-import org.jumpmind.symmetric.web.rest.model.BatchResults;
-import org.jumpmind.symmetric.web.rest.model.BatchSummaries;
-import org.jumpmind.symmetric.web.rest.model.BatchSummary;
-import org.jumpmind.symmetric.web.rest.model.ChannelStatus;
-import org.jumpmind.symmetric.web.rest.model.Engine;
-import org.jumpmind.symmetric.web.rest.model.EngineList;
-import org.jumpmind.symmetric.web.rest.model.Heartbeat;
-import org.jumpmind.symmetric.web.rest.model.Node;
-import org.jumpmind.symmetric.web.rest.model.NodeList;
-import org.jumpmind.symmetric.web.rest.model.NodeStatus;
-import org.jumpmind.symmetric.web.rest.model.PullDataResults;
-import org.jumpmind.symmetric.web.rest.model.QueryResults;
-import org.jumpmind.symmetric.web.rest.model.RegistrationInfo;
-import org.jumpmind.symmetric.web.rest.model.SendSchemaRequest;
-import org.jumpmind.symmetric.web.rest.model.SendSchemaResponse;
-import org.jumpmind.symmetric.web.rest.model.TableName;
+import org.jumpmind.symmetric.web.rest.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1796,6 +1772,25 @@ public class RestService {
             return engine;
         }
 
+    }
+
+    @ApiOperation(value = "Initializes the pings and obtain a list of nodes and their online status.")
+    @RequestMapping(value = "/engine/{engine}/nodeonlinestatus", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final NodeOnlineStatusList getNodeOnlineStatus(@PathVariable("engine") String engineName) {
+        NodeOnlineStatusList list = new NodeOnlineStatusList();
+        IJobManager jobManager = getSymmetricEngine(engineName).getJobManager();
+        IJob job = jobManager.getJob(ClusterConstants.NODE_ONLINE_DETECTOR);
+
+        if (job == null) {
+            log.warn("Could not find a job with the name '{}'", ClusterConstants.NODE_ONLINE_DETECTOR);
+        } else {
+            for(Map.Entry<String, NodeOnlineStatus.PossibleStatus> node : ((NodeOnlineDetectorJob)job).pingNodes().entrySet()) {
+                list.addNodeStatus(node.getKey(), node.getValue());
+            }
+        }
+        return list;
     }
 
 }

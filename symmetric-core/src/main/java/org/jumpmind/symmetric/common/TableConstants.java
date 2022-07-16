@@ -81,6 +81,7 @@ public class TableConstants {
     public static final String SYM_CONTEXT = "context";
     public static final String SYM_JOB = "job";
     public static final String SYM_TABLE_RELOAD_STATUS = "table_reload_status";
+    public static final String SYM_NODE_ONLINE_HISTORY = "node_online_history";
 
     private static List<String> tablesWithPrefix;
 

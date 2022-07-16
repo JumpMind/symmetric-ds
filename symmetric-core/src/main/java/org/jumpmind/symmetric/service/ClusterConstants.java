@@ -55,5 +55,6 @@ public class ClusterConstants {
     public static final String TYPE_CLUSTER = "CLUSTER";
     public static final String TYPE_EXCLUSIVE = "EXCLUSIVE";
     public static final String TYPE_SHARED = "SHARED";
+    public static final String NODE_ONLINE_DETECTOR = "NodeOnlineDetector";
 
 }
