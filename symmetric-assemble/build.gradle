@@ -11,6 +11,7 @@ buildscript {
 		classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.4.2'
 		classpath 'com.bmuschko:gradle-docker-plugin:3.2.1'
         classpath 'co.riiid:gradle-github-plugin:0.4.2'
+        classpath 'org.jacoco:org.jacoco.ant:0.8.5'
     }
 }
 
@@ -18,13 +19,19 @@ plugins {
     id "org.sonarqube" version "3.3"
 	id "com.github.hierynomus.license" version "0.16.1"
 	id 'com.vaadin' version "$vaadinPluginVersion" apply false
+	
 }
+
+
 
 apply plugin: 'java-library'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'com.bmuschko.docker-remote-api'
 apply plugin: 'co.riiid.gradle'
+apply plugin: 'jacoco'
+
+
 
 allprojects {
 	apply plugin: 'com.diffplug.spotless'
@@ -41,11 +48,9 @@ allprojects {
     }
 }
 
-sonarqube {
-	    properties {    
-	        property "sonar.projectKey", "JumpMind_symmetric-ds"
-    }
-}
+
+
+
 
 task develop {
     dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea, tasks.compileTestJava
@@ -80,11 +85,69 @@ task buildScriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyRe
     configurations = project.buildscript.configurations
 }
 
+//This section applies the sonarqube plugin to all subprojects and then specifies an xml report path in symmetric-assemble
+subprojects {
+	apply plugin: 'org.sonarqube'
+    sonarqube {
+        properties {
+            property 'sonar.coverage.jacoco.xmlReportPaths', "${rootDir}/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml"
+        }
+    }
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+    }
+}
+
 if (project.properties.containsKey('pro')) {
     install.enabled = false
     uploadArchives.enabled = false
 } else {
     apply from: symAssembleDir + '/common.gradle'
+}
+
+//used to specify the jacoco version
+jacoco {
+	toolVersion = "0.8.5"
+}
+
+task codeCoverageReport(type: JacocoReport) {
+
+    // Gather execution data from all subprojects
+    executionData fileTree(project.rootDir.parentFile.path).include("**/jacoco/*.exec")
+    subprojects.each {
+        sourceSets it.sourceSets.main
+    }
+	//controls what reports are generated. XML is needed for sonarqube to run. HTML is for a human readable option to check things
+    reports {
+        xml.enabled true
+        html.enabled true        
+        xml.destination file("${rootDir}/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml")
+        html.destination file("${rootDir}/build/reports/jacoco/codeCoverageReport/codeCoverageReport.html")
+    }
+}
+
+
+//This controls what tests are run. If you only want unit test comment out subprojects*.integrationTest
+//codeCoverageReport.dependsOn {
+//    subprojects.test
+//    subprojects.integrationTest
+//}
+
+//sets sonarqube parameters
+sonarqube {
+    properties {
+        property "sonar.verbose", true
+        property "sonar.projectKey", "JumpMind_symmetric-ds"
+	    property "sonar.organization", "jumpmind"
+	    property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.coverage.jacoco.xmlReportPaths", "${rootDir}/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml"
+        property "sonar.exclusions", "**/*.ad"
+    }
+}
+
+//forces sonar to require codeCoverageReport which runs all of the tests
+tasks['sonarqube'].with {
+    dependsOn codeCoverageReport
 }
 
 task generateJavadoc(type: Javadoc) {
