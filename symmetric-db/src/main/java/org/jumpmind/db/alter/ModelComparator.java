@@ -328,8 +328,7 @@ public class ModelComparator {
             compatible = true;
         }
         if (!compatible && targetColumn.getMappedTypeCode() != sourceColumn.getMappedTypeCode()
-                && platformInfo.getTargetJdbcType(targetColumn.getMappedTypeCode()) != sourceColumn
-                        .getMappedTypeCode()) {
+                && platformInfo.getTargetJdbcType(targetColumn.getMappedTypeCode()) != platformInfo.getTargetJdbcType(sourceColumn.getMappedTypeCode())) {
             log.debug(
                     "The {} column on the {} table changed type codes from {} to {} ",
                     new Object[] { sourceColumn.getName(), sourceTable.getName(),
