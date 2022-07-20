@@ -392,6 +392,12 @@ public class Column implements Cloneable, Serializable {
             sizeAsInt = null;
             scale = 0;
         }
+        if (platformColumns != null) {
+            for (PlatformColumn platformColumn : platformColumns.values()) {
+                platformColumn.setSize(sizeAsInt == null ? -1 : sizeAsInt);
+                platformColumn.setDecimalDigits(size == null || size.indexOf(",") < 0 ? -1 : scale);
+            }
+        }
     }
 
     /**
@@ -427,6 +433,12 @@ public class Column implements Cloneable, Serializable {
         this.size = String.valueOf(size);
         if (scale > 0) {
             this.size += "," + scale;
+        }
+        if (platformColumns != null) {
+            for (PlatformColumn platformColumn : platformColumns.values()) {
+                platformColumn.setSize(size);
+                platformColumn.setDecimalDigits(scale);
+            }
         }
     }
 
