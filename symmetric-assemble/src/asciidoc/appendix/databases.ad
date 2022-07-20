@@ -122,8 +122,8 @@ by database.
 |✔
 |✔
 |
-|?
-|?
+|✔ 
+|✔
 
 |Greenplum
 |8.2.15 and above
@@ -370,8 +370,8 @@ by database.
 |✔
 |✔
 |
-|?
-|?
+|✔ 
+|✔
  
 |Sybase ASE
 |12.5
@@ -383,8 +383,8 @@ by database.
 |✔
 |✔
 |
-|?
-|?
+|✔ 
+|✔
  
 |Teradata
 |15.10 and above

@@ -65,3 +65,7 @@ go
 
 ALL is referring to the combination of INSERT, UPDATE, DELETE, SELECT, ALTER and REFERENCES. These can be done individually or as the ALL command demonstrated above.
 
+==== Loading Data
+
+SymmetricDS has bulk loading capability available for Sybase ASE, when registering a Sybase ASE database with SymmetricDS, bulk loading will be checked by default. SymmetricDS specifies data loader types on a channel by channel basis. Once you have your database registered, to utilize bulk loading versus straight JDBC insert, specify the Bulk Loader ("bulk") in the data_loader_type column of sym_channel table.
+
