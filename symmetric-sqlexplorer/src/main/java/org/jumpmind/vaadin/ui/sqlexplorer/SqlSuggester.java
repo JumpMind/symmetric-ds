@@ -51,6 +51,7 @@ public class SqlSuggester {
     private int cursor;
     private String currentWord;
     private boolean addPeriod;
+    private boolean setCursorPosition;
     private boolean enabled;
     private List<String> referencedTableNames;
     private Map<String, String> aliases;
@@ -70,9 +71,16 @@ public class SqlSuggester {
                 this.editor.addTextAtCurrentPosition(".");
                 addPeriod = false;
                 this.editor.sync();
+                setCursorPosition = true;
             }
         });
         this.editor.addValueChangeListener(event -> updateSuggestions(event.getValue(), getCursorPosition()));
+        this.editor.addSelectionChangeListener(event -> {
+            if (setCursorPosition && event.getSelectionTo() != cursor) {
+                this.editor.setCursorPosition(cursor);
+            }
+            setCursorPosition = false;
+        });
         Shortcuts.addShortcutListener(this.editor, () -> {
             addPeriod = true;
             this.editor.sync();
