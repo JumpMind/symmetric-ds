@@ -2,7 +2,7 @@
 === Oracle
 This section describes Oracle specific SymmetricDS details.
 
-==== Database Permissions
+==== Permissions
 The SymmetricDS database user generally needs privileges for connecting and creating tables (including indexes), triggers, sequences, 
 and procedures (including packages and functions). For change data capture, use the following permissions:
 
@@ -50,7 +50,7 @@ then set `use_capture_lobs` to 1 in the <<TRIGGER>> table and `contains_big_lobs
 sym_data is cast to a clob which prevents truncation at 4k.  There is overhead for both of these settings
 * When multiple triggers are defined on the same table, then the order in which the triggers occur appears to be arbitrary
 
-==== Loading Data
+==== Bulk Loading
 SymmetricDS has bulk loading capability available for Oracle. SymmetricDS specifies data loader types on a channel by channel basis. 
 
 To utilize bulk loading with Oracle, you should create a user that is not the default system user of the database. Whatever user you end up using, make sure it also has the permissions mentioned above in the Database Permission section, as well as the ones mentioned below. It's important to note that SQL Loader (what Oracle uses to bulk load) will not work if either your user name or password contains a '@' symbol, so make sure to avoid this in both your username and password.

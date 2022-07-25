@@ -13,7 +13,7 @@ All jdbc driver jar files need to be placed in the SymmetricDS installation /lib
 * terajdbc4.jar
 * tdgssconfig.jar
 
-==== Database Permissions
+==== Permissions
 
 The user provided at the setup of the node but have select access to the DBC database.
 
@@ -22,7 +22,7 @@ The user provided at the setup of the node but have select access to the DBC dat
 GRANT SELECT ON "DBC" TO {USER} WITH GRANT OPTION;
 ----
 
-==== Loading Data 
+==== Bulk Loading 
 
 Turn off the initial load extract in background job
 

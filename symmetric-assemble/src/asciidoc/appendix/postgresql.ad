@@ -37,7 +37,7 @@ If you want SymmetricDS to install into a schema other than public you can alter
 alter user {user name} set search_path to {schema name};
 ----
 
-==== Postgres Permissions
+==== Permissions
 
 If SymmetricDS is connected into a different schema than the application tables and a different user account is used to write to the the application tables the following permissions need to be granted to the application user to access the SymmetricDS schema
 
@@ -84,7 +84,7 @@ endif::pro[]
 |Point, Lseg, Box, Path, Polygon, Circle|Yes
 |===
 
-==== Loading Data
+==== Bulk Loading
 
 SymmetricDS has bulk loading capability available for Postgres, when registering a PostgreSQL database with SymmetricDS, bulk loading will be checked by default. SymmetricDS specifies data loader types on a channel by channel basis.
 To utilize Postgres Bulk loading versus straight JDBC insert, specify the Postgres Bulk Loader ("postgres_bulk") in the data_loader_type column of sym_channel.

@@ -20,7 +20,7 @@ After hitting next you can setup advanced options for your OpenSearch node.
 image::images/appendix/opensearch-advanced-settings.png[]
 
 
-==== Loading Data
+==== Bulk Loading
 
 
 ===== Setup reload channels for bulk loading.

@@ -16,7 +16,7 @@ Setup the Elasticsearch node by using the <<Add Node,Connect Database>> wizard a
 image::images/appendix/elasticsearch-node-setup.png[]
 
 
-==== Loading Data
+==== Bulk Loading
 
 
 ===== Setup reload channels for bulk loading.

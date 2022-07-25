@@ -30,7 +30,34 @@ target.db.password=<snowflake_password>
 
 endif::pro[]
 
-==== Loading Data
+==== Permissions
+.Log Miner Permissions
+If the tables that are being tracked for change data capture using log mining are already created, each table needs to be altered
+to add change data tracking to it. An example DDL statement to turn this on is shown:
+[source,SQL]
+----
+ALTER TABLE TABLE1 SET CHANGE_TRACKING=TRUE;
+----
+
+Permissions must also be added to the database user ID that is used to access the Snowflake database. Assuming that you
+wanted to use a role called SYMMETRIC and a user called SYMMETRIC, here are the set of permissions that must be set in
+order for SymmetricDS to successfully run the log mining (called Streams in Snowflake) functionality (replace <warehouse>,
+<database>, and <schema> with real values):
+[source,SQL]
+----
+CREATE ROLE SYMMETRIC;
+GRANT USAGE ON WAREHOUSE <warehouse> TO ROLE SYMMETRIC;
+GRANT USAGE ON DATABASE <database> TO ROLE SYMMETRIC;
+GRANT USAGE ON SCHEMA <database>.<schema> TO ROLE SYMMETRIC;
+GRANT CREATE STREAM ON SCHEMA <database>.<schema> TO ROLE SYMMETRIC;
+GRANT SELECT ON ALL TABLES IN DATABASE <database> TO ROLE SYMMETRIC;
+GRANT CREATE TABLE ON SCHEMA <database>.<schema> TO ROLE SYMMETRIC;
+GRANT CREATE FILE FORMAT ON SCHEMA SYMMETRIC_TEST.SYMMETRIC_TEST TO ROLE SYMMETRIC;
+CREATE USER SYMMETRIC PASSWORD = 'symmetric' DEFAULT_ROLE = 'SYMMETRIC';
+GRANT ROLE SYMMETRIC TO USER SYMMETRIC;
+----
+
+==== Bulk Loading
 
 
 
@@ -119,29 +146,4 @@ cloud.bulk.load.azure.sas.token=
 ----
 endif::pro[]
 
-==== Database Permissions
-.Log Miner Permissions
-If the tables that are being tracked for change data capture using log mining are already created, each table needs to be altered
-to add change data tracking to it. An example DDL statement to turn this on is shown:
-[source,SQL]
-----
-ALTER TABLE TABLE1 SET CHANGE_TRACKING=TRUE;
-----
 
-Permissions must also be added to the database user ID that is used to access the Snowflake database. Assuming that you
-wanted to use a role called SYMMETRIC and a user called SYMMETRIC, here are the set of permissions that must be set in
-order for SymmetricDS to successfully run the log mining (called Streams in Snowflake) functionality (replace <warehouse>,
-<database>, and <schema> with real values):
-[source,SQL]
-----
-CREATE ROLE SYMMETRIC;
-GRANT USAGE ON WAREHOUSE <warehouse> TO ROLE SYMMETRIC;
-GRANT USAGE ON DATABASE <database> TO ROLE SYMMETRIC;
-GRANT USAGE ON SCHEMA <database>.<schema> TO ROLE SYMMETRIC;
-GRANT CREATE STREAM ON SCHEMA <database>.<schema> TO ROLE SYMMETRIC;
-GRANT SELECT ON ALL TABLES IN DATABASE <database> TO ROLE SYMMETRIC;
-GRANT CREATE TABLE ON SCHEMA <database>.<schema> TO ROLE SYMMETRIC;
-GRANT CREATE FILE FORMAT ON SCHEMA SYMMETRIC_TEST.SYMMETRIC_TEST TO ROLE SYMMETRIC;
-CREATE USER SYMMETRIC PASSWORD = 'symmetric' DEFAULT_ROLE = 'SYMMETRIC';
-GRANT ROLE SYMMETRIC TO USER SYMMETRIC;
-----

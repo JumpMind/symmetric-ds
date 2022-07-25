@@ -19,7 +19,7 @@ If SQL Server is configured with a default collation that does NOT support unico
 a table has character based primary keys.  This is because statements are prepared for a unicode type and as a result the indexes are not used.  You can turn this 
 functionality off in JTDS by appending the following to your db.url:  ;sendStringParametersAsUnicode=false
 
-==== SQL Server Permissions
+==== Permissions
 
 SymmetricDS can be configured to work with a variety SQL Server configurations.  It is possible to install SymmetricDS in the same database and schema with the same user account your application runs.   
 However you can also set it up to run in its own database with a designated user.   Whichever configuration you choose below are the permissions required for SymmetricDS to run.
@@ -122,6 +122,6 @@ endif::pro[]
 |Spatial Data Types|No
 |===
 
-==== Loading Data
+==== Bulk Loading
 
 When registering a SQL Server database with SymmetricDS, bulk loading will be be checked by default. In order to make use of bulk loading, the user must provide a path to a bcp executable (installation for this executable is linked in the Connect Database Wizard when asked about bulk loading).

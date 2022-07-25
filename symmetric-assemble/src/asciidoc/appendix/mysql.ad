@@ -97,7 +97,7 @@ endif::pro[]
 |Geometry, Point, LineString, Polygon, GeometryCollection, MultiPoint, MultiLinestring, MultiPolygon|No
 |===
 
-==== Loading Data
+==== Bulk Loading
 When registering a MySQL database with SymmetricDS, bulk loading will be checked by default.
 
 image::images/appendix/mysql-enable-bulk-loading.png[]
