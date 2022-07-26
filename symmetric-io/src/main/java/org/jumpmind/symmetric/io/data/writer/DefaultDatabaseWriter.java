@@ -792,21 +792,27 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         failureMessage.append(batch.getChannelId());
         failureMessage.append("'.\n");
         if (logLastDmlDetails && currentDmlStatement != null) {
-            failureMessage.append("Failed sql was: ");
-            String dynamicSQL = logSqlBuilder.buildDynamicSqlForLog(currentDmlStatement.getSql(), currentDmlValues, currentDmlStatement.getTypes());
-            failureMessage.append(dynamicSQL);
-            if (!dynamicSQL.equals(currentDmlStatement.getSql())) {
+            boolean shouldLogRawSql = true;
+            if (writerSettings.isLogSqlParamsOnError()) {
+                failureMessage.append("Failed sql was: ");
+                String dynamicSQL = logSqlBuilder.buildDynamicSqlForLog(currentDmlStatement.getSql(), currentDmlValues, currentDmlStatement.getTypes());
+                failureMessage.append(dynamicSQL);
                 failureMessage.append("\n");
+                shouldLogRawSql = !dynamicSQL.equals(currentDmlStatement.getSql());
+            }
+            if (shouldLogRawSql) {
                 failureMessage.append("Failed raw sql was: ");
                 failureMessage.append(currentDmlStatement.getSql());
             }
             failureMessage.append("\n");
         }
         if (logLastDmlDetails && currentDmlValues != null && currentDmlStatement != null) {
-            failureMessage.append("Failed sql parameters: ");
-            failureMessage.append(StringUtils.abbreviate("[" + dmlValuesToString(currentDmlValues, currentDmlStatement.getTypes()) + "]",
-                    CsvData.MAX_DATA_SIZE_TO_PRINT_TO_LOG));
-            failureMessage.append("\n");
+            if (writerSettings.isLogSqlParamsOnError()) {
+                failureMessage.append("Failed sql parameters: ");
+                failureMessage.append(StringUtils.abbreviate("[" + dmlValuesToString(currentDmlValues, currentDmlStatement.getTypes()) + "]",
+                        CsvData.MAX_DATA_SIZE_TO_PRINT_TO_LOG));
+                failureMessage.append("\n");
+            }
             failureMessage.append("Failed sql parameters types: ");
             failureMessage.append("[" + TypeMap.getJdbcTypeDescriptions(currentDmlStatement.getTypes()) + "]");
             failureMessage.append("\n");
@@ -820,7 +826,9 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         if (e instanceof DataTruncationException) {
             logDataTruncation(data, failureMessage);
         }
-        data.writeCsvDataDetails(failureMessage);
+        if (writerSettings.isLogSqlParamsOnError()) {
+            data.writeCsvDataDetails(failureMessage);
+        }
         log.info(failureMessage.toString(), e);
     }
 

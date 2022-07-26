@@ -46,6 +46,7 @@ public class DatabaseWriterSettings {
     protected boolean saveCurrentValueOnError = false;
     protected boolean fitToColumn = false;
     protected boolean logConflictResolution = false;
+    protected boolean logSqlParamsOnError = true;
     protected boolean loadOnlyNode = false;
     protected String textColumnExpression;
     protected Map<String, Conflict> conflictSettingsByChannel;
@@ -262,6 +263,14 @@ public class DatabaseWriterSettings {
 
     public boolean isLogConflictResolution() {
         return logConflictResolution;
+    }
+
+    public void setLogSqlParamsOnError(boolean logSqlParamsOnError) {
+        this.logSqlParamsOnError = logSqlParamsOnError;
+    }
+
+    public boolean isLogSqlParamsOnError() {
+        return logSqlParamsOnError;
     }
 
     public void setTextColumnExpression(String textColumnExpression) {

@@ -221,6 +221,7 @@ final public class ParameterConstants {
     public final static String DATA_LOADER_TREAT_DATETIME_AS_VARCHAR = "db.treat.date.time.as.varchar.enabled";
     public final static String DATA_LOADER_USE_PRIMARY_KEYS_FROM_SOURCE = "dataloader.use.primary.keys.from.source";
     public final static String DATA_LOADER_IGNORE_SQL_EVENT_ERRORS = "dataloader.ignore.sql.event.errors";
+    public final static String DATA_LOADER_LOG_SQL_PARAMS_ON_ERROR = "dataloader.log.sql.params.on.error";
     public final static String DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL = "datareload.batch.insert.transactional";
     public final static String DATA_EXTRACTOR_ENABLED = "dataextractor.enable";
     public final static String DATA_EXTRACTOR_TEXT_COLUMN_EXPRESSION = "dataextractor.text.column.expression";
