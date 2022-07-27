@@ -739,7 +739,7 @@ public class TabularResultLayout extends VerticalLayout {
                                     return "italics";
                                 }
                                 return null;
-                            }).setResizable(true), columnName);
+                            }).setResizable(true).setAutoWidth(true), columnName);
                     valueProviderMap.put(grid.getColumnByKey(columnName), row -> row.get(colNum));
                     types[columnCounter[0] - 1] = meta.getColumnType(columnCounter[0]);
                 } else {
