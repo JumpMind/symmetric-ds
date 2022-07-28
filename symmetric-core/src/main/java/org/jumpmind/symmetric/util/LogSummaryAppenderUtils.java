@@ -137,7 +137,7 @@ public class LogSummaryAppenderUtils {
 
     public static File getLogDir() {
         if (helper != null) {
-            helper.getLogDir();
+            return helper.getLogDir();
         }
         return null;
     }
