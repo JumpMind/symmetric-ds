@@ -323,32 +323,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         return alterDatabase(currentModel, desiredModel, alterDatabaseInterceptors);
     }
 
-    /**
-     * When the platform columns were added alters were not taken into consideration. Therefore, we copy the desiredPlatformColumn to the current platform
-     * column because the alter code ends up using the current column to come up with the alter statements. This is a hack that depends on the fact that none of
-     * the alter decision are based upon the current column's platform column.
-     */
     protected void mergeOrRemovePlatformTypes(Database currentModel, Database desiredModel) {
-        Table[] currentTables = currentModel.getTables();
-        for (Table currentTable : currentTables) {
-            /*
-             * Warning - we don't currently support altering tables across different catalogs and schemas, so we only need to look up by name
-             */
-            Table desiredTable = findTable(desiredModel, currentTable.getName());
-            if (desiredTable != null) {
-                Column[] currentColumns = currentTable.getColumns();
-                for (Column currentColumn : currentColumns) {
-                    Column desiredColumn = desiredTable.getColumnWithName(currentColumn.getName());
-                    if (desiredColumn != null) {
-                        currentColumn.removePlatformColumn(databaseName);
-                        PlatformColumn desiredPlatformColumn = desiredColumn.findPlatformColumn(databaseName);
-                        if (desiredPlatformColumn != null) {
-                            currentColumn.addPlatformColumn(desiredPlatformColumn);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     /**
