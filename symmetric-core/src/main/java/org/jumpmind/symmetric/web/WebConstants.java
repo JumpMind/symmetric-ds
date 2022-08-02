@@ -71,6 +71,8 @@ public class WebConstants {
     public static final String ACK_LOAD_DELETE_ROW_COUNT = "loadDeleteRowCount-";
     public static final String ACK_FALLBACK_INSERT_COUNT = "fallbackInsertCount-";
     public static final String ACK_FALLBACK_UPDATE_COUNT = "fallbackUpdateCount-";
+    public static final String ACK_CONFLICT_WIN_COUNT = "conflictWinCount-";
+    public static final String ACK_CONFLICT_LOSE_COUNT = "conflictLoseCount-";
     public static final String ACK_IGNORE_ROW_COUNT = "ignoreRowCount-";
     public static final String ACK_MISSING_DELETE_COUNT = "missingDeleteCount-";
     public static final String ACK_SKIP_COUNT = "skipCount-";

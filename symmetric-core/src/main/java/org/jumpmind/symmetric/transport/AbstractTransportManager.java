@@ -107,6 +107,8 @@ abstract public class AbstractTransportManager {
                 append(builder, WebConstants.ACK_LOAD_DELETE_ROW_COUNT + batchId, batch.getLoadDeleteRowCount());
                 append(builder, WebConstants.ACK_FALLBACK_INSERT_COUNT + batchId, batch.getFallbackInsertCount());
                 append(builder, WebConstants.ACK_FALLBACK_UPDATE_COUNT + batchId, batch.getFallbackUpdateCount());
+                append(builder, WebConstants.ACK_CONFLICT_WIN_COUNT + batchId, batch.getConflictWinCount());
+                append(builder, WebConstants.ACK_CONFLICT_LOSE_COUNT + batchId, batch.getConflictLoseCount());
                 append(builder, WebConstants.ACK_IGNORE_ROW_COUNT + batchId, batch.getIgnoreRowCount());
                 append(builder, WebConstants.ACK_MISSING_DELETE_COUNT + batchId, batch.getMissingDeleteCount());
                 append(builder, WebConstants.ACK_SKIP_COUNT + batchId, batch.getSkipCount());
@@ -217,6 +219,8 @@ abstract public class AbstractTransportManager {
         batchInfo.setLoadDeleteRowCount(getParamAsNum(parameters, WebConstants.ACK_LOAD_DELETE_ROW_COUNT + batchId));
         batchInfo.setFallbackInsertCount(getParamAsNum(parameters, WebConstants.ACK_FALLBACK_INSERT_COUNT + batchId));
         batchInfo.setFallbackUpdateCount(getParamAsNum(parameters, WebConstants.ACK_FALLBACK_UPDATE_COUNT + batchId));
+        batchInfo.setConflictWinCount(getParamAsNum(parameters, WebConstants.ACK_CONFLICT_WIN_COUNT + batchId));
+        batchInfo.setConflictLoseCount(getParamAsNum(parameters, WebConstants.ACK_CONFLICT_LOSE_COUNT + batchId));
         batchInfo.setIgnoreRowCount(getParamAsNum(parameters, WebConstants.ACK_IGNORE_ROW_COUNT + batchId));
         batchInfo.setMissingDeleteCount(getParamAsNum(parameters, WebConstants.ACK_MISSING_DELETE_COUNT + batchId));
         batchInfo.setSkipCount(getParamAsNum(parameters, WebConstants.ACK_SKIP_COUNT + batchId));

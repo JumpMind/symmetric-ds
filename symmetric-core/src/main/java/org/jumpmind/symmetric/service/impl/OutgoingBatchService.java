@@ -212,11 +212,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.getFailedDataId(), outgoingBatch.getFailedLineNumber(),
                         outgoingBatch.getLastUpdatedHostName(), new Date(), outgoingBatch.getSummary(), outgoingBatch.getLoadRowCount(),
                         outgoingBatch.getLoadInsertRowCount(), outgoingBatch.getLoadUpdateRowCount(), outgoingBatch.getLoadDeleteRowCount(),
-                        outgoingBatch.getFallbackInsertCount(), outgoingBatch.getFallbackUpdateCount(), outgoingBatch.getIgnoreRowCount(),
-                        outgoingBatch.getMissingDeleteCount(), outgoingBatch.getSkipCount(), outgoingBatch.getExtractRowCount(),
-                        outgoingBatch.getExtractInsertRowCount(), outgoingBatch.getExtractUpdateRowCount(),
-                        outgoingBatch.getExtractDeleteRowCount(), outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(),
-                        outgoingBatch.isBulkLoadFlag(),
+                        outgoingBatch.getFallbackInsertCount(), outgoingBatch.getFallbackUpdateCount(), outgoingBatch.getConflictWinCount(),
+                        outgoingBatch.getConflictLoseCount(), outgoingBatch.getIgnoreRowCount(), outgoingBatch.getMissingDeleteCount(),
+                        outgoingBatch.getSkipCount(), outgoingBatch.getExtractRowCount(), outgoingBatch.getExtractInsertRowCount(),
+                        outgoingBatch.getExtractUpdateRowCount(), outgoingBatch.getExtractDeleteRowCount(),
+                        outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(), outgoingBatch.isBulkLoadFlag(),
                         outgoingBatch.getBatchId(), outgoingBatch.getNodeId() },
                 new int[] { Types.CHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
@@ -224,7 +224,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         Types.TIMESTAMP, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC,
                         Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                        Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                        Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 
@@ -235,7 +235,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 Types.TIMESTAMP, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC,
                 Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                 Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                 symmetricDialect.getSqlTypeForIds(), Types.VARCHAR };
         int count = 0;
         transaction.prepare(getSql("updateOutgoingBatchSql"));
@@ -255,11 +255,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                             outgoingBatch.getFailedDataId(), outgoingBatch.getFailedLineNumber(),
                             outgoingBatch.getLastUpdatedHostName(), new Date(), outgoingBatch.getSummary(), outgoingBatch.getLoadRowCount(),
                             outgoingBatch.getLoadInsertRowCount(), outgoingBatch.getLoadUpdateRowCount(), outgoingBatch.getLoadDeleteRowCount(),
-                            outgoingBatch.getFallbackInsertCount(), outgoingBatch.getFallbackUpdateCount(), outgoingBatch.getIgnoreRowCount(),
-                            outgoingBatch.getMissingDeleteCount(), outgoingBatch.getSkipCount(), outgoingBatch.getExtractRowCount(),
-                            outgoingBatch.getExtractInsertRowCount(), outgoingBatch.getExtractUpdateRowCount(),
-                            outgoingBatch.getExtractDeleteRowCount(), outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(),
-                            outgoingBatch.isBulkLoadFlag(),
+                            outgoingBatch.getFallbackInsertCount(), outgoingBatch.getFallbackUpdateCount(), outgoingBatch.getConflictWinCount(),
+                            outgoingBatch.getConflictLoseCount(), outgoingBatch.getIgnoreRowCount(), outgoingBatch.getMissingDeleteCount(),
+                            outgoingBatch.getSkipCount(), outgoingBatch.getExtractRowCount(), outgoingBatch.getExtractInsertRowCount(),
+                            outgoingBatch.getExtractUpdateRowCount(), outgoingBatch.getExtractDeleteRowCount(),
+                            outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(), outgoingBatch.isBulkLoadFlag(),
                             outgoingBatch.getBatchId(), outgoingBatch.getNodeId() }, types);
             if (++count >= flushSize) {
                 transaction.flush();
@@ -871,6 +871,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     batch.setSummary(rs.getString("summary"));
                     batch.setFallbackInsertCount(rs.getLong("fallback_insert_count"));
                     batch.setFallbackUpdateCount(rs.getLong("fallback_update_count"));
+                    batch.setConflictWinCount(rs.getLong("conflict_win_count"));
+                    batch.setConflictLoseCount(rs.getLong("conflict_lose_count"));
                     batch.setIgnoreRowCount(rs.getLong("ignore_row_count"));
                     batch.setMissingDeleteCount(rs.getLong("missing_delete_count"));
                     batch.setSkipCount(rs.getLong("skip_count"));

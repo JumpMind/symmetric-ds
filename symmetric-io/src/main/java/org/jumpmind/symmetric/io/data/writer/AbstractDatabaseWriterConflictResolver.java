@@ -61,13 +61,18 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                             }
                             if (isWinner) {
                                 performChainedFallbackForInsert(writer, data, conflict);
-                            } else if (!conflict.isResolveRowOnly()) {
-                                throw new IgnoreBatchException();
                             } else {
-                                ignoreRow(writer);
+                                if (!conflict.isResolveRowOnly()) {
+                                    writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.CONFLICTLOSECOUNT);
+                                    throw new IgnoreBatchException();
+                                } else {
+                                    ignoreRow(writer);
+                                    writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.CONFLICTLOSECOUNT);
+                                }
                             }
                             break;
                         case IGNORE:
+                            writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.CONFLICTLOSECOUNT);
                             ignore(writer, conflict);
                             break;
                         case MANUAL:
@@ -96,13 +101,18 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                             }
                             if (isWinner) {
                                 performChainedFallbackForUpdate(writer, data, conflict);
-                            } else if (!conflict.isResolveRowOnly()) {
-                                throw new IgnoreBatchException();
                             } else {
-                                ignoreRow(writer);
+                                if (!conflict.isResolveRowOnly()) {
+                                    writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.CONFLICTLOSECOUNT);
+                                    throw new IgnoreBatchException();
+                                } else {
+                                    ignoreRow(writer);
+                                    writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.CONFLICTLOSECOUNT);
+                                }
                             }
                             break;
                         case IGNORE:
+                            writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.CONFLICTLOSECOUNT);
                             ignore(writer, conflict);
                             break;
                         case MANUAL:
@@ -127,8 +137,10 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                         if (status == LoadStatus.CONFLICT) {
                             writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
                         }
+                        writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.CONFLICTWINCOUNT);
                         break;
                     case IGNORE:
+                        writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.CONFLICTWINCOUNT);
                         ignore(writer, conflict);
                         break;
                     case NEWER_WINS:
@@ -152,10 +164,12 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                         if (status == LoadStatus.CONFLICT) {
                             writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
                         }
+                        writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.CONFLICTWINCOUNT);
                         break;
                     case MANUAL:
                     default:
                         if (resolvedData != null) {
+                            writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.CONFLICTWINCOUNT);
                             if (!resolvedData.isIgnoreRow()) {
                                 writer.delete(data, false);
                             } else {
@@ -327,6 +341,8 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                 } catch (ConflictException ex) {
                     performFallbackToInsert(writer, data, conflict, true);
                 }
+            } else {
+                writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.CONFLICTLOSECOUNT);
             }
         } else {
             throw new ConflictException(data, writer.getTargetTable(), false, conflict,
@@ -349,6 +365,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                 throw new ConflictException(data, writer.getTargetTable(), true, conflict,
                         (Exception) writer.getContext().get(AbstractDatabaseWriter.CONFLICT_ERROR));
             } else {
+                writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.CONFLICTWINCOUNT);
                 writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.FALLBACKUPDATECOUNT);
             }
         } finally {
@@ -365,6 +382,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                 throw new ConflictException(csvData, writer.getTargetTable(), true, conflict,
                         (Exception) writer.getContext().get(AbstractDatabaseWriter.CONFLICT_ERROR));
             } else {
+                writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.CONFLICTWINCOUNT);
                 writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);
             }
         } finally {

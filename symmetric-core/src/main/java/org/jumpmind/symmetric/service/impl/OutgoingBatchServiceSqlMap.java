@@ -51,9 +51,9 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "  sql_state=?, sql_code=?, sql_message=?,                                       "
                         + "  failed_data_id=?, failed_line_number=?, last_update_hostname=?, last_update_time=?, summary=?, "
                         + "  load_row_count=?, load_insert_row_count=?, load_update_row_count=?, load_delete_row_count=?, "
-                        + "  fallback_insert_count=?, fallback_update_count=?, ignore_row_count=?, missing_delete_count=?, "
-                        + "  skip_count=?, extract_row_count=?, extract_insert_row_count=?, extract_update_row_count=?, extract_delete_row_count=?, "
-                        + "  transform_extract_millis=?, transform_load_millis=?, bulk_loader_flag=? "
+                        + "  fallback_insert_count=?, fallback_update_count=?, conflict_win_count=?, conflict_lose_count=?, ignore_row_count=?, "
+                        + "  missing_delete_count=?, skip_count=?, extract_row_count=?, extract_insert_row_count=?, extract_update_row_count=?, "
+                        + "  extract_delete_row_count=?, transform_extract_millis=?, transform_load_millis=?, bulk_loader_flag=? "
                         + "  where batch_id=? and node_id=?");
         putSql("statusNotOk", " and status not in ('OK', 'IG')");
         putSql("updateOutgoingBatchStatusSql",
@@ -95,7 +95,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "  b.sql_message, b.load_insert_row_count, b.load_update_row_count, b.load_delete_row_count, b.load_row_count, "
                         + "  b.extract_insert_row_count, b.extract_update_row_count, b.extract_delete_row_count, b.extract_row_count, "
                         + "  b.transform_extract_millis, b.transform_load_millis, b.fallback_insert_count, b.fallback_update_count, "
-                        + "  b.ignore_row_count, b.missing_delete_count, b.skip_count, "
+                        + "  b.conflict_win_count, b.conflict_lose_count, b.ignore_row_count, b.missing_delete_count, b.skip_count, "
                         + "  b.failed_data_id, b.failed_line_number, b.last_update_hostname, b.last_update_time, b.create_time, b.batch_id, "
                         + "  b.extract_job_flag, b.load_flag, b.error_flag, b.common_flag, b.load_id, b.create_by, b.summary from "
                         + "  $(outgoing_batch) b ");

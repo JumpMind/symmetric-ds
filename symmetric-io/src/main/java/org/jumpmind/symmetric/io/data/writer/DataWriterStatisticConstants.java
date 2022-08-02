@@ -35,6 +35,8 @@ abstract public class DataWriterStatisticConstants {
     public static final String SQLROWSAFFECTEDCOUNT = "SQLROWSAFFECTEDCOUNT";
     public static final String FALLBACKINSERTCOUNT = "FALLBACKINSERTCOUNT";
     public static final String FALLBACKUPDATECOUNT = "FALLBACKUPDATECOUNT";
+    public static final String CONFLICTWINCOUNT = "CONFLICTWINCOUNT";
+    public static final String CONFLICTLOSECOUNT = "CONFLICTLOSECOUNT";
     public static final String MISSINGDELETECOUNT = "MISSINGDELETECOUNT";
     public static final String IGNORECOUNT = "IGNORECOUNT";
     public static final String IGNOREROWCOUNT = "IGNOREROWCOUNT";

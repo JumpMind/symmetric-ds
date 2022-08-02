@@ -34,9 +34,10 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("selectIncomingBatchPrefixSql" ,""  
                     + "select batch_id, node_id, channel_id, status, network_millis, filter_millis, load_millis, "
                     + "  failed_row_number, failed_line_number, byte_count, load_row_count, fallback_insert_count, "
-                    + "  fallback_update_count, ignore_count, ignore_row_count, missing_delete_count, skip_count, "
-                    + "  sql_state, sql_code, sql_message, last_update_hostname, last_update_time, create_time, "
-                    + "  error_flag, summary, load_insert_row_count, load_update_row_count, load_delete_row_count, "
+                    + "  fallback_update_count, conflict_win_count, conflict_lose_count, ignore_count, "
+                    + "  ignore_row_count, missing_delete_count, skip_count, sql_state, sql_code, sql_message, "
+                    + "  last_update_hostname, last_update_time, create_time, error_flag, summary, "
+                    + "  load_insert_row_count, load_update_row_count, load_delete_row_count, "
                     + "  data_insert_row_count, data_update_row_count, data_delete_row_count, "
                     + "  data_row_count, extract_insert_row_count, extract_update_row_count, "
                     + "  extract_delete_row_count, extract_row_count, reload_row_count, other_row_count, "
@@ -68,22 +69,22 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("insertIncomingBatchSql" ,"" + 
 "insert into $(incoming_batch) (batch_id, node_id, channel_id, status, network_millis, filter_millis, load_millis, failed_row_number, failed_line_number, byte_count, " + 
-"  load_row_count, fallback_insert_count, fallback_update_count, ignore_count, ignore_row_count, missing_delete_count, skip_count, sql_state, sql_code, sql_message, " + 
-"  last_update_hostname, last_update_time, summary, create_time, load_flag, extract_count, sent_count, load_count, load_id, common_flag, router_millis, extract_millis, " +
-"  transform_extract_millis, transform_load_millis, reload_row_count, other_row_count, data_row_count, data_insert_row_count, data_update_row_count, " +
-"  data_delete_row_count, extract_row_count, extract_insert_row_count, extract_update_row_count, extract_delete_row_count, load_insert_row_count, " +
-"  load_update_row_count, load_delete_row_count, failed_data_id) " + 
+"  load_row_count, fallback_insert_count, fallback_update_count, conflict_win_count, conflict_lose_count, ignore_count, ignore_row_count, missing_delete_count, " +
+"  skip_count, sql_state, sql_code, sql_message, last_update_hostname, last_update_time, summary, create_time, load_flag, extract_count, sent_count, load_count, " +
+"  load_id, common_flag, router_millis, extract_millis, transform_extract_millis, transform_load_millis, reload_row_count, other_row_count, data_row_count, " +
+"  data_insert_row_count, data_update_row_count, data_delete_row_count, extract_row_count, extract_insert_row_count, extract_update_row_count, " +
+"  extract_delete_row_count, load_insert_row_count, load_update_row_count, load_delete_row_count, failed_data_id) " + 
 "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
-"  ?, ?, ?, ?, ?, ?)");
+"  ?, ?, ?, ?, ?, ?, ?, ?)");
 
         putSql("updateIncomingBatchSql" ,"" + 
 "update $(incoming_batch) set status = ?, error_flag=?, network_millis = ?, filter_millis = ?, load_millis = ?, failed_row_number = ?, failed_line_number = ?, byte_count = ?, " + 
-"  load_row_count = ?, fallback_insert_count = ?, fallback_update_count = ?, ignore_count = ?, ignore_row_count = ?, missing_delete_count = ?, skip_count = ?,  sql_state = ?, " +
-"  sql_code = ?, sql_message = ?, last_update_hostname = ?, last_update_time = ?, summary = ?, load_flag = ?, extract_count = ?, sent_count = ?, " +
-"  load_count = ?, load_id = ?, common_flag = ?, router_millis = ?, extract_millis = ?, transform_extract_millis = ?, transform_load_millis = ?, reload_row_count = ?, " + 
-"  other_row_count = ?, data_row_count = ?, data_insert_row_count = ?, data_update_row_count = ?, data_delete_row_count = ?, extract_row_count = ?, " +
-"  extract_insert_row_count = ?, extract_update_row_count = ?, extract_delete_row_count = ?, load_insert_row_count = ?, load_update_row_count = ?, load_delete_row_count = ?, " +
-"  failed_data_id = ?, bulk_loader_flag=? where batch_id = ? and node_id = ? " );
+"  load_row_count = ?, fallback_insert_count = ?, fallback_update_count = ?, conflict_win_count = ?, conflict_lose_count = ?, ignore_count = ?, ignore_row_count = ?, " +
+"  missing_delete_count = ?, skip_count = ?,  sql_state = ?, sql_code = ?, sql_message = ?, last_update_hostname = ?, last_update_time = ?, summary = ?, load_flag = ?, " +
+"  extract_count = ?, sent_count = ?, load_count = ?, load_id = ?, common_flag = ?, router_millis = ?, extract_millis = ?, transform_extract_millis = ?, " +
+"  transform_load_millis = ?, reload_row_count = ?, other_row_count = ?, data_row_count = ?, data_insert_row_count = ?, data_update_row_count = ?, data_delete_row_count = ?, " +
+"  extract_row_count = ?, extract_insert_row_count = ?, extract_update_row_count = ?, extract_delete_row_count = ?, load_insert_row_count = ?, load_update_row_count = ?, " +
+"  load_delete_row_count = ?, failed_data_id = ?, bulk_loader_flag=? where batch_id = ? and node_id = ? " );
         
         putSql("statusNotOk", " and status not in ('OK', 'IG')");
 

@@ -290,8 +290,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                         new Object[] { batch.getBatchId(), batch.getNodeId(), batch.getChannelId(), batch.getStatus().name(),
                                 batch.getNetworkMillis(), batch.getFilterMillis(), batch.getLoadMillis(), batch.getFailedRowNumber(),
                                 batch.getFailedLineNumber(), batch.getByteCount(), batch.getLoadRowCount(), batch.getFallbackInsertCount(),
-                                batch.getFallbackUpdateCount(), batch.getIgnoreCount(), batch.getIgnoreRowCount(),
-                                batch.getMissingDeleteCount(), batch.getSkipCount(), batch.getSqlState(), batch.getSqlCode(),
+                                batch.getFallbackUpdateCount(), batch.getConflictWinCount(), batch.getConflictLoseCount(), batch.getIgnoreCount(),
+                                batch.getIgnoreRowCount(), batch.getMissingDeleteCount(), batch.getSkipCount(), batch.getSqlState(), batch.getSqlCode(),
                                 FormatUtils.abbreviateForLogging(batch.getSqlMessage()), batch.getLastUpdatedHostName(), new Date(), batch.getSummary(),
                                 new Date(), batch.isLoadFlag(), batch.getExtractCount(), batch.getSentCount(), batch.getLoadCount(), batch.getLoadId(),
                                 batch.isCommonFlag(), batch.getRouterMillis(), batch.getExtractMillis(), batch.getTransformExtractMillis(),
@@ -302,11 +302,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                                 batch.getExtractDeleteRowCount(), batch.getFailedDataId() },
                         new int[] { Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                                 Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR,
-                                Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC,
+                                Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.NUMERIC, Types.NUMERIC,
                                 Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                                 Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC });
+                                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                                Types.NUMERIC });
             }
         }
     }
@@ -375,11 +376,11 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             count = transaction.prepareAndExecute(sql,
                     new Object[] { batch.getStatus().name(), batch.isErrorFlag() ? 1 : 0, batch.getNetworkMillis(), batch.getFilterMillis(),
                             batch.getLoadMillis(), batch.getFailedRowNumber(), batch.getFailedLineNumber(), batch.getByteCount(),
-                            batch.getLoadRowCount(), batch.getFallbackInsertCount(), batch.getFallbackUpdateCount(), batch.getIgnoreCount(),
-                            batch.getIgnoreRowCount(), batch.getMissingDeleteCount(), batch.getSkipCount(), batch.getSqlState(),
-                            batch.getSqlCode(), FormatUtils.abbreviateForLogging(batch.getSqlMessage()), batch.getLastUpdatedHostName(), new Date(),
-                            batch.getSummary(), batch.isLoadFlag(), batch.getExtractCount(), batch.getSentCount(), batch.getLoadCount(),
-                            batch.getLoadId(), batch.isCommonFlag(), batch.getRouterMillis(), batch.getExtractMillis(),
+                            batch.getLoadRowCount(), batch.getFallbackInsertCount(), batch.getFallbackUpdateCount(), batch.getConflictWinCount(),
+                            batch.getConflictLoseCount(), batch.getIgnoreCount(), batch.getIgnoreRowCount(), batch.getMissingDeleteCount(),
+                            batch.getSkipCount(), batch.getSqlState(), batch.getSqlCode(), FormatUtils.abbreviateForLogging(batch.getSqlMessage()),
+                            batch.getLastUpdatedHostName(), new Date(), batch.getSummary(), batch.isLoadFlag(), batch.getExtractCount(), batch.getSentCount(),
+                            batch.getLoadCount(), batch.getLoadId(), batch.isCommonFlag(), batch.getRouterMillis(), batch.getExtractMillis(),
                             batch.getTransformExtractMillis(), batch.getTransformLoadMillis(), batch.getReloadRowCount(),
                             batch.getOtherRowCount(), batch.getDataRowCount(), batch.getDataInsertRowCount(), batch.getDataUpdateRowCount(),
                             batch.getDataDeleteRowCount(), batch.getExtractRowCount(), batch.getExtractInsertRowCount(),
@@ -388,11 +389,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             batch.getNodeId() },
                     new int[] { Types.CHAR, Types.SMALLINT, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                            Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR,
+                            Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                            symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
         }
         return count;
     }
@@ -553,6 +555,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setOtherRowCount(rs.getLong("other_row_count"));
             batch.setFallbackInsertCount(rs.getLong("fallback_insert_count"));
             batch.setFallbackUpdateCount(rs.getLong("fallback_update_count"));
+            batch.setConflictWinCount(rs.getLong("conflict_win_count"));
+            batch.setConflictLoseCount(rs.getLong("conflict_lose_count"));
             batch.setIgnoreCount(rs.getLong("ignore_count"));
             batch.setIgnoreRowCount(rs.getLong("ignore_row_count"));
             batch.setMissingDeleteCount(rs.getLong("missing_delete_count"));

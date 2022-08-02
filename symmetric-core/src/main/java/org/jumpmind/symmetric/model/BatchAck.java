@@ -51,6 +51,8 @@ public class BatchAck implements Serializable {
     private long loadDeleteRowCount;
     private long fallbackInsertCount;
     private long fallbackUpdateCount;
+    private long conflictWinCount;
+    private long conflictLoseCount;
     private long ignoreRowCount;
     private long missingDeleteCount;
     private long skipCount;
@@ -225,6 +227,22 @@ public class BatchAck implements Serializable {
 
     public void setFallbackUpdateCount(long fallbackUpdateCount) {
         this.fallbackUpdateCount = fallbackUpdateCount;
+    }
+
+    public long getConflictWinCount() {
+        return conflictWinCount;
+    }
+
+    public void setConflictWinCount(long conflictWinCount) {
+        this.conflictWinCount = conflictWinCount;
+    }
+
+    public long getConflictLoseCount() {
+        return conflictLoseCount;
+    }
+
+    public void setConflictLoseCount(long conflictLoseCount) {
+        this.conflictLoseCount = conflictLoseCount;
     }
 
     public long getIgnoreRowCount() {
