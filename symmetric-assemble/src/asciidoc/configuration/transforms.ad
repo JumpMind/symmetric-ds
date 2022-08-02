@@ -51,12 +51,12 @@ want to map a table from one name to anther or from one schema to another. It is
 also want to pass it through. You would define an implied transform from the source to the target and would not have to configure each column.
 |===
 
-Source Catalog:: Name of the catalog of the configured source table.  This should only be set if <<use-source-catalog-schema,Use Source Catalog/Schema>> or <<router-target-catalog,Target Catalog>> are set on the Router.
-Source Schema:: Name of the schema for the configured source table.  This should only be set if <<use-source-catalog-schema,Use Source Catalog/Schema>> or <<router-target-schema,Target Schema>> are set on the Router.
-Source Table:: The name of the source table that will be transformed.
-Target Catalog:: Optional name for the catalog a target target table is in. Only use this if the target table is not in the default catalog.
-Target Schema:: Optional name of the schema a target target table is in. Only use this if the target table is not in the default schema."
-Target Table:: The name of the target table.
+Source Catalog:: Name of the catalog of the configured source table.  This should only be set if <<use-source-catalog-schema,Use Source Catalog/Schema>> or <<router-target-catalog,Target Catalog>> are set on the Router.  Parameter values can be substituted using `$(name)` syntax.
+Source Schema:: Name of the schema for the configured source table.  This should only be set if <<use-source-catalog-schema,Use Source Catalog/Schema>> or <<router-target-schema,Target Schema>> are set on the Router.  Parameter values can be substituted using `$(name)` syntax.
+Source Table:: The name of the source table that will be transformed.  Parameter values can be substituted using `$(name)` syntax.
+Target Catalog:: Optional name for the catalog a target target table is in. Only use this if the target table is not in the default catalog.  Parameter values can be substituted using `$(name)` syntax.
+Target Schema:: Optional name of the schema a target target table is in. Only use this if the target table is not in the default schema.  Parameter values can be substituted using `$(name)` syntax.
+Target Table:: The name of the target table.  Parameter values can be substituted using `$(name)` syntax.
 
 ifdef::pro[]
 .Advanced Options
