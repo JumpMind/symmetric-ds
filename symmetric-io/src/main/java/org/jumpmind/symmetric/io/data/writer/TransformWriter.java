@@ -118,7 +118,8 @@ public class TransformWriter extends NestedDataWriter {
 
     protected boolean isTransformable(DataEventType eventType) {
         return eventType != null
-                && (eventType == DataEventType.INSERT || eventType == DataEventType.UPDATE || eventType == DataEventType.DELETE);
+                && (eventType == DataEventType.INSERT || eventType == DataEventType.UPDATE || eventType == DataEventType.DELETE
+                        || eventType == DataEventType.SQL);
     }
 
     public void write(CsvData data) {
@@ -130,7 +131,15 @@ public class TransformWriter extends NestedDataWriter {
                 // use the last table we used
                 start(context.getLastParsedTable());
             }
-
+            if (eventType == DataEventType.SQL) {
+                List<TransformTable> transformTables = activeTransforms;
+                for (TransformTable transformation : transformTables) {
+                    Table transformedTable = new Table(transformation.getTargetCatalogName(),
+                            transformation.getTargetSchemaName(), transformation.getTargetTableName());
+                    callWriter(transformedTable, data);
+                }
+                return;
+            }
             Map<String, String> sourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
                     CsvData.ROW_DATA);
             
@@ -179,21 +188,7 @@ public class TransformWriter extends NestedDataWriter {
                 for (TransformedData transformedData : dataThatHasBeenTransformed) {
                     Table transformedTable = transformedData.buildTargetTable();
                     CsvData csvData = transformedData.buildTargetCsvData(data.getAttributes());
-                    boolean processData = true;
-                    if (lastTransformedTable == null || transformedTable == null || !lastTransformedTable.equalsByName(transformedTable)) {
-                        if (lastTransformedTable != null) {
-                            this.nestedWriter.end(lastTransformedTable);
-                        }
-                        processData = this.nestedWriter.start(transformedTable);
-                        if (!processData) {
-                            lastTransformedTable = null;
-                        } else {
-                            lastTransformedTable = transformedTable;
-                        }
-                    }
-                    if (processData || !csvData.requiresTable()) {
-                        this.nestedWriter.write(csvData);
-                    }
+                    callWriter(transformedTable, csvData);
                 }
             }
         } else {
@@ -206,6 +201,24 @@ public class TransformWriter extends NestedDataWriter {
             }
         }
 
+    }
+
+    protected void callWriter(Table transformedTable, CsvData csvData) {
+        boolean processData = true;
+        if (lastTransformedTable == null || transformedTable == null || !lastTransformedTable.equalsByName(transformedTable)) {
+            if (lastTransformedTable != null) {
+                this.nestedWriter.end(lastTransformedTable);
+            }
+            processData = this.nestedWriter.start(transformedTable);
+            if (!processData) {
+                lastTransformedTable = null;
+            } else {
+                lastTransformedTable = transformedTable;
+            }
+        }
+        if (processData || !csvData.requiresTable()) {
+            this.nestedWriter.write(csvData);
+        }
     }
 
     protected List<TransformedData> transform(DataEventType eventType, DataContext context,
