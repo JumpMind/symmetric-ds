@@ -139,7 +139,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
                     .append(" = cast(? as ").append(typeToCast).append(")");
         } else if (column.getJdbcTypeName() != null && (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY) ||
                 column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY))) {
-            sql.append(" = ST_GEOMFROMTEXT(?)");
+            sql.append(quote).append(column.getName()).append(quote).append(" = ST_GEOMFROMTEXT(?)");
         } else {
             super.appendColumnEquals(sql, column);
         }
