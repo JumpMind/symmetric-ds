@@ -71,6 +71,8 @@ public interface ITriggerRouterService {
 
     public List<TriggerRouter> getTriggerRoutersForTargetNode(String targetNodeGroupId);
 
+    public List<TriggerRouter> getTriggerRoutersForSourceAndTargetNodes(String sourceNodeGroupId, String targetNodeGroupId);
+
     /**
      * Returns a list of triggers that should be active for the current node.
      * 

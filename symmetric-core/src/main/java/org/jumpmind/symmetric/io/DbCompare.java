@@ -45,7 +45,6 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.io.DbCompareReport.TableReport;
-import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
@@ -309,15 +308,19 @@ public class DbCompare {
     }
 
     protected List<DbCompareTables> loadTablesFromConfig() {
-        List<Trigger> triggers = sourceEngine.getTriggerRouterService().getTriggersForCurrentNode(true);
+        String sourceNodeGroupId = sourceEngine.getNodeService().getCachedIdentity().getNodeGroupId();
+        String targetNodeGroupId = targetEngine.getNodeService().getCachedIdentity().getNodeGroupId();
+        List<TriggerRouter> triggerRouters = sourceEngine.getTriggerRouterService()
+                .getTriggerRoutersForSourceAndTargetNodes(sourceNodeGroupId, targetNodeGroupId);
         Set<String> configTables = TableConstants.getTables(sourceEngine.getTablePrefix());
         List<String> tableNames = new ArrayList<String>();
-        for (Trigger trigger : triggers) {
-            if (!configTables.contains(trigger.getFullyQualifiedSourceTableName()) &&
-                    ((!CollectionUtils.isEmpty(config.getSourceTableNames()) &&
-                            config.getSourceTableNames().contains(trigger.getFullyQualifiedSourceTableName())) ||
-                            CollectionUtils.isEmpty(config.getSourceTableNames()))) {
-                tableNames.add(trigger.getFullyQualifiedSourceTableName());
+        for (TriggerRouter triggerRouter : triggerRouters) {
+            String tableName = triggerRouter.getTrigger().getFullyQualifiedSourceTableName();
+            if (!tableNames.contains(tableName) && !configTables.contains(tableName)
+                    && ((!CollectionUtils.isEmpty(config.getSourceTableNames())
+                            && config.getSourceTableNames().contains(tableName))
+                            || CollectionUtils.isEmpty(config.getSourceTableNames()))) {
+                tableNames.add(tableName);
             }
         }
         return loadTables(tableNames, config.getTargetTableNames());
