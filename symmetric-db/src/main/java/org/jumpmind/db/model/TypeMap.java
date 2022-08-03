@@ -131,6 +131,7 @@ public abstract class TypeMap {
     public static final String TSVECTOR = "TSVECTOR";
     public static final String JSONB = "JSONB";
     public static final String JSON = "JSON";
+    public static final String INET = "INET";
     /** Maps type names to the corresponding {@link java.sql.Types} constants. */
     private static HashMap<String, Integer> _typeNameToTypeCode = new HashMap<String, Integer>();
     /** Maps {@link java.sql.Types} type code constants to the corresponding type names. */
