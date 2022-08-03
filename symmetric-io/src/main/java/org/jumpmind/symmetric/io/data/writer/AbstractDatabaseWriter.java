@@ -222,8 +222,12 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                             throw ex;
                         } else {
                             uncommittedCount++;
-                            statistics.get(batch).increment(DataWriterStatisticConstants.IGNORECOUNT);
+                            statistics.get(batch).increment(DataWriterStatisticConstants.IGNOREROWCOUNT);
                             checkForEarlyCommit();
+                            if (Boolean.TRUE.equals(context.get(AbstractDatabaseWriter.TRANSACTION_ABORTED))) {
+                                context.put(CONFLICT_IGNORE, true);
+                                throw ex;
+                            }
                         }
                     }
                 }
