@@ -59,6 +59,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
 
     protected boolean lastUseConflictDetection = true;
     protected boolean lastApplyChangesOnly = false;
+    protected boolean isRequiresSavePointsInTransaction = false;
     protected Table sourceTable;
     protected Table targetTable;
     protected Map<String, Table> targetTables = new HashMap<String, Table>();
@@ -159,6 +160,22 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                                 break;
                             default:
                                 break;
+                        }
+                        if (isRequiresSavePointsInTransaction && conflictResolver != null) {
+                            Statistics batchStatistics = getStatistics().get(getBatch());
+                            long statementCount = batchStatistics.get(DataWriterStatisticConstants.ROWCOUNT);
+                            ResolvedData resolvedData = getWriterSettings().getResolvedData(statementCount);
+                            if (resolvedData != null) {
+                                if (resolvedData.isIgnoreRow()) {
+                                    statistics.get(batch).increment(DataWriterStatisticConstants.IGNOREROWCOUNT);
+                                } else {
+                                    Conflict conflict = new Conflict();
+                                    conflict.setDetectType(DetectConflict.USE_PK_DATA);
+                                    conflict.setResolveType(ResolveConflict.FALLBACK);
+                                    conflictResolver.attemptToResolve(resolvedData, data, this, conflict);
+                                }
+                                return;
+                            }
                         }
                         LoadStatus loadStatus = LoadStatus.SUCCESS;
                         switch (data.getDataEventType()) {

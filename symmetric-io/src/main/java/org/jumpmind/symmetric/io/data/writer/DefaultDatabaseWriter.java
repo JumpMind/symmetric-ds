@@ -74,7 +74,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected DmlStatement currentDmlStatement;
     protected Object[] currentDmlValues;
     protected LogSqlBuilder logSqlBuilder = new LogSqlBuilder();
-    protected boolean isRequiresSavePointsInTransaction;
     protected Boolean isCteExpression;
 
     public DefaultDatabaseWriter(IDatabasePlatform platform) {
