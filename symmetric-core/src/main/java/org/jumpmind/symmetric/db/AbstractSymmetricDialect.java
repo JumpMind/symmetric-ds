@@ -619,11 +619,11 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
             case REQUEST:
-                return "sym_extract_r_st_request_id";
+                return parameterService.getTablePrefix() + "_extract_r_st_request_id";
             case DATA:
-                return "sym_data_data_id";
+                return parameterService.getTablePrefix() + "_data_data_id";
             case TRIGGER_HIST:
-                return "sym_trigger_his_ger_hist_id";
+                return parameterService.getTablePrefix() + "_trigger_his_ger_hist_id";
         }
         return null;
     }
