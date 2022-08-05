@@ -20,13 +20,14 @@ The router type for a Bean Shell scripted router is 'bsh'. The router expression
 |engine|The instance of org.jumpmind.symmetric.ISymmetricEngine which has access to SymmetricDS services.
 
 |Any Data Column|Data column values are bound to the script evaluation as Java object representations 
-of the column data. The columns are bound using the uppercase names of the columns.  Example if store_id 
-is a column then STORE_ID is a variable name available in Bean Shell script.
+of the column data. The columns are bound using the uppercase names of the columns.  For example, a table with a store_id 
+column will have a STORE_ID variable name available in Bean Shell script.  When using file sync, columns from the
+<<FILE_SNAPSHOT>> table will be available in the script.
 
 |Any Old Values|Old Data column values are bound to the script evaluation as Java object representations 
 of the column data. The columns are bound using the uppercase representations that are prefixed with 'OLD_'.
-Example if store_id is a column then OLD_STORE_ID is a variable name available in Bean Shell script representing
-the old value for the store_id before the change.
+For example, a table with a store_id column will have an OLD_STORE_ID variable name available in Bean Shell script representing
+the old value for the store_id before the change.  When using file sync, columns from the <<FILE_SNAPSHOT>> table will be available in the script.
 
 |===
 
