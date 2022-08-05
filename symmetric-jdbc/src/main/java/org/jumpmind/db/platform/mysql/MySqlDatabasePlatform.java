@@ -60,6 +60,7 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.jumpmind.util.AbstractVersion;
 
 /*
  * The platform implementation for MySQL.
@@ -118,6 +119,39 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
             defaultCatalog = getSqlTemplate().queryForObject("select database()", String.class);
         }
         return defaultCatalog;
+    }
+
+    @Override
+    protected PermissionResult getCreateSymTablePermission(Database database) {
+        String createSql = ddlBuilder.createTables(database, false);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, createSql);
+        String versionString = getSqlTemplate().getDatabaseProductVersion();
+        AbstractVersion version = new AbstractVersion() {
+            @Override
+            protected String getArtifactName() {
+                return null;
+            }
+        };
+        if (!version.isOlderThanVersion(versionString, "5.1.5")) {
+            String defaultEngine = getSqlTemplate()
+                    .queryForString("select engine from information_schema.engines where support='DEFAULT';");
+            if (!StringUtils.equalsIgnoreCase(defaultEngine, "innodb")) {
+                result.setStatus(Status.FAIL);
+                result.setSolution("Set the default storage engine to InnoDB.");
+                return result;
+            }
+        }
+        Table table = getPermissionTableDefinition();
+        getDropSymTablePermission();
+        try {
+            database.addTable(table);
+            createDatabase(database, false, false);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE permission");
+        }
+        return result;
     }
 
     @Override

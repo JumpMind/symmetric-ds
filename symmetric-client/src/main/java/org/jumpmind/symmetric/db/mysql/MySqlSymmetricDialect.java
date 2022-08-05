@@ -32,6 +32,7 @@ import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
@@ -60,6 +61,14 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     public MySqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.parameterService = parameterService;
+        String version = getProductVersion();
+        if (!Version.isOlderThanVersion(version, "5.1.5")) {
+            String defaultEngine = platform.getSqlTemplate().queryForString("select engine from information_schema.engines where support='DEFAULT';");
+            if (!StringUtils.equalsIgnoreCase(defaultEngine, "innodb")) {
+                String message = "Please ensure that the default storage engine is set to InnoDB";
+                throw new SymmetricException(message);
+            }
+        }
         if (parameterService.getString(BasicDataSourcePropertyConstants.DB_POOL_URL).contains("zeroDateTimeBehavior=convertToNull")) {
             try {
                 String sqlMode = platform.getSqlTemplate().queryForString("select @@sql_mode");
@@ -71,7 +80,6 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 log.warn("Cannot convert zero dates to null because unable to verify sql_mode: {}", e.getMessage());
             }
         }
-        String version = getProductVersion();
         if (Version.isOlderThanVersion(version, "5.1.23")) {
             this.functionTemplateKeySuffix = PRE_5_1_23;
         } else if (Version.isOlderThanVersion(version, "5.7.6")) {
