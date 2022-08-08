@@ -24,6 +24,7 @@ import java.sql.Types;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatementOptions;
@@ -78,7 +79,11 @@ public class OracleDmlStatement extends DmlStatement {
     protected void appendColumnNameForSql(StringBuilder sql, Column column, boolean select) {
         String columnName = column.getName();
         if (select && column.isTimestampWithTimezone()) {
-            sql.append("to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM') as ").append(columnName);
+            if (column.getMappedTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ || column.getJdbcTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ) {
+                sql.append("to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.FF9') as ").append(columnName);
+            } else {
+                sql.append("to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM') as ").append(columnName);
+            }
         } else {
             super.appendColumnNameForSql(sql, column, select);
         }
