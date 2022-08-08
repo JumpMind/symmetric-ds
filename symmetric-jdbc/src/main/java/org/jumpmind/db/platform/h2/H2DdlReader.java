@@ -98,7 +98,7 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
                     scale);
         }
         if (column.getMappedTypeCode() == Types.TIMESTAMP) {
-            resetColumnSize(column, String.valueOf(column.getScale()));
+            resetColumnSize(column, column.getScale() > 9 ? "9" : String.valueOf(column.getScale()));
         }
         if (column.getMappedTypeCode() == Types.TIME) {
             resetColumnSize(column, "0");

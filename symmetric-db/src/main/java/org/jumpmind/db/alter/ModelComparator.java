@@ -338,9 +338,18 @@ public class ModelComparator {
         }
         if (!ddlBuilder.areColumnSizesTheSame(sourceColumn, targetColumn)) {
             if (sizeMatters) {
+                int targetSize = targetColumn.getSizeAsInt();
+                if (targetColumn.getSize() == null) {
+                    Integer defaultSize = platformInfo.getDefaultSize(platformInfo.getTargetJdbcType(targetColumn.getMappedTypeCode()));
+                    if (defaultSize != null) {
+                        targetSize = defaultSize;
+                    } else {
+                        targetSize = 0;
+                    }
+                }
                 log.debug("The {} column on the {} table changed size from ({}) to ({})", new Object[] { sourceColumn.getName(),
-                        sourceTable.getName(), sourceColumn.getSizeAsInt(), targetColumn.getSizeAsInt() });
-                changes.add(new ColumnSizeChange(sourceTable, sourceColumn, targetColumn.getSizeAsInt(), targetColumn.getScale()));
+                        sourceTable.getName(), sourceColumn.getSizeAsInt(), targetSize });
+                changes.add(new ColumnSizeChange(sourceTable, sourceColumn, targetSize, targetColumn.getScale()));
             } else if (scaleMatters) {
                 log.debug("The {} column on the {} table changed scale from ({},{}) to ({},{})",
                         new Object[] { sourceColumn.getName(), sourceTable.getName(), sourceColumn.getSizeAsInt(), sourceColumn.getScale(),
