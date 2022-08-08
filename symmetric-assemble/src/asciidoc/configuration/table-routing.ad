@@ -87,7 +87,7 @@ ifdef::pro[]
 .Advanced Options
 endif::pro[]
 
-Initial Load Delete:: If `initial.load.delete.first` parameter is enabled, this SQL expression is used in the WHERE clause of the DELETE that clears the table on the target node at the beginning of the initial load. 
+Initial Load Delete:: A SQL statement to run that clears the table on the target node at the beginning of the initial load before data is sent.  This is usually a delete or truncate statement.  Variables are substituted for `$(groupId)`, `$(nodeId)`, `$(externalId)`, `$(sourceGroupId)`, `$(sourceNodeId)`, and `$(sourceExternalId)`. See <<Variables>> section for formatting and manipulation of variables.
 
 Initial Load Order:: Numeric position for this table in the initial load, sent in ascending numeric order. When two numeric values are the same, the ordering is based on foreign key constraints. Use a negative number to exclude the table from initial load.
 
