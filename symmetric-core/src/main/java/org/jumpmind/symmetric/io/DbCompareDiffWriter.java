@@ -22,6 +22,8 @@ package org.jumpmind.symmetric.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.model.Column;
@@ -85,11 +87,22 @@ public class DbCompareDiffWriter {
         }
         try {
             Table targetTable = tables.getTargetTable();
+            List<Column> targetColumns = new ArrayList<Column>();
+            List<Column> targetPkColumns = new ArrayList<Column>();
+            for (Column targetColumn : targetTable.getColumns()) {
+                if (tables.getColumnMapping().containsValue(targetColumn) || !targetColumn.isRequired()
+                        || targetColumn.getDefaultValue() == null) {
+                    targetColumns.add(targetColumn);
+                    if (targetColumn.isPrimaryKey()) {
+                        targetPkColumns.add(targetColumn);
+                    }
+                }
+            }
             DmlStatement statement = targetEngine.getDatabasePlatform().createDmlStatement(DmlType.INSERT,
                     targetTable.getCatalog(), targetTable.getSchema(), targetTable.getName(),
-                    targetTable.getPrimaryKeyColumns(), targetTable.getColumns(),
-                    null, null);
-            Row row = new Row(targetTable.getColumnCount());
+                    targetPkColumns.toArray(new Column[targetPkColumns.size()]),
+                    targetColumns.toArray(new Column[targetColumns.size()]), null, null);
+            Row row = new Row(targetColumns.size());
             for (Column sourceColumn : tables.getSourceTable().getColumns()) {
                 Column targetColumn = tables.getColumnMapping().get(sourceColumn);
                 if (targetColumn == null) {
