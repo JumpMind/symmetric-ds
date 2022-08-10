@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.io.data;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -860,6 +861,11 @@ public class DbFill {
             objectValue = randomFloat();
         } else if (type == Types.DOUBLE) {
             objectValue = randomDouble();
+            if (StringUtils.containsIgnoreCase(column.getJdbcTypeName(), "money")) {
+                BigDecimal bd = BigDecimal.valueOf((Double) objectValue);
+                bd = bd.setScale(2, RoundingMode.HALF_UP);
+                objectValue = bd.toString();
+            }
         } else if (type == Types.TINYINT) {
             objectValue = randomTinyInt();
         } else if (type == Types.NUMERIC || type == Types.DECIMAL
