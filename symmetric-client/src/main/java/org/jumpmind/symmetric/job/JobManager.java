@@ -60,11 +60,11 @@ public class JobManager extends AbstractService implements IJobManager {
     @Override
     public void init() {
         this.stopJobs();
-        List<JobDefinition> jobDefitions = loadJobs(engine);
+        List<JobDefinition> jobDefinitions = loadCustomJobs();
         BuiltInJobs builtInJobs = new BuiltInJobs();
-        jobDefitions = builtInJobs.syncBuiltInJobs(jobDefitions, engine, taskScheduler); // TODO save built in jobs
+        jobDefinitions = builtInJobs.syncBuiltInJobs(jobDefinitions, engine, taskScheduler); // TODO save built in jobs
         this.jobs = new ArrayList<IJob>();
-        for (JobDefinition jobDefinition : jobDefitions) {
+        for (JobDefinition jobDefinition : jobDefinitions) {
             IJob job = jobCreator.createJob(jobDefinition, engine, taskScheduler);
             if (job != null) {
                 jobs.add(job);
@@ -72,7 +72,7 @@ public class JobManager extends AbstractService implements IJobManager {
         }
     }
 
-    protected List<JobDefinition> loadJobs(ISymmetricEngine engine) {
+    public List<JobDefinition> loadCustomJobs() {
         return sqlTemplate.query(getSql("loadCustomJobs"), new JobMapper());
     }
 
