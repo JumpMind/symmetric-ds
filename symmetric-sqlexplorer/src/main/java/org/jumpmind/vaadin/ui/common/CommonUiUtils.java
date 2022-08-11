@@ -147,7 +147,6 @@ public final class CommonUiUtils {
         if (page != null) {
             HorizontalLayout layout = new HorizontalLayout();
             Notification notification = new Notification(layout);
-            
             if (message.length() <= 250) {
                 layout.getStyle().set("max-width", "400px");
                 Label label;

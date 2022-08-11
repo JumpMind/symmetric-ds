@@ -46,7 +46,7 @@ public class SubstrColumnTransform implements ISingleNewAndOldValueColumnTransfo
             DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
-    	if (StringUtils.isNotEmpty(newValue)) {
+        if (StringUtils.isNotEmpty(newValue)) {
             String expression = column.getTransformExpression();
             if (StringUtils.isNotBlank(expression)) {
                 String[] tokens = expression.split(",");

@@ -255,7 +255,7 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
         whichTable = WhichTable.PARENT;
         delete(firstId, firstId, "deleteparent", null);
     }
-    
+
     @Test
     public void testDeleteFkViolationChildTableNoPk() throws Exception {
         String firstId = insert(getNextId(), "deleteparentnopk", null);
@@ -338,8 +338,7 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
             return TEST_TABLE_GRANDCHILD;
         else if (whichTable == WhichTable.CHILD_NOPK) {
             return TEST_TABLE_CHILD_NOPK;
-        }
-        else
+        } else
             return TEST_TABLE;
     }
 
@@ -351,8 +350,7 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
             return TEST_KEYS_GRANDCHILD;
         else if (whichTable == WhichTable.CHILD_NOPK) {
             return TEST_KEYS_CHILD_NOPK;
-        }
-        else
+        } else
             return TEST_KEYS;
     }
 
@@ -364,8 +362,7 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
             return TEST_COLUMNS_GRANDCHILD;
         else if (whichTable == WhichTable.CHILD_NOPK) {
             return TEST_COLUMNS_CHILD_NOPK;
-        }
-        else
+        } else
             return TEST_COLUMNS;
     }
 }
