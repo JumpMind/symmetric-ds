@@ -1213,16 +1213,25 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 StagingFileLock fileLock = acquireStagingFileLock(batch);
                 if (fileLock.isAcquired()) {
                     lock.fileLock = fileLock;
-                } else { // Didn't get the fileLock, ditch the in-memory lock as well.
-                    locks.remove(semaphoreKey);
-                    lock.release();
+                } else {
+                    // Didn't get the fileLock, ditch the in-memory lock as well.
+                    releaseLock(lock, batch, useStagingDataWriter);
+                    // So the next releaseLock() does not do anything with the lock
+                    lock = null;
                     throw new SymmetricException("Failed to get extract lock on batch " + batch.getNodeBatchId());
                 }
             }
         } catch (InterruptedException e) {
+            releaseLock(lock, batch, useStagingDataWriter);
             throw new org.jumpmind.exception.InterruptedException(e);
+        } catch (Throwable e) {
+            releaseLock(lock, batch, useStagingDataWriter);
+            if (e instanceof SymmetricException) {
+                throw (SymmetricException) e;
+            } else {
+                throw new SymmetricException(e);
+            }
         }
-        
         return lock;
     }
 
