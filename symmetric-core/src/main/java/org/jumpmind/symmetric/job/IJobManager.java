@@ -37,7 +37,7 @@ public interface IJobManager {
 
     public void destroy();
 
-    public List<JobDefinition> loadCustomJobs();
+    public List<JobDefinition> getCustomJobDefinitions();
 
     public List<IJob> getJobs();
 

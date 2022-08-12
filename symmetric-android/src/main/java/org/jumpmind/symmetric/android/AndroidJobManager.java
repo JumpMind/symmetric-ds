@@ -355,6 +355,11 @@ public class AndroidJobManager implements IJobManager {
     }
 
     @Override
+    public List<JobDefinition> getCustomJobDefinitions() {
+        return new ArrayList<JobDefinition>();
+    }
+
+    @Override
     public void saveJob(JobDefinition jobDefinition) {
         // No action on Android
     }

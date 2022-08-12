@@ -58,7 +58,7 @@ public class JobManager extends AbstractService implements IJobManager {
     @Override
     public void init() {
         this.stopJobs();
-        List<JobDefinition> jobDefinitions = loadCustomJobs();
+        List<JobDefinition> jobDefinitions = getCustomJobDefinitions();
         BuiltInJobs builtInJobs = new BuiltInJobs();
         jobDefinitions = builtInJobs.syncBuiltInJobs(jobDefinitions, engine, taskScheduler); // TODO save built in jobs
         this.jobs = new ArrayList<IJob>();
@@ -70,7 +70,8 @@ public class JobManager extends AbstractService implements IJobManager {
         }
     }
 
-    public List<JobDefinition> loadCustomJobs() {
+    @Override
+    public List<JobDefinition> getCustomJobDefinitions() {
         return sqlTemplate.query(getSql("loadCustomJobs"), new JobMapper());
     }
 
