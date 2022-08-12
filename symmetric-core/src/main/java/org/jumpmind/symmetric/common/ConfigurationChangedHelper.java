@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.JobDefinition;
@@ -106,10 +107,14 @@ public class ConfigurationChangedHelper {
         }
         if ((matchesTable(table, TableConstants.SYM_TRIGGER) || matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER)) && isSyncTriggersAllowed(context) &&
                 context.get(CTX_KEY_RESYNC_NEEDED) == null) {
-            Set<String> triggers = getHashSet(context, CTX_KEY_CHANGED_TRIGGER_IDS);
-            String triggerId = getColumnValue(table, data, "trigger_id");
-            if (triggerId != null) {
-                triggers.add(triggerId);
+            if (data.getDataEventType().equals(DataEventType.DELETE)) {
+                context.put(CTX_KEY_RESYNC_NEEDED, true);
+            } else {
+                Set<String> triggers = getHashSet(context, CTX_KEY_CHANGED_TRIGGER_IDS);
+                String triggerId = getColumnValue(table, data, "trigger_id");
+                if (triggerId != null) {
+                    triggers.add(triggerId);
+                }
             }
         }
     }
