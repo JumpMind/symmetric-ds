@@ -715,7 +715,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         String defaultValue = getNativeDefaultValue(column);
         int typeCode = column.getMappedTypeCode();
         PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
-        if (StringUtils.containsIgnoreCase(platformColumn.getType(), "uniqueidentifier")) {
+        if (platformColumn != null && StringUtils.containsIgnoreCase(platformColumn.getType(), "uniqueidentifier")) {
             String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
             if (StringUtils.containsIgnoreCase(defaultValueStr, "NEWID()") || StringUtils.containsIgnoreCase(defaultValueStr, "NEWSEQUENTIALID()")) {
                 ddl.append(defaultValueStr);
