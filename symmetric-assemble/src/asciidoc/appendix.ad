@@ -254,6 +254,33 @@ Most patch releases only change the JAR files named with "symmetric" in the "web
 endif::pro[]
 
 [appendix]
+== Server Migration
+
+The SymmetricDS installation can be moved from one server to another.
+If the hostname and/or port is changing, then update the sync_url recorded in <<NODE>> and let it sync to other nodes *before* migration,
+by using the following steps:
+
+* Stop the SymmetricDS service.
+* Edit the engine properties file and update the sync.url property to use the new hostname and/or port
+* Start the SymmetricDS service.
+* Verify that a batch on the "config" channel is synced to other nodes.
+
+To migrate to a new server, use the following steps:
+
+* Stop the SymmetricDS service.
+* Copy the SymmetricDS installation directory to the new server.
+** The contents of the "tmp" sub-directory do NOT need copied, which can speed up the migration.
+* In the database, clear the <<NODE_HOST>> and <<LOCK>> tables to avoid startup checks for the old host.
+* Install the service on the new server (See <<Running as a Service>>.)
+* Start the SymmetricDS service.
+
+IMPORTANT: If any files are excluded from the migration, be careful to at least copy the "security/keystore", "conf/sym_service.conf", and "bin/setenv" files that contain the encryption key and keystore password.
+
+If the registration server is moved, new nodes will need to use a registration.url property that references the sync.url of the new registration server.
+Optionally, the existing nodes can also be updated with the new registration.url, but they will continue to sync with nodes based on the sync_url
+recorded in <<NODE>>.
+
+[appendix]
 == Utilities
 
 include::appendix/dbcompare.ad[]
