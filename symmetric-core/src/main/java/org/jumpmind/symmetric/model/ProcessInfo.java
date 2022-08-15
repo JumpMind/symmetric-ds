@@ -337,4 +337,21 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public int hashCode() {
+        return key.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ProcessInfo other = (ProcessInfo) obj;
+        return key.equals(other.getKey());
+    }
 }
