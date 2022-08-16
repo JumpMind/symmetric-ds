@@ -399,8 +399,12 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         if (pc == null) {
             pc = column.getPlatformColumns() == null ? null : column.getPlatformColumns().get(DatabaseNamesConstants.ORACLE122);
         }
-        if (pc != null && ("LONG".equals(pc.getType()) || "CLOB".equals(pc.getType()) || "NCLOB".equals(pc.getType()))) {
-            sqlType = "LONGTEXT";
+        if (pc != null) {
+            if ("LONG".equals(pc.getType()) || "CLOB".equals(pc.getType()) || "NCLOB".equals(pc.getType())) {
+                sqlType = "LONGTEXT";
+            } else if ("FLOAT".equals(pc.getType()) && pc.getSize() >= 63) {
+                sqlType = "DOUBLE";
+            }
         }
         return sqlType;
     }
