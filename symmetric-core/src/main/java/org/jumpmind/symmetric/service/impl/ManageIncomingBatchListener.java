@@ -117,6 +117,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
             if (batch.getStatistics() != null) {
                 incomingBatch.mergeInjectedBatchStatistics(batch.getStatistics());
                 processInfo.setTotalDataCount(incomingBatch.getExtractRowCount());
+                processInfo.setCurrentLoadId(incomingBatch.getLoadId());
             }
             this.currentBatch = incomingBatch;
             context.put("currentBatch", this.currentBatch);

@@ -113,7 +113,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
         List<ProcessInfo> infos = engine.getStatisticManager().getProcessInfos();
         for (ProcessInfo info : infos) {
             if (info.getCurrentLoadId() == status.getLoadId()) {
-                log.info("Sending interrupt to " + info.getKey());
+                log.info("Sending interrupt to " + info.getKey() + ",batchId=" + info.getCurrentBatchId());
                 info.getThread().interrupt();
             }
         }
