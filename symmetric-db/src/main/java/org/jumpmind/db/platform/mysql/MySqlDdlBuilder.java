@@ -400,7 +400,9 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
             pc = column.getPlatformColumns() == null ? null : column.getPlatformColumns().get(DatabaseNamesConstants.ORACLE122);
         }
         if (pc != null) {
-            if ("LONG".equals(pc.getType()) || "CLOB".equals(pc.getType()) || "NCLOB".equals(pc.getType()) || "XMLTYPE".equals(pc.getType())) {
+            if ("NVARCHAR2".equals(pc.getType())) {
+                sqlType = "NVARCHAR(" + pc.getSize() + ")";
+            } else if ("LONG".equals(pc.getType()) || "CLOB".equals(pc.getType()) || "NCLOB".equals(pc.getType()) || "XMLTYPE".equals(pc.getType())) {
                 sqlType = "LONGTEXT";
             } else if ("FLOAT".equals(pc.getType()) && pc.getSize() >= 63) {
                 sqlType = "DOUBLE";
