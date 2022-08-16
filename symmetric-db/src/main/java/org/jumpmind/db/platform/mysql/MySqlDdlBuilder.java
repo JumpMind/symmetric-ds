@@ -382,13 +382,6 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
                 sqlType = tmpSqlType.toString();
             }
         }
-        pc = column.getPlatformColumns() == null ? null : column.getPlatformColumns().get(DatabaseNamesConstants.ORACLE);
-        if (pc == null) {
-            pc = column.getPlatformColumns() == null ? null : column.getPlatformColumns().get(DatabaseNamesConstants.ORACLE122);
-        }
-        if (pc != null && "LONG".equals(pc.getType())) {
-            sqlType = "LONGTEXT";
-        }
         if ("TINYBLOB".equalsIgnoreCase(column.getJdbcTypeName())) {
             // For some reason, MySql driver returns BINARY type for TINYBLOB instead of BLOB type
             sqlType = "TINYBLOB";
@@ -401,6 +394,13 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
             } else {
                 sqlType = "LONGTEXT";
             }
+        }
+        pc = column.getPlatformColumns() == null ? null : column.getPlatformColumns().get(DatabaseNamesConstants.ORACLE);
+        if (pc == null) {
+            pc = column.getPlatformColumns() == null ? null : column.getPlatformColumns().get(DatabaseNamesConstants.ORACLE122);
+        }
+        if (pc != null && ("LONG".equals(pc.getType()) || "CLOB".equals(pc.getType()) || "NCLOB".equals(pc.getType()))) {
+            sqlType = "LONGTEXT";
         }
         return sqlType;
     }
