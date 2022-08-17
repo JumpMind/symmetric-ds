@@ -497,8 +497,15 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
                     if (platformColumn.getValue() != null && platformColumn.getValue().getType() != null &&
                             platformColumn.getValue().getType().equals("JSON")) {
                         type = "JSONB";
+                        return type;
                     }
                 }
+            }
+        }
+        if (column.getMappedTypeCode() == Types.CHAR || column.getMappedTypeCode() == Types.VARCHAR) {
+            int size = column.getSizeAsInt();
+            if (size > 10485760) {
+                type = "TEXT";
             }
         }
         return type;

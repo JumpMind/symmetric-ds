@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddForeignKeyChange;
 import org.jumpmind.db.alter.AddIndexChange;
@@ -71,6 +72,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
@@ -702,7 +704,25 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         } else if (sqlType.toString().equalsIgnoreCase("nvarbinary")) {
             sqlType.setLength(0);
             sqlType.append("nvarbinary(max)");
+        } else if (StringUtils.containsIgnoreCase(sqlType, "uniqueidentifier(")) {
+            sqlType.setLength(0);
+            sqlType.append("uniqueidentifier");
         }
+    }
+
+    @Override
+    protected void writeColumnDefaultValue(Table table, Column column, StringBuilder ddl) {
+        String defaultValue = getNativeDefaultValue(column);
+        int typeCode = column.getMappedTypeCode();
+        PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
+        if (platformColumn != null && StringUtils.containsIgnoreCase(platformColumn.getType(), "uniqueidentifier")) {
+            String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
+            if (StringUtils.containsIgnoreCase(defaultValueStr, "NEWID()") || StringUtils.containsIgnoreCase(defaultValueStr, "NEWSEQUENTIALID()")) {
+                ddl.append(defaultValueStr);
+                return;
+            }
+        }
+        printDefaultValue(defaultValue, typeCode, ddl);
     }
 
     @Override
