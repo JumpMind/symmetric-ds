@@ -876,6 +876,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     batch.setIgnoreRowCount(rs.getLong("ignore_row_count"));
                     batch.setMissingDeleteCount(rs.getLong("missing_delete_count"));
                     batch.setSkipCount(rs.getLong("skip_count"));
+                    batch.setBulkLoadFlag(rs.getBoolean("bulk_loader_flag"));
                 }
                 return batch;
             } else {
