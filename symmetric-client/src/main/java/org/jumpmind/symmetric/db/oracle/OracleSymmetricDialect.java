@@ -206,7 +206,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
             install(sql, pkgPackage);
         }
         String wkt2geom = this.parameterService.getTablePrefix() + "_" + "wkt2geom";
-        if (!installed(SQL_OBJECT_INSTALLED, wkt2geom)) {
+        if (!installed(SQL_OBJECT_INSTALLED, wkt2geom) && this.isSpatialTypesEnabled) {
             String sql = "  CREATE OR REPLACE FUNCTION $(functionName) (  \r\n"
                     + "        clob_in IN CLOB,                           \r\n"
                     + "        srid_in IN INTEGER)                        \r\n"

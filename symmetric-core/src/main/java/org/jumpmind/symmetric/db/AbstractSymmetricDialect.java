@@ -91,7 +91,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     protected boolean supportsSubselectsInUpdate = true;
     protected Map<String, String> sqlReplacementTokens = new HashMap<String, String>();
     protected String tablePrefixLowerCase;
-
+    protected boolean isSpatialTypesEnabled = true;
+    
     public AbstractSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         this.parameterService = parameterService;
         this.platform = platform;
@@ -105,6 +106,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         this.driverName = sqlTemplate.getDriverName();
         this.driverVersion = sqlTemplate.getDriverVersion();
         tablePrefixLowerCase = parameterService.getTablePrefix().toLowerCase();
+        this.isSpatialTypesEnabled = parameterService.is(ParameterConstants.SPATIAL_TYPES_ENABLED);
     }
 
     public boolean requiresAutoCommitFalseToSetFetchSize() {

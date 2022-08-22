@@ -447,6 +447,10 @@ final public class ParameterConstants {
     public final static String CLOUD_BULK_LOAD_AZURE_ACCOUNT_KEY = "cloud.bulk.load.azure.account.key";
     public final static String CLOUD_BULK_LOAD_AZURE_BLOB_CONTAINER = "cloud.bulk.load.azure.blob.container";
     public final static String CLOUD_BULK_LOAD_AZURE_SAS_TOKEN = "cloud.bulk.load.azure.sas.token";
+    public final static String CLOUD_BULK_ROW_TERMINATOR = "cloud.bulk.row.terminator";
+    public final static String CLOUD_BULK_FIELD_TERMINATOR = "cloud.bulk.field.terminator";
+    public final static String CLOUD_BULK_FIELD_QUOTE = "cloud.bulk.field.quote";
+    
     public final static String SNAPSHOT_FILE_INCLUDE_HOSTNAME = "snapshot.file.include.hostname";
     public final static String SNAPSHOT_MAX_FILES = "snapshot.max.files";
     public final static String SNAPSHOT_MAX_BATCHES = "snapshot.max.batches";
@@ -478,7 +482,8 @@ final public class ParameterConstants {
     public final static String S3_LOAD_AWS_ACCESS_KEY = "s3.load.aws.access.key";
     public final static String S3_LOAD_AWS_SECRET_KEY = "s3.load.aws.secret.key";
     public final static String SINGLESTORE_AUDIT_LOG_DIR = "single.store.audit.log.dir";
-
+    public final static String SPATIAL_TYPES_ENABLED = "spatial.data.types.enabled";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
