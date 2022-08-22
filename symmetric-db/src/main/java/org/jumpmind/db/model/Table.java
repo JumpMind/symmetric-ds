@@ -1273,9 +1273,21 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         for (IIndex index : table.getIndices()) {
             boolean keepIndex = true;
             for (IndexColumn columnInIndex : index.getColumns()) {
-                if (columnInIndex == null || !columnNameSet.contains(columnInIndex.getName())) {
+                if (columnInIndex == null || columnInIndex.getName() == null) {
                     keepIndex = false;
                     break;
+                } else if (!columnNameSet.contains(columnInIndex.getName())) {
+                    Set<String> functionalIndexColumnNameSet = parseFunctionalIndexColumnName(columnInIndex.getName());
+                    if (functionalIndexColumnNameSet.isEmpty()) {
+                        keepIndex = false;
+                        break;
+                    }
+                    for (String functionalIndexColumnName : functionalIndexColumnNameSet) {
+                        if (!columnNameSet.contains(functionalIndexColumnName)) {
+                            keepIndex = false;
+                            break;
+                        }
+                    }
                 }
             }
             if (keepIndex) {
@@ -1320,6 +1332,27 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
             }
         }
         return table;
+    }
+
+    private Set<String> parseFunctionalIndexColumnName(String name) {
+        Set<String> nameSet = new HashSet<String>();
+        if (name.contains(")::")) {
+            // Parses PostgreSQL functional indexes
+            String[] splitName = StringUtils.split(name, ")::");
+            for (int i = 0; i < splitName.length - 1; i++) {
+                String s = splitName[i];
+                int lastParen = s.lastIndexOf("(");
+                if (lastParen != -1) {
+                    nameSet.add(s.substring(lastParen + 1));
+                }
+            }
+        } else if (StringUtils.countMatches(name, "\"") >= 2) {
+            // Parses Oracle function-based indexes
+            for (String columnName : StringUtils.substringsBetween(name, "\"", "\"")) {
+                nameSet.add(columnName);
+            }
+        }
+        return nameSet;
     }
 
     public String[] getColumnNames() {
