@@ -70,25 +70,15 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
     @Override
     public synchronized void queueLoads(boolean force) {
         Node identity = engine.getNodeService().findIdentity();
-        if (identity != null) {
+        if (identity != null && identity.isSyncEnabled()) {
             if (force || engine.getClusterService().lock(ClusterConstants.INITIAL_LOAD_QUEUE)) {
                 ProcessInfo processInfo = null;
                 try {
                     processInfo = engine.getStatisticManager().newProcessInfo(
                             new ProcessInfoKey(identity.getNodeId(), null, ProcessType.INSERT_LOAD_EVENTS));
                     processInfo.setStatus(ProcessInfo.ProcessStatus.PROCESSING);
-                    boolean isRegistered = false;
-                    if (engine.getParameterService().isRegistrationServer()) {
-                        isRegistered = true;
-                    } else {
-                        boolean isClusteringEnabled = parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED);
-                        NodeSecurity identitySecurity = engine.getNodeService().findNodeSecurity(identity.getNodeId(), !isClusteringEnabled);
-                        isRegistered = identitySecurity != null && identitySecurity.hasRegistered();
-                    }
-                    if (isRegistered) {
-                        processInitialLoadEnabledFlag(identity, processInfo);
-                        processTableRequestLoads(identity, processInfo);
-                    }
+                    processInitialLoadEnabledFlag(identity, processInfo);
+                    processTableRequestLoads(identity, processInfo);
                     processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
                 } catch (Exception e) {
                     if (processInfo != null) {
