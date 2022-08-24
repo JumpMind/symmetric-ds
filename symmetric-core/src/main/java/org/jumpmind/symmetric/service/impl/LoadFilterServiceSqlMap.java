@@ -101,6 +101,8 @@ public class LoadFilterServiceSqlMap extends AbstractSqlMap {
 "delete from $(load_filter) where   " + 
 "  load_filter_id=? " );
 
+        putSql("deleteAllLoadFiltersSql", "delete from $(load_filter)");
+
         putSql("selectMaxLastUpdateTime" ,"" + 
 "select max(last_update_time) from $(load_filter) where last_update_time is not null" );     
         

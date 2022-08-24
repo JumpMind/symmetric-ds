@@ -73,7 +73,7 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
           "  c.use_row_data_to_route, c.use_pk_data_to_route, c.contains_big_lob,                  " +
           "  c.batch_algorithm, c.extract_period_millis, c.data_loader_type,                       " +
           "  c.last_update_time, c.last_update_by, c.create_time, c.reload_flag, c.file_sync_flag, " +
-          "  c.queue, c.max_network_kbps, c.data_event_action from $(channel) c                    ");
+          "  c.queue, c.max_network_kbps, c.data_event_action, c.description from $(channel) c ");
         
         putSql("orderChannelsBySql", "order by c.processing_order asc, c.channel_id");
         
@@ -102,14 +102,14 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
          + "  use_pk_data_to_route, contains_big_lob, enabled, batch_algorithm, description,      "
          + "  extract_period_millis, data_loader_type, last_update_time, last_update_by,          "
          + "  create_time, reload_flag, file_sync_flag, queue, max_network_kbps, data_event_action)                                    "
-         + "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         + "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         putSql("updateChannelSql",
            "update $(channel) set processing_order=?, max_batch_size=?,                                          "
          + "  max_batch_to_send=?, max_data_to_route=?, use_old_data_to_route=?, use_row_data_to_route=?,        "
          + "  use_pk_data_to_route=?, contains_big_lob=?, enabled=?, batch_algorithm=?, extract_period_millis=?, "
          + "  data_loader_type=?, last_update_time=?, last_update_by=?, reload_flag=?, file_sync_flag=?, queue=?, "
-         + " max_network_kbps = ?, data_event_action=? "
+         + " max_network_kbps = ?, data_event_action=?, description=?"
          + " where channel_id=?                                                                                  ");
 
         putSql("deleteNodeGroupLinkSql",
@@ -120,6 +120,8 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
         putSql("deleteNodeGroupSql", "delete from $(node_group) where node_group_id=?   ");
 
         putSql("deleteChannelSql", "delete from $(channel) where channel_id=?   ");
+
+        putSql("deleteAllChannelsSql", "delete from $(channel)");
 
         putSql("deleteNodeChannelSql", "delete from $(node_channel_ctl) where channel_id=?   ");
 

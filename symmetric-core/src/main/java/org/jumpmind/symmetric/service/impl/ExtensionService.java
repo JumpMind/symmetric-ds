@@ -318,6 +318,11 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         refresh();
     }
 
+    public void deleteAllExtensions() {
+        sqlTemplate.update(getSql("deleteAllExtensionsSql"));
+        refresh();
+    }
+
     public Object getCompiledClass(String javaCode) throws Exception {
         return simpleClassCompiler.getCompiledClass(javaCode);
     }

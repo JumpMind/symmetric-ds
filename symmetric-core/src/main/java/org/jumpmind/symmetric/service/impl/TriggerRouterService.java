@@ -233,6 +233,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         clearCache();
     }
 
+    @Override
+    public void deleteAllTriggers() {
+        sqlTemplate.update(getSql("deleteAllTriggersSql"));
+        clearCache();
+    }
+
     public void dropTriggers() {
         List<TriggerHistory> activeHistories = getActiveTriggerHistories();
         Set<String> symTables = TableConstants.getTables(symmetricDialect.getTablePrefix());

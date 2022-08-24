@@ -213,6 +213,11 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
         clearCache();
     }
 
+    public void deleteAllLoadFilters() {
+        sqlTemplate.update(getSql("deleteAllLoadFiltersSql"));
+        clearCache();
+    }
+
     public boolean refreshFromDatabase() {
         Date date = sqlTemplate.queryForObject(getSql("selectMaxLastUpdateTime"), Date.class);
         if (date != null) {
