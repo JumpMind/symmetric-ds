@@ -606,7 +606,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             StringReader reader = new StringReader(xml);
             Database db = DatabaseXmlUtil.read(reader, false);
             if (writerSettings.isCreateTableAlterCaseToMatchDatabaseDefault()) {
-                getPlatform().alterCaseToMatchDatabaseDefaultCase(db);
+                getPlatform(tempNonSymTable).alterCaseToMatchDatabaseDefaultCase(db);
             }
             getPlatform(tempNonSymTable).makePlatformSpecific(db);
             if (writerSettings.isAlterTable()) {
