@@ -159,6 +159,8 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                                 request.setRouterId(ParameterConstants.ALL);
                                 request.setSourceNodeId(security.getNodeId());
                                 request.setTargetNodeId(identity.getNodeId());
+                                request.setCreateTable(parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD));
+                                request.setDeleteFirst(parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD));
                                 request.setCreateTime(new Date());
                                 log.info("Creating load request from node " + security.getNodeId() + " to node " + identity.getNodeId());
                                 engine.getDataService().insertTableReloadRequest(request);
