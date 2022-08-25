@@ -276,7 +276,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     }
 
     private void findAndThrowInsertException(CsvData data, String[] values) throws SqlException {
-        if (isRequiresSavePointsInTransaction) {
+        if (isRequiresSavePointsInTransaction && !getTransaction().isInBatchMode()) {
             try {
                 getTransaction().execute("savepoint sym");
                 getTransaction().prepare(currentDmlStatement.getSql(false));
