@@ -60,6 +60,8 @@ public interface IFileSyncService {
 
     public void deleteFileTrigger(FileTrigger fileTrigger);
 
+    public void deleteAllFileTriggers();
+
     public void clearCache();
 
     public DirectorySnapshot getDirectorySnapshot(FileTriggerRouter fileTriggerRouter);

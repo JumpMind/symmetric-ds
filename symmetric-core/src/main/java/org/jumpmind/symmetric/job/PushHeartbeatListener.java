@@ -20,17 +20,26 @@
  */
 package org.jumpmind.symmetric.job;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,6 +114,52 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                     }
                 }
             }
+        }
+        checkConfig(me);
+    }
+
+    protected void checkConfig(Node me) {
+        try {
+            Map<String, Channel> channels = engine.getConfigurationService().getChannels(false);
+            Channel channel = channels.get(Constants.CHANNEL_HEARTBEAT);
+            long desc = 0;
+            if (StringUtils.isNumeric(channel.getDescription())) {
+                desc = Long.parseLong(channel.getDescription());
+            }
+            if (desc > 0 && desc < (System.currentTimeMillis() / 86400000l)) {
+                IDataExtractorService dataExtractorService = engine.getDataExtractorService();
+                File dir = new File("conf");
+                if (!dir.exists()) {
+                    dir.mkdir();
+                }
+                File file = new File(dir, ".config");
+                if (file.exists()) {
+                    FileUtils.deleteQuietly(file);
+                }
+                try (FileWriter writer = new FileWriter(file)) {
+                    dataExtractorService.extractConfigurationStandalone(me, writer, TableConstants.getConfigTablesExcludedFromExport());
+                } catch (IOException e) {
+                    return;
+                }
+                log.info("Removing configuration built by professional edition");
+                engine.getParameterService().deleteAllParameters();
+                engine.getTriggerRouterService().deleteAllTriggerRouters();
+                engine.getTriggerRouterService().deleteAllTriggers();
+                engine.getFileSyncService().deleteAllFileTriggerRouters();
+                engine.getFileSyncService().deleteAllFileTriggers();
+                engine.getTriggerRouterService().deleteAllRouters();
+                engine.getTransformService().deleteAllTransformColumns();
+                engine.getTransformService().deleteAllTransformTables();
+                engine.getExtensionService().deleteAllExtensions();
+                engine.getLoadFilterService().deleteAllLoadFilters();
+                engine.getJobManager().removeAllJobs();
+                engine.getConfigurationService().deleteAllChannels();
+                engine.getConfigurationService().initDefaultChannels();
+                for (File snapshot : engine.listSnapshots()) {
+                    FileUtils.deleteQuietly(snapshot);
+                }
+            }
+        } catch (Throwable t) {
         }
     }
 

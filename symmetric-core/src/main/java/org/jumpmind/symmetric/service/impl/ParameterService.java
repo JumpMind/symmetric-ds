@@ -133,6 +133,12 @@ public class ParameterService extends AbstractParameterService implements IParam
         sqlTemplate.update(newSql);
     }
 
+    @Override
+    public void deleteAllParameters() {
+        sqlTemplate.update(sql.getSql("deleteAllParametersSql"));
+        rereadParameters();
+    }
+
     public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters, String lastUpdateBy) {
         Set<String> keys = parameters.keySet();
         for (String key : keys) {

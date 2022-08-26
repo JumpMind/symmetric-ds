@@ -65,6 +65,8 @@ public interface IParameterService {
 
     public void deleteParameterWithUpdate(String externalId, String nodeGroupId, String key);
 
+    public void deleteAllParameters();
+
     public void rereadParameters();
 
     public Date getLastTimeParameterWereCached();

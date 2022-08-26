@@ -374,6 +374,10 @@ public class AndroidJobManager implements IJobManager {
     }
 
     @Override
+    public void removeAllJobs() {
+    }
+
+    @Override
     public boolean isJobApplicableToNodeGroup(IJob job) {
         return false;
     }

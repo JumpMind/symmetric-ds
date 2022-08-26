@@ -51,6 +51,8 @@ public interface IJobManager {
 
     public void removeJob(String name);
 
+    public void removeAllJobs();
+
     public boolean isStarted();
 
     public boolean isJobApplicableToNodeGroup(IJob job);

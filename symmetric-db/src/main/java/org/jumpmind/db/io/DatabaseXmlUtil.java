@@ -58,7 +58,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.CompressionTypes;
 import org.jumpmind.db.model.Database;
@@ -252,9 +251,7 @@ public class DatabaseXmlUtil {
                                 } else if (attributeName.equalsIgnoreCase("size")) {
                                     column.setSize(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("default")) {
-                                    if (StringUtils.isNotBlank(attributeValue)) {
-                                        column.setDefaultValue(attributeValue);
-                                    }
+                                    column.setDefaultValue(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("autoIncrement")) {
                                     column.setAutoIncrement(FormatUtils.toBoolean(attributeValue));
                                 } else if (attributeName.equalsIgnoreCase("javaName")) {

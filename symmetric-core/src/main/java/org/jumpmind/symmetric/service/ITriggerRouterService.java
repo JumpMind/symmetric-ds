@@ -159,6 +159,8 @@ public interface ITriggerRouterService {
 
     public void deleteTriggers(Collection<Trigger> triggers);
 
+    public void deleteAllTriggers();
+
     public void dropTriggers();
 
     public void dropTriggers(Set<String> tables);

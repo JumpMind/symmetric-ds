@@ -54,5 +54,7 @@ public interface IExtensionService {
 
     public void deleteExtension(String extensionId);
 
+    public void deleteAllExtensions();
+
     public Object getCompiledClass(String javaCode) throws Exception;
 }

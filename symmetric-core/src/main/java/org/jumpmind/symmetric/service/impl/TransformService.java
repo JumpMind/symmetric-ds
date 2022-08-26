@@ -464,6 +464,11 @@ public class TransformService extends AbstractService implements ITransformServi
                 (Object) transformTableId);
     }
 
+    public void deleteAllTransformColumns() {
+        sqlTemplate.update(getSql("deleteAllTransformColumnsSql"));
+        clearCache();
+    }
+
     public void deleteTransformTable(String transformTableId) {
         ISqlTransaction transaction = null;
         try {
@@ -490,6 +495,7 @@ public class TransformService extends AbstractService implements ITransformServi
 
     public void deleteAllTransformTables() {
         sqlTemplate.update(getSql("deleteAllTransformTablesSql"));
+        clearCache();
     }
 
     protected void saveTransformColumn(ISqlTransaction transaction, TransformColumn transformColumn) {
