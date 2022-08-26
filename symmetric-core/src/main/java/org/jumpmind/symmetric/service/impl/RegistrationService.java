@@ -149,7 +149,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     protected Node processRegistration(Node nodePriorToRegistration, String remoteHost,
             String remoteAddress, String userId, String password, boolean isRequestedRegistration)
             throws IOException {
-        Node processedNode = new Node();
+       Node processedNode = new Node();
         processedNode.setSyncEnabled(false);
         if (!allowClientRegistration) {
             log.warn("Cannot register a client node until this node has synced triggers");
@@ -203,7 +203,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId(), false);
             if (link == null
                     && parameterService.is(ParameterConstants.REGISTRATION_REQUIRE_NODE_GROUP_LINK,
-                            true)) {
+                            true) && !parameterService.is(ParameterConstants.REGISTRATION_AUTO_CREATE_GROUP_LINK)) {
                 RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.ER, remoteHost, remoteAddress);
                 req.setErrorMessage(String.format(
@@ -238,6 +238,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         RegistrationStatus.RQ, remoteHost, remoteAddress));
                 return processedNode;
             }
+            if (link == null && parameterService.is(ParameterConstants.REGISTRATION_AUTO_CREATE_GROUP_LINK)) {
+        		link = new NodeGroupLink(identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
+        		configurationService.saveNodeGroupLink(link);
+        		link = configurationService.getNodeGroupLinkFor(nodePriorToRegistration.getNodeGroupId(), identity.getNodeGroupId(), false);
+        		if (link == null) {
+        			link = new NodeGroupLink(identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId(), NodeGroupLinkAction.P);
+        			configurationService.saveNodeGroupLink(link);
+        		}
+        	}
             // TODO: since we send sym_node in registration batch, save this record with source_node_id = node_id
             foundNode.setSyncEnabled(true);
             foundNode.setSyncUrl(nodePriorToRegistration.getSyncUrl());
