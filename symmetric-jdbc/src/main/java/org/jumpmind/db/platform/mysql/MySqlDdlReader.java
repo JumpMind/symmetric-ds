@@ -53,6 +53,7 @@ import java.util.Map;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
@@ -150,6 +151,10 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
             adjustColumnSize(column, -9);
         } else if (column.getMappedTypeCode() == Types.DATE) {
             removeColumnSize(column);
+            if ("0000-00-00".equals(column.getDefaultValue())) {
+                column.setDefaultValue(null);
+                column.getPlatformColumns().get(platform.getName()).setDefaultValue("0000-00-00");
+            }
         }
         // MySQL converts illegal date/time/timestamp values to
         // "0000-00-00 00:00:00", but this
@@ -220,6 +225,20 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
             }
         }
         return column;
+    }
+
+    @Override
+    protected void genericizeDefaultValuesAndUpdatePlatformColumn(Column column) {
+        PlatformColumn platformColumn = column.findPlatformColumn(platform.getName());
+        if (!"0000-00-00".equals(platformColumn.getDefaultValue())) {
+            platformColumn.setDefaultValue(column.getDefaultValue());
+        }
+        /*
+         * Translate from platform specific functions to ansi sql functions
+         */
+        if ("getdate()".equalsIgnoreCase(column.getDefaultValue())) {
+            column.setDefaultValue("CURRENT_TIMESTAMP");
+        }
     }
 
     @Override

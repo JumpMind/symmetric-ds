@@ -234,4 +234,9 @@ public class JobManager extends AbstractService implements IJobManager {
             throw new SymmetricException("Failed to remove job " + name + ".  Note that BUILT_IN jobs cannot be removed.");
         }
     }
+
+    @Override
+    public void removeAllJobs() {
+        sqlTemplate.update(getSql("deleteAllJobsSql"));
+    }
 }

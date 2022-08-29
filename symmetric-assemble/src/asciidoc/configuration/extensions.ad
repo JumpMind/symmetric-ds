@@ -131,12 +131,14 @@ public class MyReloadListener implements IReloadListener, ISymmetricEngineAware 
 
     @Override
     public void beforeReload(ISqlTransaction transaction, Node node, long loadId) {
-        engine.getDataService().insertSqlEvent(transaction, node, "SET REFERENTIAL_INTEGRITY FALSE", true, loadId, "initial load");
+        TriggerHistory history = engine.getTriggerRouterService().findTriggerHistoryForGenericSync();
+        engine.getDataService().insertSqlEvent(transaction, history, "reload", node, "SET REFERENTIAL_INTEGRITY FALSE", true, loadId, "initial load");
     }
 
     @Override
     public void afterReload(ISqlTransaction transaction, Node node, long loadId) {
-        engine.getDataService().insertSqlEvent(transaction, node, "SET REFERENTIAL_INTEGRITY TRUE", true, loadId, "initial load");
+        TriggerHistory history = engine.getTriggerRouterService().findTriggerHistoryForGenericSync();
+        engine.getDataService().insertSqlEvent(transaction, history, "reload", node, "SET REFERENTIAL_INTEGRITY TRUE", true, loadId, "initial load");
     }
 
 }

@@ -469,6 +469,12 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         sqlTemplate.update(getSql("deleteFileTriggerSql"), (Object) id);
     }
 
+    @Override
+    public void deleteAllFileTriggers() {
+        sqlTemplate.update(getSql("deleteAllFileTriggersSql"));
+        clearCache();
+    }
+
     public DirectorySnapshot getDirectorySnapshot(FileTriggerRouter fileTriggerRouter) {
         return new DirectorySnapshot(fileTriggerRouter, sqlTemplate.query(
                 getSql("selectFileSnapshotSql"), new FileSnapshotMapper(), fileTriggerRouter

@@ -275,7 +275,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     }
 
     private void findAndThrowInsertException(CsvData data, String[] values) throws SqlException {
-        if (isRequiresSavePointsInTransaction) {
+        if (isRequiresSavePointsInTransaction && !getTransaction().isInBatchMode()) {
             try {
                 getTransaction().execute("savepoint sym");
                 getTransaction().prepare(currentDmlStatement.getSql(false));
@@ -605,7 +605,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             StringReader reader = new StringReader(xml);
             Database db = DatabaseXmlUtil.read(reader, false);
             if (writerSettings.isCreateTableAlterCaseToMatchDatabaseDefault()) {
-                getPlatform().alterCaseToMatchDatabaseDefaultCase(db);
+                getPlatform(tempNonSymTable).alterCaseToMatchDatabaseDefaultCase(db);
             }
             getPlatform(tempNonSymTable).makePlatformSpecific(db);
             if (writerSettings.isAlterTable()) {

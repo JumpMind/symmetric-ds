@@ -39,5 +39,6 @@ public class JobManagerSqlMap extends AbstractSqlMap {
                 + "create_by = ?, last_update_by = ?, last_update_time = ? "
                 + "where job_name = ?");
         putSql("deleteJobSql", "delete from $(job) where job_name = ? and job_type <> 'BUILT_IN'");
+        putSql("deleteAllJobsSql", "delete from $(job)");
     }
 }

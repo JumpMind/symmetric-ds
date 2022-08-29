@@ -358,8 +358,9 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         // being equal to the
         // name of the primary key of the table
         StringBuilder query = new StringBuilder();
-        query.append("SELECT a.INDEX_NAME, a.INDEX_TYPE, a.UNIQUENESS, b.COLUMN_NAME, b.COLUMN_POSITION FROM ALL_INDEXES a ");
+        query.append("SELECT a.INDEX_NAME, a.INDEX_TYPE, a.UNIQUENESS, b.COLUMN_NAME, b.COLUMN_POSITION, c.COLUMN_EXPRESSION FROM ALL_INDEXES a ");
         query.append("JOIN ALL_IND_COLUMNS b ON a.table_name = b.table_name AND a.INDEX_NAME=b.INDEX_NAME AND a.TABLE_OWNER = b.TABLE_OWNER ");
+        query.append("LEFT JOIN ALL_IND_EXPRESSIONS c ON a.table_name = c.table_name AND a.INDEX_NAME=c.INDEX_NAME AND a.TABLE_OWNER = c.TABLE_OWNER ");
         query.append("WHERE ");
         query.append("a.TABLE_NAME = ? ");
         query.append("AND a.GENERATED='N' ");
@@ -388,14 +389,26 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                     continue;
                 }
                 String type = rs.getString(2);
-                // Only read in normal oracle indexes
-                if (type.startsWith("NORMAL")) {
+                // Only read in normal oracle indexes (including function-based indexes)
+                if (type.startsWith("NORMAL") || type.startsWith("FUNCTION-BASED NORMAL")) {
                     values.put("INDEX_TYPE", Short.valueOf(DatabaseMetaData.tableIndexOther));
                     values.put("INDEX_NAME", name);
                     values.put("NON_UNIQUE",
                             "UNIQUE".equalsIgnoreCase(rs.getString(3)) ? Boolean.FALSE
                                     : Boolean.TRUE);
-                    values.put("COLUMN_NAME", rs.getString(4));
+                    if (type.startsWith("NORMAL")) {
+                        values.put("COLUMN_NAME", rs.getString(4));
+                    } else {
+                        String columnName = rs.getString(6);
+                        if (columnName != null) {
+                            if (!columnName.contains("(")) {
+                                columnName = "(" + columnName + ")";
+                            } else if (columnName.startsWith("\"") && columnName.endsWith("\"")) {
+                                columnName = "\"" + columnName + "\"";
+                            }
+                        }
+                        values.put("COLUMN_NAME", columnName);
+                    }
                     values.put("ORDINAL_POSITION", Short.valueOf(rs.getShort(5)));
                     readIndex(metaData, values, indices);
                 } else if (log.isDebugEnabled()) {

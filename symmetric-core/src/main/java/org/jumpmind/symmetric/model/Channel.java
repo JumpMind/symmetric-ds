@@ -51,6 +51,7 @@ public class Channel implements Serializable, Cloneable {
     private boolean fileSyncFlag = false;
     private String queue = "default";
     private NodeGroupLinkAction dataEventAction = null;
+    private String description;
 
     public Channel() {
     }
@@ -270,6 +271,14 @@ public class Channel implements Serializable, Cloneable {
 
     public void setDataEventAction(NodeGroupLinkAction dataEventAction) {
         this.dataEventAction = dataEventAction;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override

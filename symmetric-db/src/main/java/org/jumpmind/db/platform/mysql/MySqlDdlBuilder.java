@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.ColumnAutoIncrementChange;
@@ -166,6 +167,17 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
         ddl.append("AUTO_INCREMENT");
+    }
+
+    @Override
+    protected void writeColumnDefaultValueStmt(Table table, Column column, StringBuilder ddl) {
+        super.writeColumnDefaultValueStmt(table, column, ddl);
+        if (column.getParsedDefaultValue() == null
+                && !(databaseInfo.isDefaultValueUsedForIdentitySpec() && column.isAutoIncrement())
+                && StringUtils.isBlank(column.getDefaultValue()) && column.findPlatformColumn(databaseName) != null) {
+            ddl.append(" DEFAULT ");
+            writeColumnDefaultValue(table, column, ddl);
+        }
     }
 
     @Override
@@ -393,6 +405,19 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
                 sqlType = "MEDIUMTEXT";
             } else {
                 sqlType = "LONGTEXT";
+            }
+        }
+        pc = column.getPlatformColumns() == null ? null : column.getPlatformColumns().get(DatabaseNamesConstants.ORACLE);
+        if (pc == null) {
+            pc = column.getPlatformColumns() == null ? null : column.getPlatformColumns().get(DatabaseNamesConstants.ORACLE122);
+        }
+        if (pc != null) {
+            if ("NVARCHAR2".equals(pc.getType())) {
+                sqlType = "NVARCHAR(" + pc.getSize() + ")";
+            } else if ("LONG".equals(pc.getType()) || "CLOB".equals(pc.getType()) || "NCLOB".equals(pc.getType()) || "XMLTYPE".equals(pc.getType())) {
+                sqlType = "LONGTEXT";
+            } else if ("FLOAT".equals(pc.getType()) && pc.getSize() >= 63) {
+                sqlType = "DOUBLE";
             }
         }
         return sqlType;

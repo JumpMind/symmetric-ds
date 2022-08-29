@@ -1028,8 +1028,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             loadInfo = statisticManager.newProcessInfo(new ProcessInfoKey(transferInfo.getSourceNodeId(),
                                     transferInfo.getQueue(), transferInfo.getTargetNodeId(), transferInfo.getProcessType() == PULL_JOB_TRANSFER ? PULL_JOB_LOAD
                                             : PUSH_HANDLER_LOAD));
+                            loadInfo.setCurrentLoadId(transferInfo.getCurrentLoadId());
                             if (batchInStaging.getStatistics() != null) {
                                 loadInfo.setTotalDataCount(batchInStaging.getStatistics().get(DataReaderStatistics.DATA_ROW_COUNT));
+                                loadInfo.setCurrentLoadId(batchInStaging.getStatistics().get(DataReaderStatistics.LOAD_ID));
                             }
                             loadInfo.setStatus(ProcessInfo.ProcessStatus.LOADING);
                             ProtocolDataReader reader = buildDataReader(batchInStaging, resource);

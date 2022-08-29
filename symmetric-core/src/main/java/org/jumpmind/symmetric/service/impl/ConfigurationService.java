@@ -315,7 +315,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                         channel.getLastUpdateTime(), channel.getLastUpdateBy(),
                         channel.isReloadFlag() ? 1 : 0, channel.isFileSyncFlag() ? 1 : 0,
                         channel.getQueue(), channel.getMaxKBytesPerSecond(), channel.getDataEventAction() == null ? null : channel.getDataEventAction().name(),
-                        channel.getChannelId() })) {
+                        channel.getDescription(), channel.getChannelId() })) {
             channel.setCreateTime(new Date());
             sqlTemplate.update(
                     getSql("insertChannelSql"),
@@ -325,7 +325,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             channel.isUseRowDataToRoute() ? 1 : 0,
                             channel.isUsePkDataToRoute() ? 1 : 0,
                             channel.isContainsBigLob() ? 1 : 0, channel.isEnabled() ? 1 : 0,
-                            channel.getBatchAlgorithm(), channel.getExtractPeriodMillis(),
+                            channel.getBatchAlgorithm(), channel.getDescription(), channel.getExtractPeriodMillis(),
                             channel.getDataLoaderType(), channel.getLastUpdateTime(),
                             channel.getLastUpdateBy(), channel.getCreateTime(),
                             channel.isReloadFlag() ? 1 : 0, channel.isFileSyncFlag() ? 1 : 0,
@@ -406,6 +406,11 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private void deleteChannel(String id) {
         sqlTemplate.update(getSql("deleteNodeChannelSql"), new Object[] { id });
         sqlTemplate.update(getSql("deleteChannelSql"), new Object[] { id });
+        clearCache();
+    }
+
+    public void deleteAllChannels() {
+        sqlTemplate.update(getSql("deleteAllChannelsSql"));
         clearCache();
     }
 
@@ -728,6 +733,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             channel.setQueue(row.getString("queue"));
             channel.setMaxKBytesPerSecond(row.getBigDecimal("max_network_kbps"));
             channel.setDataEventAction(NodeGroupLinkAction.fromCode(row.getString("data_event_action")));
+            if (row.containsKey("description")) {
+                channel.setDescription(row.getString("description"));
+            }
             return channel;
         }
     }

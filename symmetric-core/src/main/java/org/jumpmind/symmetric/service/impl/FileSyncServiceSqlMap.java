@@ -143,7 +143,9 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         putSql("deleteAllFileTriggerRoutersSql", "delete from $(file_trigger_router)");
 
         putSql("deleteFileTriggerSql", "" + "delete from $(file_trigger) where trigger_id=?   ");
-        
+
+        putSql("deleteAllFileTriggersSql", "" + "delete from $(file_trigger)");
+
         putSql("selectMaxFileTriggerLastUpdateTime" ,"select max(last_update_time) from $(file_trigger) where last_update_time is not null" );
         putSql("selectMaxRouterLastUpdateTime" ,"select max(last_update_time) from $(router) where last_update_time is not null" );
         putSql("selectMaxFileTriggerRouterLastUpdateTime" ,"select max(last_update_time) from $(file_trigger_router) where last_update_time is not null" );

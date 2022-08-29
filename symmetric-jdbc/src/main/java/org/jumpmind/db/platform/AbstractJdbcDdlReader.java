@@ -1207,7 +1207,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             }
             IndexColumn indexColumn = new IndexColumn();
             String columnName = (String) values.get(getName("COLUMN_NAME"));
-            if (columnName.startsWith("\"") && columnName.endsWith("\"")) {
+            if (columnName != null && columnName.startsWith("\"") && columnName.endsWith("\"")) {
                 columnName = columnName.substring(1, columnName.length() - 1);
             }
             indexColumn.setName(columnName);

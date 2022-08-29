@@ -23,6 +23,7 @@ package org.jumpmind.db.platform.sqlite;
 import java.sql.Connection;
 import java.sql.Types;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
@@ -156,6 +157,13 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
             }
         }
         return super.mapDefaultValue(defaultValue, typeCode);
+    }
+
+    @Override
+    protected void writeColumnDefaultValueStmt(Table table, Column column, StringBuilder ddl) {
+        if (!StringUtils.containsIgnoreCase(getNativeDefaultValue(column), "NEXT VALUE FOR")) {
+            super.writeColumnDefaultValueStmt(table, column, ddl);
+        }
     }
 
     @Override

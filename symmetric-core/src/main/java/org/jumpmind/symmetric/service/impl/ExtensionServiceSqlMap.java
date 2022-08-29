@@ -39,6 +39,7 @@ public class ExtensionServiceSqlMap extends AbstractSqlMap {
                 "node_group_id = ?, enabled = ?, extension_order = ?, extension_text = ?, last_update_by = ?, " +
                 "last_update_time = ? where extension_id = ?");
         putSql("deleteExtensionSql", "delete from $(extension) where extension_id = ?");
+        putSql("deleteAllExtensionsSql", "delete from $(extension)");
         putSql("whereExtensionIdLike", "where extension_id like ?");
     }
 }
