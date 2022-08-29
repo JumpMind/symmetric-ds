@@ -450,6 +450,7 @@ final public class ParameterConstants {
     public final static String CLOUD_BULK_ROW_TERMINATOR = "cloud.bulk.row.terminator";
     public final static String CLOUD_BULK_FIELD_TERMINATOR = "cloud.bulk.field.terminator";
     public final static String CLOUD_BULK_FIELD_QUOTE = "cloud.bulk.field.quote";
+    public final static String CLOUD_BULK_CODEPAGE = "cloud.bulk.codepage";
     
     public final static String SNAPSHOT_FILE_INCLUDE_HOSTNAME = "snapshot.file.include.hostname";
     public final static String SNAPSHOT_MAX_FILES = "snapshot.max.files";
