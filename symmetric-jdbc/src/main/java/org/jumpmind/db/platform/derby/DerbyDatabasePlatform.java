@@ -111,7 +111,8 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return (!column.isOfBinaryType()) &&
                 column.getJdbcTypeCode() != Types.CLOB &&
                 column.getJdbcTypeCode() != Types.LONGVARCHAR &&
-                column.getJdbcTypeCode() != Types.LONGNVARCHAR;
+                column.getJdbcTypeCode() != Types.LONGNVARCHAR &&
+                super.canColumnBeUsedInWhereClause(column);
     }
 
     @Override

@@ -27,8 +27,8 @@ import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class MsSql2016DatabasePlatform extends MsSql2008DatabasePlatform {
-	public static final String JDBC_SUBPROTOCOL = "sqlserver";
-    
+    public static final String JDBC_SUBPROTOCOL = "sqlserver";
+
     public MsSql2016DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         if (settings.isAllowTriggerCreateOrReplace()) {

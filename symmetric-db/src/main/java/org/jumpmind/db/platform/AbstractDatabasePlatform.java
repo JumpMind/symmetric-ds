@@ -721,7 +721,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             }
         } else {
             for (Column column : result.getColumns()) {
-                if (!isLob(column.getMappedTypeCode())) {
+                if (!isLob(column.getMappedTypeCode()) && canColumnBeUsedInWhereClause(column)) {
                     column.setPrimaryKey(true);
                 }
             }
@@ -935,7 +935,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public boolean canColumnBeUsedInWhereClause(Column column) {
-        return true;
+        return column.getJdbcTypeCode() != Types.FLOAT &&
+                column.getJdbcTypeCode() != Types.DOUBLE &&
+                column.getJdbcTypeCode() != Types.REAL;
     }
 
     public java.util.Date parseTimestamp(int type, String value) {
