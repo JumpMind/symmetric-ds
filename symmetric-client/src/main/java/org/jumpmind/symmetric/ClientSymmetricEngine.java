@@ -67,9 +67,7 @@ import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IExtensionService;
-import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.impl.ClientExtensionService;
-import org.jumpmind.symmetric.service.impl.MonitorService;
 import org.jumpmind.symmetric.service.impl.NodeService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
@@ -97,7 +95,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     protected Properties properties;
     protected DataSource dataSource;
     protected ApplicationContext springContext;
-    protected IMonitorService monitorService;
 
     /**
      * @param dataSource
@@ -197,7 +194,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 SymmetricUtils.logNotices();
             }
             super.init();
-            this.monitorService = new MonitorService(this, symmetricDialect);
             this.dataSource = platform.getDataSource();
             PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
             configurer.setProperties(parameterService.getAllParameters());
@@ -514,9 +510,5 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         super.clearCaches();
         monitorService.flushMonitorCache();
         monitorService.flushNotificationCache();
-    }
-
-    public IMonitorService getMonitorService() {
-        return monitorService;
     }
 }
