@@ -58,6 +58,7 @@ import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.RegistrationRequest;
+import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatus.Status;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
@@ -69,6 +70,7 @@ import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.RegistrationFailedException;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRedirectException;
@@ -240,12 +242,23 @@ public class RegistrationService extends AbstractService implements IRegistratio
             }
             if (link == null && parameterService.is(ParameterConstants.REGISTRATION_AUTO_CREATE_GROUP_LINK)) {
         		link = new NodeGroupLink(identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
-        		configurationService.saveNodeGroupLink(link);
+        		configurationService.saveNodeGroupLink(link);        		
+        		ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+                Router router = new Router();
+                router.setNodeGroupLink(link);
+                router.setRouterId(router.createDefaultName());
+                triggerRouterService.saveRouter(router);     		
         		link = configurationService.getNodeGroupLinkFor(nodePriorToRegistration.getNodeGroupId(), identity.getNodeGroupId(), false);
         		if (link == null) {
-        			link = new NodeGroupLink(identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId(), NodeGroupLinkAction.P);
-        			configurationService.saveNodeGroupLink(link);
+        			link = new NodeGroupLink(nodePriorToRegistration.getNodeGroupId(), identity.getNodeGroupId(), NodeGroupLinkAction.P);
+        			configurationService.saveNodeGroupLink(link);        			
+        			router = new Router();
+                    router.setNodeGroupLink(link);
+                    router.setRouterId(router.createDefaultName());
+                    triggerRouterService.saveRouter(router);  
         		}
+        		configurationService.clearCache();
+        		triggerRouterService.clearCache();
         	}
             // TODO: since we send sym_node in registration batch, save this record with source_node_id = node_id
             foundNode.setSyncEnabled(true);
