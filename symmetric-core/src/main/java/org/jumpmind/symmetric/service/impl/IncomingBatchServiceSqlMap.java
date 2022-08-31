@@ -42,7 +42,7 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
                     + "  data_row_count, extract_insert_row_count, extract_update_row_count, "
                     + "  extract_delete_row_count, extract_row_count, reload_row_count, other_row_count, "
                     + "  load_flag, extract_count, load_count, router_millis, extract_millis, sent_count, "
-                    + "  transform_extract_millis, transform_load_millis, load_id, common_flag, failed_data_id from "
+                    + "  transform_extract_millis, transform_load_millis, load_id, common_flag, failed_data_id, bulk_loader_flag from "
                     + "  $(incoming_batch)                                          " );
 
         putSql("selectCreateTimePrefixSql" ,"" + 

@@ -107,7 +107,7 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     public boolean canColumnBeUsedInWhereClause(Column column) {
-        return !column.isOfBinaryType();
+        return !column.isOfBinaryType() && super.canColumnBeUsedInWhereClause(column);
     }
 
     @Override

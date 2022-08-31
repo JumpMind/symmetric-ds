@@ -136,6 +136,7 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
         addPlatform(platforms, DatabaseNamesConstants.MSSQL2005, MsSql2005DatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.MSSQL2008, MsSql2008DatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.MSSQL2016, MsSql2016DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.MSSQLAZURE, MsSql2016DatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.MYSQL, MySqlDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.NUODB, NuoDbDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.ORACLE, OracleDatabasePlatform.class);
@@ -310,6 +311,11 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
                 }
             }
         }
+        if (nameVersion.getProtocol().equalsIgnoreCase(MsSql2016DatabasePlatform.JDBC_SUBPROTOCOL)) {
+            if (isMSSQLAzureManagedInstance(connection)) {
+                nameVersion.setName(DatabaseNamesConstants.MSSQLAZURE);
+            }
+        }
     }
 
     private boolean isGreenplumDatabase(Connection connection) {
@@ -359,6 +365,21 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
             }
         }
         return isDialect1;
+    }
+
+    private boolean isMSSQLAzureManagedInstance(Connection connection) {
+        boolean isManagedInstance = false;
+        try (Statement s = connection.createStatement()) {
+            ResultSet rs = s.executeQuery("SELECT CAST(SERVERPROPERTY('EngineEdition') AS INT)");
+            if (rs.next()) {
+                if (rs.getInt(1) == 8) {
+                    isManagedInstance = true;
+                }
+            }
+        } catch (Exception e) {
+            log.info("Azure Managed Instance of SQLServer not detected.");
+        }
+        return isManagedInstance;
     }
 
     private boolean isOracle122Compatible(Connection connection) {

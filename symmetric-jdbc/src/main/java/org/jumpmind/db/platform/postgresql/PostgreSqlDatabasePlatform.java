@@ -383,6 +383,6 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         if (column.getJdbcTypeName() != null && column.getJdbcTypeName().startsWith("json")) {
             return false;
         }
-        return true;
+        return super.canColumnBeUsedInWhereClause(column);
     }
 }

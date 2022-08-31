@@ -636,11 +636,9 @@ public class RouterService extends AbstractService implements IRouterService {
             if (link != null) {
                 nodes.addAll(engine.getNodeService().findEnabledNodesFromNodeGroup(
                         router.getNodeGroupLink().getTargetNodeGroupId()));
-            } else {
-                log.error("The router {} has no node group link configured from {} to {}",
-                        new Object[] { router.getRouterId(),
-                                router.getNodeGroupLink().getSourceNodeGroupId(),
-                                router.getNodeGroupLink().getTargetNodeGroupId() });
+            } else if (!router.getRouterId().startsWith(parameterService.getTablePrefix().toLowerCase())) {
+                log.error("The router {} has no node group link configured from {} to {}", new Object[] { router.getRouterId(),
+                        router.getNodeGroupLink().getSourceNodeGroupId(), router.getNodeGroupLink().getTargetNodeGroupId() });
             }
             context.getAvailableNodes().put(triggerRouter, nodes);
         }

@@ -55,6 +55,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.ext.IDatabaseInstallStatementListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroup;
@@ -284,6 +285,9 @@ public class SymmetricEngineHolder {
                         IRegistrationService registrationService = currentEngine.getRegistrationService();
                         if (!registrationService.isAutoRegistration() && !registrationService.isRegistrationOpen(clientNodeGroupId, externalId)) {
                             Node node = new Node(properties);
+                            if (TableConstants.getTables("").contains(TableConstants.SYM_CONSOLE_USER)) {
+                                node.setDeploymentType(Constants.DEPLOYMENT_TYPE_PROFESSIONAL);
+                            }
                             registrationService.openRegistration(node);
                         }
                     }

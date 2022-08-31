@@ -85,6 +85,7 @@ import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IInitialLoadService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.IMailService;
+import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOfflinePullService;
@@ -116,6 +117,7 @@ import org.jumpmind.symmetric.service.impl.IncomingBatchService;
 import org.jumpmind.symmetric.service.impl.InitialLoadService;
 import org.jumpmind.symmetric.service.impl.LoadFilterService;
 import org.jumpmind.symmetric.service.impl.MailService;
+import org.jumpmind.symmetric.service.impl.MonitorService;
 import org.jumpmind.symmetric.service.impl.NodeCommunicationService;
 import org.jumpmind.symmetric.service.impl.NodeService;
 import org.jumpmind.symmetric.service.impl.OfflinePullService;
@@ -196,6 +198,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IMailService mailService;
     protected IContextService contextService;
     protected IUpdateService updateService;
+    protected IMonitorService monitorService;
     protected ICacheManager cacheManager;
     protected Date lastRestartTime = null;
 
@@ -333,6 +336,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.fileSyncService = buildFileSyncService();
         this.fileSyncExtractorService = new FileSyncExtractorService(this);
         this.mailService = new MailService(parameterService, securityService, symmetricDialect);
+        this.monitorService = buildMonitorService(symmetricDialect);
         String updateServiceClassName = properties.get(ParameterConstants.UPDATE_SERVICE_CLASS);
         if (updateServiceClassName == null) {
             this.updateService = new UpdateService(this);
@@ -384,6 +388,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             IParameterService parameterService,
             IConfigurationService configurationService, ISymmetricDialect symmetricDialect) {
         return new NodeCommunicationService(clusterService, nodeService, parameterService, configurationService, symmetricDialect);
+    }
+
+    protected IMonitorService buildMonitorService(ISymmetricDialect symmetricDialect) {
+        return new MonitorService(this, symmetricDialect);
     }
 
     abstract protected IStagingManager createStagingManager();
@@ -1215,6 +1223,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public IUpdateService getUpdateService() {
         return updateService;
+    }
+
+    public IMonitorService getMonitorService() {
+        return monitorService;
     }
 
     @Override

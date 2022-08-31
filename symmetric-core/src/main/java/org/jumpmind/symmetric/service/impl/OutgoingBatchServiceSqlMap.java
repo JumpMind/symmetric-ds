@@ -97,7 +97,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "  b.transform_extract_millis, b.transform_load_millis, b.fallback_insert_count, b.fallback_update_count, "
                         + "  b.conflict_win_count, b.conflict_lose_count, b.ignore_row_count, b.missing_delete_count, b.skip_count, "
                         + "  b.failed_data_id, b.failed_line_number, b.last_update_hostname, b.last_update_time, b.create_time, b.batch_id, "
-                        + "  b.extract_job_flag, b.load_flag, b.error_flag, b.common_flag, b.load_id, b.create_by, b.summary from "
+                        + "  b.extract_job_flag, b.load_flag, b.error_flag, b.common_flag, b.load_id, b.create_by, b.summary, b.bulk_loader_flag from "
                         + "  $(outgoing_batch) b ");
         putSql("selectOutgoingBatchErrorsSql", " where error_flag=1 order by batch_id   ");
         putSql("countOutgoingBatchesErrorsOnChannelSql",

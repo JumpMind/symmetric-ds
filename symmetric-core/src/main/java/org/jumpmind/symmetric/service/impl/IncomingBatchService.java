@@ -572,6 +572,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setLoadId(rs.getLong("load_id"));
             batch.setCommonFlag(rs.getBoolean("common_flag"));
             batch.setFailedDataId(rs.getLong("failed_data_id"));
+            batch.setBulkLoadFlag(rs.getBoolean("bulk_loader_flag"));
             return batch;
         }
     }

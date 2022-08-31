@@ -40,6 +40,7 @@ final public class DatabaseNamesConstants {
     public final static String MSSQL2005 = "mssql2005";
     public final static String MSSQL2008 = "mssql2008";
     public final static String MSSQL2016 = "mssql2016";
+    public final static String MSSQLAZURE = "mssqlazure";
     public final static String ORACLE = "oracle";
     public final static String ORACLE122 = "oracle122";
     public final static String MYSQL = "mysql";

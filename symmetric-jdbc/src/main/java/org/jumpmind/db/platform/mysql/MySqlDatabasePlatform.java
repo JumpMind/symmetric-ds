@@ -249,7 +249,7 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
                 || column.getMappedTypeCode() == Types.BINARY) {
             return true;
         }
-        return !column.isOfBinaryType();
+        return !column.isOfBinaryType() && super.canColumnBeUsedInWhereClause(column);
     }
 
     @Override

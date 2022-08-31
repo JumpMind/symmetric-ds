@@ -691,6 +691,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             triggerRouters.addAll(buildTriggerRoutersForSymmetricTables(Version.version(),
                     nodeGroupLink));
         }
+        if (triggerRouters.size() == 0 && parameterService.is(ParameterConstants.SYNC_TRIGGERS_REG_SVR_INSTALL_WITHOUT_CONFIG, true) &&
+                parameterService.isRegistrationServer()) {
+            NodeGroupLink link = new NodeGroupLink(sourceNodeGroupId, Constants.NO_GROUP);
+            triggerRouters.addAll(buildTriggerRoutersForSymmetricTables(Version.version(), link));
+        }
         return triggerRouters;
     }
 
