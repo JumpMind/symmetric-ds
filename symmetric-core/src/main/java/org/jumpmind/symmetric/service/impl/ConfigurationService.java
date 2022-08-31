@@ -178,6 +178,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     link.getLastUpdateTime(),
                     link.getLastUpdateBy(), link.getCreateTime());
         }
+        clearCache();
     }
 
     public void renameNodeGroupLink(String oldSourceId, String oldTargetId, NodeGroupLink link) {

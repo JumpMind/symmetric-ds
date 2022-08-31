@@ -257,8 +257,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     router.setRouterId(router.createDefaultName());
                     triggerRouterService.saveRouter(router);  
         		}
-        		configurationService.clearCache();
-        		triggerRouterService.clearCache();
         	}
             // TODO: since we send sym_node in registration batch, save this record with source_node_id = node_id
             foundNode.setSyncEnabled(true);
