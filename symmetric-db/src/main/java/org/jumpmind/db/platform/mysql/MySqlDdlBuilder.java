@@ -174,7 +174,8 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         super.writeColumnDefaultValueStmt(table, column, ddl);
         if (column.getParsedDefaultValue() == null
                 && !(databaseInfo.isDefaultValueUsedForIdentitySpec() && column.isAutoIncrement())
-                && StringUtils.isBlank(column.getDefaultValue()) && column.findPlatformColumn(databaseName) != null) {
+                && StringUtils.isBlank(column.getDefaultValue()) && column.findPlatformColumn(databaseName) != null
+                && "0000-00-00".equals(column.findPlatformColumn(databaseName).getDefaultValue())) {
             ddl.append(" DEFAULT ");
             writeColumnDefaultValue(table, column, ddl);
         }
