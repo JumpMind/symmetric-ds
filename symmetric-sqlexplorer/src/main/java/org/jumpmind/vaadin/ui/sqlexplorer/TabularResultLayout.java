@@ -26,6 +26,7 @@ import static org.jumpmind.vaadin.ui.sqlexplorer.Settings.SQL_EXPLORER_MAX_RESUL
 import static org.jumpmind.vaadin.ui.sqlexplorer.Settings.SQL_EXPLORER_SHOW_ROW_NUMBERS;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -767,7 +768,7 @@ public class TabularResultLayout extends VerticalLayout {
                             case Types.SMALLINT:
                             case Types.BIGINT:
                             case Types.INTEGER:
-                                if (o != null && !(o instanceof Long)) {
+                                if (o != null && !(o instanceof Long) && !(o instanceof BigInteger)) {
                                     o = new Long(CommonUiUtils.castToNumber(o.toString()));
                                 }
                                 break;
