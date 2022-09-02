@@ -508,13 +508,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         Set<String> configTablesWithoutCapture = TableConstants.getConfigTablesWithoutCapture(symmetricDialect.getTablePrefix());
         for (String tableName : tables) {
             Trigger trigger = buildTriggerForSymmetricTable(tableName, configTablesWithoutCapture);
-            triggers.add(trigger); 
+            triggers.add(trigger);
         }
         /*
-        if (parameterService.is(ParameterConstants.REGISTRATION_AUTO_CREATE_GROUP_LINK)) {
-        	updateOrCreateDatabaseTriggers(triggers, new StringBuilder(), true,
-                    true, getActiveTriggerHistories(), true);
-        }*/
+         * if (parameterService.is(ParameterConstants.REGISTRATION_AUTO_CREATE_GROUP_LINK)) { updateOrCreateDatabaseTriggers(triggers, new StringBuilder(),
+         * true, true, getActiveTriggerHistories(), true); }
+         */
         return triggers;
     }
 
