@@ -193,6 +193,7 @@ public class DefaultParameterParser {
         public static final String TYPE_CODE = "code";
         public static final String TYPE_XML = "xml";
         public static final String TYPE_ENCRYPTED = "encrypted";
+        public static final String TAG_TRIGGER = "trigger";
         private static final long serialVersionUID = 1L;
         private String key;
         private String description;
