@@ -115,7 +115,8 @@ public class ConfigurationChangedHelper {
                 context.put(CTX_KEY_CLUSTER_NEEDED, true);
             }
             Map<String, ParameterMetaData> parameters = ParameterConstants.getParameterMetaData();
-            if (parameters.get(paramKey).getTags().contains(ParameterMetaData.TAG_TRIGGER)) {
+            ParameterMetaData pmd = parameters.get(paramKey);
+            if (pmd != null && pmd.getTags().contains(ParameterMetaData.TAG_TRIGGER)) {
                 context.put(CTX_KEY_RESYNC_NEEDED, true);
             }
         }
