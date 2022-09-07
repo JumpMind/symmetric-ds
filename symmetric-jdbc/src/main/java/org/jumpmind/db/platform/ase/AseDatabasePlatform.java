@@ -119,7 +119,7 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     public boolean canColumnBeUsedInWhereClause(Column column) {
-        return !isLob(column.getJdbcTypeCode());
+        return !isLob(column.getJdbcTypeCode()) && super.canColumnBeUsedInWhereClause(column);
     }
 
     @Override

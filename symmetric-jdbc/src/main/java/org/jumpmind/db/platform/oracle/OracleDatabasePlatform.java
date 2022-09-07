@@ -120,7 +120,7 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     public boolean canColumnBeUsedInWhereClause(Column column) {
-        return !(isLob(column.getJdbcTypeCode()) || isGeometry(column));
+        return !(isLob(column.getJdbcTypeCode()) || isGeometry(column)) && super.canColumnBeUsedInWhereClause(column);
     }
 
     private boolean isGeometry(Column column) {

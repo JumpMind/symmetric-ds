@@ -1036,6 +1036,9 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 if (table != null) {
                     table = table.copyAndFilterColumns(sourceTable.getColumnNames(),
                             sourceTable.getPrimaryKeyColumnNames(), writerSettings.isUsePrimaryKeysFromSource());
+                    if (table.getPrimaryKeyColumnCount() == 0) {
+                        table = getPlatform(table).makeAllColumnsPrimaryKeys(table);
+                    }
                     Column[] columns = table.getColumns();
                     for (Column column : columns) {
                         if (column != null) {

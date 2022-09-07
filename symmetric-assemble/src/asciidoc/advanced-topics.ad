@@ -72,103 +72,36 @@ and registration when using registration redirect.
 include::advanced/offline.ad[]
 
 === Encrypted Passwords
+
+ifdef::pro[]
+NOTE: This section describes command line usage.  The Manage → Startup Parameters screen in the web console automatically encrypts database properties.
+endif::pro[]
        
-The `db.user` and `db.password` properties will accept encrypted text, which protects
-against casual observation. This encryption can be done two different ways 
-using the command: encrypt-text 
+The `db.user` and `db.password` properties can be protected by encrypting them.
+This encryption can be done two different ways.
 
 The first option is to pass the text as an argument:
 ====
 
 [source, cli]
 ----
-symadmin -e {engine name} encrypt-text "text-to-encrypt"
-----
-
-[source, cli]
-----
-symadmin -p {properties file} encrypt-text "text-to-encrypt"
+symadmin encrypt-text "text-to-encrypt"
 ----
 ====
-NOTE: The text-to-encrypt should be surrounded with double quotes if spaces or symbols are used.
+NOTE: The text-to-encrypt on the command line should be surrounded with double quotes if spaces or symbols are used.
 
-The second option is without an argument. In this case, it will prompt you to enter text:
+The second option is without an argument, and it will prompt you to enter text:
 ====
 
 [source, cli]
 ----
-symadmin -e {engine name} encrypt-text
-Enter Text:
-----
-
-[source, cli]
-----
-symadmin -p {properties file} encrypt-text
+symadmin encrypt-text
 Enter Text:
 ----
 ====
 
-
-The text is encrypted using a secret key named "sym.secret" that is retrieved from a keystore file.
-By default, the keystore is located in `security/keystore`.
-The location and filename of the keystore can be overridden by setting the "sym.keystore.file" system property.
-If the secret key is not found, the system will generate and install a secret key for use with Triple DES cipher.
-       
-Generate a new secret key for encryption using the `keytool`
-command that comes with the JRE.  If there is an existing key in the keystore, first remove it:
-
-[source, cli]
-----
-keytool -keystore keystore -storepass changeit -storetype jceks \
-   -alias sym.secret -delete
-----
-
-Then generate a secret key, specifying a cipher algorithm and key size.
-Commonly used algorithms that are supported include aes, blowfish, desede, and rc4.
-
-[source, cli]
-----
-keytool -keystore keystore -storepass changeit -storetype jceks \
-   -alias sym.secret -genseckey -keyalg aes -keysize 128
-----
-
-If using an alternative provider, place the provider JAR file in the SymmetricDS `lib` folder.
-The provider class name should be installed in the JRE security properties or specified on the command line.
-To install in the JRE, edit the JRE `lib/security/java.security` file
-and set a `security.provider.i` property for the provider class name.
-Or, the provider can be specified on the command line instead.
-Both `keytool` and `sym` accept command line arguments for the provider class name.
-For example, using the Bouncy Castle provider, the command line options would look like:
-
-[source, cli]
-----
-keytool -keystore keystore -storepass changeit -storetype jceks \
-   -alias sym.secret -genseckey -keyalg idea -keysize 56 \
-   -providerClass org.bouncycastle.jce.provider.BouncyCastleProvider \
-   -providerPath ..\lib\bcprov-ext.jar
-----
-
-[source, cli]
-----
-symadmin -providerClass org.bouncycastle.jce.provider.BouncyCastleProvider -e secret
-----
-
-To customize the encryption, write a Java class that implements the ISecurityService or extends the default SecurityService, and place
-the class on the classpath in either `lib` or
-`web/WEB-INF/lib` folders.
-Then, in the `symmetric.properties` specify your class name for the security service.
-
-[source, cli]
-----
-security.service.class.name=org.jumpmind.security.SecurityService
-----
-
-Remember to specify your properties file when encrypting passwords, so it will use your custom ISecurityService.
-
-[source, cli]
-----
-symadmin -p symmetric.properties -e secret
-----
+Encrypted text starts with "enc:" to differentiate it from plain text.
+See the <<Keystores>> section for an explanation of the encryption key.
 
 === Secure Transport
        
@@ -182,31 +115,19 @@ nodes to communicate over SSL with this node, you specify "https" in the URL.
 registration.url::  This is the URL where the node will connect for registration when it
 first starts up.  To protect the registration with SSL, you specify
 "https" in the URL.
-
-For incoming HTTPS connections, SymmetricDS depends on the webserver where
-it is deployed, so the webserver must be configured for HTTPS.
-As a standalone deployment, the "sym" launcher command provides options for
-enabling HTTPS support.
         
-==== Sym Launcher
+==== Standalone
            
-The "sym" launch command uses Jetty as an embedded web server.
-Using command line options, the web server can be told to listen for
-HTTP, HTTPS, or both.
+The SymmetricDS service and the "sym" launch command use Jetty as an embedded web server.
+Edit the `conf/symmetric-server.properties` file to change port numbers
+to listen on and whether or not to use HTTP and/or HTTPS.
             
 [source, cli]
 ----
-sym --port 8080 --server
-----
-           
-[source, cli]
-----
-sym --secure-port 8443 --secure-server
-----
-            
-[source, cli]
-----
-sym --port 8080 --secure-port 8443 --mixed-server
+http.enable=true
+http.port=31415
+https.enable=true
+https.port=31417
 ----
             
 ==== Tomcat
@@ -226,140 +147,129 @@ and changed to the following:
             
 ==== Keystores
            
-When SymmetricDS connects to a URL with HTTPS, Java checks the validity of the
-certificate using the built-in trusted keystore located at
-`JRE_HOME/lib/security/cacerts`.
-The "sym" launcher command overrides the trusted keystore to use its own
-trusted keystore instead, which is located at
-`security/cacerts`.
-This keystore contains the certificate aliased as "sym" for use in testing
-and easing deployments.
-The trusted keystore can be overridden
-by specifying the `javax.net.ssl.trustStore` system property.
-   
-When SymmetricDS is run as a secure server with the "sym" launcher,
-it accepts incoming requests using the key installed in the keystore
-located at
-`security/keystore`.
-The default key is provided for convenience of testing, but should be
-re-generated for security.
-            
-==== Generating Keys
-           
-To generate new keys and install a server certificate, use the
-following steps:
-            
-* Open a command prompt and navigate to the
-`security`
-subdirectory of your SymmetricDS installation on the server to which
-communication will be secured (typically the "root" or "central office" server).
-                    
-* Delete the old key pair and certificate.
-                   
-[source, cli]
-----
-keytool -keystore keystore -delete -alias sym -storetype jceks
-----
-IMPORTANT: If you receive a message like, "Alias <sym> does not exist" - then the key entry does not exist and you can skip this step.
-                   
-[source, cli]
-----
-keytool -keystore cacerts -delete -alias sym -storetype jks
-----
-IMPORTANT: See above for possible errors from this command.
-[source]
-----
-Enter keystore password:  changeit
-----
-* Generate a new key pair.  Note that the first name/last name (the "CN") must match
-    the fully qualified hostname the client will be using to communcate to the server.
-                   
-[source, cli]
-----
-keytool -keystore keystore -alias sym -genkey -keyalg RSA -validity 10950 -storetype jceks
-----
- 
-[source]
-----
-Enter keystore password:  changeit
-What is your first and last name?
-  [Unknown]:  localhost
-What is the name of your organizational unit?
-  [Unknown]:  SymmetricDS
-What is the name of your organization?
-  [Unknown]:  JumpMind
-What is the name of your City or Locality?
-  [Unknown]:
-What is the name of your State or Province?
-  [Unknown]:
-What is the two-letter country code for this unit?
-  [Unknown]:
-Is CN=localhost, OU=SymmetricDS, O=JumpMind, L=Unknown, ST=Unknown, C=Unknown
-correct?
-  [no]:  yes
+The `security` subdirectory contains a private keystore and a trusted keystore.  System properties are used to specify the location
+of each keystore file and a password to protect it.
+The system properties are set in the `bin/setenv` (or `bin\setenv.bat` on Windows) and `conf/sym_service.conf` files.
 
-Enter key password for <sym>
-        (RETURN if same as keystore password):
-----
+[cols="10,10,10,10,60", options="header"]
+|===
+|Filename|Store Type|System Property for File|System Property for Password|Description
+|keystore|PKCS12|sym.keystore.file|javax.net.ssl.keyStorePassword|Contains private encryption key and TLS certificate.
+|cacerts|JKS|javax.net.ssl.trustStore|javax.net.ssl.trustStorePassword|Contains public certificates for trusted authorities who sign keys.
+|===
 
-* Export the certificate from the private keystore.
-                   
-[source, cli]
-----
-keytool -keystore keystore -export -alias sym -rfc -file sym.cer -storetype jceks
-----
-                
-* Install the certificate in the trusted keystore.
-                   
-[source, cli]
-----
-keytool -keystore cacerts -import -alias sym -file sym.cer -storetype jks
-----
+The following entries in the `keystore` file are used.
 
-* Copy the cacerts file that is generated by this process to
-the `security` directory of each client's SymmetricDS installation.
+.Alias entries in keystore file
+[cols="20,80"]
+|===
+|sym|The TLS certificate used for handling incoming HTTPS communication.
+|sym.secret|The encryption key used for protecting secrets like database password.
+|===
 
-==== Importing Signed Certificates from PKCS 12 files
+If an entry is missing when encryption is requested, SymmetricDS will automatically generate a random key for use.
+It tries to use the strongest encryption algorithm and the largest key size available on the system.
+If the `keystore` file is missing, it will be created.  Starting in SymmetricDS 3.14, it uses PKCS12 as the store type for new keystores,
+but it is backwards compatible with the older JCEKS store type.
 
-You would use the following command to import a p12 certificate into the SymmetricDS keystore:
+==== Finding Keystore Password
+
+The keystores and each key entry is protected with a password.  The default password is `changeit`.
+ifdef::pro[]
+During installation, the setup program chooses a random password and obfuscates it for the private `keystore` file.
+endif::pro[]
+
+To obtain the current password, use the following steps:
+
+* Look in the `bin/setenv` (or `bin\setenv.bat` on Windows) or the `conf/sym_service.conf` files.  (The password should be the same in both files.)
+
+* For the password to `keystore`, look for the `javax.net.ssl.keyStorePassword` system property.
+
+* For the password to `cacerts`, look for the `javax.net.ssl.trustStorePassword` system property.
+
+* If the password starts with "obf:" then it is obfuscated.  To obtain the cleartext password, use the following command from the `bin` subdirectory:
 
 [source, cli]
 ----
-keytool -delete -alias sym -noprompt -keystore keystore -storetype jceks -storepass changeit
-
-keytool -importkeystore -deststorepass changeit -destkeypass changeit -destkeystore keystore -storetype jceks -srckeystore {yourcert.p12} -srcstoretype PKCS12 -srcstorepass {pkcs12 password} -srcalias {pkcs12 alias} -destalias sym
+symadmin unobfuscate-text obf:cHVuYXRydmc=
 ----
 
+* If the password does not start with "obf:" then it is the cleartext password.
 
 ==== Changing Keystore Password
-           
-The keystore and each key entry is protected with a password that defaults to "changeit".  To change the password, use the following steps:
-            
-* Open a command prompt and navigate to the `security` subdirectory of your SymmetricDS installation.
 
-* Use the keytool command to enter the old and new password for the keystore and each key entry.
+To change the keystore password, use the following steps:
+            
+* Open a command prompt and navigate to the SymmetricDS installation.
+
+* In the `security` subdirectory, use the following commands to enter the old and new password for the keystore and each key entry.
 
 [source, cli]
 ----
-keytool -keystore keystore -storetype jceks -storepasswd
-keytool -keystore keystore -storetype jceks -alias sym -keypasswd
-keytool -keystore keystore -storetype jceks -alias sym.secret -keypasswd
+keytool -keystore keystore -storepasswd
+keytool -keystore keystore -alias sym -keypasswd
+keytool -keystore keystore -alias sym.secret -keypasswd
 ----
 
-* (Optional) Obfuscate the password to prevent casual observation from the configuration files.  An obfuscated password starts with "obf:"
-while a cleartext password does not.
+* Edit `bin/setenv` (or `bin\setenv.bat` on Windows) and `conf/sym_service.conf` files to update the new password. 
+
+[source, cli]
+----
+-Djavax.net.ssl.keyStorePassword=changeit
+----
+
+* Optionally, obfuscate the new password in the previous step to prevent casual observation.
 
 [source, cli]
 ----
 syadmin obfuscate-text changeit
 ----
 
-* Edit `bin/setenv` (or `bin\setenv.bat` on Windows) and `conf/sym_service.conf` files to find a similar line as below to change the password. 
+            
+==== Generating Certificates
 
+ifdef::pro[]
+NOTE: This section describes command line usage.  See <<Security>> for using the web console instead.
+endif::pro[]
+           
+To generate new keys and install a server certificate, use the
+following steps:
+            
+* Open a command prompt and navigate to the `security` subdirectory of SymmetricDS.
+                    
+* Delete the old key pair and certificate.
+                   
 [source, cli]
 ----
--Djavax.net.ssl.keyStorePassword=changeit
+keytool -keystore keystore -delete -alias sym
+keytool -keystore cacerts -delete -alias sym
 ----
+IMPORTANT: If you receive a message like, "Alias <sym> does not exist" - then the key entry does not exist and you can skip this step.
+                   
+* Generate a new key pair.  Note that the first name/last name (the "CN") must match
+    the fully qualified hostname the client will be using to communcate to the server.
+                   
+[source, cli]
+----
+keytool -keystore keystore -alias sym -genkey -keyalg RSA -validity 10950
+----
+ 
+* Export the certificate from the private keystore.
+                   
+[source, cli]
+----
+keytool -keystore keystore -export -alias sym -rfc -file sym.cer
+----
+                
+* Install the certificate into the trusted keystore.
+                   
+[source, cli]
+----
+keytool -keystore cacerts -import -alias sym -file sym.cer
+----
+
+* Copy the `cacerts` file that is generated by this process to the `security` directory of each client's SymmetricDS installation.
+
 
 === Java Management Extensions
        

@@ -106,6 +106,7 @@ final public class ParameterConstants {
     public final static String REGISTRATION_REQUIRE_NODE_GROUP_LINK = "registration.require.node.group.link";
     public final static String REGISTRATION_REQUIRE_INITIAL_LOAD = "registration.require.initial.load";
     public final static String REGISTRATION_PUSH_CONFIG_ALLOWED = "registration.push.config.allowed";
+    public final static String REGISTRATION_AUTO_CREATE_GROUP_LINK = "registration.auto.create.group.link";
     public final static String REGISTRATION_URL = "registration.url";
     public final static String SYNC_URL = "sync.url";
     public final static String ENGINE_NAME = "engine.name";
@@ -379,6 +380,7 @@ final public class ParameterConstants {
     public final static String LOG_SQL_PARAMETERS_INLINE = "log.sql.parameters.inline";
     public final static String SYNC_TRIGGERS_THREAD_COUNT_PER_SERVER = "sync.triggers.thread.count.per.server";
     public final static String SYNC_TRIGGERS_TIMEOUT_IN_SECONDS = "sync.triggers.timeout.in.seconds";
+    public final static String SYNC_TRIGGERS_REG_SVR_INSTALL_WITHOUT_CONFIG = "sync.triggers.reg.svr.install.without.config";
     public static final String SMTP_HOST = "smtp.host";
     public static final String SMTP_TRANSPORT = "smtp.transport";
     public static final String SMTP_PORT = "smtp.port";
@@ -451,7 +453,6 @@ final public class ParameterConstants {
     public final static String CLOUD_BULK_FIELD_TERMINATOR = "cloud.bulk.field.terminator";
     public final static String CLOUD_BULK_FIELD_QUOTE = "cloud.bulk.field.quote";
     public final static String CLOUD_BULK_CODEPAGE = "cloud.bulk.codepage";
-    
     public final static String SNAPSHOT_FILE_INCLUDE_HOSTNAME = "snapshot.file.include.hostname";
     public final static String SNAPSHOT_MAX_FILES = "snapshot.max.files";
     public final static String SNAPSHOT_MAX_BATCHES = "snapshot.max.batches";
@@ -484,7 +485,7 @@ final public class ParameterConstants {
     public final static String S3_LOAD_AWS_SECRET_KEY = "s3.load.aws.secret.key";
     public final static String SINGLESTORE_AUDIT_LOG_DIR = "single.store.audit.log.dir";
     public final static String SPATIAL_TYPES_ENABLED = "spatial.data.types.enabled";
-    
+
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

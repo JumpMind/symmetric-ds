@@ -62,6 +62,7 @@ final public class Constants {
      */
     public static final String UNKNOWN_ROUTER_ID = "?";
     public static final String UNKNOWN_STRING = "unknown";
+    public static final String NO_GROUP = "nogroup";
     public static final String ALWAYS_TRUE_CONDITION = "1=1";
     public static final String UNROUTED_NODE_ID = "-1";
     public static final long LONG_OPERATION_THRESHOLD = 30000;

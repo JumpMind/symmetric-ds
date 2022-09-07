@@ -45,6 +45,12 @@ public class AbstractDatabasePlatformTest {
                     testDatabasePlatform.parseDate(Types.TIMESTAMP, "2015-11-03 01:35:03.714566 -05:00", false));
             assertEquals(Timestamp.valueOf("2015-11-03 01:35:03.714566"),
                     testDatabasePlatform.parseDate(Types.TIMESTAMP, "2015-11-03 01:35:03.714566", false));
+            assertEquals(Timestamp.valueOf("1970-01-01 01:35:03.714566"),
+                    testDatabasePlatform.parseDate(Types.TIMESTAMP, "01:35:03.714566", false));
+            assertEquals(Timestamp.valueOf("2015-11-03 01:35:03.714566"),
+                    testDatabasePlatform.parseDate(Types.TIME, "2015-11-03 01:35:03.714566", false));
+            assertEquals(Timestamp.valueOf("1970-01-01 01:35:03.714566"),
+                    testDatabasePlatform.parseDate(Types.TIME, "01:35:03.714566", false));
             // TODO: build out more tests for date/time combinations.
         }
     }

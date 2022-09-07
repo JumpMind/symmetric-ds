@@ -124,6 +124,7 @@ public class SecurityService implements ISecurityService {
                 }
             } else {
                 log.debug("Loading keystore from memory");
+                ks.load(null);
             }
             return ks;
         } catch (RuntimeException e) {

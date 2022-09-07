@@ -23,10 +23,12 @@ package org.jumpmind.symmetric.common;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.IConfigurationChangedListener;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -100,7 +102,8 @@ public class ConfigurationChangedHelper {
         updateContext(TableConstants.SYM_TRANSFORM_TABLE, table, context, CTX_KEY_FLUSH_TRANSFORMS_NEEDED);
         updateContext(TableConstants.SYM_TRANSFORM_COLUMN, table, context, CTX_KEY_FLUSH_TRANSFORMS_NEEDED);
         updateContext(TableConstants.SYM_TRIGGER_ROUTER_GROUPLET, table, context, CTX_KEY_FLUSH_GROUPLETS_NEEDED, CTX_KEY_RESYNC_NEEDED);
-        if (matchesTable(table, TableConstants.SYM_PARAMETER)) {
+        if (matchesTable(table, TableConstants.SYM_PARAMETER) && matchesExternalId(table, data, "external_id")
+                && matchesNodeGroupId(table, data, "node_group_id")) {
             String jobName = JobDefinition.getJobNameFromData(data);
             if (jobName != null) {
                 getHashSet(context, CTX_KEY_CHANGED_JOB_IDS).add(jobName);
@@ -110,6 +113,11 @@ public class ConfigurationChangedHelper {
                 context.put(CTX_KEY_FILE_SYNC_NEEDED, true);
             } else if (ParameterConstants.CLUSTER_LOCKING_ENABLED.equals(paramKey)) {
                 context.put(CTX_KEY_CLUSTER_NEEDED, true);
+            }
+            Map<String, ParameterMetaData> parameters = ParameterConstants.getParameterMetaData();
+            ParameterMetaData pmd = parameters.get(paramKey);
+            if (pmd != null && pmd.getTags().contains(ParameterMetaData.TAG_TRIGGER)) {
+                context.put(CTX_KEY_RESYNC_NEEDED, true);
             }
         }
         if ((matchesTable(table, TableConstants.SYM_TRIGGER) || matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER)) && isSyncTriggersAllowed(context) &&
@@ -292,6 +300,18 @@ public class ConfigurationChangedHelper {
         } else {
             return false;
         }
+    }
+
+    private boolean matchesExternalId(Table table, CsvData data, String columnName) {
+        String externalId = engine.getParameterService().getExternalId();
+        String columnValue = getColumnValue(table, data, columnName);
+        return columnValue == null || externalId.equals(columnValue) || columnValue.equals(ParameterConstants.ALL);
+    }
+
+    private boolean matchesNodeGroupId(Table table, CsvData data, String columnName) {
+        String nodeGroupId = engine.getParameterService().getNodeGroupId();
+        String columnValue = getColumnValue(table, data, columnName);
+        return columnValue == null || nodeGroupId.equals(columnValue) || columnValue.equals(ParameterConstants.ALL);
     }
 
     private void updateContext(String tableSuffix, Table table, Context context, String... constants) {

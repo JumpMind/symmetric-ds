@@ -98,7 +98,7 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
         if (column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() > 8000) {
             return false;
         }
-        return !isLob(column.getJdbcTypeCode());
+        return !isLob(column.getJdbcTypeCode()) && super.canColumnBeUsedInWhereClause(column);
     }
 
     @Override

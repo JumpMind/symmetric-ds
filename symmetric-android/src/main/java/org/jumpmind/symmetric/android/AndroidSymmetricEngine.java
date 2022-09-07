@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IProgressListener;
 import org.jumpmind.properties.TypedProperties;
@@ -142,6 +141,11 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     }
 
     @Override
+    protected IMonitorService buildMonitorService(ISymmetricDialect symmetricDialect) {
+        return new AndroidMonitorService(this);
+    }
+
+    @Override
     protected IClusterService createClusterService() {
         return new AndroidClusterService(parameterService, symmetricDialect, nodeService);
     }
@@ -220,9 +224,5 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
 
     public List<File> listSnapshots() {
         return new ArrayList<>(0);
-    }
-
-    public IMonitorService getMonitorService() {
-        throw new NotImplementedException();
     }
 }

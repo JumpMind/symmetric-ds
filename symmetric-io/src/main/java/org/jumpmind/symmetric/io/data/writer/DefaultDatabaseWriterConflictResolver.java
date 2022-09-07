@@ -205,9 +205,9 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         boolean checkDatetime = platform.getName().startsWith(DatabaseNamesConstants.MSSQL) || platform.getName().startsWith(DatabaseNamesConstants.ASE);
         Column[] pkColumns = table.getPrimaryKeyColumns();
         for (int i = 0; i < pkColumns.length && i < pkData.length; i++) {
-        	if (pkData[i] == null) {
-        		continue;
-        	}
+            if (pkData[i] == null) {
+                continue;
+            }
             int type = pkColumns[i].getMappedTypeCode();
             if (type == Types.TIMESTAMP || type == Types.TIME || type == ColumnTypes.TIMESTAMPTZ || type == ColumnTypes.TIMESTAMPLTZ
                     || type == ColumnTypes.TIMETZ) {

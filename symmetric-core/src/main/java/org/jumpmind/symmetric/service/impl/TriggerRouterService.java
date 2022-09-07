@@ -510,6 +510,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             Trigger trigger = buildTriggerForSymmetricTable(tableName, configTablesWithoutCapture);
             triggers.add(trigger);
         }
+        /*
+         * if (parameterService.is(ParameterConstants.REGISTRATION_AUTO_CREATE_GROUP_LINK)) { updateOrCreateDatabaseTriggers(triggers, new StringBuilder(),
+         * true, true, getActiveTriggerHistories(), true); }
+         */
         return triggers;
     }
 
@@ -685,6 +689,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         for (NodeGroupLink nodeGroupLink : links) {
             triggerRouters.addAll(buildTriggerRoutersForSymmetricTables(Version.version(),
                     nodeGroupLink));
+        }
+        if (triggerRouters.size() == 0 && parameterService.is(ParameterConstants.SYNC_TRIGGERS_REG_SVR_INSTALL_WITHOUT_CONFIG, true) &&
+                parameterService.isRegistrationServer()) {
+            NodeGroupLink link = new NodeGroupLink(sourceNodeGroupId, Constants.NO_GROUP);
+            triggerRouters.addAll(buildTriggerRoutersForSymmetricTables(Version.version(), link));
         }
         return triggerRouters;
     }

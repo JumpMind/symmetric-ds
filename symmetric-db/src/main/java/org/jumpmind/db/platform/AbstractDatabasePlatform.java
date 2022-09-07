@@ -652,13 +652,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     if (useTimestamp) {
                         return parseTimestamp(type, value);
                     } else if (type == Types.TIME) {
-                        if (value.indexOf(".") == 8) {
-                            /*
-                             * Firebird (at least) captures fractional seconds in time fields which need to be parsed by Timestamp.valueOf
-                             */
+                        if (value.indexOf(".") == 8 || value.length() <= 8) {
                             return Timestamp.valueOf("1970-01-01 " + value);
                         } else {
-                            return FormatUtils.parseDate(value, FormatUtils.TIME_PATTERNS);
+                            return Timestamp.valueOf(value);
                         }
                     } else {
                         return FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS);
@@ -721,7 +718,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             }
         } else {
             for (Column column : result.getColumns()) {
-                if (!isLob(column.getMappedTypeCode())) {
+                if (!isLob(column.getMappedTypeCode()) && canColumnBeUsedInWhereClause(column)) {
                     column.setPrimaryKey(true);
                 }
             }
@@ -935,11 +932,16 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public boolean canColumnBeUsedInWhereClause(Column column) {
-        return true;
+        return column.getJdbcTypeCode() != Types.FLOAT &&
+                column.getJdbcTypeCode() != Types.DOUBLE &&
+                column.getJdbcTypeCode() != Types.REAL;
     }
 
     public java.util.Date parseTimestamp(int type, String value) {
         try {
+            if (value.indexOf(".") == 8 || value.length() <= 8) {
+                value = "1970-01-01 " + value;
+            }
             return Timestamp.valueOf(value);
         } catch (IllegalArgumentException ex) {
             if (!getDatabaseInfo().isZeroDateAllowed() && value != null && value.startsWith(ZERO_DATE_STRING)) {
