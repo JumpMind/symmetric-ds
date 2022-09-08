@@ -468,6 +468,10 @@ public class RouterService extends AbstractService implements IRouterService {
             context.setDataGaps(gapDetector.getDataGaps());
             context.setOverrideContainsBigLob(isOverrideContainsBigLob);
             context.setMaxBatchesJdbcFlushSize(parameterService.getInt(ParameterConstants.ROUTING_FLUSH_BATCHES_JDBC_BATCH_SIZE, 5000));
+            int maxBatchSizeExceedPercent = parameterService.getInt(ParameterConstants.ROUTING_MAX_BATCH_SIZE_EXCEED_PERCENT);
+            if (maxBatchSizeExceedPercent > 0) {
+                context.setBatchSizeNotToExceed((int) (nodeChannel.getMaxBatchSize() * (1 + (maxBatchSizeExceedPercent / 100f))));
+            }
             if (overrideBatchesByNodes != null) {
                 context.getBatchesByNodes().putAll(overrideBatchesByNodes);
             }
