@@ -71,7 +71,7 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
 
     @Override
     protected void prepare() {
-        if (isSymmetricTable(this.targetTable != null ? this.targetTable.getName() : "")) {
+        if (isSymmetricTable(this.targetTable)) {
             super.prepare();
         } else {
             pstmt = session.prepare(currentDmlStatement.getSql());
@@ -80,7 +80,7 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
 
     @Override
     protected void prepare(String sql, CsvData data) {
-        if (isSymmetricTable(this.targetTable != null ? this.targetTable.getName() : "") && !isUserSendSql(sql, data)) {
+        if (isSymmetricTable(this.targetTable) && !isUserSendSql(sql, data)) {
             super.prepare(sql, data);
         } else {
             pstmt = session.prepare(sql);
@@ -108,7 +108,7 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
 
     @Override
     protected int execute(CsvData data, String[] values) {
-        if (isSymmetricTable(this.targetTable != null ? this.targetTable.getName() : "")) {
+        if (isSymmetricTable(this.targetTable)) {
             return super.execute(data, values);
         }
         BoundStatement bstmt = pstmt.bind();
@@ -128,7 +128,7 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
         if (sourceTable == null) {
             throw new RuntimeException("Source table is null");
         }
-        if (isSymmetricTable(sourceTable.getName())) {
+        if (isSymmetricTable(sourceTable)) {
             return super.lookupTableAtTarget(sourceTable);
         }
         String keyspace = sourceTable.getCatalog() == null ? sourceTable.getSchema() : sourceTable.getCatalog();

@@ -103,6 +103,10 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         return platform;
     }
 
+    public IDatabasePlatform getTargetPlatform() {
+        return platform;
+    }
+
     public ISqlTransaction getTransaction() {
         return transaction;
     }
@@ -112,6 +116,10 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     }
 
     public ISqlTransaction getTransaction(String table) {
+        return transaction;
+    }
+
+    public ISqlTransaction getTargetTransaction() {
         return transaction;
     }
 
@@ -596,24 +604,22 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected boolean create(CsvData data) {
         String xml = null;
         try {
-            // Placeholder to ensure target platform and transaction is returned. SYM_* tables are not created through this process.
-            String tempNonSymTable = "NON_SYM_TABLE";
-            getTransaction(tempNonSymTable).commit();
+            getTargetTransaction().commit();
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             xml = data.getParsedData(CsvData.ROW_DATA)[0];
             log.info("About to create table using the following definition: {}", xml);
             StringReader reader = new StringReader(xml);
             Database db = DatabaseXmlUtil.read(reader, false);
             if (writerSettings.isCreateTableAlterCaseToMatchDatabaseDefault()) {
-                getPlatform(tempNonSymTable).alterCaseToMatchDatabaseDefaultCase(db);
+                getTargetPlatform().alterCaseToMatchDatabaseDefaultCase(db);
             }
-            getPlatform(tempNonSymTable).makePlatformSpecific(db);
+            getTargetPlatform().makePlatformSpecific(db);
             if (writerSettings.isAlterTable()) {
-                getPlatform(tempNonSymTable).alterDatabase(db, !writerSettings.isCreateTableFailOnError(), writerSettings.getAlterDatabaseInterceptors());
+                getTargetPlatform().alterDatabase(db, !writerSettings.isCreateTableFailOnError(), writerSettings.getAlterDatabaseInterceptors());
             } else {
-                getPlatform(tempNonSymTable).createDatabase(db, writerSettings.isCreateTableDropFirst(), !writerSettings.isCreateTableFailOnError());
+                getTargetPlatform().createDatabase(db, writerSettings.isCreateTableDropFirst(), !writerSettings.isCreateTableFailOnError());
             }
-            getPlatform().resetCachedTableModel();
+            getTargetPlatform().resetCachedTableModel();
             statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
             return true;
         } catch (RuntimeException ex) {

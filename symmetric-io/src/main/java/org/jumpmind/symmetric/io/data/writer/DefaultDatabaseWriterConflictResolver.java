@@ -129,7 +129,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             if (log.isDebugEnabled()) {
                 log.debug("Finding last capture time for table {} with pk of {}", targetTable.getName(), ArrayUtils.toString(pkData));
             }
-            if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions() &&
+            if (databaseWriter.getPlatform(targetTable).supportsMultiThreadedTransactions() &&
                     (!databaseWriter.getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction() ||
                             !Boolean.TRUE.equals(databaseWriter.getContext().get(AbstractDatabaseWriter.TRANSACTION_ABORTED)))) {
                 // make sure we lock the row that is in conflict to prevent a race with other data loading
@@ -154,7 +154,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                     }
                 }
             }
-            modifyTimestampsForPrecision(databaseWriter.getPlatform(targetTable.getName()), targetTable, pkData);
+            modifyTimestampsForPrecision(databaseWriter.getPlatform(targetTable), targetTable, pkData);
             String pkCsv = CsvUtils.escapeCsvData(pkData);
             String sql = "select source_node_id, create_time from " + databaseWriter.getTablePrefix() +
                     "_data where table_name = ? and ((event_type = 'I' and row_data like ?) or " +
@@ -163,9 +163,9 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             Object[] args = new Object[] { targetTable.getName(), pkCsv + "%", pkCsv, loadingTs, writer.getBatch().getSourceNodeId() };
             log.debug("Querying capture time for CSV {}", pkCsv);
             Row row = null;
-            if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions()) {
+            if (databaseWriter.getPlatform(targetTable).supportsMultiThreadedTransactions()) {
                 // we may have waited for another transaction to commit, so query with a new transaction
-                row = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplateDirty().queryForRow(sql, args);
+                row = databaseWriter.getPlatform(targetTable).getSqlTemplateDirty().queryForRow(sql, args);
             } else {
                 row = writer.getContext().findTransaction().queryForRow(sql, args);
             }
@@ -246,7 +246,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
     }
 
     protected boolean primaryKeyUpdateAllowed(DynamicDefaultDatabaseWriter databaseWriter, Table targetTable) {
-        if (!databaseWriter.getPlatform(targetTable.getName()).getDatabaseInfo().isAutoIncrementUpdateAllowed()) {
+        if (!databaseWriter.getPlatform(targetTable).getDatabaseInfo().isAutoIncrementUpdateAllowed()) {
             for (Column column : targetTable.getPrimaryKeyColumns()) {
                 if (column.isAutoIncrement()) {
                     return false;
@@ -257,7 +257,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
     }
 
     protected boolean uniqueKeyUpdateAllowed(DynamicDefaultDatabaseWriter databaseWriter, Table targetTable, Column[] uniqueColumns) {
-        if (!databaseWriter.getPlatform(targetTable.getName()).getDatabaseInfo().isAutoIncrementUpdateAllowed()) {
+        if (!databaseWriter.getPlatform(targetTable).getDatabaseInfo().isAutoIncrementUpdateAllowed()) {
             for (Column column : uniqueColumns) {
                 if (column.isAutoIncrement()) {
                     return false;
@@ -298,13 +298,13 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 }
                 int count = 0;
                 Object[] values = databaseWriter.getPlatform().getObjectValues(writer.getBatch().getBinaryEncoding(), ukData, uniqueKeyColumns);
-                if (!databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions() ||
+                if (!databaseWriter.getPlatform(targetTable).supportsMultiThreadedTransactions() ||
                         (databaseWriter.getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction() &&
                                 Boolean.TRUE.equals(databaseWriter.getContext().get(AbstractDatabaseWriter.TRANSACTION_ABORTED)))) {
                     DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.COUNT, targetTable.getCatalog(), targetTable.getSchema(),
                             targetTable.getName(), uniqueKeyColumns, uniqueKeyColumns, nullKeyValues,
                             databaseWriter.getWriterSettings().getTextColumnExpression());
-                    count = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplateDirty().queryForInt(st.getSql(), addKeyArgs(null, values));
+                    count = databaseWriter.getPlatform(targetTable).getSqlTemplateDirty().queryForInt(st.getSql(), addKeyArgs(null, values));
                 } else if (uniqueKeyUpdateAllowed(databaseWriter, targetTable, uniqueKeyColumns)) {
                     // make sure we lock the row that is in conflict to prevent a race with other data loading
                     DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(),
@@ -318,9 +318,9 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                             "create_time >= ? order by create_time desc";
                     Object[] args = new Object[] { targetTable.getName(), ukCsv.toString(), loadingTs };
                     Row row = null;
-                    if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions()) {
+                    if (databaseWriter.getPlatform(targetTable).supportsMultiThreadedTransactions()) {
                         // we may have waited for another transaction to commit, so query with a new transaction
-                        row = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplateDirty().queryForRow(sql, args);
+                        row = databaseWriter.getPlatform(targetTable).getSqlTemplateDirty().queryForRow(sql, args);
                     } else {
                         row = writer.getContext().findTransaction().queryForRow(sql, args);
                     }

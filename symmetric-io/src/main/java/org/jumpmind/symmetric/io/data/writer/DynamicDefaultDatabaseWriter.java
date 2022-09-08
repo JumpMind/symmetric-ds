@@ -50,8 +50,12 @@ public class DynamicDefaultDatabaseWriter extends DefaultDatabaseWriter {
         this.targetPlatform = targetPlatform;
     }
 
+    protected boolean isSymmetricTable(Table table) {
+        return table != null && table.getNameLowerCase().startsWith(tablePrefix);
+    }
+
     protected boolean isSymmetricTable(String tableName) {
-        return tableName.toUpperCase().startsWith(tablePrefix.toUpperCase());
+        return tableName.toLowerCase().startsWith(tablePrefix);
     }
 
     public boolean isLoadOnly() {
@@ -63,7 +67,7 @@ public class DynamicDefaultDatabaseWriter extends DefaultDatabaseWriter {
         if (table == null) {
             table = targetTable;
         }
-        return table == null || isSymmetricTable(table.getNameLowerCase()) ? platform : targetPlatform;
+        return table == null || platform == targetPlatform || isSymmetricTable(table) ? platform : targetPlatform;
     }
 
     @Override
@@ -73,43 +77,47 @@ public class DynamicDefaultDatabaseWriter extends DefaultDatabaseWriter {
         } else {
             table = table.toLowerCase();
         }
-        return table == null || isSymmetricTable(table) ? platform : targetPlatform;
+        return table == null || platform == targetPlatform || isSymmetricTable(table) ? platform : targetPlatform;
     }
 
     @Override
     public IDatabasePlatform getPlatform() {
-        return targetTable == null || isSymmetricTable(targetTable.getNameLowerCase()) ? super.platform : targetPlatform;
+        return targetTable == null || platform == targetPlatform || isSymmetricTable(targetTable) ? super.platform : targetPlatform;
+    }
+
+    @Override
+    public IDatabasePlatform getTargetPlatform() {
+        return targetPlatform == null ? platform: targetPlatform;
     }
 
     @Override
     public ISqlTransaction getTransaction() {
-        return targetTable == null || isSymmetricTable(targetTable.getNameLowerCase()) || targetTransaction == null ? super.transaction : targetTransaction;
+        return targetTable == null || targetTransaction == null || isSymmetricTable(targetTable) ? super.transaction : targetTransaction;
     }
 
     @Override
     public ISqlTransaction getTransaction(Table table) {
-        if (table == null) {
-            table = targetTable;
-        }
         if (targetTransaction == null) {
             return transaction;
         }
-        return table == null || isSymmetricTable(table.getNameLowerCase()) ? transaction : targetTransaction;
+        if (table == null) {
+            table = targetTable;
+        }
+        return table == null || isSymmetricTable(table) ? transaction : targetTransaction;
     }
 
     @Override
     public ISqlTransaction getTransaction(String table) {
-        if (table == null) {
-            table = targetTable.getNameLowerCase();
-        } else {
-            table = table.toLowerCase();
-        }
         if (targetTransaction == null) {
             return transaction;
         }
-        return table == null || isSymmetricTable(table.toLowerCase()) ? transaction : targetTransaction;
+        if (table == null) {
+            table = targetTable.getNameLowerCase();
+        }
+        return table == null || isSymmetricTable(table) ? transaction : targetTransaction;
     }
 
+    @Override
     public ISqlTransaction getTargetTransaction() {
         return targetTransaction == null ? transaction : targetTransaction;
     }
