@@ -496,7 +496,7 @@ public class DmlStatement {
                     newSql = newSql.replaceFirst(regex, row.getString(name));
                 }
             } else {
-                newSql = newSql.replaceFirst(regex, "null");
+                newSql = newSql.replaceFirst("\\= " + regex, "is null");
             }
         }
         newSql = newSql.replace(QUESTION_MARK, "?");
