@@ -47,6 +47,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.KeyManagerFactory;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -483,6 +484,11 @@ public class SecurityService implements ISecurityService {
     protected void saveKeyStore(KeyStore ks, String password) throws Exception {
         if (keyStoreFileName != null) {
             log.info("Saving keystore {}", keyStoreFileName);
+            try {
+                FileUtils.copyFile(new File(keyStoreFileName), new File(keyStoreFileName + ".bak"));
+            } catch (IOException e) {
+                log.warn("Unable to backup keystore: ", e.getMessage());
+            }
             try (FileOutputStream os = new FileOutputStream(keyStoreFileName)) {
                 ks.store(os, password.toCharArray());
             }
