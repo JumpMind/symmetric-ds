@@ -460,6 +460,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     script.setListener(resultsListener);
                     script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                 }
+                // The beforeUpgrade() methods may have made changes to the current database, should read again
+                modelFromDatabase = readSymmetricSchemaFromDatabase();
                 String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml, interceptors);
                 if (isNotBlank(alterSql)) {
                     log.info("There are SymmetricDS tables that needed altered");
