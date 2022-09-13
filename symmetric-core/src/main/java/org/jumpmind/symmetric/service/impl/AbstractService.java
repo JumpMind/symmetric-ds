@@ -442,7 +442,7 @@ abstract public class AbstractService implements IService {
     }
 
     protected void logOnce(String message) {
-        if (!logOnce.add(message)) {
+        if (logOnce.add(message)) {
             log.info(message);
         }
     }
