@@ -31,7 +31,7 @@ import java.nio.charset.Charset;
 /**
  * A stream based writer for writing delimited text data to a file or a stream.
  */
-public class CsvWriter {
+public class CsvWriter implements AutoCloseable {
     private PrintWriter outputStream = null;
     private String fileName = null;
     private boolean firstColumn = true;
@@ -458,11 +458,6 @@ public class CsvWriter {
         if (closed) {
             throw new IOException("This instance of the CsvWriter class has already been closed.");
         }
-    }
-
-    @Override
-    protected void finalize() {
-        close(false);
     }
 
     private static class Letters {

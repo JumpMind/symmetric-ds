@@ -136,15 +136,19 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     protected void writeColumn(Table table, Column column, StringBuilder ddl) {
         printIdentifier(getColumnName(column), ddl);
         ddl.append(" ");
-        ddl.append(getSqlType(column));
+        String sqlType = getSqlType(column);
+        ddl.append(sqlType);
         writeColumnDefaultValueStmt(table, column, ddl);
         if (column.isUnique() && databaseInfo.isUniqueEmbedded()) {
             writeColumnUniqueStmt(ddl);
         }
         // Sybase does not like NULL/NOT NULL and IDENTITY together
         if (column.isAutoIncrement()) {
-            ddl.append(" ");
-            writeColumnAutoIncrementStmt(table, column, ddl);
+            // getSqlType() is returning "numeric identity" sometimes
+            if (! sqlType.toLowerCase().contains(" identity")) {
+                ddl.append(" ");
+                writeColumnAutoIncrementStmt(table, column, ddl);
+            }
         } else {
             ddl.append(" ");
             if (column.isRequired()) {
@@ -200,7 +204,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
         ddl.append("DROP INDEX ");
-        ddl.append(getFullyQualifiedTableNameShorten(table));
+        printIdentifier(getTableName(table.getName()), ddl);
         ddl.append(".");
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);

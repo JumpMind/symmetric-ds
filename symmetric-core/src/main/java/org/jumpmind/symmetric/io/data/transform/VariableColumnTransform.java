@@ -27,6 +27,7 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Data;
@@ -41,6 +42,7 @@ public class VariableColumnTransform implements ISingleNewAndOldValueColumnTrans
     protected static final String OPTION_DATE = "system_date";
     protected static final String OPTION_SOURCE_NODE_ID = "source_node_id";
     protected static final String OPTION_TARGET_NODE_ID = "target_node_id";
+    protected static final String OPTION_SOURCE_NODE_ID_FROM_DATA = "source_node_id_from_data";
     protected static final String OPTION_NULL = "null";
     protected static final String OPTION_OLD_VALUE = "old_column_value";
     protected static final String OPTION_SOURCE_TABLE_NAME = "source_table_name";
@@ -51,7 +53,8 @@ public class VariableColumnTransform implements ISingleNewAndOldValueColumnTrans
     protected static final String OPTION_BATCH_START_TIME = "batch_start_time";
     protected static final String OPTION_DELETE_INDICATOR_FLAG = "delete_indicator_flag";
     private static final String[] OPTIONS = new String[] { OPTION_TIMESTAMP, OPTION_TIMESTAMP_UTC, OPTION_DATE,
-            OPTION_SOURCE_NODE_ID, OPTION_TARGET_NODE_ID, OPTION_NULL, OPTION_OLD_VALUE, OPTION_SOURCE_CATALOG_NAME,
+            OPTION_SOURCE_NODE_ID, OPTION_TARGET_NODE_ID, OPTION_SOURCE_NODE_ID_FROM_DATA,
+            OPTION_NULL, OPTION_OLD_VALUE, OPTION_SOURCE_CATALOG_NAME,
             OPTION_SOURCE_SCHEMA_NAME, OPTION_SOURCE_TABLE_NAME, OPTION_SOURCE_DML_TYPE, OPTION_BATCH_ID, OPTION_BATCH_START_TIME,
             OPTION_DELETE_INDICATOR_FLAG };
 
@@ -88,6 +91,8 @@ public class VariableColumnTransform implements ISingleNewAndOldValueColumnTrans
                 value = context.getBatch().getSourceNodeId();
             } else if (varName.equalsIgnoreCase(OPTION_TARGET_NODE_ID)) {
                 value = context.getBatch().getTargetNodeId();
+            } else if (varName.equalsIgnoreCase(OPTION_SOURCE_NODE_ID_FROM_DATA)) {
+                value = context.getData().getAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID);
             } else if (varName.equalsIgnoreCase(OPTION_OLD_VALUE)) {
                 value = oldValue;
             } else if (varName.equals(OPTION_NULL)) {

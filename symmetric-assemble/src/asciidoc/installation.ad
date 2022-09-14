@@ -405,3 +405,29 @@ is packaged in the application to provide properties that override the Symmetric
 default values.  The second parameter to the constructor points to the web directory.
 The default location is `web`.  In this example the web directory is located
 at `conf/web_dir`.  The web.xml is expected to be found at `conf/web_dir/WEB-INF/web.xml`.
+
+==== Client Mode
+
+This option runs the SymmetricDS engine without a web server, so it can initiate push and pull requests, but not receive them.
+Without the web server, there are no open ports listening for sync requests, which can help with security requirements.
+ifdef::pro[]
+Be aware that this also means losing access to the web console at this node and any enhanced troubleshooting provided by remote status.
+endif::pro[]
+
+ifndef::pro[]
+The `sym` command line utility has an option to start in client mode:
+            
+[source, cli]
+----
+bin/sym --client
+----
+
+endif::pro[]
+
+The `conf/sym_service.conf` file has a parameter to start the service in client mode:
+
+[source, cli]
+----
+wrapper.app.parameter.3=--client
+----
+

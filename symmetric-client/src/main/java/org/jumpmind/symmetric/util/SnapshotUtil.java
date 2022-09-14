@@ -340,8 +340,8 @@ public class SnapshotUtil {
             log.warn("Failed to export thread information", e);
         }
         File logSummaryFile = new File(tmpDir, "log-summary.csv");
-        try (OutputStream outputStream = new FileOutputStream(logSummaryFile)) {
-            CsvWriter csvWriter = new CsvWriter(outputStream, ',', Charset.defaultCharset());
+        try (OutputStream outputStream = new FileOutputStream(logSummaryFile);
+                CsvWriter csvWriter = new CsvWriter(outputStream, ',', Charset.defaultCharset())) {
             csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_DOUBLED);
             csvWriter.writeRecord(new String[] { "Level", "First Time", "Last Time", "Count", "Message", "Stack Trace" });
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -476,10 +476,8 @@ public class SnapshotUtil {
     }
 
     protected static void extractQuery(ISqlTemplate sqlTemplate, String fileName, String sql) {
-        CsvWriter writer = null;
-        try {
+        try (CsvWriter writer = new CsvWriter(fileName)) {
             List<Row> rows = sqlTemplate.query(sql);
-            writer = new CsvWriter(fileName);
             writer.setEscapeMode(CsvWriter.ESCAPE_MODE_DOUBLED);
             writer.setForceQualifier(true);
             boolean isFirstRow = true;
@@ -498,10 +496,6 @@ public class SnapshotUtil {
             }
         } catch (Exception e) {
             log.warn("Failed to run extract query " + sql, e);
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
         }
     }
 
@@ -756,8 +750,8 @@ public class SnapshotUtil {
 
     public static File createThreadStatsFile(String parent) {
         File file = new File(parent, "threads-stats.csv");
-        try (OutputStream outputStream = new FileOutputStream(file)) {
-            CsvWriter csvWriter = new CsvWriter(outputStream, ',', Charset.forName("ISO-8859-1"));
+        try (OutputStream outputStream = new FileOutputStream(file);
+                CsvWriter csvWriter = new CsvWriter(outputStream, ',', Charset.forName("ISO-8859-1"))) {
             csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_DOUBLED);
             String[] heading = { "Thread", "Allocated Memory (Bytes)", "CPU Time (Seconds)" };
             csvWriter.writeRecord(heading);
@@ -797,8 +791,8 @@ public class SnapshotUtil {
             MonitorTypeBlock.filterTransactions(transaction, transactionMap, filteredTransactions, dbUser, false, false);
         }
         File file = new File(parent, "transactions.csv");
-        try (OutputStream outputStream = new FileOutputStream(file)) {
-            CsvWriter csvWriter = new CsvWriter(outputStream, ',', Charset.forName("ISO-8859-1"));
+        try (OutputStream outputStream = new FileOutputStream(file);
+                CsvWriter csvWriter = new CsvWriter(outputStream, ',', Charset.forName("ISO-8859-1"))) {
             csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_DOUBLED);
             String[] heading = { "ID", "Username", "Remote IP", "Remote Host", "Status", "Reads", "Writes",
                     "Blocking ID", "Duration", "Text" };
@@ -845,19 +839,13 @@ public class SnapshotUtil {
                             TableConstants.getTableName(tablePrefix, TableConstants.SYM_DATA));
                     // Write parsed row data to file
                     String filenameParsed = tmpDir + File.separator + batch.getBatchId() + "_parsed.csv";
-                    CsvWriter writer = null;
-                    try {
-                        writer = new CsvWriter(filenameParsed);
+                    try (CsvWriter writer = new CsvWriter(filenameParsed)) {
                         writer.setEscapeMode(CsvWriter.ESCAPE_MODE_DOUBLED);
                         writer.writeRecord(data.getTriggerHistory().getParsedColumnNames());
                         writer.writeRecord(data.toParsedRowData());
                         writer.writeRecord(data.toParsedOldData());
                     } catch (Exception e) {
                         log.warn("Failed to write parsed row data from sym_data to file " + filenameParsed, e);
-                    } finally {
-                        if (writer != null) {
-                            writer.close();
-                        }
                     }
                 } else {
                     log.warn("Could not find data ID: " + batch.getFailedDataId() + " for batch ID: " + batch.getBatchId() + " in error");

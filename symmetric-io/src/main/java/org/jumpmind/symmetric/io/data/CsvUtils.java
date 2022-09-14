@@ -57,8 +57,7 @@ public class CsvUtils {
     public static String[] tokenizeCsvData(String csvData) {
         String[] tokens = null;
         if (csvData != null) {
-            CsvReader csvReader = getCsvReader(new StringReader(csvData));
-            try {
+            try (StringReader sr = new StringReader(csvData); CsvReader csvReader = getCsvReader(sr)) {
                 if (csvReader.readRecord()) {
                     tokens = csvReader.getValues();
                 }
@@ -72,50 +71,47 @@ public class CsvUtils {
      * This escapes backslashes but doesn't wrap the data in a text qualifier.
      */
     public static String escapeCsvData(String data) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
-        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
-        try {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+                CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',')) {
+            writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
             writer.write(data);
-            writer.close();
-            out.close();
+            writer.flush();
+            return out.toString();
         } catch (IOException e) {
+            return data;
         }
-        return out.toString();
     }
 
     public static String escapeAndQuoteCsvData(String data) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
-        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
-        writer.setTextQualifier('"');
-        writer.setUseTextQualifier(true);
-        writer.setForceQualifier(false);
-        try {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+                CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',')) {
+            writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
+            writer.setTextQualifier('"');
+            writer.setUseTextQualifier(true);
+            writer.setForceQualifier(false);
             writer.write(data, true);
-            writer.close();
-            out.close();
+            writer.flush();
+            return out.toString();
         } catch (IOException e) {
+            return data;
         }
-        return out.toString();
     }
 
     public static String escapeCsvData(String[] data) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
-        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
-        writer.setTextQualifier('\"');
-        writer.setUseTextQualifier(true);
-        writer.setForceQualifier(true);
-        for (String s : data) {
-            try {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+                CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',')) {
+            writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
+            writer.setTextQualifier('\"');
+            writer.setUseTextQualifier(true);
+            writer.setForceQualifier(true);
+            for (String s : data) {
                 writer.write(s, true);
-            } catch (IOException e) {
-                throw new IoException(e);
             }
+            writer.flush();
+            return out.toString();
+        } catch (IOException e) {
+            throw new IoException(e);
         }
-        writer.close();
-        return out.toString();
     }
 
     public static String escapeCsvData(String[] data, char recordDelimiter, char textQualifier) {
@@ -127,27 +123,26 @@ public class CsvUtils {
     }
 
     public static String escapeCsvData(String[] data, char recordDelimiter, char textQualifier, int escapeMode, String nullString) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
-        writer.setEscapeMode(escapeMode);
-        if (recordDelimiter != '\0') {
-            writer.setRecordDelimiter(recordDelimiter);
-        }
-        if (textQualifier != '\0') {
-            writer.setTextQualifier(textQualifier);
-            writer.setUseTextQualifier(true);
-            writer.setForceQualifier(true);
-        }
-        if (nullString != null) {
-            writer.setNullString(nullString);
-        }
-        try {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+                CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',')) {
+            writer.setEscapeMode(escapeMode);
+            if (recordDelimiter != '\0') {
+                writer.setRecordDelimiter(recordDelimiter);
+            }
+            if (textQualifier != '\0') {
+                writer.setTextQualifier(textQualifier);
+                writer.setUseTextQualifier(true);
+                writer.setForceQualifier(true);
+            }
+            if (nullString != null) {
+                writer.setNullString(nullString);
+            }
             writer.writeRecord(data, true);
+            writer.flush();
+            return out.toString();
         } catch (IOException e) {
             throw new IoException(e);
         }
-        writer.close();
-        return out.toString();
     }
 
     public static int write(Writer writer, String... data) {

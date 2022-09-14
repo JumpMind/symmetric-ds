@@ -331,8 +331,7 @@ public class TriggerHistory implements Serializable {
         if (argColumnNames.indexOf('"') == -1) {
             return argColumnNames.split(",");
         }
-        try {
-            CsvReader reader = new CsvReader(new StringReader(argColumnNames), ',');
+        try (CsvReader reader = new CsvReader(new StringReader(argColumnNames), ',')) {
             if (reader.readRecord()) {
                 return reader.getValues();
             } else {

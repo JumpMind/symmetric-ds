@@ -40,6 +40,7 @@ public class SimpleRouterContext extends Context {
     protected Map<String, Long> stats = new HashMap<String, Long>();
     protected String nodeId;
     protected boolean requestGapDetection = false;
+    protected int batchSizeNotToExceed;
 
     public SimpleRouterContext() {
     }
@@ -75,6 +76,14 @@ public class SimpleRouterContext extends Context {
 
     public boolean isEncountedTransactionBoundary() {
         return this.encountedTransactionBoundary;
+    }
+
+    public int getBatchSizeNotToExceed() {
+        return batchSizeNotToExceed;
+    }
+
+    public void setBatchSizeNotToExceed(int batchSizeNotToExceed) {
+        this.batchSizeNotToExceed = batchSizeNotToExceed;
     }
 
     synchronized public void incrementStat(long amount, String name) {

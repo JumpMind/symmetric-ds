@@ -131,9 +131,9 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         getRouterService().routeData(true);
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1.getNodeId(), false);
         filterForChannels(batches, testChannel, otherChannel);
-        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 3 : 17, batches.getBatches().size());
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 10 : 17, batches.getBatches().size());
         Assert.assertEquals(2, countBatchesForChannel(batches, testChannel));
-        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 15, countBatchesForChannel(batches, otherChannel));
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 8 : 15, countBatchesForChannel(batches, otherChannel));
     }
 
     public void testLookupTableRouting() {

@@ -26,7 +26,7 @@ Channel ID:: Identifier used through the system to identify a given channel.
 .Channel Batching Algorithms
 |===
 
-|Default|All changes that happen in a transaction are guaranteed to be batched together. Multiple transactions will be batched and committed together until there is no more data to be sent or the max_batch_size is reached.
+|Default|All changes that happen in a transaction are guaranteed to be batched together. Multiple transactions will be batched and committed together until there is no more data to be sent or the max_batch_size is reached.  The routing.max.batch.size.exceed.percent parameter is used to keep batch sizes within a percentage over the max_batch_size, or it can be set to zero for no limit. 
 
 |Transactional|Batches will map directly to database transactions. If there are many small database transactions, then there will be many batches. The max_batch_size column has no effect.
 

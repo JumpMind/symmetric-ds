@@ -86,6 +86,24 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                 engine.getSqlTemplate().update("delete from " + tablePrefix + "_" + TableConstants.SYM_NODE_COMMUNICATION);
             }
         }
+        if (isUpgradeFromPre310(tablePrefix, currentModel, desiredModel)) {
+            String name = engine.getDatabasePlatform().getName();
+            if (name.equals(DatabaseNamesConstants.ASE)) {
+                log.info("Before upgrade, dropping foreign key constraints to node table");
+                try {
+                    engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_NODE_IDENTITY
+                            + " drop constraint " + tablePrefix + "_fk_ident_2_node");
+                } catch (Exception e) {
+                    log.info("Unable to drop FK constraint " + tablePrefix + "_fk_ident_2_node to node table", e);
+                }
+                try {
+                    engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_NODE_SECURITY
+                            + " drop constraint " + tablePrefix + "_fk_sec_2_node");
+                } catch (Exception e) {
+                    log.info("Unable to drop FK constraint " + tablePrefix + "_fk_sec_2_node to node table", e);
+                }
+            }
+        }
         if (isUpgradeFromPre311(tablePrefix, currentModel, desiredModel) && shouldFixDataEvent311(tablePrefix)) {
             fixDataEvent311(tablePrefix);
         }
@@ -114,16 +132,20 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                     engine.getSqlTemplate().update("drop index " + tablePrefix + "_" + TableConstants.SYM_DATA + "."
                             + tablePrefix + "_idx_d_channel_id");
                 } catch (Exception e) {
-                    log.info("Unable to drop FK constraints to router table: {}", e.getMessage());
+                    log.info("Unable to drop index " + tablePrefix + "_idx_d_channel_id on data table: {}", e.getMessage());
                 }
                 log.info("Before upgrade, dropping FK constraints to router table");
                 try {
                     engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_TRIGGER_ROUTER
                             + " drop constraint " + tablePrefix + "_fk_tr_2_rtr");
+                } catch (Exception e) {
+                    log.info("Unable to drop FK constraint to router table: {}", e.getMessage());
+                }
+                try {
                     engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_FILE_TRIGGER_ROUTER
                             + " drop constraint " + tablePrefix + "_fk_ftr_2_rtr");
                 } catch (Exception e) {
-                    log.info("Unable to drop FK constraints to router table: {}", e.getMessage());
+                    log.info("Unable to drop FK constraint to router table: {}", e.getMessage());
                 }
             }
         }
@@ -234,6 +256,18 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         } else {
             return false;
         }
+    }
+    
+    protected boolean isUpgradeFromPre310(String tablePrefix, Database currentModel, Database desiredModel) {
+        String nodeTableName = tablePrefix + "_" + TableConstants.SYM_NODE;
+        Table nodeTable = currentModel.findTable(nodeTableName);
+        if (nodeTable != null) {
+            Column heartbeatTime = nodeTable.getColumnWithName("heartbeat_time");
+            if (heartbeatTime != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected boolean isUpgradeFromPre311(String tablePrefix, Database currentModel, Database desiredModel) {

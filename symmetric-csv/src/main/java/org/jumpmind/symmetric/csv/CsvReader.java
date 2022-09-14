@@ -36,7 +36,7 @@ import java.util.HashMap;
 /**
  * A stream based parser for parsing delimited text data from a file or a stream.
  */
-public class CsvReader {
+public class CsvReader implements AutoCloseable {
     private static int MAX_BUFFER_EXPANSION_SIZE = 1048576;
     private Reader inputStream = null;
     private String fileName = null;
@@ -1296,11 +1296,6 @@ public class CsvReader {
         if (closed) {
             throw new IOException("This instance of the CsvReader class has already been closed.");
         }
-    }
-
-    @Override
-    protected void finalize() {
-        close(false);
     }
 
     private static class ComplexEscape {

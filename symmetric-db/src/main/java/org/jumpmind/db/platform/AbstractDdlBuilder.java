@@ -1019,7 +1019,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel, AddPrimaryKeyChange change,
             StringBuilder ddl) {
         writeExternalPrimaryKeysCreateStmt(change.getChangedTable(), change.getPrimaryKeyColumns(), ddl);
-        change.apply(currentModel, delimitedIdentifierModeOn);
+        change.apply(desiredModel, delimitedIdentifierModeOn);
     }
 
     /**

@@ -1,15 +1,15 @@
 
 === Transforms
 
-Transforms allow you to manipulate data on a source node or on a target node, as the data is being loaded or extracted.
+Transforms allow you to manipulate data on a source node or target node, as the data is being loaded or extracted.
 
-IMPORTANT: The transform source table must be configured for synchronization through a linked trigger (see <<Table Triggers>>).
+IMPORTANT: The source table must first be configured for synchronization (see <<Table Triggers>>) before it can be transformed.
 
-The source trigger creates the synchronization data, while the transformation configuration decides what to do with the 
-synchronization data as it is either being extracted from the source or loaded into the target. You have the flexibility of 
-defining different transformation behavior depending on whether the source change that triggered the synchronization 
-was an Insert, Update, or Delete. In the case of Delete, you even have options on what exactly to do on the target side, 
-be it a delete of a row, setting columns to specific values, or absolutely nothing at all.
+The source trigger captures data changes that are passed through transformations during extraction from the source
+and during loading at the target.  If any enhancement with additional data is needed, an extract transform can access the 
+source database, while a load transform can access the target database.  A single row change may be processed by multiple 
+transforms on the same group link, which transforms it into multiple target rows.  Rows for the same target table do not merge,
+which means multiple transforms with the same target table results in multiple rows for that target table.
 
 ifndef::pro[]
 SymmetricDS stores its transformation configuration in two configuration tables, TRANSFORM_TABLE and TRANSFORM_COLUMN. 
