@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.route;
 
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -145,6 +146,56 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
         }
         return params;
     }
+    
+    protected class RowMapper implements ISqlRowMapper<Object> {
+    	private long numRows;
+    	private long bytes;
+    	private long tenSecondTimer;
+    	private long ts;
+    	private final Map<String,String> params;
+    	private Map<String,Set<String>> fillMap;    	
+    	
+    	public RowMapper(Map<String,Set<String>> fillMap, final Map<String, String> params) {
+    		this.fillMap = fillMap;
+    		this.params = params;
+    		this.numRows = 0;
+    		this.bytes = 0;
+    		this.tenSecondTimer = System.currentTimeMillis();
+    		this.ts = System.currentTimeMillis();
+    	}
+    	
+    	public long getNumRows() {
+    		return this.numRows;
+    	}
+    	
+    	public long getBytes() {
+    		return this.bytes;
+    	}
+    	
+    	public long getTs() {
+    		return this.ts;
+    	}
+    	
+		@Override
+		public Object mapRow(Row rs) {
+			numRows++;
+            String key = rs.getString(params.get(PARAM_MAPPED_KEY_COLUMN));
+            String value = rs.getString(params.get(PARAM_EXTERNAL_ID_COLUMN));
+            bytes += value.getBytes(Charset.defaultCharset()).length;
+            if (System.currentTimeMillis() - tenSecondTimer > 10000) {
+            	log.info("Querying table {} for {} seconds, {} rows, and {} bytes", params.get(PARAM_LOOKUP_TABLE), ((System.currentTimeMillis() - ts))/1000, numRows, bytes);
+            	tenSecondTimer = System.currentTimeMillis();
+            }
+            Set<String> ids = fillMap.get(key);
+            if (ids == null) {
+                ids = new HashSet<String>();
+                fillMap.put(key, ids);
+                bytes += key.getBytes(Charset.defaultCharset()).length;
+            }
+            ids.add(value);
+            return value;
+		}   	
+    }
 
     @SuppressWarnings("unchecked")
     protected Map<String, Set<String>> getLookupTable(final Map<String, String> params, Router router,
@@ -155,21 +206,13 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
         if (lookupMap == null) {
             ISqlTemplate template = symmetricDialect.getPlatform().getSqlTemplate();
             final Map<String, Set<String>> fillMap = new HashMap<String, Set<String>>();
+            RowMapper rowMapper = new RowMapper(fillMap, params);
             template.query(String.format("select %s, %s from %s",
                     params.get(PARAM_MAPPED_KEY_COLUMN), params.get(PARAM_EXTERNAL_ID_COLUMN),
-                    params.get(PARAM_LOOKUP_TABLE)), new ISqlRowMapper<Object>() {
-                        public Object mapRow(Row rs) {
-                            String key = rs.getString(params.get(PARAM_MAPPED_KEY_COLUMN));
-                            String value = rs.getString(params.get(PARAM_EXTERNAL_ID_COLUMN));
-                            Set<String> ids = fillMap.get(key);
-                            if (ids == null) {
-                                ids = new HashSet<String>();
-                                fillMap.put(key, ids);
-                            }
-                            ids.add(value);
-                            return value;
-                        }
-                    });
+                    params.get(PARAM_LOOKUP_TABLE)), rowMapper);
+            if (System.currentTimeMillis() - rowMapper.getTs() > 10000) {
+            	log.info("Done querying table {} for {} seconds, {} rows, and {} bytes", params.get(PARAM_LOOKUP_TABLE), ((System.currentTimeMillis() - rowMapper.getTs()))/1000, rowMapper.getNumRows(), rowMapper.getBytes());
+            }
             lookupMap = fillMap;
             routingContext.getContextCache().put(CTX_CACHE_KEY, lookupMap);
         }
