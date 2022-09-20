@@ -37,6 +37,7 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -166,7 +167,7 @@ public class SelectFromTableSource extends SelectFromSource {
                 if (overrideSelectSql != null && overrideSelectSql.trim().toUpperCase().startsWith("WHERE")) {
                     overrideSelectSql = overrideSelectSql.trim().substring(5);
                 }
-                if (parameterService.is(ParameterConstants.INITIAL_LOAD_RECURSION_SELF_FK) && StringUtils.isBlank(overrideSelectSql)) {
+                if (parameterService.is(ParameterConstants.INITIAL_LOAD_RECURSION_SELF_FK) && overrideSelectSql.equals(Constants.ALWAYS_TRUE_CONDITION)) {
                     ForeignKey fk = sourceTable.getSelfReferencingForeignKey();
                     if (fk != null) {
                         Reference[] refs = fk.getReferences();
