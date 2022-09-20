@@ -167,7 +167,8 @@ public class SelectFromTableSource extends SelectFromSource {
                 if (overrideSelectSql != null && overrideSelectSql.trim().toUpperCase().startsWith("WHERE")) {
                     overrideSelectSql = overrideSelectSql.trim().substring(5);
                 }
-                if (parameterService.is(ParameterConstants.INITIAL_LOAD_RECURSION_SELF_FK) && overrideSelectSql.equals(Constants.ALWAYS_TRUE_CONDITION)) {
+                if (parameterService.is(ParameterConstants.INITIAL_LOAD_RECURSION_SELF_FK) 
+                        && (overrideSelectSql.equals(Constants.ALWAYS_TRUE_CONDITION) || StringUtils.isBlank(overrideSelectSql))) {
                     ForeignKey fk = sourceTable.getSelfReferencingForeignKey();
                     if (fk != null) {
                         Reference[] refs = fk.getReferences();
