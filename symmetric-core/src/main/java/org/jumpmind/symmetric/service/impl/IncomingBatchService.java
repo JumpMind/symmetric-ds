@@ -164,7 +164,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     public List<IncomingBatch> listIncomingBatches(List<FilterCriterion> filter) {
         String where = filter != null ? buildBatchWhereFromFilter(filter) : null;
         Map<String, Object> params = filter != null ? buildBatchParams(filter) : new HashMap<String, Object>();
-        String sql = getSql("selectIncomingBatchPrefixSql", where);
+        String sql = getSql("selectIncomingBatchPrefixSql", where, " order by batch_id desc");
         int maxBatches = parameterService.getInt("batch.screen.max.to.select");
         if (maxBatches < 1) {
             maxBatches = Integer.MAX_VALUE;
