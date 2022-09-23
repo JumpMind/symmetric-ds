@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.derby;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
@@ -36,6 +37,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
     public DerbySymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new DerbyTriggerTemplate(this);
+        platform.getDatabaseInfo().setGeneratedColumnsSupported(!Version.isOlderThanVersion(getProductVersion(), "10.5"));
     }
 
     @Override

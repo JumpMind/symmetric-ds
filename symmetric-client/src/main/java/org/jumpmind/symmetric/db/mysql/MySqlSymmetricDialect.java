@@ -90,6 +90,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         characterSet = parameterService.getString(ParameterConstants.DB_MASTER_COLLATION, Version.isOlderThanVersion(getProductVersion(), "5.5.3") ? "utf8"
                 : "utf8mb4");
         this.triggerTemplate = new MySqlTriggerTemplate(this, isConvertZeroDateToNull, characterSet);
+        platform.getDatabaseInfo().setGeneratedColumnsSupported(!Version.isOlderThanVersion(version, "5.7.0"));
     }
 
     @Override

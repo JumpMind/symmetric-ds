@@ -94,11 +94,42 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
             Map<String, Object> values) throws SQLException {
         Table table = super.readTable(connection, metaData, values);
         if (table != null) {
-            // Sybase does not return the auto-increment status via the database
-            // metadata
+            // Sybase does not return the auto-increment status or the generated
+            // column status via the database metadata
             determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
+            determineGeneratedColumns(connection, table, table.getColumns());
         }
         return table;
+    }
+
+    protected void determineGeneratedColumns(Connection conn, Table table, final Column columnsToCheck[]) {
+        StringBuilder query = new StringBuilder();
+        if (columnsToCheck == null || columnsToCheck.length == 0) {
+            return;
+        }
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
+        query.append("select col.name, com.text\n"
+                + "from syscolumns col left join syscomments com\n"
+                + "on col.computedcol = com.id\n"
+                + "where col.id = (select id from sysobjects where name = ?)");
+        List<String> l = new ArrayList<String>();
+        l.add(table.getName());
+        List<Row> result = sqlTemplate.query(query.toString(), l.toArray());
+        for (Column column : columnsToCheck) {
+            for (Row row : result) {
+                if (column.getName().equalsIgnoreCase(row.getString("name"))) {
+                    String definition = row.getString("text");
+                    if (definition != null) {
+                        column.setGenerated(true);
+                        if (definition.startsWith("AS ")) {
+                            definition = definition.substring(2).trim();
+                        }
+                        column.setDefaultValue(definition);
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     @Override

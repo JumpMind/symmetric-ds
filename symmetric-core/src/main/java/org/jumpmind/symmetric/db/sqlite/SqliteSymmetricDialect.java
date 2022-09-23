@@ -27,6 +27,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
@@ -47,6 +48,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
         this.triggerTemplate = new SqliteTriggerTemplate(this);
         this.contextService = new ContextService(parameterService, this);
         sqliteFunctionToOverride = parameterService.getString(ParameterConstants.SQLITE_TRIGGER_FUNCTION_TO_USE);
+        platform.getDatabaseInfo().setGeneratedColumnsSupported(!Version.isOlderThanVersion(getProductVersion(), "3.31.0"));
     }
 
     @Override

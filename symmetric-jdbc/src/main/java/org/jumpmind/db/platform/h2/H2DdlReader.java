@@ -77,6 +77,46 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
+            Map<String, Object> values) throws SQLException {
+        Table table = super.readTable(connection, metaData, values);
+        if (table != null && table.getColumnsAsList().stream().anyMatch(col -> col.getDefaultValue() != null
+                && col.getDefaultValue().contains("(") && col.getDefaultValue().contains(")"))) {
+            determineGeneratedColumns(connection, table, table.getColumns());
+        }
+        return table;
+    }
+
+    protected void determineGeneratedColumns(Connection conn, Table table, final Column columnsToCheck[]) {
+        StringBuilder query = new StringBuilder();
+        if (columnsToCheck == null || columnsToCheck.length == 0) {
+            return;
+        }
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
+        query.append("SELECT column_name, is_computed FROM information_schema.columns WHERE ");
+        List<String> l = new ArrayList<String>();
+        if (table.getCatalog() != null) {
+            query.append("table_catalog = ? AND ");
+            l.add(table.getCatalog());
+        }
+        if (table.getSchema() != null) {
+            query.append("table_schema = ? AND ");
+            l.add(table.getSchema());
+        }
+        query.append("table_name = ?");
+        l.add(table.getName());
+        List<Row> result = sqlTemplate.query(query.toString(), l.toArray());
+        for (Column column : columnsToCheck) {
+            for (Row row : result) {
+                if (column.getName().equalsIgnoreCase(row.getString("column_name"))) {
+                    column.setGenerated(row.getBoolean("is_computed"));
+                    break;
+                }
+            }
+        }
+    }
+
+    @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);

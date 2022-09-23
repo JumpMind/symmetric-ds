@@ -76,6 +76,21 @@ public class HsqlDb2DdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
+        if (column.isGenerated() && column.getDefaultValue() == null) {
+            JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
+            String sql = "SELECT generation_expression\n"
+                    + "FROM information_schema.columns\n"
+                    + "WHERE table_name = ?\n"
+                    + "AND column_name = ?\n";
+            List<String> l = new ArrayList<String>();
+            String schemaName = (String) values.get("TABLE_SCHEM");
+            String tableName = (String) values.get("TABLE_NAME");
+            l.add(tableName);
+            l.add(column.getName());
+            String definition = sqlTemplate.queryForString(sql, l.toArray());
+            definition = definition.replace(schemaName + "." + tableName + ".", "");
+            column.setDefaultValue(definition);
+        }
         if (TypeMap.isTextType(column.getMappedTypeCode()) && (column.getDefaultValue() != null)) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }

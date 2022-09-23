@@ -89,6 +89,8 @@ public class DatabaseInfo {
     private boolean triggersCreateOrReplaceSupported = false;
     /** Whether identity specification is supported for non-primary key columns. */
     private boolean nonPKIdentityColumnsSupported = true;
+    /** Whether generated/computed/virtual columns are supported. */
+    private boolean generatedColumnsSupported = false;
     /**
      * Whether the auto-increment definition is done via the DEFAULT part of the column definition.
      */
@@ -439,6 +441,25 @@ public class DatabaseInfo {
      */
     public void setNonPKIdentityColumnsSupported(boolean supportingNonPKIdentityColumns) {
         this.nonPKIdentityColumnsSupported = supportingNonPKIdentityColumns;
+    }
+
+    /**
+     * Determines whether generated/computed/virtual columns are supported.
+     * 
+     * @return <code>true</code> if generated/computed/virtual columns are supported
+     */
+    public boolean isGeneratedColumnsSupported() {
+        return generatedColumnsSupported;
+    }
+
+    /**
+     * Specifies whether generated/computed/virtual columns are supported.
+     * 
+     * @param generatedColumnsSupported
+     *            <code>true</code> if generated/computed/virtual columns are supported
+     */
+    public void setGeneratedColumnsSupported(boolean generatedColumnsSupported) {
+        this.generatedColumnsSupported = generatedColumnsSupported;
     }
 
     /**

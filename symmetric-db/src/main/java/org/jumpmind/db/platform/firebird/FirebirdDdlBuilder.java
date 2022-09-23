@@ -44,6 +44,7 @@ import java.sql.Types;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
@@ -106,6 +107,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
+        databaseInfo.setGeneratedColumnsSupported(true);
         databaseInfo.setBinaryQuoteStart("X'");
         databaseInfo.setBinaryQuoteEnd("'");
         databaseInfo.setMinIsolationLevelToPreventPhantomReads(Connection.TRANSACTION_REPEATABLE_READ);
@@ -214,6 +216,19 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
         // we're using a generator
+    }
+
+    @Override
+    protected void writeGeneratedColumn(Table table, Column column, StringBuilder ddl) {
+        writeColumnTypeDefaultRequired(table, column, ddl);
+        String definition = getDefinitionForGeneratedColumn(table, column);
+        if (!StringUtils.isBlank(definition)) {
+            if (!(definition.startsWith("(") && definition.endsWith(")"))) {
+                ddl.append(" COMPUTED BY ").append("(").append(definition).append(")");
+            } else {
+                ddl.append(" COMPUTED BY ").append(definition);
+            }
+        }
     }
 
     @Override

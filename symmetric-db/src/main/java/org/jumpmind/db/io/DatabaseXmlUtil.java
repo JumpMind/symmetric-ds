@@ -260,6 +260,8 @@ public class DatabaseXmlUtil {
                                     column.setDescription(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("unique")) {
                                     column.setUnique(FormatUtils.toBoolean(attributeValue));
+                                } else if (attributeName.equalsIgnoreCase("generated")) {
+                                    column.setGenerated(FormatUtils.toBoolean(attributeValue));
                                 }
                             }
                             if (table != null) {
@@ -544,6 +546,9 @@ public class DatabaseXmlUtil {
                 }
                 if (column.isUnique()) {
                     output.write(" unique=\"" + column.isUnique() + "\"");
+                }
+                if (column.isGenerated()) {
+                    output.write(" generated=\"" + column.isGenerated() + "\"");
                 }
                 if (column.getPlatformColumns() != null && column.getPlatformColumns().size() > 0) {
                     Collection<PlatformColumn> platformColumns = column.getPlatformColumns()

@@ -82,6 +82,8 @@ public class Column implements Cloneable, Serializable {
     private boolean autoIncrement;
     /** Whether the column's value is unique using the unique constraint keyword (e.g. SQLite). */
     private boolean unique;
+    /** Whether the column is a generated/computed/virtual column. */
+    private boolean generated;
     /**
      * The mapped JDBC type code
      */
@@ -250,7 +252,7 @@ public class Column implements Cloneable, Serializable {
     /**
      * Determines whether this column is an unique column.
      * 
-     * @return <code>true</code> if this column is an unique column
+     * @return <code>true</code> if this column is a unique column
      */
     public boolean isUnique() {
         return unique;
@@ -259,11 +261,30 @@ public class Column implements Cloneable, Serializable {
     /**
      * Specifies whether this column is an unique column.
      * 
-     * @param autoIncrement
+     * @param unique
      *            <code>true</code> if this column is a unique column
      */
     public void setUnique(boolean unique) {
         this.unique = unique;
+    }
+
+    /**
+     * Determines whether this column is a generated/computed/virtual column.
+     * 
+     * @return <code>true</code> if this column is a generated/computed/virtual column
+     */
+    public boolean isGenerated() {
+        return generated;
+    }
+
+    /**
+     * Specifies whether this column is a generated/computed/virtual column.
+     * 
+     * @param generated
+     *            <code>true</code> if this column is a generated/computed/virtual column
+     */
+    public void setGenerated(boolean generated) {
+        this.generated = generated;
     }
 
     /**

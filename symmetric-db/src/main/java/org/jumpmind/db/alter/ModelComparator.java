@@ -251,7 +251,6 @@ public class ModelComparator {
             changes.add(new RemovePrimaryKeyChange(sourceTable, sourcePK));
         } else if ((sourcePK.length > 0) && (targetPK.length > 0)) {
             boolean changePK = false;
-
             if (sourcePK.length != targetPK.length) {
                 changePK = true;
             } else {
@@ -353,19 +352,18 @@ public class ModelComparator {
         Object sourceDefaultValue = sourceColumn.getParsedDefaultValue();
         Object targetDefaultValue = targetColumn.getParsedDefaultValue();
         boolean isBigDecimal = sourceDefaultValue instanceof BigDecimal && targetDefaultValue instanceof BigDecimal;
-        if ((sourceDefaultValue == null && targetDefaultValue != null)
+        if (!targetColumn.isGenerated() && ((sourceDefaultValue == null && targetDefaultValue != null)
                 || (sourceDefaultValue != null && targetDefaultValue == null)
                 || (sourceDefaultValue != null && targetDefaultValue != null &&
                         ((isBigDecimal && ((BigDecimal) sourceDefaultValue).compareTo((BigDecimal) targetDefaultValue) != 0) ||
-                                (!isBigDecimal && !sourceDefaultValue.toString().equals(targetDefaultValue.toString()))))) {
+                                (!isBigDecimal && !sourceDefaultValue.toString().equals(targetDefaultValue.toString())))))) {
             log.debug(
                     "The {} column on the {} table changed default value from {} to {} ",
                     new Object[] { sourceColumn.getName(), sourceTable.getName(),
                             sourceColumn.getDefaultValue(), targetColumn.getDefaultValue() });
-            changes.add(new ColumnDefaultValueChange(sourceTable, sourceColumn, targetColumn
-                    .getDefaultValue()));
+            changes.add(new ColumnDefaultValueChange(sourceTable, sourceColumn, targetColumn.getDefaultValue()));
         }
-        if (sourceColumn.isRequired() != targetColumn.isRequired()) {
+        if (!targetColumn.isGenerated() && sourceColumn.isRequired() != targetColumn.isRequired()) {
             log.debug(
                     "The {} column on the {} table changed required status from {} to {}",
                     new Object[] { sourceColumn.getName(), sourceTable.getName(),
@@ -378,6 +376,22 @@ public class ModelComparator {
                     new Object[] { sourceColumn.getName(), sourceTable.getName(),
                             sourceColumn.isAutoIncrement(), targetColumn.isAutoIncrement() });
             changes.add(new ColumnAutoIncrementChange(sourceTable, sourceColumn));
+        }
+        if (sourceColumn.isGenerated() != targetColumn.isGenerated()) {
+            log.debug(
+                    "The {} column on the {} table changed generated status from {} to {} ",
+                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
+                            sourceColumn.isGenerated(), targetColumn.isGenerated() });
+            changes.add(new ColumnGeneratedChange(sourceTable, sourceColumn, targetColumn.getDefaultValue()));
+        } else if (Boolean.valueOf(System.getProperty("compare.generated.column.definitions", "true"))
+                && sourceColumn.isGenerated() && sourceColumn.getDefaultValue() != null
+                && !sourceColumn.getDefaultValue().equals(targetColumn.getDefaultValue())) {
+            log.debug(
+                    "The {} generated column on the {} table changed definition from {} to {} ",
+                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
+                            sourceColumn.getDefaultValue(), targetColumn.getDefaultValue() });
+            changes.add(new GeneratedColumnDefinitionChange(sourceTable, sourceColumn, targetColumn
+                    .getDefaultValue()));
         }
         return changes;
     }
