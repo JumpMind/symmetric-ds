@@ -146,45 +146,46 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
         }
         return params;
     }
-    
+
     protected class RowMapper implements ISqlRowMapper<Object> {
-    	private long numRows;
-    	private long bytes;
-    	private long tenSecondTimer;
-    	private long ts;
-    	private final Map<String,String> params;
-    	private Map<String,Set<String>> fillMap;    	
-    	
-    	public RowMapper(Map<String,Set<String>> fillMap, final Map<String, String> params) {
-    		this.fillMap = fillMap;
-    		this.params = params;
-    		this.numRows = 0;
-    		this.bytes = 0;
-    		this.tenSecondTimer = System.currentTimeMillis();
-    		this.ts = System.currentTimeMillis();
-    	}
-    	
-    	public long getNumRows() {
-    		return this.numRows;
-    	}
-    	
-    	public long getBytes() {
-    		return this.bytes;
-    	}
-    	
-    	public long getTs() {
-    		return this.ts;
-    	}
-    	
-		@Override
-		public Object mapRow(Row rs) {
-			numRows++;
+        private long numRows;
+        private long bytes;
+        private long tenSecondTimer;
+        private long ts;
+        private final Map<String, String> params;
+        private Map<String, Set<String>> fillMap;
+
+        public RowMapper(Map<String, Set<String>> fillMap, final Map<String, String> params) {
+            this.fillMap = fillMap;
+            this.params = params;
+            this.numRows = 0;
+            this.bytes = 0;
+            this.tenSecondTimer = System.currentTimeMillis();
+            this.ts = System.currentTimeMillis();
+        }
+
+        public long getNumRows() {
+            return this.numRows;
+        }
+
+        public long getBytes() {
+            return this.bytes;
+        }
+
+        public long getTs() {
+            return this.ts;
+        }
+
+        @Override
+        public Object mapRow(Row rs) {
+            numRows++;
             String key = rs.getString(params.get(PARAM_MAPPED_KEY_COLUMN));
             String value = rs.getString(params.get(PARAM_EXTERNAL_ID_COLUMN));
             bytes += value.getBytes(Charset.defaultCharset()).length;
             if (System.currentTimeMillis() - tenSecondTimer > 10000) {
-            	log.info("Querying table {} for {} seconds, {} rows, and {} bytes", params.get(PARAM_LOOKUP_TABLE), ((System.currentTimeMillis() - ts))/1000, numRows, bytes);
-            	tenSecondTimer = System.currentTimeMillis();
+                log.info("Querying table {} for {} seconds, {} rows, and {} bytes", params.get(PARAM_LOOKUP_TABLE), ((System.currentTimeMillis() - ts)) / 1000,
+                        numRows, bytes);
+                tenSecondTimer = System.currentTimeMillis();
             }
             Set<String> ids = fillMap.get(key);
             if (ids == null) {
@@ -194,7 +195,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
             }
             ids.add(value);
             return value;
-		}   	
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -211,7 +212,8 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
                     params.get(PARAM_MAPPED_KEY_COLUMN), params.get(PARAM_EXTERNAL_ID_COLUMN),
                     params.get(PARAM_LOOKUP_TABLE)), rowMapper);
             if (System.currentTimeMillis() - rowMapper.getTs() > 10000) {
-            	log.info("Done querying table {} for {} seconds, {} rows, and {} bytes", params.get(PARAM_LOOKUP_TABLE), ((System.currentTimeMillis() - rowMapper.getTs()))/1000, rowMapper.getNumRows(), rowMapper.getBytes());
+                log.info("Done querying table {} for {} seconds, {} rows, and {} bytes", params.get(PARAM_LOOKUP_TABLE), ((System.currentTimeMillis()
+                        - rowMapper.getTs())) / 1000, rowMapper.getNumRows(), rowMapper.getBytes());
             }
             lookupMap = fillMap;
             routingContext.getContextCache().put(CTX_CACHE_KEY, lookupMap);

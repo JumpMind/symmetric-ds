@@ -118,7 +118,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     Map<String, String> tableNameCache = new HashMap<String, String>();
     Map<String, Map<String, String>> tableColumnCache = new HashMap<String, Map<String, String>>();
     public KafkaProducer<String, Object> kafkaProducer;
-    public static Map<String,KafkaProducer<String, Object>> producerMap = new HashMap<String,KafkaProducer<String,Object>>();
+    public static Map<String, KafkaProducer<String, Object>> producerMap = new HashMap<String, KafkaProducer<String, Object>>();
 
     public KafkaWriterFilter(IParameterService parameterService) {
         schema = parser.parse(AVRO_CDC_SCHEMA);
@@ -134,15 +134,14 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
         this.messageBy = parameterService.getString(ParameterConstants.KAFKA_MESSAGE_BY, KAFKA_MESSAGE_BY_BATCH);
         this.confluentUrl = parameterService.getString(ParameterConstants.KAFKA_CONFLUENT_REGISTRY_URL);
         this.schemaPackage = parameterService.getString(ParameterConstants.KAFKA_AVRO_JAVA_PACKAGE);
-        this.externalNodeID=parameterService.getExternalId();
-        String clientID = this.producer +"-"+ this.externalNodeID;
-        if(producerMap.get(clientID) != null) {
+        this.externalNodeID = parameterService.getExternalId();
+        String clientID = this.producer + "-" + this.externalNodeID;
+        if (producerMap.get(clientID) != null) {
             kafkaProducer = producerMap.get(clientID);
-        } else {            
+        } else {
             configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.url);
             configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
             configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-           
             configs.put(ProducerConfig.CLIENT_ID_CONFIG, clientID);
             if (confluentUrl != null) {
                 configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
