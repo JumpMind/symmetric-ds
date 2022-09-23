@@ -299,7 +299,7 @@ ifndef::pro[]
 NOTE: Clustering is available in https://www.jumpmind.com/products/symmetricds/symmetricds-overview[SymmetricDS Pro].
 endif::pro[]
 
-Each node in the cluster shares the same database and uses the same copy of the engine properties file and the `security/keystore` file.
+Each node in the cluster shares the same database.
 A separate hardware or software load balancer is required to receive incoming requests and direct them to one of the backend nodes.
 Use the following steps to setup a cluster:
 
@@ -307,7 +307,7 @@ Use the following steps to setup a cluster:
 2. Optionally, set the `cluster.server.id` property to a unique name, otherwise the hostname will be used
 3. Set the `sync.url` property to the URL of the load balancer
 4. Set the `initial.load.use.extract.job.enabled` property to `false` if using local staging
-5. Copy the engine properties file and `security/keystore` file to each installation
+5. Copy the engine properties, `security/keystore`, and `conf/sym_service.conf` files to each installation
 6. Configure the load balancer for sticky sessions
 
 With the `cluster.lock.enabled` property set to `true`, jobs will acquire an entry in the <<LOCK>> table to ensure that only
