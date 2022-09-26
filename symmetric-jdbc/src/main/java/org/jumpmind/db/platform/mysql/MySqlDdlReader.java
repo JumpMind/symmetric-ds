@@ -149,9 +149,11 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
             JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
             String sql = "SELECT extra, generation_expression\n"
                     + "FROM information_schema.columns\n"
-                    + "WHERE table_name = ?\n"
+                    + "WHERE table_schema = ?\n"
+                    + "AND table_name = ?\n"
                     + "AND column_name = ?";
             List<String> l = new ArrayList<String>();
+            l.add((String) values.get("TABLE_CAT"));
             l.add((String) values.get("TABLE_NAME"));
             l.add(column.getName());
             Row result = sqlTemplate.queryForRow(sql, l.toArray());
