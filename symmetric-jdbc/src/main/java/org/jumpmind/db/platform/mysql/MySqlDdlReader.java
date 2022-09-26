@@ -145,17 +145,21 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
-        if (column.isGenerated() && (column.getDefaultValue() == null || column.getDefaultValue().equals("NULL"))) {
+        if (column.isGenerated()) {
             JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
-            String sql = "SELECT generation_expression\n"
+            String sql = "SELECT extra, generation_expression\n"
                     + "FROM information_schema.columns\n"
                     + "WHERE table_name = ?\n"
                     + "AND column_name = ?";
             List<String> l = new ArrayList<String>();
             l.add((String) values.get("TABLE_NAME"));
             l.add(column.getName());
-            String definition = sqlTemplate.queryForString(sql, l.toArray());
-            column.setDefaultValue(definition);
+            Row result = sqlTemplate.queryForRow(sql, l.toArray());
+            if ("DEFAULT_GENERATED".equals(result.getString("extra"))) {
+                column.setGenerated(false);
+            } else if (column.getDefaultValue() == null || column.getDefaultValue().equals("NULL")) {
+                column.setDefaultValue(result.getString("generation_expression"));
+            }
         }
         if (column.getMappedTypeCode() == Types.TIMESTAMP) {
             adjustColumnSize(column, -20);
