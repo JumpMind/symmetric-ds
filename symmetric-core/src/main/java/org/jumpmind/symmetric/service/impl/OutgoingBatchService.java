@@ -452,17 +452,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return sqlTemplateDirty.query(sql, maxRowsToRetrieve, new OutgoingBatchMapper(true), params);
     }
 
-    public List<OutgoingBatch> listOutgoingBatches(List<FilterCriterion> filter) {
-        String where = filter != null ? buildBatchWhereFromFilter(filter) : null;
-        Map<String, Object> params = filter != null ? buildBatchParams(filter) : new HashMap<String, Object>();
-        String sql = getSql("selectOutgoingBatchPrefixSql", where, " order by batch_id desc");
-        int maxBatches = parameterService.getInt("batch.screen.max.to.select");
-        if (maxBatches < 1) {
-            maxBatches = Integer.MAX_VALUE;
-        }
-        return sqlTemplateDirty.query(sql, maxBatches, new OutgoingBatchMapper(true), params);
-    }
-
     public List<OutgoingBatch> listOutgoingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter,
             String orderColumn, String orderDirection) {
         String where = filter != null ? buildBatchWhereFromFilter(filter) : null;
