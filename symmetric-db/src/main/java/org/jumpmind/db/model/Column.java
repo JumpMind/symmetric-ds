@@ -84,6 +84,8 @@ public class Column implements Cloneable, Serializable {
     private boolean unique;
     /** Whether the column is a generated/computed/virtual column. */
     private boolean generated;
+    /** Whether the column has an expression for a default value. */
+    private boolean expressionAsDefaultValue;
     /**
      * The mapped JDBC type code
      */
@@ -285,6 +287,25 @@ public class Column implements Cloneable, Serializable {
      */
     public void setGenerated(boolean generated) {
         this.generated = generated;
+    }
+
+    /**
+     * Determines whether this column has an expression for a default value.
+     * 
+     * @return <code>true</code> if this column has an expression for a default value
+     */
+    public boolean isExpressionAsDefaultValue() {
+        return expressionAsDefaultValue;
+    }
+
+    /**
+     * Specifies whether this column has an expression for a default value.
+     * 
+     * @param expressionAsDefaultValue
+     *            <code>true</code> if this column has an expression for a default value
+     */
+    public void setExpressionAsDefaultValue(boolean expressionAsDefaultValue) {
+        this.expressionAsDefaultValue = expressionAsDefaultValue;
     }
 
     /**

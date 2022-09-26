@@ -159,6 +159,7 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
             Row result = sqlTemplate.queryForRow(sql, l.toArray());
             if ("DEFAULT_GENERATED".equals(result.getString("extra"))) {
                 column.setGenerated(false);
+                column.setExpressionAsDefaultValue(true);
             } else if (column.getDefaultValue() == null || column.getDefaultValue().equals("NULL")) {
                 column.setDefaultValue(result.getString("generation_expression"));
             }

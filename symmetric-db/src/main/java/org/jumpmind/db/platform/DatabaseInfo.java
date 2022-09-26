@@ -91,6 +91,8 @@ public class DatabaseInfo {
     private boolean nonPKIdentityColumnsSupported = true;
     /** Whether generated/computed/virtual columns are supported. */
     private boolean generatedColumnsSupported = false;
+    /** Whether expressions can be used as default values */
+    private boolean expressionsAsDefaultValuesSupported = false;
     /**
      * Whether the auto-increment definition is done via the DEFAULT part of the column definition.
      */
@@ -460,6 +462,25 @@ public class DatabaseInfo {
      */
     public void setGeneratedColumnsSupported(boolean generatedColumnsSupported) {
         this.generatedColumnsSupported = generatedColumnsSupported;
+    }
+
+    /**
+     * Determines whether expressions can be used as default values.
+     * 
+     * @return <code>true</code> if expressions can be used as default values
+     */
+    public boolean isExpressionsAsDefaultValuesSupported() {
+        return expressionsAsDefaultValuesSupported;
+    }
+
+    /**
+     * Specifies whether expressions can be used as default values.
+     * 
+     * @param expressionsAsDefaultValuesSupported
+     *            <code>true</code> if expressions can be used as default values
+     */
+    public void setExpressionsAsDefaultValuesSupported(boolean expressionsAsDefaultValuesSupported) {
+        this.expressionsAsDefaultValuesSupported = expressionsAsDefaultValuesSupported;
     }
 
     /**
