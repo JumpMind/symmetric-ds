@@ -763,6 +763,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             allowInsertIntoAutoIncrementColumns(false, oldTargetTable);
         }
         allowInsertIntoAutoIncrementColumns(true, targetTable);
+        this.currentDmlStatement = null;
     }
 
     private void removeExcludedColumns(Conflict conflict,
