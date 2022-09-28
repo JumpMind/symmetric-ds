@@ -258,6 +258,18 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
             throws SQLException {
         Column column = super.readColumn(metaData, values);
         String defaultValue = column.getDefaultValue();
+        if (column.isGenerated() && defaultValue == null) {
+            JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
+            String sql = "SELECT definition\n"
+                    + "FROM sys.computed_columns\n"
+                    + "WHERE OBJECT_NAME(object_id) = ?\n"
+                    + "AND name = ?";
+            List<String> l = new ArrayList<String>();
+            l.add((String) values.get("TABLE_NAME"));
+            l.add(column.getName());
+            String definition = sqlTemplate.queryForString(sql, l.toArray());
+            column.setDefaultValue(definition);
+        }
         // Sql Server tends to surround the returned default value with one or
         // two sets of parentheses
         if (defaultValue != null) {

@@ -60,6 +60,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
                 log.warn("Cannot enable use of transaction views for data gap detection.", ex);
             }
         }
+        platform.getDatabaseInfo().setGeneratedColumnsSupported(databaseMajorVersion >= 12);
     }
 
     @Override

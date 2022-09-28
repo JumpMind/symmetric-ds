@@ -28,6 +28,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
+import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
+import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +81,12 @@ public abstract class AbstractDataLoaderFactory {
         if (multipleDefaultSettingsFound) {
             log.warn("There were multiple default conflict settings found.  Using '{}' as the default",
                     settings.getDefaultConflictSetting().getConflictId());
+        }
+        if (settings.getDefaultConflictSetting() == null && parameterService.is(ParameterConstants.CONFLICT_DEFAULT_PK_WITH_FALLBACK)) {
+            Conflict conflict = new Conflict();
+            conflict.setDetectType(DetectConflict.USE_PK_DATA);
+            conflict.setResolveType(ResolveConflict.FALLBACK);
+            settings.setDefaultConflictSetting(conflict);
         }
         settings.setConflictSettingsByChannel(byChannel);
         settings.setConflictSettingsByTable(byTable);

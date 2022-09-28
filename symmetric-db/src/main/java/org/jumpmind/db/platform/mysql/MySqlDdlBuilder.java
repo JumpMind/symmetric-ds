@@ -62,6 +62,7 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
@@ -179,6 +180,45 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
             ddl.append(" DEFAULT ");
             writeColumnDefaultValue(table, column, ddl);
         }
+    }
+
+    @Override
+    protected void writeColumnDefaultValue(Table table, Column column, StringBuilder ddl) {
+        int typeCode = column.getMappedTypeCode();
+        String defaultValue = getNativeDefaultValue(column);
+        String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
+        PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
+        if (TypeMap.isDateTimeType(typeCode) && defaultValueStr.toUpperCase().equals("CURRENT_TIMESTAMP") && hasSize(column)) {
+            String nativeType = getNativeType(column);
+            if (platformColumn != null) {
+                nativeType = platformColumn.getType();
+            }
+            if (nativeType.startsWith("DATETIME") || nativeType.startsWith("TIMESTAMP")) {
+                Integer size = column.getSizeAsInt();
+                if (platformColumn != null) {
+                    size = platformColumn.getSize();
+                } else if (column.getSize() == null) {
+                    size = databaseInfo.getDefaultSize(column.getMappedTypeCode());
+                }
+                if (size != null && size >= 0) {
+                    int maxSize = databaseInfo.getMaxSize(nativeType);
+                    if (maxSize > 0 && size > maxSize) {
+                        size = maxSize;
+                    }
+                    ddl.append(defaultValueStr).append("(").append(size).append(")");
+                    return;
+                }
+            }
+        } else if (databaseInfo.isExpressionsAsDefaultValuesSupported() && platformColumn != null
+                && column.isExpressionAsDefaultValue()) {
+            if (defaultValue.startsWith("(") && defaultValue.endsWith(")")) {
+                ddl.append(defaultValueStr);
+            } else {
+                ddl.append("(").append(defaultValueStr).append(")");
+            }
+            return;
+        }
+        printDefaultValue(defaultValue, typeCode, ddl);
     }
 
     @Override

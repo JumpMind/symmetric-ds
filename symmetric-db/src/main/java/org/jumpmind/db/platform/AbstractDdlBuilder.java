@@ -62,9 +62,11 @@ import org.jumpmind.db.alter.AddTableChange;
 import org.jumpmind.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.ColumnDefaultValueChange;
+import org.jumpmind.db.alter.ColumnGeneratedChange;
 import org.jumpmind.db.alter.ColumnRequiredChange;
 import org.jumpmind.db.alter.ColumnSizeChange;
 import org.jumpmind.db.alter.CopyColumnValueChange;
+import org.jumpmind.db.alter.GeneratedColumnDefinitionChange;
 import org.jumpmind.db.alter.IModelChange;
 import org.jumpmind.db.alter.ModelComparator;
 import org.jumpmind.db.alter.PrimaryKeyChange;
@@ -389,7 +391,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         Predicate<IModelChange> predicate = new MultiInstanceofPredicate(new Class<?>[] { RemovePrimaryKeyChange.class,
                 AddPrimaryKeyChange.class, PrimaryKeyChange.class, RemoveColumnChange.class, AddColumnChange.class,
                 ColumnAutoIncrementChange.class, ColumnDefaultValueChange.class, ColumnRequiredChange.class,
-                ColumnDataTypeChange.class, ColumnSizeChange.class, CopyColumnValueChange.class });
+                ColumnDataTypeChange.class, ColumnSizeChange.class, ColumnGeneratedChange.class, CopyColumnValueChange.class,
+                GeneratedColumnDefinitionChange.class });
         processTableStructureChanges(currentModel, desiredModel, CollectionUtils.select(changes, predicate), ddl);
         // 4th pass: adding tables
         processChanges(currentModel, desiredModel, changes, ddl, new Class<?>[] { AddTableChange.class });
@@ -712,6 +715,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                         && !addColumnChange.getNewColumn().isAutoIncrement()) {
                     requiresFullRebuild = true;
                 }
+            } else if (change instanceof ColumnGeneratedChange || change instanceof GeneratedColumnDefinitionChange) {
+                requiresFullRebuild = true;
             }
         }
         if (!requiresFullRebuild) {
@@ -990,7 +995,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         for (int idx = 0; idx < sourceTable.getColumnCount(); idx++) {
             Column sourceColumn = sourceTable.getColumn(idx);
             Column targetColumn = targetTable.findColumn(sourceColumn.getName(), delimitedIdentifierModeOn);
-            if (targetColumn != null) {
+            if (targetColumn != null && !targetColumn.isGenerated()) {
                 columns.put(sourceColumn, targetColumn);
             }
         }
@@ -1613,6 +1618,36 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         writeColumnType(table, column, ddl);
     }
 
+    protected void writeGeneratedColumn(Table table, Column column, StringBuilder ddl) {
+        writeColumnTypeDefaultRequired(table, column, ddl);
+        String definition = getDefinitionForGeneratedColumn(table, column);
+        if (!StringUtils.isBlank(definition)) {
+            if (!(definition.startsWith("(") && definition.endsWith(")"))) {
+                ddl.append(" AS ").append("(").append(definition).append(")");
+            } else {
+                ddl.append(" AS ").append(definition);
+            }
+        }
+    }
+
+    protected String getDefinitionForGeneratedColumn(Table table, Column column) {
+        String definition = column.getDefaultValue();
+        if (!StringUtils.isBlank(definition)) {
+            for (PlatformColumn platformColumn : column.getPlatformColumns().values()) {
+                if ("mysql".equals(platformColumn.getName())) {
+                    for (Column col : table.getColumns()) {
+                        definition = StringUtils.replaceIgnoreCase(definition, "`" + col.getName() + "`", col.getName());
+                    }
+                } else if (platformColumn.getName() != null && platformColumn.getName().contains("mssql")) {
+                    for (Column col : table.getColumns()) {
+                        definition = StringUtils.replaceIgnoreCase(definition, "[" + col.getName() + "]", col.getName());
+                    }
+                }
+            }
+        }
+        return definition;
+    }
+
     public String getColumnTypeDdl(Table table, Column column) {
         StringBuilder ddl = new StringBuilder();
         writeColumnType(table, column, ddl);
@@ -1621,14 +1656,16 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     protected void writeColumnType(Table table, Column column, StringBuilder ddl) {
         ddl.append(getSqlType(column));
-        writeColumnDefaultValueStmt(table, column, ddl);
-        if (column.isRequired() && databaseInfo.isNotNullColumnsSupported()) {
-            ddl.append(" ");
-            writeColumnNotNullableStmt(ddl);
-        } else if (databaseInfo.isNullAsDefaultValueRequired()
-                && databaseInfo.hasNullDefault(column.getMappedTypeCode())) {
-            ddl.append(" ");
-            writeColumnNullableStmt(ddl);
+        if (!column.isGenerated()) {
+            writeColumnDefaultValueStmt(table, column, ddl);
+            if (column.isRequired() && databaseInfo.isNotNullColumnsSupported()) {
+                ddl.append(" ");
+                writeColumnNotNullableStmt(ddl);
+            } else if (databaseInfo.isNullAsDefaultValueRequired()
+                    && databaseInfo.hasNullDefault(column.getMappedTypeCode())) {
+                ddl.append(" ");
+                writeColumnNullableStmt(ddl);
+            }
         }
     }
 
@@ -1636,7 +1673,11 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Outputs the DDL for the specified column.
      */
     protected void writeColumn(Table table, Column column, StringBuilder ddl) {
-        writeColumnTypeDefaultRequired(table, column, ddl);
+        if (column.isGenerated() && databaseInfo.isGeneratedColumnsSupported()) {
+            writeGeneratedColumn(table, column, ddl);
+        } else {
+            writeColumnTypeDefaultRequired(table, column, ddl);
+        }
         if (column.isPrimaryKey() && databaseInfo.isPrimaryKeyEmbedded()) {
             writeColumnEmbeddedPrimaryKey(table, column, ddl);
         }

@@ -933,6 +933,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         if (values.get(getName("IS_NULLABLE")) != null) {
             column.setRequired("NO".equalsIgnoreCase(((String) values.get(getName("IS_NULLABLE"))).trim()));
         }
+        if (values.get(getName("IS_GENERATEDCOLUMN")) != null) {
+            column.setGenerated("YES".equalsIgnoreCase(((String) values.get(getName("IS_GENERATEDCOLUMN"))).trim()));
+        }
         column.setDescription((String) values.get(getName("REMARKS")));
         Object octetLength = values.get(getName("CHAR_OCTET_LENGTH"));
         if (octetLength != null) {
@@ -1346,7 +1349,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
     }
 
-    private StringBuilder appendIdentifier(StringBuilder query, String identifier) {
+    protected StringBuilder appendIdentifier(StringBuilder query, String identifier) {
         if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
             query.append(getPlatformInfo().getDelimiterToken());
         }

@@ -257,7 +257,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             return false;
         }
     }
-    
+
     protected boolean isUpgradeFromPre310(String tablePrefix, Database currentModel, Database desiredModel) {
         String nodeTableName = tablePrefix + "_" + TableConstants.SYM_NODE;
         Table nodeTable = currentModel.findTable(nodeTableName);

@@ -89,6 +89,10 @@ public class DatabaseInfo {
     private boolean triggersCreateOrReplaceSupported = false;
     /** Whether identity specification is supported for non-primary key columns. */
     private boolean nonPKIdentityColumnsSupported = true;
+    /** Whether generated/computed/virtual columns are supported. */
+    private boolean generatedColumnsSupported = false;
+    /** Whether expressions can be used as default values */
+    private boolean expressionsAsDefaultValuesSupported = false;
     /**
      * Whether the auto-increment definition is done via the DEFAULT part of the column definition.
      */
@@ -439,6 +443,44 @@ public class DatabaseInfo {
      */
     public void setNonPKIdentityColumnsSupported(boolean supportingNonPKIdentityColumns) {
         this.nonPKIdentityColumnsSupported = supportingNonPKIdentityColumns;
+    }
+
+    /**
+     * Determines whether generated/computed/virtual columns are supported.
+     * 
+     * @return <code>true</code> if generated/computed/virtual columns are supported
+     */
+    public boolean isGeneratedColumnsSupported() {
+        return generatedColumnsSupported;
+    }
+
+    /**
+     * Specifies whether generated/computed/virtual columns are supported.
+     * 
+     * @param generatedColumnsSupported
+     *            <code>true</code> if generated/computed/virtual columns are supported
+     */
+    public void setGeneratedColumnsSupported(boolean generatedColumnsSupported) {
+        this.generatedColumnsSupported = generatedColumnsSupported;
+    }
+
+    /**
+     * Determines whether expressions can be used as default values.
+     * 
+     * @return <code>true</code> if expressions can be used as default values
+     */
+    public boolean isExpressionsAsDefaultValuesSupported() {
+        return expressionsAsDefaultValuesSupported;
+    }
+
+    /**
+     * Specifies whether expressions can be used as default values.
+     * 
+     * @param expressionsAsDefaultValuesSupported
+     *            <code>true</code> if expressions can be used as default values
+     */
+    public void setExpressionsAsDefaultValuesSupported(boolean expressionsAsDefaultValuesSupported) {
+        this.expressionsAsDefaultValuesSupported = expressionsAsDefaultValuesSupported;
     }
 
     /**

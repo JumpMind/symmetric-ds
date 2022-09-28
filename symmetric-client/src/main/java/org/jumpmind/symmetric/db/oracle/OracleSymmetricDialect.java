@@ -69,6 +69,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
                 log.warn("Was not able to enable the use of transaction views.  You might not have access to select from gv$transaction", ex);
             }
         }
+        platform.getDatabaseInfo().setGeneratedColumnsSupported(databaseMajorVersion >= 11);
     }
 
     @Override

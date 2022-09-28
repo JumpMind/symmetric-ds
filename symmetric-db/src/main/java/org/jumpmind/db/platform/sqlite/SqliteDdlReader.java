@@ -21,6 +21,7 @@
 package org.jumpmind.db.platform.sqlite;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -77,15 +78,36 @@ public class SqliteDdlReader implements IDdlReader {
         return database;
     }
 
-    protected void checkForAutoIncrementColumn(List<Column> columns, String tableName) {
+    protected void checkColumns(List<Column> columns, String tableName) {
         String ddl = platform.getSqlTemplate().queryForObject("select sql from sqlite_master where tbl_name=?", String.class, tableName);
         if (StringUtils.isNotBlank(ddl)) {
-            String[] split = ddl.split(",");
-            for (String string : split) {
+            int openingParen = ddl.indexOf("(");
+            if (openingParen != -1) {
+                ddl = ddl.substring(openingParen + 1);
+            }
+            int closingParen = ddl.lastIndexOf(")");
+            if (closingParen != -1) {
+                ddl = ddl.substring(0, closingParen);
+            }
+            String[] commaSplit = ddl.split(",");
+            for (String string : commaSplit) {
                 for (Column col : columns) {
-                    if (string.contains(col.getName()) && string.toUpperCase().contains("AUTOINCREMENT")) {
-                        col.setAutoIncrement(true);
-                        return;
+                    if (string.contains(col.getName())) {
+                        if (string.toUpperCase().contains("AUTOINCREMENT")) {
+                            col.setAutoIncrement(true);
+                        }
+                        if (col.isGenerated()) {
+                            String[] split = StringUtils.split(string);
+                            int i;
+                            for (i = 0; i < split.length; i++) {
+                                if (split[i].equalsIgnoreCase("as")) {
+                                    break;
+                                }
+                            }
+                            if (i < split.length - 1) {
+                                col.setDefaultValue(String.join(" ", Arrays.copyOfRange(split, i + 1, split.length)));
+                            }
+                        }
                     }
                 }
             }
@@ -103,8 +125,8 @@ public class SqliteDdlReader implements IDdlReader {
 
     public Table readTable(String catalog, String schema, String tableName) {
         Table table = null;
-        List<Column> columns = platform.getSqlTemplate().query("pragma table_info(" + quote(tableName) + ")", COLUMN_MAPPER);
-        checkForAutoIncrementColumn(columns, tableName);
+        List<Column> columns = platform.getSqlTemplate().query("pragma table_xinfo(" + quote(tableName) + ")", COLUMN_MAPPER);
+        checkColumns(columns, tableName);
         if (columns != null && columns.size() > 0) {
             table = new Table(tableName);
             for (Column column : columns) {
@@ -168,6 +190,7 @@ public class SqliteDdlReader implements IDdlReader {
             col.setMappedType(toJdbcType((String) row.get("type")));
             col.setRequired(booleanValue(row.get("notnull")));
             col.setDefaultValue(scrubDefaultValue((String) row.get("dflt_value")));
+            col.setGenerated(intValue(row.get("hidden")) == 2);
             return col;
         }
 

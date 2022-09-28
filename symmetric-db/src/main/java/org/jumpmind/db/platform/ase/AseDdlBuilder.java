@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.ColumnAutoIncrementChange;
@@ -124,6 +125,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setAutoIncrementUpdateAllowed(false);
         databaseInfo.setRequiresAutoCommitForDdl(true);
+        databaseInfo.setGeneratedColumnsSupported(true);
     }
 
     @Override
@@ -134,22 +136,27 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected void writeColumn(Table table, Column column, StringBuilder ddl) {
-        printIdentifier(getColumnName(column), ddl);
-        ddl.append(" ");
-        String sqlType = getSqlType(column);
-        ddl.append(sqlType);
-        writeColumnDefaultValueStmt(table, column, ddl);
+        if (column.isGenerated()) {
+            writeGeneratedColumn(table, column, ddl);
+        } else {
+            printIdentifier(getColumnName(column), ddl);
+            ddl.append(" ");
+            String sqlType = getSqlType(column);
+            ddl.append(sqlType);
+            writeColumnDefaultValueStmt(table, column, ddl);
+        }
         if (column.isUnique() && databaseInfo.isUniqueEmbedded()) {
             writeColumnUniqueStmt(ddl);
         }
         // Sybase does not like NULL/NOT NULL and IDENTITY together
         if (column.isAutoIncrement()) {
+            String sqlType = getSqlType(column);
             // getSqlType() is returning "numeric identity" sometimes
-            if (! sqlType.toLowerCase().contains(" identity")) {
+            if (!sqlType.toLowerCase().contains(" identity")) {
                 ddl.append(" ");
                 writeColumnAutoIncrementStmt(table, column, ddl);
             }
-        } else {
+        } else if (!column.isGenerated()) {
             ddl.append(" ");
             if (column.isRequired()) {
                 writeColumnNotNullableStmt(ddl);
@@ -157,6 +164,21 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
                 // we'll write a NULL for all columns that are not required
                 writeColumnNullableStmt(ddl);
             }
+        }
+    }
+
+    @Override
+    protected void writeGeneratedColumn(Table table, Column column, StringBuilder ddl) {
+        String definition = getDefinitionForGeneratedColumn(table, column);
+        if (!StringUtils.isBlank(definition)) {
+            printIdentifier(getColumnName(column), ddl);
+            ddl.append(" COMPUTE ").append(definition);
+        } else {
+            printIdentifier(getColumnName(column), ddl);
+            ddl.append(" ");
+            String sqlType = getSqlType(column);
+            ddl.append(sqlType);
+            writeColumnDefaultValueStmt(table, column, ddl);
         }
     }
 

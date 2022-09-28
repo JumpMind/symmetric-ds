@@ -115,6 +115,19 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
+        if (column.isGenerated() && column.getDefaultValue() == null) {
+            JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
+            String sql = "SELECT rdb$computed_source\n"
+                    + "FROM rdb$fields f JOIN rdb$relation_fields rf\n"
+                    + "ON f.rdb$field_name = rf.rdb$field_source\n"
+                    + "WHERE rf.rdb$relation_name = ?\n"
+                    + "AND rf.rdb$field_name = ?";
+            List<String> l = new ArrayList<String>();
+            l.add((String) values.get("TABLE_NAME"));
+            l.add(column.getName());
+            String definition = sqlTemplate.queryForString(sql, l.toArray());
+            column.setDefaultValue(definition);
+        }
         if (column.getMappedTypeCode() == Types.FLOAT) {
             column.setMappedTypeCode(Types.REAL);
         } else if (TypeMap.isTextType(column.getMappedTypeCode())) {

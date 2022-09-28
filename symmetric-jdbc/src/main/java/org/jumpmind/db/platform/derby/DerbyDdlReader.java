@@ -82,6 +82,17 @@ public class DerbyDdlReader extends AbstractJdbcDdlReader {
                     || defaultValue.startsWith("AUTOINCREMENT:")) {
                 column.setDefaultValue(null);
                 column.setAutoIncrement(true);
+            } else if (column.isGenerated() && defaultValue.startsWith("GENERATED ALWAYS AS")) {
+                defaultValue = defaultValue.replace("GENERATED ALWAYS AS", "");
+                int openingParen = defaultValue.indexOf("(");
+                if (openingParen != -1) {
+                    defaultValue = defaultValue.substring(openingParen + 1);
+                }
+                int closingParen = defaultValue.lastIndexOf(")");
+                if (closingParen != -1) {
+                    defaultValue = defaultValue.substring(0, closingParen);
+                }
+                column.setDefaultValue(defaultValue.trim());
             } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
                 column.setDefaultValue(unescape(defaultValue, "'", "''"));
             }

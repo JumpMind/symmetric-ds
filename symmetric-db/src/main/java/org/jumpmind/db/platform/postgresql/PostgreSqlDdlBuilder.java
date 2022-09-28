@@ -286,6 +286,19 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
+    protected void writeGeneratedColumn(Table table, Column column, StringBuilder ddl) {
+        writeColumnTypeDefaultRequired(table, column, ddl);
+        String definition = getDefinitionForGeneratedColumn(table, column);
+        if (!StringUtils.isBlank(definition)) {
+            if (!(definition.startsWith("(") && definition.endsWith(")"))) {
+                ddl.append(" GENERATED ALWAYS AS ").append("(").append(definition).append(") STORED");
+            } else {
+                ddl.append(" GENERATED ALWAYS AS ").append(definition).append(" STORED");
+            }
+        }
+    }
+
+    @Override
     public String getSelectLastIdentityValues(Table table) {
         Column[] columns = table.getAutoIncrementColumns();
         if (columns.length == 0) {

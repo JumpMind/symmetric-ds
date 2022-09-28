@@ -87,7 +87,7 @@ public class DynamicDefaultDatabaseWriter extends DefaultDatabaseWriter {
 
     @Override
     public IDatabasePlatform getTargetPlatform() {
-        return targetPlatform == null ? platform: targetPlatform;
+        return targetPlatform == null ? platform : targetPlatform;
     }
 
     @Override

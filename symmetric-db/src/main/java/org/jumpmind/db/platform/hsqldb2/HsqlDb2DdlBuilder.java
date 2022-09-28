@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.ColumnSizeChange;
@@ -99,6 +100,7 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
+        databaseInfo.setGeneratedColumnsSupported(true);
     }
 
     @Override
@@ -107,6 +109,19 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
         ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append(" IF EXISTS");
         printEndOfStatement(ddl);
+    }
+
+    @Override
+    protected void writeGeneratedColumn(Table table, Column column, StringBuilder ddl) {
+        writeColumnTypeDefaultRequired(table, column, ddl);
+        String definition = getDefinitionForGeneratedColumn(table, column);
+        if (!StringUtils.isBlank(definition)) {
+            if (!(definition.startsWith("(") && definition.endsWith(")"))) {
+                ddl.append(" GENERATED ALWAYS AS ").append("(").append(definition).append(")");
+            } else {
+                ddl.append(" GENERATED ALWAYS AS ").append(definition);
+            }
+        }
     }
 
     @Override

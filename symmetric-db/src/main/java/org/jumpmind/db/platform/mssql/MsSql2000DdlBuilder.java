@@ -128,6 +128,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setAutoIncrementUpdateAllowed(false);
+        databaseInfo.setGeneratedColumnsSupported(true);
         databaseInfo.setBinaryQuoteStart("0x");
         databaseInfo.setBinaryQuoteEnd("");
     }
@@ -723,6 +724,17 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
             }
         }
         printDefaultValue(defaultValue, typeCode, ddl);
+    }
+
+    @Override
+    protected void writeGeneratedColumn(Table table, Column column, StringBuilder ddl) {
+        String definition = getDefinitionForGeneratedColumn(table, column);
+        if (!StringUtils.isBlank(definition)) {
+            printIdentifier(getColumnName(column), ddl);
+            ddl.append(" AS ").append(definition);
+        } else {
+            writeColumnTypeDefaultRequired(table, column, ddl);
+        }
     }
 
     @Override
