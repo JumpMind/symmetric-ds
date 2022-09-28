@@ -553,6 +553,8 @@ public class Column implements Cloneable, Serializable {
                         if (PlatformUtils.supportsJava14JdbcTypes()
                                 && (mappedTypeCode == PlatformUtils.determineBooleanTypeCode())) {
                             return FormatUtils.toBoolean(defaultValue);
+                        } else if (isTimestampWithTimezone()) {
+                            return removeOuterParentheses(defaultValue);
                         }
                         break;
                 }
@@ -567,6 +569,16 @@ public class Column implements Cloneable, Serializable {
 
     private String getCleanDefaultValue() {
         return defaultValue.replace("'", "");
+    }
+
+    private String removeOuterParentheses(String value) {
+        String newValue = new String(value);
+        if (newValue != null) {
+            while (newValue.startsWith("(") && newValue.endsWith(")")) {
+                newValue = newValue.substring(1, newValue.length() - 1);
+            }
+        }
+        return newValue;
     }
 
     public void removePlatformColumn(String databaseName) {
