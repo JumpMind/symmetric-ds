@@ -446,17 +446,25 @@ public class DataService extends AbstractService implements IDataService {
         int count = transaction.prepareAndExecute(getSql("updateTableReloadStatusDataLoaded"),
                 new Object[] { batchId, batchCount, batchId, batchCount, batchId, batchCount,
                         batchId, batchCount, batchId, batchCount, batchId, batchCount, new Date(),
-                        batchId, batchCount, batchId, batchCount, batchId, batchCount, loadId, engine.getNodeId(), new Date(), batchId, isBulkLoaded, loadId },
+                        batchId, batchCount, batchId, batchCount, batchId, batchCount, loadId, engine.getNodeId(), new Date(), batchId,
+                        isBulkLoaded, batchId, batchId, loadId },
                 new int[] { idType, Types.NUMERIC, idType, Types.NUMERIC, idType, Types.NUMERIC,
                         idType, Types.NUMERIC, idType, Types.NUMERIC, idType, Types.NUMERIC, Types.TIMESTAMP,
                         idType, Types.NUMERIC, idType, Types.NUMERIC, idType, Types.NUMERIC, idType,
-                        Types.VARCHAR, Types.TIMESTAMP, idType, Types.NUMERIC, idType });
+                        Types.VARCHAR, Types.TIMESTAMP, idType, Types.NUMERIC, idType, idType, idType });
         List<TableReloadStatus> status = transaction.query(getSql("selectTableReloadStatusByLoadId"),
                 new TableReloadStatusMapper(), new Object[] { loadId }, new int[] { idType });
         if (status != null && status.size() > 0 && count > 0) {
             return status.get(0);
         }
         return null;
+    }
+
+    public void updateTableReloadStatusFailed(ISqlTransaction transaction, long loadId, long batchId) {
+        int idType = symmetricDialect.getSqlTypeForIds();
+        transaction.prepareAndExecute(getSql("updateTableReloadStatusFailed"),
+                new Object[] { batchId, batchId, batchId, loadId },
+                new int[] { idType, idType, idType, idType });
     }
 
     public void updateTableReloadStatusDataCounts(ISqlTransaction transaction, long loadId, long startBatchId, long endBatchId,
