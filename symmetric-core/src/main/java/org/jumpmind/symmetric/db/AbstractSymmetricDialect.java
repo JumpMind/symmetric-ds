@@ -916,4 +916,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public void setTargetDialect(ISymmetricDialect targetDialect) {
         this.targetDialect = targetDialect;
     }
+
+    @Override
+    public String getSyncTriggersOnIncomingExpression() {
+        return Constants.ALWAYS_TRUE_CONDITION;
+    }
 }

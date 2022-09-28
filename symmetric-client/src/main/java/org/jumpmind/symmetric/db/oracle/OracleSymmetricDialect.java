@@ -331,6 +331,10 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         return parameterService.getTablePrefix() + "_trigger_disabled() is null";
     }
 
+    public String getSyncTriggersOnIncomingExpression() {
+        return "nvl(" + parameterService.getTablePrefix() + "_trigger_disabled(), 0) != 2";
+    }
+
     @Override
     public final boolean areDatabaseTransactionsPendingSince(long time) {
         String returnValue = platform.getSqlTemplate().queryForObject(SQL_SELECT_TRANSACTIONS,
