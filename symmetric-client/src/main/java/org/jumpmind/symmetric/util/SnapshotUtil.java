@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.util;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -43,13 +44,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TreeSet;
+import java.util.TimeZone;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -126,7 +126,9 @@ public class SnapshotUtil {
         if (listener != null) {
             listener.checkpoint(engine.getEngineName(), 0, 5);
         }
-        String dirName = engine.getEngineName().replaceAll(" ", "-") + "-" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        String dirName = engine.getEngineName().replaceAll(" ", "-") + "-" + dateFormat.format(new Date());
         IParameterService parameterService = engine.getParameterService();
         File tmpDir = new File(parameterService.getTempDirectory(), dirName);
         tmpDir.mkdirs();
@@ -288,16 +290,16 @@ public class SnapshotUtil {
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST_CHANNEL_STATS));
         extract(export, new File(tmpDir, "sym_registration_request.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_REGISTRATION_REQUEST));
-        try (FileOutputStream fos = new FileOutputStream(new File(tmpDir, "parameters.properties"))) {
+        try {
             Properties effectiveParameters = engine.getParameterService().getAllParameters();
-            SortedProperties parameters = new SortedProperties();
+            Properties parameters = new Properties();
             parameters.putAll(effectiveParameters);
             parameters.remove("db.password");
-            parameters.store(fos, "parameters.properties");
+            writeProperties(parameters, tmpDir, "parameters.properties");
         } catch (Exception e) {
             log.warn("Failed to export parameter information", e);
         }
-        try (FileOutputStream fos = new FileOutputStream(new File(tmpDir, "parameters-changed.properties"))) {
+        try {
             Properties defaultParameters = new Properties();
             InputStream in = SnapshotUtil.class.getResourceAsStream("/symmetric-default.properties");
             defaultParameters.load(in);
@@ -316,7 +318,7 @@ public class SnapshotUtil {
                 }
             }
             Properties effectiveParameters = engine.getParameterService().getAllParameters();
-            Properties changedParameters = new SortedProperties();
+            Properties changedParameters = new Properties();
             Map<String, ParameterMetaData> parameters = ParameterConstants.getParameterMetaData();
             for (String key : parameters.keySet()) {
                 String defaultValue = defaultParameters.getProperty((String) key);
@@ -330,21 +332,22 @@ public class SnapshotUtil {
                     "cloud.bulk.load.s3.secret.key", "cloud.bulk.load.azure.sas.token", "registration.secret" }) {
                 changedParameters.remove(name);
             }
-            changedParameters.store(fos, "parameters-changed.properties");
+            writeProperties(changedParameters, tmpDir, "parameters-changed.properties");
         } catch (Exception e) {
             log.warn("Failed to export parameters-changed information", e);
         }
-        try (FileOutputStream fos = new FileOutputStream(new File(tmpDir, "system.properties"))) {
-            SortedProperties props = new SortedProperties();
+        try {
+            Properties props = new Properties();
             props.putAll(System.getProperties());
-            props.store(fos, "system.properties");
+            writeProperties(props, tmpDir, "system.properties");
         } catch (Exception e) {
-            log.warn("Failed to export thread information", e);
+            log.warn("Failed to export system information", e);
         }
         File logSummaryFile = new File(tmpDir, "log-summary.csv");
         try (OutputStream outputStream = new FileOutputStream(logSummaryFile)) {
             CsvWriter csvWriter = new CsvWriter(outputStream, ',', Charset.defaultCharset());
             csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_DOUBLED);
+            csvWriter.setForceQualifier(true);
             csvWriter.writeRecord(new String[] { "Level", "First Time", "Last Time", "Count", "Message", "Stack Trace" });
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             List<LogSummary> logSummaries = LogSummaryAppenderUtils.getLogSummaryErrors(engine.getEngineName());
@@ -384,6 +387,7 @@ public class SnapshotUtil {
             try (FileOutputStream fos = new FileOutputStream(new File(tmpDir, "sym_data_gap_cache.csv"))) {
                 List<DataGap> gaps = engine.getRouterService().getDataGaps();
                 SimpleDateFormat dformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                dformat.setTimeZone(TimeZone.getTimeZone("GMT"));
                 fos.write("start_id,end_id,create_time\n".getBytes(Charset.defaultCharset()));
                 if (gaps != null) {
                     for (DataGap gap : gaps) {
@@ -562,7 +566,8 @@ public class SnapshotUtil {
                 }
             }
             for (File file : files) {
-                if (file.isDirectory() && (config.getExcludeDir() == null || !config.getExcludeDir().equals(dir))) {
+                if (file.isDirectory() && (config.getExcludeDir() == null || (!config.getExcludeDir().equals(dir)
+                        && !file.getName().equalsIgnoreCase("tmp")))) {
                     printDirectoryContents(file, output, config);
                 }
             }
@@ -571,14 +576,8 @@ public class SnapshotUtil {
 
     protected static void writeRuntimeStats(ISymmetricEngine engine, File tmpDir) {
         log.info("Writing runtime stats");
-        try (FileOutputStream fos = new FileOutputStream(new File(tmpDir, "runtime-stats.properties"))) {
-            Properties runtimeProperties = new Properties() {
-                private static final long serialVersionUID = 1L;
-
-                public synchronized Enumeration<Object> keys() {
-                    return Collections.enumeration(new TreeSet<Object>(super.keySet()));
-                }
-            };
+        try {
+            Properties runtimeProperties = new Properties();
             DataSource dataSource = engine.getDatabasePlatform().getDataSource();
             if (dataSource instanceof BasicDataSource) {
                 @SuppressWarnings("resource")
@@ -652,9 +651,25 @@ public class SnapshotUtil {
                 runtimeProperties.setProperty("file.descriptor.max.count", mbeanServer.getAttribute(oName, "MaxFileDescriptorCount").toString());
             } catch (Exception e) {
             }
-            runtimeProperties.store(fos, "runtime-stats.properties");
+            writeProperties(runtimeProperties, tmpDir, "runtime-stats.properties");
         } catch (Exception e) {
             log.warn("Failed to export runtime-stats information", e);
+        }
+    }
+
+    protected static void writeProperties(Properties properties, File tmpDir, String fileName) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(new File(tmpDir, fileName)))) {
+            List<String> keys = new ArrayList<String>();
+            for (Object key : properties.keySet()) {
+                keys.add(key.toString());
+            }
+            Collections.sort(keys);
+            for (String key : keys) {
+                bw.write(key + "=" + properties.getProperty(key).replace("\n", "\\n").replace("\r", "\\r"));
+                bw.newLine();
+            }            
+        } catch (Exception e) {
+            log.warn("Failed to write " + fileName, e);
         }
     }
 
@@ -668,7 +683,8 @@ public class SnapshotUtil {
                     + nodeService.findNodeHosts(nodeService.findIdentityNodeId()).size() + " instances in the cluster\n\n");
             writer.write(StringUtils.rightPad("Job Name", 30) + StringUtils.rightPad("Schedule", 20) + StringUtils.rightPad("Status", 10)
                     + StringUtils.rightPad("Server Id", 30) + StringUtils.rightPad("Last Server Id", 30)
-                    + StringUtils.rightPad("Last Finish Time", 30) + StringUtils.rightPad("Last Run Period", 20)
+                    + StringUtils.rightPad("Last Finish Time", 30) + StringUtils.rightPad("Next Run Time", 30)
+                    + StringUtils.rightPad("Last Run Period", 20)
                     + StringUtils.rightPad("Avg. Run Period", 20) + "\n");
             List<IJob> jobs = jobManager.getJobs();
             Map<String, Lock> locks = clusterService.findLocks();
@@ -682,11 +698,14 @@ public class SnapshotUtil {
                 }
                 String schedule = job.getSchedule();
                 String lastFinishTime = getLastFinishTime(job, lock);
+                String nextRunTime = job.getNextExecutionTime() == null ? "" :
+                    DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.format(job.getNextExecutionTime());
                 writer.write(StringUtils.rightPad(job.getName().replace("_", " "), 30) +
                         StringUtils.rightPad(schedule, 20) + StringUtils.rightPad(status, 10) +
-                        StringUtils.rightPad(runningServerId == null ? "" : runningServerId, 30) +
-                        StringUtils.rightPad(lastServerId == null ? "" : lastServerId, 30) +
+                        StringUtils.left(StringUtils.rightPad(runningServerId == null ? "" : runningServerId, 30), 30) +
+                        StringUtils.left(StringUtils.rightPad(lastServerId == null ? "" : lastServerId, 30), 30) +
                         StringUtils.rightPad(lastFinishTime == null ? "" : lastFinishTime, 30) +
+                        StringUtils.rightPad(nextRunTime, 30) +
                         StringUtils.rightPad(job.getLastExecutionTimeInMs() + "", 20) +
                         StringUtils.rightPad(job.getAverageExecutionTimeInMs() + "", 20) + "\n");
             }
@@ -963,15 +982,6 @@ public class SnapshotUtil {
             }
         }
         return transformsByTable;
-    }
-
-    static class SortedProperties extends Properties {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public synchronized Enumeration<Object> keys() {
-            return Collections.enumeration(new TreeSet<Object>(super.keySet()));
-        }
     }
 
     static class FileComparator implements Comparator<File> {
