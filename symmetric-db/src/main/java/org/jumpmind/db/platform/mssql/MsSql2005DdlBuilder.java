@@ -88,8 +88,7 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
 
     @Override
     public String getSqlType(Column column) {
-        Map<String, String> env = System.getenv();
-        boolean useVarcharForText = "y".equalsIgnoreCase(env.get("USE_VARCHAR_FOR_TEXT"));
+        boolean useVarcharForText = System.getProperty("mssql.use.varchar.for.lob", "false").equalsIgnoreCase("true");
         String sqlType = super.getSqlType(column);
         if (column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() > 8000) {
             sqlType = "VARBINARY(MAX)";
