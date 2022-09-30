@@ -98,10 +98,7 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
             sqlType = String.format("DECIMAL(38,%d)", column.getScale());
         } else if (useVarcharForText && (column.getMappedTypeCode() == Types.LONGVARCHAR || column.getMappedTypeCode() == Types.LONGNVARCHAR || column
                 .getMappedTypeCode() == Types.CLOB)) {
-            sqlType = "";
-            if (column.getMappedTypeCode() == Types.LONGNVARCHAR) {
-                sqlType = "N";
-            }
+            sqlType = (column.getMappedTypeCode() == Types.LONGNVARCHAR) ? "N" : "";
             sqlType += "VARCHAR(MAX)";
         }
         return sqlType;
