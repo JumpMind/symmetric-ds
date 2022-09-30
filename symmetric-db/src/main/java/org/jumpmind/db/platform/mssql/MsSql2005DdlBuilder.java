@@ -92,6 +92,8 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
             sqlType = "VARBINARY(MAX)";
         } else if (column.getMappedTypeCode() == Types.VARCHAR && column.getSizeAsInt() > 8000) {
             sqlType = "VARCHAR(MAX)";
+        } else if (column.getMappedTypeCode() == Types.NVARCHAR && column.getSizeAsInt() > 8000) {
+            sqlType = "NVARCHAR(MAX)";
         } else if (column.getMappedTypeCode() == Types.DECIMAL && column.getSizeAsInt() > 38) {
             sqlType = String.format("DECIMAL(38,%d)", column.getScale());
         }
