@@ -21,6 +21,7 @@
 package org.jumpmind.db.platform.mssql;
 
 import java.sql.Types;
+import java.util.Map;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
@@ -87,6 +88,8 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
 
     @Override
     public String getSqlType(Column column) {
+        Map<String, String> env = System.getenv();
+        boolean useVarcharForText = "y".equalsIgnoreCase(env.get("USE_VARCHAR_FOR_TEXT"));
         String sqlType = super.getSqlType(column);
         if (column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() > 8000) {
             sqlType = "VARBINARY(MAX)";
@@ -94,6 +97,13 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
             sqlType = "VARCHAR(MAX)";
         } else if (column.getMappedTypeCode() == Types.DECIMAL && column.getSizeAsInt() > 38) {
             sqlType = String.format("DECIMAL(38,%d)", column.getScale());
+        } else if (useVarcharForText && (column.getMappedTypeCode() == Types.LONGVARCHAR || column.getMappedTypeCode() == Types.LONGNVARCHAR || column
+                .getMappedTypeCode() == Types.CLOB)) {
+            sqlType = "";
+            if (column.getMappedTypeCode() == Types.LONGNVARCHAR) {
+                sqlType = "N";
+            }
+            sqlType += "VARCHAR(MAX)";
         }
         return sqlType;
     }
