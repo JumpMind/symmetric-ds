@@ -74,11 +74,11 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     public Database readSymmetricSchemaFromXml() {
         Database db = super.readSymmetricSchemaFromXml();
         if (parameterService.is(ParameterConstants.MSSQL_USE_NTYPES_FOR_SYNC)) {
-            Table sym_table = db.findTable(TableConstants.getTableName(getTablePrefix(),
+            Table symTable = db.findTable(TableConstants.getTableName(getTablePrefix(),
                     TableConstants.SYM_DATA));
-            setColumnToNtext(sym_table.getColumnWithName("row_data"));
-            setColumnToNtext(sym_table.getColumnWithName("old_data"));
-            setColumnToNtext(sym_table.getColumnWithName("pk_data"));
+            setColumnToNtext(symTable.getColumnWithName("row_data"));
+            setColumnToNtext(symTable.getColumnWithName("old_data"));
+            setColumnToNtext(symTable.getColumnWithName("pk_data"));
         }
         if (parameterService.is(ParameterConstants.MSSQL_USE_VARCHAR_FOR_LOB_IN_SYNC)) {
             for (Table table : db.getTables()) {
