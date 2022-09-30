@@ -112,6 +112,8 @@ public interface ITriggerRouterService {
     public void saveRouter(Router router);
     
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId);
+
+    public List<TriggerRouter> getTriggerRoutersForTargetNode(String targetNodeGroupId);
     
     /**
      * Get a list of all the triggers that have been defined for the system.

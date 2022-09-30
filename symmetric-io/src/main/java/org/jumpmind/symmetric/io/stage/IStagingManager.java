@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io.stage;
 
+import java.io.File;
 import java.util.Set;
 
 public interface IStagingManager {
@@ -36,4 +37,5 @@ public interface IStagingManager {
 
     public StagingFileLock acquireFileLock(String serverInfo, Object... path);
 
+    public File getStagingDirectory();
 }

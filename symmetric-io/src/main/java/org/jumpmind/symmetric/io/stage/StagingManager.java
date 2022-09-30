@@ -319,6 +319,11 @@ public class StagingManager implements IStagingManager {
         return stagingFileLock;
     }
 
+    @Override
+    public File getStagingDirectory() {
+        return directory;
+    }
+
     protected static final DirectoryStream.Filter<Path> STAGING_FILE_FILTER = new DirectoryStream.Filter<Path>() {
         @Override
         public boolean accept(Path entry) {

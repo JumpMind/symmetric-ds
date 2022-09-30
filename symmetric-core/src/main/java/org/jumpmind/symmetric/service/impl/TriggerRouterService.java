@@ -982,6 +982,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerRouters;
     }
 
+    public List<TriggerRouter> getTriggerRoutersForTargetNode(String targetNodeGroupId) {
+        List<TriggerRouter> triggerRouters = enhanceTriggerRouters(sqlTemplate.query(getTriggerRouterSql("activeTriggersForTargetNodeGroupSql"),
+                new TriggerRouterMapper(), targetNodeGroupId));
+        return triggerRouters;
+    }
+
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(
             String sourceNodeGroupId, String targetNodeGroupId) {
         return enhanceTriggerRouters(sqlTemplate.query(
