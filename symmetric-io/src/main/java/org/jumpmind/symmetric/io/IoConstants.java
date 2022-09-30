@@ -25,6 +25,7 @@ final public class IoConstants {
     public static final String ENCODING = "UTF-8";
     
     public static final long IGNORE_TABLES_BATCH = -9999;
+    public static final String CHANNEL_CONFIG = "config";
 
     private IoConstants() {
     }

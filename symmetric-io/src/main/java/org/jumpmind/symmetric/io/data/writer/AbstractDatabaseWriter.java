@@ -145,7 +145,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
          */
         if (sourceTable != null && targetTable == null && 
                 data.requiresTable() && (writerSettings.isIgnoreMissingTables()
-                || batch.getBatchId() == IoConstants.IGNORE_TABLES_BATCH)) {
+                || batch.getBatchId() == IoConstants.IGNORE_TABLES_BATCH || IoConstants.CHANNEL_CONFIG.equals(batch.getChannelId()))) {
             String qualifiedName = sourceTable.getFullyQualifiedTableName();
             if (!missingTables.contains(qualifiedName)) {
                 log.info("Did not find the {} table in the target database", qualifiedName);
