@@ -607,7 +607,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             if (parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_REVERSE_RELOAD)
                     && listener.getCurrentBatch() != null && listener.isNewErrorForCurrentBatch()
                     && listener.getCurrentBatch().isLoadFlag()
-                    && listener.getCurrentBatch().getSqlCode() == ErrorConstants.FK_VIOLATION_CODE) {
+                    && listener.getCurrentBatch().getSqlCode() == ErrorConstants.FK_VIOLATION_CODE
+                    && !Version.isOlderThanVersion(sourceNode.getSymmetricVersion(), "3.12.6")) {
                 engine.getDataService().reloadMissingForeignKeyRowsForLoad(sourceNode.getNodeId(), ctx.getBatch().getBatchId(),
                         listener.getCurrentBatch().getFailedLineNumber(), ctx.getTable(), ctx.getData(), Constants.CHANNEL_CONFIG);
             }
