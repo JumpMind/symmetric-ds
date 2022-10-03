@@ -170,7 +170,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         println("  CLOSE refcursor", ddl);
         println("  DEALLOCATE refcursor", ddl);
         ddl.append("  DROP TABLE ");
-        if (schema != null) {
+        if (StringUtils.isNotBlank(schema)) {
             printIdentifier(schema, ddl);
             ddl.append(".");
         }
