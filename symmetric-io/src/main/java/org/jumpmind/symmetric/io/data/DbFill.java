@@ -284,9 +284,10 @@ public class DbFill {
                     List<Object> commonValue = new ArrayList<Object>();
                     StringBuilder sb = null;
                     for (ForeignKeyReference fkr : references) {
+                        ForeignKey fk = fkr.getForeignKey();
                         String key = table.getFullyQualifiedTableName() + "." + fkr.getReference().getForeignColumnName();
                         commonDependencyValues.put(key, commonValue);
-                        commonDependencyTables.add(getDbTable(fkr.getForeignKey().getForeignTableName()));
+                        commonDependencyTables.add(getDbTable(fk.getForeignTableCatalog(), fk.getForeignTableSchema(), fk.getForeignTableName()));
                         if (verbose) {
                             sb = (sb == null) ? new StringBuilder() : sb.append(", ");
                             sb.append(fkr.getReference().getLocalColumnName() + " -> " + fkr.getForeignKey().getForeignTableName() + "." + fkr.getReference()
@@ -329,7 +330,8 @@ public class DbFill {
             for (ForeignKey fk : table.getForeignKeys()) {
                 for (Reference ref : fk.getReferences()) {
                     if (ref.getLocalColumnName().equals(column.getName())) {
-                        Table foreignTable = getDbTable(fk.getForeignTableName());
+                        Table foreignTable = getDbTable(fk.getForeignTableCatalog(), fk.getForeignTableSchema(),
+                                fk.getForeignTableName());
                         Column foreignColumn = foreignTable.findColumn(ref.getForeignColumnName());
                         size = buildMinColumnSize(foreignTable, foreignColumn, relatedTableColumns, size);
                     }
@@ -356,9 +358,10 @@ public class DbFill {
         Set<Table> fkDepSet = new HashSet<Table>(tables);
         List<Table> fkDepList = new ArrayList<Table>();
         for (Table table : tables) {
-            if (visited.add(table)) {
+            if (table != null && visited.add(table)) {
                 for (ForeignKey fk : table.getForeignKeys()) {
-                    Table foreignTable = getDbTable(fk.getForeignTableName());
+                    Table foreignTable = getDbTable(fk.getForeignTableCatalog(), fk.getForeignTableSchema(),
+                            fk.getForeignTableName());
                     if (fkDepSet.add(foreignTable)) {
                         fkDepList.add(foreignTable);
                     }
@@ -375,7 +378,7 @@ public class DbFill {
     protected List<Table> getForeignKeyTablesReversed(List<Table> tables, Set<Table> visited) {
         List<Table> fkDepList = new ArrayList<Table>();
         for (Table table : tables) {
-            if (visited.add(table)) {
+            if (table != null && visited.add(table)) {
                 String parentTableName = table.getName();
                 for (Table child : getAllDbTables().values()) {
                     for (ForeignKey fk : child.getForeignKeys()) {
@@ -1057,8 +1060,12 @@ public class DbFill {
         return allDbTablesCache;
     }
 
-    protected Table getDbTable(String tableName) {
-        return getAllDbTables().get(tableName);
+    protected Table getDbTable(String catalogName, String schemaName, String tableName) {
+        Table table = getAllDbTables().get(tableName);
+        if (table == null) {
+            table = platform.readTableFromDatabase(catalogName, schemaName, tableName);
+        }
+        return table;
     }
 
     public DmlStatement createInsertDmlStatement(Table table) {
