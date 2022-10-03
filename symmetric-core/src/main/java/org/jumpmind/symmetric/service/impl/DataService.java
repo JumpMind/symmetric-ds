@@ -1462,6 +1462,9 @@ public class DataService extends AbstractService implements IDataService {
             String quote = dbInfo.getDelimiterToken();
             String catalogSeparator = dbInfo.getCatalogSeparator();
             String schemaSeparator = dbInfo.getSchemaSeparator();
+            if (selectSql != null && selectSql.trim().toUpperCase().startsWith("WHERE")) {
+                selectSql = selectSql.trim().substring(5);
+            }
             String sql = String.format("select count(*) from %s t where %s", table
                     .getQualifiedTableName(quote, catalogSeparator, schemaSeparator), selectSql);
             sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
