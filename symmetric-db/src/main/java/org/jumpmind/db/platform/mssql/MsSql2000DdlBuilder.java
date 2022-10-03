@@ -142,6 +142,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         String tableName = getTableName(table.getName());
+        String schema = table.getSchema();
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
         writeQuotationOnStatement(ddl);
@@ -169,6 +170,10 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         println("  CLOSE refcursor", ddl);
         println("  DEALLOCATE refcursor", ddl);
         ddl.append("  DROP TABLE ");
+        if (schema != null) {
+            printIdentifier(schema, ddl);
+            ddl.append(".");
+        }
         printlnIdentifier(tableName, ddl);
         ddl.append("END");
         printEndOfStatement(ddl);
