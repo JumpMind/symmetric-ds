@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -522,7 +523,18 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         
         IParameterService parameterService = engine.getParameterService();
         INodeService nodeService = engine.getNodeService();
-        
+
+        if (context.getBatch().getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
+            String nodeId = nodeService.findIdentityNodeId();
+            Node sourceNode = nodeService.findNode(context.getBatch().getSourceNodeId());
+            if (nodeId != null && sourceNode != null && Version.isOlderThanVersion(sourceNode.getSymmetricVersion(), "3.12.0")) {
+                NodeSecurity security = nodeService.findNodeSecurity(nodeId);
+                if (security != null && (security.isRegistrationEnabled() || security.getRegistrationTime() == null)) {
+                    engine.getRegistrationService().markNodeAsRegistered(nodeId);
+                }
+            }
+        }
+
         if (context.get(CTX_KEY_FLUSH_GROUPLETS_NEEDED) != null) {
             log.info("Grouplets flushed because new grouplet config came through the data loader");
             engine.getGroupletService().clearCache();
