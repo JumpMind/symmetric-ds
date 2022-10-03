@@ -21,10 +21,10 @@
 package org.jumpmind.db.platform.mssql;
 
 import java.sql.Types;
-import java.util.Map;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
@@ -88,8 +88,9 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
 
     @Override
     public String getSqlType(Column column) {
-        boolean useVarcharForText = System.getProperty("mssql.use.varchar.for.lob", "false").equalsIgnoreCase("true");
         String sqlType = super.getSqlType(column);
+        boolean useVarcharForText = System.getProperty("mssql.use.varchar.for.lob", "false").equalsIgnoreCase("true");
+        boolean useNvarChar = System.getProperty("mssql.use.ntypes.for.chars", "false").equalsIgnoreCase("true");
         if (column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() > 8000) {
             sqlType = "VARBINARY(MAX)";
         } else if (column.getMappedTypeCode() == Types.VARCHAR && column.getSizeAsInt() > 8000) {
@@ -100,8 +101,18 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
             sqlType = String.format("DECIMAL(38,%d)", column.getScale());
         } else if (useVarcharForText && (column.getMappedTypeCode() == Types.LONGVARCHAR || column.getMappedTypeCode() == Types.LONGNVARCHAR || column
                 .getMappedTypeCode() == Types.CLOB)) {
+            column.setMappedType(TypeMap.VARCHAR);
+            column.setSize("10000"); // Ensure the size is set to max
             sqlType = (column.getMappedTypeCode() == Types.LONGNVARCHAR) ? "N" : "";
             sqlType += "VARCHAR(MAX)";
+        }
+        if (useNvarChar && column.getMappedTypeCode() == Types.VARCHAR) {
+            int intColumnSize = 2 * column.getSizeAsInt(); // As every character in MSSQL takes at least 2 bytes in N-types, we have to double the size.
+            String strColumnSize = String.valueOf(intColumnSize);
+            if (intColumnSize > 4000) {
+                strColumnSize = "max";
+            }
+            sqlType = String.format("NVARCHAR(%s)", strColumnSize);
         }
         return sqlType;
     }
