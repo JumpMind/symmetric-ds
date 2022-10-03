@@ -67,7 +67,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS_AFTER_CONFIG_CHANGED));
         }
         helper.handleChange(routingContext, dataMetaData.getTable(), dataMetaData.getData());
-        possibleTargetNodes = helper.filterNodes(possibleTargetNodes, tableName(dataMetaData.getTable().getNameLowerCase()));
+        possibleTargetNodes = helper.filterNodes(possibleTargetNodes, dataMetaData.getTable().getNameLowerCase());
         // the list of nodeIds that we will return
         Set<String> nodeIds = new HashSet<String>();
         // the inbound data
