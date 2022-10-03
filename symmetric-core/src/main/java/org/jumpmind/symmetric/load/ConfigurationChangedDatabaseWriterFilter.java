@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ConfigurationChangedHelper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -39,6 +40,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterFilterAdapter;
 import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -186,6 +188,17 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         helper.contextCommitted(context);
         if (context.remove(CTX_KEY_CHANGED_NODE_SECURITY) != null) {
             putNodeSecurityIntoContext(context);
+        }
+        if (context.getBatch().getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
+            INodeService nodeService = engine.getNodeService();
+            String nodeId = nodeService.findIdentityNodeId();
+            Node sourceNode = nodeService.findNode(context.getBatch().getSourceNodeId());
+            if (nodeId != null && sourceNode != null && Version.isOlderThanVersion(sourceNode.getSymmetricVersion(), "3.12.0")) {
+                NodeSecurity security = nodeService.findNodeSecurity(nodeId);
+                if (security != null && (security.isRegistrationEnabled() || security.getRegistrationTime() == null)) {
+                    engine.getRegistrationService().markNodeAsRegistered(nodeId);
+                }
+            }
         }
     }
 
