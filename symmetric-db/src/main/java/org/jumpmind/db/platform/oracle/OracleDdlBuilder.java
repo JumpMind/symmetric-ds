@@ -76,6 +76,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     protected static final String PREFIX_TRIGGER = "TRG";
     protected static final String PREFIX_SEQUENCE = "SEQ";
     protected static final String ROWID_TYPE = "ROWID";
+    protected static final String DATE_TYPE = "DATE";
 
     public OracleDdlBuilder() {
         super(DatabaseNamesConstants.ORACLE);
@@ -564,10 +565,14 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     @Override
     public String getSqlType(Column column) {
         PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
-        if (platformColumn != null && platformColumn.getType() != null
-                && platformColumn.getType().equals(ROWID_TYPE)) {
-            return ROWID_TYPE;
-        } else if (column.getJdbcTypeCode() == ColumnTypes.ORACLE_TIMESTAMPTZ || column.getMappedTypeCode() == ColumnTypes.ORACLE_TIMESTAMPTZ) {
+        if (platformColumn != null && platformColumn.getType() != null) {
+            if (platformColumn.getType().equals(ROWID_TYPE)) {
+                return ROWID_TYPE;
+            } else if (platformColumn.getType().equals(DATE_TYPE)) {
+                return DATE_TYPE;
+            }
+        }
+        if (column.getJdbcTypeCode() == ColumnTypes.ORACLE_TIMESTAMPTZ || column.getMappedTypeCode() == ColumnTypes.ORACLE_TIMESTAMPTZ) {
             return "TIMESTAMP(" + column.getSizeAsInt() + ") WITH TIME ZONE";
         } else if (column.getJdbcTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ || column.getMappedTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ) {
             return "TIMESTAMP(" + column.getSizeAsInt() + ") WITH LOCAL TIME ZONE";
