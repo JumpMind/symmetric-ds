@@ -360,6 +360,7 @@ final public class ParameterConstants {
     public final static String BSH_EXTENSION_GLOBAL_SCRIPT = "bsh.extension.global.script";
     public final static String MSSQL_ROW_LEVEL_LOCKS_ONLY = "mssql.allow.only.row.level.locks.on.runtime.tables";
     public final static String MSSQL_USE_NTYPES_FOR_SYNC = "mssql.use.ntypes.for.sync";
+    public final static String MSSQL_USE_VARCHAR_FOR_LOB_IN_SYNC = "mssql.use.varchar.for.lob.in.sync";
     public final static String MSSQL_LOCK_ESCALATION_DISABLED = "mssql.lock.escalation.disabled";
     public final static String MSSQL_INCLUDE_CATALOG_IN_TRIGGERS = "mssql.include.catalog.in.triggers";
     public final static String MSSQL_TRIGGER_EXECUTE_AS = "mssql.trigger.execute.as";

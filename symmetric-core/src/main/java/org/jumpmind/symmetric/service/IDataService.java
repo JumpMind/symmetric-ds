@@ -84,6 +84,8 @@ public interface IDataService {
 
     public TableReloadStatus updateTableReloadStatusDataLoaded(ISqlTransaction transcation, long loadId, long batchId, int batchCount, boolean isBulkLoaded);
 
+    public void updateTableReloadStatusFailed(ISqlTransaction transaction, long loadId, long batchId);
+
     public int updateTableReloadRequestsCancelled(long loadId);
 
     public int cancelTableReloadRequest(TableReloadRequest request);

@@ -21,6 +21,7 @@
 package org.jumpmind.db.platform.mssql;
 
 import java.sql.Types;
+import java.util.Map;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
@@ -87,13 +88,20 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
 
     @Override
     public String getSqlType(Column column) {
+        boolean useVarcharForText = System.getProperty("mssql.use.varchar.for.lob", "false").equalsIgnoreCase("true");
         String sqlType = super.getSqlType(column);
         if (column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() > 8000) {
             sqlType = "VARBINARY(MAX)";
         } else if (column.getMappedTypeCode() == Types.VARCHAR && column.getSizeAsInt() > 8000) {
             sqlType = "VARCHAR(MAX)";
+        } else if (column.getMappedTypeCode() == Types.NVARCHAR && column.getSizeAsInt() > 8000) {
+            sqlType = "NVARCHAR(MAX)";
         } else if (column.getMappedTypeCode() == Types.DECIMAL && column.getSizeAsInt() > 38) {
             sqlType = String.format("DECIMAL(38,%d)", column.getScale());
+        } else if (useVarcharForText && (column.getMappedTypeCode() == Types.LONGVARCHAR || column.getMappedTypeCode() == Types.LONGNVARCHAR || column
+                .getMappedTypeCode() == Types.CLOB)) {
+            sqlType = (column.getMappedTypeCode() == Types.LONGNVARCHAR) ? "N" : "";
+            sqlType += "VARCHAR(MAX)";
         }
         return sqlType;
     }

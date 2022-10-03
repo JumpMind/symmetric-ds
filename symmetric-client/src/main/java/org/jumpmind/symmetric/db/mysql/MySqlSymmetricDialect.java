@@ -228,6 +228,10 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         return SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
     }
 
+    public String getSyncTriggersOnIncomingExpression() {
+        return "coalesce(" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + ", 0) != 2";
+    }
+
     private final String getTransactionFunctionName() {
         return SymmetricUtils.quote(this, platform.getDefaultCatalog()) + "." + parameterService.getTablePrefix() + "_"
                 + TRANSACTION_ID + this.functionTemplateKeySuffix;

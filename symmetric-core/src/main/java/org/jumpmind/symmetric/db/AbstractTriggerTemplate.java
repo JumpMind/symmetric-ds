@@ -461,7 +461,7 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("oracleLobTypeClobAlways", getClobType(table), ddl);
         String syncTriggersExpression = symmetricDialect.getSyncTriggersExpression();
         ddl = FormatUtils.replace("syncOnIncomingBatchCondition",
-                trigger.isSyncOnIncomingBatch() ? Constants.ALWAYS_TRUE_CONDITION
+                trigger.isSyncOnIncomingBatch() ? symmetricDialect.getSyncTriggersOnIncomingExpression()
                         : syncTriggersExpression, ddl);
         ddl = FormatUtils.replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
         Column[] orderedColumns = table.getColumns();

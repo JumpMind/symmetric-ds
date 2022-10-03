@@ -77,6 +77,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     status = Status.IG;
                 }
                 boolean isFirstTimeAsOkStatus = outgoingBatch.getStatus() != Status.OK && status == Status.OK;
+                boolean isFirstTimeAsErStatus = !outgoingBatch.isErrorFlag() && status == Status.ER;
                 outgoingBatch.setStatus(status);
                 outgoingBatch.setBulkLoadFlag(batch.isBulkLoaderFlag());
                 outgoingBatch.setErrorFlag(status == Status.ER);
@@ -181,6 +182,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
                     if (status == Status.OK && isFirstTimeAsOkStatus && outgoingBatch.getLoadId() > 0) {
                         engine.getDataExtractorService().updateExtractRequestLoadTime(transaction, new Date(), outgoingBatch);
+                    } else if (status == Status.ER && isFirstTimeAsErStatus && outgoingBatch.getLoadId() > 0) {
+                        engine.getDataService().updateTableReloadStatusFailed(transaction, outgoingBatch.getLoadId(), outgoingBatch.getBatchId());
                     }
                     transaction.commit();
                     if (status == Status.OK) {

@@ -237,6 +237,10 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
         return "$(defaultSchema)" + parameterService.getTablePrefix() + "_triggers_disabled() = 0";
     }
 
+    public String getSyncTriggersOnIncomingExpression() {
+        return "$(defaultSchema)" + parameterService.getTablePrefix() + "_triggers_disabled() != 2";
+    }
+
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         if (supportsTransactionId()) {

@@ -140,8 +140,10 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected String mapDefaultValue(Object defaultValue, int typeCode) {
-        String newValue = super.mapDefaultValue(defaultValue, typeCode).trim();
-        if (newValue.startsWith("(") && newValue.endsWith(")")) {
+        String newValue = super.mapDefaultValue(defaultValue, typeCode);
+        if ((typeCode == Types.TIMESTAMP || typeCode == ColumnTypes.ORACLE_TIMESTAMPTZ
+                || typeCode == ColumnTypes.ORACLE_TIMESTAMPLTZ)
+                && (newValue.startsWith("(") && newValue.endsWith(")"))) {
             newValue = newValue.substring(1, newValue.length() - 1);
         }
         return newValue;
@@ -150,7 +152,9 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void printDefaultValue(String defaultValue, int typeCode, StringBuilder ddl) {
         String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
-        if (defaultValueStr != null && defaultValueStr.trim().toUpperCase().startsWith("SYS_GUID")) {
+        if (defaultValueStr != null && (defaultValueStr.trim().toUpperCase().startsWith("SYS_GUID")
+                || defaultValueStr.trim().toUpperCase().startsWith("SYS_CONTEXT")
+                || defaultValueStr.trim().toUpperCase().startsWith("NVL"))) {
             ddl.append(defaultValueStr);
         } else {
             super.printDefaultValue(defaultValue, typeCode, ddl);

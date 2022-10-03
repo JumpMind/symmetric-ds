@@ -162,6 +162,8 @@ public interface ISymmetricDialect {
 
     public String getSyncTriggersExpression();
 
+    public String getSyncTriggersOnIncomingExpression();
+
     public String getSourceNodeExpression();
 
     public String getCreateSymmetricDDL();

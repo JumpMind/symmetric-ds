@@ -34,6 +34,8 @@ public class MsSql2016SymmetricDialect extends MsSql2008SymmetricDialect {
             "\n    set @disabled = CONVERT(varchar(50), SESSION_CONTEXT(N'" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "'));    " +
             "\n    if @disabled is null      " +
             "\n      return 0;       " +
+            "\n    else if @disabled = '2' " +
+            "\n      return 2; " +
             "\n    return 1;         " +
             "\n  end                 ";
     static final String nodeDisabledFunctionSql = "create function dbo.$(functionName)() returns varchar(50)    " +
