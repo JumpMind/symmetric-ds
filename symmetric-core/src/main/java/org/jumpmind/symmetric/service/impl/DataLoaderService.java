@@ -484,7 +484,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     public void loadDataFromConfig(Node remote, RemoteNodeStatus status, boolean force) throws IOException {
-        if (engine.getParameterService().isRegistrationServer()) {
+        if (engine.getParameterService().isRegistrationServer() || remote == null || Version.isOlderThanVersion(remote.getSymmetricVersion(), "3.8.22")) {
             return;
         }
         Node local = nodeService.findIdentity();
