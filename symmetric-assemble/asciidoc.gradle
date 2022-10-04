@@ -1,5 +1,4 @@
 apply plugin: 'org.asciidoctor.gradle.asciidoctor'
-apply plugin: 'docbook-reference'
 
 configurations{ 
 	generateAppendixesDependencies
@@ -12,13 +11,6 @@ dependencies {
     generateReleaseNotesDependencies project(":symmetric-util")
     generateReleaseNotesDependencies project(":symmetric-db")
 }
-
-reference {
-    sourceDir = file("$buildDir/src/asciidoc/docbook")
-    // Configure which files have ${} expanded
-    expandPlaceholders = '**/user-guide.xml'
-}
-
 
 def downloadURLCore = 'http://maven.jumpmind.com/repo/org/jumpmind/symmetric/symmetric-core/%s/symmetric-core-%s.jar'
 def downloadURLPro = 'http://maven.jumpmind.com/repo/org/jumpmind/symmetric/symmetric-pro/%s/symmetric-pro-%s.jar'
