@@ -1877,6 +1877,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
         boolean shouldUseQuotes = !isNull && !TypeMap.isNumericType(typeCode)
                 && !(TypeMap.isDateTimeType(typeCode) && (defaultValueStr.toUpperCase().startsWith("TO_DATE(")
+                        || defaultValueStr.toUpperCase().startsWith("TO_TIMESTAMP(")
                         || defaultValueStr.toUpperCase().startsWith("SYSDATE")
                         || defaultValueStr.toUpperCase().startsWith("SYSTIMESTAMP")
                         || defaultValueStr.toUpperCase().startsWith("SYS_EXTRACT_UTC(")
