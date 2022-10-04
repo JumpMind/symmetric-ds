@@ -1892,6 +1892,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                         || defaultValueStr.toUpperCase().startsWith("USER")
                         || defaultValueStr.toUpperCase().startsWith("SYSTEM_USER")
                         || defaultValueStr.toUpperCase().startsWith("SESSION_USER")
+                        || defaultValueStr.toUpperCase().startsWith("LOCALTIMESTAMP")
                         || defaultValueStr.toUpperCase().startsWith("DATE '")
                         || defaultValueStr.toUpperCase().startsWith("TIME '")
                         || defaultValueStr.toUpperCase().startsWith("TIMESTAMP '")
