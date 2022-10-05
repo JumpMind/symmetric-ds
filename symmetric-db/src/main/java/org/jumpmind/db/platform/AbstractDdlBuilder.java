@@ -1881,6 +1881,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                         || defaultValueStr.toUpperCase().startsWith("SYSDATE")
                         || defaultValueStr.toUpperCase().startsWith("SYSTIMESTAMP")
                         || defaultValueStr.toUpperCase().startsWith("SYS_EXTRACT_UTC(")
+                        || defaultValueStr.toUpperCase().startsWith("GETDATE(")
+                        || defaultValueStr.toUpperCase().startsWith("GETUTCDATE(")
                         || defaultValueStr.toUpperCase().startsWith("CURRENT_TIMESTAMP")
                         || defaultValueStr.toUpperCase().startsWith("CURRENT_TIME")
                         || defaultValueStr.toUpperCase().startsWith("CURRENT_DATE")
