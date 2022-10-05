@@ -260,6 +260,12 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                     platformColumn.setDecimalDigits(0);
                 }
             }
+        } else if (column.getMappedTypeCode() == Types.BINARY || column.getMappedTypeCode() == Types.VARBINARY) {
+            String defaultValue = column.getDefaultValue();
+            if (isNotBlank(defaultValue) && defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
+                defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
+                column.setDefaultValue(defaultValue);
+            }
         } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
             String defaultValue = column.getDefaultValue();
             if (isNotBlank(defaultValue) && defaultValue.startsWith("('") && defaultValue.endsWith("')")) {
