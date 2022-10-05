@@ -82,13 +82,25 @@ public class UnixService extends WrapperService {
         try (FileWriter writer = new FileWriter(runFile);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(
                         "/symmetricds.systemd")))) {
+            String javaCommand = config.getJavaCommand();
+            if (javaCommand == null) {
+                javaCommand = "java";
+            }
+            if (! javaCommand.startsWith(File.separator)) {
+                if ( ! javaCommand.contains(File.separator)) {
+                    javaCommand = getAbsolutePath(javaCommand);
+                } else {
+                    String cwd = System.getProperty("user.dir");
+                    javaCommand = cwd + File.separator + javaCommand;
+                }
+            }
             String line = null;
             while ((line = reader.readLine()) != null) {
                 line = line.replaceAll("\\$\\{wrapper.description}", config.getDescription());
                 line = line.replaceAll("\\$\\{wrapper.pidfile}", getWrapperPidFile());
                 line = line.replaceAll("\\$\\{wrapper.home}", config.getWorkingDirectory().getAbsolutePath());
                 line = line.replaceAll("\\$\\{wrapper.jarfile}", config.getWrapperJarPath());
-                line = line.replaceAll("\\$\\{wrapper.java.command}", config.getJavaCommand());
+                line = line.replaceAll("\\$\\{wrapper.java.command}", javaCommand);
                 line = line.replaceAll("\\$\\{wrapper.run.as.user}",
                         config.getRunAsUser() == null || config.getRunAsUser().length() == 0 ? "root" : config.getRunAsUser());
                 writer.write(line + "\n");
@@ -404,6 +416,39 @@ public class UnixService extends WrapperService {
             }
             if (cmdOutput != null && cmdOutput.size() > 0) {
                 ret = Integer.parseInt(cmdOutput.get(0));
+            }
+        }
+        return ret;
+    }
+    
+    private String getAbsolutePath(String command) {
+        String ret = command;
+        List<String> cmd = new ArrayList<String>();
+        cmd.add("which");
+        cmd.add(command);
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.redirectErrorStream(true);
+        Process process = null;
+        try {
+            process = pb.start();
+            process.waitFor();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+        if (process != null) {
+            ArrayList<String> cmdOutput = new ArrayList<String>();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    cmdOutput.add(line);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new WrapperException(Constants.RC_FAIL_EXECUTION, 0, "Unable to read from command: " + cmd, e);
+            }
+            if (cmdOutput != null && cmdOutput.size() > 0) {
+                ret = cmdOutput.get(0);
             }
         }
         return ret;
