@@ -713,6 +713,9 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         } else if (StringUtils.containsIgnoreCase(sqlType, "uniqueidentifier(")) {
             sqlType.setLength(0);
             sqlType.append("uniqueidentifier");
+        } else if (StringUtils.containsIgnoreCase(sqlType, "sysname(")) {
+            sqlType.setLength(0);
+            sqlType.append("sysname");
         }
     }
 
