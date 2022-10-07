@@ -86,8 +86,8 @@ public class UnixService extends WrapperService {
             if (javaCommand == null) {
                 javaCommand = "java";
             }
-            if (! javaCommand.startsWith(File.separator)) {
-                if ( ! javaCommand.contains(File.separator)) {
+            if (!javaCommand.startsWith(File.separator)) {
+                if (!javaCommand.contains(File.separator)) {
                     javaCommand = getAbsolutePath(javaCommand);
                 } else {
                     String cwd = System.getProperty("user.dir");
@@ -420,7 +420,7 @@ public class UnixService extends WrapperService {
         }
         return ret;
     }
-    
+
     private String getAbsolutePath(String command) {
         String ret = command;
         List<String> cmd = new ArrayList<String>();
