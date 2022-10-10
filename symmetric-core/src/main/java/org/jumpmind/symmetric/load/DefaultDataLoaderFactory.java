@@ -34,6 +34,7 @@ import org.jumpmind.db.platform.kafka.KafkaPlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.DatabaseConstants;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -92,13 +93,38 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                         symmetricDialect.getTablePrefix(), new DefaultTransformWriterConflictResolver(transformWriter),
                         buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
             } else if (targetPlatform instanceof KafkaPlatform) {
-                if (filters == null) {
-                    filters = new ArrayList<IDatabaseWriterFilter>();
-                }
-                filters.add(new KafkaWriterFilter(this.parameterService));
+//                if (filters == null) {
+//                    filters = new ArrayList<IDatabaseWriterFilter>();
+//                }
+                String url;
+                String producer;
+                String externalNodeID;
+                String outputFormat;
+                String topicBy;
+                String messageBy;
+                String confluentUrl;
+                String schemaPackage;
+                String loadOnlyPrefix;
+                TypedProperties props;
+                String runtimeConfigTablePrefix;
+                String channelReload;
+                // filters.add(new KafkaWriterFilter(this.parameterService));
+                producer = this.parameterService.getString(ParameterConstants.KAFKA_PRODUCER, "SymmetricDS");
+                outputFormat = parameterService.getString(ParameterConstants.KAFKA_FORMAT, KafkaWriter.KAFKA_FORMAT_JSON);
+                topicBy = parameterService.getString(ParameterConstants.KAFKA_TOPIC_BY, KafkaWriter.KAFKA_TOPIC_BY_CHANNEL);
+                messageBy = parameterService.getString(ParameterConstants.KAFKA_MESSAGE_BY, KafkaWriter.KAFKA_MESSAGE_BY_BATCH);
+                confluentUrl = parameterService.getString(ParameterConstants.KAFKA_CONFLUENT_REGISTRY_URL);
+                schemaPackage = parameterService.getString(ParameterConstants.KAFKA_AVRO_JAVA_PACKAGE);
+                externalNodeID = parameterService.getExternalId();
+                loadOnlyPrefix = ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX;
+                props = parameterService.getAllParameters();
+                url = parameterService.getString(ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + "db.url");
+                runtimeConfigTablePrefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX);
+                channelReload = Constants.CHANNEL_RELOAD;
                 return new KafkaWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                         symmetricDialect.getTablePrefix(), new DefaultTransformWriterConflictResolver(transformWriter),
-                        buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
+                        buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData), producer, outputFormat, topicBy,
+                        messageBy, confluentUrl, schemaPackage, externalNodeID, url, loadOnlyPrefix, props, runtimeConfigTablePrefix, channelReload);
             }
         } catch (Exception e) {
             log.warn("Failed to create writer for platform " + targetPlatform.getClass().getSimpleName(), e);
