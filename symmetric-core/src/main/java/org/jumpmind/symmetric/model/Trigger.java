@@ -213,6 +213,7 @@ public class Trigger implements IModelObject, Cloneable {
             for (int i = 0; i < pks.length; i++) {
                 orderedColumns.add(pks[i]);
             }
+            List<Column> endingColumns = new ArrayList<Column>();
             for (int i = 0; i < cols.length; i++) {
                 boolean syncKey = false;
                 for (int j = 0; j < pks.length; j++) {
@@ -221,9 +222,14 @@ public class Trigger implements IModelObject, Cloneable {
                         break;
                     }
                 }
-                if (!syncKey) {
+                if (cols[i].getJdbcTypeName().equalsIgnoreCase("LONG")) {
+                    endingColumns.add(cols[i]);
+                } else if (!syncKey) {
                     orderedColumns.add(cols[i]);
                 }
+            }
+            for (Column column : endingColumns) {
+                orderedColumns.add(column);
             }
             Column[] result = orderedColumns.toArray(new Column[orderedColumns.size()]);
             return filterExcludedAndIncludedColumns(result);
