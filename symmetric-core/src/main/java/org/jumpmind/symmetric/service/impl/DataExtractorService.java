@@ -148,6 +148,7 @@ import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.ITransformService;
@@ -1292,8 +1293,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (!isRetry && parameterService.is(ParameterConstants.OUTGOING_BATCH_COPY_TO_INCOMING_STAGING) &&
                             !parameterService.is(ParameterConstants.NODE_OFFLINE, false)) {
                         ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByUrl(targetNode.getSyncUrl());
-                        if (targetEngine != null && extractedBatch.isFileResource() && targetEngine.getParameterService().is(
-                                ParameterConstants.STREAM_TO_FILE_ENABLED)) {
+                        IParameterService targetParam = targetEngine.getParameterService();
+                        if (targetEngine != null && extractedBatch.isFileResource() && targetParam.is(ParameterConstants.STREAM_TO_FILE_ENABLED)
+                                && (!targetParam.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) || targetParam.is(
+                                        ParameterConstants.CLUSTER_STAGING_ENABLED))) {
                             Node sourceNode = nodeService.findIdentity();
                             Node targetNodeByEngine = targetEngine.getNodeService().findIdentity();
                             if ((sourceNode != null && sourceNode.equals(targetNodeByEngine)) || (targetNodeByEngine != null && !targetNodeByEngine.equals(
