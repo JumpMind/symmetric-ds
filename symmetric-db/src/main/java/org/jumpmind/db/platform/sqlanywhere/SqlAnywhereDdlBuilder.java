@@ -425,7 +425,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
                 delimitedIdentifierModeOn);
         ddl.append(" DEFAULT ");
         if (isValidDefaultValue(change.getNewDefaultValue(), curColumn.getMappedTypeCode())) {
-            printDefaultValue(change.getNewDefaultValue(), curColumn.getMappedTypeCode(), ddl);
+            printDefaultValue(change.getNewDefaultValue(), curColumn, ddl);
         } else {
             ddl.append("NULL");
         }

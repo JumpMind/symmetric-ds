@@ -134,6 +134,27 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
+    public String mapDefaultValue(Object defaultValue, Column column) {
+        String newValue = super.mapDefaultValue(defaultValue, column);
+        int typeCode = column.getMappedTypeCode();
+        if ((typeCode == Types.TIMESTAMP || typeCode == ColumnTypes.TIMESTAMPTZ || typeCode == ColumnTypes.TIMESTAMPLTZ)
+                && !column.allPlatformColumnNamesContain("mssql")) {
+            String uppercaseValue = newValue.trim().toUpperCase();
+            if (uppercaseValue.startsWith("SYSDATE") || uppercaseValue.startsWith("SYSTIMESTAMP")
+                    || uppercaseValue.startsWith("CURRENT_DATE") || uppercaseValue.startsWith("CURRENT_TIMESTAMP")
+                    || uppercaseValue.startsWith("CURRENT DATE") || uppercaseValue.startsWith("CURRENT TIMESTAMP")
+                    || uppercaseValue.startsWith("LOCALTIME") || uppercaseValue.startsWith("NOW(")
+                    || uppercaseValue.startsWith("TRANSACTION_TIMESTAMP(") || uppercaseValue.startsWith("STATEMENT_TIMESTAMP(")
+                    || uppercaseValue.startsWith("CLOCK_TIMESTAMP(")) {
+                newValue = "GETDATE()";
+            } else if (uppercaseValue.startsWith("UTC_TIMESTAMP")) {
+                newValue = "GETUTCDATE()";
+            }
+        }
+        return newValue;
+    }
+
+    @Override
     protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         writeQuotationOnStatement(ddl);
         super.createTable(table, ddl, temporary, recreate);
@@ -722,16 +743,25 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void writeColumnDefaultValue(Table table, Column column, StringBuilder ddl) {
         String defaultValue = getNativeDefaultValue(column);
-        int typeCode = column.getMappedTypeCode();
         PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
         if (platformColumn != null && StringUtils.containsIgnoreCase(platformColumn.getType(), "uniqueidentifier")) {
-            String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
+            String defaultValueStr = mapDefaultValue(defaultValue, column);
             if (StringUtils.containsIgnoreCase(defaultValueStr, "NEWID()") || StringUtils.containsIgnoreCase(defaultValueStr, "NEWSEQUENTIALID()")) {
                 ddl.append(defaultValueStr);
                 return;
             }
         }
-        printDefaultValue(defaultValue, typeCode, ddl);
+        printDefaultValue(defaultValue, column, ddl);
+    }
+
+    @Override
+    protected boolean shouldUseQuotes(String defaultValue, Column column) {
+        String defaultValueStr = mapDefaultValue(defaultValue, column);
+        while (defaultValueStr != null && defaultValueStr.startsWith("(") && defaultValueStr.endsWith(")")) {
+            defaultValueStr = defaultValueStr.substring(1, defaultValueStr.length() - 1);
+        }
+        return super.shouldUseQuotes(defaultValue, column) && !(defaultValueStr.trim().toUpperCase().startsWith("GETDATE(")
+                || defaultValueStr.trim().toUpperCase().startsWith("GETUTCDATE("));
     }
 
     @Override

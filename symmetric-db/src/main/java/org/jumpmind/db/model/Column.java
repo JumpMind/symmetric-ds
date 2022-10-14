@@ -559,9 +559,7 @@ public class Column implements Cloneable, Serializable {
                         break;
                 }
             } catch (NumberFormatException ex) {
-                return null;
             } catch (IllegalArgumentException ex) {
-                return null;
             }
         }
         return defaultValue;
@@ -604,6 +602,24 @@ public class Column implements Cloneable, Serializable {
             platformColumn = platformColumns.get(name);
         }
         return platformColumn;
+    }
+
+    public boolean anyPlatformColumnNameContains(String name) {
+        for (String platformColumnName : platformColumns.keySet()) {
+            if (platformColumnName != null && platformColumnName.contains(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean allPlatformColumnNamesContain(String name) {
+        for (String platformColumnName : platformColumns.keySet()) {
+            if (platformColumnName != null && !platformColumnName.contains(name)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

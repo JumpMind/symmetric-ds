@@ -140,26 +140,44 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected String mapDefaultValue(Object defaultValue, int typeCode) {
-        String newValue = super.mapDefaultValue(defaultValue, typeCode);
+    public String mapDefaultValue(Object defaultValue, Column column) {
+        String newValue = super.mapDefaultValue(defaultValue, column);
+        int typeCode = column.getMappedTypeCode();
         if ((typeCode == Types.TIMESTAMP || typeCode == ColumnTypes.ORACLE_TIMESTAMPTZ
-                || typeCode == ColumnTypes.ORACLE_TIMESTAMPLTZ)
-                && (newValue.startsWith("(") && newValue.endsWith(")"))) {
-            newValue = newValue.substring(1, newValue.length() - 1);
+                || typeCode == ColumnTypes.ORACLE_TIMESTAMPLTZ)) {
+            if (newValue.startsWith("(") && newValue.endsWith(")")) {
+                newValue = newValue.substring(1, newValue.length() - 1);
+            }
+            if (!column.allPlatformColumnNamesContain("oracle")) {
+                String uppercaseValue = newValue.trim().toUpperCase();
+                if (uppercaseValue.startsWith("SYSDATE(")) {
+                    newValue = "SYSDATE";
+                } else if (uppercaseValue.startsWith("CURRENT_TIMESTAMP") || uppercaseValue.startsWith("CURRENT TIMESTAMP")
+                        || uppercaseValue.startsWith("GETDATE(") || uppercaseValue.startsWith("SYSDATETIME")
+                        || uppercaseValue.startsWith("NOW(") || uppercaseValue.startsWith("LOCALTIME")
+                        || uppercaseValue.startsWith("TRANSACTION_TIMESTAMP(") || uppercaseValue.startsWith("STATEMENT_TIMESTAMP(")
+                        || uppercaseValue.startsWith("CLOCK_TIMESTAMP(")) {
+                    newValue = "SYSTIMESTAMP";
+                } else if (uppercaseValue.startsWith("GETUTCDATE(") || uppercaseValue.startsWith("SYSUTCDATETIME(")
+                        || uppercaseValue.startsWith("UTC_TIMESTAMP")) {
+                    newValue = "SYS_EXTRACT_UTC(SYSTIMESTAMP)";
+                }
+            }
         }
         return newValue;
     }
 
     @Override
-    protected void printDefaultValue(String defaultValue, int typeCode, StringBuilder ddl) {
-        String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
-        if (defaultValueStr != null && (defaultValueStr.trim().toUpperCase().startsWith("SYS_GUID")
-                || defaultValueStr.trim().toUpperCase().startsWith("SYS_CONTEXT")
-                || defaultValueStr.trim().toUpperCase().startsWith("NVL"))) {
-            ddl.append(defaultValueStr);
-        } else {
-            super.printDefaultValue(defaultValue, typeCode, ddl);
+    protected boolean shouldUseQuotes(String defaultValue, Column column) {
+        String defaultValueStr = mapDefaultValue(defaultValue, column);
+        while (defaultValueStr != null && defaultValueStr.startsWith("(") && defaultValueStr.endsWith(")")) {
+            defaultValueStr = defaultValueStr.substring(1, defaultValueStr.length() - 1);
         }
+        return super.shouldUseQuotes(defaultValue, column) && !(defaultValueStr.trim().toUpperCase().startsWith("SYSTIMESTAMP")
+                || defaultValueStr.trim().toUpperCase().startsWith("SYS_EXTRACT_UTC(")
+                || defaultValueStr.trim().toUpperCase().startsWith("SYS_GUID")
+                || defaultValueStr.trim().toUpperCase().startsWith("SYS_CONTEXT")
+                || defaultValueStr.trim().toUpperCase().startsWith("NVL"));
     }
 
     @Override

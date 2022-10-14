@@ -43,6 +43,8 @@ import java.sql.Types;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.alter.AddColumnChange;
@@ -136,6 +138,48 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         addEscapedCharSequence("\n", "\\n");
         addEscapedCharSequence("\r", "\\r");
         addEscapedCharSequence("\t", "\\t");
+    }
+
+    public String mapDefaultValue(Object defaultValue, Column column) {
+        String newValue = super.mapDefaultValue(defaultValue, column);
+        int typeCode = column.getMappedTypeCode();
+        if ((typeCode == Types.TIMESTAMP || typeCode == ColumnTypes.TIMESTAMPTZ || typeCode == ColumnTypes.TIMESTAMPLTZ)
+                && !column.allPlatformColumnNamesContain("postgres")) {
+            String uppercaseValue = newValue.trim().toUpperCase();
+            if (uppercaseValue.startsWith("CURRENT_DATE") || uppercaseValue.startsWith("CURRENT DATE")
+                    || (column.anyPlatformColumnNameContains("oracle") && uppercaseValue.startsWith("SYSDATE"))
+                    || (column.anyPlatformColumnNameContains("mysql") && !uppercaseValue.matches(".*\\d.*")
+                            && (uppercaseValue.startsWith("NOW") || uppercaseValue.startsWith("CURRENT_TIMESTAMP")
+                                    || uppercaseValue.startsWith("LOCALTIME") || uppercaseValue.startsWith("SYSDATE")))) {
+                newValue = "CURRENT_TIMESTAMP(0)";
+            } else if (column.anyPlatformColumnNameContains("mssql")
+                    && (uppercaseValue.startsWith("GETDATE(") || uppercaseValue.startsWith("CURRENT_TIMESTAMP"))) {
+                newValue = "CURRENT_TIMESTAMP(3)";
+            } else if (uppercaseValue.startsWith("SYSTIMESTAMP") || uppercaseValue.startsWith("SYSDATETIME(")) {
+                newValue = "CURRENT_TIMESTAMP";
+            } else if (column.anyPlatformColumnNameContains("mysql") && uppercaseValue.startsWith("SYSDATE(")) {
+                newValue = StringUtils.replaceOnceIgnoreCase(newValue, "sysdate", "CURRENT_TIMESTAMP");
+            } else if (uppercaseValue.startsWith("SYSDATETIMEOFFSET(")) {
+                newValue = "LOCALTIMESTAMP";
+            } else if (uppercaseValue.startsWith("GETUTCDATE(")) {
+                newValue = "TIMEZONE('utc', CURRENT_TIMESTAMP(3))";
+            } else if (uppercaseValue.startsWith("SYSUTCDATETIME(")) {
+                newValue = "TIMEZONE('utc', CURRENT_TIMESTAMP)";
+            } else if (uppercaseValue.startsWith("UTC_TIMESTAMP")) {
+                if (uppercaseValue.matches(".*\\d.*")) {
+                    Matcher matcher = Pattern.compile("\\d").matcher(uppercaseValue);
+                    matcher.find();
+                    int precision = Integer.valueOf(matcher.group());
+                    if (precision > 6) {
+                        precision = 6;
+                    }
+                    newValue = "TIMEZONE('utc', CURRENT_TIMESTAMP(" + precision + "))";
+                } else {
+                    newValue = "TIMEZONE('utc', CURRENT_TIMESTAMP(0))";
+                }
+            }
+        }
+        return newValue;
     }
 
     public static boolean isUsePseudoSequence() {
@@ -430,7 +474,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             Column column = change.getChangedColumn();
             printIdentifier(getColumnName(column), ddl);
             ddl.append(" SET DEFAULT ");
-            printDefaultValue(change.getNewDefaultValue(), column.getMappedTypeCode(), ddl);
+            printDefaultValue(change.getNewDefaultValue(), column, ddl);
             printEndOfStatement(ddl);
         }
     }
@@ -479,7 +523,8 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected void printDefaultValue(String defaultValue, int typeCode, StringBuilder ddl) {
+    protected void printDefaultValue(String defaultValue, Column column, StringBuilder ddl) {
+        int typeCode = column.getMappedTypeCode();
         if (defaultValue != null &&
                 ((defaultValue.endsWith("::uuid") && Types.OTHER == typeCode) ||
                         (defaultValue.contains("::") && Types.ARRAY == typeCode))) {
@@ -497,8 +542,17 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
                 ddl.append(defaultValue);
             }
         } else {
-            super.printDefaultValue(defaultValue, typeCode, ddl);
+            super.printDefaultValue(defaultValue, column, ddl);
         }
+    }
+
+    @Override
+    protected boolean shouldUseQuotes(String defaultValue, Column column) {
+        String defaultValueStr = mapDefaultValue(defaultValue, column);
+        while (defaultValueStr != null && defaultValueStr.startsWith("(") && defaultValueStr.endsWith(")")) {
+            defaultValueStr = defaultValueStr.substring(1, defaultValueStr.length() - 1);
+        }
+        return super.shouldUseQuotes(defaultValue, column) && !defaultValueStr.trim().toUpperCase().startsWith("TIMEZONE(");
     }
 
     @Override
