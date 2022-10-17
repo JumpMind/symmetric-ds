@@ -135,24 +135,34 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     public String mapDefaultValue(Object defaultValue, Column column) {
-        if (TypeMap.isDateTimeType(column.getMappedTypeCode()) && defaultValue != null) {
+        if (defaultValue != null) {
             String defaultValueStr = defaultValue.toString();
-            if (defaultValueStr.toUpperCase().startsWith("SYSDATE")
-                    || defaultValueStr.toUpperCase().startsWith("CURRENT_DATE")) {
-                return "CURRENT_DATE";
-            } else if (defaultValueStr.toUpperCase().startsWith("SYSTIMESTAMP")
-                    || defaultValueStr.toUpperCase().startsWith("CURRENT_TIMESTAMP")) {
-                return "CURRENT_TIMESTAMP";
-            } else if (defaultValueStr.toUpperCase().startsWith("SYSTIME")
-                    || defaultValueStr.toUpperCase().startsWith("CURRENT_TIME")) {
-                return "CURRENT_TIME";
-            } else if (defaultValueStr.contains("('")) {
-                int beginIndex = defaultValueStr.indexOf("('");
-                int lastIndex = defaultValueStr.lastIndexOf(")");
-                if (lastIndex > beginIndex) {
-                    return defaultValueStr.substring(beginIndex, lastIndex);
-                } else {
-                    return defaultValueStr.substring(beginIndex);
+            if (TypeMap.isDateTimeType(column.getMappedTypeCode())) {
+                if (defaultValueStr.toUpperCase().startsWith("SYSDATE")
+                        || defaultValueStr.toUpperCase().startsWith("CURRENT_DATE")) {
+                    return "CURRENT_DATE";
+                } else if (defaultValueStr.toUpperCase().startsWith("SYSTIMESTAMP")
+                        || defaultValueStr.toUpperCase().startsWith("CURRENT_TIMESTAMP")) {
+                    return "CURRENT_TIMESTAMP";
+                } else if (defaultValueStr.toUpperCase().startsWith("SYSTIME")
+                        || defaultValueStr.toUpperCase().startsWith("CURRENT_TIME")) {
+                    return "CURRENT_TIME";
+                } else if (defaultValueStr.contains("('")) {
+                    int beginIndex = defaultValueStr.indexOf("('");
+                    int lastIndex = defaultValueStr.lastIndexOf(")");
+                    if (lastIndex > beginIndex) {
+                        return defaultValueStr.substring(beginIndex, lastIndex);
+                    } else {
+                        return defaultValueStr.substring(beginIndex);
+                    }
+                }
+            } else {
+                if (defaultValueStr.toUpperCase().startsWith("NEWID(")) {
+                    return "HEX(RANDOMBLOB(4)) || '-' || HEX(RANDOMBLOB(2)) || '-' || HEX(RANDOMBLOB(2)) || '-' || HEX(RANDOMBLOB(2)) || '-'"
+                            + " || HEX(RANDOMBLOB(6))";
+                } else if (defaultValueStr.toUpperCase().startsWith("NEWSEQUENTIALID(")) {
+                    return "HEX(RANDOMBLOB(4)) || '-' || HEX(RANDOMBLOB(2)) || '-' || HEX(RANDOMBLOB(2)) || '-' || HEX(RANDOMBLOB(2)) || '-'"
+                            + " || SUBSTR(PRINTF('%014X', (STRFTIME('%s', 'now') * 1000 + SUBSTR(STRFTIME('%f','now'), 4, 3))), 3, 12)";
                 }
             }
         }
@@ -171,6 +181,15 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         ddl.append("(");
         super.writeColumnDefaultValue(table, column, ddl);
         ddl.append(")");
+    }
+
+    @Override
+    protected boolean shouldUseQuotes(String defaultValue, Column column) {
+        String defaultValueStr = mapDefaultValue(defaultValue, column);
+        while (defaultValueStr != null && defaultValueStr.startsWith("(") && defaultValueStr.endsWith(")")) {
+            defaultValueStr = defaultValueStr.substring(1, defaultValueStr.length() - 1);
+        }
+        return super.shouldUseQuotes(defaultValue, column) && !defaultValueStr.trim().toUpperCase().startsWith("HEX(RANDOMBLOB(");
     }
 
     @Override
