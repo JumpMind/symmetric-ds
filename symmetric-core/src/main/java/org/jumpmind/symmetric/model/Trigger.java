@@ -222,7 +222,7 @@ public class Trigger implements IModelObject, Cloneable {
                         break;
                     }
                 }
-                if (cols[i].getJdbcTypeName().equalsIgnoreCase("LONG")) {
+                if ("LONG".equalsIgnoreCase(cols[i].getJdbcTypeName())) {
                     endingColumns.add(cols[i]);
                 } else if (!syncKey) {
                     orderedColumns.add(cols[i]);
