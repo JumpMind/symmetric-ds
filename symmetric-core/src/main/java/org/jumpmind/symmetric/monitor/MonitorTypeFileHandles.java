@@ -30,7 +30,6 @@ import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
 
 public class MonitorTypeFileHandles implements IMonitorType, IBuiltInExtensionPoint {
-
     @Override
     public String getName() {
         return "fileHandles";
@@ -38,18 +37,18 @@ public class MonitorTypeFileHandles implements IMonitorType, IBuiltInExtensionPo
 
     @Override
     public MonitorEvent check(Monitor monitor) {
-    	MonitorEvent event = new MonitorEvent();
-    	try {
-    		ObjectName oName = new ObjectName("java.lang:type=OperatingSystem");
+        MonitorEvent event = new MonitorEvent();
+        try {
+            ObjectName oName = new ObjectName("java.lang:type=OperatingSystem");
             MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
             int openFiles = Integer.parseInt(mbeanServer.getAttribute(oName, "OpenFileDescriptorCount").toString());
             int maxCount = Integer.parseInt(mbeanServer.getAttribute(oName, "MaxFileDescriptorCount").toString());
-            int percent = (int)((openFiles * 100.0f) / maxCount); 
+            int percent = (int) ((openFiles * 100.0f) / maxCount);
             event.setValue(percent);
             return event;
         } catch (Exception e) {
-        	event.setValue(0);
-        	return event;
+            event.setValue(0);
+            return event;
         }
     }
 
@@ -57,5 +56,4 @@ public class MonitorTypeFileHandles implements IMonitorType, IBuiltInExtensionPo
     public boolean requiresClusterLock() {
         return false;
     }
-
 }

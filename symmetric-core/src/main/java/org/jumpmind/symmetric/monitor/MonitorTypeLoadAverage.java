@@ -28,7 +28,6 @@ import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
 
 public class MonitorTypeLoadAverage implements IMonitorType, IBuiltInExtensionPoint {
-
     @Override
     public String getName() {
         return "loadAverage";
@@ -46,5 +45,4 @@ public class MonitorTypeLoadAverage implements IMonitorType, IBuiltInExtensionPo
     public boolean requiresClusterLock() {
         return false;
     }
-
 }
