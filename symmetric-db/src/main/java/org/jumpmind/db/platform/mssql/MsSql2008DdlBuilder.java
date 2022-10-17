@@ -59,6 +59,48 @@ public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
     }
 
     @Override
+    public String mapDefaultValue(Object defaultValue, Column column) {
+        int typeCode = column.getMappedTypeCode();
+        if (defaultValue != null && (typeCode == Types.TIMESTAMP || typeCode == ColumnTypes.TIMESTAMPTZ
+                || typeCode == ColumnTypes.TIMESTAMPLTZ) && !column.allPlatformColumnNamesContain("mssql")) {
+            String uppercaseValue = defaultValue.toString().trim().toUpperCase();
+            String nativeType = getNativeType(column);
+            boolean isDateTimeOffset = nativeType != null && nativeType.toUpperCase().contains("OFFSET");
+            if (uppercaseValue.startsWith("SYSDATE") || uppercaseValue.startsWith("SYSTIMESTAMP")
+                    || uppercaseValue.startsWith("CURRENT_DATE") || uppercaseValue.startsWith("CURRENT_TIMESTAMP")
+                    || uppercaseValue.startsWith("CURRENT DATE") || uppercaseValue.startsWith("CURRENT TIMESTAMP")
+                    || uppercaseValue.startsWith("LOCALTIME") || uppercaseValue.startsWith("NOW(")
+                    || uppercaseValue.startsWith("TRANSACTION_TIMESTAMP(") || uppercaseValue.startsWith("STATEMENT_TIMESTAMP(")
+                    || uppercaseValue.startsWith("CLOCK_TIMESTAMP(")) {
+                if (isDateTimeOffset) {
+                    return "SYSDATETIMEOFFSET()";
+                }
+                return "SYSDATETIME()";
+            }
+            if (uppercaseValue.startsWith("UTC_TIMESTAMP")) {
+                if (isDateTimeOffset) {
+                    return "SWITCHOFFSET(SYSDATETIMEOFFSET(), '+00:00')";
+                }
+                return "SYSUTCDATETIME()";
+            }
+            return defaultValue.toString();
+        }
+        return super.mapDefaultValue(defaultValue, column);
+    }
+
+    @Override
+    protected boolean shouldUseQuotes(String defaultValue, Column column) {
+        String defaultValueStr = mapDefaultValue(defaultValue, column);
+        while (defaultValueStr != null && defaultValueStr.startsWith("(") && defaultValueStr.endsWith(")")) {
+            defaultValueStr = defaultValueStr.substring(1, defaultValueStr.length() - 1);
+        }
+        return super.shouldUseQuotes(defaultValue, column) && !(defaultValueStr.trim().toUpperCase().startsWith("SYSDATETIME(")
+                || defaultValueStr.trim().toUpperCase().startsWith("SYSDATETIMEOFFSET(")
+                || defaultValueStr.trim().toUpperCase().startsWith("SYSUTCDATETIME(")
+                || defaultValueStr.trim().toUpperCase().startsWith("SWITCHOFFSET("));
+    }
+
+    @Override
     protected boolean hasSize(Column column) {
         if (column.getMappedTypeCode() == Types.TIMESTAMP) {
             PlatformColumn platformColumn = column.findPlatformColumn(databaseName);

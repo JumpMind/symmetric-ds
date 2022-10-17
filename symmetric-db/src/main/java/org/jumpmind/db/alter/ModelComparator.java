@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
@@ -349,14 +350,7 @@ public class ModelComparator {
                 changes.add(new ColumnSizeChange(sourceTable, sourceColumn, targetColumn.getSizeAsInt(), targetColumn.getScale()));
             }
         }
-        Object sourceDefaultValue = sourceColumn.getParsedDefaultValue();
-        Object targetDefaultValue = targetColumn.getParsedDefaultValue();
-        boolean isBigDecimal = sourceDefaultValue instanceof BigDecimal && targetDefaultValue instanceof BigDecimal;
-        if (!targetColumn.isGenerated() && ((sourceDefaultValue == null && targetDefaultValue != null)
-                || (sourceDefaultValue != null && targetDefaultValue == null)
-                || (sourceDefaultValue != null && targetDefaultValue != null &&
-                        ((isBigDecimal && ((BigDecimal) sourceDefaultValue).compareTo((BigDecimal) targetDefaultValue) != 0) ||
-                                (!isBigDecimal && !sourceDefaultValue.toString().equals(targetDefaultValue.toString())))))) {
+        if (!defaultValuesAreEqual(sourceColumn, targetColumn)) {
             log.debug(
                     "The {} column on the {} table changed default value from {} to {} ",
                     new Object[] { sourceColumn.getName(), sourceTable.getName(),
@@ -438,5 +432,40 @@ public class ModelComparator {
             }
         }
         return null;
+    }
+
+    private boolean defaultValuesAreEqual(Column sourceColumn, Column targetColumn) {
+        Object sourceDefaultValue = sourceColumn.getParsedDefaultValue();
+        Object targetDefaultValue = targetColumn.getParsedDefaultValue();
+        if (!targetColumn.isGenerated() && !(sourceDefaultValue == null && targetDefaultValue == null)) {
+            if ((sourceDefaultValue == null && targetDefaultValue != null)
+                    || (sourceDefaultValue != null && targetDefaultValue == null)) {
+                return false;
+            }
+            boolean isBigDecimal = sourceDefaultValue instanceof BigDecimal && targetDefaultValue instanceof BigDecimal;
+            if ((isBigDecimal && ((BigDecimal) sourceDefaultValue).compareTo((BigDecimal) targetDefaultValue) != 0)) {
+                return false;
+            }
+            if (!isBigDecimal) {
+                String sourceDefaultValueString = sourceDefaultValue.toString();
+                String targetDefaultValueString = ddlBuilder.mapDefaultValue(targetDefaultValue, targetColumn).toString();
+                if (!sourceDefaultValueString.equals(targetDefaultValueString)) {
+                    int typeCode = targetColumn.getMappedTypeCode();
+                    if (typeCode == Types.TIMESTAMP || typeCode == ColumnTypes.TIMESTAMPTZ || typeCode == ColumnTypes.TIMESTAMPLTZ) {
+                        if (targetColumn.anyPlatformColumnNameContains("mysql") || targetColumn.anyPlatformColumnNameContains("maria")) {
+                            while (targetDefaultValueString.startsWith("(") && targetDefaultValueString.endsWith(")")) {
+                                targetDefaultValueString = targetDefaultValueString.substring(1, targetDefaultValueString.length() - 1);
+                            }
+                        }
+                        if (targetColumn.anyPlatformColumnNameContains("postgres")) {
+                            sourceDefaultValueString = sourceDefaultValueString.replace("::text", "");
+                        }
+                        return sourceDefaultValueString.equalsIgnoreCase(targetDefaultValueString);
+                    }
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

@@ -33,7 +33,7 @@ public class Channel implements Serializable, Cloneable {
     private String channelId;
     private int processingOrder;
     private int maxBatchSize = 10000;
-    private int maxBatchToSend = 100;
+    private int maxBatchToSend = 10;
     private int maxDataToRoute = 500000;
     private BigDecimal maxKBytesPerSecond = BigDecimal.ZERO;
     private boolean enabled = true;

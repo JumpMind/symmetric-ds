@@ -159,6 +159,41 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
+    public String mapDefaultValue(Object defaultValue, Column column) {
+        String newValue = super.mapDefaultValue(defaultValue, column);
+        int typeCode = column.getMappedTypeCode();
+        if ((typeCode == Types.TIMESTAMP || typeCode == ColumnTypes.TIMESTAMPTZ || typeCode == ColumnTypes.TIMESTAMPLTZ)
+                && (!column.allPlatformColumnNamesContain("mysql") && !column.allPlatformColumnNamesContain("maria"))) {
+            String uppercaseValue = defaultValue.toString().trim().toUpperCase();
+            if (uppercaseValue.startsWith("SYSDATE")) {
+                newValue = "SYSDATE()";
+            } else if (uppercaseValue.startsWith("CURRENT_DATE") || uppercaseValue.startsWith("CURRENT DATE")) {
+                newValue = "NOW()";
+            } else if (column.anyPlatformColumnNameContains("mssql")
+                    && (uppercaseValue.startsWith("GETDATE(") || uppercaseValue.startsWith("CURRENT_TIMESTAMP"))) {
+                newValue = "NOW(3)";
+            } else if (uppercaseValue.startsWith("SYSTIMESTAMP") || uppercaseValue.startsWith("SYSDATETIME")
+                    || uppercaseValue.startsWith("TRANSACTION_TIMESTAMP(")
+                    || uppercaseValue.startsWith("STATEMENT_TIMESTAMP(") || uppercaseValue.startsWith("CLOCK_TIMESTAMP(")
+                    || (column.anyPlatformColumnNameContains("oracle") && uppercaseValue.startsWith("CURRENT_TIMESTAMP")
+                            || uppercaseValue.startsWith("LOCALTIMESTAMP"))
+                    || (column.anyPlatformColumnNameContains("postgres") && !uppercaseValue.matches(".*\\d.*")
+                            && (uppercaseValue.startsWith("NOW") || uppercaseValue.startsWith("CURRENT_TIMESTAMP")
+                                    || uppercaseValue.startsWith("LOCALTIMESTAMP")))) {
+                newValue = "NOW(6)";
+            } else if (uppercaseValue.startsWith("GETUTCDATE(")) {
+                newValue = "UTC_TIMESTAMP(3)";
+            } else if (uppercaseValue.startsWith("SYSUTCDATETIME(")) {
+                newValue = "UTC_TIMESTAMP(6)";
+            }
+            if (newValue.matches(".*[A-Za-z].*") && !(newValue.startsWith("(") && newValue.endsWith(")"))) {
+                newValue = "(" + newValue + ")";
+            }
+        }
+        return newValue;
+    }
+
+    @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         ddl.append("DROP TABLE IF EXISTS ");
         ddl.append(getFullyQualifiedTableNameShorten(table));
@@ -186,7 +221,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     protected void writeColumnDefaultValue(Table table, Column column, StringBuilder ddl) {
         int typeCode = column.getMappedTypeCode();
         String defaultValue = getNativeDefaultValue(column);
-        String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
+        String defaultValueStr = mapDefaultValue(defaultValue, column);
         PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
         if (TypeMap.isDateTimeType(typeCode) && defaultValueStr.toUpperCase().equals("CURRENT_TIMESTAMP") && hasSize(column)) {
             String nativeType = getNativeType(column);
@@ -218,7 +253,16 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
             }
             return;
         }
-        printDefaultValue(defaultValue, typeCode, ddl);
+        printDefaultValue(defaultValue, column, ddl);
+    }
+
+    @Override
+    protected boolean shouldUseQuotes(String defaultValue, Column column) {
+        String defaultValueStr = mapDefaultValue(defaultValue, column);
+        while (defaultValueStr != null && defaultValueStr.startsWith("(") && defaultValueStr.endsWith(")")) {
+            defaultValueStr = defaultValueStr.substring(1, defaultValueStr.length() - 1);
+        }
+        return super.shouldUseQuotes(defaultValue, column) && !defaultValueStr.trim().toUpperCase().startsWith("UTC_TIMESTAMP");
     }
 
     @Override

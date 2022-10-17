@@ -41,4 +41,12 @@ public class ExceptionUtils {
         }
         return cause.getMessage();
     }
+
+    public static Throwable getRootCause(Throwable ex) {
+        Throwable cause = org.apache.commons.lang3.exception.ExceptionUtils.getRootCause(ex);
+        if (cause == null) {
+            cause = ex;
+        }
+        return cause;
+    }
 }

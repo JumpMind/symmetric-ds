@@ -311,6 +311,13 @@ public class AbstractBatch implements Serializable {
         this.sqlMessage = sqlMessage;
     }
 
+    public void setSqlMessage(Throwable t) {
+        this.sqlMessage = t.getMessage();
+        if (this.sqlMessage == null) {
+            this.sqlMessage = t.getClass().getName();
+        }
+    }
+
     public String getLastUpdatedHostName() {
         return lastUpdatedHostName;
     }

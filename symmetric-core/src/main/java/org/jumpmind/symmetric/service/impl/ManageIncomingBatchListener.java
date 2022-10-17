@@ -219,7 +219,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                 } else if (ex instanceof IOException || ex instanceof TransportException
                         || ex instanceof IoException) {
                     log.warn("Failed to load batch " + this.currentBatch.getNodeBatchId(), ex);
-                    this.currentBatch.setSqlMessage(ex.getMessage());
+                    this.currentBatch.setSqlMessage(ex);
                 } else if (ex instanceof ParseException || ex instanceof ProtocolException || ex.getCause() instanceof ZipException) {
                     this.currentBatch.setSqlCode(ErrorConstants.PROTOCOL_VIOLATION_CODE);
                     this.currentBatch.setSqlState(ErrorConstants.PROTOCOL_VIOLATION_STATE);
@@ -231,11 +231,10 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                 } else {
                     SQLException se = ExceptionUtils.unwrapSqlException(ex);
                     if (ex instanceof ConflictException) {
-                        String message = ex.getMessage();
+                        this.currentBatch.setSqlMessage(ex);
                         if (se != null && isNotBlank(se.getMessage())) {
-                            message = message + " " + se.getMessage();
+                            this.currentBatch.setSqlMessage(this.currentBatch.getSqlMessage() + " " + se.getMessage());
                         }
-                        this.currentBatch.setSqlMessage(message);
                         this.currentBatch.setSqlState(ErrorConstants.CONFLICT_STATE);
                         this.currentBatch.setSqlCode(ErrorConstants.CONFLICT_CODE);
                     } else if (se != null) {
@@ -248,7 +247,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                         }
                         this.currentBatch.setSqlState(sqlState);
                         this.currentBatch.setSqlCode(se.getErrorCode());
-                        this.currentBatch.setSqlMessage(se.getMessage());
+                        this.currentBatch.setSqlMessage(se);
                         ISqlTemplate sqlTemplate = null;
                         if (context.getTable() != null) {
                             sqlTemplate = symmetricDialect.getTargetPlatform(context.getTable().getName()).getSqlTemplate();
@@ -263,7 +262,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                             this.currentBatch.setSqlCode(ErrorConstants.DEADLOCK_CODE);
                         }
                     } else {
-                        this.currentBatch.setSqlMessage(ExceptionUtils.getRootMessage(ex));
+                        this.currentBatch.setSqlMessage(ExceptionUtils.getRootCause(ex));
                     }
                     if (ex instanceof TableNotFoundException) {
                         log.error("The incoming batch {} failed: {}", this.currentBatch.getNodeBatchId(), ex.getMessage());

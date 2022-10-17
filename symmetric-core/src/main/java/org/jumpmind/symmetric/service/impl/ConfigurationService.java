@@ -70,27 +70,27 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     protected final void createDefaultChannels() {
         Map<String, Channel> updatedDefaultChannels = new LinkedHashMap<String, Channel>();
         updatedDefaultChannels.put(Constants.CHANNEL_CONFIG,
-                new Channel(Constants.CHANNEL_CONFIG, 0, 2000, 100, true, 0, true));
+                new Channel(Constants.CHANNEL_CONFIG, 0, 2000, 10, true, 0, true));
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
             updatedDefaultChannels.put(Constants.CHANNEL_RELOAD,
-                    new Channel(Constants.CHANNEL_RELOAD, 1, 10000, 100, true, 0, false, true, false));
+                    new Channel(Constants.CHANNEL_RELOAD, 1, 10000, 10, true, 0, false, true, false));
         } else {
             updatedDefaultChannels.put(Constants.CHANNEL_RELOAD,
                     new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0, false, true, false));
         }
         updatedDefaultChannels.put(Constants.CHANNEL_MONITOR,
-                new Channel(Constants.CHANNEL_MONITOR, 2, 100, 100, true, 0, true));
+                new Channel(Constants.CHANNEL_MONITOR, 2, 100, 10, true, 0, true));
         updatedDefaultChannels.put(Constants.CHANNEL_HEARTBEAT,
-                new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 100, true, 0, false));
+                new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 10, true, 0, false));
         updatedDefaultChannels.put(Constants.CHANNEL_DEFAULT,
-                new Channel(Constants.CHANNEL_DEFAULT, 500000, 1000, 100, true, 0, false));
+                new Channel(Constants.CHANNEL_DEFAULT, 500000, 1000, 10, true, 0, false));
         updatedDefaultChannels.put(Constants.CHANNEL_DYNAMIC,
-                new Channel(Constants.CHANNEL_DYNAMIC, 99999, 1000, 100, true, 0, false));
+                new Channel(Constants.CHANNEL_DYNAMIC, 99999, 1000, 10, true, 0, false));
         if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
             updatedDefaultChannels.put(Constants.CHANNEL_FILESYNC,
-                    new Channel(Constants.CHANNEL_FILESYNC, 3, 100, 100, true, 0, false, "nontransactional", false, true));
+                    new Channel(Constants.CHANNEL_FILESYNC, 3, 100, 10, true, 0, false, "nontransactional", false, true));
             updatedDefaultChannels.put(Constants.CHANNEL_FILESYNC_RELOAD,
-                    new Channel(Constants.CHANNEL_FILESYNC_RELOAD, 1, 100, 100, true, 0, false, "nontransactional", true, true));
+                    new Channel(Constants.CHANNEL_FILESYNC_RELOAD, 1, 100, 10, true, 0, false, "nontransactional", true, true));
         }
         this.defaultChannels = updatedDefaultChannels;
     }
