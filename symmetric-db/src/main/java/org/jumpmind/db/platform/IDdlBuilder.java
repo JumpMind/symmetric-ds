@@ -73,6 +73,8 @@ public interface IDdlBuilder {
 
     public String getSqlType(Column column);
 
+    public String mapDefaultValue(Object defaultValue, Column column);
+
     public boolean areColumnSizesTheSame(Column sourceColumn, Column targetColumn);
 
     public List<IModelChange> getDetectedChanges(Database currentModel, Database desiredModel, IAlterDatabaseInterceptor... alterDatabaseInterceptors);

@@ -161,6 +161,14 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             typeToCast = "json";
         } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.JSON)) {
             typeToCast = "json";
+        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.INET)) {
+            typeToCast = "inet";
+        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.CIDR)) {
+            typeToCast = "cidr";
+        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.MACADDR8)) {
+            typeToCast = "macaddr8";
+        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.MACADDR)) {
+            typeToCast = "macaddr";
         }
         if (typeToCast != null && column.getMappedType() != null && column.getMappedType().equals(TypeMap.ARRAY)) {
             typeToCast = typeToCast + "[]";

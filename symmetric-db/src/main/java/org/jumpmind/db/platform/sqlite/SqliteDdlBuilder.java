@@ -134,8 +134,8 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected String mapDefaultValue(Object defaultValue, int typeCode) {
-        if (TypeMap.isDateTimeType(typeCode) && defaultValue != null) {
+    public String mapDefaultValue(Object defaultValue, Column column) {
+        if (TypeMap.isDateTimeType(column.getMappedTypeCode()) && defaultValue != null) {
             String defaultValueStr = defaultValue.toString();
             if (defaultValueStr.toUpperCase().startsWith("SYSDATE")
                     || defaultValueStr.toUpperCase().startsWith("CURRENT_DATE")) {
@@ -156,7 +156,7 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
                 }
             }
         }
-        return super.mapDefaultValue(defaultValue, typeCode);
+        return super.mapDefaultValue(defaultValue, column);
     }
 
     @Override

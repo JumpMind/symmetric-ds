@@ -111,8 +111,8 @@ public class TiberoDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected String mapDefaultValue(Object defaultValue, int typeCode) {
-        String newValue = super.mapDefaultValue(defaultValue, typeCode).trim();
+    public String mapDefaultValue(Object defaultValue, Column column) {
+        String newValue = super.mapDefaultValue(defaultValue, column).trim();
         if (newValue.startsWith("(") && newValue.endsWith(")")) {
             newValue = newValue.substring(1, newValue.length() - 1);
         }

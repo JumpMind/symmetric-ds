@@ -1756,6 +1756,17 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         return databaseInfo.hasSize(column.getMappedTypeCode());
     }
 
+    protected Integer getSize(Column column) {
+        Integer size = column.getSizeAsInt();
+        PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
+        if (platformColumn != null) {
+            size = platformColumn.getSize();
+        } else if (column.getSize() == null || (size == 0 && !TypeMap.isDateTimeType(column.getMappedTypeCode()))) {
+            size = databaseInfo.getDefaultSize(column.getMappedTypeCode());
+        }
+        return size;
+    }
+
     protected void filterColumnSqlType(StringBuilder sqlType) {
         // Default is to not filter but allows subclasses to filter as needed.
     }
@@ -1863,30 +1874,41 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * Prints the default value of the column.
      */
     protected void writeColumnDefaultValue(Table table, Column column, StringBuilder ddl) {
-        printDefaultValue(getNativeDefaultValue(column), column.getMappedTypeCode(), ddl);
+        printDefaultValue(getNativeDefaultValue(column), column, ddl);
     }
 
     /**
      * Prints the default value of the column.
      */
-    protected void printDefaultValue(String defaultValue, int typeCode, StringBuilder ddl) {
+    protected void printDefaultValue(String defaultValue, Column column, StringBuilder ddl) {
+        String defaultValueStr = mapDefaultValue(defaultValue, column);
+        if (shouldUseQuotes(defaultValue, column)) {
+            // characters are only escaped when within a string literal
+            ddl.append(databaseInfo.getValueQuoteToken());
+            ddl.append(escapeStringValue(defaultValueStr));
+            ddl.append(databaseInfo.getValueQuoteToken());
+        } else {
+            ddl.append(defaultValueStr);
+        }
+    }
+
+    protected boolean shouldUseQuotes(String defaultValue, Column column) {
         boolean isNull = false;
         if (defaultValue == null || defaultValue.equalsIgnoreCase("null") || defaultValue.equalsIgnoreCase("(null)")) {
             isNull = true;
         }
-        String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
+        String defaultValueStr = mapDefaultValue(defaultValue, column);
+        while (!isNull && defaultValueStr.startsWith("(") && defaultValueStr.endsWith(")")) {
+            defaultValueStr = defaultValueStr.substring(1, defaultValueStr.length() - 1);
+        }
+        int typeCode = column.getMappedTypeCode();
         boolean shouldUseQuotes = !isNull && !TypeMap.isNumericType(typeCode)
                 && !(TypeMap.isDateTimeType(typeCode) && (defaultValueStr.toUpperCase().startsWith("TO_DATE(")
                         || defaultValueStr.toUpperCase().startsWith("TO_TIMESTAMP(")
                         || defaultValueStr.toUpperCase().startsWith("SYSDATE")
-                        || defaultValueStr.toUpperCase().startsWith("SYSTIMESTAMP")
-                        || defaultValueStr.toUpperCase().startsWith("SYS_EXTRACT_UTC(")
-                        || defaultValueStr.toUpperCase().startsWith("GETDATE(")
-                        || defaultValueStr.toUpperCase().startsWith("GETUTCDATE(")
-                        || defaultValueStr.toUpperCase().startsWith("CURRENT_TIMESTAMP")
+                        || defaultValueStr.toUpperCase().startsWith("NOW(")
                         || defaultValueStr.toUpperCase().startsWith("CURRENT_TIME")
                         || defaultValueStr.toUpperCase().startsWith("CURRENT_DATE")
-                        || defaultValueStr.toUpperCase().startsWith("CURRENT TIMESTAMP")
                         || defaultValueStr.toUpperCase().startsWith("CURRENT TIME")
                         || defaultValueStr.toUpperCase().startsWith("CURRENT DATE")
                         || defaultValueStr.toUpperCase().startsWith("CURRENT_USER")
@@ -1900,17 +1922,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                         || defaultValueStr.toUpperCase().startsWith("TIMESTAMP '")
                         || defaultValueStr.toUpperCase().startsWith("INTERVAL '")))
                 && !(defaultValueStr.toUpperCase().startsWith("N'") && defaultValueStr.endsWith("'"));
-        if (shouldUseQuotes) {
-            // characters are only escaped when within a string literal
-            ddl.append(databaseInfo.getValueQuoteToken());
-            ddl.append(escapeStringValue(defaultValueStr));
-            ddl.append(databaseInfo.getValueQuoteToken());
-        } else {
-            ddl.append(defaultValueStr);
-        }
+        return shouldUseQuotes;
     }
 
-    protected String mapDefaultValue(Object defaultValue, int typeCode) {
+    public String mapDefaultValue(Object defaultValue, Column column) {
         if (defaultValue == null) {
             defaultValue = "NULL";
         }

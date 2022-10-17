@@ -132,6 +132,10 @@ public abstract class TypeMap {
     public static final String TSVECTOR = "TSVECTOR";
     public static final String JSONB = "JSONB";
     public static final String JSON = "JSON";
+    public static final String INET = "INET";
+    public static final String CIDR = "CIDR";
+    public static final String MACADDR = "MACADDR";
+    public static final String MACADDR8 = "MACADDR8";
     /** Maps type names to the corresponding {@link java.sql.Types} constants. */
     private static HashMap<String, Integer> _typeNameToTypeCode = new HashMap<String, Integer>();
     /** Maps {@link java.sql.Types} type code constants to the corresponding type names. */

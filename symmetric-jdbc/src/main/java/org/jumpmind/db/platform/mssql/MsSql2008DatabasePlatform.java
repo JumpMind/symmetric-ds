@@ -79,11 +79,11 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
                     result.setStatus(Status.PASS);
                 } else {
                     result.setStatus(Status.FAIL);
-                    result.setSolution("Enable snapshot isolation for this database."); 
+                    result.setSolution("Enable snapshot isolation for this database.");
                 }
             } else {
                 result.setStatus(Status.FAIL);
-                result.setSolution("Grant alter any database to this user. Or, enable change tracking for this database."); 
+                result.setSolution("Grant alter any database to this user. Or, enable change tracking for this database.");
             }
         } catch (Exception e) {
             result.setSolution("Error occurred checking user permissions");
