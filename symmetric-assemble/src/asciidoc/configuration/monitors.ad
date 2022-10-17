@@ -42,6 +42,10 @@ be compared to a threshold value.
 
 |block|Number of seconds that a transaction has been blocked for.
 
+|loadAverage|Sum of the number of runnable entities queued to the available processors and the number of runnable entities running on the available processors averaged over a period of time. Not implemented for Windows.
+
+|fileHandles|Percentage from 0 to 100 of Operating System's open file handles. Not implemented for Windows.
+
 ifdef::pro[]
 |licenseExpire|Percentage from 0 to 100 of the license usage, with expiration occurring at 100%.
 
