@@ -155,20 +155,7 @@ public class SnapshotUtil {
         IDatabasePlatform targetPlatform = engine.getSymmetricDialect().getTargetPlatform();
         ISymmetricDialect targetDialect = engine.getTargetDialect();
         try {
-            HashMap<CatalogSchema, List<Table>> catalogSchemas = new HashMap<CatalogSchema, List<Table>>();
-            ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
-            List<TriggerHistory> triggerHistories = triggerRouterService.getActiveTriggerHistories();
-            String tablePrefix = engine.getTablePrefix().toUpperCase();
-            for (TriggerHistory triggerHistory : triggerHistories) {
-                if (!triggerHistory.getSourceTableName().toUpperCase().startsWith(tablePrefix)) {
-                    Table table = targetPlatform.getTableFromCache(triggerHistory.getSourceCatalogName(),
-                            triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(), false);
-                    if (table != null) {
-                        addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
-                    }
-                }
-            }
-            addTablesThatLoadIncoming(engine, catalogSchemas);
+            HashMap<CatalogSchema, List<Table>> catalogSchemas = getTablesByCatalogSchema(engine);
             for (CatalogSchema catalogSchema : catalogSchemas.keySet()) {
                 DbExport export = new DbExport(targetPlatform);
                 boolean isDefaultCatalog = StringUtils.equalsIgnoreCase(catalogSchema.getCatalog(), targetPlatform.getDefaultCatalog());
@@ -825,15 +812,6 @@ public class SnapshotUtil {
         return file;
     }
 
-    private static void addTableToMap(HashMap<CatalogSchema, List<Table>> catalogSchemas, CatalogSchema catalogSchema, Table table) {
-        List<Table> tables = catalogSchemas.get(catalogSchema);
-        if (tables == null) {
-            tables = new ArrayList<Table>();
-            catalogSchemas.put(catalogSchema, tables);
-        }
-        tables.add(table);
-    }
-
     public static void outputSymDataForBatchesInError(ISymmetricEngine engine, File tmpDir) {
         String tablePrefix = engine.getTablePrefix();
         DbExport export = new DbExport(engine.getDatabasePlatform());
@@ -866,7 +844,37 @@ public class SnapshotUtil {
         }
     }
 
-    protected static void addTablesThatLoadIncoming(ISymmetricEngine engine, HashMap<CatalogSchema, List<Table>> catalogSchemas) {
+    public static HashMap<CatalogSchema, List<Table>> getTablesByCatalogSchema(ISymmetricEngine engine) {
+        HashMap<CatalogSchema, List<Table>> tables = getTablesForCaptureByCatalogSchema(engine);
+        addTablesForLoadByCatalogSchema(engine, tables);
+        return tables;
+    }
+
+    public static HashMap<CatalogSchema, List<Table>> getTablesForCaptureByCatalogSchema(ISymmetricEngine engine) {
+        IDatabasePlatform targetPlatform = engine.getSymmetricDialect().getTargetPlatform();
+        HashMap<CatalogSchema, List<Table>> catalogSchemas = new HashMap<CatalogSchema, List<Table>>();
+        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+        List<TriggerHistory> triggerHistories = triggerRouterService.getActiveTriggerHistories();
+        String tablePrefix = engine.getTablePrefix().toUpperCase();
+        for (TriggerHistory triggerHistory : triggerHistories) {
+            if (!triggerHistory.getSourceTableName().toUpperCase().startsWith(tablePrefix)) {
+                Table table = targetPlatform.getTableFromCache(triggerHistory.getSourceCatalogName(),
+                        triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(), false);
+                if (table != null) {
+                    addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
+                }
+            }
+        }
+        return catalogSchemas;
+    }
+
+    public static HashMap<CatalogSchema, List<Table>> getTablesForLoadByCatalogSchema(ISymmetricEngine engine) {
+        HashMap<CatalogSchema, List<Table>> tables = new HashMap<CatalogSchema, List<Table>>();
+        addTablesForLoadByCatalogSchema(engine, tables);
+        return tables;
+    }
+
+    protected static void addTablesForLoadByCatalogSchema(ISymmetricEngine engine, HashMap<CatalogSchema, List<Table>> catalogSchemas) {
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
         IParameterService parameterService = engine.getParameterService();
         IDatabasePlatform targetPlatform = engine.getSymmetricDialect().getTargetPlatform();
@@ -937,6 +945,17 @@ public class SnapshotUtil {
                     }
                 }
             }
+        }
+    }
+
+    private static void addTableToMap(HashMap<CatalogSchema, List<Table>> catalogSchemas, CatalogSchema catalogSchema, Table table) {
+        List<Table> tables = catalogSchemas.get(catalogSchema);
+        if (tables == null) {
+            tables = new ArrayList<Table>();
+            catalogSchemas.put(catalogSchema, tables);
+        }
+        if (!tables.contains(table)) {
+            tables.add(table);
         }
     }
 
