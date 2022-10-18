@@ -48,6 +48,13 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
     @Override
     public MonitorEvent check(Monitor monitor) {
         MonitorEvent event = new MonitorEvent();
+        int cpuUsage = getCpuUsage();
+        event.setValue(cpuUsage);
+        event.setDetails(getNotificationMessage(cpuUsage, 0l, 0l));
+        return event;
+    }
+
+    public int getCpuUsage() {
         int availableProcessors = osBean.getAvailableProcessors();
         long prevUpTime = runtimeBean.getUptime();
         long prevProcessCpuTime = getProcessCpuTime();
@@ -59,14 +66,11 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
         long processCpuTime = getProcessCpuTime();
         long elapsedCpu = processCpuTime - prevProcessCpuTime;
         long elapsedTime = upTime - prevUpTime;
-        long value = (long) (elapsedCpu / (elapsedTime * 1000f * availableProcessors));
-        if (value >= 100) {
-            event.setValue(100);
-        } else {
-            event.setValue(value);
+        int cpuUsage = (int) (elapsedCpu / (elapsedTime * 1000f * availableProcessors));
+        if (cpuUsage > 100) {
+            cpuUsage = 100;
         }
-        event.setDetails(getNotificationMessage(value, 0l, 0l));
-        return event;
+        return cpuUsage;
     }
 
     protected long getProcessCpuTime() {
