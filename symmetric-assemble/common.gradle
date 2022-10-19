@@ -279,7 +279,7 @@ subprojects { subproject ->
         commonsFileuploadVersion = '1.4'
         commonsIoVersion = '2.11.0'
         commonsLangVersion = '3.12.0'
-        commonsTextVersion = '1.9'
+        commonsTextVersion = '1.10.0'
         commonsCodecVersion = '1.15'
         commonsCollectionVersion = '4.4'
         commonsVfs = '2.9.0'
