@@ -1293,36 +1293,38 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (!isRetry && parameterService.is(ParameterConstants.OUTGOING_BATCH_COPY_TO_INCOMING_STAGING) &&
                             !parameterService.is(ParameterConstants.NODE_OFFLINE, false)) {
                         ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByUrl(targetNode.getSyncUrl());
-                        IParameterService targetParam = targetEngine.getParameterService();
-                        if (targetEngine != null && extractedBatch.isFileResource() && targetParam.is(ParameterConstants.STREAM_TO_FILE_ENABLED)
-                                && (!targetParam.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) || targetParam.is(
-                                        ParameterConstants.CLUSTER_STAGING_ENABLED))) {
-                            Node sourceNode = nodeService.findIdentity();
-                            Node targetNodeByEngine = targetEngine.getNodeService().findIdentity();
-                            if ((sourceNode != null && sourceNode.equals(targetNodeByEngine)) || (targetNodeByEngine != null && !targetNodeByEngine.equals(
-                                    targetNode))) {
-                                log.warn(
-                                        "Target engine (NodeId {}) is the same engine as the current one and differs from the correct target (NodeId {}). This looks like a mis-configuration of the sync urls '{}'",
-                                        targetNodeByEngine.getNodeId(), targetNode.getNodeId(), targetNode.getSyncUrl());
-                            } else {
-                                IStagedResource targetResource = targetEngine.getStagingManager().create(
-                                        Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId(), currentBatch.getBatchId()),
-                                        currentBatch.getBatchId());
-                                try {
-                                    Files.copy(extractedBatch.getFile().toPath(), targetResource.getFile().toPath(), StandardCopyOption.REPLACE_EXISTING);
-                                    processInfo.setCurrentDataCount(currentBatch.getDataRowCount());
-                                    if (log.isDebugEnabled()) {
-                                        log.debug("Copied file to incoming staging of remote engine {}", targetResource.getFile().getAbsolutePath());
+                        if (targetEngine != null) {
+                            IParameterService targetParam = targetEngine.getParameterService();
+                            if (extractedBatch.isFileResource() && targetParam.is(ParameterConstants.STREAM_TO_FILE_ENABLED)
+                                    && (!targetParam.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) || targetParam.is(
+                                            ParameterConstants.CLUSTER_STAGING_ENABLED))) {
+                                Node sourceNode = nodeService.findIdentity();
+                                Node targetNodeByEngine = targetEngine.getNodeService().findIdentity();
+                                if ((sourceNode != null && sourceNode.equals(targetNodeByEngine)) || (targetNodeByEngine != null && !targetNodeByEngine.equals(
+                                        targetNode))) {
+                                    log.warn(
+                                            "Target engine (NodeId {}) is the same engine as the current one and differs from the correct target (NodeId {}). This looks like a mis-configuration of the sync urls '{}'",
+                                            targetNodeByEngine.getNodeId(), targetNode.getNodeId(), targetNode.getSyncUrl());
+                                } else {
+                                    IStagedResource targetResource = targetEngine.getStagingManager().create(
+                                            Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId(), currentBatch.getBatchId()),
+                                            currentBatch.getBatchId());
+                                    try {
+                                        Files.copy(extractedBatch.getFile().toPath(), targetResource.getFile().toPath(), StandardCopyOption.REPLACE_EXISTING);
+                                        processInfo.setCurrentDataCount(currentBatch.getDataRowCount());
+                                        if (log.isDebugEnabled()) {
+                                            log.debug("Copied file to incoming staging of remote engine {}", targetResource.getFile().getAbsolutePath());
+                                        }
+                                        targetResource.setState(State.DONE);
+                                        isRetry = true;
+                                        if (currentBatch.getSentCount() == 1) {
+                                            statisticManager.incrementDataSent(currentBatch.getChannelId(), currentBatch.getDataRowCount());
+                                            statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), extractedBatch.getFile().length());
+                                        }
+                                    } catch (Exception e) {
+                                        FileUtils.deleteQuietly(targetResource.getFile());
+                                        throw new RuntimeException(e);
                                     }
-                                    targetResource.setState(State.DONE);
-                                    isRetry = true;
-                                    if (currentBatch.getSentCount() == 1) {
-                                        statisticManager.incrementDataSent(currentBatch.getChannelId(), currentBatch.getDataRowCount());
-                                        statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), extractedBatch.getFile().length());
-                                    }
-                                } catch (Exception e) {
-                                    FileUtils.deleteQuietly(targetResource.getFile());
-                                    throw new RuntimeException(e);
                                 }
                             }
                         }
