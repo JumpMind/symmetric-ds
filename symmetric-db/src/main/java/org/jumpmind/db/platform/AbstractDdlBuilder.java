@@ -1846,9 +1846,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                         || defaultValueStr.toUpperCase().startsWith("DATE '")
                         || defaultValueStr.toUpperCase().startsWith("TIME '")
                         || defaultValueStr.toUpperCase().startsWith("TIMESTAMP '")
-                        || defaultValueStr.toUpperCase().startsWith("UUID_GENERATE")
                         || defaultValueStr.toUpperCase().startsWith("INTERVAL '")))
-                && !(defaultValueStr.toUpperCase().startsWith("N'") && defaultValueStr.endsWith("'"));
+                && !(defaultValueStr.toUpperCase().startsWith("N'") && defaultValueStr.endsWith("'"))
+                && !(defaultValueStr.toUpperCase().startsWith("UUID_GENERATE"));
         if (shouldUseQuotes) {
             // characters are only escaped when within a string literal
             ddl.append(databaseInfo.getValueQuoteToken());
