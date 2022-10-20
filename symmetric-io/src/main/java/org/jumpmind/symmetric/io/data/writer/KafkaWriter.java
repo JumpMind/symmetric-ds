@@ -159,7 +159,6 @@ public class KafkaWriter extends DynamicDefaultDatabaseWriter {
                 configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
                 configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
                 configs.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, confluentUrl);
-
                 configs.put(ProducerConfig.CLIENT_ID_CONFIG, clientID);
             }
             for (Object key : this.props.keySet()) {
@@ -237,7 +236,7 @@ public class KafkaWriter extends DynamicDefaultDatabaseWriter {
                     kafkaText.append(",");
                 }
             }
-            kafkaText.append(" } } }");
+            kafkaText.append(" } } }, ");
         } else if (outputFormat.equals(KAFKA_FORMAT_CSV)) {
             // Quote every non-null field, escape quote character by
             // doubling the quote character
