@@ -198,6 +198,6 @@ public class NuoDbTriggerTemplate extends AbstractTriggerTemplate {
 
     @Override
     protected String castDatetimeColumnToString(String columnName) {
-        return "cast(\n" + SymmetricUtils.quote(symmetricDialect, columnName) + " as char) as \n" + columnName;
+        return "cast(\n" + SymmetricUtils.quote(symmetricDialect, columnName) + " as char)";
     }
 }
