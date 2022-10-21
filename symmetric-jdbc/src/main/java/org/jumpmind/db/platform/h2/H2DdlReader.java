@@ -70,10 +70,13 @@ import org.jumpmind.db.sql.SqlException;
  * >https://issues.apache.org/jira/browse/DDLUTILS-185</a>
  */
 public class H2DdlReader extends AbstractJdbcDdlReader {
+    private boolean isVersion2;
+
     public H2DdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
+        isVersion2 = platform.getSqlTemplate().getDatabaseMajorVersion() == 2;
     }
 
     @Override
@@ -93,7 +96,11 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
             return;
         }
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
-        query.append("SELECT column_name, is_computed FROM information_schema.columns WHERE ");
+        String isGeneratedColumnName = "is_computed";
+        if (isVersion2) {
+            isGeneratedColumnName = "is_generated";
+        }
+        query.append("SELECT column_name, " + isGeneratedColumnName + " FROM information_schema.columns WHERE ");
         List<String> l = new ArrayList<String>();
         if (table.getCatalog() != null) {
             query.append("table_catalog = ? AND ");
@@ -109,7 +116,11 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
         for (Column column : columnsToCheck) {
             for (Row row : result) {
                 if (column.getName().equalsIgnoreCase(row.getString("column_name"))) {
-                    column.setGenerated(row.getBoolean("is_computed"));
+                    if (isVersion2) {
+                        column.setGenerated("ALWAYS".equals(row.getString("is_generated")));
+                    } else {
+                        column.setGenerated(row.getBoolean("is_computed"));
+                    }
                     break;
                 }
             }
@@ -146,13 +157,14 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
         if (column.getMappedTypeCode() == Types.DATE) {
             removeColumnSize(column);
         }
+        String defaultValue = column.getDefaultValue();
         if (TypeMap.isTextType(column.getMappedTypeCode())
-                && (column.getDefaultValue() != null)) {
-            column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
+                && (defaultValue != null)) {
+            column.setDefaultValue(unescape(defaultValue, "'", "''"));
         }
         String autoIncrement = (String) values.get("IS_AUTOINCREMENT");
-        if (autoIncrement != null
-                && "YES".equalsIgnoreCase(autoIncrement.trim())) {
+        if ((autoIncrement != null && "YES".equalsIgnoreCase(autoIncrement.trim()))
+                || (isVersion2 && defaultValue != null && defaultValue.toUpperCase().startsWith("NEXTVAL("))) {
             column.setAutoIncrement(true);
             column.setDefaultValue(null);
         }
@@ -161,11 +173,17 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
 
     @Override
     protected String getResultSetSchemaName() {
+        if (isVersion2) {
+            return "TABLE_SCHEM";
+        }
         return "TABLE_SCHEMA";
     }
 
     @Override
     protected String getResultSetCatalogName() {
+        if (isVersion2) {
+            return "TABLE_CAT";
+        }
         return "TABLE_CATALOG";
     }
 

@@ -284,7 +284,7 @@ subprojects { subproject ->
         commonsCollectionVersion = '4.4'
         commonsVfs = '2.9.0'
         hamcrestVersion = '1.3'
-        h2Version = '1.3.176'
+        h2Version = '2.1.214'
         derbyVersion = '10.14.2.0'
         postgresqlVersion =  '42.3.3'
         hsqldbVersion = '2.5.1'

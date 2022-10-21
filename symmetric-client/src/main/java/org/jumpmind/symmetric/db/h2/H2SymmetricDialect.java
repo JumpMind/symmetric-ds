@@ -20,15 +20,18 @@
  */
 package org.jumpmind.symmetric.db.h2;
 
+import java.sql.Types;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.platform.h2.H2DdlBuilder;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractEmbeddedSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -40,11 +43,29 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect implements ISymmetricDialect {
     static final String SQL_DROP_FUNCTION = "DROP ALIAS $(functionName)";
-    static final String SQL_FUNCTION_INSTALLED = "select count(*) from INFORMATION_SCHEMA.FUNCTION_ALIASES where ALIAS_NAME='$(functionName)'";
+    static String SQL_FUNCTION_INSTALLED;
 
     public H2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new H2TriggerTemplate(this);
+        if (!Version.isOlderThanVersion(getProductVersion(), "2.0.202")) {
+            SQL_FUNCTION_INSTALLED = "select count(*) from INFORMATION_SCHEMA.ROUTINES where ROUTINE_NAME='$(functionName)'";
+            platform.getDatabaseInfo().addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR(1000000000)", Types.VARCHAR);
+            platform.getDatabaseInfo().setDefaultSize(Types.CHAR, 1000000000);
+            platform.getDatabaseInfo().setMaxSize("CHAR", 1000000000);
+            platform.getDatabaseInfo().setDefaultSize(Types.VARCHAR, 1000000000);
+            platform.getDatabaseInfo().setMaxSize("VARCHAR", 1000000000);
+            platform.getDatabaseInfo().setDefaultSize(Types.BINARY, 1000000000);
+            platform.getDatabaseInfo().setMaxSize("BINARY", 1000000000);
+            platform.getDatabaseInfo().setDefaultSize(Types.VARBINARY, 1000000000);
+            platform.getDatabaseInfo().setMaxSize("VARBINARY", 1000000000);
+            platform.getDatabaseInfo().setNonBlankCharColumnSpacePadded(true);
+            platform.getDatabaseInfo().setBlankCharColumnSpacePadded(true);
+            platform.getDatabaseInfo().setCharColumnSpaceTrimmed(false);
+            ((H2DdlBuilder) platform.getDdlBuilder()).setVersion2(true);
+        } else {
+            SQL_FUNCTION_INSTALLED = "select count(*) from INFORMATION_SCHEMA.FUNCTION_ALIASES where ALIAS_NAME='$(functionName)'";
+        }
     }
 
     @Override

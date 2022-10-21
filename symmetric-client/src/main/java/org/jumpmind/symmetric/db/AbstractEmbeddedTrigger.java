@@ -25,16 +25,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.time.FastDateFormat;
+import org.h2.jdbc.JdbcBlob;
+import org.h2.jdbc.JdbcClob;
 import org.jumpmind.symmetric.db.h2.H2Trigger;
 import org.jumpmind.symmetric.db.hsqldb.HsqlDbTrigger;
 
@@ -139,10 +146,18 @@ abstract public class AbstractEmbeddedTrigger {
     protected Object appendVirtualTableStringValue(Object value, StringBuilder out) {
         if (value == null) {
             out.append("null");
-        } else if (value instanceof String || value instanceof Reader) {
+        } else if (value instanceof String || value instanceof Reader || value instanceof JdbcClob) {
             if (value instanceof Reader) {
                 try {
                     value = readStringAndClose((Reader) value, -1);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else if (value instanceof JdbcClob) {
+                try {
+                    value = readStringAndClose(((JdbcClob) value).getCharacterStream(), -1);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -163,9 +178,32 @@ abstract public class AbstractEmbeddedTrigger {
             }
             out.append(escapeString(value));
             out.append("'");
+        } else if (value instanceof JdbcBlob) {
+            out.append("'");
+            try {
+                value = new String(readBytesAndClose(((JdbcBlob) value).getBinaryStream(), -1), StandardCharsets.UTF_8);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            out.append(escapeString(value));
+            out.append("'");
         } else if (value instanceof Date) {
             out.append("'");
             out.append(DATE_FORMATTER.format(value));
+            out.append("'");
+        } else if (value instanceof LocalDate) {
+            out.append("'");
+            out.append(((LocalDate) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            out.append("'");
+        } else if (value instanceof LocalTime) {
+            out.append("'");
+            out.append(((LocalTime) value).format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS")));
+            out.append("'");
+        } else if (value instanceof LocalDateTime) {
+            out.append("'");
+            out.append(((LocalDateTime) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
             out.append("'");
         } else if (value instanceof byte[]) {
             out.append("'");

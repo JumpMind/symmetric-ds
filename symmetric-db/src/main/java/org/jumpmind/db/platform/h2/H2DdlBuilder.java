@@ -70,6 +70,8 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
  * The SQL Builder for the H2 database. 
  */
 public class H2DdlBuilder extends AbstractDdlBuilder {
+    private boolean isVersion2;
+
     public H2DdlBuilder() {
         super(DatabaseNamesConstants.H2);
         databaseInfo.setNonPKIdentityColumnsSupported(false);
@@ -105,6 +107,50 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setNullAsDefaultValueRequired(true);
         databaseInfo.setGeneratedColumnsSupported(true);
+    }
+
+    @Override
+    protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
+        if (isVersion2 && !temporary && !recreate) {
+            for (int idx = 0; idx < table.getColumnCount(); idx++) {
+                Column column = table.getColumn(idx);
+                if (column.isAutoIncrement()) {
+                    createAutoIncrementSequence(table, column, ddl);
+                }
+            }
+        }
+        super.createTable(table, ddl, temporary, recreate);
+    }
+
+    private void createAutoIncrementSequence(Table table, Column column, StringBuilder ddl) {
+        ddl.append("CREATE SEQUENCE ");
+        if (StringUtils.isNotBlank(table.getSchema())) {
+            printIdentifier(table.getSchema(), ddl);
+            ddl.append(".");
+        }
+        printIdentifier(getConstraintName(null, table, column.getName(), "SEQ"), ddl);
+        printEndOfStatement(ddl);
+    }
+
+    @Override
+    protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
+        super.dropTable(table, ddl, temporary, recreate);
+        if (isVersion2 && !temporary && !recreate) {
+            Column[] columns = table.getAutoIncrementColumns();
+            for (int idx = 0; idx < columns.length; idx++) {
+                dropAutoIncrementSequence(table, columns[idx], ddl);
+            }
+        }
+    }
+
+    private void dropAutoIncrementSequence(Table table, Column column, StringBuilder ddl) {
+        ddl.append("DROP SEQUENCE ");
+        if (StringUtils.isNotBlank(table.getSchema())) {
+            printIdentifier(table.getSchema(), ddl);
+            ddl.append(".");
+        }
+        printIdentifier(getConstraintName(null, table, column.getName(), "SEQ"), ddl);
+        printEndOfStatement(ddl);
     }
 
     @Override
@@ -171,6 +217,9 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
         printEndOfStatement(ddl);
+        if (isVersion2 && change.getColumn().isAutoIncrement()) {
+            dropAutoIncrementSequence(change.getChangedTable(), change.getColumn(), ddl);
+        }
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
@@ -208,7 +257,15 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
 
     @Override
     protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
-        ddl.append("AUTO_INCREMENT");
+        if (isVersion2) {
+            ddl.append("DEFAULT nextval('");
+            if (StringUtils.isNotBlank(table.getSchema())) {
+                ddl.append(table.getSchema()).append(".");
+            }
+            ddl.append(getConstraintName(null, table, column.getName(), "SEQ")).append("')");
+        } else {
+            ddl.append("AUTO_INCREMENT");
+        }
     }
 
     @Override
@@ -223,5 +280,9 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         ddl.append("ALTER COLUMN ");
         writeColumn(table, column, ddl);
         printEndOfStatement(ddl);
+    }
+
+    public void setVersion2(boolean isVersion2) {
+        this.isVersion2 = isVersion2;
     }
 }
