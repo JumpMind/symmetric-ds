@@ -1902,7 +1902,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             defaultValueStr = defaultValueStr.substring(1, defaultValueStr.length() - 1);
         }
         int typeCode = column.getMappedTypeCode();
-        boolean shouldUseQuotes = !isNull && !TypeMap.isNumericType(typeCode)
+        boolean shouldUseQuotes = !isNull && !defaultValueStr.contains("()") && !TypeMap.isNumericType(typeCode)
                 && !(TypeMap.isDateTimeType(typeCode) && (defaultValueStr.toUpperCase().startsWith("TO_DATE(")
                         || defaultValueStr.toUpperCase().startsWith("TO_TIMESTAMP(")
                         || defaultValueStr.toUpperCase().startsWith("SYSDATE")
