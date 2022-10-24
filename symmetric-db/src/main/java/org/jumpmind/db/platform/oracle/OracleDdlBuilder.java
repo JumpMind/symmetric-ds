@@ -142,6 +142,9 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     @Override
     public String mapDefaultValue(Object defaultValue, Column column) {
         String newValue = super.mapDefaultValue(defaultValue, column);
+        if (databaseInfo.getDefaultValuesToTranslate().containsKey(defaultValue.toString())) {
+            return newValue;
+        }
         int typeCode = column.getMappedTypeCode();
         if ((typeCode == Types.TIMESTAMP || typeCode == ColumnTypes.ORACLE_TIMESTAMPTZ
                 || typeCode == ColumnTypes.ORACLE_TIMESTAMPLTZ)) {

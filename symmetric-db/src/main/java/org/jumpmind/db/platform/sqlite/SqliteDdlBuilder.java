@@ -22,6 +22,7 @@ package org.jumpmind.db.platform.sqlite;
 
 import java.sql.Connection;
 import java.sql.Types;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
@@ -137,6 +138,10 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
     public String mapDefaultValue(Object defaultValue, Column column) {
         if (defaultValue != null) {
             String defaultValueStr = defaultValue.toString();
+            Map<String, String> defaultValuesToTranslate = databaseInfo.getDefaultValuesToTranslate();
+            if (defaultValuesToTranslate.containsKey(defaultValueStr)) {
+                return defaultValuesToTranslate.get(defaultValueStr);
+            }
             if (TypeMap.isDateTimeType(column.getMappedTypeCode())) {
                 if (defaultValueStr.toUpperCase().startsWith("SYSDATE")
                         || defaultValueStr.toUpperCase().startsWith("CURRENT_DATE")) {

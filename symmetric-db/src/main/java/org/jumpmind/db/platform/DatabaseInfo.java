@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.jumpmind.db.model.ColumnTypes;
 import org.slf4j.Logger;
@@ -210,6 +211,8 @@ public class DatabaseInfo {
      * Contains those JDBC types whose corresponding native types are types that have precision and scale on this platform.
      */
     private HashSet<Integer> typesWithPrecisionAndScale = new HashSet<Integer>();
+    private Supplier<Set<String>> defaultValuesToLeaveUnquotedSupplier;
+    private Supplier<Map<String, String>> defaultValuesToTranslateSupplier;
     /**
      * The minimum transaction isolation level for the given database that will prevent phantom reads from occurring. Default is TRANSACTION_READ_COMMITTED
      * which covers most dbs
@@ -1136,6 +1139,28 @@ public class DatabaseInfo {
         } else {
             this.typesWithPrecisionAndScale.remove(Integer.valueOf(sqlTypeCode));
         }
+    }
+
+    public Set<String> getDefaultValuesToLeaveUnquoted() {
+        if (defaultValuesToLeaveUnquotedSupplier != null) {
+            return defaultValuesToLeaveUnquotedSupplier.get();
+        }
+        return new HashSet<String>();
+    }
+
+    public void setDefaultValuesToLeaveUnquotedSupplier(Supplier<Set<String>> defaultValuesToLeaveUnquotedSupplier) {
+        this.defaultValuesToLeaveUnquotedSupplier = defaultValuesToLeaveUnquotedSupplier;
+    }
+
+    public Map<String, String> getDefaultValuesToTranslate() {
+        if (defaultValuesToTranslateSupplier != null) {
+            return defaultValuesToTranslateSupplier.get();
+        }
+        return new HashMap<String, String>();
+    }
+
+    public void setDefaultValuesToTranslateSupplier(Supplier<Map<String, String>> defaultValuesToTranslateSupplier) {
+        this.defaultValuesToTranslateSupplier = defaultValuesToTranslateSupplier;
     }
 
     public void setTriggersSupported(boolean triggersSupported) {

@@ -25,17 +25,20 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import java.io.IOException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
@@ -53,6 +56,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.IDatabaseInstallStatementListener;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
@@ -107,6 +111,33 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         this.driverVersion = sqlTemplate.getDriverVersion();
         tablePrefixLowerCase = parameterService.getTablePrefix().toLowerCase();
         this.isSpatialTypesEnabled = parameterService.is(ParameterConstants.SPATIAL_TYPES_ENABLED);
+        DatabaseInfo ddlBuilderDbInfo = this.platform.getDdlBuilder().getDatabaseInfo();
+        ddlBuilderDbInfo.setDefaultValuesToLeaveUnquotedSupplier(() -> {
+            String defaultValuesToLeaveUnquoted = parameterService.getString(ParameterConstants.DEFAULT_VALUES_TO_LEAVE_UNQUOTED);
+            if (StringUtils.isNotBlank(defaultValuesToLeaveUnquoted)) {
+                String[] values = CsvUtils.tokenizeCsvData(defaultValuesToLeaveUnquoted);
+                if (values != null && values.length > 0) {
+                    return Arrays.stream(values).collect(Collectors.toSet());
+                }
+            }
+            return new HashSet<String>();
+        });
+        ddlBuilderDbInfo.setDefaultValuesToTranslateSupplier(() -> {
+            String defaultValuesToTranslate = parameterService.getString(ParameterConstants.DEFAULT_VALUES_TO_TRANSLATE);
+            Map<String, String> valueMap = new HashMap<String, String>();
+            if (StringUtils.isNotBlank(defaultValuesToTranslate)) {
+                String[] pairs = CsvUtils.tokenizeCsvData(defaultValuesToTranslate);
+                if (pairs != null && pairs.length > 0) {
+                    for (String pair : pairs) {
+                        String[] values = pair.split("=");
+                        if (values.length == 2) {
+                            valueMap.put(values[0], values[1]);
+                        }
+                    }
+                }
+            }
+            return valueMap;
+        });
     }
 
     public boolean requiresAutoCommitFalseToSetFetchSize() {
