@@ -124,7 +124,7 @@ public class SnapshotUtil {
 
     public static File createSnapshot(ISymmetricEngine engine, IProgressListener listener) {
         if (listener != null) {
-            listener.checkpoint(engine.getEngineName(), 0, 5);
+            listener.checkpoint(engine.getEngineName(), 0, 7);
         }
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -133,7 +133,13 @@ public class SnapshotUtil {
         File tmpDir = new File(parameterService.getTempDirectory(), dirName);
         tmpDir.mkdirs();
         log.info("Creating snapshot file in " + tmpDir.getAbsolutePath());
+        for (ISnapshotUtilListener snapshotListener : engine.getExtensionService().getExtensionPointList(ISnapshotUtilListener.class)) {
+            snapshotListener.beforeSnapshot(engine, tmpDir);
+        }
         log.info("Exporting configuration");
+        if (listener != null) {
+            listener.checkpoint(engine.getEngineName(), 1, 7);
+        }
         try (FileWriter fwriter = new FileWriter(new File(tmpDir, "config-export.csv"))) {
             engine.getDataExtractorService().extractConfigurationStandalone(engine.getNodeService().findIdentity(),
                     fwriter, TableConstants.getConfigTablesExcludedFromExport());
@@ -149,7 +155,7 @@ public class SnapshotUtil {
             log.warn("Failed to copy " + serviceConfFile.getName() + " to the snapshot directory", e);
         }
         if (listener != null) {
-            listener.checkpoint(engine.getEngineName(), 1, 5);
+            listener.checkpoint(engine.getEngineName(), 2, 7);
         }
         log.info("Writing table definitions");
         IDatabasePlatform targetPlatform = engine.getSymmetricDialect().getTargetPlatform();
@@ -190,7 +196,7 @@ public class SnapshotUtil {
             log.warn("Failed to export table definitions", e);
         }
         if (listener != null) {
-            listener.checkpoint(engine.getEngineName(), 2, 5);
+            listener.checkpoint(engine.getEngineName(), 3, 7);
         }
         log.info("Writing runtime data");
         String tablePrefix = engine.getTablePrefix();
@@ -363,7 +369,7 @@ public class SnapshotUtil {
                     "show session variables");
         }
         if (listener != null) {
-            listener.checkpoint(engine.getEngineName(), 3, 5);
+            listener.checkpoint(engine.getEngineName(), 4, 7);
         }
         if (!engine.getParameterService().is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
             try (FileOutputStream fos = new FileOutputStream(new File(tmpDir, "sym_data_gap_cache.csv"))) {
@@ -427,7 +433,7 @@ public class SnapshotUtil {
             }
         }
         if (listener != null) {
-            listener.checkpoint(engine.getEngineName(), 4, 5);
+            listener.checkpoint(engine.getEngineName(), 5, 7);
         }
         File jarFile = null;
         try {
@@ -442,7 +448,13 @@ public class SnapshotUtil {
             throw new IoException("Failed to package snapshot files into archive", e);
         }
         if (listener != null) {
-            listener.checkpoint(engine.getEngineName(), 5, 5);
+            listener.checkpoint(engine.getEngineName(), 6, 7);
+        }
+        for (ISnapshotUtilListener snapshotListener : engine.getExtensionService().getExtensionPointList(ISnapshotUtilListener.class)) {
+            snapshotListener.afterSnapshot(engine, tmpDir);
+        }
+        if (listener != null) {
+            listener.checkpoint(engine.getEngineName(), 7, 7);
         }
         log.info("Done creating snapshot file");
         return jarFile;
