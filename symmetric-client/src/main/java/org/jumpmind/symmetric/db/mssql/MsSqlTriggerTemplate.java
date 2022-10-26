@@ -55,7 +55,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(convert("+
         (castToNVARCHAR ? "n" : "")
-        +"varchar($(columnSize)),$(tableAlias).\"$(columnName)\") $(masterCollation),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
+        +"varchar($(columnSizeOrMax)),$(tableAlias).\"$(columnName)\") $(masterCollation),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         geometryColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(convert("+(castToNVARCHAR ? "n" : "")+"varchar(max),$(tableAlias).\"$(columnName)\".STAsText()) $(masterCollation),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         geographyColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(convert("+(castToNVARCHAR ? "n" : "")+"varchar(max),$(tableAlias).\"$(columnName)\".STAsText()) $(masterCollation),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar(40), $(tableAlias).\"$(columnName)\",2) + '\"') end" ;
@@ -92,7 +92,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with ex
 "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "         insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data \n" +
 "           (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-"          select '$(targetTableName)','I', $(triggerHistoryId), $(columns), \n" +
+"          select '$(targetTableName)','I', $(triggerHistoryId), $(oracleToClob)$(columns), \n" +
 "                  $(channelExpression), $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), " + getCreateTimeExpression() + " \n" +
 "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
 "          from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) \n" +
@@ -120,7 +120,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with ex
 "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "         insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data \n" +
 "           (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-"          select '$(targetTableName)','R', $(triggerHistoryId), $(newKeys), \n" +
+"          select '$(targetTableName)','R', $(triggerHistoryId), $(oracleToClob)$(newKeys), \n" +
 "                  $(channelExpression), $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), " + getCreateTimeExpression() + " \n" +
 "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
 "          from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) \n" +
@@ -175,7 +175,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "            (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id,                 \n" +
 "             transaction_id, source_node_id,                                                                   \n" +
 "             external_data, create_time)                                                                       \n" +
-"          select '$(targetTableName)','U', $(triggerHistoryId), $(columns), $(oldKeys), $(oldColumns),         \n" +
+"          select '$(targetTableName)','U', $(triggerHistoryId), $(oracleToClob)$(columns), $(oracleToClob)$(oldKeys), $(oracleToClob)$(oldColumns),         \n" +
 "                   $(channelExpression),                                                                       \n" +
 "               $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), \n" +
 "                " + getCreateTimeExpression() + "                                                              \n" +
@@ -194,7 +194,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "        insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data                                  \n" +
 "           (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id,                      \n" +
 "            source_node_id, external_data, create_time)                                                        \n" +
-"          select '$(targetTableName)','D', $(triggerHistoryId), $(oldKeys),                                    \n" +
+"          select '$(targetTableName)','D', $(triggerHistoryId), $(oracleToClob)$(oldKeys),                                    \n" +
 "            $(specialSqlServerSybaseChannelExpression), $(txIdExpression),                                     \n" +
              defaultCatalog + "dbo.$(prefixName)_node_disabled(),                                               \n" +
 "            $(externalSelectForDelete), " + getCreateTimeExpression() + "                                               \n" +
@@ -203,7 +203,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "        insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data                                  \n" +
 "           (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id,                     \n" +
 "            source_node_id, external_data, create_time)                                                        \n" +
-"          select '$(targetTableName)','I', $(triggerHistoryId), $(columns),                                    \n" +
+"          select '$(targetTableName)','I', $(triggerHistoryId), $(oracleToClob)$(columns),                                    \n" +
 "            $(channelExpression), $(txIdExpression),                                                            \n" +
             defaultCatalog + "dbo.$(prefixName)_node_disabled(),                                                \n" +
 "           $(externalSelectForInsert), " + getCreateTimeExpression() + "                                                \n" +
@@ -222,7 +222,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "            (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id,                 \n" +
 "             transaction_id, source_node_id,                                                                   \n" +
 "             external_data, create_time)                                                                       \n" +
-"          select '$(targetTableName)','U', $(triggerHistoryId), $(columns), $(oldKeys), $(oldColumns),         \n" +
+"          select '$(targetTableName)','U', $(triggerHistoryId), $(oracleToClob)$(columns), $(oracleToClob)$(oldKeys), $(oracleToClob)$(oldColumns),         \n" +
 "                   $(channelExpression),                                                                       \n" +
 "               $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), \n" +
 "                " + getCreateTimeExpression() + "                                                              \n" +
@@ -275,7 +275,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "            (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id,                 \n" +
 "             transaction_id, source_node_id,                                                                   \n" +
 "             external_data, create_time)                                                                       \n" +
-"          select '$(targetTableName)','U', $(triggerHistoryId), $(columns), $(oldKeys), $(oldColumns),         \n" +
+"          select '$(targetTableName)','U', $(triggerHistoryId), $(oracleToClob)$(columns), $(oracleToClob)$(oldKeys), $(oracleToClob)$(oldColumns),         \n" +
 "                   $(channelExpression),                                                                       \n" +
 "               $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), \n" +
 "                " + getCreateTimeExpression() + "                                                              \n" +
@@ -294,7 +294,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "        insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data                                  \n" +
 "           (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id,                      \n" +
 "            source_node_id, external_data, create_time)                                                        \n" +
-"          select '$(targetTableName)','D', $(triggerHistoryId), $(oldKeys),                                    \n" +
+"          select '$(targetTableName)','D', $(triggerHistoryId), $(oracleToClob)$(oldKeys),                                    \n" +
 "              $(specialSqlServerSybaseChannelExpression),                                                      \n" +
 "              $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(),                     \n" +
 "              $(externalSelectForDelete), " + getCreateTimeExpression() + "                                             \n" +
@@ -303,7 +303,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "        insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data                                  \n" +
 "           (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id,                      \n" +
 "            source_node_id, external_data, create_time)                                                        \n" +
-"          select '$(targetTableName)','R', $(triggerHistoryId), $(newKeys),                                    \n" +
+"          select '$(targetTableName)','R', $(triggerHistoryId), $(oracleToClob)$(newKeys),                                    \n" +
 "                  $(channelExpression), $(txIdExpression),                                                     \n" + 
                    defaultCatalog + "dbo.$(prefixName)_node_disabled(),                                         \n" +
 "                  $(externalSelectForInsert), " + getCreateTimeExpression() + "                                         \n" +
@@ -321,7 +321,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "         insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data                                 \n" +
 "            (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id,                     \n" +
 "             source_node_id, external_data, create_time)                                                       \n" +
-"           select '$(targetTableName)','R', $(triggerHistoryId), $(oldKeys), $(channelExpression),             \n" +
+"           select '$(targetTableName)','R', $(triggerHistoryId), $(oracleToClob)$(oldKeys), $(channelExpression),             \n" +
 "               $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(),                    \n" +
 "               $(externalSelect), " + getCreateTimeExpression() + "                                            \n" +
 "       $(if:containsBlobClobColumns)                                                                           \n" +
@@ -409,7 +409,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with ex
 "    $(custom_before_delete_text) \n" +
 "    if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "        insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-"        select '$(targetTableName)','D', $(triggerHistoryId), $(oldKeys), $(oldColumns), $(channelExpression), \n" +
+"        select '$(targetTableName)','D', $(triggerHistoryId), $(oracleToClob)$(oldKeys), $(oracleToClob)$(oldColumns), $(channelExpression), \n" +
 "              $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), " + getCreateTimeExpression() + "\n" +
 "        from deleted where $(syncOnDeleteCondition)                                                                      \n" +
 "    end                                                                                                                                                                  \n" +
@@ -565,5 +565,14 @@ getCreateTriggerString() + " $(triggerName) on database\n" +
     @Override
     protected boolean requiresEmptyLobTemplateForDeletes() {
         return true;
+    }
+    
+    @Override
+    protected String toClobExpression(Table table) {
+        if (castToNVARCHAR) {
+            return "cast(N'' as nvarchar(max)) +";
+        } else {
+            return "cast('' as varchar(max)) +";
+        }
     }
 }
