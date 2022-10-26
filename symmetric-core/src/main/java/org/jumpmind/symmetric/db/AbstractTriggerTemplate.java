@@ -1036,9 +1036,14 @@ abstract public class AbstractTriggerTemplate {
         } else {
             throw new NotImplementedException("Table " + table + " column " + column);
         }
+        
+        
 
-        String formattedColumnText = FormatUtils.replace("columnName",
-                String.format("%s%s", columnPrefix, column.getName()), templateToUse);
+        String formattedColumnText = FormatUtils.replace("columnSizeOrMax",
+                trigger.isUseCaptureLobs() ? "max" : "$(columnSize)", templateToUse);
+                
+        formattedColumnText = FormatUtils.replace("columnName",
+                String.format("%s%s", columnPrefix, column.getName()), formattedColumnText);
         
         formattedColumnText = FormatUtils.replace("columnSize",
                 getColumnSize(table, column), formattedColumnText);
