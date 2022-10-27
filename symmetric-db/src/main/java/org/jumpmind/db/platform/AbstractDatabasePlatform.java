@@ -1000,6 +1000,18 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
     }
 
+    @Override
+    public boolean hasMatchingPlatform(Database db) {
+        boolean matches = true;
+        for (Table table : db.getTables()) {
+            for (Column column : table.getColumns()) {
+                matches &= column.getPlatformColumns() != null && column.getPlatformColumns().get(getName()) != null;
+                break;
+            }
+        }
+        return matches;
+    }
+
     public List<PermissionResult> checkSymTablePermissions(PermissionType... permissionTypes) {
         List<PermissionResult> results = new ArrayList<PermissionResult>();
         Database database = new Database();

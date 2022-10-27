@@ -213,6 +213,8 @@ public interface IDatabasePlatform {
 
     public void makePlatformSpecific(Database database);
 
+    public boolean hasMatchingPlatform(Database database);
+
     public List<PermissionResult> checkSymTablePermissions(PermissionType... permissionTypes);
 
     public PermissionResult getLogMinePermission();
