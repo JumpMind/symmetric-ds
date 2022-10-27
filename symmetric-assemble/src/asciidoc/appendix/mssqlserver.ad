@@ -30,7 +30,7 @@ However you can also set it up to run in its own database with a designated user
 
 |Symmetric Database|CREATE TABLE, CREATE FUNCTION, REFERENCES|INSERT, EXECUTE
 |Symmetric Schema|ALTER, SELECT, INSERT, UPDATE, DELETE|
-|Application Database|SELECT, ALTER|
+|Application Database|SELECT, ALTER (and INSERT, UPDATE, DELETE if the node is a target)|
 
 |===
 
@@ -66,6 +66,10 @@ GO
 use APP_DATABASE;
 CREATE USER SYM_USER FOR LOGIN SYM_USER 
 GRANT SELECT, ALTER ON DATABASE::APP_DATABASE to SYM_USER;
+
+-- Grant the below permissions to the SymmetricDS User if the node is a target
+
+GRANT INSERT, DELETE, UPDATE ON DATABASE::APP_DATABASE to SYM_USER;
 
 -- Application User
 
