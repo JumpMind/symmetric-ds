@@ -21,8 +21,9 @@
 package org.jumpmind.symmetric.io.data.transform;
 
 import java.util.Map;
-import java.util.StringTokenizer;
 
+import org.apache.commons.text.StringTokenizer;
+import org.apache.commons.text.matcher.StringMatcherFactory;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -50,20 +51,19 @@ public class ValueMapColumnTransform implements ISingleNewAndOldValueColumnTrans
             return null;
         }
         StringTokenizer tokens = new StringTokenizer(expression);
+        tokens.setQuoteChar('"');
+        tokens.setDelimiterMatcher(StringMatcherFactory.INSTANCE.charSetMatcher(' ', '='));
         String defaultValue = null;
-        while (tokens.hasMoreElements()) {
-            String keyValue = (String) tokens.nextElement();
-            int equalIndex = keyValue.indexOf("=");
-            if (equalIndex != -1) {
-                if (keyValue.substring(0, equalIndex).equals(value)) {
-                    return keyValue.substring(equalIndex + 1);
-                } else if (keyValue.substring(0, equalIndex).equals("*")) {
-                    String targetValue = keyValue.substring(equalIndex + 1);
-                    if (targetValue.equals("*")) {
-                        defaultValue = value;
-                    } else {
-                        defaultValue = targetValue;
-                    }
+        String[] tokenArray = tokens.getTokenArray();
+        for (int i = 0; i < tokenArray.length - 1; i += 2) {
+            if (tokenArray[i].equals(value)) {
+                return tokenArray[i + 1];
+            } else if (tokenArray[i].equals("*")) {
+                String targetValue = tokenArray[i + 1];
+                if (targetValue.equals("*")) {
+                    defaultValue = value;
+                } else {
+                    defaultValue = targetValue;
                 }
             }
         }
