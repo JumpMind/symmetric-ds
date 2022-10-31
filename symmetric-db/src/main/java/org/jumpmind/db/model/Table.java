@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -133,6 +134,19 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public void removeAllColumns() {
         columns.clear();
         lobColumns = null;
+    }
+
+    public void removeAllColumnDefaults() {
+        for (Column column : columns) {
+            column.setDefaultValue(null);
+            Map<String, PlatformColumn> platformColumns = column.getPlatformColumns();
+            if (platformColumns != null) {
+                Collection<PlatformColumn> cols = platformColumns.values();
+                for (PlatformColumn platformColumn : cols) {
+                    platformColumn.setDefaultValue(null);
+                }
+            }
+        }
     }
 
     public void removeAllIndices() {
