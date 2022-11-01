@@ -123,6 +123,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String OPTION_EXCLUDE_DEFAULTS = "exclude-defaults";
     private static final String OPTION_EXCLUDE_LOG4J = "exclude-log4j";
     private static final String OPTION_EXTERNAL_SECURITY = "external-security";
+    private static final String OPTION_ALTERS = "alters";
     private static final int WIDTH = 120;
     private static final int PAD = 3;
 
@@ -252,6 +253,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                 addOption(options, null, OPTION_EXCLUDE_LOG4J, false);
                 addOption(options, null, OPTION_EXTERNAL_SECURITY, false);
             }
+            if (cmd.equals(CMD_EXPORT_SYM_TABLES)) {
+                addOption(options, null, OPTION_ALTERS, false);
+            }
             if (options.getOptions().size() > 0) {
                 format.printWrapped(writer, WIDTH, "\nOptions:");
                 format.printOptions(writer, WIDTH, options, PAD, PAD);
@@ -287,6 +291,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         addOption(options, null, OPTION_EXCLUDE_DEFAULTS, false);
         addOption(options, null, OPTION_EXCLUDE_LOG4J, false);
         addOption(options, null, OPTION_EXTERNAL_SECURITY, false);
+        addOption(options, null, OPTION_ALTERS, false);
         buildCryptoOptions(options);
     }
 
@@ -704,10 +709,14 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private void exportSymTables(CommandLine line, List<String> args) throws IOException {
         OutputStreamWriter os = getWriter(args);
-        os.write(getSymmetricEngine().getSymmetricDialect().getCreateSymmetricDDL());
+        if (line.hasOption(OPTION_ALTERS)) {
+            os.write(getSymmetricEngine().getSymmetricDialect().getSymmetricDdlChanges());
+        } else {
+            os.write(getSymmetricEngine().getSymmetricDialect().getCreateSymmetricDDL());
+        }
         os.close();
     }
-
+    
     private void exportDefaultProperties(CommandLine line, List<String> args) throws IOException {
         OutputStreamWriter os = getWriter(args);
         BufferedReader is = new BufferedReader(new InputStreamReader(

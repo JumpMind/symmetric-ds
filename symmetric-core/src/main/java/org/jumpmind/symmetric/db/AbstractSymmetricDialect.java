@@ -139,6 +139,18 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             return valueMap;
         });
     }
+    
+    public String getSymmetricDdlChanges() {
+        Database modelFromXml = readSymmetricSchemaFromXml();
+        Database modelFromDatabase = readSymmetricSchemaFromDatabase();
+        List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = extensionService
+                .getExtensionPointList(IAlterDatabaseInterceptor.class);
+        IAlterDatabaseInterceptor[] interceptors = alterDatabaseInterceptors
+                .toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]);
+        IDdlBuilder builder = platform.getDdlBuilder();
+        String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml, interceptors);
+        return alterSql;
+    }
 
     public boolean requiresAutoCommitFalseToSetFetchSize() {
         return false;
