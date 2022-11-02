@@ -240,4 +240,6 @@ public interface IDatabasePlatform {
     public boolean supportsSliceTables();
 
     public String getSliceTableSql(String columnName, int sliceNum, int totalSlices);
+    
+    public String getCharSetName();
 }

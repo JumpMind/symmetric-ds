@@ -126,4 +126,10 @@ public class MsSql2005DatabasePlatform extends MsSql2000DatabasePlatform {
     public String getSliceTableSql(String columnName, int sliceNum, int totalSlices) {
         return "ascii(substring(" + columnName + ", 1, 1)) % " + totalSlices + " = " + sliceNum;
     }
+    
+    @Override
+    public String getCharSetName() {
+    	return (String) getSqlTemplate().queryForObject("select collation_name from sys.databases where name =\r\n"
+    			+ "db_name()", String.class);
+    }
 }

@@ -633,6 +633,11 @@ public class SnapshotUtil {
             runtimeProperties.setProperty("instance.id", engine.getClusterService().getInstanceId());
             runtimeProperties.setProperty("server.id", engine.getClusterService().getServerId());
             try {
+            	runtimeProperties.setProperty("charset.server", System.getProperty("file.encoding"));
+                runtimeProperties.setProperty("charset.database", engine.getTargetDialect().getTargetPlatform().getCharSetName());
+            } catch (Exception e) {
+            }
+            try {
                 MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
                 ObjectName oName = new ObjectName("java.lang:type=OperatingSystem");
                 runtimeProperties.setProperty("file.descriptor.open.count", mbeanServer.getAttribute(oName, "OpenFileDescriptorCount").toString());
