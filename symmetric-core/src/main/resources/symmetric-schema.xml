@@ -346,6 +346,7 @@
         <column name="default_schedule" type="VARCHAR" size="50" description="The schedule to use if no schedule parameter is found. Overridden by job.jobname.period.time.ms or job.jobname.cron." />
         <column name="default_auto_start" type="BOOLEANINT" size="1" required="true" default="1"  description="Determine if this job should auto start. Overridden by start.jobname.job." />
         <column name="node_group_id" type="VARCHAR" size="50" required="true" description="Target the job at a specific node group id. To target all groups, use the value of 'ALL'." />
+        <column name="is_clustered" type="BOOLEANINT" size="1" required="true" default="0"  description="Whether to acquire a cluster lock or not." />
         <column name="create_by" type="VARCHAR" size="50" description="The user who created this entry." />
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />

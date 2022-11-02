@@ -188,30 +188,35 @@ abstract public class AbstractJob implements Runnable, IJob {
                 return false;
             }
             long startTime = System.currentTimeMillis();
-            try {
-                if (!running.compareAndSet(false, true)) { // This ensures this job only runs once on this instance.
-                    log.info("Job '{}' is already running on another thread and will not run at this time.", getName());
-                    return false;
-                }
-                if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
-                    synchronized (AbstractJob.class) {
+            if (!jobDefinition.isClustered() || engine.getClusterService().lock(jobName)) {
+                try {
+                    if (!running.compareAndSet(false, true)) { // This ensures this job only runs once on this instance.
+                        log.info("Job '{}' is already running on another thread and will not run at this time.", getName());
+                        return false;
+                    }
+                    if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
+                        synchronized (AbstractJob.class) {
+                            doJob(force);
+                        }
+                    } else {
                         doJob(force);
                     }
-                } else {
-                    doJob(force);
+                } finally {
+                    if (jobDefinition.isClustered()) {
+                        engine.getClusterService().unlock(jobName);
+                    }
+                    lastFinishTime = new Date();
+                    long endTime = System.currentTimeMillis();
+                    lastExecutionTimeInMs = endTime - startTime;
+                    totalExecutionTimeInMs += lastExecutionTimeInMs;
+                    if (lastExecutionTimeInMs > Constants.LONG_OPERATION_THRESHOLD ||
+                            (recordStatisticsCountThreshold > 0 && getProcessedCount() > recordStatisticsCountThreshold)) {
+                        engine.getStatisticManager().addJobStats(targetNodeId, targetNodeCount, jobName,
+                                startTime, endTime, getProcessedCount());
+                    }
+                    numberOfRuns++;
+                    running.set(false);
                 }
-            } finally {
-                lastFinishTime = new Date();
-                long endTime = System.currentTimeMillis();
-                lastExecutionTimeInMs = endTime - startTime;
-                totalExecutionTimeInMs += lastExecutionTimeInMs;
-                if (lastExecutionTimeInMs > Constants.LONG_OPERATION_THRESHOLD ||
-                        (recordStatisticsCountThreshold > 0 && getProcessedCount() > recordStatisticsCountThreshold)) {
-                    engine.getStatisticManager().addJobStats(targetNodeId, targetNodeCount, jobName,
-                            startTime, endTime, getProcessedCount());
-                }
-                numberOfRuns++;
-                running.set(false);
             }
         } catch (final Throwable ex) {
             log.error("Exception while executing job '" + getName() + "'", ex);

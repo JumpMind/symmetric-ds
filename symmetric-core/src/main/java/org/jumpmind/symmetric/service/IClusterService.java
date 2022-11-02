@@ -46,6 +46,10 @@ public interface IClusterService {
 
     public void clearAllLocks();
 
+    public void addLock(String action, String lockType);
+
+    public void removeLock(String action);
+
     public String getServerId();
 
     public boolean isClusteringEnabled();
