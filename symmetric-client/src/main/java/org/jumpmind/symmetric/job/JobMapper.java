@@ -38,6 +38,7 @@ public class JobMapper implements ISqlRowMapper<JobDefinition> {
         jobDefinition.setDefaultSchedule(row.getString("default_schedule"));
         jobDefinition.setDescription(row.getString("description"));
         jobDefinition.setNodeGroupId(row.getString("node_group_id"));
+        jobDefinition.setClustered(row.getBoolean("is_clustered"));
         jobDefinition.setCreateBy(row.getString("create_by"));
         jobDefinition.setCreateTime(row.getDateTime("create_time"));
         jobDefinition.setLastUpdateBy(row.getString("last_update_by"));

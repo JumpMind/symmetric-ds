@@ -45,6 +45,7 @@ public class JobDefinition implements IModelObject {
     private String defaultSchedule;
     private String nodeGroupId;
     private transient boolean automaticStartup = true;
+    private boolean clustered;
     private transient String schedule;
 
     public boolean isCronSchedule() {
@@ -165,6 +166,14 @@ public class JobDefinition implements IModelObject {
 
     public void setAutomaticStartup(boolean automaticStartup) {
         this.automaticStartup = automaticStartup;
+    }
+
+    public boolean isClustered() {
+        return clustered;
+    }
+
+    public void setClustered(boolean clustered) {
+        this.clustered = clustered;
     }
 
     public static String getJobNameParameter(String name) {

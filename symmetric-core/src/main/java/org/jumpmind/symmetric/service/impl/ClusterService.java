@@ -238,6 +238,19 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     @Override
+    public synchronized void addLock(String action, String lockType) {
+        Lock lock = new Lock();
+        lock.setLockAction(action);
+        lock.setLockType(lockType);
+        lockCache.put(action, lock);
+    }
+
+    @Override
+    public synchronized void removeLock(String action) {
+        lockCache.remove(action);
+    }
+
+    @Override
     public void clearAllLocks() {
         initCache();
     }

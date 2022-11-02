@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.model.JobDefinition;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.impl.AbstractService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +69,9 @@ public class JobManager extends AbstractService implements IJobManager {
             IJob job = jobCreator.createJob(jobDefinition, engine, taskScheduler);
             if (job != null) {
                 jobs.add(job);
+            }
+            if (jobDefinition.isClustered()) {
+                engine.getClusterService().addLock(jobDefinition.getJobName(), ClusterConstants.TYPE_CLUSTER);
             }
         }
     }
@@ -199,12 +203,15 @@ public class JobManager extends AbstractService implements IJobManager {
     public void saveJob(JobDefinition job) {
         if (sqlTemplate.update(getSql("updateJobSql"),
                 new Object[] { job.getDescription(), job.getJobType().toString(), job.getJobExpression(),
-                        job.isDefaultAutomaticStartup() ? 1 : 0, job.getDefaultSchedule(), job.getNodeGroupId(),
+                        job.isDefaultAutomaticStartup() ? 1 : 0, job.getDefaultSchedule(), job.getNodeGroupId(), job.isClustered() ? 1 : 0,
                         job.getCreateBy(), job.getLastUpdateBy(), new Date(), job.getJobName() }) <= 0) {
             sqlTemplate.update(getSql("insertJobSql"),
                     new Object[] { job.getDescription(), job.getJobType().toString(), job.getJobExpression(),
-                            job.isDefaultAutomaticStartup() ? 1 : 0, job.getDefaultSchedule(), job.getNodeGroupId(),
+                            job.isDefaultAutomaticStartup() ? 1 : 0, job.getDefaultSchedule(), job.getNodeGroupId(), job.isClustered() ? 1 : 0,
                             job.getCreateBy(), new Date(), job.getLastUpdateBy(), new Date(), job.getJobName() });
+        }
+        if (job.isClustered()) {
+            engine.getClusterService().addLock(job.getJobName(), ClusterConstants.TYPE_CLUSTER);
         }
     }
 
@@ -232,6 +239,11 @@ public class JobManager extends AbstractService implements IJobManager {
         if (sqlTemplate.update(getSql("deleteJobSql"), args) == 1) {
         } else {
             throw new SymmetricException("Failed to remove job " + name + ".  Note that BUILT_IN jobs cannot be removed.");
+        }
+        for (IJob job : jobs) {
+            if (name.equals(job.getName()) && job.getJobDefinition().isClustered()) {
+                engine.getClusterService().removeLock(job.getName());
+            }
         }
     }
 
