@@ -331,9 +331,9 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public String getSliceTableSql(String columnName, int sliceNum, int totalSlices) {
         return "ascii(substring(" + columnName + ", 1, 1)) % " + totalSlices + " = " + sliceNum;
     }
-    
+
     @Override
     public String getCharSetName() {
-    	return (String) getSqlTemplate().queryForObject("select @@character_set_database", String.class);
+        return (String) getSqlTemplate().queryForObject("select @@character_set_database", String.class);
     }
 }

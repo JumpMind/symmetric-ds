@@ -255,7 +255,7 @@ public interface ISymmetricDialect {
     public String getTablePrefix();
 
     public Database readSymmetricSchemaFromXml();
-    
+
     public String getSymmetricDdlChanges();
 
     public String getTemplateNumberPrecisionSpec();

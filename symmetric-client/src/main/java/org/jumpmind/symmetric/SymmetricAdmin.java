@@ -716,7 +716,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         }
         os.close();
     }
-    
+
     private void exportDefaultProperties(CommandLine line, List<String> args) throws IOException {
         OutputStreamWriter os = getWriter(args);
         BufferedReader is = new BufferedReader(new InputStreamReader(

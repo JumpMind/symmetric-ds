@@ -1262,8 +1262,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public String getSliceTableSql(String columnName, int sliceNum, int totalSlices) {
         return "";
     }
-    
+
     public String getCharSetName() {
-    	return "";
+        return "";
     }
 }

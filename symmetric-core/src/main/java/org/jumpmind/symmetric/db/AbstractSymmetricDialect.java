@@ -139,7 +139,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             return valueMap;
         });
     }
-    
+
     public String getSymmetricDdlChanges() {
         Database modelFromXml = readSymmetricSchemaFromXml();
         Database modelFromDatabase = readSymmetricSchemaFromDatabase();

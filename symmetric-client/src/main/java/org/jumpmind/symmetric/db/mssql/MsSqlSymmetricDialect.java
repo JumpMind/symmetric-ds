@@ -71,13 +71,13 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
         super(parameterService, platform);
         this.triggerTemplate = new MsSqlTriggerTemplate(this);
         try {
-        	noCount = platform.getSqlTemplate().queryForInt(SQL_NOCOUNT);        	
+            noCount = platform.getSqlTemplate().queryForInt(SQL_NOCOUNT);
         } catch (Exception se) {
-        	log.warn("Unable to query nocount", se);
-        }        
+            log.warn("Unable to query nocount", se);
+        }
         if (noCount != 0) {
-        	throw new SymmetricException("Incompatible setting for nocount detected.  Add the following to your\r\n"
-        			+ "engine properties file: db.init.sql=set no count off");
+            throw new SymmetricException("Incompatible setting for nocount detected.  Add the following to your\r\n"
+                    + "engine properties file: db.init.sql=set no count off");
         }
     }
 

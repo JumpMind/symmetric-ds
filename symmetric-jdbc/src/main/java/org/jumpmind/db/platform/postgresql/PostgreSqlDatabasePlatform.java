@@ -385,10 +385,10 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return super.canColumnBeUsedInWhereClause(column);
     }
-    
+
     @Override
     public String getCharSetName() {
-    	return (String) getSqlTemplate().queryForObject("select pg_encoding_to_char(encoding) from pg_database\r\n"
-    			+ "where datname = current_database()", String.class);
+        return (String) getSqlTemplate().queryForObject("select pg_encoding_to_char(encoding) from pg_database\r\n"
+                + "where datname = current_database()", String.class);
     }
 }

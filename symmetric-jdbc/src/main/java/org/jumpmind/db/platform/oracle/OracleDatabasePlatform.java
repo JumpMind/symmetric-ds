@@ -290,10 +290,10 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public String getSliceTableSql(String columnName, int sliceNum, int totalSlices) {
         return "mod(ora_hash(rowid), " + totalSlices + ") = " + sliceNum;
     }
-    
+
     @Override
     public String getCharSetName() {
-    	return (String) getSqlTemplate().queryForObject("select value from nls_database_parameters where\r\n"
-    			+ "parameter='NLS_CHARACTERSET'", String.class);
+        return (String) getSqlTemplate().queryForObject("select value from nls_database_parameters where\r\n"
+                + "parameter='NLS_CHARACTERSET'", String.class);
     }
 }
