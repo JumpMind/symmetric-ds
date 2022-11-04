@@ -108,6 +108,7 @@ final public class SymmetricUtils {
     public static Map<String, String> getReplacementsForMonitorEvent(ISymmetricEngine engine, MonitorEvent event) {
         Node eventNode = engine.getNodeService().findNode(event.getNodeId());
         Map<String, String> replacements = new HashMap<String, String>();
+        replacements.put("engineName", engine.getEngineName());
         replacements.put("eventCount", String.valueOf(event.getCount()));
         replacements.put("eventDetails", event.getDetails());
         replacements.put("eventHostName", event.getHostName());
@@ -128,6 +129,7 @@ final public class SymmetricUtils {
         replacements.put("eventTime", FormatUtils.formatDateTimeISO(event.getEventTime()));
         replacements.put("eventType", event.getType());
         replacements.put("eventValue", String.valueOf(event.getValue()));
+        replacements.put("serverName", AppUtils.getHostName());
         return replacements;
     }
 
@@ -139,10 +141,12 @@ final public class SymmetricUtils {
             nodeIds.add(event.getNodeId());
             types.add(event.getType());
         }
+        replacements.put("engineName", engine.getEngineName());
         replacements.put("eventCount", String.valueOf(events.size()));
         replacements.put("eventNodeCount", String.valueOf(nodeIds.size()));
         replacements.put("eventNodeIds", String.join(", ", nodeIds));
         replacements.put("eventTypes", String.join(", ", types));
+        replacements.put("serverName", AppUtils.getHostName());
         return replacements;
     }
 
