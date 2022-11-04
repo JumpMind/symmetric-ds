@@ -27,8 +27,14 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.security.cert.Certificate;
 import java.util.List;
 import java.util.Map;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSocketFactory;
 
 public class HttpConnection implements Closeable {
     public static final int HTTP_OK = HttpURLConnection.HTTP_OK;
@@ -119,5 +125,29 @@ public class HttpConnection implements Closeable {
 
     public int getResponseCode() throws IOException {
         return conn.getResponseCode();
+    }
+
+    public void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
+        if (conn instanceof HttpsURLConnection) {
+            ((HttpsURLConnection) conn).setHostnameVerifier(hostnameVerifier);
+        }
+    }
+
+    public void setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
+        if (conn instanceof HttpsURLConnection) {
+            ((HttpsURLConnection) conn).setSSLSocketFactory(sslSocketFactory);
+        }
+    }
+
+    public Certificate[] getServerCertificates() {
+        if (conn instanceof HttpsURLConnection) {
+            try {
+                conn.connect();
+                return ((HttpsURLConnection) conn).getServerCertificates();
+            } catch (SSLPeerUnverifiedException e) {
+            } catch (IOException e) {
+            }
+        }
+        return new Certificate[] {};
     }
 }

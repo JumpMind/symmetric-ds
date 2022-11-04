@@ -72,7 +72,7 @@ public class TransportManagerFactory {
                 if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
                     HostnameVerifier hostnameVerifier = new SimpleHostnameVerifier(httpSslVerifiedServerNames);
                     HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
-                    Http2Connection.setHostnameVerifier(hostnameVerifier);
+                    Http2Connection.setDefaultHostnameVerifier(hostnameVerifier);
                 }
                 if (allowSelfSignedCerts) {
                     initSelfSignedSocketFactory(enableHttps2);
@@ -165,7 +165,7 @@ public class TransportManagerFactory {
         context.init(keyManagers, new TrustManager[] { trustManager }, new SecureRandom());
         SSLSocketFactory sslSocketFactory = context.getSocketFactory();
         HttpsURLConnection.setDefaultSSLSocketFactory(sslSocketFactory);
-        Http2Connection.setSslSocketFactory(sslSocketFactory);
-        Http2Connection.setTrustManager(trustManager);
+        Http2Connection.setDefaultSslSocketFactory(sslSocketFactory);
+        Http2Connection.setDefaultTrustManager(trustManager);
     }
 }

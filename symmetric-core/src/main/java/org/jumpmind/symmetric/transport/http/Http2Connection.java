@@ -334,7 +334,7 @@ public class Http2Connection extends HttpConnection {
         return trustManager;
     }
 
-    public static void setTrustManager(X509TrustManager trustManager) {
+    public static void setDefaultTrustManager(X509TrustManager trustManager) {
         Http2Connection.trustManager = trustManager;
     }
 
@@ -342,7 +342,11 @@ public class Http2Connection extends HttpConnection {
         return sslSocketFactory;
     }
 
-    public static void setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
+    public void setSslSocketFactoryAndTrustManager(SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
+        clientBuilder.sslSocketFactory(sslSocketFactory, trustManager);
+    }
+
+    public static void setDefaultSslSocketFactory(SSLSocketFactory sslSocketFactory) {
         Http2Connection.sslSocketFactory = sslSocketFactory;
     }
 
@@ -350,7 +354,12 @@ public class Http2Connection extends HttpConnection {
         return hostnameVerifier;
     }
 
-    public static void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
+    @Override
+    public void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
+        clientBuilder.hostnameVerifier(hostnameVerifier);
+    }
+
+    public static void setDefaultHostnameVerifier(HostnameVerifier hostnameVerifier) {
         Http2Connection.hostnameVerifier = hostnameVerifier;
     }
 
