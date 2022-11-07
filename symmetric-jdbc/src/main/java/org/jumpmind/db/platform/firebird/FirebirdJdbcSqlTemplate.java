@@ -53,6 +53,12 @@ public class FirebirdJdbcSqlTemplate extends JdbcSqlTemplate {
     }
 
     @Override
+    public boolean isDataTruncationViolation(Throwable ex) {
+        SQLException sqlEx = findSQLException(ex);
+        return sqlEx != null && sqlEx.getMessage() != null && sqlEx.getMessage().contains("State:22001");
+    }
+
+    @Override
     public SqlException translate(String message, Throwable ex) {
         if (ex instanceof SQLException) {
             if (((SQLException) ex).getErrorCode() == 335544336) {

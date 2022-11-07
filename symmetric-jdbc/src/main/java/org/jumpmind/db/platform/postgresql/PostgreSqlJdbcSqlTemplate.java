@@ -43,6 +43,7 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
         foreignKeyViolationMessageParts = new String[] { "violates foreign key constraint" };
         foreignKeyViolationSqlStates = new String[] { "23503" };
         foreignKeyChildExistsViolationMessageParts = new String[] { "is still referenced from table" };
+        dataTruncationStates = new String[] { "22001" };
         deadlockSqlStates = new String[] { "40P01" };
     }
 
@@ -63,18 +64,5 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
     @Override
     protected void setNanOrNull(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
         StatementCreatorUtils.setParameterValue(ps, i, Types.FLOAT, Float.NaN);
-    }
-
-    @Override
-    public boolean isDataTruncationViolation(Throwable ex) {
-        boolean dataTruncationViolation = false;
-        SQLException sqlEx = findSQLException(ex);
-        if (sqlEx != null) {
-            String sqlState = sqlEx.getSQLState();
-            if (sqlState != null && sqlState.equals("22001")) {
-                dataTruncationViolation = true;
-            }
-        }
-        return dataTruncationViolation;
     }
 }
