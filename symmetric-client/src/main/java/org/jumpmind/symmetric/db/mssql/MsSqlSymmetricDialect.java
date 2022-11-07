@@ -77,7 +77,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
         }
         if (noCount != 0) {
             throw new SymmetricException("Incompatible setting for nocount detected.  Add the following to your\r\n"
-                    + "engine properties file: db.init.sql=set no count off");
+                    + "engine properties file: db.init.sql=set nocount off");
         }
     }
 
