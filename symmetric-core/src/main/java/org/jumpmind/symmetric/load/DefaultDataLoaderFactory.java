@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.load;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -201,7 +200,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                                 if (nodeHists != null && nodeHists.size() > 0 && pkCsvData != null) {
                                     String sourceNodeId = csvData.getAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID);
                                     long createTime = data.getCreateTime() != null ? data.getCreateTime().getTime() : 0;
-                                    String script = "if (context != void && context != null) { " +
+                                    String script = "if (context != void && context != null && org.jumpmind.symmetric.Version.isOlderVersion(\"3.12.4\")) { " +
                                             "engine.getDataService().sendNewerDataToNode(context.findTransaction(), SOURCE_NODE_ID, \"" +
                                             tableName + "\", " + pkCsvData + ", new Date(" +
                                             createTime + "L), \"" + sourceNodeId + "\"); }";
