@@ -97,9 +97,14 @@ public class FileSyncDataRouter extends AbstractDataRouter implements IBuiltInEx
                 }
             }
         } else {
-            log.error(
-                    "Could not find a trigger router with a trigger_id of {} and a router_id of {}.  The file snapshot will not be routed",
-                    triggerId, routerId);
+            if (context != null && context.getChannel() != null && !context.getChannel().isFileSyncFlag()) {
+                log.error("One or more file triggers use the '{}' channel, which is not configured for file sync.",
+                        context.getChannel().getChannelId());
+            } else {
+                log.error(
+                        "Could not find a trigger router with a trigger_id of {} and a router_id of {}.  The file snapshot will not be routed",
+                        triggerId, routerId);
+            }
         }
         return nodeIds;
     }
