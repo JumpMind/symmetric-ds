@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.route;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.jumpmind.symmetric.common.Constants.LOG_PROCESS_SUMMARY_THRESHOLD;
 
 import java.sql.SQLException;
@@ -31,7 +30,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
@@ -133,16 +131,15 @@ public class DataGapRouteReader implements IDataToRouteReader {
             processInfo.setStatus(ProcessStatus.OK);
         } catch (Throwable ex) {
             processInfo.setStatus(ProcessStatus.ERROR);
-            String msg = "";
-            if (engine.getDatabasePlatform().getName().startsWith(DatabaseNamesConstants.FIREBIRD)
-                    && isNotBlank(ex.getMessage())
-                    && ex.getMessage().contains(
-                            "arithmetic exception, numeric overflow, or string truncation")) {
-                msg = "There is a good chance that the truncation error you are receiving is because contains_big_lobs on the '"
-                        + context.getChannel().getChannelId()
-                        + "' channel needs to be turned on.  Firebird casts to varchar when this setting is not turned on and the data length has most likely exceeded the 10k row size";
+            if (!context.isOverrideContainsBigLob() && engine.getSqlTemplate().isDataTruncationViolation(ex)) {
+                log.warn(ex.getMessage());
+                log.info("Re-attempting routing with contains_big_lobs temporarily enabled for channel {}",
+                        context.getChannel().getChannelId());
+                context.setOverrideContainsBigLob(true);
+                execute();
+            } else {
+                log.error("Failed to read data for routing", ex);
             }
-            log.error(msg, ex);
         } finally {
             if (cursor != null) {
                 cursor.close();
