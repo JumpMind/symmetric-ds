@@ -147,7 +147,7 @@ public final class CommonUiUtils {
         if (page != null) {
             HorizontalLayout layout = new HorizontalLayout();
             Notification notification = new Notification(layout);
-            if (message.length() <= 250) {
+            if (message != null && message.length() <= 250) {
                 layout.getStyle().set("max-width", "400px");
                 Label label;
                 if (!StringUtils.isBlank(caption)) {
@@ -165,13 +165,15 @@ public final class CommonUiUtils {
                     label.setWidthFull();
                     vLayout.add(label);
                 }
-                TextArea textArea = new TextArea();
-                textArea.setWidthFull();
-                textArea.setHeight("400px");
-                textArea.setValue(message);
-                textArea.setReadOnly(true);
-                vLayout.add(textArea);
-                layout.add(vLayout);
+                if (message != null) {
+                	TextArea textArea = new TextArea();
+                    textArea.setWidthFull();
+                    textArea.setHeight("400px");
+                    textArea.setValue(message);
+                    textArea.setReadOnly(true);
+                    vLayout.add(textArea);
+                    layout.add(vLayout);
+                }
             }
             Icon closeIcon = new Icon(VaadinIcon.CLOSE_CIRCLE_O);
             closeIcon.setSize("36px");
