@@ -1898,11 +1898,14 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             isNull = true;
         }
         String defaultValueStr = mapDefaultValue(defaultValue, column);
+        if (databaseInfo.getDefaultValuesToLeaveUnquoted().contains(defaultValueStr)) {
+            return false;
+        }
         while (!isNull && defaultValueStr.startsWith("(") && defaultValueStr.endsWith(")")) {
             defaultValueStr = defaultValueStr.substring(1, defaultValueStr.length() - 1);
         }
         int typeCode = column.getMappedTypeCode();
-        boolean shouldUseQuotes = !isNull && !TypeMap.isNumericType(typeCode)
+        boolean shouldUseQuotes = !isNull && !defaultValueStr.contains("()") && !TypeMap.isNumericType(typeCode)
                 && !(TypeMap.isDateTimeType(typeCode) && (defaultValueStr.toUpperCase().startsWith("TO_DATE(")
                         || defaultValueStr.toUpperCase().startsWith("TO_TIMESTAMP(")
                         || defaultValueStr.toUpperCase().startsWith("SYSDATE")
@@ -1929,7 +1932,12 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         if (defaultValue == null) {
             defaultValue = "NULL";
         }
-        return defaultValue.toString();
+        String defaultValueStr = defaultValue.toString();
+        Map<String, String> defaultValuesToTranslate = databaseInfo.getDefaultValuesToTranslate();
+        if (defaultValuesToTranslate.containsKey(defaultValueStr)) {
+            return defaultValuesToTranslate.get(defaultValueStr);
+        }
+        return defaultValueStr;
     }
 
     /**

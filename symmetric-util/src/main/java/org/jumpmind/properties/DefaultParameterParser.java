@@ -23,11 +23,14 @@ package org.jumpmind.properties;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -146,8 +149,13 @@ public class DefaultParameterParser {
                 parmParsers.add(new DefaultParameterParser(FileUtils.openInputStream(new File(path))));
             }
         }
-        new File(args[1]).getParentFile().mkdirs();
-        FileWriter writer = new FileWriter(args[1]);
+        File file = new File(args[1]);
+        file.getParentFile().mkdirs();
+        Writer writer = null;
+        try {
+            writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+        }
         boolean isDatabaseOverridable = Boolean.parseBoolean(args[2]);
         boolean isAsciiDocFormat = args.length > 3 && "asciidoc".equals(args[3]);
         TreeMap<String, ParameterMetaData> map = new TreeMap<String, ParameterMetaData>();

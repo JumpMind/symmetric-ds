@@ -42,6 +42,8 @@ public abstract class AbstractDataLoaderFactory {
         DatabaseWriterSettings settings = new DatabaseWriterSettings();
         settings.setCreateTableAlterCaseToMatchDatabaseDefault(
                 parameterService.is(ParameterConstants.DATA_LOADER_CREATE_TABLE_ALTER_TO_MATCH_DB_CASE, true));
+        settings.setCreateTableWithoutDefaultsOnError(
+                parameterService.is(ParameterConstants.DATA_LOADER_CREATE_TABLE_WITHOUT_DEFAULTS_ON_ERROR, false));
         settings.setMaxRowsBeforeCommit(
                 parameterService.getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT));
         settings.setCommitSleepInterval(

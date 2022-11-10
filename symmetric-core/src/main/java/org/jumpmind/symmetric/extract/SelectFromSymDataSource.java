@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.extract;
 
 import java.sql.Types;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.DmlStatement;
@@ -263,17 +261,7 @@ public class SelectFromSymDataSource extends SelectFromSource {
         db.setSchema(copyTargetTable.getSchema());
         db.addTable(copyTargetTable);
         if (excludeDefaults) {
-            Column[] columns = copyTargetTable.getColumns();
-            for (Column column : columns) {
-                column.setDefaultValue(null);
-                Map<String, PlatformColumn> platformColumns = column.getPlatformColumns();
-                if (platformColumns != null) {
-                    Collection<PlatformColumn> cols = platformColumns.values();
-                    for (PlatformColumn platformColumn : cols) {
-                        platformColumn.setDefaultValue(null);
-                    }
-                }
-            }
+            copyTargetTable.removeAllColumnDefaults();
         }
         if (excludeForeignKeys || deferConstraints) {
             copyTargetTable.removeAllForeignKeys();

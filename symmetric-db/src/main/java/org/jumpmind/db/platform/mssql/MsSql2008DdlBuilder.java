@@ -60,10 +60,15 @@ public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
 
     @Override
     public String mapDefaultValue(Object defaultValue, Column column) {
+        String defaultValueStr = defaultValue.toString();
+        Map<String, String> defaultValuesToTranslate = databaseInfo.getDefaultValuesToTranslate();
+        if (defaultValuesToTranslate.containsKey(defaultValueStr)) {
+            return defaultValuesToTranslate.get(defaultValueStr);
+        }
         int typeCode = column.getMappedTypeCode();
         if (defaultValue != null && (typeCode == Types.TIMESTAMP || typeCode == ColumnTypes.TIMESTAMPTZ
                 || typeCode == ColumnTypes.TIMESTAMPLTZ) && !column.allPlatformColumnNamesContain("mssql")) {
-            String uppercaseValue = defaultValue.toString().trim().toUpperCase();
+            String uppercaseValue = defaultValueStr.trim().toUpperCase();
             String nativeType = getNativeType(column);
             boolean isDateTimeOffset = nativeType != null && nativeType.toUpperCase().contains("OFFSET");
             if (uppercaseValue.startsWith("SYSDATE") || uppercaseValue.startsWith("SYSTIMESTAMP")
@@ -83,7 +88,7 @@ public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
                 }
                 return "SYSUTCDATETIME()";
             }
-            return defaultValue.toString();
+            return defaultValueStr;
         }
         return super.mapDefaultValue(defaultValue, column);
     }

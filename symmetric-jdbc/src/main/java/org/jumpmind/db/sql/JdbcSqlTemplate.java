@@ -84,6 +84,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     protected String[] foreignKeyChildExistsViolationMessageParts;
     protected int[] deadlockCodes;
     protected String[] deadlockSqlStates;
+    protected int[] dataTruncationCodes;
+    protected String[] dataTruncationStates;
     protected int isolationLevel;
 
     public JdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
@@ -1016,6 +1018,37 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return deadlock;
     }
 
+    @Override
+    public boolean isDataTruncationViolation(Throwable ex) {
+        boolean truncation = false;
+        if (dataTruncationCodes != null || dataTruncationStates != null) {
+            SQLException sqlEx = findSQLException(ex);
+            if (sqlEx != null) {
+                if (dataTruncationCodes != null) {
+                    int errorCode = sqlEx.getErrorCode();
+                    for (int dataTruncationCode : dataTruncationCodes) {
+                        if (dataTruncationCode == errorCode) {
+                            truncation = true;
+                            break;
+                        }
+                    }
+                }
+                if (dataTruncationStates != null) {
+                    String sqlState = sqlEx.getSQLState();
+                    if (sqlState != null) {
+                        for (String dataTruncationState : dataTruncationStates) {
+                            if (sqlState.equals(dataTruncationState)) {
+                                truncation = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return truncation;
+    }
+
     protected SQLException findSQLException(Throwable ex) {
         if (ex instanceof SQLException) {
             return (SQLException) ex;
@@ -1132,11 +1165,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public void doSetValue(PreparedStatement ps, int parameterPosition, Object argValue)
             throws SQLException {
         StatementCreatorUtils.setParameterValue(ps, parameterPosition, SqlTypeValue.TYPE_UNKNOWN, argValue);
-    }
-
-    @Override
-    public boolean isDataTruncationViolation(Throwable ex) {
-        return false;
     }
 
     @Override

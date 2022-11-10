@@ -39,4 +39,9 @@ public class MariaDBDatabasePlatform extends MySqlDatabasePlatform {
     protected MariaDBDdlReader createDdlReader() {
         return new MariaDBDdlReader(this);
     }
+
+    @Override
+    public String getCharSetName() {
+        return (String) getSqlTemplate().queryForObject("SELECT CHARSET('a'), @@character_set_connection;", String.class);
+    }
 }

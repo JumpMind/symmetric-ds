@@ -113,6 +113,9 @@ public class TiberoDdlBuilder extends AbstractDdlBuilder {
     @Override
     public String mapDefaultValue(Object defaultValue, Column column) {
         String newValue = super.mapDefaultValue(defaultValue, column).trim();
+        if (databaseInfo.getDefaultValuesToTranslate().containsKey(defaultValue.toString())) {
+            return newValue;
+        }
         if (newValue.startsWith("(") && newValue.endsWith(")")) {
             newValue = newValue.substring(1, newValue.length() - 1);
         }

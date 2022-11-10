@@ -256,6 +256,8 @@ public interface ISymmetricDialect {
 
     public Database readSymmetricSchemaFromXml();
 
+    public String getSymmetricDdlChanges();
+
     public String getTemplateNumberPrecisionSpec();
 
     public Map<String, String> getSqlReplacementTokens();

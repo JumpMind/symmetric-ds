@@ -298,6 +298,9 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 }
                 int count = 0;
                 Object[] values = databaseWriter.getPlatform().getObjectValues(writer.getBatch().getBinaryEncoding(), ukData, uniqueKeyColumns);
+                if (values == null || values.length == 0) {
+                    break;
+                }
                 if (!databaseWriter.getPlatform(targetTable).supportsMultiThreadedTransactions() ||
                         (databaseWriter.getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction() &&
                                 Boolean.TRUE.equals(databaseWriter.getContext().get(AbstractDatabaseWriter.TRANSACTION_ABORTED)))) {

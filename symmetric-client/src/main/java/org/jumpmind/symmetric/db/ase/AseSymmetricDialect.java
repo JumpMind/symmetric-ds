@@ -39,6 +39,7 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
@@ -57,7 +58,9 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
     static final String SQL_DROP_FUNCTION = "drop function dbo.$(functionName)";
     static final String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))";
     static final String SQL_PAGE_SIZE = "select @@maxpagesize";
+    static final String SQL_NOCOUNT = "select @@OPTIONS & 512";
     private int pageSize = 2048;
+    private int noCount = 0;
 
     public AseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
@@ -71,6 +74,15 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
             log.info("Page size is {}", pageSize);
         } catch (Exception e) {
             log.debug("Unable to query page size", e);
+        }
+        try {
+            noCount = platform.getSqlTemplate().queryForInt(SQL_NOCOUNT);
+        } catch (Exception se) {
+            log.warn("Unable to query nocount", se);
+        }
+        if (noCount != 0) {
+            throw new SymmetricException("Incompatible setting for nocount detected.  Add the following to your\r\n"
+                    + "engine properties file: db.init.sql=set nocount off");
         }
     }
 

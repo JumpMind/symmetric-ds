@@ -42,6 +42,7 @@ public class DatabaseWriterSettings {
     protected boolean createTableDropFirst = false;
     protected boolean applyChangesOnly = true;
     protected boolean createTableAlterCaseToMatchDatabaseDefault = false;
+    protected boolean createTableWithoutDefaultsOnError = false;
     protected boolean ignoreMissingTables = true;
     protected boolean saveCurrentValueOnError = false;
     protected boolean fitToColumn = false;
@@ -129,6 +130,14 @@ public class DatabaseWriterSettings {
     public void setCreateTableAlterCaseToMatchDatabaseDefault(
             boolean createTableAlterCaseToMatchDatabaseDefault) {
         this.createTableAlterCaseToMatchDatabaseDefault = createTableAlterCaseToMatchDatabaseDefault;
+    }
+
+    public boolean isCreateTableWithoutDefaultsOnError() {
+        return createTableWithoutDefaultsOnError;
+    }
+
+    public void setCreateTableWithoutDefaultsOnError(boolean createTableWithoutDefaultsOnError) {
+        this.createTableWithoutDefaultsOnError = createTableWithoutDefaultsOnError;
     }
 
     public Map<String, Conflict> getConflictSettingsByChannel() {

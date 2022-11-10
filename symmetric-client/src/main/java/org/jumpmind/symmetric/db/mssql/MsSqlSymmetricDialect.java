@@ -63,11 +63,22 @@ import org.jumpmind.symmetric.service.IParameterService;
 public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
     static final protected String SQL_DROP_FUNCTION = "drop function dbo.$(functionName)";
     static final protected String SQL_FUNCTION_INSTALLED = "select count(object_name(object_id('$(functionName)')))";
+    static final String SQL_NOCOUNT = "select @@OPTIONS & 512";
     protected Boolean supportsDisableTriggers = null;
+    protected int noCount = 0;
 
     public MsSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new MsSqlTriggerTemplate(this);
+        try {
+            noCount = platform.getSqlTemplate().queryForInt(SQL_NOCOUNT);
+        } catch (Exception se) {
+            log.warn("Unable to query nocount", se);
+        }
+        if (noCount != 0) {
+            throw new SymmetricException("Incompatible setting for nocount detected.  Add the following to your\r\n"
+                    + "engine properties file: db.init.sql=set nocount off");
+        }
     }
 
     @Override

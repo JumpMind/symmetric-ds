@@ -602,18 +602,30 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
     @Override
     protected boolean create(CsvData data) {
+        return create(data, false);
+    }
+
+    protected boolean create(CsvData data, boolean withoutDefaults) {
         String xml = null;
+        Database db = null;
+        boolean hasMatchingPlatform = false;
         try {
             getTargetTransaction().commit();
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             xml = data.getParsedData(CsvData.ROW_DATA)[0];
             log.info("About to create table using the following definition: {}", xml);
             StringReader reader = new StringReader(xml);
-            Database db = DatabaseXmlUtil.read(reader, false);
+            db = DatabaseXmlUtil.read(reader, false);
+            hasMatchingPlatform = getTargetPlatform().hasMatchingPlatform(db);
             if (writerSettings.isCreateTableAlterCaseToMatchDatabaseDefault()) {
                 getTargetPlatform().alterCaseToMatchDatabaseDefaultCase(db);
             }
             getTargetPlatform().makePlatformSpecific(db);
+            if (withoutDefaults) {
+                for (Table table : db.getTables()) {
+                    table.removeAllColumnDefaults();
+                }
+            }
             if (writerSettings.isAlterTable()) {
                 getTargetPlatform().alterDatabase(db, !writerSettings.isCreateTableFailOnError(), writerSettings.getAlterDatabaseInterceptors());
             } else {
@@ -623,8 +635,12 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
             return true;
         } catch (RuntimeException ex) {
-            log.error("Failed to alter table using the following xml: " + xml, ex); // This is not logged upstream
-            throw ex;
+            if (!withoutDefaults && writerSettings.isCreateTableWithoutDefaultsOnError() && !hasMatchingPlatform) {
+                log.info("Attempting to create table again without defaults");
+                return create(data, true);
+            } else {
+                throw ex;
+            }
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
