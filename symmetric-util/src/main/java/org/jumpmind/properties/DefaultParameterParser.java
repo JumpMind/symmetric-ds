@@ -154,8 +154,7 @@ public class DefaultParameterParser {
         Writer writer = null;
         try {
             writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
-        } catch(IOException e) {
-        	
+        } catch (IOException e) {
         }
         boolean isDatabaseOverridable = Boolean.parseBoolean(args[2]);
         boolean isAsciiDocFormat = args.length > 3 && "asciidoc".equals(args[3]);
