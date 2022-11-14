@@ -94,6 +94,7 @@ public class Wrapper {
             ex.printStackTrace();
             System.exit(-1);
         }
+        System.exit(0);
     }
 
     protected static String getParentDir(String filepath) {

@@ -46,6 +46,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.util.component.LifeCycle;
+import org.eclipse.jetty.util.component.LifeCycle.Listener;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
@@ -258,6 +260,19 @@ public class SymmetricWebServer {
                 System.setProperty("org.eclipse.jetty.websocket.jsr356.ssl-trust-all", "true");
             }
         }
+        server.addLifeCycleListener(new Listener() {
+            public void lifeCycleStarted(LifeCycle event) {
+                System.out.println("Started");
+            }
+
+            public void lifeCycleFailure(LifeCycle event, Throwable cause) {
+                log.info("Web server failed to start: " + cause.getMessage());
+            }
+
+            public void lifeCycleStopping(LifeCycle event) {
+                log.info("Web server is stopping");
+            }
+        });
         server.start();
         if (join) {
             log.info("Joining the web server main thread");
