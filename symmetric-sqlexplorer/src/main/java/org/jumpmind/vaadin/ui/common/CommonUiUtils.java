@@ -166,7 +166,7 @@ public final class CommonUiUtils {
                     vLayout.add(label);
                 }
                 if (message != null) {
-                	TextArea textArea = new TextArea();
+                    TextArea textArea = new TextArea();
                     textArea.setWidthFull();
                     textArea.setHeight("400px");
                     textArea.setValue(message);
