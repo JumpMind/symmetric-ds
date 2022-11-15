@@ -55,6 +55,14 @@
 		<column name="decimal_value" type="DECIMAL" />
 	</table>
 
+	<table name="test_overlap">
+		<column name="id" type="INTEGER" required="true" primaryKey="true" />
+	</table>
+
+	<table name="tst_overlap">
+		<column name="id" type="INTEGER" required="true" primaryKey="true" />
+	</table>
+
 	<table name="test_dataloader_table">
 		<column name="string_value" type="VARCHAR" size="50" />
 		<column name="string_required_value" type="VARCHAR" size="50"
