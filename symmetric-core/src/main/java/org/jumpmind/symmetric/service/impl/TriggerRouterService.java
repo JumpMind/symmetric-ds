@@ -347,7 +347,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected boolean isTriggerNameInUse(List<TriggerHistory> activeTriggerHistories, Trigger trigger, String triggerName,
-            TriggerHistory oldhist) {
+            TriggerHistory oldhist, List<String> triggerNamesGeneratedThisSession) {
         synchronized (activeTriggerHistories) {
             for (TriggerHistory triggerHistory : activeTriggerHistories) {
                 if ((!triggerHistory.getTriggerId().equals(trigger.getTriggerId()) ||
@@ -359,6 +359,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     return true;
                 }
             }
+        }
+        if (triggerNamesGeneratedThisSession.contains(triggerName)) {
+            return true;
         }
         return false;
     }
@@ -1707,6 +1710,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private Map<String, List<TriggerTableSupportingInfo>> getTriggerToTableSupportingInfo(List<Trigger> triggers, List<TriggerHistory> activeTriggerHistories, 
             boolean useTableCache) {
         Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = new HashMap<String, List<TriggerTableSupportingInfo>>();
+        List<String> triggerNamesGeneratedThisSession = new ArrayList<String>();
         for (final Trigger trigger : triggers) {
             List<TriggerTableSupportingInfo> triggerTableSupportingInfoList = new ArrayList<TriggerTableSupportingInfo>();
             Set<Table> tables = getTablesForTrigger(trigger, triggers, useTableCache);
@@ -1737,17 +1741,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 String deleteTriggerName = null;
                 if (trigger.isSyncOnInsert()) {
                     insertTriggerName = getTriggerName(DataEventType.INSERT,
-                        maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild).toUpperCase();
+                        maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild, triggerNamesGeneratedThisSession).toUpperCase();
+                    triggerNamesGeneratedThisSession.add(insertTriggerName);
                 }
                 
                 if (trigger.isSyncOnUpdate()) {
                     updateTriggerName = getTriggerName(DataEventType.UPDATE,
-                            maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild).toUpperCase();
+                            maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild, triggerNamesGeneratedThisSession).toUpperCase();
+                    triggerNamesGeneratedThisSession.add(updateTriggerName);
                 }
 
                 if (trigger.isSyncOnDelete()) {
                     deleteTriggerName = getTriggerName(DataEventType.DELETE,
-                            maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild).toUpperCase();
+                            maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild, triggerNamesGeneratedThisSession).toUpperCase();
+                    triggerNamesGeneratedThisSession.add(deleteTriggerName);
                 }
                 TriggerTableSupportingInfo triggerTableSupportingInfo = new TriggerTableSupportingInfo(trigger.getTriggerId(), insertTriggerName, updateTriggerName, deleteTriggerName, latestHistoryBeforeRebuild, modifiedTable);
                 triggerTableSupportingInfoList.add(triggerTableSupportingInfo);
@@ -2156,7 +2163,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
     
     public String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger,
-            Table table, List<TriggerHistory> activeTriggerHistories, TriggerHistory oldhist) {
+            Table table, List<TriggerHistory> activeTriggerHistories, TriggerHistory oldhist, List<String> triggerNamesGeneratedThisSession) {
 
         String triggerName = null;
         switch (dml) {
@@ -2215,7 +2222,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
 
         int duplicateCount = 0;
-        while (isTriggerNameInUse(activeTriggerHistories, trigger, triggerName, oldhist)) {
+        while (isTriggerNameInUse(activeTriggerHistories, trigger, triggerName, oldhist, triggerNamesGeneratedThisSession)) {
             duplicateCount++;
             String duplicateSuffix = Integer.toString(duplicateCount);
             if (triggerName.length() + duplicateSuffix.length() > maxTriggerNameLength) {

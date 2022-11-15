@@ -3312,12 +3312,13 @@ public class DataService extends AbstractService implements IDataService {
                     triggerHistory = new TriggerHistory(table, trigger, engine.getSymmetricDialect().getTriggerTemplate());
                     triggerHistory.setTriggerHistoryId(isExistingTriggerHist ? 0 : triggerHistId);
                     triggerHistory.setLastTriggerBuildReason(TriggerReBuildReason.TRIGGER_HIST_MISSING);
+                    List<String> triggerNamesGeneratedThisSession = new ArrayList<String>();
                     triggerHistory.setNameForInsertTrigger(engine.getTriggerRouterService().getTriggerName(DataEventType.INSERT,
-                            symmetricDialect.getMaxTriggerNameLength(), trigger, table, activeTriggerHistories, null));
+                            symmetricDialect.getMaxTriggerNameLength(), trigger, table, activeTriggerHistories, null, triggerNamesGeneratedThisSession));
                     triggerHistory.setNameForUpdateTrigger(engine.getTriggerRouterService().getTriggerName(DataEventType.UPDATE,
-                            symmetricDialect.getMaxTriggerNameLength(), trigger, table, activeTriggerHistories, null));
+                            symmetricDialect.getMaxTriggerNameLength(), trigger, table, activeTriggerHistories, null, triggerNamesGeneratedThisSession));
                     triggerHistory.setNameForDeleteTrigger(engine.getTriggerRouterService().getTriggerName(DataEventType.DELETE,
-                            symmetricDialect.getMaxTriggerNameLength(), trigger, table, activeTriggerHistories, null));
+                            symmetricDialect.getMaxTriggerNameLength(), trigger, table, activeTriggerHistories, null, triggerNamesGeneratedThisSession));
                     log.warn("Could not find trigger history {} for table {} for data_id {}.  Generating a new trigger history row.",
                             triggerHistId, tableName, dataId);
                     engine.getTriggerRouterService().insert(triggerHistory);
