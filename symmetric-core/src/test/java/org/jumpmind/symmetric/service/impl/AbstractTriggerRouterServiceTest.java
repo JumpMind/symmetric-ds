@@ -35,8 +35,10 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
@@ -384,6 +386,45 @@ abstract public class AbstractTriggerRouterServiceTest extends AbstractServiceTe
             String csvString = getNextDataRow();
             Assert.assertEquals("\"23\",\"dGVzdCAxIDIgMw==\",\"dGVzdCAxIDIgMyAg\"", csvString);
         }
+    }
+
+    @Test
+    public void test14OverlappingTriggerIds() {
+        ITriggerRouterService service = getTriggerRouterService();
+        TriggerRouter trouter = new TriggerRouter();
+        Trigger trigger = trouter.getTrigger();
+        trigger.setTriggerId("test_overlap");
+        trigger.setSourceTableName("test_overlap");
+        trigger.setChannelId(TestConstants.TEST_CHANNEL_ID);
+        Router router = trouter.getRouter();
+        NodeGroupLink groupLink = new NodeGroupLink(TestConstants.TEST_ROOT_NODE_GROUP,
+                TestConstants.TEST_ROOT_NODE_GROUP);
+        router.setNodeGroupLink(groupLink);
+        service.saveTriggerRouter(trouter);
+        trigger.setTriggerId("tst_overlap");
+        trigger.setSourceTableName("tst_overlap");
+        service.saveTriggerRouter(trouter);
+        service.syncTriggers();
+        Assert.assertEquals("Some triggers must have failed to build.", 0, service.getFailedTriggers().size());
+        TriggerHistory history0 = null;
+        TriggerHistory history1 = null;
+        boolean foundHistories = false;
+        for (TriggerHistory history : service.getActiveTriggerHistories()) {
+            if (history.getTriggerId().equals("test_overlap")) {
+                history0 = history;
+            } else if (history.getTriggerId().equals("tst_overlap")) {
+                history1 = history;
+            }
+            if (history0 != null && history1 != null) {
+                foundHistories = true;
+                break;
+            }
+        }
+        Assert.assertTrue("Missing rows in sym_trigger_hist.", foundHistories);
+        Assert.assertTrue("Trigger names are not unique.",
+                !history0.getNameForInsertTrigger().equals(history1.getNameForInsertTrigger())
+                        && !history0.getNameForUpdateTrigger().equals(history1.getNameForUpdateTrigger())
+                        && !history0.getNameForDeleteTrigger().equals(history1.getNameForDeleteTrigger()));
     }
 
     protected static int[] filterTypes(int[] types, ISymmetricDialect dbDialect) {
