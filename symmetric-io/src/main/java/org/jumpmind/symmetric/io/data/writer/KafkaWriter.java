@@ -79,11 +79,8 @@ import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 
 public class KafkaWriter extends DynamicDefaultDatabaseWriter {
     private static final Logger log = LoggerFactory.getLogger(KafkaWriter.class);
-
     private static final String TRUNCATE_PATTERN = "^(truncate)( table)?.*";
-
     private static final String DELETE_PATTERN = "^(delete from).*";
-
     protected final String KAFKA_TEXT_CACHE = "KAFKA_TEXT_CACHE" + this.hashCode();
     protected Map<String, List<ProducerRecord<String, Object>>> kafkaDataMap = new HashMap<String, List<ProducerRecord<String, Object>>>();
     protected String kafkaDataKey;
@@ -141,7 +138,6 @@ public class KafkaWriter extends DynamicDefaultDatabaseWriter {
         this.props = props;
         this.runtimeConfigTablePrefix = runtimeConfigTablePrefix;
         this.channelReload = channelReload;
-
         if (this.url == null) {
             throw new RuntimeException(
                     "Kakfa not configured properly, verify you have set the endpoint to kafka with the following property : " + loadOnlyPrefix
@@ -196,7 +192,6 @@ public class KafkaWriter extends DynamicDefaultDatabaseWriter {
             return super.execute(data, values);
         }
         Table table = this.sourceTable;
-
         String[] rowData = data.getParsedData(CsvData.ROW_DATA);
         if (data.getDataEventType() == DataEventType.DELETE) {
             rowData = data.getParsedData(CsvData.OLD_DATA);
@@ -352,7 +347,6 @@ public class KafkaWriter extends DynamicDefaultDatabaseWriter {
         } else {
             successValue = writeKafka(data, table);
         }
-
         statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         if (successValue == 1) {
             return LoadStatus.SUCCESS;
@@ -365,17 +359,14 @@ public class KafkaWriter extends DynamicDefaultDatabaseWriter {
     protected boolean create(CsvData data) {
         String xml = null;
         try {
-
             // Placeholder to ensure target platform and transaction is
             // returned.
             // SYM_* tables are not created through this process.
             String tempNonSymTable = "NON_SYM_TABLE";
             getTransaction(tempNonSymTable).commit();
-
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             xml = data.getParsedData(CsvData.ROW_DATA)[0];
             log.info("Creating Kafka Topic for the following xml:", xml);
-
             writeKafka(data, this.sourceTable);
             statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
             return true;
@@ -401,18 +392,15 @@ public class KafkaWriter extends DynamicDefaultDatabaseWriter {
                 ISqlTransaction newTransaction = null;
                 try {
                     Table table = targetTable != null ? targetTable : sourceTable;
-
                     sql = FormatUtils.replace("nodeId", batch.getTargetNodeId(), sql);
                     if (table != null) {
                         sql = FormatUtils.replace("catalogName", quoteString(table.getCatalog()), sql);
                         sql = FormatUtils.replace("schemaName", quoteString(table.getSchema()), sql);
                         sql = FormatUtils.replace("tableName", quoteString(table.getName()), sql);
-
                         DatabaseInfo info = getPlatform().getDatabaseInfo();
                         String quote = getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? info.getDelimiterToken() : "";
                         sql = FormatUtils.replace("fullTableName",
                                 table.getQualifiedTableName(quote, info.getCatalogSeparator(), info.getSchemaSeparator()), sql);
-
                         final String old38CompatibilityTable = "sym_node";
                         if ((channelReload.equals(batch.getChannelId()) && sql.matches(TRUNCATE_PATTERN)
                                 && !table.getNameLowerCase().equals(old38CompatibilityTable))
@@ -451,7 +439,6 @@ public class KafkaWriter extends DynamicDefaultDatabaseWriter {
         if (sourceTable != null && isSymmetricTable(sourceTable.getName())) {
             return super.lookupTableAtTarget(sourceTable);
         }
-
         return sourceTable;
     }
 
@@ -625,7 +612,6 @@ public class KafkaWriter extends DynamicDefaultDatabaseWriter {
     }
 
     public int writeKafka(CsvData data, Table table) {
-
         String[] rowData = data.getParsedData(CsvData.ROW_DATA);
         if (data.getDataEventType() == DataEventType.DELETE) {
             rowData = data.getParsedData(CsvData.OLD_DATA);

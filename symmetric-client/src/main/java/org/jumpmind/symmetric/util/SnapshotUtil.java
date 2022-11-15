@@ -667,7 +667,7 @@ public class SnapshotUtil {
             for (String key : keys) {
                 bw.write(key + "=" + properties.getProperty(key).replace("\n", "\\n").replace("\r", "\\r"));
                 bw.newLine();
-            }            
+            }
         } catch (Exception e) {
             log.warn("Failed to write " + fileName, e);
         }
@@ -698,8 +698,8 @@ public class SnapshotUtil {
                 }
                 String schedule = job.getSchedule();
                 String lastFinishTime = getLastFinishTime(job, lock);
-                String nextRunTime = job.getNextExecutionTime() == null ? "" :
-                    DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.format(job.getNextExecutionTime());
+                String nextRunTime = job.getNextExecutionTime() == null ? ""
+                        : DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.format(job.getNextExecutionTime());
                 writer.write(StringUtils.rightPad(job.getName().replace("_", " "), 30) +
                         StringUtils.rightPad(schedule, 20) + StringUtils.rightPad(status, 10) +
                         StringUtils.left(StringUtils.rightPad(runningServerId == null ? "" : runningServerId, 30), 30) +

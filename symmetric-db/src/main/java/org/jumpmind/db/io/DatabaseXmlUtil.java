@@ -252,7 +252,7 @@ public class DatabaseXmlUtil {
                                 } else if (attributeName.equalsIgnoreCase("size")) {
                                     column.setSize(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("default")) {
-                                        column.setDefaultValue(attributeValue);
+                                    column.setDefaultValue(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("autoIncrement")) {
                                     column.setAutoIncrement(FormatUtils.toBoolean(attributeValue));
                                 } else if (attributeName.equalsIgnoreCase("javaName")) {

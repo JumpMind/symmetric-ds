@@ -92,9 +92,9 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                         symmetricDialect.getTablePrefix(), new DefaultTransformWriterConflictResolver(transformWriter),
                         buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
             } else if (targetPlatform instanceof KafkaPlatform) {
-//                if (filters == null) {
-//                    filters = new ArrayList<IDatabaseWriterFilter>();
-//                }
+                // if (filters == null) {
+                // filters = new ArrayList<IDatabaseWriterFilter>();
+                // }
                 String url;
                 String producer;
                 String externalNodeID;

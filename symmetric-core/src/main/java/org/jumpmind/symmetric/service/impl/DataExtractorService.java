@@ -1307,7 +1307,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                             targetNodeByEngine.getNodeId(), targetNode.getNodeId(), targetNode.getSyncUrl());
                                 } else {
                                     IStagedResource targetResource = targetEngine.getStagingManager().create(
-                                            Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId(), currentBatch.getBatchId()),
+                                            Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId(), currentBatch
+                                                    .getBatchId()),
                                             currentBatch.getBatchId());
                                     try {
                                         Files.copy(extractedBatch.getFile().toPath(), targetResource.getFile().toPath(), StandardCopyOption.REPLACE_EXISTING);

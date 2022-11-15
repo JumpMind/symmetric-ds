@@ -1665,17 +1665,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 String deleteTriggerName = null;
                 if (trigger.isSyncOnInsert()) {
                     insertTriggerName = getTriggerName(DataEventType.INSERT,
-                        maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild, triggerNamesGeneratedThisSession).toUpperCase();
+                            maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild, triggerNamesGeneratedThisSession)
+                                    .toUpperCase();
                     triggerNamesGeneratedThisSession.add(insertTriggerName);
                 }
                 if (trigger.isSyncOnUpdate()) {
                     updateTriggerName = getTriggerName(DataEventType.UPDATE,
-                            maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild, triggerNamesGeneratedThisSession).toUpperCase();
+                            maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild, triggerNamesGeneratedThisSession)
+                                    .toUpperCase();
                     triggerNamesGeneratedThisSession.add(updateTriggerName);
                 }
                 if (trigger.isSyncOnDelete()) {
                     deleteTriggerName = getTriggerName(DataEventType.DELETE,
-                            maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild, triggerNamesGeneratedThisSession).toUpperCase();
+                            maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild, triggerNamesGeneratedThisSession)
+                                    .toUpperCase();
                     triggerNamesGeneratedThisSession.add(deleteTriggerName);
                 }
                 TriggerTableSupportingInfo triggerTableSupportingInfo = new TriggerTableSupportingInfo(trigger.getTriggerId(), insertTriggerName,
