@@ -20,7 +20,9 @@
  */
 package org.jumpmind.symmetric.test;
 
+import java.io.IOException;
 import java.sql.Types;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -28,12 +30,16 @@ import static org.junit.Assert.*;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.jumpmind.symmetric.web.rest.RestService;
+import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 
 public class NonDmlEventsTest extends AbstractTest {
     // test sendSchema
@@ -138,10 +144,9 @@ public class NonDmlEventsTest extends AbstractTest {
         rootServer.getParameterService().saveParameter(ParameterConstants.REST_API_ENABLED, true, "unit_test");
         rootServer.getRegistrationService().openRegistration(clientServer.getParameterService().getNodeGroupId(), "2");
         rootServer.getRegistrationService().openRegistration(clientServer.getParameterService().getNodeGroupId(), "3");
-        RestService restService = getRegServer().getRestService();
         /* register a few more nodes to make sure that when we insert reload events they are only routed to the node we want */
-        restService.postRegisterNode("2", clientServer.getParameterService().getNodeGroupId(), DatabaseNamesConstants.H2, "1.2", "host2");
-        restService.postRegisterNode("3", clientServer.getParameterService().getNodeGroupId(), DatabaseNamesConstants.H2, "1.2", "host2");
+        postRegisterNode(rootServer, "2", clientServer.getParameterService().getNodeGroupId(), DatabaseNamesConstants.H2, "1.2", "host2");
+        postRegisterNode(rootServer, "3", clientServer.getParameterService().getNodeGroupId(), DatabaseNamesConstants.H2, "1.2", "host2");
         rootServer.route();
         assertEquals(0, rootServer.getOutgoingBatchService().countOutgoingBatchesUnsent(Constants.CHANNEL_RELOAD));
         Table serverTable = rootServer.getDatabasePlatform().readTableFromDatabase(null, null, "NODE_SPECIFIC");
@@ -153,5 +158,27 @@ public class NonDmlEventsTest extends AbstractTest {
         assertEquals(0, rootServer.getOutgoingBatchService().getOutgoingBatches("3", true).getBatchesForChannel(Constants.CHANNEL_RELOAD).size());
         OutgoingBatches batches = rootServer.getOutgoingBatchService().getOutgoingBatches(clientServer.getNodeService().findIdentityNodeId(), true);
         assertEquals(1, batches.getBatchesForChannel(Constants.CHANNEL_RELOAD).size());
+    }
+
+    private void postRegisterNode(ISymmetricEngine engine, String externalId, String nodeGroupId, String databaseType,
+            String databaseVersion, String hostName) {
+        IRegistrationService registrationService = engine.getRegistrationService();
+        INodeService nodeService = engine.getNodeService();
+        try {
+            Node processedNode = registrationService
+                    .registerPullOnlyNode(externalId, nodeGroupId, databaseType, databaseVersion, engine.getDatabasePlatform().getName());
+            if (processedNode.isSyncEnabled()) {
+                NodeHost nodeHost = new NodeHost();
+                nodeHost.setNodeId(processedNode.getNodeId());
+                nodeHost.setHostName(hostName);
+                Date now = new Date();
+                nodeHost.setCreateTime(now);
+                nodeHost.setLastRestartTime(now);
+                nodeHost.setHeartbeatTime(now);
+                nodeService.updateNodeHost(nodeHost);
+            }
+        } catch (IOException e) {
+            throw new IoException(e);
+        }
     }
 }

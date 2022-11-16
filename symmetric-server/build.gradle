@@ -7,7 +7,6 @@ apply from: symAssembleDir + '/asciidoc.gradle'
 
     dependencies {
         api project(":symmetric-client")
-        compileOnly project(":symmetric-swagger-ui")
         api "org.springframework:spring-jms:$springVersion"
         api "org.springframework:spring-web:$springVersion"
         api "org.springframework:spring-webmvc:$springVersion"
