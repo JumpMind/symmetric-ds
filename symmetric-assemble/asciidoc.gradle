@@ -1,17 +1,10 @@
 apply plugin: 'org.asciidoctor.gradle.asciidoctor'
-apply plugin: 'docbook-reference'
 
 configurations{ generateAppendixesDependencies }
 
 dependencies {
     generateAppendixesDependencies project(":symmetric-util")
     generateAppendixesDependencies project(":symmetric-db")
-}
-
-reference {
-    sourceDir = file("$buildDir/src/asciidoc/docbook")
-    // Configure which files have ${} expanded
-    expandPlaceholders = '**/user-guide.xml'
 }
 
 task generateAppendixes {
