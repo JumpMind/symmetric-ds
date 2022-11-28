@@ -51,6 +51,7 @@ import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
+import org.jumpmind.symmetric.io.data.ProtocolException;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.Statistics;
@@ -191,7 +192,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                                         + "The number of columns (%d) reported for table '%s' doesn't match up with the token count (%d) data: %s",
                                 columnCount, context.getLastParsedTable().getFullyQualifiedTableName(), tokens.length,
                                 ArrayUtils.toString(tokens));
-                        throw new IllegalStateException(msg);
+                        throw new ProtocolException(msg);
                     }
                     data.putParsedData(CsvData.ROW_DATA, CollectionUtils.copyOfRange(tokens, 1, columnCount + 1));
                     data.putParsedData(CsvData.PK_DATA, CollectionUtils.copyOfRange(tokens, columnCount + 1, tokens.length));
