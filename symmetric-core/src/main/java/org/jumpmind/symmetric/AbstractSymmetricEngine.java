@@ -699,7 +699,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, true);
         if (useExtractJob && !streamToFile) {
             throw new SymmetricException(String.format(
-                    "Node '%s' is configured with confilcting parameters which may result in replication stopping and/or empty load batches. "
+                    "Node '%s' is configured with conflicting parameters which may result in replication stopping and/or empty load batches. "
                             + "One of these two parameters needs to be changed: %s=%s and %s=%s",
                     node != null ? node.getNodeId() : "null", ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB,
                     useExtractJob, ParameterConstants.STREAM_TO_FILE_ENABLED, streamToFile));
@@ -932,6 +932,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             log.warn(
                     "SymmetricDS does not support automatic downgrading.  The current version running version of {} is older than the last running version of {}",
                     Version.version(), node.getSymmetricVersion());
+        } else if (!StringUtils.isBlank(parameterService.getSyncUrl()) && !parameterService.getSyncUrl().endsWith(parameterService.getEngineName())) {
+            log.error("The engine is named '{}' but the {} property does not end with the same engine name: {}", parameterService.getEngineName(),
+                    ParameterConstants.SYNC_URL, parameterService.getSyncUrl());
         } else {
             if (node != null && Version.isOlderMinorVersion(node.getSymmetricVersion(), Version.version())) {
                 log.debug("The current version of {} is newer than the last running version of {}",
