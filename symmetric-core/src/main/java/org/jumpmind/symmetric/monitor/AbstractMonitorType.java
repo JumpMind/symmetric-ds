@@ -44,7 +44,7 @@ public abstract class AbstractMonitorType implements IMonitorType, ISymmetricEng
     protected void rankTopUsage(ThreadInfo infos[], long usages[], ThreadInfo info, long usage) {
         for (int i = 0; i < infos.length; i++) {
             if (usage > usages[i]) {
-                for (int j = i + 1; j < infos.length; j++) {
+                for (int j = infos.length - 1; j > i; j--) {
                     infos[j] = infos[j - 1];
                     usages[j] = usages[j - 1];
                 }
