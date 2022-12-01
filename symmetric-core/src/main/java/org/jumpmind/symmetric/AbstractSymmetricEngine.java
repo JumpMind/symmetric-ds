@@ -139,6 +139,7 @@ import org.jumpmind.symmetric.transport.ConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
+import org.jumpmind.symmetric.util.PropertiesUtil;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
@@ -932,9 +933,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             log.warn(
                     "SymmetricDS does not support automatic downgrading.  The current version running version of {} is older than the last running version of {}",
                     Version.version(), node.getSymmetricVersion());
-        } else if (!StringUtils.isBlank(parameterService.getSyncUrl()) && !parameterService.getSyncUrl().endsWith(parameterService.getEngineName())) {
+        } else if (!StringUtils.isBlank(parameterService.getSyncUrl()) && !parameterService.getSyncUrl().matches(".*/sync/?")
+                && !parameterService.getSyncUrl().endsWith(parameterService.getEngineName())) {
             log.error("The engine is named '{}' but the {} property does not end with the same engine name: {}", parameterService.getEngineName(),
                     ParameterConstants.SYNC_URL, parameterService.getSyncUrl());
+        } else if (!StringUtils.isBlank(parameterService.getSyncUrl()) && parameterService.getSyncUrl().matches(".*/sync/?")
+                && PropertiesUtil.findEnginePropertiesFiles().length > 1) {
+            log.error("There are multiple engine property files, so engine name of '{}' should be on the end of the {} property: {}",
+                    parameterService.getEngineName(), ParameterConstants.SYNC_URL, parameterService.getSyncUrl());
         } else {
             if (node != null && Version.isOlderMinorVersion(node.getSymmetricVersion(), Version.version())) {
                 log.debug("The current version of {} is newer than the last running version of {}",
