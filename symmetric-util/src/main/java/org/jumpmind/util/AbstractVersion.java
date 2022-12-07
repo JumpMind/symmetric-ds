@@ -39,6 +39,9 @@ abstract public class AbstractVersion {
     public static final int MINOR_INDEX = 1;
     public static final int PATCH_INDEX = 2;
     private String version = null;
+    private int majorVersion;
+    private int minorVersion;
+    private int patchVersion;
     private long buildTime = -1;
     private String buildYear;
 
@@ -82,8 +85,24 @@ abstract public class AbstractVersion {
                     version = "development";
                 }
             }
+            int[] versionParts = parseVersion(version);
+            majorVersion = versionParts[0];
+            minorVersion = versionParts[1];
+            patchVersion = versionParts[2];
         }
         return version;
+    }
+
+    public int getMajorVersion() {
+        return majorVersion;
+    }
+
+    public int getMinorVersion() {
+        return minorVersion;
+    }
+
+    public int getPatchVersion() {
+        return patchVersion;
     }
 
     public long getBuildTime() {
