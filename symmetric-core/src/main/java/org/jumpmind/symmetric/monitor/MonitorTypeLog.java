@@ -81,7 +81,7 @@ public class MonitorTypeLog implements IMonitorType, ISymmetricEngineAware, IBui
 
     @Override
     public boolean requiresClusterLock() {
-        return false;
+        return true;
     }
 
     @Override
