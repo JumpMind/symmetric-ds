@@ -139,6 +139,7 @@ import org.jumpmind.symmetric.transport.ConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
+import org.jumpmind.symmetric.util.PropertiesUtil;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
@@ -891,6 +892,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public boolean isConfigured() {
         boolean configurationValid = false;
+        String errorMessage = null;
         boolean isRegistrationServer = getNodeService().isRegistrationServer();
         boolean isSelfConfigurable = isRegistrationServer
                 && (getParameterService().is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND,
@@ -906,41 +908,47 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
         String registrationUrl = getParameterService().getRegistrationUrl();
         if (!isSelfConfigurable && node == null && isRegistrationServer) {
-            log.warn(
-                    "This node is configured as a registration server, but it is missing its node_identity.  It probably needs configured.",
-                    ParameterConstants.REGISTRATION_URL);
+            errorMessage = "This node is configured as a registration server, but it is missing its node_identity.  It probably needs configured.";
         } else if (!isSelfConfigurable && node == null
                 && StringUtils.isBlank(getParameterService().getRegistrationUrl())) {
-            log.warn(
-                    "Please set the property {} so this node may pull registration or manually insert configuration into the configuration tables",
-                    ParameterConstants.REGISTRATION_URL);
+            errorMessage = "Please set the property {} so this node may pull registration or manually insert configuration into the configuration tables";
         } else if (Constants.PLEASE_SET_ME.equals(registrationUrl)) {
-            log.warn("Please set the registration.url for the node");
+            errorMessage = "Please set the registration.url for the node";
         } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getNodeGroupId())) {
-            log.warn("Please set the group.id for the node");
+            errorMessage = "Please set the group.id for the node";
         } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getExternalId())) {
-            log.warn("Please set the external.id for the node");
+            errorMessage = "Please set the external.id for the node";
         } else if (offlineNodeDetectionPeriodSeconds > 0
                 && offlineNodeDetectionPeriodSeconds <= heartbeatSeconds) {
             // Offline node detection is not disabled (-1) and the value is too
             // small (less than the heartbeat)
-            log.warn(
-                    "The {} property must be a longer period of time than the {} property.  Otherwise, nodes will be taken offline before the heartbeat job has a chance to run",
-                    ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES,
-                    ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
+            errorMessage = String.format(
+                    "The %s property must be a longer period of time than the %s property.  Otherwise, nodes will be taken offline before the heartbeat job has a chance to run",
+                    ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES, ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
         } else if (node != null && Version.isOlderMinorVersion(Version.version(), node.getSymmetricVersion())) {
-            log.warn(
-                    "SymmetricDS does not support automatic downgrading.  The current version running version of {} is older than the last running version of {}",
+            errorMessage = String.format(
+                    "SymmetricDS does not support automatic downgrading.  The current version running version of %s is older than the last running version of %s",
                     Version.version(), node.getSymmetricVersion());
-        } else if (!StringUtils.isBlank(parameterService.getSyncUrl()) && !parameterService.getSyncUrl().endsWith(parameterService.getEngineName())) {
-            log.error("The engine is named '{}' but the {} property does not end with the same engine name: {}", parameterService.getEngineName(),
+        } else if (!StringUtils.isBlank(parameterService.getSyncUrl()) && !parameterService.getSyncUrl().matches(".*/sync/?")
+                && !parameterService.getSyncUrl().endsWith(parameterService.getEngineName())) {
+            errorMessage = String.format(
+                    "The engine is named %s' but the %s property does not end with the same engine name: %s", parameterService.getEngineName(),
                     ParameterConstants.SYNC_URL, parameterService.getSyncUrl());
+        } else if (!StringUtils.isBlank(parameterService.getSyncUrl()) && parameterService.getSyncUrl().matches(".*/sync/?")
+                && PropertiesUtil.findEnginePropertiesFiles().length > 1) {
+            errorMessage = String.format(
+                    "There are multiple engine property files, so engine name of '%s' should be on the end of the %s property: %s",
+                    parameterService.getEngineName(), ParameterConstants.SYNC_URL, parameterService.getSyncUrl());
         } else {
             if (node != null && Version.isOlderMinorVersion(node.getSymmetricVersion(), Version.version())) {
                 log.debug("The current version of {} is newer than the last running version of {}",
                         Version.version(), node.getSymmetricVersion());
             }
             configurationValid = true;
+        }
+        if (errorMessage != null) {
+            log.error(errorMessage);
+            lastException = new SymmetricException(errorMessage);
         }
         return configurationValid;
     }

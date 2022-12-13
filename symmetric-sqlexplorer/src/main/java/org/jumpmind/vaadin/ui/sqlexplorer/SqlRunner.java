@@ -187,8 +187,8 @@ public class SqlRunner extends Thread {
         try {
             DataSource dataSource = db.getPlatform().getDataSource();
             if (!(db.getPlatform().getSqlTemplate() instanceof JdbcSqlTemplate)) {
-            	resultComponents.add(wrapTextInComponent("<span style='color: red'> SQL queries are not available for this platform. </span>", "marked"));
-            	return;
+                resultComponents.add(wrapTextInComponent("<span style='color: red'> SQL queries are not available for this platform. </span>", "marked"));
+                return;
             }
             JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) db.getPlatform().getSqlTemplate();
             stmt = null;

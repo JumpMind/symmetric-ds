@@ -86,4 +86,16 @@ final public class Version {
     public static String getBuildYear() {
         return version.getBuildYear();
     }
+
+    public static int getMajorVersion() {
+        return version.getMajorVersion();
+    }
+
+    public static int getMinorVersion() {
+        return version.getMinorVersion();
+    }
+
+    public static int getPatchVersion() {
+        return version.getPatchVersion();
+    }
 }
