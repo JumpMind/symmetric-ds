@@ -63,6 +63,7 @@ public class SqlAnywhereDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public static final String JDBC_DRIVER_OLD = "com.sybase.jdbc4.jdbc.SybDriver";
     /* The subprotocol used by the standard Sybase driver. */
     public static final String JDBC_SUBPROTOCOL = "sybase:Tds";
+    public static final String JDBC_SUBPROTOCOL_SHORT = "sybase";
     /* The maximum size that text and binary columns can have. */
     public static final long MAX_TEXT_SIZE = 2147483647;
     private Map<String, String> sqlScriptReplacementTokens;

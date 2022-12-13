@@ -44,6 +44,7 @@ import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
 import org.jumpmind.db.platform.raima.RaimaDatabasePlatform;
 import org.jumpmind.db.platform.redshift.RedshiftDatabasePlatform;
+import org.jumpmind.db.platform.sqlanywhere.SqlAnywhere12DatabasePlatform;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.db.platform.tibero.TiberoDatabasePlatform;
@@ -75,6 +76,7 @@ import org.jumpmind.symmetric.db.postgresql.GreenplumSymmetricDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlSymmetricDialect;
 import org.jumpmind.symmetric.db.raima.RaimaSymmetricDialect;
 import org.jumpmind.symmetric.db.redshift.RedshiftSymmetricDialect;
+import org.jumpmind.symmetric.db.sqlanywhere.SqlAnywhere12SymmetricDialect;
 import org.jumpmind.symmetric.db.sqlanywhere.SqlAnywhereSymmetricDialect;
 import org.jumpmind.symmetric.db.sqlite.SqliteJdbcSymmetricDialect;
 import org.jumpmind.symmetric.db.tibero.TiberoSymmetricDialect;
@@ -150,6 +152,8 @@ public class JdbcSymmetricDialectFactory implements ISymmetricDialectFactory {
             }
         } else if (platform instanceof AseDatabasePlatform) {
             dialect = new AseSymmetricDialect(parameterService, platform);
+        } else if (platform instanceof SqlAnywhere12DatabasePlatform) {
+            dialect = new SqlAnywhere12SymmetricDialect(parameterService, platform);
         } else if (platform instanceof SqlAnywhereDatabasePlatform) {
             dialect = new SqlAnywhereSymmetricDialect(parameterService, platform);
         } else if (platform instanceof InterbaseDatabasePlatform) {

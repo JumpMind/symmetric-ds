@@ -51,6 +51,7 @@ final public class DatabaseNamesConstants {
     public final static String POSTGRESQL95 = "postgres95";
     public final static String ASE = "ase";
     public final static String SQLANYWHERE = "sqlanywhere";
+    public final static String SQLANYWHERE12 = "sqlanywhere12";
     public final static String MARIADB = "mariadb";
     public final static String REDSHIFT = "redshift";
     public final static String VOLTDB = "voltdb";

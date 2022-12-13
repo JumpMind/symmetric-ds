@@ -84,6 +84,7 @@ import org.jumpmind.db.platform.postgresql.PostgreSql95DatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
 import org.jumpmind.db.platform.raima.RaimaDatabasePlatform;
 import org.jumpmind.db.platform.redshift.RedshiftDatabasePlatform;
+import org.jumpmind.db.platform.sqlanywhere.SqlAnywhere12DatabasePlatform;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.db.platform.tibero.TiberoDatabasePlatform;
@@ -144,7 +145,8 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
         addPlatform(platforms, DatabaseNamesConstants.POSTGRESQL, PostgreSqlDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.POSTGRESQL95, PostgreSql95DatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.SQLITE, SqliteDatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.SQLANYWHERE, SqliteDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.SQLANYWHERE, SqlAnywhere12DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.SQLANYWHERE12, SqlAnywhere12DatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.RAIMA, RaimaDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.REDSHIFT, RedshiftDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.TIBERO, TiberoDatabasePlatform.class);
@@ -315,6 +317,9 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
             if (isMSSQLAzureManagedInstance(connection)) {
                 nameVersion.setName(DatabaseNamesConstants.MSSQLAZURE);
             }
+        }
+        if (nameVersion.getProtocol().equalsIgnoreCase(SqlAnywhereDatabasePlatform.JDBC_SUBPROTOCOL_SHORT) && nameVersion.getVersion() >= 12) {
+            nameVersion.setName(DatabaseNamesConstants.SQLANYWHERE12);
         }
     }
 
