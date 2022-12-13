@@ -518,7 +518,12 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             Table targetTable = writer.getTargetTable();
             log.info("Child exists foreign key violation on table {} during {} with batch {}.  Attempting to correct.",
                     targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
-            return deleteForeignKeyChildren(platform, sqlTemplate, databaseWriter, writer.getTargetTable(), data);
+            if (deleteForeignKeyChildren(platform, sqlTemplate, databaseWriter, writer.getTargetTable(), data)) {
+                return true;
+            } else {
+                throw new RuntimeException("Failed to delete foreign table rows to fix foreign key violation for table '"
+                        + writer.getTargetTable().getFullyQualifiedTableName() + "'");
+            }
         }
         return false;
     }
