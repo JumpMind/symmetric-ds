@@ -1425,8 +1425,13 @@ public class DataService extends AbstractService implements IDataService {
                     String selectSql = selectSqlOverride;
                     if (StringUtils.isEmpty(selectSql)) {
                         if (reloadRequests != null) {
-                            TableReloadRequest reloadRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
-                            selectSql = reloadRequest != null ? reloadRequest.getReloadSelect() : null;
+                            if (isFullLoad && reloadRequests.size() == 1) {
+                                TableReloadRequest reloadRequest = reloadRequests.values().stream().findFirst().get();
+                                selectSql = reloadRequest != null ? reloadRequest.getReloadSelect() : null;
+                            } else {
+                                TableReloadRequest reloadRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
+                                selectSql = reloadRequest != null ? reloadRequest.getReloadSelect() : null;
+                            }
                         }
                         if (StringUtils.isBlank(selectSql)) {
                             selectSql = StringUtils.isBlank(triggerRouter.getInitialLoadSelect())
