@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -49,6 +50,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.mapper.NumberMapper;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.db.util.DatabaseConstants;
 import org.jumpmind.db.util.TableRow;
 import org.jumpmind.exception.ParseException;
@@ -531,16 +533,44 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
     protected boolean deleteForeignKeyChildren(IDatabasePlatform platform, ISqlTemplate sqlTemplate, DefaultDatabaseWriter databaseWriter, Table targetTable,
             CsvData data) {
         Map<String, String> values = null;
+        List<TableRow> tableRows = new ArrayList<TableRow>();
         if (data.getDataEventType() == DataEventType.INSERT) {
             values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getColumnNames(), CsvData.ROW_DATA);
         } else {
             values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getColumnNames(), CsvData.OLD_DATA);
             if (values == null || values.size() == 0) {
                 values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getPrimaryKeyColumnNames(), CsvData.PK_DATA);
+                Row whereRow = new Row(values.size());
+                boolean[] nullValues = new boolean[values.size()];
+                int index = 0;
+                for (Entry<String, String> entry : values.entrySet()) {
+                    nullValues[index++] = entry.getValue() == null;
+                    whereRow.put(entry.getKey(), entry.getValue());
+                }
+                DmlStatement whereSt = platform.createDmlStatement(DmlType.WHERE, targetTable.getCatalog(),
+                        targetTable.getSchema(), targetTable.getName(), targetTable.getPrimaryKeyColumns(),
+                        targetTable.getColumns(), nullValues, null);
+                String whereSql = whereSt.buildDynamicSql(BinaryEncoding.HEX, whereRow, false, true,
+                        targetTable.getPrimaryKeyColumns()).substring(6);
+                String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
+                if (delimiter != null && delimiter.length() > 0) {
+                    whereSql = whereSql.substring(0, whereSql.length() - delimiter.length());
+                }
+                DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, targetTable, null);
+                Object[] keys = whereRow.toArray(targetTable.getPrimaryKeyColumnNames());
+                Row targetRow = doInTransaction(platform, databaseWriter, new ITransactionCallback<Row>() {
+                    public Row execute(ISqlTransaction transaction) {
+                        return transaction.queryForRow(selectSt.getSql(), keys);
+                    }
+                });
+                if (targetRow != null) {
+                    tableRows.add(new TableRow(targetTable, targetRow, null, null, null));
+                }
             }
         }
-        List<TableRow> tableRows = new ArrayList<TableRow>();
-        tableRows.add(new TableRow(targetTable, values, null, null, null));
+        if (tableRows.isEmpty()) {
+            tableRows.add(new TableRow(targetTable, values, null, null, null));
+        }
         List<TableRow> foreignTableRows = doInTransaction(platform, databaseWriter, new ITransactionCallback<List<TableRow>>() {
             public List<TableRow> execute(ISqlTransaction transaction) {
                 return platform.getDdlReader().getExportedForeignTableRows(transaction, tableRows, new HashSet<TableRow>(), databaseWriter.getBatch()
