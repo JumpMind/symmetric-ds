@@ -617,7 +617,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             StringReader reader = new StringReader(xml);
             db = DatabaseXmlUtil.read(reader, false);
             hasMatchingPlatform = getTargetPlatform().hasMatchingPlatform(db);
-            if (writerSettings.isCreateTableAlterCaseToMatchDatabaseDefault()) {
+            if (writerSettings.isCreateTableAlterCaseToMatchDatabaseDefault() && !hasMatchingPlatform) {
                 getTargetPlatform().alterCaseToMatchDatabaseDefaultCase(db);
             }
             getTargetPlatform().makePlatformSpecific(db);

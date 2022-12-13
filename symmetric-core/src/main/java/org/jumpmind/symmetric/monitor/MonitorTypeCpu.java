@@ -26,6 +26,8 @@ import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.Monitor;
@@ -34,10 +36,19 @@ import org.jumpmind.symmetric.model.MonitorEvent;
 public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExtensionPoint {
     protected OperatingSystemMXBean osBean;
     protected RuntimeMXBean runtimeBean;
+    protected List<StackTraceElement> ignoreElements;
 
     public MonitorTypeCpu() {
         osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
         runtimeBean = ManagementFactory.getRuntimeMXBean();
+        ignoreElements = new ArrayList<StackTraceElement>();
+        ignoreElements.add(new StackTraceElement("java.lang.Object", "wait", null, 0));
+        ignoreElements.add(new StackTraceElement("sun.misc.Unsafe", "park", null, 0));
+        ignoreElements.add(new StackTraceElement("sun.nio.ch.EPollArrayWrapper", "epollWait", null, 0));
+        ignoreElements.add(new StackTraceElement("java.lang.Thread", "sleep", null, 0));
+        ignoreElements.add(new StackTraceElement("sun.management.ThreadImpl", "getThreadInfo1", null, 0));
+        ignoreElements.add(new StackTraceElement("sun.nio.ch.ServerSocketChannelImpl", "accept", null, 0));
+        ignoreElements.add(new StackTraceElement("sun.nio.ch.ServerSocketChannelImpl", "accept0", null, 0));
     }
 
     @Override
@@ -89,15 +100,27 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
         long cpuUsages[] = new long[TOP_THREADS];
         ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
         for (long threadId : threadBean.getAllThreadIds()) {
-            ThreadInfo info = threadBean.getThreadInfo(threadId);
+            ThreadInfo info = threadBean.getThreadInfo(threadId, 1);
             if (info != null) {
                 if (info.getThreadState() != Thread.State.TERMINATED) {
-                    rankTopUsage(infos, cpuUsages, info, threadBean.getThreadCpuTime(threadId));
+                    StackTraceElement[] trace = info.getStackTrace();
+                    boolean ignore = false;
+                    if (trace != null && trace.length > 0) {
+                        for (StackTraceElement element : ignoreElements) {
+                            if (trace[0].getClassName().equals(element.getClassName()) && trace[0].getMethodName().equals(element.getMethodName())) {
+                                ignore = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!ignore) {
+                        rankTopUsage(infos, cpuUsages, info, threadBean.getThreadCpuTime(threadId));
+                    }
                 }
             }
         }
         StringBuilder text = new StringBuilder("CPU usage is at ");
-        text.append(value).append(System.lineSeparator()).append(System.lineSeparator());
+        text.append(value).append("%").append(System.lineSeparator()).append(System.lineSeparator());
         for (int i = 0; i < infos.length; i++) {
             if (infos[i] != null) {
                 text.append("Top #").append((i + 1)).append(" CPU thread ").append(infos[i].getThreadName())

@@ -240,6 +240,7 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
             insertBatchMs += (System.currentTimeMillis() - ts);
         }
         origBatch.setLoadId(loadId);
+        transaction.flush();
     }
 
     protected String getTempTableSql(RouterInfo routerInfo, TableInfo tableInfo, long loadId) {

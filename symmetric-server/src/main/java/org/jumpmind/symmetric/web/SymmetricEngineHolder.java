@@ -145,7 +145,11 @@ public class SymmetricEngineHolder {
                             singleServerPropertiesFile = singleServerPropertiesURL.getFile();
                         }
                     }
-                    enginesStarting.add(new SymmetricEngineStarter(singleServerPropertiesFile, this));
+                    if (StringUtils.isNotBlank(singleServerPropertiesFile)) {
+                        enginesStarting.add(new SymmetricEngineStarter(singleServerPropertiesFile, this));
+                    } else {
+                        log.info("No engine symmetric.properties file found");
+                    }
                 }
                 int poolSize = Integer.parseInt(System.getProperty(SystemConstants.SYSPROP_CONCURRENT_ENGINES_STARTING_COUNT, "5"));
                 ExecutorService executor = Executors.newFixedThreadPool(poolSize, new CustomizableThreadFactory("symmetric-engine-startup"));

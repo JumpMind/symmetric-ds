@@ -207,7 +207,7 @@ public interface ITriggerRouterService {
     public Trigger getTriggerById(String triggerId, boolean refreshCache);
 
     public String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger, Table table,
-            List<TriggerHistory> activeTriggerHistories, TriggerHistory oldhist);
+            List<TriggerHistory> activeTriggerHistories, TriggerHistory oldhist, List<String> triggerNamesGeneratedThisSession);
 
     public void insert(TriggerHistory newAuditRecord);
 

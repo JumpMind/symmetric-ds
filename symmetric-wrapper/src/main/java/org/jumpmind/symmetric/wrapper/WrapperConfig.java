@@ -157,6 +157,14 @@ public class WrapperConfig {
         return getListProperty(prop, "wrapper.app.parameter");
     }
 
+    public String getApplicationOutputStart() {
+        return getProperty(prop, "wrapper.app.output.start", "");
+    }
+
+    public String getApplicationOutputRestart() {
+        return getProperty(prop, "wrapper.app.output.restart", "");
+    }
+
     public ArrayList<String> getCommand(boolean isConsole) {
         ArrayList<String> cmdList = new ArrayList<String>();
         cmdList.add(getJavaCommand());

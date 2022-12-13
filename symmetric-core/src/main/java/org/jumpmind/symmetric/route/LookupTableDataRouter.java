@@ -84,6 +84,10 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
                             nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
                         }
                     }
+                } else if (StringUtils.equals(keyData, params.get(PARAM_ALL_NODES_VALUE))) {
+                    for (Node node : nodes) {
+                        nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
+                    }
                 }
             } else {
                 log.error(
@@ -123,7 +127,11 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
                          * tokens must be trimmed, removing leading and trailing spaces
                          */
                         if (tokens.length == 2 && !params.containsKey(tokens[0].trim())) {
-                            params.put(tokens[0].trim(), tokens[1].trim());
+                            String token1 = tokens[1].trim();
+                            if (token1.equalsIgnoreCase("null")) {
+                                token1 = null;
+                            }
+                            params.put(tokens[0].trim(), token1);
                         } else {
                             valid = false;
                             break;
@@ -191,7 +199,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
             if (ids == null) {
                 ids = new HashSet<String>();
                 fillMap.put(key, ids);
-                bytes += key.getBytes(Charset.defaultCharset()).length;
+                bytes += key == null ? 0 : key.getBytes(Charset.defaultCharset()).length;
             }
             ids.add(value);
             return value;

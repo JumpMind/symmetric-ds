@@ -148,6 +148,7 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         }
         if (line.hasOption(OPTION_START_CLIENT)) {
             getSymmetricEngine(false).start();
+            System.out.println("Started");
         } else {
             SymmetricWebServer webServer = new SymmetricWebServer(chooseWebDir(line, webDir),
                     maxIdleTime, propertiesFile != null ? propertiesFile.getCanonicalPath() : null,

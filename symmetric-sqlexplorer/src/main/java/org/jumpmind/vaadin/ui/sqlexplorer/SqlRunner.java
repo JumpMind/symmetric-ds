@@ -186,6 +186,10 @@ public class SqlRunner extends Thread {
         boolean autoCommitBefore = true;
         try {
             DataSource dataSource = db.getPlatform().getDataSource();
+            if (!(db.getPlatform().getSqlTemplate() instanceof JdbcSqlTemplate)) {
+                resultComponents.add(wrapTextInComponent("<span style='color: red'> SQL queries are not available for this platform. </span>", "marked"));
+                return;
+            }
             JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) db.getPlatform().getSqlTemplate();
             stmt = null;
             StringBuilder results = new StringBuilder();
