@@ -150,7 +150,9 @@ public class BasicDataSourceFactory {
         String initSql = properties.get(BasicDataSourcePropertyConstants.DB_POOL_INIT_SQL, null);
         if (StringUtils.isNotBlank(initSql)) {
             List<String> initSqlList = new ArrayList<String>(1);
-            initSqlList.add(initSql);
+            for (String i : initSql.split(";")) {
+                initSqlList.add(i);
+            }
             dataSource.setConnectionInitSqls(initSqlList);
         }
         return dataSource;
