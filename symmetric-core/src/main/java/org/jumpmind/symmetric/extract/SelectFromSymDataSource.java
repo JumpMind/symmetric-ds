@@ -110,24 +110,32 @@ public class SelectFromSymDataSource extends SelectFromSource {
         if (data == null) {
             data = cursor.next();
             if (data != null) {
-                TriggerHistory triggerHistory = data.getTriggerHistory();
-                TriggerRouter triggerRouter = triggerRoutersByTriggerHist.get(triggerHistory.getTriggerHistoryId());
-                if (triggerRouter == null) {
-                    CounterStat counterStat = missingTriggerRoutersByTriggerHist.get(triggerHistory.getTriggerHistoryId());
-                    if (counterStat == null) {
-                        triggerRouter = triggerRouterService.getTriggerRouterByTriggerHist(targetNode.getNodeGroupId(),
-                                triggerHistory.getTriggerHistoryId(), true);
-                        if (triggerRouter == null) {
-                            counterStat = new CounterStat(data.getDataId(), 1);
-                            missingTriggerRoutersByTriggerHist.put(triggerHistory.getTriggerHistoryId(), counterStat);
-                            return next();
+                TriggerHistory triggerHistory = null;
+                TriggerRouter triggerRouter = null;
+                do {
+                    triggerHistory = data.getTriggerHistory();
+                    triggerRouter = triggerRoutersByTriggerHist.get(triggerHistory.getTriggerHistoryId());
+                    if (triggerRouter == null) {
+                        CounterStat counterStat = missingTriggerRoutersByTriggerHist.get(triggerHistory.getTriggerHistoryId());
+                        if (counterStat == null) {
+                            triggerRouter = triggerRouterService.getTriggerRouterByTriggerHist(targetNode.getNodeGroupId(),
+                                    triggerHistory.getTriggerHistoryId(), true);
+                            if (triggerRouter == null) {
+                                counterStat = new CounterStat(data.getDataId(), 1);
+                                missingTriggerRoutersByTriggerHist.put(triggerHistory.getTriggerHistoryId(), counterStat);
+                                data = cursor.next();
+                            }
+                        } else {
+                            counterStat.incrementCount();
+                            data = cursor.next();
                         }
-                    } else {
-                        counterStat.incrementCount();
-                        return next();
+                        if (data == null) {
+                            closeCursor();
+                            return null;
+                        }
+                        triggerRoutersByTriggerHist.put(triggerHistory.getTriggerHistoryId(), triggerRouter);
                     }
-                    triggerRoutersByTriggerHist.put(triggerHistory.getTriggerHistoryId(), triggerRouter);
-                }
+                } while (triggerRouter == null);
                 String routerId = triggerRouter.getRouterId();
                 if (data.getDataEventType() == DataEventType.RELOAD) {
                     data = processReloadEvent(triggerHistory, triggerRouter, data);
