@@ -7,7 +7,7 @@ endif::pro[]
 
 ifdef::pro[]
 
-Use `symadmin module install S3` to install driver files, or copy your own files into the `lib` sub-directory.
+Use `symadmin module install s3` to install driver files, or copy your own files into the `lib` sub-directory.
 
 Send changes from your relational database to S3 as a CSV file.  An S3 node can be setup as a <<Load Only Node>> to receive changes from another node that is capturing changes.
 
