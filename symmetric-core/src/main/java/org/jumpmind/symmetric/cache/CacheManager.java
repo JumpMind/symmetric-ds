@@ -235,6 +235,15 @@ public class CacheManager implements ICacheManager {
     }
 
     @Override
+    public void flushAllWithRouters() {
+        flushTriggerRoutersByNodeGroupId();
+        flushTriggerRoutersByChannel();
+        flushTriggerRouters();
+        flushTriggerRoutersByTriggerHist();
+        flushTriggerRoutersById();
+    }
+
+    @Override
     public List<Node> getSourceNodesCache(NodeGroupLinkAction eventAction, Node node) {
         initializeNodeCache();
         return nodeCache.getSourceNodesCache(eventAction, node);

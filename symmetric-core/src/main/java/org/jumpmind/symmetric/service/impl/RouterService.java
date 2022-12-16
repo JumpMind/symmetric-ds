@@ -172,6 +172,10 @@ public class RouterService extends AbstractService implements IRouterService {
         }
     }
 
+    public void flushCache() {
+        defaultRoutersCacheTime = 0;
+    }
+
     /**
      * This method will route data to specific nodes.
      */
