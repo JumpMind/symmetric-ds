@@ -71,6 +71,8 @@ public interface ICacheManager {
 
     public void flushRouters();
 
+    public void flushAllWithRouters();
+
     public List<Node> getSourceNodesCache(NodeGroupLinkAction eventAction, Node node);
 
     public List<Node> getTargetNodesCache(NodeGroupLinkAction eventAction, Node node);

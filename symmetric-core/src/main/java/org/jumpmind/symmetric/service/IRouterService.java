@@ -53,4 +53,6 @@ public interface IRouterService extends IService {
     public List<DataGap> getDataGaps();
 
     public void stop();
+
+    public void flushCache();
 }
