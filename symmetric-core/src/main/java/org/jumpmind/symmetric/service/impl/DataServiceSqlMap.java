@@ -55,7 +55,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " create_table, delete_first, reload_select, channel_id, "
                 + " before_custom_sql, processed, "
                 + " reload_time, channel_id, create_time, last_update_by, "
-                + " last_update_time, trigger_id, router_id "
+                + " last_update_time, trigger_id, router_id, reload_select"
                 + " from $(table_reload_request) "
                 + " where load_id = ? "
                 + " order by processed, last_update_time desc");
