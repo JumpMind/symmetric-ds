@@ -96,35 +96,31 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
 
     @Override
     public void cancelLoad(TableReloadStatus status) {
-        TableReloadRequest reloadRequest = engine.getDataService().getTableReloadRequest(status.getLoadId());
-        
-        if (status.isFullLoad() && (reloadRequest.getReloadSelect().isEmpty() || reloadRequest.getReloadSelect() == null)) {
-            Node identity = engine.getNodeService().findIdentity();
-            boolean isSourceNode = identity != null && identity.getNodeId().equals(status.getSourceNodeId());
-            log.info("Cancelling {} load {} {} node {}", isSourceNode ? "outgoing" : "incoming", status.getLoadId(),
-                    isSourceNode ? "for" : "from", isSourceNode ? status.getTargetNodeId() : status.getSourceNodeId());
-            List<ProcessInfo> infos = engine.getStatisticManager().getProcessInfos();
-            for (ProcessInfo info : infos) {
-                if (info.getCurrentLoadId() == status.getLoadId()) {
-                    log.info("Sending interrupt to " + info.getKey() + ",batchId=" + info.getCurrentBatchId());
-                    info.getThread().interrupt();
-                }
+        Node identity = engine.getNodeService().findIdentity();
+        boolean isSourceNode = identity != null && identity.getNodeId().equals(status.getSourceNodeId());
+        log.info("Cancelling {} load {} {} node {}", isSourceNode ? "outgoing" : "incoming", status.getLoadId(),
+                isSourceNode ? "for" : "from", isSourceNode ? status.getTargetNodeId() : status.getSourceNodeId());
+        List<ProcessInfo> infos = engine.getStatisticManager().getProcessInfos();
+        for (ProcessInfo info : infos) {
+            if (info.getCurrentLoadId() == status.getLoadId()) {
+                log.info("Sending interrupt to " + info.getKey() + ",batchId=" + info.getCurrentBatchId());
+                info.getThread().interrupt();
             }
-            if (isSourceNode) {
-                IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
-                int count = engine.getDataService().updateTableReloadRequestsCancelled(status.getLoadId());
-                log.info("Marked {} load requests as OK for node {}", count, status.getTargetNodeId());
-                count = engine.getDataExtractorService().cancelExtractRequests(status.getLoadId());
-                log.info("Marked {} extract requests as OK for node {}", count, status.getTargetNodeId());
-                count = outgoingBatchService.cancelLoadBatches(status.getLoadId());
-                log.info("Marked {} batches as OK or IG for node {}", count, status.getTargetNodeId());
-                engine.getDataExtractorService().releaseMissedExtractRequests();
-                if (status.isFullLoad()) {
-                    engine.getNodeService().setInitialLoadEnded(null, status.getTargetNodeId());
-                }
-            } else {
-                engine.getDataService().updateTableReloadRequestsCancelled(status.getLoadId());
+        }
+        if (isSourceNode) {
+            IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
+            int count = engine.getDataService().updateTableReloadRequestsCancelled(status.getLoadId());
+            log.info("Marked {} load requests as OK for node {}", count, status.getTargetNodeId());
+            count = engine.getDataExtractorService().cancelExtractRequests(status.getLoadId());
+            log.info("Marked {} extract requests as OK for node {}", count, status.getTargetNodeId());
+            count = outgoingBatchService.cancelLoadBatches(status.getLoadId());
+            log.info("Marked {} batches as OK or IG for node {}", count, status.getTargetNodeId());
+            engine.getDataExtractorService().releaseMissedExtractRequests();
+            if (status.isFullLoad()) {
+                engine.getNodeService().setInitialLoadEnded(null, status.getTargetNodeId());
             }
+        } else {
+            engine.getDataService().updateTableReloadRequestsCancelled(status.getLoadId());
         }
     }
 
