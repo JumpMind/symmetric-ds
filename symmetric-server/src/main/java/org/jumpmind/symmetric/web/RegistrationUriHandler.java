@@ -59,7 +59,11 @@ public class RegistrationUriHandler extends AbstractUriHandler {
                         node));
             }
         } catch (RegistrationRedirectException e) {
-            res.sendRedirect(HttpTransportManager.buildRegistrationUrl(e.getRedirectionUrl(), node));
+            String redirectedRegistrationURL = HttpTransportManager.buildRegistrationUrl(e.getRedirectionUrl(), node);
+            if (StringUtils.isNotEmpty(req.getQueryString())) {
+                redirectedRegistrationURL = redirectedRegistrationURL + "?" + req.getQueryString();
+            }
+            res.sendRedirect(redirectedRegistrationURL);
         }
     }
 
