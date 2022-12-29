@@ -396,7 +396,7 @@ public class SnapshotUtil {
             if (!transactions.isEmpty()) {
                 createTransactionsFile(engine, tmpDir.getPath(), transactions);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.warn("Failed to create transactions file", e);
         }
         writeRuntimeStats(engine, tmpDir);

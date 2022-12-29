@@ -470,7 +470,7 @@ public class DmlStatement {
                         long diff = date.getTime() - System.currentTimeMillis();
                         newSql = newSql.replaceFirst(regex, "${curdate" + diff + "}");
                     } else if (type == Types.TIME) {
-                        newSql = newSql.replaceFirst(regex, (useJdbcTimestampFormat ? "{ts " : "")
+                        newSql = newSql.replaceFirst(regex, (useJdbcTimestampFormat ? "{t " : "")
                                 + quote + FormatUtils.TIME_FORMATTER.format(date) + quote
                                 + (useJdbcTimestampFormat ? "}" : ""));
                     } else {

@@ -432,6 +432,7 @@ public class DataService extends AbstractService implements IDataService {
                 summary.setChannelId(request.getChannelId());
                 summary.setTriggerId(request.getTriggerId());
                 summary.setRouterId(request.getRouterId());
+                summary.setReloadSelect(request.getReloadSelect());
             }
             previousLoadId = request.getLoadId();
         }
