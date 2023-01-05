@@ -448,6 +448,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                         log.info("Failed to create DDL trigger: {}", triggerSql);
                         throw ex;
                     }
+                    postCreateDdlTrigger(transaction, tablePrefix, sqlBuffer, triggerName);
                     transaction.commit();
                 } catch (SqlException ex) {
                     if (transaction != null) {
@@ -461,6 +462,24 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 }
             }
         }
+    }
+
+    protected void postCreateDdlTrigger(ISqlTransaction transaction, String tablePrefix, StringBuilder sqlBuffer, String triggerName) {
+        String postTriggerDdl = createPostDdlTriggerDDL(tablePrefix, triggerName);
+        if (StringUtils.isNotBlank(postTriggerDdl)) {
+            try {
+                log.debug("Running: {}", postTriggerDdl);
+                logSql(postTriggerDdl, sqlBuffer);
+                transaction.execute(postTriggerDdl);
+            } catch (SqlException ex) {
+                log.info("Failed to create post DDL trigger: {}", postTriggerDdl);
+                throw ex;
+            }
+        }
+    }
+
+    protected String createPostDdlTriggerDDL(String tablePrefix, String triggerName) {
+        return triggerTemplate.createPostDdlTriggerDDL(tablePrefix, triggerName);
     }
 
     public String getCreateSymmetricDDL() {

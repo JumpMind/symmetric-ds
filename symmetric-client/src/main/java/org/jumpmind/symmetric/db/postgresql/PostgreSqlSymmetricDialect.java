@@ -218,6 +218,37 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
         }
     }
 
+    @Override
+    public boolean doesDdlTriggerExist(final String catalogName, final String schema, final String triggerName) {
+        boolean dropTriggerExists = platform.getSqlTemplate().queryForInt("select count(*) from pg_event_trigger where evtname = ?",
+                new Object[] { triggerName.toLowerCase() + "_drop" }) > 0;
+        return dropTriggerExists && platform.getSqlTemplate().queryForInt("select count(*) from pg_event_trigger where evtname = ?",
+                new Object[] { triggerName.toLowerCase() }) > 0;
+    }
+
+    @Override
+    public void removeDdlTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName) {
+        final String dropSql = "drop event trigger IF EXISTS " + triggerName;
+        logSql(dropSql, sqlBuffer);
+        final String dropFunction = "drop function IF EXISTS f" + triggerName + "() cascade";
+        logSql(dropFunction, sqlBuffer);
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            log.info("Removing DDL trigger " + triggerName);
+            try {
+                platform.getSqlTemplate().update(dropSql);
+                platform.getSqlTemplate().update(dropSql + "_drop");
+            } catch (Exception e) {
+                log.warn("Tried to remove DDL trigger using: {} and failed because: {}", dropSql, e.getMessage());
+            }
+            try {
+                platform.getSqlTemplate().update(dropFunction);
+                platform.getSqlTemplate().update("drop function IF EXISTS f" + triggerName + "_drop() cascade");
+            } catch (Exception e) {
+                log.warn("Tried to remove DDL trigger function using: {} and failed because: {}", dropFunction, e.getMessage());
+            }
+        }
+    }
+
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         transaction.prepareAndExecute("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE + "', '1', false)");
         if (nodeId == null) {

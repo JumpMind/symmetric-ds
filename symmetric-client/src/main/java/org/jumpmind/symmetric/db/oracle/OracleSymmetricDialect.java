@@ -54,6 +54,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 public class OracleSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
     static final String SQL_SELECT_TRIGGERS = "from ALL_TRIGGERS where owner = sys_context('USERENV', 'CURRENT_SCHEMA') and trigger_name = upper(?) and table_name = upper(?) and table_owner = upper(?)";
+    static final String SQL_SELECT_DDL_TRIGGERS = "from ALL_TRIGGERS where owner = sys_context('USERENV', 'CURRENT_SCHEMA') and trigger_name = upper(?) and table_name is null and table_owner = upper(?)";
     static final String SQL_SELECT_TRANSACTIONS = "select min(start_time) from gv$transaction where status = 'ACTIVE'";
     static final String SQL_OBJECT_INSTALLED = "select count(*) from user_source where line = 1 and (((type = 'FUNCTION' or type = 'PACKAGE') and name=upper('$(functionName)')) or (name||'_'||type=upper('$(functionName)')))";
     static final String SQL_DROP_FUNCTION = "DROP FUNCTION $(functionName)";
@@ -134,6 +135,31 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
                 }
             }
             throw ex;
+        }
+    }
+
+    @Override
+    public boolean doesDdlTriggerExist(final String catalogName, final String schema, final String triggerName) {
+        if (isBlank(schema)) {
+            return platform.getSqlTemplate().queryForInt("select count(*) " + SQL_SELECT_DDL_TRIGGERS,
+                    new Object[] { triggerName, platform.getDefaultSchema() }) > 0;
+        } else {
+            return platform.getSqlTemplate().queryForInt("select count(*) " + SQL_SELECT_DDL_TRIGGERS,
+                    new Object[] { triggerName, schema }) > 0;
+        }
+    }
+
+    @Override
+    public void removeDdlTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName) {
+        String sql = "drop trigger " + triggerName;
+        logSql(sql, sqlBuffer);
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            try {
+                log.info("Removing DDL trigger " + triggerName);
+                platform.getSqlTemplate().update(sql);
+            } catch (Exception e) {
+                log.warn("Tried to remove DDL trigger using: {} and failed because: {}", sql, e.getMessage());
+            }
         }
     }
 

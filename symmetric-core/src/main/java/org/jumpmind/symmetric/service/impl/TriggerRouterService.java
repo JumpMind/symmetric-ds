@@ -1789,13 +1789,37 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected void updateOrCreateDdlTriggers(StringBuilder sqlBuffer) {
-        String triggerName = tablePrefix + "_on_ddl";
+        String allDdlTriggerName = tablePrefix + "_on_all_ddl";
+        String filteredDdlTriggerName = tablePrefix + "_on_filtered_ddl";
         boolean isCapture = parameterService.is(ParameterConstants.TRIGGER_CAPTURE_DDL_CHANGES, false);
-        boolean exists = symmetricDialect.doesDdlTriggerExist(platform.getDefaultCatalog(), platform.getDefaultSchema(), triggerName);
-        if (isCapture && !exists) {
-            symmetricDialect.createDdlTrigger(tablePrefix, sqlBuffer, triggerName);
-        } else if (!isCapture && exists) {
-            symmetricDialect.removeDdlTrigger(sqlBuffer, platform.getDefaultCatalog(), platform.getDefaultSchema(), triggerName);
+        boolean isFiltered = parameterService.is(ParameterConstants.TRIGGER_CAPTURE_DDL_CHECK_TRIGGER_HIST, true);
+        boolean allDdlTriggerExists = symmetricDialect.doesDdlTriggerExist(platform.getDefaultCatalog(),
+                platform.getDefaultSchema(), allDdlTriggerName);
+        boolean filteredDdlTriggerExists = symmetricDialect.doesDdlTriggerExist(platform.getDefaultCatalog(),
+                platform.getDefaultSchema(), filteredDdlTriggerName);
+        if (isCapture) {
+            if (isFiltered) {
+                if (allDdlTriggerExists) {
+                    symmetricDialect.removeDdlTrigger(sqlBuffer, platform.getDefaultCatalog(), platform.getDefaultSchema(), allDdlTriggerName);
+                }
+                if (!filteredDdlTriggerExists) {
+                    symmetricDialect.createDdlTrigger(tablePrefix, sqlBuffer, filteredDdlTriggerName);
+                }
+            } else {
+                if (!allDdlTriggerExists) {
+                    symmetricDialect.createDdlTrigger(tablePrefix, sqlBuffer, allDdlTriggerName);
+                }
+                if (filteredDdlTriggerExists) {
+                    symmetricDialect.removeDdlTrigger(sqlBuffer, platform.getDefaultCatalog(), platform.getDefaultSchema(), filteredDdlTriggerName);
+                }
+            }
+        } else {
+            if (allDdlTriggerExists) {
+                symmetricDialect.removeDdlTrigger(sqlBuffer, platform.getDefaultCatalog(), platform.getDefaultSchema(), allDdlTriggerName);
+            }
+            if (filteredDdlTriggerExists) {
+                symmetricDialect.removeDdlTrigger(sqlBuffer, platform.getDefaultCatalog(), platform.getDefaultSchema(), filteredDdlTriggerName);
+            }
         }
     }
 
