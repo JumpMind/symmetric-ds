@@ -3,7 +3,6 @@ package org.jumpmind.symmetric.db.sqlanywhere;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
 public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
-
     public SqlAnywhere12TriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         sqlTemplates.put("insertTriggerTemplate",
@@ -17,7 +16,7 @@ public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
                         "                                  $(declareNewKeyVariables)                                                                                                                                            "
                         +
                         "                                  declare @ChannelId varchar(20);                                                                                                                                     "
-                        + 
+                        +
                         "                                  declare @err_notfound EXCEPTION FOR SQLSTATE VALUE '02000';                                                                                                    "
                         +
                         "                                  $(custom_before_insert_text) \n" +
@@ -36,17 +35,17 @@ public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
                         "                                    $(end:containsBlobClobColumns)                                                                                                                                     "
                         +
                         "                                       open DataCursor;"
-                        + 
+                        +
                         "                                       LoopGetRow:"
-                        + 
+                        +
                         "                                       loop                                                                                                          "
                         +
                         "                                           fetch next DataCursor into @DataRow $(newKeyVariables), @ChannelId;                                                                                                   "
                         +
                         "                                           if SQLSTATE = @err_notfound then"
-                        + 
+                        +
                         "                                               leave LoopGetRow"
-                        + 
+                        +
                         "                                           end if;                                                                                                                                  "
                         +
                         "                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) "
@@ -60,13 +59,13 @@ public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
                         "                                  end;                                                                                                                                                                 "
                         +
                         "                                  $(custom_on_insert_text)  "
-                        + 
+                        +
                         "                                   end if;                                                                                                                                         "
                         +
                         "                                end;                                                                                                                                                                  ");
         sqlTemplates.put("updateTriggerTemplate",
                 "create or replace trigger $(triggerName) after update order 10000 on $(schemaName)$(tableName) "
-                        + 
+                        +
                         "                                   referencing old as deleted new as inserted "
                         +
                         "                                begin                                                                                                                                                                  "
@@ -78,7 +77,7 @@ public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
                         "                                  declare @OldDataRow varchar(16384);                                                                                                                                   "
                         +
                         "                                  declare @ChannelId varchar(20);"
-                        + 
+                        +
                         "                                  declare @err_notfound EXCEPTION FOR SQLSTATE VALUE '02000';                                                                                                    "
                         +
                         "                                  $(declareOldKeyVariables)                                                                                                                                            "
@@ -103,15 +102,15 @@ public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
                         "                                       open DataCursor;                                                                                                                                                 "
                         +
                         "                                       LoopGetRow:"
-                        + 
+                        +
                         "                                       loop                                                                                                          "
                         +
                         "                                           fetch next DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables), @ChannelId;                                                      "
                         +
                         "                                           if SQLSTATE = @err_notfound then"
-                        + 
+                        +
                         "                                               leave LoopGetRow"
-                        + 
+                        +
                         "                                           end if;                                                                                                                                  "
                         +
                         "                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) "
@@ -127,8 +126,8 @@ public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
                         "                                  $(custom_on_update_text)                                                                                                                                             "
                         +
                         "                                  end if;"
-                        + 
-                                                    "end;                                                                                                                                                                 ");
+                        +
+                        "end;                                                                                                                                                                 ");
         sqlTemplates.put("deleteTriggerTemplate",
                 "create or replace trigger $(triggerName) after delete order 10000 on $(schemaName)$(tableName) referencing old as deleted                                                                                                                              "
                         +
@@ -139,7 +138,7 @@ public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
                         "                                  declare @OldDataRow varchar(16384);                                                                                                                                  "
                         +
                         "                                  declare @ChannelId varchar(20);                                                                                                                                     "
-                        + 
+                        +
                         "                                  declare @err_notfound EXCEPTION FOR SQLSTATE VALUE '02000';                                                                                                    "
                         +
                         "                                  $(declareOldKeyVariables)                                                                                                                                            "
@@ -154,15 +153,15 @@ public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
                         "                                      open DataCursor;                                                                                                                                                  "
                         +
                         "                                      LoopGetRow:"
-                        + 
+                        +
                         "                                      loop                                                                                  "
                         +
                         "                                       fetch next DataCursor into @OldPk,@OldDataRow $(oldKeyVariables), @ChannelId;                                                                                                                                "
                         +
                         "                                           if SQLSTATE = @err_notfound then"
-                        + 
+                        +
                         "                                               leave LoopGetRow"
-                        + 
+                        +
                         "                                           end if;                                                                                                                                  "
                         +
                         "                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) "
@@ -178,10 +177,9 @@ public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
                         "                                  $(custom_on_delete_text)                                                                                                                                             "
                         +
                         "                                end if;"
-                        + 
+                        +
                         "                           end;                                                                                                                                                                    ");
         sqlTemplates.put("initialLoadSqlTemplate",
                 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                ");
     }
-
 }

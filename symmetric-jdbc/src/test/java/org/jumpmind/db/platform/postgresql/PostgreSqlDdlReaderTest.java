@@ -64,7 +64,6 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 class PostgreSqlDdlReaderTest {
-
     protected IDatabasePlatform platform;
     protected Pattern postgresIsoDatePattern;
     /*
@@ -72,8 +71,7 @@ class PostgreSqlDdlReaderTest {
      */
     protected Pattern postgresIsoTimePattern;
     /*
-     * The regular expression pattern for the postgres conversion of ISO
-     * timestamps.
+     * The regular expression pattern for the postgres conversion of ISO timestamps.
      */
     protected Pattern postgresIsoTimestampPattern;
     ISqlTemplate sqlTemplate;
@@ -96,20 +94,17 @@ class PostgreSqlDdlReaderTest {
         testReader.setDefaultCatalogPattern(null);
         testReader.setDefaultSchemaPattern(null);
         testReader.setDefaultTablePattern("%");
-
         assertEquals(null, testReader.getDefaultCatalogPattern());
         assertEquals(null, testReader.getDefaultSchemaPattern());
         assertEquals("%", testReader.getDefaultTablePattern());
         assertEquals(true, postgresIsoDatePattern.pattern().equals("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD'\\)"));
         assertEquals(true, postgresIsoTimePattern.pattern().equals("TO_DATE\\('([^']*)'\\, 'HH24:MI:SS'\\)"));
         assertEquals(true, postgresIsoTimestampPattern.pattern().equals("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD HH24:MI:SS'\\)"));
-
     }
 
     @ParameterizedTest
     @CsvSource({ "INSERT", "UPDATE", "DELETE", })
     void testGetTriggers(String triggerTypeParam) throws Exception {
-
         // Mocked components
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         PreparedStatement ps = mock(PreparedStatement.class);
@@ -122,15 +117,12 @@ class PostgreSqlDdlReaderTest {
         ResultSet rs2 = mock(ResultSet.class);
         ResultSetMetaData rsMetaData = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData2 = mock(ResultSetMetaData.class);
-
         // "Real" components
         PostgreSqlDdlReader testReader = new PostgreSqlDdlReader(platform);
         List<Trigger> actualTriggers = new ArrayList<Trigger>();
         PostgreSqlJdbcSqlTemplate testTemplate = new PostgreSqlJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), databaseInfo);
-
         // Spied components
         PostgreSqlJdbcSqlTemplate spyTemplate = Mockito.spy(testTemplate);
-
         when(platform.getSqlTemplate()).thenReturn(spyTemplate);
         when(spyTemplate.getDataSource()).thenReturn(dataSource);
         when(dataSource.getConnection()).thenReturn(connection);
@@ -161,14 +153,12 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData2.getColumnCount()).thenReturn(1);
         when(rsMetaData2.getColumnLabel(1)).thenReturn("TEXT");
         when(rs2.getObject(1)).thenReturn("testText");
-
         Row triggerMetaData = new Row(5);
         triggerMetaData.put("trigger_name", "testTrigger");
         triggerMetaData.put("trigger_schema", "testSchema");
         triggerMetaData.put(DdlReaderTestConstants.TABLE_NAME, "testTableName");
         triggerMetaData.put("STATUS", "ACTIVE");
         triggerMetaData.put("TRIGGERING_EVENT", triggerTypeParam);
-
         Trigger trigger = new Trigger();
         trigger.setName("testTrigger");
         trigger.setSchemaName("testSchema");
@@ -179,7 +169,6 @@ class PostgreSqlDdlReaderTest {
         String triggerType = triggerTypeParam;
         trigger.setTriggerType(TriggerType.valueOf(triggerType));
         actualTriggers.add(trigger);
-
         List<Trigger> triggers = testReader.getTriggers("test", "test", "test");
         Trigger testTrigger = triggers.get(0);
         assertEquals("testTrigger", testTrigger.getName());
@@ -188,31 +177,23 @@ class PostgreSqlDdlReaderTest {
         assertEquals(true, testTrigger.isEnabled());
         assertEquals("create ", testTrigger.getSource());
         assertEquals(true, testTrigger.getTriggerType().toString().equals(triggerTypeParam));
-
     }
 
-    
-
-
-
-   
-
     @ParameterizedTest
-    @CsvSource({ "2008-11-11, DATE, " + Types.DATE + ",,"+-1+"",
-            "2008-11-11 12:10:30, TIMESTAMP, " + Types.TIMESTAMP + ",,"+-1+"",
-            "testDef, VARCHAR, " + Types.VARCHAR + ",254,"+254+"", })
-    void testReadTableWithBasicArgs(String defaultValue, String jdbcTypeName, int jdbcTypeCode,String testColumnSize, int platformColumnSize) throws Exception {
+    @CsvSource({ "2008-11-11, DATE, " + Types.DATE + ",," + -1 + "",
+            "2008-11-11 12:10:30, TIMESTAMP, " + Types.TIMESTAMP + ",," + -1 + "",
+            "testDef, VARCHAR, " + Types.VARCHAR + ",254," + 254 + "", })
+    void testReadTableWithBasicArgs(String defaultValue, String jdbcTypeName, int jdbcTypeCode, String testColumnSize, int platformColumnSize)
+            throws Exception {
         // Mocked Components
         Connection connection = mock(Connection.class);
         DataSource dataSource = mock(DataSource.class);
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         PostgreSqlJdbcSqlTemplate testTemplate = new PostgreSqlJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), databaseInfo);
         PostgreSqlDatabasePlatform platform = new PostgreSqlDatabasePlatform(dataSource, settings);
-
         // Spied Components
         PostgreSqlDatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -220,30 +201,25 @@ class PostgreSqlDdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         PostgreSqlDdlReader testReader = new PostgreSqlDdlReader(spyPlatform);
         PostgreSqlDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
         ResultSet rs3 = mock(ResultSet.class);
         ResultSet rs4 = mock(ResultSet.class);
         ResultSet rs5 = mock(ResultSet.class);
-
         ResultSet stmtrs1 = mock(ResultSet.class);
         ResultSet stmtrs2 = mock(ResultSet.class);
         ResultSet stmtrs3 = mock(ResultSet.class);
         ResultSet stmtrs4 = mock(ResultSet.class);
-
         ResultSetMetaData rsMetaData = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData2 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData3 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData4 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData5 = mock(ResultSetMetaData.class);
-
         PreparedStatement stmt1 = mock(PreparedStatement.class);
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplate()).thenReturn(spyTemplate);
@@ -272,7 +248,6 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -299,19 +274,16 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData2.getColumnLabel(7)).thenReturn(DdlReaderTestConstants.IS_NULLABLE);
         when(rsMetaData2.getColumnName(7)).thenReturn(DdlReaderTestConstants.IS_NULLABLE);
         when(rs2.getString(7)).thenReturn("TRUE");
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
                 .thenReturn(stmt4);
         when(stmt1.executeQuery()).thenReturn(stmtrs1);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -330,7 +302,6 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(metaData.getIndexInfo(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())).thenReturn(rs5);
         when(rs5.next()).thenReturn(true).thenReturn(false);
@@ -342,13 +313,10 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData5.getColumnLabel(2)).thenReturn("TABLE_NAME");
         when(rsMetaData5.getColumnName(2)).thenReturn("TABLE_NAME");
         when(rs5.getString(2)).thenReturn(DdlReaderTestConstants.TESTNAME);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -367,7 +335,6 @@ class PostgreSqlDdlReaderTest {
         testColumn.setPrecisionRadix(10);
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(defaultValue);// Variable 1
@@ -376,33 +343,29 @@ class PostgreSqlDdlReaderTest {
         platformColumn.setSize(platformColumnSize);
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("postgres", platformColumn);
-
         IndexColumn testIndexColumn = new IndexColumn();
         testIndexColumn.setOrdinalPosition(0);
         NonUniqueIndex testIndex = new NonUniqueIndex();
         testIndex.setName("testIndexName");
         testIndex.addColumn(testIndexColumn);
-
         testColumn.addPlatformColumn(platformColumn);
-
         expectedTable.addColumn(testColumn);
         expectedTable.addIndex(testIndex);
         assertEquals(expectedTable, testTable);
-
     }
-    
+
     @ParameterizedTest
-    @CsvSource({ "'1001001','1001001',BINARY,"+Types.BINARY+",100,BINARY,"+Types.BINARY+",BINARY,"+63+",BINARY",
-        "testDef,testDefault,TEXT,"+Types.VARCHAR+",2147483647,TEXT,"+Types.VARCHAR+",LONGVARCHAR,"+2147483647+",VARCHAR",
-        "testDef,testDefault,BINARY,"+Types.BINARY+",2147483647,BINARY,"+Types.BINARY+",LONGVARBINARY,"+2147483647+",VARCHAR",
-        "testDef,testDefault,OTHER,"+Types.OTHER+",63,LONGVARCHAR,"+Types.LONGVARCHAR+",LONGVARCHAR,"+63+",LONGVARCHAR"})
-    void testReadTableWithAdvancedArgs(String columnDef, 
-            String columnDefault, 
-            String jdbcTypeName, 
-            int jdbcTypeCode, 
+    @CsvSource({ "'1001001','1001001',BINARY," + Types.BINARY + ",100,BINARY," + Types.BINARY + ",BINARY," + 63 + ",BINARY",
+            "testDef,testDefault,TEXT," + Types.VARCHAR + ",2147483647,TEXT," + Types.VARCHAR + ",LONGVARCHAR," + 2147483647 + ",VARCHAR",
+            "testDef,testDefault,BINARY," + Types.BINARY + ",2147483647,BINARY," + Types.BINARY + ",LONGVARBINARY," + 2147483647 + ",VARCHAR",
+            "testDef,testDefault,OTHER," + Types.OTHER + ",63,LONGVARCHAR," + Types.LONGVARCHAR + ",LONGVARCHAR," + 63 + ",LONGVARCHAR" })
+    void testReadTableWithAdvancedArgs(String columnDef,
+            String columnDefault,
+            String jdbcTypeName,
+            int jdbcTypeCode,
             String columnSize,
-            String testColumnJdbcTypeName, 
-            int testColumnJdbcTypeCode, 
+            String testColumnJdbcTypeName,
+            int testColumnJdbcTypeCode,
             String testColumnMappedType,
             int platformColumnSize,
             String platformColumnType) throws Exception {
@@ -412,11 +375,9 @@ class PostgreSqlDdlReaderTest {
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         PostgreSqlJdbcSqlTemplate testTemplate = new PostgreSqlJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), databaseInfo);
         PostgreSqlDatabasePlatform platform = new PostgreSqlDatabasePlatform(dataSource, settings);
-
         // Spied Components
         PostgreSqlDatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -424,30 +385,25 @@ class PostgreSqlDdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         PostgreSqlDdlReader testReader = new PostgreSqlDdlReader(spyPlatform);
         PostgreSqlDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
         ResultSet rs3 = mock(ResultSet.class);
         ResultSet rs4 = mock(ResultSet.class);
         ResultSet rs5 = mock(ResultSet.class);
-
         ResultSet stmtrs1 = mock(ResultSet.class);
         ResultSet stmtrs2 = mock(ResultSet.class);
         ResultSet stmtrs3 = mock(ResultSet.class);
         ResultSet stmtrs4 = mock(ResultSet.class);
-
         ResultSetMetaData rsMetaData = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData2 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData3 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData4 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData5 = mock(ResultSetMetaData.class);
-
         PreparedStatement stmt1 = mock(PreparedStatement.class);
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplate()).thenReturn(spyTemplate);
@@ -476,7 +432,6 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -506,19 +461,16 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData2.getColumnLabel(8)).thenReturn("COLUMN_SIZE");
         when(rsMetaData2.getColumnName(8)).thenReturn("COLUMN_SIZE");
         when(rs2.getString(8)).thenReturn(columnSize);
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
                 .thenReturn(stmt4);
         when(stmt1.executeQuery()).thenReturn(stmtrs1);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -537,7 +489,6 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(metaData.getIndexInfo(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())).thenReturn(rs5);
         when(rs5.next()).thenReturn(true).thenReturn(false);
@@ -549,15 +500,11 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData5.getColumnLabel(2)).thenReturn("TABLE_NAME");
         when(rsMetaData5.getColumnName(2)).thenReturn("TABLE_NAME");
         when(rs5.getString(2)).thenReturn(DdlReaderTestConstants.TESTNAME);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         doReturn(1).when(spyTemplate).queryForInt(ArgumentMatchers.anyString(), (Object) ArgumentMatchers.any());
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -576,7 +523,6 @@ class PostgreSqlDdlReaderTest {
         testColumn.setPrecisionRadix(10);
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(DdlReaderTestConstants.COLUMN_DEF_TEST_VALUE);
@@ -585,36 +531,35 @@ class PostgreSqlDdlReaderTest {
         platformColumn.setType(platformColumnType);
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("postgres", platformColumn);
-
         IndexColumn testIndexColumn = new IndexColumn();
         testIndexColumn.setOrdinalPosition(0);
         NonUniqueIndex testIndex = new NonUniqueIndex();
         testIndex.setName("testIndexName");
         testIndex.addColumn(testIndexColumn);
-
         testColumn.addPlatformColumn(platformColumn);
-
         expectedTable.addColumn(testColumn);
         expectedTable.addIndex(testIndex);
         assertEquals(expectedTable, testTable);
-
     }
- 
+
     @ParameterizedTest
-    //1010 is a code size for null size and null scale. If scale is set, it automatically sets the size to 0 instead of null, and for the test purposes
-    //we need the size to be null.
-    //using 126:288 because it is supposed to set the size to 126,288 but the comma breaks the csv data.
-    @CsvSource({ "1.1234321,1.1234321,DECIMAL,"+Types.DECIMAL+",0,"+288+",DECIMAL,"+Types.DECIMAL+","+Types.DECIMAL+",1010,"+0+",DECIMAL,"+2147483647+",DECIMAL",
-        "1.1234321,1.1234321,DECIMAL,"+Types.DECIMAL+",126,"+288+",DECIMAL,"+Types.DECIMAL+","+Types.DECIMAL+",126:288,"+288+",DECIMAL,"+63+",DECIMAL",
-        "1.1234321,1.1234321,DECIMAL,"+Types.DECIMAL+",126,"+10+",DECIMAL,"+Types.DECIMAL+","+Types.DECIMAL+",126:10,"+10+",DECIMAL,"+126+",DECIMAL"})
-    void testReadTableWithDecimalArgs(String columnDef, 
-            String columnDefault, 
-            String jdbcTypeName, 
-            int jdbcTypeCode, 
+    // 1010 is a code size for null size and null scale. If scale is set, it automatically sets the size to 0 instead of null, and for the test purposes
+    // we need the size to be null.
+    // using 126:288 because it is supposed to set the size to 126,288 but the comma breaks the csv data.
+    @CsvSource({ "1.1234321,1.1234321,DECIMAL," + Types.DECIMAL + ",0," + 288 + ",DECIMAL," + Types.DECIMAL + "," + Types.DECIMAL + ",1010," + 0 + ",DECIMAL,"
+            + 2147483647 + ",DECIMAL",
+            "1.1234321,1.1234321,DECIMAL," + Types.DECIMAL + ",126," + 288 + ",DECIMAL," + Types.DECIMAL + "," + Types.DECIMAL + ",126:288," + 288 + ",DECIMAL,"
+                    + 63 + ",DECIMAL",
+            "1.1234321,1.1234321,DECIMAL," + Types.DECIMAL + ",126," + 10 + ",DECIMAL," + Types.DECIMAL + "," + Types.DECIMAL + ",126:10," + 10 + ",DECIMAL,"
+                    + 126 + ",DECIMAL" })
+    void testReadTableWithDecimalArgs(String columnDef,
+            String columnDefault,
+            String jdbcTypeName,
+            int jdbcTypeCode,
             String columnSize,
             int decimalDigits,
             String testColumnJdbcTypeName,
-            int testColumnJdbcTypeCode, 
+            int testColumnJdbcTypeCode,
             int testColumnMappedTypeCode,
             String testColumnSize,
             int testColumnScale,
@@ -627,11 +572,9 @@ class PostgreSqlDdlReaderTest {
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         PostgreSqlJdbcSqlTemplate testTemplate = new PostgreSqlJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), databaseInfo);
         PostgreSqlDatabasePlatform platform = new PostgreSqlDatabasePlatform(dataSource, settings);
-
         // Spied Components
         PostgreSqlDatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -639,30 +582,25 @@ class PostgreSqlDdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         PostgreSqlDdlReader testReader = new PostgreSqlDdlReader(spyPlatform);
         PostgreSqlDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
         ResultSet rs3 = mock(ResultSet.class);
         ResultSet rs4 = mock(ResultSet.class);
         ResultSet rs5 = mock(ResultSet.class);
-
         ResultSet stmtrs1 = mock(ResultSet.class);
         ResultSet stmtrs2 = mock(ResultSet.class);
         ResultSet stmtrs3 = mock(ResultSet.class);
         ResultSet stmtrs4 = mock(ResultSet.class);
-
         ResultSetMetaData rsMetaData = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData2 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData3 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData4 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData5 = mock(ResultSetMetaData.class);
-
         PreparedStatement stmt1 = mock(PreparedStatement.class);
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplate()).thenReturn(spyTemplate);
@@ -691,7 +629,6 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -724,19 +661,16 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData2.getColumnLabel(9)).thenReturn("DECIMAL_DIGITS");
         when(rsMetaData2.getColumnName(9)).thenReturn("DECIMAL_DIGITS");
         when(rs2.getInt(9)).thenReturn(decimalDigits);
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
                 .thenReturn(stmt4);
         when(stmt1.executeQuery()).thenReturn(stmtrs1);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -755,7 +689,6 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(metaData.getIndexInfo(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())).thenReturn(rs5);
         when(rs5.next()).thenReturn(true).thenReturn(false);
@@ -767,15 +700,11 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData5.getColumnLabel(2)).thenReturn("TABLE_NAME");
         when(rsMetaData5.getColumnName(2)).thenReturn("TABLE_NAME");
         when(rs5.getString(2)).thenReturn(DdlReaderTestConstants.TESTNAME);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         doReturn(1).when(spyTemplate).queryForInt(ArgumentMatchers.anyString(), (Object) ArgumentMatchers.any());
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -787,13 +716,13 @@ class PostgreSqlDdlReaderTest {
         testColumn.setDefaultValue(columnDef);
         testColumn.setName(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         testColumn.setJdbcTypeName(jdbcTypeName);
-        if(testColumnSize.equals("1010")) {
+        if (testColumnSize.equals("1010")) {
             testColumn.setSize(null);
-        } else if(testColumnSize.contains(":")) { 
+        } else if (testColumnSize.contains(":")) {
             String correctColumnSize = testColumnSize.replace(":", ",");
             testColumn.setSize(correctColumnSize);
             testColumn.setScale(testColumnScale);
-        }else {
+        } else {
             testColumn.setSize(testColumnSize);
             testColumn.setScale(testColumnScale);
         }
@@ -804,7 +733,6 @@ class PostgreSqlDdlReaderTest {
         testColumn.setPrecisionRadix(10);
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(columnDef);
@@ -813,22 +741,18 @@ class PostgreSqlDdlReaderTest {
         platformColumn.setType(platformColumnType);
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("postgres", platformColumn);
-
         IndexColumn testIndexColumn = new IndexColumn();
         testIndexColumn.setOrdinalPosition(0);
         NonUniqueIndex testIndex = new NonUniqueIndex();
         testIndex.setName("testIndexName");
         testIndex.addColumn(testIndexColumn);
-
         testColumn.addPlatformColumn(platformColumn);
-
         expectedTable.addColumn(testColumn);
         expectedTable.addIndex(testIndex);
-        assertEquals(testColumn,testTable.getColumn(0));
+        assertEquals(testColumn, testTable.getColumn(0));
         assertEquals(expectedTable, testTable);
-
     }
-    
+
     @Test
     void testReadTableWithBitType() throws Exception {
         // Mocked Components
@@ -837,11 +761,9 @@ class PostgreSqlDdlReaderTest {
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         PostgreSqlJdbcSqlTemplate testTemplate = new PostgreSqlJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), databaseInfo);
         PostgreSqlDatabasePlatform platform = new PostgreSqlDatabasePlatform(dataSource, settings);
-
         // Spied Components
         PostgreSqlDatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -849,30 +771,25 @@ class PostgreSqlDdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         PostgreSqlDdlReader testReader = new PostgreSqlDdlReader(spyPlatform);
         PostgreSqlDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
         ResultSet rs3 = mock(ResultSet.class);
         ResultSet rs4 = mock(ResultSet.class);
         ResultSet rs5 = mock(ResultSet.class);
-
         ResultSet stmtrs1 = mock(ResultSet.class);
         ResultSet stmtrs2 = mock(ResultSet.class);
         ResultSet stmtrs3 = mock(ResultSet.class);
         ResultSet stmtrs4 = mock(ResultSet.class);
-
         ResultSetMetaData rsMetaData = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData2 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData3 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData4 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData5 = mock(ResultSetMetaData.class);
-
         PreparedStatement stmt1 = mock(PreparedStatement.class);
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplate()).thenReturn(spyTemplate);
@@ -901,7 +818,6 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -931,19 +847,16 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData2.getColumnLabel(8)).thenReturn("COLUMN_SIZE");
         when(rsMetaData2.getColumnName(8)).thenReturn("COLUMN_SIZE");
         when(rs2.getString(8)).thenReturn("63");
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
                 .thenReturn(stmt4);
         when(stmt1.executeQuery()).thenReturn(stmtrs1);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -962,7 +875,6 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(metaData.getIndexInfo(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())).thenReturn(rs5);
         when(rs5.next()).thenReturn(true).thenReturn(false);
@@ -974,13 +886,10 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData5.getColumnLabel(2)).thenReturn("TABLE_NAME");
         when(rsMetaData5.getColumnName(2)).thenReturn("TABLE_NAME");
         when(rs5.getString(2)).thenReturn(DdlReaderTestConstants.TESTNAME);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -999,7 +908,6 @@ class PostgreSqlDdlReaderTest {
         testColumn.setPrecisionRadix(10);
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(DdlReaderTestConstants.COLUMN_DEF_TEST_VALUE);
@@ -1008,25 +916,18 @@ class PostgreSqlDdlReaderTest {
         platformColumn.setType("VARCHAR");
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("postgres", platformColumn);
-
         IndexColumn testIndexColumn = new IndexColumn();
         testIndexColumn.setOrdinalPosition(0);
         NonUniqueIndex testIndex = new NonUniqueIndex();
         testIndex.setName("testIndexName");
         testIndex.addColumn(testIndexColumn);
-
         testColumn.addPlatformColumn(platformColumn);
-
         expectedTable.addColumn(testColumn);
         expectedTable.addIndex(testIndex);
         assertEquals(expectedTable, testTable);
-
     }
 
-
-
-
-       //haven't be parameterized because size and scale have to be set
+    // haven't be parameterized because size and scale have to be set
     @Test
     void testReadTableWithVarcharAndSizeToGetDecimal() throws Exception {
         // Mocked Components
@@ -1035,11 +936,9 @@ class PostgreSqlDdlReaderTest {
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         PostgreSqlJdbcSqlTemplate testTemplate = new PostgreSqlJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), databaseInfo);
         PostgreSqlDatabasePlatform platform = new PostgreSqlDatabasePlatform(dataSource, settings);
-
         // Spied Components
         PostgreSqlDatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -1047,30 +946,25 @@ class PostgreSqlDdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         PostgreSqlDdlReader testReader = new PostgreSqlDdlReader(spyPlatform);
         PostgreSqlDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
         ResultSet rs3 = mock(ResultSet.class);
         ResultSet rs4 = mock(ResultSet.class);
         ResultSet rs5 = mock(ResultSet.class);
-
         ResultSet stmtrs1 = mock(ResultSet.class);
         ResultSet stmtrs2 = mock(ResultSet.class);
         ResultSet stmtrs3 = mock(ResultSet.class);
         ResultSet stmtrs4 = mock(ResultSet.class);
-
         ResultSetMetaData rsMetaData = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData2 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData3 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData4 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData5 = mock(ResultSetMetaData.class);
-
         PreparedStatement stmt1 = mock(PreparedStatement.class);
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplate()).thenReturn(spyTemplate);
@@ -1099,7 +993,6 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -1129,19 +1022,16 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData2.getColumnLabel(8)).thenReturn("COLUMN_SIZE");
         when(rsMetaData2.getColumnName(8)).thenReturn("COLUMN_SIZE");
         when(rs2.getString(8)).thenReturn("131089");
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
                 .thenReturn(stmt4);
         when(stmt1.executeQuery()).thenReturn(stmtrs1);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -1160,7 +1050,6 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(metaData.getIndexInfo(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())).thenReturn(rs5);
         when(rs5.next()).thenReturn(true).thenReturn(false);
@@ -1172,13 +1061,10 @@ class PostgreSqlDdlReaderTest {
         when(rsMetaData5.getColumnLabel(2)).thenReturn("TABLE_NAME");
         when(rsMetaData5.getColumnName(2)).thenReturn("TABLE_NAME");
         when(rs5.getString(2)).thenReturn(DdlReaderTestConstants.TESTNAME);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -1197,7 +1083,6 @@ class PostgreSqlDdlReaderTest {
         testColumn.setPrecisionRadix(10);
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(DdlReaderTestConstants.COLUMN_DEF_TEST_VALUE);
@@ -1206,21 +1091,16 @@ class PostgreSqlDdlReaderTest {
         platformColumn.setType("VARCHAR");
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("postgres", platformColumn);
-
         IndexColumn testIndexColumn = new IndexColumn();
         testIndexColumn.setOrdinalPosition(0);
         NonUniqueIndex testIndex = new NonUniqueIndex();
         testIndex.setName("testIndexName");
         testIndex.addColumn(testIndexColumn);
-
         testColumn.addPlatformColumn(platformColumn);
-
         expectedTable.addColumn(testColumn);
         expectedTable.addIndex(testIndex);
         assertEquals(expectedTable, testTable);
-
     }
-
 
     protected String getResultSetSchemaName() {
         return DdlReaderTestConstants.TABLE_SCHEM;

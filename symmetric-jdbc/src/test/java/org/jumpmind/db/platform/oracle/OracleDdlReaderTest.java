@@ -46,7 +46,6 @@ import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
-
 import org.jumpmind.db.DdlReaderTestConstants;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IndexColumn;
@@ -69,14 +68,12 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 class OracleDdlReaderTest {
-
     protected IDatabasePlatform platform;
     protected Pattern oracleIsoDatePattern;
     /* The regular expression pattern for the Oracle conversion of ISO times. */
     protected Pattern oracleIsoTimePattern;
     /*
-     * The regular expression pattern for the Oracle conversion of ISO
-     * timestamps.
+     * The regular expression pattern for the Oracle conversion of ISO timestamps.
      */
     protected Pattern oracleIsoTimestampPattern;
     ISqlTemplate sqlTemplate;
@@ -99,32 +96,26 @@ class OracleDdlReaderTest {
         testReader.setDefaultCatalogPattern(null);
         testReader.setDefaultSchemaPattern(null);
         testReader.setDefaultTablePattern("%");
-
         assertEquals(null, testReader.getDefaultCatalogPattern());
         assertEquals(null, testReader.getDefaultSchemaPattern());
         assertEquals("%", testReader.getDefaultTablePattern());
         assertEquals(true, oracleIsoDatePattern.pattern().equals("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD'\\)"));
         assertEquals(true, oracleIsoTimePattern.pattern().equals("TO_DATE\\('([^']*)'\\, 'HH24:MI:SS'\\)"));
         assertEquals(true, oracleIsoTimestampPattern.pattern().equals("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD HH24:MI:SS'\\)"));
-
     }
 
     @Test
     void testIsTableInRecycleBin() throws Exception {
         OracleDdlReader testReader = new OracleDdlReader(platform);
         Connection connection = mock(Connection.class);
-
         Map<String, Object> values = new HashMap<String, Object>();
         values.put(DdlReaderTestConstants.TABLE_NAME, "bin$testing123");
         Map<String, Object> values2 = new HashMap<String, Object>();
         values2.put("TABLE_NAME2", "testing123");
-
         boolean testIsTableInRecycleBin = testReader.isTableInRecycleBin(connection, values);
         boolean testIsTableInRecycleBin2 = testReader.isTableInRecycleBin(connection, values2);
-
         assertTrue(testIsTableInRecycleBin);
         assertFalse(testIsTableInRecycleBin2);
-
     }
 
     @Test
@@ -167,17 +158,15 @@ class OracleDdlReaderTest {
         List<String> actualNamesBlank = new ArrayList<String>();
         assertNotEquals(actualNamesBlank, tableNames);
         assertEquals(actualNames, tableNames);
-
     }
 
     @ParameterizedTest
     @CsvSource({
-        "INSERT",
-        "UPDATE",
-        "DELETE",
+            "INSERT",
+            "UPDATE",
+            "DELETE",
     })
     void testGetTriggers(String triggerType) throws Exception {
-
         // Mocked components
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         PreparedStatement ps = mock(PreparedStatement.class);
@@ -190,15 +179,12 @@ class OracleDdlReaderTest {
         ResultSet rs2 = mock(ResultSet.class);
         ResultSetMetaData rsMetaData = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData2 = mock(ResultSetMetaData.class);
-
         // "Real" components
         OracleDdlReader testReader = new OracleDdlReader(platform);
         OracleJdbcSqlTemplate testTemplate = new OracleJdbcSqlTemplate(dataSource, settings,
                 new OracleLobHandler(settings.getJdbcLobHandling()), databaseInfo);
-
         // Spied components
         OracleJdbcSqlTemplate spyTemplate = Mockito.spy(testTemplate);
-
         when(platform.getSqlTemplate()).thenReturn(spyTemplate);
         when(spyTemplate.getDataSource()).thenReturn(dataSource);
         when(dataSource.getConnection()).thenReturn(connection);
@@ -225,7 +211,6 @@ class OracleDdlReaderTest {
         when(rsMetaData2.getColumnCount()).thenReturn(1);
         when(rsMetaData2.getColumnLabel(1)).thenReturn("TEXT");
         when(rs2.getObject(1)).thenReturn("testText");
-
         List<Trigger> triggers = testReader.getTriggers("test", "test", "test");
         Trigger testTrigger = triggers.get(0);
         assertEquals("testTrigger", testTrigger.getName());
@@ -234,20 +219,16 @@ class OracleDdlReaderTest {
         assertEquals(false, testTrigger.isEnabled());
         assertEquals("create \ntestText", testTrigger.getSource());
         assertEquals(true, testTrigger.getTriggerType().toString().equals(triggerType));
-
     }
 
-
-    
-    
     @ParameterizedTest
-    @CsvSource({ "2008-11-11, DATE, " + Types.DATE + ",,"+-1+"",
-            "2008-11-11 12:10:30, TIMESTAMP, " + Types.TIMESTAMP + ",,"+-1+"",
-            "testDef, VARCHAR, " + Types.VARCHAR + ",254,"+254+"", })
-    void testReadTableWithBasicArgs(String defaultValue, 
-            String jdbcTypeName, 
+    @CsvSource({ "2008-11-11, DATE, " + Types.DATE + ",," + -1 + "",
+            "2008-11-11 12:10:30, TIMESTAMP, " + Types.TIMESTAMP + ",," + -1 + "",
+            "testDef, VARCHAR, " + Types.VARCHAR + ",254," + 254 + "", })
+    void testReadTableWithBasicArgs(String defaultValue,
+            String jdbcTypeName,
             int jdbcTypeCode,
-            String testColumnSize, 
+            String testColumnSize,
             int platformColumnSize) throws Exception {
         // Mocked Components
         Connection connection = mock(Connection.class);
@@ -255,12 +236,10 @@ class OracleDdlReaderTest {
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         OracleJdbcSqlTemplate testTemplate = new OracleJdbcSqlTemplate(dataSource, settings,
                 new OracleLobHandler(settings.getJdbcLobHandling()), databaseInfo);
         OracleDatabasePlatform platform = new OracleDatabasePlatform(dataSource, settings);
-
         // Spied Components
         OracleDatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -268,28 +247,23 @@ class OracleDdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         OracleDdlReader testReader = new OracleDdlReader(spyPlatform);
         OracleDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
         ResultSet rs3 = mock(ResultSet.class);
         ResultSet rs4 = mock(ResultSet.class);
-
         ResultSet stmtrs1 = mock(ResultSet.class);
         ResultSet stmtrs2 = mock(ResultSet.class);
         ResultSet stmtrs3 = mock(ResultSet.class);
         ResultSet stmtrs4 = mock(ResultSet.class);
-
         ResultSetMetaData rsMetaData = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData2 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData3 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData4 = mock(ResultSetMetaData.class);
-
         PreparedStatement stmt1 = mock(PreparedStatement.class);
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplateDirty()).thenReturn(spyTemplate);
@@ -318,7 +292,6 @@ class OracleDdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -345,19 +318,16 @@ class OracleDdlReaderTest {
         when(rsMetaData2.getColumnLabel(7)).thenReturn(DdlReaderTestConstants.IS_NULLABLE);
         when(rsMetaData2.getColumnName(7)).thenReturn(DdlReaderTestConstants.IS_NULLABLE);
         when(rs2.getString(7)).thenReturn("TRUE");
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
                 .thenReturn(stmt4);
         when(stmt1.executeQuery()).thenReturn(stmtrs1);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -376,15 +346,11 @@ class OracleDdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
-
         // Creation of the table we would expect to be created
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -404,9 +370,6 @@ class OracleDdlReaderTest {
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
         testColumn.setSize(testColumnSize);
-        
-
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(defaultValue);
@@ -415,24 +378,21 @@ class OracleDdlReaderTest {
         platformColumn.setType(jdbcTypeName);
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("oracle", platformColumn);
-
         testColumn.addPlatformColumn(platformColumn);
-
         expectedTable.addColumn(testColumn);
         assertEquals(expectedTable, testTable);
-
     }
 
     @ParameterizedTest
-    @CsvSource({ "testDef,testDefault, BINARY_FLOAT, " + Types.FLOAT + ",126,BINARY_FLOAT,"+Types.DOUBLE+",DOUBLE,126",
-        "testDef,testDefault, BINARY_FLOAT, " + Types.FLOAT + ",63,BINARY_FLOAT,"+Types.REAL+",REAL,63",
-        "'1001001','1001001', BINARY, " + Types.BINARY + ",100,BINARY,"+Types.BINARY+",BINARY,100"})
+    @CsvSource({ "testDef,testDefault, BINARY_FLOAT, " + Types.FLOAT + ",126,BINARY_FLOAT," + Types.DOUBLE + ",DOUBLE,126",
+            "testDef,testDefault, BINARY_FLOAT, " + Types.FLOAT + ",63,BINARY_FLOAT," + Types.REAL + ",REAL,63",
+            "'1001001','1001001', BINARY, " + Types.BINARY + ",100,BINARY," + Types.BINARY + ",BINARY,100" })
     void testReadTableWithAdvancedArgs(String metaDataColumnDef,
             String metaDataColumnDefault,
             String metaDataJdbcTypeName,
             int metaDataJdbcTypeCode,
             String metaDataColumnSize,
-            String testColumnjdbcTypeName, 
+            String testColumnjdbcTypeName,
             int testColumnjdbcTypeCode,
             String testColumnMappedType,
             String testColumnSize) throws Exception {
@@ -442,12 +402,10 @@ class OracleDdlReaderTest {
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         OracleJdbcSqlTemplate testTemplate = new OracleJdbcSqlTemplate(dataSource, settings,
                 new OracleLobHandler(settings.getJdbcLobHandling()), databaseInfo);
         OracleDatabasePlatform platform = new OracleDatabasePlatform(dataSource, settings);
-
         // Spied Components
         OracleDatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -455,7 +413,6 @@ class OracleDdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         OracleDdlReader testReader = new OracleDdlReader(spyPlatform);
         OracleDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
@@ -473,7 +430,6 @@ class OracleDdlReaderTest {
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplateDirty()).thenReturn(spyTemplate);
@@ -502,7 +458,6 @@ class OracleDdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -532,19 +487,16 @@ class OracleDdlReaderTest {
         when(rsMetaData2.getColumnLabel(8)).thenReturn("COLUMN_SIZE");
         when(rsMetaData2.getColumnName(8)).thenReturn("COLUMN_SIZE");
         when(rs2.getString(8)).thenReturn(metaDataColumnSize);
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
                 .thenReturn(stmt4);
         when(stmt1.executeQuery()).thenReturn(stmtrs1);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -563,13 +515,10 @@ class OracleDdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -588,7 +537,6 @@ class OracleDdlReaderTest {
         testColumn.setPrecisionRadix(10);
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(DdlReaderTestConstants.COLUMN_DEF_TEST_VALUE);
@@ -597,44 +545,36 @@ class OracleDdlReaderTest {
         platformColumn.setType(DdlReaderTestConstants.TYPE_NAME_TEST_VALUE);
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("oracle", platformColumn);
-
         testColumn.addPlatformColumn(platformColumn);
-
         expectedTable.addColumn(testColumn);
         assertEquals(expectedTable, testTable);
-
     }
-    
-    
-
 
     @ParameterizedTest
-    @CsvSource({ "1.1234321, DECIMAL, " + Types.DECIMAL + ",126,"+10+",DECIMAL,"+Types.DECIMAL+",NUMERIC,"+Types.NUMERIC+",126:10,10",
-        "1.1234321, DECIMAL, " + Types.DECIMAL + ",126,"+288+",DECIMAL,"+Types.DECIMAL+",DOUBLE,"+Types.DOUBLE+",126:288,288",
-        "1.1234321, DECIMAL, " + Types.DECIMAL + ",0,"+288+",DECIMAL,"+Types.DECIMAL+",BIGINT,"+Types.BIGINT+",126:288,288"})
+    @CsvSource({ "1.1234321, DECIMAL, " + Types.DECIMAL + ",126," + 10 + ",DECIMAL," + Types.DECIMAL + ",NUMERIC," + Types.NUMERIC + ",126:10,10",
+            "1.1234321, DECIMAL, " + Types.DECIMAL + ",126," + 288 + ",DECIMAL," + Types.DECIMAL + ",DOUBLE," + Types.DOUBLE + ",126:288,288",
+            "1.1234321, DECIMAL, " + Types.DECIMAL + ",0," + 288 + ",DECIMAL," + Types.DECIMAL + ",BIGINT," + Types.BIGINT + ",126:288,288" })
     void testReadTableWithDecimalArgs(String metaDataColumnDef,
             String metaDataJdbcTypeName,
             int metaDataJdbcTypeCode,
             String metaDataColumnSize,
             int metaDataDecimalDigits,
-            String testColumnjdbcTypeName, 
+            String testColumnjdbcTypeName,
             int testColumnjdbcTypeCode,
             String testColumnMappedType,
             int testColumnMappedTypeCode,
             String testColumnSize,
             int testColumnScale) throws Exception {
-     // Mocked Components
+        // Mocked Components
         Connection connection = mock(Connection.class);
         DataSource dataSource = mock(DataSource.class);
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         OracleJdbcSqlTemplate testTemplate = new OracleJdbcSqlTemplate(dataSource, settings,
                 new OracleLobHandler(settings.getJdbcLobHandling()), databaseInfo);
         OracleDatabasePlatform platform = new OracleDatabasePlatform(dataSource, settings);
-
         // Spied Components
         OracleDatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -642,7 +582,6 @@ class OracleDdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         OracleDdlReader testReader = new OracleDdlReader(spyPlatform);
         OracleDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
@@ -660,7 +599,6 @@ class OracleDdlReaderTest {
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplateDirty()).thenReturn(spyTemplate);
@@ -689,7 +627,6 @@ class OracleDdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -722,19 +659,16 @@ class OracleDdlReaderTest {
         when(rsMetaData2.getColumnLabel(9)).thenReturn("DECIMAL_DIGITS");
         when(rsMetaData2.getColumnName(9)).thenReturn("DECIMAL_DIGITS");
         when(rs2.getInt(9)).thenReturn(metaDataDecimalDigits);
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
                 .thenReturn(stmt4);
         when(stmt1.executeQuery()).thenReturn(stmtrs1);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -753,15 +687,11 @@ class OracleDdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         doReturn(1).when(spyTemplate).queryForInt(ArgumentMatchers.anyString(), (Object) ArgumentMatchers.any());
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -773,13 +703,13 @@ class OracleDdlReaderTest {
         testColumn.setDefaultValue("1.1234321");
         testColumn.setName(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         testColumn.setJdbcTypeName(testColumnjdbcTypeName);
-        if(testColumnSize.equals("1010")) {
+        if (testColumnSize.equals("1010")) {
             testColumn.setSize(null);
-        } else if(testColumnSize.contains(":")) { 
+        } else if (testColumnSize.contains(":")) {
             String correctColumnSize = testColumnSize.replace(":", ",");
             testColumn.setSize(correctColumnSize);
             testColumn.setScale(testColumnScale);
-        }else {
+        } else {
             testColumn.setSize(testColumnSize);
             testColumn.setScale(testColumnScale);
         }
@@ -790,7 +720,6 @@ class OracleDdlReaderTest {
         testColumn.setPrecisionRadix(10);
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(DdlReaderTestConstants.COLUMN_DEF_TEST_VALUE);
@@ -799,22 +728,17 @@ class OracleDdlReaderTest {
         platformColumn.setType(DdlReaderTestConstants.TYPE_NAME_TEST_VALUE);
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("oracle", platformColumn);
-
         testColumn.addPlatformColumn(platformColumn);
-
         expectedTable.addColumn(testColumn);
         assertEquals(expectedTable, testTable);
-
-
     }
 
-
     @ParameterizedTest
-    @CsvSource({"testDef,VARCHAR, " + Types.VARCHAR + ",VARCHAR,"+Types.VARCHAR+",VARCHAR,"+254+",NORMAL"})
+    @CsvSource({ "testDef,VARCHAR, " + Types.VARCHAR + ",VARCHAR," + Types.VARCHAR + ",VARCHAR," + 254 + ",NORMAL" })
     void testReadTableWithOracleTypeArgs(String metaDataColumnDef,
             String metaDataJdbcTypeName,
             int metaDataJdbcTypeCode,
-            String testColumnjdbcTypeName, 
+            String testColumnjdbcTypeName,
             int testColumnjdbcTypeCode,
             String testColumnMappedType,
             String testColumnSize,
@@ -825,12 +749,10 @@ class OracleDdlReaderTest {
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         OracleJdbcSqlTemplate testTemplate = new OracleJdbcSqlTemplate(dataSource, settings,
                 new OracleLobHandler(settings.getJdbcLobHandling()), databaseInfo);
         OracleDatabasePlatform platform = new OracleDatabasePlatform(dataSource, settings);
-
         // Spied Components
         OracleDatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -838,7 +760,6 @@ class OracleDdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         OracleDdlReader testReader = new OracleDdlReader(spyPlatform);
         OracleDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
@@ -856,7 +777,6 @@ class OracleDdlReaderTest {
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplateDirty()).thenReturn(spyTemplate);
@@ -885,7 +805,6 @@ class OracleDdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -912,19 +831,16 @@ class OracleDdlReaderTest {
         when(rsMetaData2.getColumnLabel(7)).thenReturn(DdlReaderTestConstants.IS_NULLABLE);
         when(rsMetaData2.getColumnName(7)).thenReturn(DdlReaderTestConstants.IS_NULLABLE);
         when(rs2.getString(7)).thenReturn("TRUE");
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
                 .thenReturn(stmt4);
         when(stmt1.executeQuery()).thenReturn(stmtrs1);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -946,13 +862,10 @@ class OracleDdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -972,7 +885,6 @@ class OracleDdlReaderTest {
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
         testColumn.setSize(testColumnSize);
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(DdlReaderTestConstants.COLUMN_DEF_TEST_VALUE);
@@ -981,9 +893,7 @@ class OracleDdlReaderTest {
         platformColumn.setType(DdlReaderTestConstants.TYPE_NAME_TEST_VALUE);
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("oracle", platformColumn);
-
         NonUniqueIndex index = new NonUniqueIndex();
-
         IndexColumn indexColumn = new IndexColumn();
         indexColumn.setName("testColumnName");
         indexColumn.setOrdinalPosition(5321);
@@ -992,9 +902,7 @@ class OracleDdlReaderTest {
         testColumn.addPlatformColumn(platformColumn);
         expectedTable.addColumn(testColumn);
         expectedTable.addIndex(index);
-
         assertEquals(expectedTable, testTable);
-
     }
 
     @Test
@@ -1005,12 +913,10 @@ class OracleDdlReaderTest {
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         OracleJdbcSqlTemplate testTemplate = new OracleJdbcSqlTemplate(dataSource, settings,
                 new OracleLobHandler(settings.getJdbcLobHandling()), databaseInfo);
         OracleDatabasePlatform platform = new OracleDatabasePlatform(dataSource, settings);
-
         // Spied Components
         OracleDatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -1018,7 +924,6 @@ class OracleDdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         OracleDdlReader testReader = new OracleDdlReader(spyPlatform);
         OracleDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
@@ -1036,7 +941,6 @@ class OracleDdlReaderTest {
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplateDirty()).thenReturn(spyTemplate);
@@ -1065,7 +969,6 @@ class OracleDdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -1092,19 +995,16 @@ class OracleDdlReaderTest {
         when(rsMetaData2.getColumnLabel(7)).thenReturn(DdlReaderTestConstants.IS_NULLABLE);
         when(rsMetaData2.getColumnName(7)).thenReturn(DdlReaderTestConstants.IS_NULLABLE);
         when(rs2.getString(7)).thenReturn("TRUE");
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
                 .thenReturn(stmt4);
         when(stmt1.executeQuery()).thenReturn(stmtrs1);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -1127,13 +1027,10 @@ class OracleDdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -1153,7 +1050,6 @@ class OracleDdlReaderTest {
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
         testColumn.setSize("254");
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(DdlReaderTestConstants.COLUMN_DEF_TEST_VALUE);
@@ -1162,9 +1058,7 @@ class OracleDdlReaderTest {
         platformColumn.setType(DdlReaderTestConstants.TYPE_NAME_TEST_VALUE);
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("oracle", platformColumn);
-
         NonUniqueIndex index = new NonUniqueIndex();
-
         IndexColumn indexColumn = new IndexColumn();
         indexColumn.setName("(testColumnName)");
         indexColumn.setOrdinalPosition(5321);
@@ -1173,9 +1067,7 @@ class OracleDdlReaderTest {
         testColumn.addPlatformColumn(platformColumn);
         expectedTable.addColumn(testColumn);
         expectedTable.addIndex(index);
-
         assertEquals(expectedTable, testTable);
-
     }
 
     protected String getResultSetSchemaName() {
