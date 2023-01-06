@@ -276,7 +276,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "    end if;\n" +
 "    if (ora_dict_obj_type like '%TRIGGER%') then\n" +
 "        if (upper(rowData) like '%CREATE%TRIGGER%') then\n" +
-"            select regexp_substr(rowData, '\son\s([[:alnum:]_$#\".]+)', 1, 1, 'i', 1) into tableName from dual;\n" +
+"            select regexp_substr(rowData, '\\son\\s([[:alnum:]_$#\".]+)', 1, 1, 'i', 1) into tableName from dual;\n" +
 "            select regexp_replace(tableName, '$(defaultSchema)', '', 1, 1, 'i') into tableName from dual;\n" +
 "            if (upper(tableName) = 'DATABASE' or upper(tableName) = 'SCHEMA' or upper(tableName) = 'NESTED') then\n" +
 "                tableName := '$(prefixName)_node';\n" +
@@ -287,7 +287,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "    end if;\n" +
 "    if (ora_dict_obj_type like '%INDEX%') then\n" +
 "        if (upper(rowData) like '%CREATE%INDEX%') then\n" +
-"            select regexp_substr(rowData, '\son\s([[:alnum:]_$#\".]+)', 1, 1, 'i', 1) into tableName from dual;\n" +
+"            select regexp_substr(rowData, '\\son\\s([[:alnum:]_$#\".]+)', 1, 1, 'i', 1) into tableName from dual;\n" +
 "            select regexp_replace(tableName, '$(defaultSchema)', '', 1, 1, 'i') into tableName from dual;\n" +
 "            if (upper(tableName) = 'CLUSTER') then\n" +
 "                tableName := '$(prefixName)_node';\n" +
@@ -339,7 +339,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "        end if;\n" +
 "        if (ora_dict_obj_type like '%TRIGGER%') then\n" +
 "            if (upper(rowData) like '%CREATE%TRIGGER%') then\n" +
-"                select regexp_substr(rowData, '\son\s([[:alnum:]_$#\".]+)', 1, 1, 'i', 1) into tableName from dual;\n" +
+"                select regexp_substr(rowData, '\\son\\s([[:alnum:]_$#\".]+)', 1, 1, 'i', 1) into tableName from dual;\n" +
 "                select regexp_replace(tableName, '$(defaultSchema)', '', 1, 1, 'i') into tableName from dual;\n" +
 "                if (upper(tableName) = 'DATABASE' or upper(tableName) = 'SCHEMA' or upper(tableName) = 'NESTED') then\n" +
 "                    tableName := '$(prefixName)_node';\n" +
@@ -350,7 +350,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "        end if;\n" +
 "        if (ora_dict_obj_type like '%INDEX%') then\n" +
 "            if (upper(rowData) like '%CREATE%INDEX%') then\n" +
-"                select regexp_substr(rowData, '\son\s([[:alnum:]_$#\".]+)', 1, 1, 'i', 1) into tableName from dual;\n" +
+"                select regexp_substr(rowData, '\\son\\s([[:alnum:]_$#\".]+)', 1, 1, 'i', 1) into tableName from dual;\n" +
 "                select regexp_replace(tableName, '$(defaultSchema)', '', 1, 1, 'i') into tableName from dual;\n" +
 "                if (upper(tableName) = 'CLUSTER') then\n" +
 "                    tableName := '$(prefixName)_node';\n" +
