@@ -890,7 +890,7 @@ public class DataService extends AbstractService implements IDataService {
                     /*
                      * Outgoing data events are pointless because we are reloading all data
                      */
-                    if (isFullLoad) {
+                    if (isFullLoad && StringUtils.isBlank(reloadRequests.get(0).getReloadSelect())) {
                         engine.getOutgoingBatchService().markAllAsSentForNode(targetNode.getNodeId(),
                                 false);
                     }
