@@ -27,10 +27,14 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class OracleTriggerTemplate extends AbstractTriggerTemplate {
+    String delimiter;
+
     public OracleTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
+        delimiter = symmetricDialect.getParameterService().getString(ParameterConstants.TRIGGER_CAPTURE_DDL_DELIMITER, "$");
         // @formatter:off
 
         emptyColumnTemplate = "''" ;
@@ -250,6 +254,137 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(oracleQueryHint) $(oracleToClob)$(columns) from $(schemaName)$(tableName) t where $(whereClause)");
+
+        sqlTemplates.put("filteredDdlTriggerTemplate",
+"create or replace trigger $(triggerName) after ddl on schema\n" +
+"declare\n" +
+"tableName varchar(255);\n" +
+"histId number(22);\n" +
+"channelId varchar(128);\n" +
+"n number;\n" +
+"sqlText ora_name_list_t;\n" +
+"rowData varchar2(4000);\n" +
+"begin\n" +
+"if (ora_dict_obj_name not like upper('$(prefixName)%')) then\n" +
+"    n := ora_sql_txt(sqlText);\n" + 
+"    for i in 1..n loop\n" + 
+"        rowData := rowData || sqlText(i);\n" + 
+"    end loop;\n" +
+"    tableName := '$(prefixName)_node';\n" +
+"    if (ora_dict_obj_type like '%TABLE%' and upper(rowData) not like '%DROP%TABLE%') then\n" +
+"        tableName := ora_dict_obj_name;\n" +
+"    end if;\n" +
+"    if (ora_dict_obj_type like '%TRIGGER%') then\n" +
+"        if (upper(rowData) like '%CREATE%TRIGGER%') then\n" +
+"            select regexp_substr(rowData, '\\son\\s([[:alnum:]_$#\".]+)', 1, 1, 'i', 1) into tableName from dual;\n" +
+"            select regexp_replace(tableName, '$(defaultSchema)', '', 1, 1, 'i') into tableName from dual;\n" +
+"            if (upper(tableName) = 'DATABASE' or upper(tableName) = 'SCHEMA' or upper(tableName) = 'NESTED') then\n" +
+"                tableName := '$(prefixName)_node';\n" +
+"            end if;\n" +
+"        else\n" +
+"            select table_name into tableName from all_triggers where trigger_name = ora_dict_obj_name;\n" +
+"        end if;\n" +
+"    end if;\n" +
+"    if (ora_dict_obj_type like '%INDEX%') then\n" +
+"        if (upper(rowData) like '%CREATE%INDEX%') then\n" +
+"            select regexp_substr(rowData, '\\son\\s([[:alnum:]_$#\".]+)', 1, 1, 'i', 1) into tableName from dual;\n" +
+"            select regexp_replace(tableName, '$(defaultSchema)', '', 1, 1, 'i') into tableName from dual;\n" +
+"            if (upper(tableName) = 'CLUSTER') then\n" +
+"                tableName := '$(prefixName)_node';\n" +
+"            end if;\n" +
+"        else\n" +
+"            select table_name into tableName from all_indexes where index_name = ora_dict_obj_name;\n" +
+"        end if;\n" +
+"    end if;\n" +
+"    select regexp_replace(tableName, '$(defaultSchema)', '', 1, 1, 'i') into tableName from dual;\n" +
+"    begin\n" +
+"        select trigger_hist_id, source_table_name into histId, tableName from sym_trigger_hist where upper(source_table_name) = upper(tableName) and inactive_time is null;\n" +
+"    exception when no_data_found then\n" +
+"        histId := '';\n" +
+"    end;\n" +
+"    if (histId is not null) then\n" +
+"        begin\n" +
+"            select channel_id into channelId from sym_trigger where upper(source_table_name) = upper(tableName);\n" +
+"        exception when no_data_found then\n" +
+"            channelId := 'config';\n" +
+"        end;\n" +
+"        select regexp_replace(rowData, '$(defaultSchema)', '', 1, 0, 'i') into rowData from dual;\n" +
+"        insert into $(defaultSchema)$(prefixName)_data\n" +
+"        (table_name, event_type, trigger_hist_id, row_data, channel_id, source_node_id, create_time)\n" +
+"        values (tableName, '" + DataEventType.SQL.getCode() + "', histId,\n" +
+"        '\"delimiter " + delimiter + ";' || chr(13) || chr(10) || replace(replace(rowData,'\\','\\\\'),'\"','\\\"') || '\",ddl',\n" +
+"        channelId, $(prefixName)_pkg.disable_node_id, " + getCreateTimeExpression(symmetricDialect) + ");\n" +
+"    end if;\n" +
+"end if;\n" +
+"end;\n");
+        
+        sqlTemplates.put("allDdlTriggerTemplate",
+"create or replace trigger $(triggerName) after ddl on schema\n" +
+"declare\n" +
+"tableName varchar(255);\n" +
+"histId number(22);\n" +
+"channelId varchar(128);\n" +
+"n number;\n" +
+"sqlText ora_name_list_t;\n" +
+"rowData varchar2(4000);\n" +
+"begin\n" +
+"if (ora_dict_obj_name not like upper('$(prefixName)%')) then\n" +
+"    n := ora_sql_txt(sqlText);\n" + 
+"    for i in 1..n loop\n" + 
+"        rowData := rowData || sqlText(i);\n" + 
+"    end loop;\n" +
+"    if (ora_dict_obj_name not like 'SYS_C%' and rowData not like 'CREATE UNIQUE INDEX%') then\n" +
+"        if (ora_dict_obj_type like '%TABLE%' and upper(rowData) not like '%DROP%TABLE%') then\n" +
+"            tableName := ora_dict_obj_name;\n" +
+"        end if;\n" +
+"        if (ora_dict_obj_type like '%TRIGGER%') then\n" +
+"            if (upper(rowData) like '%CREATE%TRIGGER%') then\n" +
+"                select regexp_substr(rowData, '\\son\\s([[:alnum:]_$#\".]+)', 1, 1, 'i', 1) into tableName from dual;\n" +
+"                select regexp_replace(tableName, '$(defaultSchema)', '', 1, 1, 'i') into tableName from dual;\n" +
+"                if (upper(tableName) = 'DATABASE' or upper(tableName) = 'SCHEMA' or upper(tableName) = 'NESTED') then\n" +
+"                    tableName := '$(prefixName)_node';\n" +
+"                end if;\n" +
+"            else\n" +
+"                select table_name into tableName from all_triggers where trigger_name = ora_dict_obj_name;\n" +
+"            end if;\n" +
+"        end if;\n" +
+"        if (ora_dict_obj_type like '%INDEX%') then\n" +
+"            if (upper(rowData) like '%CREATE%INDEX%') then\n" +
+"                select regexp_substr(rowData, '\\son\\s([[:alnum:]_$#\".]+)', 1, 1, 'i', 1) into tableName from dual;\n" +
+"                select regexp_replace(tableName, '$(defaultSchema)', '', 1, 1, 'i') into tableName from dual;\n" +
+"                if (upper(tableName) = 'CLUSTER') then\n" +
+"                    tableName := '$(prefixName)_node';\n" +
+"                end if;\n" +
+"            else\n" +
+"                select table_name into tableName from all_indexes where index_name = ora_dict_obj_name;\n" +
+"            end if;\n" +
+"        end if;\n" +
+"        if (tableName is not null) then\n" +
+"            select regexp_replace(tableName, '$(defaultSchema)', '', 1, 1, 'i') into tableName from dual;\n" +
+"            begin\n" +
+"                select trigger_hist_id, source_table_name into histId, tableName from sym_trigger_hist where upper(source_table_name) = upper(tableName) and inactive_time is null;\n" +
+"            exception when no_data_found then\n" +
+"                histId := '';\n" +
+"            end;\n" +
+"        end if;\n" +
+"        if (histId is null) then\n" +
+"            tableName := '$(prefixName)_node';\n" +
+"            select trigger_hist_id into histId from sym_trigger_hist where upper(source_table_name) = upper(tableName) and inactive_time is null;\n" +
+"        end if;\n" +
+"        begin\n" +
+"            select channel_id into channelId from sym_trigger where upper(source_table_name) = upper(tableName);\n" +
+"        exception when no_data_found then\n" +
+"            channelId := 'config';\n" +
+"        end;\n" +
+"        select regexp_replace(rowData, '$(defaultSchema)', '', 1, 0, 'i') into rowData from dual;\n" +
+"        insert into $(defaultSchema)$(prefixName)_data\n" +
+"        (table_name, event_type, trigger_hist_id, row_data, channel_id, source_node_id, create_time)\n" +
+"        values (tableName, '" + DataEventType.SQL.getCode() + "', histId,\n" +
+"        '\"delimiter " + delimiter + ";' || chr(13) || chr(10) || replace(replace(rowData,'\\','\\\\'),'\"','\\\"') || '\",ddl',\n" +
+"        channelId, $(prefixName)_pkg.disable_node_id, " + getCreateTimeExpression(symmetricDialect) + ");\n" +
+"    end if;\n" +
+"end if;\n" +
+"end;\n");
     }
 
     protected final String getNumberConversionString() {

@@ -51,10 +51,12 @@ import java.sql.Types;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PlatformUtils;
 import org.jumpmind.util.FormatUtils;
 
@@ -600,8 +602,32 @@ public class Column implements Cloneable, Serializable {
         PlatformColumn platformColumn = null;
         if (platformColumns != null) {
             platformColumn = platformColumns.get(name);
+            if (platformColumn == null) {
+                if (name.contains(DatabaseNamesConstants.MSSQL)) {
+                    return findDifferentVersionPlatformColumn(DatabaseNamesConstants.MSSQL);
+                } else if (name.contains(DatabaseNamesConstants.ORACLE)) {
+                    return findDifferentVersionPlatformColumn(DatabaseNamesConstants.ORACLE);
+                } else if (name.contains(DatabaseNamesConstants.POSTGRESQL)) {
+                    return findDifferentVersionPlatformColumn(DatabaseNamesConstants.POSTGRESQL);
+                } else if (name.contains(DatabaseNamesConstants.SQLANYWHERE)) {
+                    return findDifferentVersionPlatformColumn(DatabaseNamesConstants.SQLANYWHERE);
+                } else if (name.contains(DatabaseNamesConstants.FIREBIRD)) {
+                    return findDifferentVersionPlatformColumn(DatabaseNamesConstants.FIREBIRD);
+                } else if (name.contains(DatabaseNamesConstants.HSQLDB)) {
+                    return findDifferentVersionPlatformColumn(DatabaseNamesConstants.HSQLDB);
+                }
+            }
         }
         return platformColumn;
+    }
+
+    private PlatformColumn findDifferentVersionPlatformColumn(String name) {
+        for (Entry<String, PlatformColumn> entry : platformColumns.entrySet()) {
+            if (entry.getKey() != null && entry.getKey().contains(name)) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     public boolean anyPlatformColumnNameContains(String name) {

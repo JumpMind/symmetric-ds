@@ -334,7 +334,11 @@ subprojects { subproject ->
         testImplementation "org.powermock:powermock-api-mockito2:$powerMockVersion"
         testImplementation "org.powermock:powermock-module-junit4:$powerMockVersion"
         
-        deployerJars "org.apache.maven.wagon:wagon-ssh:3.5.1"        
+        deployerJars "org.apache.maven.wagon:wagon-ssh:3.5.1"  
+        
+        testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
+		testImplementation "org.junit.jupiter:junit-jupiter-engine:5.8.2"
+		testImplementation "org.junit.jupiter:junit-jupiter-params:5.8.2"
     }    
 
     task develop {

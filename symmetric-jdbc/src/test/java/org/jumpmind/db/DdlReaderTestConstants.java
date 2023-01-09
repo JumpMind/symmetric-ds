@@ -59,5 +59,4 @@ final public class DdlReaderTestConstants {
     public final static String ORACLESQL1 = "SELECT TRIGGER_NAME, OWNER, TABLE_NAME, STATUS, TRIGGERING_EVENT FROM ALL_TRIGGERS WHERE TABLE_NAME=? and OWNER=?";
     public final static String POSTGRESQL1 = "SELECT trigger_name, trigger_schema, trigger_catalog, event_manipulation AS trigger_type, event_object_table AS table_name,trig.*, pgproc.prosrc FROM INFORMATION_SCHEMA.TRIGGERS AS trig INNER JOIN pg_catalog.pg_trigger AS pgtrig ON pgtrig.tgname=trig.trigger_name INNER JOIN pg_catalog.pg_proc AS pgproc ON pgproc.oid=pgtrig.tgfoid WHERE event_object_table=? AND event_object_schema=?;";
     public final static String sql2 = "select TEXT from all_source where OWNER=? AND NAME=? order by LINE";
-
 }

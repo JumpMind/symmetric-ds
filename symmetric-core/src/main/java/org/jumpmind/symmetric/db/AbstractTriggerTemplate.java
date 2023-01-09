@@ -365,7 +365,23 @@ abstract public class AbstractTriggerTemplate {
     }
 
     public String createDdlTrigger(String tablePrefix, String defaultCatalog, String defaultSchema, String triggerName) {
-        String ddl = sqlTemplates.get("ddlTriggerTemplate");
+        String ddl;
+        if (symmetricDialect.getParameterService().is(ParameterConstants.TRIGGER_CAPTURE_DDL_CHECK_TRIGGER_HIST, true)) {
+            ddl = sqlTemplates.get("filteredDdlTriggerTemplate");
+        } else {
+            ddl = sqlTemplates.get("allDdlTriggerTemplate");
+        }
+        if (ddl == null) {
+            return null;
+        }
+        ddl = FormatUtils.replace("triggerName", triggerName, ddl);
+        ddl = FormatUtils.replace("prefixName", tablePrefix, ddl);
+        ddl = replaceDefaultSchemaAndCatalog(ddl);
+        return ddl;
+    }
+
+    public String createPostDdlTriggerDDL(String tablePrefix, String triggerName) {
+        String ddl = sqlTemplates.get("postDdlTriggerTemplate");
         if (ddl == null) {
             return null;
         }

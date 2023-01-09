@@ -863,6 +863,74 @@ public class RestService {
     }
 
     /**
+     * Requests the server to open and allow registration for this node
+     * 
+     * @param nodeGroup
+     *            The node group to which this node belongs
+     * @param externalId
+     *            The external id for this node
+     * @return The node id assigned to the node
+     * 
+     */
+    @ApiOperation(value = "Open registration for the specified node at the single engine")
+    @RequestMapping(value = "/engine/openregistration", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final String postOpenRegistration(
+            @RequestParam(value = "nodeGroupId") String nodeGroupId,
+            @RequestParam(value = "externalId") String externalId) {
+        return postOpenRegistration(getSymmetricEngine().getEngineName(), nodeGroupId, externalId);
+    }
+
+    @ApiOperation(value = "Open registration for the specified node at the specified engine")
+    @RequestMapping(value = "/engine/{engine}/openregistration", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final String postOpenRegistration(@PathVariable("engine") String engineName,
+            @RequestParam(value = "nodeGroupId") String nodeGroupId,
+            @RequestParam(value = "externalId") String externalId) {
+        ISymmetricEngine engine = getSymmetricEngine(engineName);
+        return engine.getRegistrationService().openRegistration(nodeGroupId, externalId);
+    }
+
+    /**
+     * Requests the server to open and allow registration for this node within a window of time
+     * 
+     * @param nodeGroup
+     *            The node group to which this node belongs
+     * @param externalId
+     *            The external id for this node
+     * @return The node id assigned to the node
+     * 
+     */
+    @ApiOperation(value = "Open registration window of time for the specified node at the single engine")
+    @RequestMapping(value = "/engine/openregistrationwindow", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final String postOpenRegistrationWindow(
+            @RequestParam(value = "nodeGroupId") String nodeGroupId,
+            @RequestParam(value = "externalId") String externalId,
+            @RequestParam(value = "syncUrl", required = false) String syncUrl,
+            @RequestParam(value = "notBefore") Date notBefore,
+            @RequestParam(value = "notAfter") Date notAfter) {
+        return postOpenRegistrationWindow(getSymmetricEngine().getEngineName(), nodeGroupId, externalId, syncUrl, notBefore, notAfter);
+    }
+
+    @ApiOperation(value = "Open registration window of time for the specified node at the specified engine")
+    @RequestMapping(value = "/engine/{engine}/openregistrationwindow", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final String postOpenRegistrationWindow(@PathVariable("engine") String engineName,
+            @RequestParam(value = "nodeGroupId") String nodeGroupId,
+            @RequestParam(value = "externalId") String externalId,
+            @RequestParam(value = "syncUrl", required = false) String syncUrl,
+            @RequestParam(value = "notBefore") Date notBefore,
+            @RequestParam(value = "notAfter") Date notAfter) {
+        ISymmetricEngine engine = getSymmetricEngine(engineName);
+        return engine.getRegistrationService().openRegistration(nodeGroupId, externalId, syncUrl, notBefore, notAfter);
+    }
+
+    /**
      * Pulls pending batches (data) for a given node.
      * 
      * @param nodeId
