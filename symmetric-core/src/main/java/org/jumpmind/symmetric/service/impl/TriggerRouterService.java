@@ -521,7 +521,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected Trigger buildTriggerForSymmetricTable(String tableName, Set<String> configTablesWithoutCapture) {
-        boolean syncChanges = !configTablesWithoutCapture.contains(tableName) && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION);
+        boolean syncChanges = !configTablesWithoutCapture.contains(tableName)
+                && (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)
+                        || TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST).equals(tableName));
         // boolean syncOnIncoming = !configurationService.isMasterToMaster() && (parameterService.is(
         // ParameterConstants.AUTO_SYNC_CONFIGURATION_ON_INCOMING, true)
         // || tableName.equals(TableConstants.getTableName(tablePrefix,
