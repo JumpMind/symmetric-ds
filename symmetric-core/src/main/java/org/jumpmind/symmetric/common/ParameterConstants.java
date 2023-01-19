@@ -537,6 +537,7 @@ final public class ParameterConstants {
     public final static String SNAPSHOT_MAX_FILES = "snapshot.max.files";
     public final static String SNAPSHOT_MAX_BATCHES = "snapshot.max.batches";
     public final static String SNAPSHOT_MAX_NODE_CHANNELS = "snapshot.max.node.channels";
+    public final static String SNAPSHOT_OPERATION_TIMEOUT_MS = "snapshot.operation.timeout.ms";
     
     public final static String REDSHIFT_APPEND_TO_COPY_COMMAND = "redshift.append.to.copy.command";
     public final static String REDSHIFT_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH = "redshift.bulk.load.max.rows.before.flush";
