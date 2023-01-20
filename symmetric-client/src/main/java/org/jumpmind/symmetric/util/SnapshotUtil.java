@@ -45,10 +45,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TimeZone;
 
 import javax.management.MBeanServer;
@@ -873,12 +875,27 @@ public class SnapshotUtil {
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
         List<TriggerHistory> triggerHistories = triggerRouterService.getActiveTriggerHistories();
         String tablePrefix = engine.getTablePrefix().toUpperCase();
+        Set<String> triggerIds = new HashSet<String>();
+        boolean isClonedTables = engine.getParameterService().is("sync.triggers.expand.table.clone", true);
+        long timeoutMillis = engine.getParameterService().getLong(ParameterConstants.SNAPSHOT_OPERATION_TIMEOUT_MS, 30000);
+        long ts = System.currentTimeMillis();
         for (TriggerHistory triggerHistory : triggerHistories) {
             if (!triggerHistory.getSourceTableName().toUpperCase().startsWith(tablePrefix)) {
+                if (isClonedTables && !triggerIds.add(triggerHistory.getTriggerId())) {
+                    Trigger trigger = triggerRouterService.getTriggerById(triggerHistory.getTriggerId(), false);
+                    if (trigger != null && trigger.getSourceTableName().contains("$(targetExternalId)")) {
+                        // for multi-tenant database where the same table is repeated for each node, just need one definition
+                        continue;
+                    }
+                }
                 Table table = targetPlatform.getTableFromCache(triggerHistory.getSourceCatalogName(),
                         triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(), false);
                 if (table != null) {
                     addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
+                }
+                if (System.currentTimeMillis() - ts > timeoutMillis) {
+                    log.info("Reached time limit for table definitions");
+                    break;
                 }
             }
         }
