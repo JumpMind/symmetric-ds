@@ -30,4 +30,8 @@ public class NotFoundException extends RuntimeException {
     public NotFoundException() {
         super("The requested entity could not be located");
     }
+
+    public NotFoundException(String message) {
+        super(message);
+    }
 }
