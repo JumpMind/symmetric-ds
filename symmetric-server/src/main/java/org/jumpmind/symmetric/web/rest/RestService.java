@@ -70,6 +70,7 @@ import org.jumpmind.symmetric.model.OutgoingBatchWithPayload;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessType;
+import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
@@ -1234,6 +1235,90 @@ public class RestService {
         ISymmetricEngine engine = getSymmetricEngine(engineName);
         INodeService nodeService = engine.getNodeService();
         nodeService.setInitialLoadEnabled(nodeId, true, false, -1, "restapi");
+    }
+
+    /**
+     * Requests a load from a source to a target node.  The request is synced to the source node where it will queue the load.
+     * 
+     * @param nodeID
+     */
+    @ApiOperation(value = "Request a table reload for the specified source and target node for the single engine")
+    @RequestMapping(value = "/engine/requesttablereload", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public final void postRequestTableReload(
+            @ApiParam(value = "The source node ID that will send the load", required = true) @RequestParam(value = "sourceNodeId") String sourceNodeId,
+            @ApiParam(value = "The target node ID that will receive the load", required = true) @RequestParam(value = "targetNodeId") String targetNodeId,
+            @ApiParam(value = "The trigger ID for a table or \"ALL\" for all tables", required = true) @RequestParam(value = "triggerId") String triggerId,
+            @ApiParam(value = "The router ID for a table or \"ALL\" for all tables", required = true) @RequestParam(value = "routerId") String routerId,
+            @ApiParam(value = "Create tables if they don't exist", defaultValue = "false", required = true) @RequestParam(
+                    value = "createTable") boolean createTable,
+            @ApiParam(value = "Delete from each table before loading", defaultValue = "false", required = true) @RequestParam(
+                    value = "deleteFirst") boolean deleteFirst,
+            @ApiParam(value = "The SQL \"where\" clause for extracting the table", defaultValue = " ") @RequestParam(
+                    value = "reloadSelect") String reloadSelect,
+            @ApiParam(value = "Custom SQL to run before each table, use %s as variable for table name", defaultValue = " ") @RequestParam(
+                    value = "beforeCustomSql") String beforeCustomSql) {
+        postRequestTableReload(getSymmetricEngine().getEngineName(), sourceNodeId, targetNodeId, triggerId, routerId, createTable, deleteFirst, reloadSelect,
+                beforeCustomSql);
+    }
+
+    @ApiOperation(value = "Request a table reload for the specified source and target node with a specific engine")
+    @RequestMapping(value = "/engine/{engine}/requesttablereload", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public final void postRequestTableReload(@PathVariable("engine") String engineName,
+            @ApiParam(value = "The source node ID that will send the load", required = true) @RequestParam(value = "sourceNodeId") String sourceNodeId,
+            @ApiParam(value = "The target node ID that will receive the load", required = true) @RequestParam(value = "targetNodeId") String targetNodeId,
+            @ApiParam(value = "The trigger ID for a table or \"ALL\" for all tables", required = true) @RequestParam(value = "triggerId") String triggerId,
+            @ApiParam(value = "The router ID for a table or \"ALL\" for all tables", required = true) @RequestParam(value = "routerId") String routerId,
+            @ApiParam(value = "Create tables if they don't exist", defaultValue = "false", required = true) @RequestParam(
+                    value = "createTable") boolean createTable,
+            @ApiParam(value = "Delete from each table before loading", defaultValue = "false", required = true) @RequestParam(
+                    value = "deleteFirst") boolean deleteFirst,
+            @ApiParam(value = "The SQL \"where\" clause for extracting the table", defaultValue = " ") @RequestParam(
+                    value = "reloadSelect") String reloadSelect,
+            @ApiParam(value = "Custom SQL to run before each table, use %s as variable for table name", defaultValue = " ") @RequestParam(
+                    value = "beforeCustomSql") String beforeCustomSql) {
+        ISymmetricEngine engine = getSymmetricEngine(engineName);
+        org.jumpmind.symmetric.model.Node sourceNode = engine.getNodeService().findNode(sourceNodeId);
+        if (sourceNode == null) {
+            throw new NotFoundException("Source node '" + sourceNodeId + "' not found");
+        }
+        org.jumpmind.symmetric.model.Node targetNode = engine.getNodeService().findNode(targetNodeId);
+        if (targetNode == null) {
+            throw new NotFoundException("Target node '" + targetNodeId + "' not found");
+        }
+        if (!"ALL".equals(triggerId) && engine.getTriggerRouterService().getTriggerById(triggerId) == null) {
+            throw new NotFoundException("Trigger ID '" + triggerId + "' not found");
+        }
+        if (!"ALL".equals(routerId) && engine.getTriggerRouterService().getRouterById(routerId) == null) {
+            throw new NotFoundException("Router ID '" + routerId + "' not found");
+        }
+        TriggerRouter triggerRouter = engine.getTriggerRouterService().findTriggerRouterById(triggerId, routerId);
+        if (!"ALL".equals(triggerId) && !"ALL".equals(routerId) && triggerRouter == null) {
+            throw new NotFoundException("Association of trigger ID '" + triggerId + "' and router ID '" + routerId + "' not found");
+        }
+        if (triggerRouter != null && triggerRouter.getRouter() != null && triggerRouter.getRouter().getNodeGroupLink() != null) {
+            NodeGroupLink link = triggerRouter.getRouter().getNodeGroupLink();
+            if (!link.getSourceNodeGroupId().equals(sourceNode.getNodeGroupId())) {
+                throw new NotFoundException("Source node group of '" + sourceNode.getNodeGroupId() + "' does not match with node group link");
+            }
+            if (!link.getTargetNodeGroupId().equals(targetNode.getNodeGroupId())) {
+                throw new NotFoundException("Target node group of '" + targetNode.getNodeGroupId() + "' does not match with node group link");
+            }
+        }
+        TableReloadRequest request = new TableReloadRequest();
+        request.setSourceNodeId(sourceNodeId);
+        request.setTargetNodeId(targetNodeId);
+        request.setTriggerId(triggerId);
+        request.setRouterId(routerId);
+        request.setCreateTable(createTable);
+        request.setDeleteFirst(deleteFirst);
+        request.setReloadSelect(StringUtils.trimToNull(reloadSelect));
+        request.setBeforeCustomSql(StringUtils.trimToNull(beforeCustomSql));
+        request.setCreateTime(new Date((System.currentTimeMillis() / 1000) * 1000));
+        engine.getDataService().insertTableReloadRequest(request);
     }
 
     @ApiOperation(value = "Outgoing summary of batches and data counts waiting for a node")
