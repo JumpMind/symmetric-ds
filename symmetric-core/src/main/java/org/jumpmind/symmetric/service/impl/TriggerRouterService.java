@@ -1116,7 +1116,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            saveTriggerRouter(triggerRouter);
+            saveTriggerRouter(triggerRouter, true);
             sqlTemplate.update(getSql("updateTriggerRouterIdSql0"), triggerRouter.getTriggerId(), oldTriggerId);
             sqlTemplate.update(getSql("updateTriggerRouterIdSql1"), triggerRouter.getRouterId(), oldRouterId);
             deleteTriggerRouter(oldTriggerId, oldRouterId);
