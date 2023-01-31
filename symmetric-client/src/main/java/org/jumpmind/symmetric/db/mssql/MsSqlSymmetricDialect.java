@@ -406,8 +406,8 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
             }
             String triggerNameFirst = (String) transaction.queryForObject(
                     "select tr.name " +
-                            "from sys.triggers tr inner join sys.trigger_events te on te.object_id = tr.object_id " +
-                            "inner join sys.tables t on t.object_id = tr.parent_id " +
+                            "from sys.triggers tr with (nolock) inner join sys.trigger_events te with (nolock) on te.object_id = tr.object_id " +
+                            "inner join sys.tables t with (nolock) on t.object_id = tr.parent_id " +
                             "where t.name = ? and te.type_desc = ? and te.is_first = 1", String.class, table.getName(), dml.name());
             if (StringUtils.isNotBlank(triggerNameFirst)) {
                 log.warn("Existing first trigger '{}{}' is being set to order of 'None'", schemaName, triggerNameFirst);
