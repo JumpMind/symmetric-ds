@@ -891,7 +891,7 @@ public class DataService extends AbstractService implements IDataService {
                         }
                         Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = triggerRouterService
                                 .fillTriggerRoutersByHistIdAndSortHist(sourceNode.getNodeGroupId(),
-                                        targetNode.getNodeGroupId(), triggerHistories, triggerRouters);
+                                        targetNode.getNodeGroupId(), targetNode.getExternalId(), triggerHistories, triggerRouters);
                         if (isFullLoad) {
                             if (!reverse) {
                                 nodeService.setInitialLoadEnabled(transaction, nodeIdRecord, false, true, loadId, createBy);
@@ -2236,7 +2236,7 @@ public class DataService extends AbstractService implements IDataService {
                 catalogName, schemaName, tableName);
         Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = triggerRouterService
                 .fillTriggerRoutersByHistIdAndSortHist(sourceNode.getNodeGroupId(),
-                        targetNode.getNodeGroupId(), triggerHistories);
+                        targetNode.getNodeGroupId(), targetNode.getExternalId(), triggerHistories);
         int eventCount = 0;
         ISqlTransaction transaction = null;
         try {
@@ -2408,6 +2408,10 @@ public class DataService extends AbstractService implements IDataService {
     protected void reloadMissingForeignKeyRows(Data data, long batchId, String nodeId, long dataId, long rowNumber) {
         String batchName = nodeId + "-" + batchId + " " + (dataId == -1 ? "row " + rowNumber : "data " + dataId);
         try {
+            if (data == null) {
+                log.warn("Unable to reload missing foreign data for data ID {} because data is not found", dataId);
+                return;
+            }
             log.debug("reloadMissingForeignKeyRows for batch {} table {}", batchName, data.getTableName());
             TriggerHistory hist = data.getTriggerHistory();
             IDatabasePlatform targetPlatform = getTargetPlatform(data.getTableName());

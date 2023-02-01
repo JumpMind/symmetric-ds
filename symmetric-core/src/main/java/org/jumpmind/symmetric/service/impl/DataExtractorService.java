@@ -2042,7 +2042,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (histories != null && histories.size() > 0) {
                         for (TriggerHistory history : histories) {
                             Channel channel = configurationService.getChannel(trigger.getReloadChannelId());
-                            if (!channel.isFileSyncFlag()) {
+                            if (!channel.isFileSyncFlag() && history.getSourceTableName().equalsIgnoreCase(request.getTableName())) {
                                 Data data = new Data(history.getSourceTableName(), DataEventType.CREATE, null, String.valueOf(request.getLoadId()),
                                         history, trigger.getChannelId(), null, null);
                                 data.setNodeList(targetNode.getNodeId());
