@@ -2476,18 +2476,18 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     @Override
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
-            String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories) {
-        return fillTriggerRoutersByHistIdAndSortHist(sourceNodeGroupId, targetNodeGroupId, triggerHistories, getAllTriggerRoutersForReloadForCurrentNode(
+            String sourceNodeGroupId, String targetNodeGroupId, String targetExternalId, List<TriggerHistory> triggerHistories) {
+        return fillTriggerRoutersByHistIdAndSortHist(sourceNodeGroupId, targetNodeGroupId, targetExternalId, triggerHistories, getAllTriggerRoutersForReloadForCurrentNode(
                 sourceNodeGroupId, targetNodeGroupId));
     }
-    
+
     @Override
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
-            String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories, List<TriggerRouter> triggerRouters) {
+            String sourceNodeGroupId, String targetNodeGroupId, String targetExternalId, List<TriggerHistory> triggerHistories, List<TriggerRouter> triggerRouters) {
         
 
         final Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = fillTriggerRoutersByHistId(
-                sourceNodeGroupId, targetNodeGroupId, triggerHistories, triggerRouters);
+                sourceNodeGroupId, targetNodeGroupId, targetExternalId, triggerHistories, triggerRouters);
         final List<Table> sortedTables = getSortedTablesFor(triggerHistories);
 
         Comparator<TriggerHistory> comparator = new Comparator<TriggerHistory>() {
@@ -2535,13 +2535,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     
     @Override
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistId(
-            String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories) {
-        return fillTriggerRoutersByHistId(sourceNodeGroupId, targetNodeGroupId, triggerHistories, getAllTriggerRoutersForReloadForCurrentNode(
+            String sourceNodeGroupId, String targetNodeGroupId, String targetExternalId, List<TriggerHistory> triggerHistories) {
+        return fillTriggerRoutersByHistId(sourceNodeGroupId, targetNodeGroupId, targetExternalId, triggerHistories, getAllTriggerRoutersForReloadForCurrentNode(
                 sourceNodeGroupId, targetNodeGroupId));
     }
 
     protected Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistId(
-            String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories, List<TriggerRouter> triggerRouters) {
+            String sourceNodeGroupId, String targetNodeGroupId, String targetExternalId, List<TriggerHistory> triggerHistories, List<TriggerRouter> triggerRouters) {
 
         triggerRouters = new ArrayList<TriggerRouter>(triggerRouters);
 
@@ -2556,7 +2556,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             String triggerId = triggerHistory.getTriggerId();
             for (TriggerRouter triggerRouter : triggerRouters) {
                 if (triggerRouter.getTrigger().getTriggerId().equals(triggerId)) {
-                    triggerRoutersForTriggerHistory.add(triggerRouter);
+                    if (!triggerRouter.getTrigger().getSourceTableName().contains("$(targetExternalId)")
+                            || triggerRouter.getTrigger().getSourceTableName().replace("$(targetExternalId)", targetExternalId)
+                                    .equalsIgnoreCase(triggerHistory.getSourceTableName())) {
+                        triggerRoutersForTriggerHistory.add(triggerRouter);
+                    }
                 }
             }
         }
