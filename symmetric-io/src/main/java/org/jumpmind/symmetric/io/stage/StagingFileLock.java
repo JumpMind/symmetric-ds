@@ -39,7 +39,8 @@ public class StagingFileLock {
             FileTime lastModifiedTime;
             try {
                 lastModifiedTime = Files.getLastModifiedTime(lockFile.toPath());
-                return System.currentTimeMillis() - lastModifiedTime.toMillis();
+                long age = System.currentTimeMillis() - lastModifiedTime.toMillis();
+                return age < 0 ? 42 : age;
             } catch (IOException ex) {
                 if (log.isDebugEnabled()) {
                     log.debug("Failed to get last modified time for file " + lockFile, ex);
