@@ -29,14 +29,24 @@ public class MariaDBDatabasePlatform extends MySqlDatabasePlatform {
     public static final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
     public static final String JDBC_SUBPROTOCOL = "mariadb";
     public static final String SQL_GET_MARIADB_NAME = "select variable_value from information_schema.global_variables where variable_name='VERSION'";
+    private static int originalFetchSize;
 
     public MariaDBDatabasePlatform(DataSource dataSource,
             SqlTemplateSettings settings) {
-        super(dataSource, settings);
+        super(dataSource, overrideSettings(settings));
+        settings.setFetchSize(originalFetchSize);
     }
 
     @Override
     protected MariaDBDdlReader createDdlReader() {
         return new MariaDBDdlReader(this);
+    }
+    
+    protected static SqlTemplateSettings overrideSettings(SqlTemplateSettings settings) {
+        if (settings == null) {
+            settings = new SqlTemplateSettings();
+        }
+        originalFetchSize = settings.getFetchSize();
+        return settings;
     }
 }
