@@ -217,23 +217,34 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
     @Override
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) throws SqlException {
+        String tableNameColumnName;
+        String triggerTypeColumnName;
+        if (isVersion2) {
+            tableNameColumnName = "EVENT_OBJECT_TABLE";
+            triggerTypeColumnName = "EVENT_MANIPULATION";
+        } else {
+            tableNameColumnName = "TABLE_NAME";
+            triggerTypeColumnName = "TRIGGER_TYPE";
+        }
         List<Trigger> triggers = new ArrayList<Trigger>();
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
         String sql = "SELECT * FROM INFORMATION_SCHEMA.TRIGGERS "
-                + "WHERE TABLE_NAME=? and TRIGGER_SCHEMA=? and TRIGGER_CATALOG=? ;";
+                + "WHERE " + tableNameColumnName + "=? and TRIGGER_SCHEMA=? and TRIGGER_CATALOG=? ;";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
             public Trigger mapRow(Row row) {
                 Trigger trigger = new Trigger();
                 trigger.setName(row.getString("TRIGGER_NAME"));
                 trigger.setCatalogName(row.getString("TRIGGER_CATALOG"));
                 trigger.setSchemaName(row.getString("TRIGGER_SCHEMA"));
-                trigger.setTableName(row.getString("TABLE_NAME"));
+                trigger.setTableName(row.getString(tableNameColumnName));
                 trigger.setEnabled(true);
-                trigger.setSource(row.getString("SQL"));
-                row.remove("SQL");
-                String triggerType = row.getString("TRIGGER_TYPE");
+                if (!isVersion2) {
+                    trigger.setSource(row.getString("SQL"));
+                    row.remove("SQL");
+                }
+                String triggerType = row.getString(triggerTypeColumnName);
                 if (triggerType.equals("DELETE")
                         || triggerType.equals("INSERT")
                         || triggerType.equals("UPDATE")) {
