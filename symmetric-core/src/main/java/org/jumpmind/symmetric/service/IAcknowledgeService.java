@@ -33,4 +33,6 @@ public interface IAcknowledgeService {
     public BatchAckResult ack(BatchAck batch);
 
     public List<BatchAckResult> ack(List<BatchAck> batches);
+
+    public void checkMissingAck(List<BatchAck> batches, String queue);
 }
