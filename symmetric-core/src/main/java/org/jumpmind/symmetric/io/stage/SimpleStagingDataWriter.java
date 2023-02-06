@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.ProtocolException;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.model.ProcessInfo;
@@ -61,6 +62,7 @@ public class SimpleStagingDataWriter {
     protected BufferedWriter writer;
     protected Batch batch;
     protected long invalidLineCount;
+    protected Exception exception;
 
     public SimpleStagingDataWriter(ProcessInfo processInfo, BufferedReader reader, IStagingManager stagingManager, String category, long memoryThresholdInBytes,
             BatchType batchType, String targetNodeId, DataContext context, IProtocolDataWriterListener... listeners) {
@@ -273,6 +275,7 @@ public class SimpleStagingDataWriter {
 
             processInfo.setStatus(ProcessStatus.OK);
         } catch (Exception ex) {
+            exception = ex;
             if (resource != null) {
                 resource.delete();
             }
@@ -290,6 +293,10 @@ public class SimpleStagingDataWriter {
                 log.warn("Found {} invalid lines that could not be written to a batch", invalidLineCount);
             }
         }
+    }
+
+    public Exception getException() {
+        return exception;
     }
 
     protected String getArgLine(String line) throws IOException {
@@ -316,8 +323,12 @@ public class SimpleStagingDataWriter {
             if (log.isDebugEnabled()) {
                 log.debug("Writing staging data: {}", line);
             }
-            writer.write(line);
-            writer.write("\n");            
+            if (writer != null) {
+                writer.write(line);
+                writer.write("\n");
+            } else {
+                throw new ProtocolException("Batch data is corrupt because no batch ID is present");
+            }
         }
     }
     
