@@ -345,10 +345,8 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                 }
             }
         } catch (Throwable e) {
-            log.error("Failed to record status of batch {}",
-                    this.currentBatch != null ? this.currentBatch.getNodeBatchId()
-                            : context
-                                    .getBatch().getNodeBatchId(), e);
+            log.error("Failed to record status of batch " + (this.currentBatch != null ? this.currentBatch.getNodeBatchId()
+                    : context.getBatch().getNodeBatchId()), e);
         }
     }
 
