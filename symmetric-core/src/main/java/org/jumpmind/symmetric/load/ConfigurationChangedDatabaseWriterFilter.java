@@ -204,18 +204,20 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             engine.getTriggerRouterService().syncTriggers(new ArrayList<Table>(tables), false);
         }
         if (context.remove(CTX_KEY_INITIAL_LOAD_COMPLETED) != null) {
-            long loadId = (long) context.remove(CTX_KEY_INITAL_LOAD_ID);    
-            log.info("Initial load ended for load ID {}", loadId);
+            long loadId = (long) context.remove(CTX_KEY_INITAL_LOAD_ID);
+            log.info("Initial load ended for me, load ID {}", loadId);
             if (hasClientReloadListener(context)) {
                 List<IClientReloadListener> listeners = engine.getExtensionService().getExtensionPointList(IClientReloadListener.class);
                 for (IClientReloadListener listener : listeners) {
                     listener.reloadCompleted();
                 }
             }
-            TableReloadRequest currLoad = engine.getDataService().getTableReloadRequest(loadId);
-            if (currLoad != null && currLoad.isCreateTable()) {
-                engine.getTriggerRouterService().syncTriggers();
-            }  
+            if (parameterService.is(ParameterConstants.TRIGGER_CREATE_BEFORE_INITIAL_LOAD)) {
+                TableReloadRequest currLoad = engine.getDataService().getTableReloadRequest(loadId);
+                if (currLoad != null && currLoad.isCreateTable()) {
+                    engine.getTriggerRouterService().syncTriggers();
+                }
+            }
         }
         @SuppressWarnings("unchecked")
         List<Long> loadIds = (List<Long>) context.get(CTX_KEY_CANCEL_LOAD);
