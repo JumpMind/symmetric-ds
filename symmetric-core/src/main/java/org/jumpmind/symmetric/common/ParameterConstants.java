@@ -385,6 +385,7 @@ final public class ParameterConstants {
     public final static String SYNC_TRIGGERS_THREAD_COUNT_PER_SERVER = "sync.triggers.thread.count.per.server";
     public final static String SYNC_TRIGGERS_TIMEOUT_IN_SECONDS = "sync.triggers.timeout.in.seconds";
     public final static String SYNC_TRIGGERS_REG_SVR_INSTALL_WITHOUT_CONFIG = "sync.triggers.reg.svr.install.without.config";
+    public final static String SYNC_TRIGGERS_FIX_DUPLICATE_ACTIVE_TRIGGER_HISTORIES = "sync.triggers.fix.duplicate.active.trigger.histories";
     public static final String SMTP_HOST = "smtp.host";
     public static final String SMTP_TRANSPORT = "smtp.transport";
     public static final String SMTP_PORT = "smtp.port";
