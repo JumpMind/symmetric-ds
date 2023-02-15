@@ -258,7 +258,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 nodeId = batch.getNodeId();
             }
         }
-        if (hasCorruptBatch) {
+        if (hasCorruptBatch && parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
             OutgoingBatches batches = engine.getOutgoingBatchService().getOutgoingBatches(nodeId, queue, false);
             if (batches.containsBatches()) {
                 Map<Long, OutgoingBatch> batchMap = new HashMap<Long, OutgoingBatch>();
