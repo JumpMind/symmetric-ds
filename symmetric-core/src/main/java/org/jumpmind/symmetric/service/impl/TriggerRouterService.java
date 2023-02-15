@@ -2761,7 +2761,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
     
     protected void fixMultipleActiveTriggerHistories() {
-        if (parameterService.is(ParameterConstants.SYNC_TRIGGERS_FIX_DUPLICATE_ACTIVE_TRIGGER_HISTORIES)) {
+        if (parameterService.is(ParameterConstants.SYNC_TRIGGERS_FIX_DUPLICATE_ACTIVE_TRIGGER_HISTORIES,true)) {
             // Get trigger_id, source_table_name, source_schema_name, and source_catalog_name of active ones that have more than one active
             List<TriggerHistory> multiples = getMultipleActiveTriggerHistories();
             if (multiples.size() > 0) {
