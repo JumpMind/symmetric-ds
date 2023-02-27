@@ -310,6 +310,25 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
                 }
             }
         }
+        if (nameVersion.getProtocol().equalsIgnoreCase("sqlserver")) {
+            int engineEdition = getMsSqlEngineEdition(connection);
+            if (engineEdition >= 5) {
+                nameVersion.setName(DatabaseNamesConstants.MSSQL2016);
+            }
+        }
+    }
+
+    private static int getMsSqlEngineEdition(Connection connection) {
+        int engineEdition = -1;
+        try (Statement s = connection.createStatement()) {
+            ResultSet rs = s.executeQuery("SELECT CAST(SERVERPROPERTY('EngineEdition') AS INT)");
+            if (rs.next()) {
+                engineEdition = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            log.info("Unable to get Sql Server Engine Edition");
+        }
+        return engineEdition;
     }
 
     private boolean isGreenplumDatabase(Connection connection) {
