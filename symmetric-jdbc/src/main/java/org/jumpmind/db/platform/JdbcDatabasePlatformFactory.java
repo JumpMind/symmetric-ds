@@ -314,8 +314,11 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
             }
         }
         if (nameVersion.getProtocol().equalsIgnoreCase(MsSql2016DatabasePlatform.JDBC_SUBPROTOCOL)) {
-            if (isMSSQLAzureManagedInstance(connection)) {
+        	int engineEdition = getMsSqlEngineEdition(connection);
+        	if (isMSSQLAzureManagedInstance(engineEdition)) {
                 nameVersion.setName(DatabaseNamesConstants.MSSQLAZURE);
+        	} else if (engineEdition >= 5) {
+        		nameVersion.setName(DatabaseNamesConstants.MSSQL2016);
             }
         }
         if (nameVersion.getProtocol().equalsIgnoreCase(SqlAnywhereDatabasePlatform.JDBC_SUBPROTOCOL_SHORT) && nameVersion.getVersion() >= 12) {
@@ -372,19 +375,21 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
         return isDialect1;
     }
 
-    private boolean isMSSQLAzureManagedInstance(Connection connection) {
-        boolean isManagedInstance = false;
-        try (Statement s = connection.createStatement()) {
+    private boolean isMSSQLAzureManagedInstance(int engineEdition) {
+        return engineEdition == 8;
+    }
+    
+    private int getMsSqlEngineEdition(Connection connection) {
+    	int engineEdition = -1;
+    	try (Statement s = connection.createStatement()) {
             ResultSet rs = s.executeQuery("SELECT CAST(SERVERPROPERTY('EngineEdition') AS INT)");
             if (rs.next()) {
-                if (rs.getInt(1) == 8) {
-                    isManagedInstance = true;
-                }
+            	engineEdition = rs.getInt(1);
             }
-        } catch (Exception e) {
-            log.info("Azure Managed Instance of SQLServer not detected.");
+        } catch (SQLException e) {
+            log.info("Unable to get Sql Server Engine Edition");
         }
-        return isManagedInstance;
+    	return engineEdition;
     }
 
     private boolean isOracle122Compatible(Connection connection) {
