@@ -112,6 +112,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "microsoft sql server12", MsSql2008DatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server13", MsSql2016DatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server", MsSql2016DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.MSSQL2016, MsSql2016DatabasePlatform.class);
         addPlatform(platforms, "MySQL", MySqlDatabasePlatform.class);
         addPlatform(platforms, "Oracle", OracleDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.ORACLE122, Oracle122DatabasePlatform.class);
@@ -300,7 +301,12 @@ public class JdbcDatabasePlatformFactory {
                     }
                 }
             }
-            
+            if (nameVersion[2].equalsIgnoreCase("sqlserver")) {
+                int engineEdition = getMsSqlEngineEdition(connection);
+                if (engineEdition >= 5) {
+                    nameVersion[0] = DatabaseNamesConstants.MSSQL2016;
+                }
+            }
             log.info("Detected database '" + nameVersion[0] + "', version '" + nameVersion[1] + "', protocol '" + nameVersion[2] + "'");
 
             return nameVersion;
@@ -320,6 +326,19 @@ public class JdbcDatabasePlatformFactory {
                 }
             }
         }
+    }
+    
+    private static int getMsSqlEngineEdition(Connection connection) {
+        int engineEdition = -1;
+        try (Statement s = connection.createStatement()) {
+            ResultSet rs = s.executeQuery("SELECT CAST(SERVERPROPERTY('EngineEdition') AS INT)");
+            if (rs.next()) {
+                engineEdition = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            log.info("Unable to get Sql Server Engine Edition");
+        }
+        return engineEdition;
     }
 
     private static boolean isGreenplumDatabase(Connection connection) {
