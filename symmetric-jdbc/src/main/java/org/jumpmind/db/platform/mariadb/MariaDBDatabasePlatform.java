@@ -46,7 +46,7 @@ public class MariaDBDatabasePlatform extends MySqlDatabasePlatform {
     public String getCharSetName() {
         return (String) getSqlTemplate().queryForObject("SELECT CHARSET('a'), @@character_set_connection;", String.class);
     }
-    
+
     protected static SqlTemplateSettings overrideSettings(SqlTemplateSettings settings) {
         if (settings == null) {
             settings = new SqlTemplateSettings();

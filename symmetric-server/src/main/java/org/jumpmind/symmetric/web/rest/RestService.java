@@ -1238,7 +1238,7 @@ public class RestService {
     }
 
     /**
-     * Requests a load from a source to a target node.  The request is synced to the source node where it will queue the load.
+     * Requests a load from a source to a target node. The request is synced to the source node where it will queue the load.
      * 
      * @param nodeID
      */

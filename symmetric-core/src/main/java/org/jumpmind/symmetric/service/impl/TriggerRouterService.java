@@ -1783,7 +1783,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                         triggerTableSupportingInfo);
                                 log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
                             } else {
-                                log.warn("Can't find table {} for trigger {}, make sure table exists.", table.getFullyQualifiedTableName(), trigger.getTriggerId());
+                                log.warn("Can't find table {} for trigger {}, make sure table exists.", table.getFullyQualifiedTableName(), trigger
+                                        .getTriggerId());
                             }
                         }
                     }
@@ -2425,7 +2426,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
             if (rs.containsKey("last_trigger_build_reason")) {
                 hist.setLastTriggerBuildReason(TriggerReBuildReason.fromCode(rs
-                    .getString("last_trigger_build_reason")));
+                        .getString("last_trigger_build_reason")));
             }
             if (rs.containsKey("name_for_delete_trigger")) {
                 hist.setNameForDeleteTrigger(rs.getString("name_for_delete_trigger"));
@@ -2759,9 +2760,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             throw new RuntimeException(e);
         }
     }
-    
+
     protected void fixMultipleActiveTriggerHistories() {
-        if (parameterService.is(ParameterConstants.SYNC_TRIGGERS_FIX_DUPLICATE_ACTIVE_TRIGGER_HISTORIES,true)) {
+        if (parameterService.is(ParameterConstants.SYNC_TRIGGERS_FIX_DUPLICATE_ACTIVE_TRIGGER_HISTORIES, true)) {
             // Get trigger_id, source_table_name, source_schema_name, and source_catalog_name of active ones that have more than one active
             List<TriggerHistory> multiples = getMultipleActiveTriggerHistories();
             if (multiples.size() > 0) {
@@ -2783,11 +2784,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         }
     }
-    
+
     protected List<TriggerHistory> getMultipleActiveTriggerHistories() {
         return sqlTemplate.query(getSql("multipleActiveTriggerHistSql"), new TriggerHistoryMapper());
     }
-    
+
     protected List<TriggerHistory> getTriggerHistoryIds(TriggerHistory triggerHistory) {
         List<Object> values = new ArrayList<Object>();
         StringBuilder sb = new StringBuilder(getSql("selectTriggerHistIdSql")).append(" where trigger_id=? and source_table_name=?");

@@ -314,11 +314,11 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
             }
         }
         if (nameVersion.getProtocol().equalsIgnoreCase(MsSql2016DatabasePlatform.JDBC_SUBPROTOCOL)) {
-        	int engineEdition = getMsSqlEngineEdition(connection);
-        	if (isMSSQLAzureManagedInstance(engineEdition)) {
+            int engineEdition = getMsSqlEngineEdition(connection);
+            if (isMSSQLAzureManagedInstance(engineEdition)) {
                 nameVersion.setName(DatabaseNamesConstants.MSSQLAZURE);
-        	} else if (engineEdition >= 5) {
-        		nameVersion.setName(DatabaseNamesConstants.MSSQL2016);
+            } else if (engineEdition >= 5) {
+                nameVersion.setName(DatabaseNamesConstants.MSSQL2016);
             }
         }
         if (nameVersion.getProtocol().equalsIgnoreCase(SqlAnywhereDatabasePlatform.JDBC_SUBPROTOCOL_SHORT) && nameVersion.getVersion() >= 12) {
@@ -378,18 +378,18 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
     private boolean isMSSQLAzureManagedInstance(int engineEdition) {
         return engineEdition == 8;
     }
-    
+
     private int getMsSqlEngineEdition(Connection connection) {
-    	int engineEdition = -1;
-    	try (Statement s = connection.createStatement()) {
+        int engineEdition = -1;
+        try (Statement s = connection.createStatement()) {
             ResultSet rs = s.executeQuery("SELECT CAST(SERVERPROPERTY('EngineEdition') AS INT)");
             if (rs.next()) {
-            	engineEdition = rs.getInt(1);
+                engineEdition = rs.getInt(1);
             }
         } catch (SQLException e) {
             log.info("Unable to get Sql Server Engine Edition");
         }
-    	return engineEdition;
+        return engineEdition;
     }
 
     private boolean isOracle122Compatible(Connection connection) {

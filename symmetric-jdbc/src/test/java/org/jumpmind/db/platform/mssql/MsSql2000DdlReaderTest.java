@@ -64,7 +64,6 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 class MsSql2000DdlReaderTest {
-
     protected MsSql2000DatabasePlatform platform;
     protected Pattern mssql2000IsoDatePattern;
     /*
@@ -72,8 +71,7 @@ class MsSql2000DdlReaderTest {
      */
     protected Pattern mssql2000IsoTimePattern;
     /*
-     * The regular expression pattern for the mssql2000 conversion of ISO
-     * timestamps.
+     * The regular expression pattern for the mssql2000 conversion of ISO timestamps.
      */
     protected Pattern mssql2000IsoTimestampPattern;
     ISqlTemplate sqlTemplate;
@@ -96,16 +94,14 @@ class MsSql2000DdlReaderTest {
         testReader.setDefaultCatalogPattern(null);
         testReader.setDefaultSchemaPattern(null);
         testReader.setDefaultTablePattern("%");
-
         assertEquals(null, testReader.getDefaultCatalogPattern());
         assertEquals(null, testReader.getDefaultSchemaPattern());
         assertEquals("%", testReader.getDefaultTablePattern());
         assertEquals(true, mssql2000IsoDatePattern.pattern().equals("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD'\\)"));
         assertEquals(true, mssql2000IsoTimePattern.pattern().equals("TO_DATE\\('([^']*)'\\, 'HH24:MI:SS'\\)"));
         assertEquals(true, mssql2000IsoTimestampPattern.pattern().equals("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD HH24:MI:SS'\\)"));
-
     }
-    
+
     @Test
     void testGetTableNames() throws Exception {
         MsSqlDdlReader testReader = new MsSqlDdlReader(platform);
@@ -113,21 +109,16 @@ class MsSql2000DdlReaderTest {
         List<String> tableNames = new ArrayList<String>();
         tableNames.add("testName");
         MsSqlJdbcSqlTemplate testTemplate = mock(MsSqlJdbcSqlTemplate.class);
-        
         when(platform.getSqlTemplateDirty()).thenReturn(testTemplate);
         doReturn(tableNames).when(testTemplate).queryWithHandler(ArgumentMatchers.anyString(),
-                ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any());       
-
+                ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any());
         tableNameResults = testReader.getTableNames("testCatlog", "testSchema", null);
-        
-        assertEquals(tableNames,tableNameResults);
-        
+        assertEquals(tableNames, tableNameResults);
     }
 
     @ParameterizedTest
     @CsvSource({ "INSERT,1,0,0", "UPDATE,0,1,0", "DELETE,0,0,1", })
     void testGetTriggers(String triggerTypeParam, String isInsert, String isUpdate, String isDelete) throws Exception {
-
         // Mocked components
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         PreparedStatement ps = mock(PreparedStatement.class);
@@ -140,15 +131,12 @@ class MsSql2000DdlReaderTest {
         ResultSet rs2 = mock(ResultSet.class);
         ResultSetMetaData rsMetaData = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData2 = mock(ResultSetMetaData.class);
-
         // "Real" components
         MsSqlDdlReader testReader = new MsSqlDdlReader(platform);
         List<Trigger> actualTriggers = new ArrayList<Trigger>();
         MsSqlJdbcSqlTemplate testTemplate = new MsSqlJdbcSqlTemplate(dataSource, settings, databaseInfo);
-
         // Spied components
         MsSqlJdbcSqlTemplate spyTemplate = Mockito.spy(testTemplate);
-
         when(platform.getSqlTemplateDirty()).thenReturn(spyTemplate);
         when(spyTemplate.getDataSource()).thenReturn(dataSource);
         when(dataSource.getConnection()).thenReturn(connection);
@@ -179,21 +167,18 @@ class MsSql2000DdlReaderTest {
         when(rs.getObject(9)).thenReturn("0");
         when(rsMetaData.getColumnLabel(10)).thenReturn("isinsteadof");
         when(rs.getObject(10)).thenReturn("0");
-
         when(ps2.executeQuery()).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
         when(rs2.getMetaData()).thenReturn(rsMetaData2);
         when(rsMetaData2.getColumnCount()).thenReturn(1);
         when(rsMetaData2.getColumnLabel(1)).thenReturn("TEXT");
         when(rs2.getObject(1)).thenReturn("testText");
-
         Row triggerMetaData = new Row(5);
         triggerMetaData.put("trigger_name", "testTrigger");
         triggerMetaData.put("trigger_schema", "testSchema");
         triggerMetaData.put(DdlReaderTestConstants.TABLE_NAME, "testTableName");
         triggerMetaData.put("STATUS", "ACTIVE");
         triggerMetaData.put("TRIGGERING_EVENT", triggerTypeParam);
-
         Trigger trigger = new Trigger();
         trigger.setName("testTrigger");
         trigger.setSchemaName("testSchema");
@@ -204,7 +189,6 @@ class MsSql2000DdlReaderTest {
         String triggerType = triggerTypeParam;
         trigger.setTriggerType(TriggerType.valueOf(triggerType));
         actualTriggers.add(trigger);
-
         List<Trigger> triggers = testReader.getTriggers("test", "test", "test");
         Trigger testTrigger = triggers.get(0);
         assertEquals("testTrigger", testTrigger.getName());
@@ -213,10 +197,8 @@ class MsSql2000DdlReaderTest {
         assertEquals(true, testTrigger.isEnabled());
         assertEquals("create ", testTrigger.getSource());
         assertEquals(true, testTrigger.getTriggerType().toString().equals(triggerTypeParam));
-
     }
 
-    
     @ParameterizedTest
     @CsvSource({ "2008-11-11, DATE, " + Types.DATE + ",," + -1 + "", "2008-11-11 12:10:30, TIMESTAMP, " + Types.TIMESTAMP + ",," + -1 + "",
             "testDef, VARCHAR, " + Types.VARCHAR + ",254," + 254 + "", })
@@ -228,11 +210,9 @@ class MsSql2000DdlReaderTest {
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         MsSqlJdbcSqlTemplate testTemplate = new MsSqlJdbcSqlTemplate(dataSource, settings, databaseInfo);
         MsSql2000DatabasePlatform platform = new MsSql2000DatabasePlatform(dataSource, settings);
-
         // Spied Components
         MsSql2000DatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -240,32 +220,26 @@ class MsSql2000DdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         MsSqlDdlReader testReader = new MsSqlDdlReader(spyPlatform);
         MsSqlDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
         ResultSet rs3 = mock(ResultSet.class);
         ResultSet rs4 = mock(ResultSet.class);
         ResultSet rs5 = mock(ResultSet.class);
-
         ResultSet stmtrs1 = mock(ResultSet.class);
         ResultSet stmtrs2 = mock(ResultSet.class);
         ResultSet stmtrs3 = mock(ResultSet.class);
         ResultSet stmtrs4 = mock(ResultSet.class);
-
         ResultSetMetaData rsMetaData = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData2 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData3 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData4 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData5 = mock(ResultSetMetaData.class);
-
         PreparedStatement stmt1 = mock(PreparedStatement.class);
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         ResultSetMetaData stmt1RsMetaData = mock(ResultSetMetaData.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplate()).thenReturn(spyTemplate);
@@ -294,7 +268,6 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -321,16 +294,13 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData2.getColumnLabel(7)).thenReturn(DdlReaderTestConstants.IS_NULLABLE);
         when(rsMetaData2.getColumnName(7)).thenReturn(DdlReaderTestConstants.IS_NULLABLE);
         when(rs2.getString(7)).thenReturn("TRUE");
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         // when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
         // .thenReturn(stmt4);
-
         // THIS SECTION IS NEW. This is because the msSqlDdlReader uses the
         // determineAutoIncrementFromResultSetMetaData
         // method, and this changes several things when testing
@@ -340,7 +310,6 @@ class MsSql2000DdlReaderTest {
         when(stmt1RsMetaData.isAutoIncrement(ArgumentMatchers.anyInt())).thenReturn(true);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -359,7 +328,6 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(metaData.getIndexInfo(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())).thenReturn(rs5);
         when(rs5.next()).thenReturn(true).thenReturn(false);
@@ -371,13 +339,10 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData5.getColumnLabel(2)).thenReturn("TABLE_NAME");
         when(rsMetaData5.getColumnName(2)).thenReturn("TABLE_NAME");
         when(rs5.getString(2)).thenReturn(DdlReaderTestConstants.TESTNAME);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -396,7 +361,6 @@ class MsSql2000DdlReaderTest {
         testColumn.setPrecisionRadix(10);
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(defaultValue);// Variable 1
@@ -405,19 +369,15 @@ class MsSql2000DdlReaderTest {
         platformColumn.setSize(platformColumnSize);
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("mssql2000", platformColumn);
-
         IndexColumn testIndexColumn = new IndexColumn();
         testIndexColumn.setOrdinalPosition(0);
         NonUniqueIndex testIndex = new NonUniqueIndex();
         testIndex.setName("testIndexName");
         testIndex.addColumn(testIndexColumn);
-
         testColumn.addPlatformColumn(platformColumn);
-
         expectedTable.addColumn(testColumn);
         expectedTable.addIndex(testIndex);
         assertEquals(expectedTable, testTable);
-
     }
 
     @ParameterizedTest
@@ -434,11 +394,9 @@ class MsSql2000DdlReaderTest {
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         MsSqlJdbcSqlTemplate testTemplate = new MsSqlJdbcSqlTemplate(dataSource, settings, databaseInfo);
         MsSql2000DatabasePlatform platform = new MsSql2000DatabasePlatform(dataSource, settings);
-
         // Spied Components
         MsSql2000DatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -446,32 +404,26 @@ class MsSql2000DdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         MsSqlDdlReader testReader = new MsSqlDdlReader(spyPlatform);
         MsSqlDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
         ResultSet rs3 = mock(ResultSet.class);
         ResultSet rs4 = mock(ResultSet.class);
         ResultSet rs5 = mock(ResultSet.class);
-
         ResultSet stmtrs1 = mock(ResultSet.class);
         ResultSet stmtrs2 = mock(ResultSet.class);
         ResultSet stmtrs3 = mock(ResultSet.class);
         ResultSet stmtrs4 = mock(ResultSet.class);
-
         ResultSetMetaData rsMetaData = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData2 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData3 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData4 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData5 = mock(ResultSetMetaData.class);
-
         PreparedStatement stmt1 = mock(PreparedStatement.class);
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         ResultSetMetaData stmt1RsMetaData = mock(ResultSetMetaData.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplate()).thenReturn(spyTemplate);
@@ -500,7 +452,6 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -530,16 +481,13 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData2.getColumnLabel(8)).thenReturn("COLUMN_SIZE");
         when(rsMetaData2.getColumnName(8)).thenReturn("COLUMN_SIZE");
         when(rs2.getString(8)).thenReturn(columnSize);
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         // when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
         // .thenReturn(stmt4);
-
         // THIS SECTION IS NEW. This is because the msSqlDdlReader uses the
         // determineAutoIncrementFromResultSetMetaData
         // method, and this changes several things when testing
@@ -549,7 +497,6 @@ class MsSql2000DdlReaderTest {
         when(stmt1RsMetaData.isAutoIncrement(ArgumentMatchers.anyInt())).thenReturn(true);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -568,7 +515,6 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(metaData.getIndexInfo(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())).thenReturn(rs5);
         when(rs5.next()).thenReturn(true).thenReturn(false);
@@ -580,15 +526,11 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData5.getColumnLabel(2)).thenReturn("TABLE_NAME");
         when(rsMetaData5.getColumnName(2)).thenReturn("TABLE_NAME");
         when(rs5.getString(2)).thenReturn(DdlReaderTestConstants.TESTNAME);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         doReturn(1).when(spyTemplate).queryForInt(ArgumentMatchers.anyString(), (Object) ArgumentMatchers.any());
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -607,7 +549,6 @@ class MsSql2000DdlReaderTest {
         testColumn.setPrecisionRadix(10);
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(DdlReaderTestConstants.COLUMN_DEF_TEST_VALUE);
@@ -616,19 +557,15 @@ class MsSql2000DdlReaderTest {
         platformColumn.setType(platformColumnType);
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("mssql2000", platformColumn);
-
         IndexColumn testIndexColumn = new IndexColumn();
         testIndexColumn.setOrdinalPosition(0);
         NonUniqueIndex testIndex = new NonUniqueIndex();
         testIndex.setName("testIndexName");
         testIndex.addColumn(testIndexColumn);
-
         testColumn.addPlatformColumn(platformColumn);
-
         expectedTable.addColumn(testColumn);
         expectedTable.addIndex(testIndex);
         assertEquals(expectedTable, testTable);
-
     }
 
     @ParameterizedTest
@@ -654,12 +591,9 @@ class MsSql2000DdlReaderTest {
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         MsSqlJdbcSqlTemplate testTemplate = new MsSqlJdbcSqlTemplate(dataSource, settings, databaseInfo);
-
         MsSql2000DatabasePlatform platform = new MsSql2000DatabasePlatform(dataSource, settings);
-
         // Spied Components
         MsSql2000DatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -667,32 +601,26 @@ class MsSql2000DdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         MsSqlDdlReader testReader = new MsSqlDdlReader(spyPlatform);
         MsSqlDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
         ResultSet rs3 = mock(ResultSet.class);
         ResultSet rs4 = mock(ResultSet.class);
         ResultSet rs5 = mock(ResultSet.class);
-
         ResultSet stmtrs1 = mock(ResultSet.class);
         ResultSet stmtrs2 = mock(ResultSet.class);
         ResultSet stmtrs3 = mock(ResultSet.class);
         ResultSet stmtrs4 = mock(ResultSet.class);
-
         ResultSetMetaData rsMetaData = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData2 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData3 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData4 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData5 = mock(ResultSetMetaData.class);
-
         PreparedStatement stmt1 = mock(PreparedStatement.class);
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         ResultSetMetaData stmt1RsMetaData = mock(ResultSetMetaData.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplate()).thenReturn(spyTemplate);
@@ -721,7 +649,6 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -754,16 +681,13 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData2.getColumnLabel(9)).thenReturn("DECIMAL_DIGITS");
         when(rsMetaData2.getColumnName(9)).thenReturn("DECIMAL_DIGITS");
         when(rs2.getInt(9)).thenReturn(decimalDigits);
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         // when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
         // .thenReturn(stmt4);
-
         // THIS SECTION IS NEW. This is because the msSqlDdlReader uses the
         // determineAutoIncrementFromResultSetMetaData
         // method, and this changes several things when testing
@@ -773,7 +697,6 @@ class MsSql2000DdlReaderTest {
         when(stmt1RsMetaData.isAutoIncrement(ArgumentMatchers.anyInt())).thenReturn(true);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -792,7 +715,6 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(metaData.getIndexInfo(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())).thenReturn(rs5);
         when(rs5.next()).thenReturn(true).thenReturn(false);
@@ -804,15 +726,11 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData5.getColumnLabel(2)).thenReturn("TABLE_NAME");
         when(rsMetaData5.getColumnName(2)).thenReturn("TABLE_NAME");
         when(rs5.getString(2)).thenReturn(DdlReaderTestConstants.TESTNAME);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         doReturn(1).when(spyTemplate).queryForInt(ArgumentMatchers.anyString(), (Object) ArgumentMatchers.any());
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -841,7 +759,6 @@ class MsSql2000DdlReaderTest {
         testColumn.setPrecisionRadix(10);
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(columnDef);
@@ -850,19 +767,15 @@ class MsSql2000DdlReaderTest {
         platformColumn.setType(platformColumnType);
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("mssql2000", platformColumn);
-
         IndexColumn testIndexColumn = new IndexColumn();
         testIndexColumn.setOrdinalPosition(0);
         NonUniqueIndex testIndex = new NonUniqueIndex();
         testIndex.setName("testIndexName");
         testIndex.addColumn(testIndexColumn);
-
         testColumn.addPlatformColumn(platformColumn);
-
         expectedTable.addColumn(testColumn);
         expectedTable.addIndex(testIndex);
         assertEquals(expectedTable, testTable);
-
     }
 
     @Test
@@ -873,11 +786,9 @@ class MsSql2000DdlReaderTest {
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         MsSqlJdbcSqlTemplate testTemplate = new MsSqlJdbcSqlTemplate(dataSource, settings, databaseInfo);
         MsSql2000DatabasePlatform platform = new MsSql2000DatabasePlatform(dataSource, settings);
-
         // Spied Components
         MsSql2000DatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -885,32 +796,26 @@ class MsSql2000DdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         MsSqlDdlReader testReader = new MsSqlDdlReader(spyPlatform);
         MsSqlDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
         ResultSet rs3 = mock(ResultSet.class);
         ResultSet rs4 = mock(ResultSet.class);
         ResultSet rs5 = mock(ResultSet.class);
-
         ResultSet stmtrs1 = mock(ResultSet.class);
         ResultSet stmtrs2 = mock(ResultSet.class);
         ResultSet stmtrs3 = mock(ResultSet.class);
         ResultSet stmtrs4 = mock(ResultSet.class);
-
         ResultSetMetaData rsMetaData = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData2 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData3 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData4 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData5 = mock(ResultSetMetaData.class);
-
         PreparedStatement stmt1 = mock(PreparedStatement.class);
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         ResultSetMetaData stmt1RsMetaData = mock(ResultSetMetaData.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplate()).thenReturn(spyTemplate);
@@ -939,7 +844,6 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -969,17 +873,14 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData2.getColumnLabel(8)).thenReturn("COLUMN_SIZE");
         when(rsMetaData2.getColumnName(8)).thenReturn("COLUMN_SIZE");
         when(rs2.getString(8)).thenReturn("63");
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         //
         when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
                 .thenReturn(stmt4);
-
         // THIS SECTION IS NEW. This is because the msSqlDdlReader uses the
         // determineAutoIncrementFromResultSetMetaData
         // method, and this changes several things when testing
@@ -989,7 +890,6 @@ class MsSql2000DdlReaderTest {
         when(stmt1RsMetaData.isAutoIncrement(ArgumentMatchers.anyInt())).thenReturn(true);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -1008,7 +908,6 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(metaData.getIndexInfo(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())).thenReturn(rs5);
         when(rs5.next()).thenReturn(true).thenReturn(false);
@@ -1020,13 +919,10 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData5.getColumnLabel(2)).thenReturn("TABLE_NAME");
         when(rsMetaData5.getColumnName(2)).thenReturn("TABLE_NAME");
         when(rs5.getString(2)).thenReturn(DdlReaderTestConstants.TESTNAME);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -1045,7 +941,6 @@ class MsSql2000DdlReaderTest {
         testColumn.setPrecisionRadix(10);
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(DdlReaderTestConstants.COLUMN_DEF_TEST_VALUE);
@@ -1054,21 +949,17 @@ class MsSql2000DdlReaderTest {
         platformColumn.setType("VARCHAR");
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("mssql2000", platformColumn);
-
         IndexColumn testIndexColumn = new IndexColumn();
         testIndexColumn.setOrdinalPosition(0);
         NonUniqueIndex testIndex = new NonUniqueIndex();
         testIndex.setName("testIndexName");
         testIndex.addColumn(testIndexColumn);
-
         testColumn.addPlatformColumn(platformColumn);
-
         expectedTable.addColumn(testColumn);
         expectedTable.addIndex(testIndex);
         assertEquals(expectedTable, testTable);
-
     }
-    
+
     @ParameterizedTest
     // 1010 is a code size for null size and null scale. If scale is set, it
     // automatically sets the size to 0 instead of null, and for the test
@@ -1090,12 +981,9 @@ class MsSql2000DdlReaderTest {
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-
         // "Real" Components
         MsSqlJdbcSqlTemplate testTemplate = new MsSqlJdbcSqlTemplate(dataSource, settings, databaseInfo);
-
         MsSql2000DatabasePlatform platform = new MsSql2000DatabasePlatform(dataSource, settings);
-
         // Spied Components
         MsSql2000DatabasePlatform spyPlatform = Mockito.spy(platform);
         testTemplate.setIsolationLevel(1);
@@ -1103,32 +991,26 @@ class MsSql2000DdlReaderTest {
         spyTemplate.setIsolationLevel(1);
         MsSqlDdlReader testReader = new MsSqlDdlReader(spyPlatform);
         MsSqlDdlReader spyReader = Mockito.spy(testReader);
-
         // Result Set Mocks
         ResultSet rs = mock(ResultSet.class);
         ResultSet rs2 = mock(ResultSet.class);
         ResultSet rs3 = mock(ResultSet.class);
         ResultSet rs4 = mock(ResultSet.class);
         ResultSet rs5 = mock(ResultSet.class);
-
         ResultSet stmtrs1 = mock(ResultSet.class);
         ResultSet stmtrs2 = mock(ResultSet.class);
         ResultSet stmtrs3 = mock(ResultSet.class);
         ResultSet stmtrs4 = mock(ResultSet.class);
-
         ResultSetMetaData rsMetaData = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData2 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData3 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData4 = mock(ResultSetMetaData.class);
         ResultSetMetaData rsMetaData5 = mock(ResultSetMetaData.class);
-
         PreparedStatement stmt1 = mock(PreparedStatement.class);
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-
         ResultSetMetaData stmt1RsMetaData = mock(ResultSetMetaData.class);
-
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplate()).thenReturn(spyTemplate);
@@ -1157,7 +1039,6 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData.getColumnLabel(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rsMetaData.getColumnName(5)).thenReturn(DdlReaderTestConstants.REMARKS);
         when(rs.getString(5)).thenReturn(DdlReaderTestConstants.REMARKS_TEST_VALUE);
-
         when(metaData.getColumns(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.any())).thenReturn(rs2);
         when(rs2.next()).thenReturn(true).thenReturn(false);
@@ -1190,16 +1071,13 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData2.getColumnLabel(9)).thenReturn("DECIMAL_DIGITS");
         when(rsMetaData2.getColumnName(9)).thenReturn("DECIMAL_DIGITS");
         when(rs2.getInt(9)).thenReturn(decimalDigits);
-
         when(metaData.getImportedKeys(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
                 .thenReturn(rs3);
         when(rs3.next()).thenReturn(false);
         when(rs3.getMetaData()).thenReturn(rsMetaData3);
         when(rsMetaData3.getColumnCount()).thenReturn(0);
-
         // when(connection.prepareStatement(ArgumentMatchers.anyString())).thenReturn(stmt1).thenReturn(stmt2).thenReturn(stmt3)
         // .thenReturn(stmt4);
-
         // THIS SECTION IS NEW. This is because the msSqlDdlReader uses the
         // determineAutoIncrementFromResultSetMetaData
         // method, and this changes several things when testing
@@ -1209,7 +1087,6 @@ class MsSql2000DdlReaderTest {
         when(stmt1RsMetaData.isAutoIncrement(ArgumentMatchers.anyInt())).thenReturn(true);
         when(stmtrs1.next()).thenReturn(true).thenReturn(false);
         when(stmtrs1.getString(1)).thenReturn(DdlReaderTestConstants.TESTNAMECAPS);
-
         when(stmt2.executeQuery()).thenReturn(stmtrs2);
         when(stmtrs2.next()).thenReturn(true).thenReturn(false);
         when(stmtrs2.getString(1)).thenReturn("NOTRIGHTNAME");
@@ -1228,7 +1105,6 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData4.getColumnName(3)).thenReturn(DdlReaderTestConstants.PK_NAME);
         when(rs4.getString(3)).thenReturn(DdlReaderTestConstants.COLUMN_NAME_TEST_VALUE);
         when(rs4.next()).thenReturn(true).thenReturn(false);
-
         when(metaData.getIndexInfo(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                 ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())).thenReturn(rs5);
         when(rs5.next()).thenReturn(true).thenReturn(false);
@@ -1240,15 +1116,11 @@ class MsSql2000DdlReaderTest {
         when(rsMetaData5.getColumnLabel(2)).thenReturn("TABLE_NAME");
         when(rsMetaData5.getColumnName(2)).thenReturn("TABLE_NAME");
         when(rs5.getString(2)).thenReturn(DdlReaderTestConstants.TESTNAME);
-
         when(stmt3.executeQuery()).thenReturn(stmtrs3);
         when(stmtrs3.next()).thenReturn(true);
-
         when(stmt4.executeQuery()).thenReturn(stmtrs4);
         when(stmtrs4.next()).thenReturn(true);
-
         doReturn(1).when(spyTemplate).queryForInt(ArgumentMatchers.anyString(), (Object) ArgumentMatchers.any());
-
         Table testTable = spyReader.readTable(DdlReaderTestConstants.CATALOG, DdlReaderTestConstants.SCHEMA, DdlReaderTestConstants.TABLE);
         Table expectedTable = new Table();
         expectedTable.setName(DdlReaderTestConstants.TESTNAME);
@@ -1277,7 +1149,6 @@ class MsSql2000DdlReaderTest {
         testColumn.setPrecisionRadix(10);
         testColumn.setPrimaryKeySequence(1);
         testColumn.setPrimaryKey(true);
-
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setDecimalDigits(-1);
         platformColumn.setDefaultValue(columnDef);
@@ -1286,19 +1157,15 @@ class MsSql2000DdlReaderTest {
         platformColumn.setType(platformColumnType);
         HashMap<String, PlatformColumn> expectedPlatformColumn = new HashMap<String, PlatformColumn>();
         expectedPlatformColumn.put("mssql2000", platformColumn);
-
         IndexColumn testIndexColumn = new IndexColumn();
         testIndexColumn.setOrdinalPosition(0);
         NonUniqueIndex testIndex = new NonUniqueIndex();
         testIndex.setName("testIndexName");
         testIndex.addColumn(testIndexColumn);
-
         testColumn.addPlatformColumn(platformColumn);
-
         expectedTable.addColumn(testColumn);
         expectedTable.addIndex(testIndex);
         assertEquals(expectedTable, testTable);
-
     }
 
     protected String getResultSetSchemaName() {
