@@ -22,6 +22,7 @@ package org.jumpmind.db.platform.mssql;
 
 import java.sql.Types;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -34,19 +35,50 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.SQLXML, "XML", Types.SQLXML);
     }
 
-    protected void dropDefaultConstraint(String tableName, String columnName, StringBuilder ddl) {
-        println("BEGIN                                                                                        ", ddl);
-        println("DECLARE @sql NVARCHAR(2000)                                                                  ", ddl);
-        println(String.format("SELECT TOP 1 @sql = N'alter table \"%s\" drop constraint ['+dc.NAME+N']'                     ", tableName), ddl);
-        println("FROM sys.default_constraints dc                                                              ", ddl);
-        println("JOIN sys.columns c                                                                           ", ddl);
-        println("    ON c.default_object_id = dc.object_id                                                    ", ddl);
-        println("WHERE                                                                                        ", ddl);
-        println(String.format("    dc.parent_object_id = OBJECT_ID('%s')                                                    ", tableName), ddl);
-        println(String.format("AND c.name = N'%s'                                                                           ", columnName), ddl);
-        println("IF @@ROWCOUNT > 0                                                                            ", ddl);
-        println("  EXEC (@sql)                                                                                ", ddl);
-        println("END                                                                                          ", ddl);
+    protected void dropDefaultConstraint(Table table, String columnName, StringBuilder ddl) {
+        String catalog = table.getCatalog();
+        String schema = table.getSchema();
+        println("BEGIN", ddl);
+        println("DECLARE @sql NVARCHAR(2000)", ddl);
+        ddl.append("SELECT @sql = N'alter table ");
+        if (StringUtils.isNotBlank(catalog)) {
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
+        }
+        if (StringUtils.isNotBlank(schema)) {
+            printIdentifier(schema, ddl);
+            ddl.append(".");
+        }
+        printIdentifier(table.getName(), ddl);
+        println(" drop constraint ['+cons.NAME+N']'", ddl);
+        ddl.append("from ");
+        if (StringUtils.isNotBlank(catalog)) {
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
+        }
+        println("sys.default_constraints cons", ddl);
+        ddl.append("join ");
+        if (StringUtils.isNotBlank(catalog)) {
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
+        }
+        println("sys.syscolumns cols on cons.parent_object_id = cols.id and cons.parent_column_id = cols.colid", ddl);
+        ddl.append("join ");
+        if (StringUtils.isNotBlank(catalog)) {
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
+        }
+        println("sys.sysobjects objs on objs.id=cons.parent_object_id", ddl);
+        ddl.append("join ");
+        if (StringUtils.isNotBlank(catalog)) {
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
+        }
+        println("sys.schemas sch on sch.schema_id = objs.uid", ddl);
+        println("WHERE cols.name='"+columnName+"' and objs.name='"+table.getName()+"' and sch.name='"+schema+"'", ddl);
+        println("IF @@ROWCOUNT > 0", ddl);
+        println("  EXEC (@sql)", ddl);
+        println("END", ddl);
         printEndOfStatement(ddl);
     }
 
@@ -56,26 +88,81 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
         String columnName = getColumnName(sourceColumn);
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
+        String catalog = sourceTable.getCatalog();
+        String schema = sourceTable.getSchema();
         println("BEGIN", ddl);
         println("  DECLARE @" + tableNameVar + " nvarchar(256), @" + constraintNameVar
                 + " nvarchar(256)", ddl);
         println("  DECLARE refcursor CURSOR FOR", ddl);
-        println("  SELECT object_name(cons.parent_object_id) tablename, cons.name constraintname FROM sys.default_constraints cons ",
-                ddl);
-        println("    WHERE  cons.parent_column_id = (SELECT colid FROM syscolumns WHERE id = object_id(", ddl);
+        println("  select objs.name tablename, cons.name constraintname ", ddl);
+        ddl.append("   from ");
+        if (StringUtils.isNotBlank(catalog)) {
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
+        }
+        println("sys.default_constraints cons", ddl);
+        ddl.append("join ");
+        if (StringUtils.isNotBlank(catalog)) {
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
+        }
+        println("sys.sysobjects objs on cons.parent_object_id=objs.id", ddl);
+        ddl.append("join ");
+        if (StringUtils.isNotBlank(catalog)) {
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
+        }
+        println("sys.schemas sch on objs.uid=sch.schema_id", ddl);
+        println("    where cons.parent_column_id=(", ddl);
+        println("    SELECT colid", ddl);
+        ddl.append("    FROM ");
+        if (StringUtils.isNotBlank(catalog)) {
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
+        }
+        println("sys.syscolumns cols", ddl);
+        ddl.append(" JOIN ");
+        if (StringUtils.isNotBlank(catalog)) {
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
+        }
+        println("sys.sysobjects objs on objs.id=cols.id", ddl);
+        ddl.append(" JOIN ");
+        if (StringUtils.isNotBlank(catalog)) {
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
+        }
+        println("sys.schemas sch on sch.schema_id=objs.uid", ddl);
+        ddl.append("WHERE objs.name = ");
         printAlwaysSingleQuotedIdentifier(tableName, ddl);
-        ddl.append(") AND name = ");
+        ddl.append(" and cols.name = ");
         printAlwaysSingleQuotedIdentifier(columnName, ddl);
-        println(") AND", ddl);
-        ddl.append("          object_name(cons.parent_object_id) = ");
+        if (StringUtils.isNotBlank(schema)) {
+            ddl.append(" AND sch.name=");
+            printAlwaysSingleQuotedIdentifier(schema, ddl);
+        }
+        println(")", ddl);
+        ddl.append(" AND objs.name=");
         printAlwaysSingleQuotedIdentifier(tableName, ddl);
+        ddl.append(" AND sch.name=");
+        printAlwaysSingleQuotedIdentifier(schema, ddl);
+        println("", ddl);
         println("  OPEN refcursor", ddl);
         println("  FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar,
                 ddl);
         println("  WHILE @@FETCH_STATUS = 0", ddl);
         println("    BEGIN", ddl);
-        println("      EXEC ('ALTER TABLE '+@" + tableNameVar + "+' DROP CONSTRAINT '+@"
-                + constraintNameVar + ")", ddl);
+        ddl.append("      EXEC ('ALTER TABLE ");
+        if (StringUtils.isNotBlank(catalog)) {
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
+        }
+        if (StringUtils.isNotBlank(schema)) {
+            printIdentifier(schema, ddl);
+            ddl.append(".");
+        }
+        ddl.append("'+@" + tableNameVar + "+' DROP CONSTRAINT '+@" + constraintNameVar + ")");
+        println("", ddl);
         println("      FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @"
                 + constraintNameVar, ddl);
         println("    END", ddl);
