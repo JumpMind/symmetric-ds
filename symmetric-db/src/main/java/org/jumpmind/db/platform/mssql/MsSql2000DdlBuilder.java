@@ -166,11 +166,17 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         String tableName = getTableName(table.getName());
+        String catalog = table.getCatalog();
         String schema = table.getSchema();
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
         writeQuotationOnStatement(ddl);
-        ddl.append("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'U' AND name = ");
+        ddl.append("IF EXISTS (SELECT 1 FROM ");
+        if (StringUtils.isNotBlank(catalog)) {
+        	printIdentifier(catalog, ddl);
+        	ddl.append(".");
+        }
+        ddl.append("dbo.sysobjects WHERE type = 'U' AND name = ");
         printAlwaysSingleQuotedIdentifier(tableName, ddl);
         println(")", ddl);
         println("BEGIN", ddl);
@@ -178,28 +184,40 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                 + " nvarchar(256)", ddl);
         println("  DECLARE refcursor CURSOR FOR", ddl);
         println("  SELECT object_name(objs.parent_obj) tablename, objs.name constraintname", ddl);
-        println("    FROM sysobjects objs", ddl);
+        ddl.append("    FROM ");
+        if (StringUtils.isNotBlank(catalog)) {
+        	printIdentifier(catalog, ddl);
+        	ddl.append(".");
+        }
+        ddl.append("dbo.sysobjects objs");
         ddl.append("    WHERE objs.xtype in ('C','D','F','UQ') AND object_name(objs.parent_obj) = ");
         printAlwaysSingleQuotedIdentifier(tableName, ddl);
+        println("", ddl);
         println("  OPEN refcursor", ddl);
         println("  FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar,
                 ddl);
         println("  WHILE @@FETCH_STATUS = 0", ddl);
         println("    BEGIN", ddl);
-        println("      EXEC ('ALTER TABLE '+@" + tableNameVar + "+' DROP CONSTRAINT '+@"
-                + constraintNameVar + ")", ddl);
+        ddl.append("      EXEC ('ALTER TABLE ");
+        if (StringUtils.isNotBlank(catalog)) {
+        	printIdentifier(catalog, ddl);
+        	ddl.append(".");
+        }
+        if (StringUtils.isNotBlank(schema)) {
+        	printIdentifier(schema, ddl);
+        	ddl.append(".");
+        }
+        ddl.append("'+@" + tableNameVar + "+' DROP CONSTRAINT '+@" + constraintNameVar + ")");
+        println("", ddl);
         println("      FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar,
                 ddl);
         println("    END", ddl);
         println("  CLOSE refcursor", ddl);
         println("  DEALLOCATE refcursor", ddl);
         ddl.append("  DROP TABLE ");
-        if (StringUtils.isNotBlank(schema)) {
-            printIdentifier(schema, ddl);
-            ddl.append(".");
-        }
-        printlnIdentifier(tableName, ddl);
-        ddl.append("END");
+        ddl.append(getFullyQualifiedTableNameShorten(table));
+        println("", ddl);
+        println("END", ddl);
         printEndOfStatement(ddl);
     }
 
@@ -295,7 +313,13 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey,
             StringBuilder ddl) {
         String constraintName = getForeignKeyName(table, foreignKey);
-        ddl.append("IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'F' AND name = ");
+        String catalog = table.getCatalog();
+        ddl.append("IF EXISTS (SELECT 1 FROM ");
+        if (StringUtils.isNotBlank(catalog)) {
+        	printIdentifier(catalog, ddl);
+        	ddl.append(".");
+        }
+        ddl.append("sys.sysobjects WHERE type = 'F' AND name = ");
         printAlwaysSingleQuotedIdentifier(constraintName, ddl);
         println(")", ddl);
         printIndent(ddl);
@@ -550,7 +574,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
             RemoveColumnChange change, StringBuilder ddl) {
         boolean hasDefault = change.getColumn().getParsedDefaultValue() != null;
         if (hasDefault) {
-            dropDefaultConstraint(change.getChangedTable().getName(), change.getColumn().getName(), ddl);
+            dropDefaultConstraint(change.getChangedTable(), change.getColumn().getName(), ddl);
         }
         ddl.append("ALTER TABLE ");
         ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
@@ -568,6 +592,8 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
             RemovePrimaryKeyChange change, StringBuilder ddl) {
         // TODO: this would be easier when named primary keys are supported
         // because then we can use ALTER TABLE DROP
+    	String catalog = change.getChangedTable().getCatalog();
+    	String schema = change.getChangedTable().getSchema();
         String tableName = getTableName(change.getChangedTable().getName());
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
@@ -575,17 +601,39 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         println("  DECLARE @" + tableNameVar + " nvarchar(256), @" + constraintNameVar
                 + " nvarchar(256)", ddl);
         println("  DECLARE refcursor CURSOR FOR", ddl);
-        println("  SELECT object_name(objs.parent_obj) tablename, objs.name constraintname", ddl);
-        println("    FROM sysobjects objs", ddl);
-        ddl.append("    WHERE objs.xtype = 'PK' AND object_name(objs.parent_obj) = ");
+        println("  SELECT parentobjs.name tablename, objs.name constraintname", ddl);
+        ddl.append("    FROM ");
+        if (StringUtils.isNotBlank(catalog)) {
+        	printIdentifier(catalog, ddl);
+        	ddl.append(".");
+        }
+        println("dbo.sysobjects objs", ddl);
+        ddl.append("    JOIN ");
+        if (StringUtils.isNotBlank(catalog)) {
+        	printIdentifier(catalog, ddl);
+        	ddl.append(".");
+        }
+        println("dbo.sysobjects parentobjs on objs.parent_obj=parentobjs.id", ddl);
+        ddl.append("    WHERE objs.xtype = 'PK' AND parentobjs.name = ");
         printAlwaysSingleQuotedIdentifier(tableName, ddl);
+        println("", ddl);
         println("  OPEN refcursor", ddl);
         println("  FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar,
                 ddl);
         println("  WHILE @@FETCH_STATUS = 0", ddl);
         println("    BEGIN", ddl);
-        println("      EXEC ('ALTER TABLE '+@" + tableNameVar + "+' DROP CONSTRAINT '+@"
-                + constraintNameVar + ")", ddl);
+        
+        ddl.append("      EXEC ('ALTER TABLE ");
+        if (StringUtils.isNotBlank(catalog)) {
+        	printIdentifier(catalog, ddl);
+        	ddl.append(".");
+        }
+        if (StringUtils.isNotBlank(schema)) {
+        	printIdentifier(schema, ddl);
+        	ddl.append(".");
+        }
+        ddl.append("'+@" + tableNameVar + "+' DROP CONSTRAINT '+@" + constraintNameVar + ")");
+        println("", ddl);
         println("      FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar,
                 ddl);
         println("    END", ddl);
@@ -596,17 +644,17 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
-    protected void dropDefaultConstraint(String tableName, String columnName, StringBuilder ddl) {
+    protected void dropDefaultConstraint(Table table, String columnName, StringBuilder ddl) {
         println("BEGIN                                                                                        ", ddl);
         println("DECLARE @sql NVARCHAR(2000)                                                                  ", ddl);
-        println(String.format("SELECT TOP 1 @sql = N'alter table \"%s\" drop constraint ['+objs.NAME+N']'                     ", tableName), ddl);
+        println(String.format("SELECT TOP 1 @sql = N'alter table \"%s\" drop constraint ['+objs.NAME+N']'                     ", table.getName()), ddl);
         println("FROM dbo.sysconstraints dc                                                              ", ddl);
         println("JOIN dbo.sysobjects objs                                                                          ", ddl);
         println("    ON objs.id = dc.constid                                                     ", ddl);
         println("JOIN sys.columns c                                                                           ", ddl);
         println("    ON c.default_object_id = dc.colid                                                    ", ddl);
         println("WHERE                                                                                        ", ddl);
-        println(String.format("    dc.id = OBJECT_ID('%s')                                                    ", tableName), ddl);
+        println(String.format("    dc.id = OBJECT_ID('%s')                                                    ", table.getName()), ddl);
         println(String.format("AND c.name = N'%s'                                                                           ", columnName), ddl);
         println("IF @@ROWCOUNT > 0                                                                            ", ddl);
         println("  EXEC (@sql)                                                                                ", ddl);
