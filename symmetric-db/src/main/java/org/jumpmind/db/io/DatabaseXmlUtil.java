@@ -511,6 +511,18 @@ public class DatabaseXmlUtil {
         return false;
     }
 
+    public static boolean isMySql(Column column) {
+        if (column.getPlatformColumns() != null) {
+            Collection<PlatformColumn> platformColumns = column.getPlatformColumns().values();
+            for (PlatformColumn col : platformColumns) {
+                if (col.getName().equals(DatabaseNamesConstants.MYSQL)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public static void write(Table table, Writer output) {
         try {
             output.write("\t<table name=\"" + StringEscapeUtils.escapeXml10(table.getName()) + "\"");
@@ -563,7 +575,8 @@ public class DatabaseXmlUtil {
                         output.write("\t\t\t<platform-column name=\""
                                 + platformColumn.getName() + "\"");
                         output.write(" type=\"" + StringEscapeUtils.escapeXml10(platformColumn.getType()) + "\"");
-                        if (platformColumn.getSize() > 0) {
+                        if (platformColumn.getSize() > 0 || (platformColumn.getSize() == 0 && isMySql(column)
+                                && column.getMappedType().equalsIgnoreCase("varchar"))) {
                             output.write(" size=\"" + platformColumn.getSize() + "\"");
                         }
                         if (platformColumn.getDecimalDigits() > 0) {
