@@ -213,8 +213,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             log.debug("Generated create sql: \n{}", createSql);
         }
         String delimiter = getDdlBuilder().getDatabaseInfo().getSqlCommandDelimiter();
-        new SqlScript(createSql, getSqlTemplate(), !continueOnError, false, false, delimiter, null)
-                .execute(getDatabaseInfo().isRequiresAutoCommitForDdl());
+        new SqlScript(createSql, getSqlTemplate(), !continueOnError, false, false,
+                getDatabaseInfo().isTriggersContainJava(), delimiter, null)
+                        .execute(getDatabaseInfo().isRequiresAutoCommitForDdl());
     }
 
     public void alterDatabase(Database desiredDatabase, boolean continueOnError, IAlterDatabaseInterceptor[] interceptors) {

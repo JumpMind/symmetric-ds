@@ -72,4 +72,5 @@ final public class DatabaseNamesConstants {
     public final static String COSMOS = "cosmos";
     public final static String S3 = "S3";
     public final static String SINGLE_STORE = "singlestore";
+    public final static String OPENEDGE = "openedge";
 }

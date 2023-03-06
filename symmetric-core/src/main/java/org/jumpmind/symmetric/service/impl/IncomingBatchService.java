@@ -278,7 +278,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     public void insertIncomingBatch(ISqlTransaction transaction, IncomingBatch batch) {
         if (batch.isPersistable()) {
             boolean alreadyExists = false;
-            if (symmetricDialect.getName().equals(DatabaseNamesConstants.REDSHIFT)) {
+            if (symmetricDialect.getName().equals(DatabaseNamesConstants.REDSHIFT)
+                    || symmetricDialect.getDriverName().equalsIgnoreCase(DatabaseNamesConstants.OPENEDGE)) {
                 if (findIncomingBatch(batch.getBatchId(), batch.getNodeId()) != null) {
                     alreadyExists = true;
                 }

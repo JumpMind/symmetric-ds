@@ -34,6 +34,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -93,6 +96,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     protected boolean supportsTransactionViews = false;
     protected boolean supportsSubselectsInDelete = true;
     protected boolean supportsSubselectsInUpdate = true;
+    protected boolean supportsParametersInSelect = true;
     protected Map<String, String> sqlReplacementTokens = new HashMap<String, String>();
     protected String tablePrefixLowerCase;
     protected boolean isSpatialTypesEnabled = true;
@@ -530,14 +534,26 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     log.debug("Alter SQL generated: {}", alterSql);
                     ISqlResultsListener resultsInstallListener = resultsListener;
                     List<IDatabaseInstallStatementListener> installListeners = extensionService.getExtensionPointList(IDatabaseInstallStatementListener.class);
+                    boolean triggersContainJava = platform.getDatabaseInfo().isTriggersContainJava();
                     if (installListeners != null && installListeners.size() > 0) {
-                        int totalStatements = SqlScript.calculateTotalStatements(alterSql, delimiter);
+                        int totalStatements = SqlScript.calculateTotalStatements(alterSql, delimiter, triggersContainJava);
                         resultsInstallListener = new LogSqlResultsInstallListener(parameterService.getEngineName(),
                                 totalStatements, extensionService.getExtensionPointList(IDatabaseInstallStatementListener.class));
                     }
-                    SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
+                    DataSource dataSource = this.platform.getDataSource();
+                    BasicDataSource dbcp = (BasicDataSource) dataSource;
+                    int activeConnections = dbcp.getNumActive();
+                    int idleConnections = dbcp.getNumIdle();
+                    log.info("Before pause, active = " + activeConnections + ", idle = " + idleConnections);
+                    activeConnections = dbcp.getNumActive();
+                    idleConnections = dbcp.getNumIdle();
+                    log.info("After pause, active = " + activeConnections + ", idle = " + idleConnections);
+                    SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, false, false, triggersContainJava, delimiter, null);
                     script.setListener(resultsInstallListener);
                     script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
+                    activeConnections = dbcp.getNumActive();
+                    idleConnections = dbcp.getNumIdle();
+                    log.info("After execution, active = " + activeConnections + ", idle = " + idleConnections);
                     for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
                         String sql = listener.afterUpgrade(this, this.parameterService.getTablePrefix(), modelFromXml);
                         script = new SqlScript(sql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
@@ -671,6 +687,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
      */
     public boolean supportsSubselectsInUpdate() {
         return supportsSubselectsInUpdate;
+    }
+
+    /*
+     * Indicates if this dialect supports parameter markers in select queries.
+     */
+    public boolean supportsParametersInSelect() {
+        return supportsParametersInSelect;
     }
 
     public long insertWithGeneratedKey(String sql, SequenceIdentifier sequenceId) {

@@ -1,0 +1,19 @@
+
+=== Progress OpenEdge
+
+ifndef::pro[]
+Progress OpenEdge is only supported in the professional version of SymmetricDS.
+endif::pro[]
+
+ifdef::pro[]
+
+The Progress OpenEdge JDBC driver is not publicly available, so it is not possible to install the driver files via the `symadmin` command. Instead, to install the driver, copy your `openedge.jar` file into the `lib` sub-directory.
+
+Make sure your user has the DBA privilege, which allows the user to create, access, modify and delete database objects:
+
+[source, SQL]
+----
+GRANT DBA TO SYMMETRIC;
+----
+
+endif::pro[]

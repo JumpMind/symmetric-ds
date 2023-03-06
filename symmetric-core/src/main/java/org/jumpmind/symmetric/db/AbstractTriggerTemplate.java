@@ -910,6 +910,7 @@ abstract public class AbstractTriggerTemplate {
             templateToUse = emptyColumnTemplate;
         }
         if (templateToUse != null) {
+            templateToUse = adjustColumnTemplate(templateToUse, column.getMappedTypeCode());
             templateToUse = templateToUse.trim();
         } else {
             throw new NotImplementedException("Table " + table + " column " + column);
@@ -949,6 +950,10 @@ abstract public class AbstractTriggerTemplate {
     protected boolean noDateColumnTemplate() {
         return dateColumnTemplate == null || dateColumnTemplate.equals("null")
                 || dateColumnTemplate.trim().equals("");
+    }
+
+    protected String adjustColumnTemplate(String template, int typeCode) {
+        return template;
     }
 
     protected String buildKeyVariablesDeclare(Column[] columns, String prefix) {
@@ -1096,10 +1101,10 @@ abstract public class AbstractTriggerTemplate {
     }
 
     protected static class ColumnString {
-        String columnString;
-        boolean isBlobClob = false;
+        public String columnString;
+        public boolean isBlobClob = false;
 
-        ColumnString(String columnExpression, boolean isBlobClob) {
+        public ColumnString(String columnExpression, boolean isBlobClob) {
             this.columnString = columnExpression;
             this.isBlobClob = isBlobClob;
         }

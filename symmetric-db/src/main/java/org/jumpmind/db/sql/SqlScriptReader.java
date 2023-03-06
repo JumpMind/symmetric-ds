@@ -38,9 +38,15 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
     private Map<String, String> replacementTokens;
     private boolean usePrefixSuffixForReplacementTokens = false;
     private boolean stripOutBlockComments = false;
+    private boolean triggersContainJava = false;
 
     public SqlScriptReader(Reader in) {
+        this(in, false);
+    }
+
+    public SqlScriptReader(Reader in, boolean triggersContainJava) {
         super(in);
+        this.triggersContainJava = triggersContainJava;
     }
 
     public void setUsePrefixSuffixForReplacementTokens(boolean usePrefixSuffixForReplacementTokens) {
@@ -82,13 +88,22 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
             int checkStatementEndsIndex = 0;
             CheckEndStatus endStatus = new CheckEndStatus();
             if (line != null) {
+                boolean creatingJavaTrigger = false;
                 do {
                     if (sql == null) {
                         sql = new StringBuilder();
                     }
                     sql.append("\n");
                     sql.append(line);
-                    if (checkStatementEnds(endStatus, checkStatementEndsIndex, sql.toString())) {
+                    if (triggersContainJava) {
+                        String trimmedLine = line.trim();
+                        if (!creatingJavaTrigger && StringUtils.startsWithIgnoreCase(trimmedLine, "CREATE TRIGGER")) {
+                            creatingJavaTrigger = true;
+                        } else if (creatingJavaTrigger && StringUtils.startsWithIgnoreCase(trimmedLine, "END")) {
+                            creatingJavaTrigger = false;
+                        }
+                    }
+                    if (!creatingJavaTrigger && checkStatementEnds(endStatus, checkStatementEndsIndex, sql.toString())) {
                         String toExecute = sql.substring(0, sql.lastIndexOf(delimiter));
                         toExecute = prepareForExecute(toExecute);
                         if (StringUtils.isNotBlank(toExecute)) {

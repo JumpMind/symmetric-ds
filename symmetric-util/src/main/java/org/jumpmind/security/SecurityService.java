@@ -465,7 +465,7 @@ public class SecurityService implements ISecurityService {
         } else {
             byte[] password = getKeyStorePassword().getBytes(Charset.defaultCharset());
             for (int i = 0; i < byteSize; i++) {
-                bytes[i] = password[i];
+                bytes[i] = password[i < password.length ? i : password.length - 1];
             }
         }
         return bytes;

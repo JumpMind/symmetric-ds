@@ -57,9 +57,16 @@ public class DataExtractorServiceSqlMap extends AbstractSqlMap {
                 + " loaded_rows = loaded_rows + ?, loaded_millis = loaded_millis + ?, last_loaded_batch_id = ?, "
                 + " last_update_time=? where start_batch_id <= ? and end_batch_id >= ? and node_id=? and load_id=? and source_node_id = ?");
         
+        putSql("updateExtractRequestLoadTimeNoParamsInSelect", "update $(extract_request) set loaded_time = (case when end_batch_id = $(batchId) then now() when 1 = 0 then last_update_time else null end), "
+                + " loaded_rows = loaded_rows + $(rowCount), loaded_millis = loaded_millis + $(loadMillis), last_loaded_batch_id = ?, "
+                + " last_update_time=? where start_batch_id <= ? and end_batch_id >= ? and node_id=? and load_id=? and source_node_id = ?");
+        
         putSql("updateExtractRequestTransferred", "update $(extract_request) set last_transferred_batch_id=?, transferred_rows = transferred_rows + ?, transferred_millis = ?"
                 + " where start_batch_id <= ? and end_batch_id >= ? and node_id=? and load_id=? and (last_transferred_batch_id is null or last_transferred_batch_id < ?) and source_node_id = ?");
 
+        putSql("updateExtractRequestTransferredNoParamsInSelect", "update $(extract_request) set last_transferred_batch_id=?, transferred_rows = transferred_rows + $(rowCount), transferred_millis = ?"
+                + " where start_batch_id <= ? and end_batch_id >= ? and node_id=? and load_id=? and (last_transferred_batch_id is null or last_transferred_batch_id < ?) and source_node_id = ?");
+        
         putSql("restartExtractRequest", "update $(extract_request) set last_transferred_batch_id = null, transferred_rows = 0, transferred_millis = 0, "
                 + "last_loaded_batch_id = null, loaded_rows = 0, loaded_millis = 0, parent_request_id = 0, status = ? "
                 + "where request_id = ? and node_id = ?");

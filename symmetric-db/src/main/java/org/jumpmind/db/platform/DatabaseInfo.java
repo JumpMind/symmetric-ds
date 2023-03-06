@@ -226,6 +226,7 @@ public class DatabaseInfo {
     private boolean zeroDateAllowed;
     private String cteExpression;
     private boolean logBased;
+    private boolean triggersContainJava = false;
 
     /**
      * Creates a new platform info object.
@@ -1323,5 +1324,13 @@ public class DatabaseInfo {
 
     public void setLogBased(boolean logBased) {
         this.logBased = logBased;
+    }
+
+    public boolean isTriggersContainJava() {
+        return triggersContainJava;
+    }
+
+    public void setTriggersContainJava(boolean triggersContainJava) {
+        this.triggersContainJava = triggersContainJava;
     }
 }

@@ -89,10 +89,9 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
 "  data_id not in                                                " + 
 "  (select e.data_id from $(data_event) e where                  " + 
 "  e.data_id between ? and ? and                                 " + 
-"  (e.data_id is null or                                         " + 
 "  e.batch_id in                                                 " + 
 "  (select batch_id from $(outgoing_batch) where                 " + 
-"  status != ?)))                                  " );
+"  status != ?))                                  " );
 
         putSql("selectIncomingBatchRangeSql" ,
 "select node_id, min(batch_id) as min_id, max(batch_id) as max_id from $(incoming_batch) where   " + 
