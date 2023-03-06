@@ -34,9 +34,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.sql.DataSource;
-
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -540,20 +537,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                         resultsInstallListener = new LogSqlResultsInstallListener(parameterService.getEngineName(),
                                 totalStatements, extensionService.getExtensionPointList(IDatabaseInstallStatementListener.class));
                     }
-                    DataSource dataSource = this.platform.getDataSource();
-                    BasicDataSource dbcp = (BasicDataSource) dataSource;
-                    int activeConnections = dbcp.getNumActive();
-                    int idleConnections = dbcp.getNumIdle();
-                    log.info("Before pause, active = " + activeConnections + ", idle = " + idleConnections);
-                    activeConnections = dbcp.getNumActive();
-                    idleConnections = dbcp.getNumIdle();
-                    log.info("After pause, active = " + activeConnections + ", idle = " + idleConnections);
                     SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, false, false, triggersContainJava, delimiter, null);
                     script.setListener(resultsInstallListener);
                     script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
-                    activeConnections = dbcp.getNumActive();
-                    idleConnections = dbcp.getNumIdle();
-                    log.info("After execution, active = " + activeConnections + ", idle = " + idleConnections);
                     for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
                         String sql = listener.afterUpgrade(this, this.parameterService.getTablePrefix(), modelFromXml);
                         script = new SqlScript(sql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
