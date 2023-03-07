@@ -211,6 +211,8 @@ public class DbImport {
 
     protected void importTablesFromXml(InputStream in) {
         XmlDataReader reader = new XmlDataReader(in);
+        reader.setCatalog(catalog);
+        reader.setSchema(schema);
         DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricPlatform, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();

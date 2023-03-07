@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -56,6 +57,9 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
     protected XmlPullParser parser;
     protected Statistics statistics = new Statistics();
     protected List<Object> next = new ArrayList<Object>();
+    // These values will override the specification from the input stream
+    protected String catalog;
+    protected String schema;
 
     public XmlDataReader(InputStream is) {
         this(toReader(is));
@@ -83,8 +87,8 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
             String columnName = null;
             CsvData data = null;
             Table table = null;
-            String catalog = null;
-            String schema = null;
+            String localCatalog = catalog;
+            String localSchema = schema;
             int eventType = parser.next();
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 switch (eventType) {
@@ -138,8 +142,8 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                             next.add(table);
                             Database db = new Database();
                             db.setName("dbimport");
-                            db.setCatalog(catalog);
-                            db.setSchema(schema);
+                            db.setCatalog(localCatalog);
+                            db.setSchema(localSchema);
                             db.addTable(table);
                             String xml = DatabaseXmlUtil.toXml(db);
                             data = new CsvData(DataEventType.CREATE);
@@ -150,9 +154,9 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                                 String attributeName = parser.getAttributeName(i);
                                 String attributeValue = parser.getAttributeValue(i);
                                 if ("catalog".equalsIgnoreCase(attributeName)) {
-                                    catalog = attributeValue;
+                                    localCatalog = StringUtils.isBlank(catalog) ? attributeValue : catalog;
                                 } else if ("schema".equalsIgnoreCase(attributeName)) {
-                                    schema = attributeValue;
+                                    localSchema = StringUtils.isBlank(schema) ? attributeValue : schema;
                                 }
                             }
                         }
@@ -245,4 +249,20 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
         map.put(batch, statistics);
         return map;
     }
+
+	public String getCatalog() {
+		return catalog;
+	}
+
+	public void setCatalog(String catalog) {
+		this.catalog = catalog;
+	}
+
+	public String getSchema() {
+		return schema;
+	}
+
+	public void setSchema(String schema) {
+		this.schema = schema;
+	}
 }
