@@ -173,8 +173,8 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         writeQuotationOnStatement(ddl);
         ddl.append("IF EXISTS (SELECT 1 FROM ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         ddl.append("dbo.sysobjects WHERE type = 'U' AND name = ");
         printAlwaysSingleQuotedIdentifier(tableName, ddl);
@@ -186,8 +186,8 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         println("  SELECT object_name(objs.parent_obj) tablename, objs.name constraintname", ddl);
         ddl.append("    FROM ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         ddl.append("dbo.sysobjects objs");
         ddl.append("    WHERE objs.xtype in ('C','D','F','UQ') AND object_name(objs.parent_obj) = ");
@@ -200,12 +200,12 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         println("    BEGIN", ddl);
         ddl.append("      EXEC ('ALTER TABLE ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         if (StringUtils.isNotBlank(schema)) {
-        	printIdentifier(schema, ddl);
-        	ddl.append(".");
+            printIdentifier(schema, ddl);
+            ddl.append(".");
         }
         ddl.append("'+@" + tableNameVar + "+' DROP CONSTRAINT '+@" + constraintNameVar + ")");
         println("", ddl);
@@ -316,8 +316,8 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         String catalog = table.getCatalog();
         ddl.append("IF EXISTS (SELECT 1 FROM ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         ddl.append("sys.sysobjects WHERE type = 'F' AND name = ");
         printAlwaysSingleQuotedIdentifier(constraintName, ddl);
@@ -592,8 +592,8 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
             RemovePrimaryKeyChange change, StringBuilder ddl) {
         // TODO: this would be easier when named primary keys are supported
         // because then we can use ALTER TABLE DROP
-    	String catalog = change.getChangedTable().getCatalog();
-    	String schema = change.getChangedTable().getSchema();
+        String catalog = change.getChangedTable().getCatalog();
+        String schema = change.getChangedTable().getSchema();
         String tableName = getTableName(change.getChangedTable().getName());
         String tableNameVar = "tn" + createUniqueIdentifier();
         String constraintNameVar = "cn" + createUniqueIdentifier();
@@ -604,14 +604,14 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         println("  SELECT parentobjs.name tablename, objs.name constraintname", ddl);
         ddl.append("    FROM ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         println("dbo.sysobjects objs", ddl);
         ddl.append("    JOIN ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         println("dbo.sysobjects parentobjs on objs.parent_obj=parentobjs.id", ddl);
         ddl.append("    WHERE objs.xtype = 'PK' AND parentobjs.name = ");
@@ -622,15 +622,14 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                 ddl);
         println("  WHILE @@FETCH_STATUS = 0", ddl);
         println("    BEGIN", ddl);
-        
         ddl.append("      EXEC ('ALTER TABLE ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         if (StringUtils.isNotBlank(schema)) {
-        	printIdentifier(schema, ddl);
-        	ddl.append(".");
+            printIdentifier(schema, ddl);
+            ddl.append(".");
         }
         ddl.append("'+@" + tableNameVar + "+' DROP CONSTRAINT '+@" + constraintNameVar + ")");
         println("", ddl);

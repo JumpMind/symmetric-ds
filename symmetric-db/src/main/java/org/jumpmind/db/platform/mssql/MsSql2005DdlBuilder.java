@@ -37,46 +37,46 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
     }
 
     protected void dropDefaultConstraint(Table table, String columnName, StringBuilder ddl) {
-    	String catalog = table.getCatalog();
-    	String schema = table.getSchema();
+        String catalog = table.getCatalog();
+        String schema = table.getSchema();
         println("BEGIN", ddl);
         println("DECLARE @sql NVARCHAR(2000)", ddl);
         ddl.append("SELECT @sql = N'alter table ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         if (StringUtils.isNotBlank(schema)) {
-        	printIdentifier(schema, ddl);
-        	ddl.append(".");
+            printIdentifier(schema, ddl);
+            ddl.append(".");
         }
         printIdentifier(table.getName(), ddl);
         println(" drop constraint ['+cons.NAME+N']'", ddl);
         ddl.append("from ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         println("sys.default_constraints cons", ddl);
         ddl.append("join ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         println("sys.syscolumns cols on cons.parent_object_id = cols.id and cons.parent_column_id = cols.colid", ddl);
         ddl.append("join ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         println("sys.sysobjects objs on objs.id=cons.parent_object_id", ddl);
         ddl.append("join ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         println("sys.schemas sch on sch.schema_id = objs.uid", ddl);
-        println("WHERE cols.name='"+columnName+"' and objs.name='"+table.getName()+"' and sch.name='"+schema+"'", ddl);
+        println("WHERE cols.name='" + columnName + "' and objs.name='" + table.getName() + "' and sch.name='" + schema + "'", ddl);
         println("IF @@ROWCOUNT > 0", ddl);
         println("  EXEC (@sql)", ddl);
         println("END", ddl);
@@ -98,40 +98,40 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
         println("  select objs.name tablename, cons.name constraintname ", ddl);
         ddl.append("   from ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         println("sys.default_constraints cons", ddl);
         ddl.append("join ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         println("sys.sysobjects objs on cons.parent_object_id=objs.id", ddl);
         ddl.append("join ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         println("sys.schemas sch on objs.uid=sch.schema_id", ddl);
         println("    where cons.parent_column_id=(", ddl);
         println("    SELECT colid", ddl);
         ddl.append("    FROM ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         println("sys.syscolumns cols", ddl);
         ddl.append(" JOIN ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         println("sys.sysobjects objs on objs.id=cols.id", ddl);
         ddl.append(" JOIN ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         println("sys.schemas sch on sch.schema_id=objs.uid", ddl);
         ddl.append("WHERE objs.name = ");
@@ -139,8 +139,8 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
         ddl.append(" and cols.name = ");
         printAlwaysSingleQuotedIdentifier(columnName, ddl);
         if (StringUtils.isNotBlank(schema)) {
-        	ddl.append(" AND sch.name=");
-        	printAlwaysSingleQuotedIdentifier(schema, ddl);
+            ddl.append(" AND sch.name=");
+            printAlwaysSingleQuotedIdentifier(schema, ddl);
         }
         println(")", ddl);
         ddl.append(" AND objs.name=");
@@ -155,12 +155,12 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
         println("    BEGIN", ddl);
         ddl.append("      EXEC ('ALTER TABLE ");
         if (StringUtils.isNotBlank(catalog)) {
-        	printIdentifier(catalog, ddl);
-        	ddl.append(".");
+            printIdentifier(catalog, ddl);
+            ddl.append(".");
         }
         if (StringUtils.isNotBlank(schema)) {
-        	printIdentifier(schema, ddl);
-        	ddl.append(".");
+            printIdentifier(schema, ddl);
+            ddl.append(".");
         }
         ddl.append("'+@" + tableNameVar + "+' DROP CONSTRAINT '+@" + constraintNameVar + ")");
         println("", ddl);
