@@ -1291,4 +1291,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public String getCharSetName() {
         return "";
     }
+
+    public boolean supportsParametersInSelect() {
+        return true;
+    }
 }

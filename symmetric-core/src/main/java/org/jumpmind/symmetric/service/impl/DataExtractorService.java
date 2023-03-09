@@ -1420,7 +1420,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     @Override
     public void updateExtractRequestLoadTime(ISqlTransaction transaction, Date loadTime, OutgoingBatch outgoingBatch) {
-        if (symmetricDialect.supportsParametersInSelect()) {
+        if (platform.supportsParametersInSelect()) {
             transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), new Date(),
                     outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0,
                     outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), new Date(), outgoingBatch.getBatchId(),
@@ -1447,7 +1447,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            if (symmetricDialect.supportsParametersInSelect()) {
+            if (platform.supportsParametersInSelect()) {
                 transaction.prepareAndExecute(getSql("updateExtractRequestTransferred"), batch.getBatchId(), batch.getDataRowCount(), transferMillis,
                         batch.getBatchId(), batch.getBatchId(), batch.getNodeId(), batch.getLoadId(), batch.getBatchId(), engine.getNodeId());
             } else {

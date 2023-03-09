@@ -93,7 +93,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     protected boolean supportsTransactionViews = false;
     protected boolean supportsSubselectsInDelete = true;
     protected boolean supportsSubselectsInUpdate = true;
-    protected boolean supportsParametersInSelect = true;
     protected Map<String, String> sqlReplacementTokens = new HashMap<String, String>();
     protected String tablePrefixLowerCase;
     protected boolean isSpatialTypesEnabled = true;
@@ -673,13 +672,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
      */
     public boolean supportsSubselectsInUpdate() {
         return supportsSubselectsInUpdate;
-    }
-
-    /*
-     * Indicates if this dialect supports parameter markers in select queries.
-     */
-    public boolean supportsParametersInSelect() {
-        return supportsParametersInSelect;
     }
 
     public long insertWithGeneratedKey(String sql, SequenceIdentifier sequenceId) {

@@ -445,7 +445,7 @@ public class DataService extends AbstractService implements IDataService {
     public TableReloadStatus updateTableReloadStatusDataLoaded(ISqlTransaction transaction, long loadId, long batchId, int batchCount, boolean isBulkLoaded) {
         int idType = symmetricDialect.getSqlTypeForIds();
         int count;
-        if (symmetricDialect.supportsParametersInSelect()) {
+        if (platform.supportsParametersInSelect()) {
             count = transaction.prepareAndExecute(getSql("updateTableReloadStatusDataLoaded"),
                     new Object[] { batchId, batchCount, batchId, batchCount, batchId, batchCount,
                             batchId, batchCount, batchId, batchCount, batchId, batchCount, new Date(),
@@ -474,7 +474,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public void updateTableReloadStatusFailed(ISqlTransaction transaction, long loadId, long batchId) {
         int idType = symmetricDialect.getSqlTypeForIds();
-        if (symmetricDialect.supportsParametersInSelect()) {
+        if (platform.supportsParametersInSelect()) {
             transaction.prepareAndExecute(getSql("updateTableReloadStatusFailed"),
                     new Object[] { batchId, batchId, batchId, loadId },
                     new int[] { idType, idType, idType, idType });
@@ -492,7 +492,7 @@ public class DataService extends AbstractService implements IDataService {
         String sql;
         Object[] args;
         int[] types;
-        if (symmetricDialect.supportsParametersInSelect()) {
+        if (platform.supportsParametersInSelect()) {
             sql = getSql("updateTableReloadStatusDataCounts");
             args = new Object[] { startBatchId, endBatchId, dataBatchCount, rowsCount, new Date(), loadId };
             types = new int[] { idType, idType, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, idType };
