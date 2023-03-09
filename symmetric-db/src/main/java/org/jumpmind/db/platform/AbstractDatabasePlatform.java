@@ -1007,7 +1007,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 }
                 for (IIndex indexToRemove : indicesToRemove) {
                     log.info("Removing index " + indexToRemove.getName()
-                        + " from table " + table.getName() + " because functional indexes are not supported on this platform.");
+                            + " from table " + table.getName() + " because functional indexes are not supported on this platform.");
                     table.removeIndex(indexToRemove);
                 }
             }
