@@ -61,6 +61,7 @@ public class AckUriHandler extends AbstractUriHandler {
             log.debug("Reading ack from node {} at remote address {}: {}", ServletUtils.getParameter(req, WebConstants.NODE_ID),
                     req.getRemoteAddr(), req.getParameterMap());
         }
+        String queue = req.getHeader(WebConstants.CHANNEL_QUEUE);
         List<BatchAck> batches = AbstractTransportManager.readAcknowledgement(req.getParameterMap());
         Collections.sort(batches, BATCH_ID_COMPARATOR);
         if (isStandalone) {
@@ -83,11 +84,6 @@ public class AckUriHandler extends AbstractUriHandler {
             ts = System.currentTimeMillis();
         }
         writer.close();
-    }
-
-    protected void ack(List<BatchAck> batches) throws IOException {
-        for (BatchAck batchInfo : batches) {
-            acknowledgeService.ack(batchInfo);
-        }
+        acknowledgeService.checkMissingAck(batches, queue);
     }
 }

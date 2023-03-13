@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
@@ -60,9 +61,19 @@ public class MonitorTypeLog implements IMonitorType, ISymmetricEngineAware, IBui
         for (LogSummary logSummary : all) {
             count += logSummary.getCount();
         }
-        event.setDetails(serializeDetails(all));
         event.setValue(all.size());
         event.setCount(count);
+        String details = serializeDetails(all);
+        if (DatabaseNamesConstants.INTERBASE.equals(engine.getDatabasePlatform().getName())) {
+            while (details != null && details.length() > 4096 && all.size() > 1) {
+                all.remove(all.size() - 1);
+                details = serializeDetails(all);
+            }
+            if (details != null && details.length() > 4096) {
+                details = details.substring(0, 4096);
+            }
+        }
+        event.setDetails(details);
         return event;
     }
 

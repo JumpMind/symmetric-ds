@@ -448,6 +448,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                         log.info("Failed to create DDL trigger: {}", triggerSql);
                         throw ex;
                     }
+                    postCreateDdlTrigger(transaction, tablePrefix, sqlBuffer, triggerName);
                     transaction.commit();
                 } catch (SqlException ex) {
                     if (transaction != null) {
@@ -461,6 +462,24 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 }
             }
         }
+    }
+
+    protected void postCreateDdlTrigger(ISqlTransaction transaction, String tablePrefix, StringBuilder sqlBuffer, String triggerName) {
+        String postTriggerDdl = createPostDdlTriggerDDL(tablePrefix, triggerName);
+        if (StringUtils.isNotBlank(postTriggerDdl)) {
+            try {
+                log.debug("Running: {}", postTriggerDdl);
+                logSql(postTriggerDdl, sqlBuffer);
+                transaction.execute(postTriggerDdl);
+            } catch (SqlException ex) {
+                log.info("Failed to create post DDL trigger: {}", postTriggerDdl);
+                throw ex;
+            }
+        }
+    }
+
+    protected String createPostDdlTriggerDDL(String tablePrefix, String triggerName) {
+        return triggerTemplate.createPostDdlTriggerDDL(tablePrefix, triggerName);
     }
 
     public String getCreateSymmetricDDL() {
@@ -511,12 +530,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     log.debug("Alter SQL generated: {}", alterSql);
                     ISqlResultsListener resultsInstallListener = resultsListener;
                     List<IDatabaseInstallStatementListener> installListeners = extensionService.getExtensionPointList(IDatabaseInstallStatementListener.class);
+                    boolean triggersContainJava = platform.getDatabaseInfo().isTriggersContainJava();
                     if (installListeners != null && installListeners.size() > 0) {
-                        int totalStatements = SqlScript.calculateTotalStatements(alterSql, delimiter);
+                        int totalStatements = SqlScript.calculateTotalStatements(alterSql, delimiter, triggersContainJava);
                         resultsInstallListener = new LogSqlResultsInstallListener(parameterService.getEngineName(),
                                 totalStatements, extensionService.getExtensionPointList(IDatabaseInstallStatementListener.class));
                     }
-                    SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
+                    SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, false, false, triggersContainJava, delimiter, null);
                     script.setListener(resultsInstallListener);
                     script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                     for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {

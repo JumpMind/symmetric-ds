@@ -51,7 +51,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 class MonitorServiceTest {
-
     ISymmetricEngine engine = mock(ISymmetricEngine.class);
     ISymmetricDialect symmetricDialect = mock(ISymmetricDialect.class);
     IDatabasePlatform databasePlatform = mock(IDatabasePlatform.class);
@@ -65,13 +64,11 @@ class MonitorServiceTest {
     @Test
     void testMonitorService() throws Exception {
         Map<String, String> testMap = new HashMap<String, String>();
-
         when(databasePlatform.getName()).thenReturn("Postgres");
         when(engine.getParameterService()).thenReturn(parameterService);
         when(symmetricDialect.getPlatform()).thenReturn(databasePlatform);
         when(symmetricDialect.getSqlReplacementTokens()).thenReturn(testMap);
         when(engine.getExtensionService()).thenReturn(extensionService);
-
         MonitorService testMonitorService = new MonitorService(engine, symmetricDialect);
         // not quite sure what exactly to test here.
         // the uncovered lines are for loops that use
@@ -81,7 +78,6 @@ class MonitorServiceTest {
 
     @Test
     void testMonitorServiceUpdate() throws Exception {
-
         INodeService nodeService = mock(INodeService.class);
         ICacheManager cacheManager = mock(ICacheManager.class);
         Node identity = mock(Node.class);
@@ -89,7 +85,6 @@ class MonitorServiceTest {
         MonitorEvent monitorEvent = mock(MonitorEvent.class);
         Monitor monitor = mock(Monitor.class);
         MonitorTypeLog monitorType = mock(MonitorTypeLog.class);
-
         List<MonitorEvent> list = new ArrayList<MonitorEvent>();
         String sql = ArgumentMatchers.anyString();
         @SuppressWarnings("unchecked")
@@ -100,15 +95,11 @@ class MonitorServiceTest {
                 return list;
             }
         });
-
         List<Monitor> activeMonitors = new ArrayList<Monitor>();
         activeMonitors.add(monitor);
-
         Map<String, String> testMap = new HashMap<String, String>();
-
         Map<String, IMonitorType> monitorTypes = new HashMap<String, IMonitorType>();
         monitorTypes.put("log", monitorType);
-
         when(databasePlatform.getName()).thenReturn("Postgres");
         when(engine.getParameterService()).thenReturn(parameterService);
         when(symmetricDialect.getPlatform()).thenReturn(databasePlatform);
@@ -128,16 +119,13 @@ class MonitorServiceTest {
         when(engine.getClusterService()).thenReturn(clusterService);
         when(clusterService.lock("Monitor")).thenReturn(false);
         when(monitorEvent.getMonitorId()).thenReturn("log");
-
         MonitorService testMonitorService = new MonitorService(engine, symmetricDialect);
         testMonitorService.update();
         testMonitorService.update();
-
     }
 
     @Test
     void testRequiresClusterLockMonitorServiceUpdate() throws Exception {
-
         INodeService nodeService = mock(INodeService.class);
         ICacheManager cacheManager = mock(ICacheManager.class);
         Node identity = mock(Node.class);
@@ -145,7 +133,6 @@ class MonitorServiceTest {
         MonitorEvent monitorEvent = mock(MonitorEvent.class);
         Monitor monitor = mock(Monitor.class);
         MonitorTypeLog monitorType = mock(MonitorTypeLog.class);
-
         List<MonitorEvent> list = new ArrayList<MonitorEvent>();
         String sql = ArgumentMatchers.anyString();
         @SuppressWarnings("unchecked")
@@ -156,15 +143,11 @@ class MonitorServiceTest {
                 return list;
             }
         });
-
         List<Monitor> activeMonitors = new ArrayList<Monitor>();
         activeMonitors.add(monitor);
-
         Map<String, String> testMap = new HashMap<String, String>();
-
         Map<String, IMonitorType> monitorTypes = new HashMap<String, IMonitorType>();
         monitorTypes.put("log", monitorType);
-
         when(databasePlatform.getName()).thenReturn("Postgres");
         when(engine.getParameterService()).thenReturn(parameterService);
         when(symmetricDialect.getPlatform()).thenReturn(databasePlatform);
@@ -184,10 +167,8 @@ class MonitorServiceTest {
         when(engine.getClusterService()).thenReturn(clusterService);
         when(clusterService.lock("Monitor")).thenReturn(false);
         when(monitorEvent.getMonitorId()).thenReturn("log");
-
         MonitorService testMonitorService = new MonitorService(engine, symmetricDialect);
         testMonitorService.update();
-
     }
 
     // This test case needs no Assertions as it is just testing if a null
@@ -198,7 +179,6 @@ class MonitorServiceTest {
         MonitorEvent monitorEvent = mock(MonitorEvent.class);
         Monitor monitor = mock(Monitor.class);
         MonitorTypeLog monitorType = mock(MonitorTypeLog.class);
-
         List<MonitorEvent> list = new ArrayList<MonitorEvent>();
         String sql = ArgumentMatchers.anyString();
         @SuppressWarnings("unchecked")
@@ -209,13 +189,11 @@ class MonitorServiceTest {
                 return list;
             }
         });
-
         List<Monitor> activeMonitors = new ArrayList<Monitor>();
         activeMonitors.add(monitor);
         Map<String, String> testMap = new HashMap<String, String>();
         Map<String, IMonitorType> monitorTypes = new HashMap<String, IMonitorType>();
         monitorTypes.put("log", monitorType);
-
         when(databasePlatform.getName()).thenReturn("Postgres");
         when(engine.getParameterService()).thenReturn(parameterService);
         when(symmetricDialect.getPlatform()).thenReturn(databasePlatform);
@@ -224,15 +202,12 @@ class MonitorServiceTest {
         when(engine.getExtensionService()).thenReturn(extensionService);
         when(extensionService.getExtensionPointMap(IMonitorType.class)).thenReturn(monitorTypes);
         when(engine.getNodeService()).thenReturn(nodeService);
-
         MonitorService testMonitorService = new MonitorService(engine, symmetricDialect);
         testMonitorService.update();
-
     }
 
     @Test
     void testNullMonitorTypeMonitorServiceUpdate() throws Exception {
-
         INodeService nodeService = mock(INodeService.class);
         ICacheManager cacheManager = mock(ICacheManager.class);
         Node identity = mock(Node.class);
@@ -240,7 +215,6 @@ class MonitorServiceTest {
         MonitorEvent monitorEvent = mock(MonitorEvent.class);
         Monitor monitor = mock(Monitor.class);
         MonitorTypeLog monitorType = mock(MonitorTypeLog.class);
-
         List<MonitorEvent> list = new ArrayList<MonitorEvent>();
         String sql = ArgumentMatchers.anyString();
         @SuppressWarnings("unchecked")
@@ -251,15 +225,11 @@ class MonitorServiceTest {
                 return list;
             }
         });
-
         List<Monitor> activeMonitors = new ArrayList<Monitor>();
         activeMonitors.add(monitor);
-
         Map<String, String> testMap = new HashMap<String, String>();
-
         Map<String, IMonitorType> monitorTypes = new HashMap<String, IMonitorType>();
         monitorTypes.put("log", monitorType);
-
         when(databasePlatform.getName()).thenReturn("Postgres");
         when(engine.getParameterService()).thenReturn(parameterService);
         when(symmetricDialect.getPlatform()).thenReturn(databasePlatform);
@@ -279,14 +249,12 @@ class MonitorServiceTest {
         when(engine.getClusterService()).thenReturn(clusterService);
         when(clusterService.lock("Monitor")).thenReturn(false);
         when(monitorEvent.getMonitorId()).thenReturn("log");
-
         MonitorService testMonitorService = new MonitorService(engine, symmetricDialect);
         testMonitorService.update();
     }
 
     @Test
     void testClusterLockTrueMonitorServiceUpdate() throws Exception {
-
         INodeService nodeService = mock(INodeService.class);
         ICacheManager cacheManager = mock(ICacheManager.class);
         Node identity = mock(Node.class);
@@ -294,7 +262,6 @@ class MonitorServiceTest {
         MonitorEvent monitorEvent = mock(MonitorEvent.class);
         Monitor monitor = mock(Monitor.class);
         MonitorTypeLog monitorType = mock(MonitorTypeLog.class);
-
         List<MonitorEvent> list = new ArrayList<MonitorEvent>();
         String sql = ArgumentMatchers.anyString();
         @SuppressWarnings("unchecked")
@@ -305,15 +272,11 @@ class MonitorServiceTest {
                 return list;
             }
         });
-
         List<Monitor> activeMonitors = new ArrayList<Monitor>();
         activeMonitors.add(monitor);
-
         Map<String, String> testMap = new HashMap<String, String>();
-
         Map<String, IMonitorType> monitorTypes = new HashMap<String, IMonitorType>();
         monitorTypes.put("log", monitorType);
-
         when(databasePlatform.getName()).thenReturn("Postgres");
         when(engine.getParameterService()).thenReturn(parameterService);
         when(engine.getContextService()).thenReturn(contextService);
@@ -335,9 +298,7 @@ class MonitorServiceTest {
         when(clusterService.lock("Monitor")).thenReturn(true);
         when(monitorEvent.getMonitorId()).thenReturn("log");
         when(contextService.getString(ContextConstants.MONITOR_LAST_CHECK_TIMES)).thenReturn(null);
-
         MonitorService testMonitorService = new MonitorService(engine, symmetricDialect);
         testMonitorService.update();
     }
-
 }

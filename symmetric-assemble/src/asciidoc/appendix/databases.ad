@@ -255,6 +255,19 @@ by database.
 |
 |
                     
+|OpenEdge
+|Tested on 12.2
+|
+|✔
+|
+|✔
+|
+|✔
+|✔
+|
+|
+|
+
 |Oracle
 |10g and above
 |✔
@@ -540,6 +553,13 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 |✔
 |select current_schema from system.dual
 
+|OpenEdge
+| 
+|
+| 
+|✔
+|select user() from sysprogress.syscalctable
+
 |Oracle
 | 
 |
@@ -650,6 +670,7 @@ include::{includedir}/appendix/kafka.ad[]
 include::{includedir}/appendix/mariadb.ad[]
 include::{includedir}/appendix/mongodb.ad[]
 include::{includedir}/appendix/mysql.ad[]
+include::{includedir}/appendix/openedge.ad[]
 include::{includedir}/appendix/opensearch.ad[]
 include::{includedir}/appendix/oracle.ad[]
 include::{includedir}/appendix/postgresql.ad[]

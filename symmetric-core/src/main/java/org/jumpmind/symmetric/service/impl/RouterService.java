@@ -88,6 +88,7 @@ import org.jumpmind.symmetric.route.FileSyncDataRouter;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IDataToRouteReader;
+import org.jumpmind.symmetric.route.JavaDataRouter;
 import org.jumpmind.symmetric.route.LookupTableDataRouter;
 import org.jumpmind.symmetric.route.NonTransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
@@ -129,6 +130,7 @@ public class RouterService extends AbstractService implements IRouterService {
         extensionService.addExtensionPoint(NonTransactionalBatchAlgorithm.NAME, new NonTransactionalBatchAlgorithm());
         extensionService.addExtensionPoint(TransactionalBatchAlgorithm.NAME, new TransactionalBatchAlgorithm());
         extensionService.addExtensionPoint(ConfigurationChangedDataRouter.ROUTER_TYPE, new ConfigurationChangedDataRouter(engine));
+        extensionService.addExtensionPoint("java", new JavaDataRouter(engine));
         extensionService.addExtensionPoint("bsh", new BshDataRouter(engine));
         extensionService.addExtensionPoint("subselect", new SubSelectDataRouter(symmetricDialect));
         extensionService.addExtensionPoint("lookuptable", new LookupTableDataRouter(symmetricDialect));

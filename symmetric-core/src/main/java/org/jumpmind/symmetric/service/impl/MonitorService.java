@@ -242,7 +242,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
                     event.setDetails(eventValue.getDetails());
                 }
                 saveMonitorEvent(event);
-           }
+            }
         }
     }
 

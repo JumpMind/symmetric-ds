@@ -290,6 +290,7 @@ final public class ParameterConstants {
     public final static String TRIGGER_CREATE_BEFORE_INITIAL_LOAD = "trigger.create.before.initial.load.enabled";
     public final static String TRIGGER_CAPTURE_DDL_CHANGES = "trigger.capture.ddl.changes";
     public final static String TRIGGER_CAPTURE_DDL_DELIMITER = "trigger.capture.ddl.delimiter";
+    public final static String TRIGGER_CAPTURE_DDL_CHECK_TRIGGER_HIST = "trigger.capture.ddl.check.trigger.hist";
     public final static String TRIGGER_USE_INSERT_DELETE_FOR_PRIMARY_KEY_CHANGES = "trigger.use.insert.delete.for.primary.key.changes";
     public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
     public final static String DB_NATIVE_EXTRACTOR = "db.native.extractor";
@@ -384,6 +385,7 @@ final public class ParameterConstants {
     public final static String SYNC_TRIGGERS_THREAD_COUNT_PER_SERVER = "sync.triggers.thread.count.per.server";
     public final static String SYNC_TRIGGERS_TIMEOUT_IN_SECONDS = "sync.triggers.timeout.in.seconds";
     public final static String SYNC_TRIGGERS_REG_SVR_INSTALL_WITHOUT_CONFIG = "sync.triggers.reg.svr.install.without.config";
+    public final static String SYNC_TRIGGERS_FIX_DUPLICATE_ACTIVE_TRIGGER_HISTORIES = "sync.triggers.fix.duplicate.active.trigger.histories";
     public static final String SMTP_HOST = "smtp.host";
     public static final String SMTP_TRANSPORT = "smtp.transport";
     public static final String SMTP_PORT = "smtp.port";
@@ -461,6 +463,7 @@ final public class ParameterConstants {
     public final static String SNAPSHOT_MAX_FILES = "snapshot.max.files";
     public final static String SNAPSHOT_MAX_BATCHES = "snapshot.max.batches";
     public final static String SNAPSHOT_MAX_NODE_CHANNELS = "snapshot.max.node.channels";
+    public final static String SNAPSHOT_OPERATION_TIMEOUT_MS = "snapshot.operation.timeout.ms";
     public final static String REDSHIFT_APPEND_TO_COPY_COMMAND = "redshift.append.to.copy.command";
     public final static String REDSHIFT_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH = "redshift.bulk.load.max.rows.before.flush";
     public final static String REDSHIFT_BULK_LOAD_MAX_BYTES_BEFORE_FLUSH = "redshift.bulk.load.max.bytes.before.flush";

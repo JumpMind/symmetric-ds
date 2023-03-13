@@ -280,7 +280,7 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
                     throw new NotImplementedException(columns[i] + " is of type "
                             + columns[i].getMappedType());
             }
-            text+=";";
+            text += ";";
         }
         return text;
     }

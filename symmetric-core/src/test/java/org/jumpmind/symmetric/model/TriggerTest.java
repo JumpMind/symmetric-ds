@@ -114,7 +114,6 @@ class TriggerTest {
         String qualifiedSourceTableName = trigger.qualifiedSourceTableName();
         String actualQualifiedSourceTableName = "catalogTest" + "." + "schemaTest" + "." + "testTable";
         assertEquals(actualQualifiedSourceTableName, qualifiedSourceTableName);
-
     }
 
     @Test
@@ -125,7 +124,6 @@ class TriggerTest {
         String schemaPlus = (trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() + "." : "");
         String catalogPlus = (trigger.getSourceCatalogName() != null ? trigger.getSourceCatalogName() + "." : "") + schemaPlus;
         String actualQualifiedSourceTablePrefix = "catalogTest" + "." + "schemaTest" + ".";
-
         assertEquals(actualQualifiedSourceTablePrefix, catalogPlus);
     }
 
@@ -145,9 +143,7 @@ class TriggerTest {
         trigger.setCustomOnInsertText("         ");
         trigger.setCustomOnUpdateText("         ");
         trigger.setCustomOnDeleteText("         ");
-
         trigger.nullOutBlankFields();
-
         assertEquals(null, trigger.getSourceCatalogName());
         assertEquals(null, trigger.getSourceCatalogNameUnescaped());
         assertFalse(trigger.isSourceCatalogNameWildCarded());
@@ -165,11 +161,9 @@ class TriggerTest {
         assertEquals(null, trigger.getCustomOnInsertText());
         assertEquals(null, trigger.getCustomOnUpdateText());
         assertEquals(null, trigger.getCustomOnDeleteText());
-
         assertEquals("1=1", trigger.getSyncOnInsertCondition());
         assertEquals("1=1", trigger.getSyncOnDeleteCondition());
         assertEquals("1=1", trigger.getSyncOnUpdateCondition());
-
     }
 
     @Test
@@ -177,12 +171,9 @@ class TriggerTest {
         Trigger trigger = new Trigger();
         trigger.setSourceCatalogName("testCatalog");
         trigger.setSourceSchemaName("testSchema");
-
         trigger.nullOutBlankFields();
-
         assertEquals("testCatalog", trigger.getSourceCatalogName());
         assertEquals("testSchema", trigger.getSourceSchemaName());
-
     }
 
     @Test
@@ -211,23 +202,17 @@ class TriggerTest {
         pkColumn.setName("pk1");
         pkColumn.setPrimaryKey(true);
         testTable.addColumn(pkColumn);
-
         Column actualColumn[] = trigger.orderColumnsForTable(testTable);
         Column expectedColumn[] = { pkColumn, nonPKColumn };
-
         assertArrayEquals(expectedColumn, actualColumn);
-
     }
 
     @Test
     void testNullOrderColumnsForTable() throws Exception {
         Trigger trigger = new Trigger();
-
         Column actualColumn[] = trigger.orderColumnsForTable(null);
         Column expectedColumn[] = {};
-
         assertArrayEquals(expectedColumn, actualColumn);
-
     }
 
     @Test
@@ -240,12 +225,9 @@ class TriggerTest {
         testTable.addColumn(pkColumn2);
         testTable.addColumn(nonPKColumn);
         testTable.addColumn(pkColumn);
-
         Column actualColumn[] = trigger.orderColumnsForTable(testTable);
         Column expectedColumn[] = { pkColumn2, pkColumn, nonPKColumn };
-
         assertArrayEquals(expectedColumn, actualColumn);
-
     }
 
     @Test
@@ -259,12 +241,9 @@ class TriggerTest {
         testTable.addColumn(longColumn);
         testTable.addColumn(nonPKColumn);
         testTable.addColumn(pkColumn);
-
         Column actualColumn[] = trigger.orderColumnsForTable(testTable);
         Column expectedColumn[] = { pkColumn, nonPKColumn, longColumn };
-
         assertArrayEquals(expectedColumn, actualColumn);
-
     }
 
     @Test
@@ -290,9 +269,7 @@ class TriggerTest {
     @Test
     void testNoNullToHashedValue() throws Exception {
         Trigger trigger = new Trigger();
-
         long actualHashedValue = trigger.getTriggerId() != null ? trigger.getTriggerId().hashCode() : 0;
-
         trigger.setSourceTableName("true");
         trigger.setChannelId("true");
         trigger.setSourceSchemaName("true");
@@ -321,7 +298,6 @@ class TriggerTest {
         trigger.setExternalSelect("true");
         trigger.setTxIdExpression("true");
         trigger.setSyncKeyNames("true");
-
         actualHashedValue += trigger.getSourceTableName().hashCode();
         actualHashedValue += trigger.getChannelId().hashCode();
         actualHashedValue += trigger.getSourceSchemaName().hashCode();
@@ -350,18 +326,14 @@ class TriggerTest {
         actualHashedValue += trigger.getExternalSelect().hashCode();
         actualHashedValue += trigger.getTxIdExpression().hashCode();
         actualHashedValue += trigger.getSyncKeyNames().hashCode();
-
         long test = trigger.toHashedValue();
-
         assertEquals(actualHashedValue, test);
     }
 
     @Test
     void testNoNullSomeFalseToHashedValue() throws Exception {
         Trigger trigger = new Trigger();
-
         long actualHashedValue = trigger.getTriggerId() != null ? trigger.getTriggerId().hashCode() : 0;
-
         trigger.setSourceTableName("true");
         trigger.setChannelId("true");
         trigger.setSourceSchemaName("true");
@@ -390,7 +362,6 @@ class TriggerTest {
         trigger.setExternalSelect("true");
         trigger.setTxIdExpression("true");
         trigger.setSyncKeyNames("true");
-
         actualHashedValue += trigger.getSourceTableName().hashCode();
         actualHashedValue += trigger.getChannelId().hashCode();
         actualHashedValue += trigger.getSourceSchemaName().hashCode();
@@ -419,9 +390,7 @@ class TriggerTest {
         actualHashedValue += trigger.getExternalSelect().hashCode();
         actualHashedValue += trigger.getTxIdExpression().hashCode();
         actualHashedValue += trigger.getSyncKeyNames().hashCode();
-
         long test = trigger.toHashedValue();
-
         assertEquals(actualHashedValue, test);
     }
 
@@ -439,7 +408,6 @@ class TriggerTest {
         trigger.setSourceTableName("testTable");
         boolean ignoreCase = false;
         boolean testMatches = trigger.matches(testTable, defaultCatalog, defaultSchema, ignoreCase);
-
         assertTrue(testMatches);
     }
 
@@ -457,10 +425,9 @@ class TriggerTest {
         trigger.setSourceTableName("test*Table");
         boolean ignoreCase = false;
         boolean testMatches = trigger.matches(testTable, defaultCatalog, defaultSchema, ignoreCase);
-
         assertTrue(testMatches);
     }
-    
+
     @Test
     void testWildCardFalseMatches() throws Exception {
         Trigger trigger = new Trigger();
@@ -475,10 +442,9 @@ class TriggerTest {
         trigger.setSourceTableName("test*Table");
         boolean ignoreCase = false;
         boolean testMatches = trigger.matches(testTable, defaultCatalog, defaultSchema, ignoreCase);
-
         assertTrue(testMatches);
     }
-    
+
     @Test
     void testFalseWildCardMatches() throws Exception {
         Trigger trigger = new Trigger();
@@ -493,10 +459,9 @@ class TriggerTest {
         trigger.setSourceTableName("testTable");
         boolean ignoreCase = false;
         boolean testMatches = trigger.matches(testTable, defaultCatalog, defaultSchema, ignoreCase);
-
         assertFalse(testMatches);
     }
-    
+
     @Test
     void testBlankTriggerSchemaCatalogMatches() throws Exception {
         Trigger trigger = new Trigger();
@@ -509,10 +474,9 @@ class TriggerTest {
         trigger.setSourceTableName("testTable");
         boolean ignoreCase = false;
         boolean testMatches = trigger.matches(testTable, defaultCatalog, defaultSchema, ignoreCase);
-
         assertTrue(testMatches);
     }
-    
+
     @Test
     void testTriggerToTriggerTrueMatches() throws Exception {
         Trigger trigger = new Trigger();
@@ -524,10 +488,9 @@ class TriggerTest {
         testTrigger.setSourceSchemaName("schemaTest");
         testTrigger.setSourceTableName("testTable");
         boolean testMatches = trigger.matches(testTrigger);
-
         assertTrue(testMatches);
     }
-    
+
     @Test
     void testTriggerToTriggerFalseMatches() throws Exception {
         Trigger trigger = new Trigger();
@@ -539,41 +502,33 @@ class TriggerTest {
         testTrigger.setSourceSchemaName("");
         testTrigger.setSourceTableName("");
         boolean testMatches = trigger.matches(testTrigger);
-
         assertFalse(testMatches);
     }
-    
+
     @Test
-    void testToStringOverride() throws Exception{
+    void testToStringOverride() throws Exception {
         Trigger trigger = new Trigger();
         trigger.setTriggerId("testId");
         String test = trigger.toString();
-        
-        assertEquals("testId",test);
+        assertEquals("testId", test);
     }
-    
+
     @Test
-    void testNullToStringOverride() throws Exception{
+    void testNullToStringOverride() throws Exception {
         Trigger trigger = new Trigger();
         String test = trigger.toString();
-        
-        assertEquals(String.valueOf(trigger),test);
+        assertEquals(String.valueOf(trigger), test);
     }
-    
+
     @Test
-    void testTriggerCopy() throws Exception{
+    void testTriggerCopy() throws Exception {
         Trigger trigger = new Trigger();
         trigger.setSourceCatalogName("catalogTest");
         trigger.setSourceSchemaName("schemaTest");
         trigger.setSourceTableName("testTable");
-        
         Trigger test = trigger.copy();
-        
-        assertTrue(EqualsBuilder.reflectionEquals(trigger,test));        
-        
+        assertTrue(EqualsBuilder.reflectionEquals(trigger, test));
     }
-
-   
 
     public Column[] buildColumnArray() {
         Column c1 = new Column("col1", false, Types.INTEGER, 50, 0);

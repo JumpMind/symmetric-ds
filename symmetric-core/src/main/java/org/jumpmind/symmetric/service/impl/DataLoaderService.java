@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -78,6 +79,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.ProtocolException;
 import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
@@ -563,9 +565,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 ExecutorService executor = Executors.newFixedThreadPool(1, threadFactory);
                 LoadIntoDatabaseOnArrivalListener loadListener = new LoadIntoDatabaseOnArrivalListener(transferInfo,
                         sourceNode.getNodeId(), listener, executor);
+                SimpleStagingDataWriter stageWriter = null;
                 try {
-                    new SimpleStagingDataWriter(transferInfo, transport.openReader(), stagingManager, Constants.STAGING_CATEGORY_INCOMING,
-                            memoryThresholdInBytes, BatchType.LOAD, targetNodeId, ctx, loadListener).process();
+                    stageWriter = new SimpleStagingDataWriter(transferInfo, transport.openReader(), stagingManager, Constants.STAGING_CATEGORY_INCOMING,
+                            memoryThresholdInBytes, BatchType.LOAD, targetNodeId, ctx, loadListener);
+                    stageWriter.process();
                 } finally {
                     /* Previously submitted tasks will still be executed */
                     executor.shutdown();
@@ -588,6 +592,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     awaitTermination(executor);
                 }
                 loadListener.isDone();
+                if (stageWriter.getException() != null) {
+                    throw stageWriter.getException();
+                }
             } else {
                 transferInfo.setStatus(ProcessStatus.OK);
                 ProcessInfo loadInfo = statisticManager.newProcessInfo(new ProcessInfoKey(sourceNode.getNodeId(), transferInfo.getQueue(), nodeService
@@ -634,7 +641,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 l.syncEnded(ctx, listener.getBatchesProcessed(), error);
             }
         }
-        return listener.getBatchesProcessed();
+        List<IncomingBatch> batchesProcessed = listener.getBatchesProcessed();
+        if (error != null) {
+            batchesProcessed.add(new IncomingBatch());
+        }
+        return batchesProcessed;
     }
 
     private void awaitTermination(ExecutorService executor) throws InterruptedException {
@@ -667,6 +678,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw (HttpException) ex;
         } else if (ex instanceof InvalidRetryException) {
             throw (InvalidRetryException) ex;
+        } else if (ex instanceof ProtocolException) {
+            log.error("Failed to process batch: {}: {}", ex.getClass().getSimpleName(), ex.getMessage());
         } else if (ex instanceof StagingLowFreeSpace) {
             log.error("Loading is disabled because disk is almost full: {}", ex.getMessage());
         } else if (!(ex instanceof ConflictException) && !(ex instanceof SqlException) && !(ex instanceof CancellationException)) {
@@ -883,28 +896,37 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void insertIncomingError(ISqlTransaction transaction, IncomingError incomingError) {
         if (StringUtils.isNotBlank(incomingError.getNodeId()) && incomingError.getBatchId() >= 0) {
-            transaction.prepareAndExecute(
-                    getSql("insertIncomingErrorSql"),
-                    new Object[] { incomingError.getBatchId(), incomingError.getNodeId(),
-                            incomingError.getFailedRowNumber(),
-                            incomingError.getFailedLineNumber(),
-                            incomingError.getTargetCatalogName(),
-                            incomingError.getTargetSchemaName(),
-                            incomingError.getTargetTableName(),
-                            incomingError.getEventType().getCode(),
-                            incomingError.getBinaryEncoding().name(),
-                            incomingError.getColumnNames(),
-                            incomingError.getPrimaryKeyColumnNames(), incomingError.getRowData(),
-                            incomingError.getOldData(), incomingError.getCurData(),
-                            incomingError.getResolveData(),
-                            incomingError.isResolveIgnore() ? 1 : 0, incomingError.getConflictId(),
-                            incomingError.getCreateTime(), incomingError.getLastUpdateBy(),
-                            incomingError.getLastUpdateTime() }, new int[] { Types.BIGINT,
-                                    Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR,
-                                    Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR,
-                                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                                    Types.VARCHAR, Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP,
-                                    Types.VARCHAR, Types.TIMESTAMP });
+            boolean alreadyExists = false;
+            if (symmetricDialect.getDriverName().equalsIgnoreCase(DatabaseNamesConstants.OPENEDGE)) {
+                if (getIncomingError(incomingError.getBatchId(), incomingError.getNodeId(),
+                        incomingError.getFailedRowNumber()) != null) {
+                    alreadyExists = true;
+                }
+            }
+            if (!alreadyExists) {
+                transaction.prepareAndExecute(
+                        getSql("insertIncomingErrorSql"),
+                        new Object[] { incomingError.getBatchId(), incomingError.getNodeId(),
+                                incomingError.getFailedRowNumber(),
+                                incomingError.getFailedLineNumber(),
+                                incomingError.getTargetCatalogName(),
+                                incomingError.getTargetSchemaName(),
+                                incomingError.getTargetTableName(),
+                                incomingError.getEventType().getCode(),
+                                incomingError.getBinaryEncoding().name(),
+                                incomingError.getColumnNames(),
+                                incomingError.getPrimaryKeyColumnNames(), incomingError.getRowData(),
+                                incomingError.getOldData(), incomingError.getCurData(),
+                                incomingError.getResolveData(),
+                                incomingError.isResolveIgnore() ? 1 : 0, incomingError.getConflictId(),
+                                incomingError.getCreateTime(), incomingError.getLastUpdateBy(),
+                                incomingError.getLastUpdateTime() }, new int[] { Types.BIGINT,
+                                        Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR,
+                                        Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR,
+                                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                                        Types.VARCHAR, Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP,
+                                        Types.VARCHAR, Types.TIMESTAMP });
+            }
         }
     }
 

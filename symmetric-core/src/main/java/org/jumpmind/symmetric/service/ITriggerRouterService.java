@@ -254,13 +254,14 @@ public interface ITriggerRouterService {
     public Map<Trigger, Exception> getFailedTriggers();
 
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
-            String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories, List<TriggerRouter> triggerRouters);
+            String sourceNodeGroupId, String targetNodeGroupId, String targetExternalId, List<TriggerHistory> triggerHistories,
+            List<TriggerRouter> triggerRouters);
 
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
-            String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories);
+            String sourceNodeGroupId, String targetNodeGroupId, String targetExternalId, List<TriggerHistory> triggerHistories);
 
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistId(
-            String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories);
+            String sourceNodeGroupId, String targetNodeGroupId, String targetExternalId, List<TriggerHistory> triggerHistories);
 
     public TriggerHistory findTriggerHistoryForGenericSync();
 

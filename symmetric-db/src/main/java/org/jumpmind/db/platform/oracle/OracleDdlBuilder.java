@@ -137,6 +137,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setTriggersCreateOrReplaceSupported(true);
         databaseInfo.setBinaryQuoteStart("0x");
         databaseInfo.setBinaryQuoteEnd("");
+        databaseInfo.setFunctionalIndicesSupported(true);
     }
 
     @Override
@@ -506,7 +507,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
 
     protected void processChange(Database currentModel, Database desiredModel,
             ColumnRequiredChange change, StringBuilder ddl) {
-        boolean required = change.getChangedColumn().isRequired();
+        boolean required = !change.getChangedColumn().isRequired();
         writeTableAlterStmt(change.getChangedTable(), ddl);
         ddl.append(" MODIFY (");
         Column column = change.getChangedColumn();

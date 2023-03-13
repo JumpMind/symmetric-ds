@@ -26,10 +26,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
+    String delimiter;
+
     public PostgreSqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
+        delimiter = symmetricDialect.getParameterService().getString(ParameterConstants.TRIGGER_CAPTURE_DDL_DELIMITER, "$");
         //@formatter:off        
         geometryColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast(ST_AsEWKT($(tableAlias).\"$(columnName)\") as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         geographyColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast(ST_AsEWKT($(tableAlias).\"$(columnName)\") as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
@@ -221,6 +225,146 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
+
+        sqlTemplates.put("filteredDdlTriggerTemplate",
+"create or replace function f$(triggerName)() returns event_trigger as\n" +
+"$function$\n" +
+"declare cmd record;\n" +
+"declare tableName varchar(255);\n" +
+"declare histId integer;\n" +
+"declare channelId varchar(128);\n" +
+"declare rowData text;\n" +
+"begin\n" +
+"rowData = current_query();\n" +
+"for cmd in select * from pg_event_trigger_ddl_commands() loop\n" +
+"    if (upper(cmd.object_identity) not like upper('$(prefixName)%') and upper(cmd.object_identity) not like upper('%.$(prefixName)%') and" + 
+"    upper(cmd.object_identity) not like upper('f$(prefixName)%') and upper(cmd.object_identity) not like upper('%.f$(prefixName)%') and" +
+"    (upper(rowData) not like '%CREATE%TABLE%(%' or cmd.command_tag like '%CREATE%TABLE%')) then\n" +
+"        tableName := '$(prefixName)_node';\n" +
+"        if (cmd.command_tag like '%TABLE%') then\n" +
+"            tableName := cmd.object_identity;\n" +
+"        end if;\n" +
+"        if (cmd.command_tag like '%TRIGGER%') then\n" +
+"            select c.relname into tableName from pg_trigger t join pg_class c on t.tgrelid = c.oid" +
+"            where t.tgname = trim(both '\"' from split_part(cmd.object_identity, '.', 2));\n" +
+"        end if;\n" +
+"        if (cmd.command_tag like '%INDEX%') then\n" +
+"            select ct.relname into tableName from pg_index i join pg_class ci on i.indexrelid = ci.oid join pg_class ct on i.indrelid = ct.oid" +
+"            where ci.relname = trim(both '\"' from split_part(cmd.object_identity, '.', 2));\n" +
+"        end if;\n" +
+"        if (tableName like '%.%') then\n" +
+"            tableName := split_part(tableName, '.', 2);\n" +
+"        end if;\n" +
+"        tableName := trim(both '\"' from tableName);\n" +
+"        select trigger_hist_id, source_table_name into histId, tableName from sym_trigger_hist where upper(source_table_name) = upper(tableName) and inactive_time is null;\n" +
+"        if (histId is not null) then\n" +
+"            select channel_id into channelId from sym_trigger where upper(source_table_name) = upper(tableName);\n" +
+"            if (channelId is null) then\n" +
+"                channelId := 'config';\n" +
+"            end if;\n" +
+"            insert into $(defaultSchema)$(prefixName)_data\n" +
+"            (table_name, event_type, trigger_hist_id, row_data, channel_id, source_node_id, create_time)\n" +
+"            values (tableName, '" + DataEventType.SQL.getCode() + "', histId,\n" +
+"            '\"delimiter " + delimiter + ";' || chr(13) || chr(10) || replace(replace(rowData,'\\','\\\\'),'\"','\\\"') || '\",ddl',\n" +
+"            channelId, $(defaultSchema)$(prefixName)_node_disabled(), " + getCreateTimeExpression(symmetricDialect) + ");\n" +
+"        end if;\n" +
+"    end if;\n" +
+"end loop;\n" +
+"end;\n" +
+"$function$ language plpgsql" + getSecurityClause() + ";" +
+"create or replace function f$(triggerName)_drop() returns event_trigger as\n" +
+"$function$\n" +
+"declare cmd record;\n" +
+"declare histId integer;\n" +
+"declare rowData text;\n" +
+"begin\n" +
+"rowData = current_query();\n" +
+"for cmd in select * from pg_event_trigger_dropped_objects() loop\n" +
+"    if (upper(cmd.object_identity) not like upper('$(prefixName)%') and upper(cmd.object_identity) not like upper('%.$(prefixName)%') and" + 
+"    upper(cmd.object_identity) not like upper('f$(prefixName)%') and upper(cmd.object_identity) not like upper('%.f$(prefixName)%') and cmd.original) then\n" +
+"        select trigger_hist_id into histId from sym_trigger_hist where upper(source_table_name) = upper('$(prefixName)_node') and inactive_time is null;\n" +
+"        insert into $(defaultSchema)$(prefixName)_data\n" +
+"        (table_name, event_type, trigger_hist_id, row_data, channel_id, source_node_id, create_time)\n" +
+"        values ('$(prefixName)_node', '" + DataEventType.SQL.getCode() + "', histId,\n" +
+"        '\"delimiter " + delimiter + ";' || chr(13) || chr(10) || replace(replace(rowData,'\\','\\\\'),'\"','\\\"') || '\",ddl',\n" +
+"        'config', $(defaultSchema)$(prefixName)_node_disabled(), " + getCreateTimeExpression(symmetricDialect) + ");\n" +
+"    end if;\n" +
+"end loop;\n" +
+"end;\n" +
+"$function$ language plpgsql" + getSecurityClause() + ";");
+
+        sqlTemplates.put("allDdlTriggerTemplate",
+"create or replace function f$(triggerName)() returns event_trigger as\n" +
+"$function$\n" +
+"declare cmd record;\n" +
+"declare tableName varchar(255);\n" +
+"declare histId integer;\n" +
+"declare channelId varchar(128);\n" +
+"declare rowData text;\n" +
+"begin\n" +
+"rowData = current_query();\n" +
+"for cmd in select * from pg_event_trigger_ddl_commands() loop\n" +
+"    if (upper(cmd.object_identity) not like upper('$(prefixName)%') and upper(cmd.object_identity) not like upper('%.$(prefixName)%') and" + 
+"    upper(cmd.object_identity) not like upper('f$(prefixName)%') and upper(cmd.object_identity) not like upper('%.f$(prefixName)%') and" +
+"    (upper(rowData) not like '%CREATE%TABLE%(%' or cmd.command_tag like '%CREATE%TABLE%')) then\n" +
+"        if (cmd.command_tag like '%TABLE%') then\n" +
+"            tableName := cmd.object_identity;\n" +
+"        end if;\n" +
+"        if (cmd.command_tag like '%TRIGGER%') then\n" +
+"            select c.relname into tableName from pg_trigger t join pg_class c on t.tgrelid = c.oid" +
+"            where t.tgname = trim(both '\"' from split_part(cmd.object_identity, '.', 2));\n" +
+"        end if;\n" +
+"        if (cmd.command_tag like '%INDEX%') then\n" +
+"            select ct.relname into tableName from pg_index i join pg_class ci on i.indexrelid = ci.oid join pg_class ct on i.indrelid = ct.oid" +
+"            where ci.relname = trim(both '\"' from split_part(cmd.object_identity, '.', 2));\n" +
+"        end if;\n" +
+"        if (tableName is not null) then\n" +
+"            if (tableName like '%.%') then\n" +
+"                tableName := split_part(tableName, '.', 2);\n" +
+"            end if;\n" +
+"            tableName := trim(both '\"' from tableName);\n" +
+"            select trigger_hist_id, source_table_name into histId, tableName from sym_trigger_hist where upper(source_table_name) = upper(tableName) and inactive_time is null;\n" +
+"        end if;\n" +
+"        if (histId is null) then\n" +
+"            tableName := '$(prefixName)_node';\n" +
+"            select trigger_hist_id into histId from sym_trigger_hist where upper(source_table_name) = upper(tableName) and inactive_time is null;\n" +
+"        end if;\n" +
+"        select channel_id into channelId from sym_trigger where upper(source_table_name) = upper(tableName);\n" +
+"        if (channelId is null) then\n" +
+"            channelId := 'config';\n" +
+"        end if;\n" +
+"        insert into $(defaultSchema)$(prefixName)_data\n" +
+"        (table_name, event_type, trigger_hist_id, row_data, channel_id, source_node_id, create_time)\n" +
+"        values (tableName, '" + DataEventType.SQL.getCode() + "', histId,\n" +
+"        '\"delimiter " + delimiter + ";' || chr(13) || chr(10) || replace(replace(rowData,'\\','\\\\'),'\"','\\\"') || '\",ddl',\n" +
+"        channelId, $(defaultSchema)$(prefixName)_node_disabled(), " + getCreateTimeExpression(symmetricDialect) + ");\n" +
+"    end if;\n" +
+"end loop;\n" +
+"end;\n" +
+"$function$ language plpgsql" + getSecurityClause() + ";" +
+"create or replace function f$(triggerName)_drop() returns event_trigger as\n" +
+"$function$\n" +
+"declare cmd record;\n" +
+"declare histId integer;\n" +
+"declare rowData text;\n" +
+"begin\n" +
+"rowData = current_query();\n" +
+"for cmd in select * from pg_event_trigger_dropped_objects() loop\n" +
+"    if (upper(cmd.object_identity) not like upper('$(prefixName)%') and upper(cmd.object_identity) not like upper('%.$(prefixName)%') and" + 
+"    upper(cmd.object_identity) not like upper('f$(prefixName)%') and upper(cmd.object_identity) not like upper('%.f$(prefixName)%') and cmd.original) then\n" +
+"        select trigger_hist_id into histId from sym_trigger_hist where upper(source_table_name) = upper('$(prefixName)_node') and inactive_time is null;\n" +
+"        insert into $(defaultSchema)$(prefixName)_data\n" +
+"        (table_name, event_type, trigger_hist_id, row_data, channel_id, source_node_id, create_time)\n" +
+"        values ('$(prefixName)_node', '" + DataEventType.SQL.getCode() + "', histId,\n" +
+"        '\"delimiter " + delimiter + ";' || chr(13) || chr(10) || replace(replace(rowData,'\\','\\\\'),'\"','\\\"') || '\",ddl',\n" +
+"        'config', $(defaultSchema)$(prefixName)_node_disabled(), " + getCreateTimeExpression(symmetricDialect) + ");\n" +
+"    end if;\n" +
+"end loop;\n" +
+"end;\n" +
+"$function$ language plpgsql" + getSecurityClause() + ";");
+        
+        sqlTemplates.put("postDdlTriggerTemplate", "create event trigger $(triggerName) on ddl_command_end execute procedure f$(triggerName)();" + 
+"create event trigger $(triggerName)_drop on sql_drop execute procedure f$(triggerName)_drop();");
     }
 
     @Override

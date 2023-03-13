@@ -94,6 +94,8 @@ public class DatabaseInfo {
     private boolean generatedColumnsSupported = false;
     /** Whether expressions can be used as default values */
     private boolean expressionsAsDefaultValuesSupported = false;
+    /** Whether functional indices are supported */
+    private boolean functionalIndicesSupported = false;
     /**
      * Whether the auto-increment definition is done via the DEFAULT part of the column definition.
      */
@@ -226,6 +228,7 @@ public class DatabaseInfo {
     private boolean zeroDateAllowed;
     private String cteExpression;
     private boolean logBased;
+    private boolean triggersContainJava = false;
 
     /**
      * Creates a new platform info object.
@@ -1323,5 +1326,21 @@ public class DatabaseInfo {
 
     public void setLogBased(boolean logBased) {
         this.logBased = logBased;
+    }
+
+    public boolean isTriggersContainJava() {
+        return triggersContainJava;
+    }
+
+    public void setTriggersContainJava(boolean triggersContainJava) {
+        this.triggersContainJava = triggersContainJava;
+    }
+
+    public boolean isFunctionalIndicesSupported() {
+        return functionalIndicesSupported;
+    }
+
+    public void setFunctionalIndicesSupported(boolean functionalIndicesSupported) {
+        this.functionalIndicesSupported = functionalIndicesSupported;
     }
 }
