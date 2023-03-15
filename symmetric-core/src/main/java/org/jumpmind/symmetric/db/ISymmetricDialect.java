@@ -148,11 +148,6 @@ public interface ISymmetricDialect {
     public boolean supportsSubselectsInUpdate();
 
     /*
-     * Indicates if this dialect supports parameter markers in select queries.
-     */
-    public boolean supportsParametersInSelect();
-
-    /*
      * Implement this if the database has some type of cleanup functionality that needs to be run when dropping database objects. An example is Oracle's 'purge
      * recyclebin'
      */

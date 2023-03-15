@@ -250,19 +250,19 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
         return map;
     }
 
-	public String getCatalog() {
-		return catalog;
-	}
+    public String getCatalog() {
+        return catalog;
+    }
 
-	public void setCatalog(String catalog) {
-		this.catalog = catalog;
-	}
+    public void setCatalog(String catalog) {
+        this.catalog = catalog;
+    }
 
-	public String getSchema() {
-		return schema;
-	}
+    public String getSchema() {
+        return schema;
+    }
 
-	public void setSchema(String schema) {
-		this.schema = schema;
-	}
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
 }

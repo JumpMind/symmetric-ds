@@ -242,4 +242,6 @@ public interface IDatabasePlatform {
     public String getSliceTableSql(String columnName, int sliceNum, int totalSlices);
 
     public String getCharSetName();
+
+    public boolean supportsParametersInSelect();
 }

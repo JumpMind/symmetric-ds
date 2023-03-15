@@ -137,6 +137,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setTriggersCreateOrReplaceSupported(true);
         databaseInfo.setBinaryQuoteStart("0x");
         databaseInfo.setBinaryQuoteEnd("");
+        databaseInfo.setFunctionalIndicesSupported(true);
     }
 
     @Override

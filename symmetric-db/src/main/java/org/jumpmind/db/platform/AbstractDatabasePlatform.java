@@ -998,7 +998,31 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     column.addPlatformColumn(platformColumn);
                 }
             }
+            if (!getDatabaseInfo().isFunctionalIndicesSupported()) {
+                List<IIndex> indicesToRemove = new ArrayList<IIndex>();
+                for (IIndex index : table.getIndices()) {
+                    if (isFunctionalIndex(index)) {
+                        indicesToRemove.add(index);
+                    }
+                }
+                for (IIndex indexToRemove : indicesToRemove) {
+                    log.info("Removing index " + indexToRemove.getName()
+                            + " from table " + table.getName() + " because functional indexes are not supported on this platform.");
+                    table.removeIndex(indexToRemove);
+                }
+            }
         }
+    }
+
+    private boolean isFunctionalIndex(IIndex index) {
+        boolean ret = false;
+        for (IndexColumn indexColumn : index.getColumns()) {
+            if (indexColumn.getName().contains("(") || indexColumn.getName().contains(")")) {
+                ret = true;
+                break;
+            }
+        }
+        return ret;
     }
 
     @Override
@@ -1266,5 +1290,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public String getCharSetName() {
         return "";
+    }
+
+    public boolean supportsParametersInSelect() {
+        return true;
     }
 }
