@@ -59,6 +59,7 @@ import org.jumpmind.symmetric.file.FileSyncZipDataWriter;
 import org.jumpmind.symmetric.file.FileTriggerFileModifiedListener;
 import org.jumpmind.symmetric.file.FileTriggerFileModifiedListener.FileModifiedCallback;
 import org.jumpmind.symmetric.file.FileTriggerTracker;
+import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
@@ -574,8 +575,9 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     @Override
     public Object[] getStagingPathComponents(OutgoingBatch fileSyncBatch) {
         StringBuilder zipName = new StringBuilder(32);
-        zipName.append("filesync_").append(fileSyncBatch.getNodeBatchId()).append(".zip");
-        return new String[] { Constants.STAGING_CATEGORY_OUTGOING, fileSyncBatch.getNodeId(), zipName.toString() };
+        zipName.append(StringUtils.leftPad(String.valueOf(fileSyncBatch.getBatchId()), 10, "0")).append("_filesync");
+        return new String[] { Constants.STAGING_CATEGORY_OUTGOING, Batch.getStagedLocation(fileSyncBatch.isCommonFlag(),
+                fileSyncBatch.getNodeId(), fileSyncBatch.getBatchId()), zipName.toString() };
     }
 
     public List<OutgoingBatch> sendFiles(ProcessInfo processInfo, Node targetNode,
@@ -609,9 +611,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                         stagedResource = previouslyStagedResource;
                     } else {
                         if (dataWriter == null) {
-                            stagedResource = stagingManager.create(
-                                    Constants.STAGING_CATEGORY_OUTGOING, processInfo.getSourceNodeId(),
-                                    targetNode.getNodeId(), "filesync.zip");
+                            stagedResource = stagingManager.create(getStagingPathComponents(currentBatch));
                             dataWriter = new FileSyncZipDataWriter(maxBytesToSync, this,
                                     engine.getNodeService(), stagedResource, engine.getExtensionService(), engine.getConfigurationService());
                         }
@@ -691,7 +691,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             }
             throw e;
         } finally {
-            if (stagedResource != null) {
+            if (stagedResource != null && parameterService.is(ParameterConstants.FILE_SYNC_DELETE_ZIP_FILE_AFTER_SYNC)) {
                 stagedResource.delete();
             }
         }

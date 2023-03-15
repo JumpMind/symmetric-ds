@@ -355,6 +355,7 @@ final public class ParameterConstants {
     public final static String FILE_SYNC_USE_CRC = "file.sync.use.crc";
     public final static String FILE_SYNC_PREVENT_PING_BACK = "file.sync.prevent.ping.back";
     public final static String FILE_SYNC_LOCK_WAIT_MS = "file.sync.lock.wait.ms";
+    public final static String FILE_SYNC_DELETE_ZIP_FILE_AFTER_SYNC = "file.sync.delete.zip.file.after.sync";
     public final static String FILE_SYNC_DELETE_CTL_FILE_AFTER_SYNC = "file.sync.delete.ctl.file.after.sync";
     public final static String FILE_SYNC_USE_CTL_AS_FILE_EXT = "file.sync.use.ctl.as.file.ext";
     public final static String BSH_LOAD_FILTER_HANDLES_MISSING_TABLES = "bsh.load.filter.handles.missing.tables";

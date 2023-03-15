@@ -129,7 +129,7 @@ public class BatchStagingManager extends StagingManager {
         @SuppressWarnings("unchecked")
         Set<Long> outgoingBatches = (Set<Long>) context.getContextValue("outgoingBatches");
         try {
-            Long batchId = Long.valueOf(path[path.length - 1]);
+            Long batchId = Long.valueOf(path[path.length - 1].replace("_filesync", ""));
             if ((resourceClearsMinTimeHurdle && !outgoingBatches.contains(batchId)) || ttlInMs == 0) {
                 return true;
             }
@@ -149,7 +149,7 @@ public class BatchStagingManager extends StagingManager {
         Map<String, Long> biggestIncomingByNode = (Map<String, Long>) context.getContextValue("biggestIncomingByNode");
         boolean recordIncomingBatchesEnabled = context.getBoolean("recordIncomingBatchesEnabled");
         try {
-            BatchId batchId = new BatchId(Long.valueOf(path[path.length - 1]), path[1]);
+            BatchId batchId = new BatchId(Long.valueOf(path[path.length - 1].replace("_filesync", "")), path[1]);
             Long biggestBatchId = biggestIncomingByNode.get(batchId.getNodeId());
             if ((recordIncomingBatchesEnabled && resourceClearsMinTimeHurdle && biggestBatchId != null
                     && biggestBatchId > batchId.getBatchId() && !incomingBatches.contains(batchId))
