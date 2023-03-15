@@ -30,11 +30,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.PlatformColumn;
+import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.Trigger.TriggerType;
@@ -257,6 +259,33 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
             }
         }
         return defaultValue;
+    }
+
+    @Override
+    protected void readForeignKey(DatabaseMetaDataWrapper metaData, Map<String, Object> values,
+            Map<String, ForeignKey> knownFks) throws SQLException {
+        String fkName = (String) values.get(getName("FK_NAME"));
+        ForeignKey fk = (ForeignKey) knownFks.get(fkName);
+        if (fk == null) {
+            fk = new ForeignKey(fkName);
+            fk.setForeignTableName((String) values.get(getName("PKTABLE_NAME")));
+            fk.setForeignTableCatalog((String) values.get(getName("PKTABLE_CAT")));
+            String fkSchema = (String) values.get(getName("PKTABLE_SCHEM"));
+            if (StringUtils.isBlank(fkSchema)) {
+                fkSchema = (String) values.get(getName("pktable_schem"));
+            }
+            fk.setForeignTableSchema(fkSchema);
+            readForeignKeyUpdateRule(values, fk);
+            readForeignKeyDeleteRule(values, fk);
+            knownFks.put(fkName, fk);
+        }
+        Reference ref = new Reference();
+        ref.setForeignColumnName((String) values.get(getName("PKCOLUMN_NAME")));
+        ref.setLocalColumnName((String) values.get(getName("FKCOLUMN_NAME")));
+        if (values.containsKey(getName("KEY_SEQ"))) {
+            ref.setSequenceValue(((Short) values.get(getName("KEY_SEQ"))).intValue());
+        }
+        fk.addReference(ref);
     }
 
     @Override

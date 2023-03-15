@@ -112,7 +112,7 @@ abstract public class AbstractTransportManager {
                 append(builder, WebConstants.ACK_IGNORE_ROW_COUNT + batchId, batch.getIgnoreRowCount());
                 append(builder, WebConstants.ACK_MISSING_DELETE_COUNT + batchId, batch.getMissingDeleteCount());
                 append(builder, WebConstants.ACK_SKIP_COUNT + batchId, batch.getSkipCount());
-                append(builder, WebConstants.ACK_BULK_LOADER_FLAG + batchId, batch.isBulkLoadFlag());
+                append(builder, WebConstants.ACK_BULK_LOADER_FLAG + batchId, batch.isBulkLoaderFlag());
                 if (batch.getIgnoreCount() > 0) {
                     append(builder, WebConstants.ACK_IGNORE_COUNT + batchId, batch.getIgnoreCount());
                 }

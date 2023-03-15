@@ -898,9 +898,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 && (getParameterService().is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND,
                         false) || StringUtils.isNotBlank(getParameterService().getString(
                                 ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT)));
-        Table symNodeTable = symmetricDialect.getPlatform().readTableFromDatabase(null, null,
+        Table symNodeTable = symmetricDialect.getPlatform().getTableFromCache(null, null,
                 TableConstants.getTableName(parameterService.getTablePrefix(),
-                        TableConstants.SYM_NODE));
+                        TableConstants.SYM_NODE), false);
         Node node = symNodeTable != null ? getNodeService().findIdentity() : null;
         long offlineNodeDetectionPeriodSeconds = getParameterService().getLong(
                 ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES) * 60;

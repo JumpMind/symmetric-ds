@@ -62,7 +62,7 @@ public class SqlScript {
             String fileName = url.getFile();
             fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
             init(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8.name()), sqlTemplate, failOnError, true, true,
-                    delimiter, replacementTokens);
+                    false, delimiter, replacementTokens);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -74,17 +74,22 @@ public class SqlScript {
 
     public SqlScript(String sqlScript, ISqlTemplate sqlTemplate, boolean failOnError, boolean failOnDrop, boolean failOnSequenceCreate,
             String delimiter, Map<String, String> replacementTokens) {
-        init(new StringReader(sqlScript), sqlTemplate, failOnError, failOnDrop, failOnSequenceCreate, delimiter, replacementTokens);
+        init(new StringReader(sqlScript), sqlTemplate, failOnError, failOnDrop, failOnSequenceCreate, false, delimiter, replacementTokens);
+    }
+
+    public SqlScript(String sqlScript, ISqlTemplate sqlTemplate, boolean failOnError, boolean failOnDrop, boolean failOnSequenceCreate,
+            boolean triggersContainJava, String delimiter, Map<String, String> replacementTokens) {
+        init(new StringReader(sqlScript), sqlTemplate, failOnError, failOnDrop, failOnSequenceCreate, triggersContainJava, delimiter, replacementTokens);
     }
 
     public SqlScript(Reader reader, ISqlTemplate sqlTemplate, boolean failOnError,
             String delimiter, Map<String, String> replacementTokens) {
-        init(reader, sqlTemplate, failOnError, true, true, delimiter, replacementTokens);
+        init(reader, sqlTemplate, failOnError, true, true, false, delimiter, replacementTokens);
     }
 
     private void init(Reader reader, ISqlTemplate sqlTemplate, boolean failOnError, boolean failOnDrop, boolean failOnSequenceCreate,
-            String delimiter, Map<String, String> replacementTokens) {
-        this.scriptReader = new SqlScriptReader(reader);
+            boolean triggersContainJava, String delimiter, Map<String, String> replacementTokens) {
+        this.scriptReader = new SqlScriptReader(reader, triggersContainJava);
         this.scriptReader.setDelimiter(delimiter);
         this.scriptReader.setReplacementTokens(replacementTokens);
         this.sqlTemplate = sqlTemplate;
@@ -118,9 +123,9 @@ public class SqlScript {
         }
     }
 
-    public static int calculateTotalStatements(String sqlScript, String delimiter) {
+    public static int calculateTotalStatements(String sqlScript, String delimiter, boolean triggersContainJava) {
         int count = 0;
-        try (SqlScriptReader scriptReader = new SqlScriptReader(new StringReader(sqlScript))) {
+        try (SqlScriptReader scriptReader = new SqlScriptReader(new StringReader(sqlScript), triggersContainJava)) {
             scriptReader.setDelimiter(delimiter);
             while (scriptReader.readSqlStatement() != null) {
                 count++;

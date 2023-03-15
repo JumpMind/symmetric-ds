@@ -320,7 +320,7 @@ public class ModelComparator {
             // This is probably a conversion from CLOB to BLOB because the database collation is set to binary
             compatible = true;
         }
-        if (!compatible && targetColumn.getMappedTypeCode() != sourceColumn.getMappedTypeCode()
+        if (!compatible && !ddlBuilder.areMappedTypesTheSame(sourceColumn, targetColumn)
                 && platformInfo.getTargetJdbcType(targetColumn.getMappedTypeCode()) != platformInfo.getTargetJdbcType(sourceColumn.getMappedTypeCode())) {
             log.debug(
                     "The {} column on the {} table changed type codes from {} to {} ",

@@ -2008,6 +2008,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         return true;
     }
 
+    public boolean areMappedTypesTheSame(Column sourceColumn, Column targetColumn) {
+        return sourceColumn.getMappedTypeCode() == targetColumn.getMappedTypeCode();
+    }
+
     /**
      * Returns the name to be used for the given foreign key. If the foreign key has no specified name, this method determines a unique name for it. The name
      * will also be shortened to honor the maximum identifier length imposed by the platform.

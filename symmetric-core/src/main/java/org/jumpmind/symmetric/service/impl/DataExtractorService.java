@@ -162,6 +162,7 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.CustomizableThreadFactory;
 import org.jumpmind.util.ExceptionUtils;
+import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.FutureImpl;
 import org.jumpmind.util.Statistics;
 import org.slf4j.MDC;
@@ -1419,12 +1420,22 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     @Override
     public void updateExtractRequestLoadTime(ISqlTransaction transaction, Date loadTime, OutgoingBatch outgoingBatch) {
-        transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), new Date(),
-                outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0,
-                outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), new Date(), outgoingBatch.getBatchId(),
-                outgoingBatch.getBatchId(), outgoingBatch.getNodeId(), outgoingBatch.getLoadId(), engine.getNodeId());
+        if (platform.supportsParametersInSelect()) {
+            transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), new Date(),
+                    outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0,
+                    outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), new Date(), outgoingBatch.getBatchId(),
+                    outgoingBatch.getBatchId(), outgoingBatch.getNodeId(), outgoingBatch.getLoadId(), engine.getNodeId());
+        } else {
+            String sql = getSql("updateExtractRequestLoadTimeNoParamsInSelect");
+            sql = FormatUtils.replace("batchId", String.valueOf(outgoingBatch.getBatchId()), sql);
+            sql = FormatUtils.replace("rowCount",
+                    String.valueOf(outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0), sql);
+            sql = FormatUtils.replace("loadMillis", String.valueOf(outgoingBatch.getLoadMillis()), sql);
+            transaction.prepareAndExecute(sql, outgoingBatch.getBatchId(), new Date(), outgoingBatch.getBatchId(),
+                    outgoingBatch.getBatchId(), outgoingBatch.getNodeId(), outgoingBatch.getLoadId(), engine.getNodeId());
+        }
         TableReloadStatus status = dataService.updateTableReloadStatusDataLoaded(transaction,
-                outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1, outgoingBatch.isBulkLoadFlag());
+                outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1, outgoingBatch.isBulkLoaderFlag());
         if (status != null && status.isFullLoad() && (status.isCancelled() || status.isCompleted())) {
             log.info("Initial load ended for node {}", outgoingBatch.getNodeId());
             nodeService.setInitialLoadEnded(transaction, outgoingBatch.getNodeId());
@@ -1436,8 +1447,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            transaction.prepareAndExecute(getSql("updateExtractRequestTransferred"), batch.getBatchId(), batch.getDataRowCount(), transferMillis,
-                    batch.getBatchId(), batch.getBatchId(), batch.getNodeId(), batch.getLoadId(), batch.getBatchId(), engine.getNodeId());
+            if (platform.supportsParametersInSelect()) {
+                transaction.prepareAndExecute(getSql("updateExtractRequestTransferred"), batch.getBatchId(), batch.getDataRowCount(), transferMillis,
+                        batch.getBatchId(), batch.getBatchId(), batch.getNodeId(), batch.getLoadId(), batch.getBatchId(), engine.getNodeId());
+            } else {
+                String sql = getSql("updateExtractRequestTransferredNoParamsInSelect");
+                sql = FormatUtils.replace("rowCount", String.valueOf(batch.getDataRowCount()), sql);
+                transaction.prepareAndExecute(sql, batch.getBatchId(), transferMillis, batch.getBatchId(),
+                        batch.getBatchId(), batch.getNodeId(), batch.getLoadId(), batch.getBatchId(), engine.getNodeId());
+            }
             transaction.commit();
         } catch (Error ex) {
             if (transaction != null) {

@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -895,28 +896,37 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void insertIncomingError(ISqlTransaction transaction, IncomingError incomingError) {
         if (StringUtils.isNotBlank(incomingError.getNodeId()) && incomingError.getBatchId() >= 0) {
-            transaction.prepareAndExecute(
-                    getSql("insertIncomingErrorSql"),
-                    new Object[] { incomingError.getBatchId(), incomingError.getNodeId(),
-                            incomingError.getFailedRowNumber(),
-                            incomingError.getFailedLineNumber(),
-                            incomingError.getTargetCatalogName(),
-                            incomingError.getTargetSchemaName(),
-                            incomingError.getTargetTableName(),
-                            incomingError.getEventType().getCode(),
-                            incomingError.getBinaryEncoding().name(),
-                            incomingError.getColumnNames(),
-                            incomingError.getPrimaryKeyColumnNames(), incomingError.getRowData(),
-                            incomingError.getOldData(), incomingError.getCurData(),
-                            incomingError.getResolveData(),
-                            incomingError.isResolveIgnore() ? 1 : 0, incomingError.getConflictId(),
-                            incomingError.getCreateTime(), incomingError.getLastUpdateBy(),
-                            incomingError.getLastUpdateTime() }, new int[] { Types.BIGINT,
-                                    Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR,
-                                    Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR,
-                                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                                    Types.VARCHAR, Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP,
-                                    Types.VARCHAR, Types.TIMESTAMP });
+            boolean alreadyExists = false;
+            if (symmetricDialect.getDriverName().equalsIgnoreCase(DatabaseNamesConstants.OPENEDGE)) {
+                if (getIncomingError(incomingError.getBatchId(), incomingError.getNodeId(),
+                        incomingError.getFailedRowNumber()) != null) {
+                    alreadyExists = true;
+                }
+            }
+            if (!alreadyExists) {
+                transaction.prepareAndExecute(
+                        getSql("insertIncomingErrorSql"),
+                        new Object[] { incomingError.getBatchId(), incomingError.getNodeId(),
+                                incomingError.getFailedRowNumber(),
+                                incomingError.getFailedLineNumber(),
+                                incomingError.getTargetCatalogName(),
+                                incomingError.getTargetSchemaName(),
+                                incomingError.getTargetTableName(),
+                                incomingError.getEventType().getCode(),
+                                incomingError.getBinaryEncoding().name(),
+                                incomingError.getColumnNames(),
+                                incomingError.getPrimaryKeyColumnNames(), incomingError.getRowData(),
+                                incomingError.getOldData(), incomingError.getCurData(),
+                                incomingError.getResolveData(),
+                                incomingError.isResolveIgnore() ? 1 : 0, incomingError.getConflictId(),
+                                incomingError.getCreateTime(), incomingError.getLastUpdateBy(),
+                                incomingError.getLastUpdateTime() }, new int[] { Types.BIGINT,
+                                        Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR,
+                                        Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR,
+                                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                                        Types.VARCHAR, Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP,
+                                        Types.VARCHAR, Types.TIMESTAMP });
+            }
         }
     }
 

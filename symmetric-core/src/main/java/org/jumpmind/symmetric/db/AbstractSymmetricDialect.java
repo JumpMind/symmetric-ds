@@ -530,12 +530,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     log.debug("Alter SQL generated: {}", alterSql);
                     ISqlResultsListener resultsInstallListener = resultsListener;
                     List<IDatabaseInstallStatementListener> installListeners = extensionService.getExtensionPointList(IDatabaseInstallStatementListener.class);
+                    boolean triggersContainJava = platform.getDatabaseInfo().isTriggersContainJava();
                     if (installListeners != null && installListeners.size() > 0) {
-                        int totalStatements = SqlScript.calculateTotalStatements(alterSql, delimiter);
+                        int totalStatements = SqlScript.calculateTotalStatements(alterSql, delimiter, triggersContainJava);
                         resultsInstallListener = new LogSqlResultsInstallListener(parameterService.getEngineName(),
                                 totalStatements, extensionService.getExtensionPointList(IDatabaseInstallStatementListener.class));
                     }
-                    SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
+                    SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, false, false, triggersContainJava, delimiter, null);
                     script.setListener(resultsInstallListener);
                     script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                     for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {

@@ -55,6 +55,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -237,18 +238,24 @@ public class SelectFromTableSource extends SelectFromSource {
         if (isSelfReferencingFk) {
             selectSql = "";
             if (selfRefLevel == 0) {
-                selectSql += "(" + selfRefParentColumnName + " is null or " + selfRefParentColumnName + " = " + selfRefChildColumnName + ") ";
+                selectSql += "(" + SymmetricUtils.quote(symmetricDialectToUse, selfRefParentColumnName)
+                        + " is null or " + SymmetricUtils.quote(symmetricDialectToUse, selfRefParentColumnName)
+                        + " = " + SymmetricUtils.quote(symmetricDialectToUse, selfRefChildColumnName) + ") ";
             } else {
                 DatabaseInfo info = symmetricDialectToUse.getPlatform().getDatabaseInfo();
                 String tableName = Table.getFullyQualifiedTableName(sourceTable.getCatalog(), sourceTable.getSchema(),
                         sourceTable.getName(), info.getDelimiterToken(), info.getCatalogSeparator(), info.getSchemaSeparator());
-                String refSql = "select " + selfRefChildColumnName + " from " + tableName + " where " + selfRefParentColumnName;
-                selectSql += selfRefParentColumnName + " in (";
+                String refSql = "select " + SymmetricUtils.quote(symmetricDialectToUse, selfRefChildColumnName)
+                        + " from " + tableName + " where "
+                        + SymmetricUtils.quote(symmetricDialectToUse, selfRefParentColumnName);
+                selectSql += SymmetricUtils.quote(symmetricDialectToUse, selfRefParentColumnName) + " in (";
                 for (int i = 1; i < selfRefLevel; i++) {
                     selectSql += refSql + " in (";
                 }
-                selectSql += refSql + " is null or " + selfRefChildColumnName + " = " + selfRefParentColumnName + " ) and " +
-                        selfRefParentColumnName + " != " + selfRefChildColumnName + StringUtils.repeat(")", selfRefLevel - 1);
+                selectSql += refSql + " is null or " + SymmetricUtils.quote(symmetricDialectToUse, selfRefChildColumnName) + " = " + SymmetricUtils.quote(
+                        symmetricDialectToUse, selfRefParentColumnName) + " ) and " +
+                        SymmetricUtils.quote(symmetricDialectToUse, selfRefParentColumnName) + " != " + SymmetricUtils.quote(symmetricDialectToUse,
+                                selfRefChildColumnName) + StringUtils.repeat(")", selfRefLevel - 1);
             }
             log.info("Querying level {} for table {}: {}", selfRefLevel, sourceTable.getName(), selectSql);
         }

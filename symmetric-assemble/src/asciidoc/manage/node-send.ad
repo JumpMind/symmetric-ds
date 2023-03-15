@@ -3,6 +3,9 @@ Events other than data changes can be sent to nodes, which include the following
 SQL Scripts:: Sql can be sent to be executed on a target node
 BSH Scripts:: Beanshell scripts can be sent to be executed on a target node
 Table Schema:: The schema the source node can be replicated to the target node individually
+ifdef::pro[]
+Configuration:: The configuration is sent, similar to exporting the configuration and importing it, which excludes node, user, role, and privilege tables.
+endif::pro[]
 
 ifndef::pro[]
 

@@ -124,6 +124,12 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " rows_count = rows_count + ?, "
                 + " last_update_time = ?  "
                 + " where load_id = ?");
+        putSql("updateTableReloadStatusDataCountsNoParamsInSelect", "update $(table_reload_status) set "
+                + " start_data_batch_id = ?, end_data_batch_id = ?, "
+                + " data_batch_count = data_batch_count + $(batchCount), "
+                + " rows_count = rows_count + $(rowCount), "
+                + " last_update_time = ?  "
+                + " where load_id = ?");
         putSql("insertTableReloadStatus",
                 "insert into $(table_reload_status) (load_id, target_node_id, source_node_id, full_load, start_time, last_update_time) values (?, ?, ?, ?, ?, ?)");
         putSql("deleteTableReloadStatus", "delete from $(table_reload_status) where load_id = ?");
@@ -150,10 +156,34 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " error_flag = case when error_batch_id = ? then 0 else error_flag end, "
                 + " error_batch_id = case when error_batch_id = ? then null else error_batch_id end "
                 + " where load_id = ? and completed = 0");
+        putSql("updateTableReloadStatusDataLoadedNoParams", "update $(table_reload_status) "
+                + " set completed = case when ("
+                + "    data_batch_count <= (case when $(batchId) between start_data_batch_id and end_data_batch_id then data_batch_loaded + $(batchCount) else data_batch_loaded end) and "
+                + "    setup_batch_count <= (case when $(batchId) < start_data_batch_id then setup_batch_loaded + $(batchCount) else setup_batch_loaded end) and "
+                + "    finalize_batch_count <= (case when $(batchId) > end_data_batch_id then finalize_batch_loaded + $(batchCount) else finalize_batch_loaded end)) "
+                + "    then 1 else 0 end, "
+                + " end_time = case when ("
+                + "    data_batch_count <= (case when $(batchId) between start_data_batch_id and end_data_batch_id then data_batch_loaded + $(batchCount) else data_batch_loaded end) and "
+                + "    setup_batch_count <= (case when $(batchId) < start_data_batch_id then setup_batch_loaded + $(batchCount) else setup_batch_loaded end) and "
+                + "    finalize_batch_loaded <= (case when $(batchId) > end_data_batch_id then finalize_batch_loaded + $(batchCount) else finalize_batch_loaded end)) "
+                + "    then now() else end_time end, "
+                + " data_batch_loaded = case when $(batchId) between start_data_batch_id and end_data_batch_id then data_batch_loaded + $(batchCount) else data_batch_loaded end, "
+                + " setup_batch_loaded = case when $(batchId) < start_data_batch_id then setup_batch_loaded + $(batchCount) else setup_batch_loaded end, "
+                + " finalize_batch_loaded = case when $(batchId) > end_data_batch_id then finalize_batch_loaded + $(batchCount) else finalize_batch_loaded end, "
+                + " (rows_loaded) = (select case when sum(loaded_rows) is null then 0 else sum(loaded_rows) end from $(extract_request) where load_id = $(loadId) and source_node_id = '$(nodeId)'), "
+                + " last_update_time = now(), "
+                + " batch_bulk_load_count = case when $(batchId) between start_data_batch_id and end_data_batch_id then batch_bulk_load_count + $(isBulkLoaded) else batch_bulk_load_count end, "
+                + " error_flag = case when error_batch_id = $(batchId) then 0 else error_flag end, "
+                + " error_batch_id = case when error_batch_id = $(batchId) then null else error_batch_id end "
+                + " where load_id = $(loadId) and completed = 0");
         putSql("updateTableReloadStatusFailed", "update $(table_reload_status) "
                 + " set error_flag = case when error_batch_id is null or error_batch_id != ? then 1 else error_flag end, "
                 + " error_batch_id = case when error_batch_id is null or error_batch_id != ? then ? else error_batch_id end "
                 + " where load_id = ? and completed = 0");
+        putSql("updateTableReloadStatusFailedNoParams", "update $(table_reload_status) "
+                + " set error_flag = case when error_batch_id is null or error_batch_id != $(batchId) then 1 else error_flag end, "
+                + " error_batch_id = case when error_batch_id is null or error_batch_id != $(batchId) then $(batchId) else error_batch_id end "
+                + " where load_id = $(loadId) and completed = 0");
         putSql("selectStartBatchExtractRequest",
                 "select start_batch_id from $(extract_request) where ? between start_batch_id and end_batch_id and node_id = ? and source_node_id = ?");
         putSql("updateTableReloadStatusFinalizeCount", "update $(table_reload_status) set "

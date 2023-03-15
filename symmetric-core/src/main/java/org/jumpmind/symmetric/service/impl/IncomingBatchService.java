@@ -278,7 +278,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     public void insertIncomingBatch(ISqlTransaction transaction, IncomingBatch batch) {
         if (batch.isPersistable()) {
             boolean alreadyExists = false;
-            if (symmetricDialect.getName().equals(DatabaseNamesConstants.REDSHIFT)) {
+            if (symmetricDialect.getName().equals(DatabaseNamesConstants.REDSHIFT)
+                    || symmetricDialect.getDriverName().equalsIgnoreCase(DatabaseNamesConstants.OPENEDGE)) {
                 if (findIncomingBatch(batch.getBatchId(), batch.getNodeId()) != null) {
                     alreadyExists = true;
                 }
@@ -385,7 +386,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             batch.getOtherRowCount(), batch.getDataRowCount(), batch.getDataInsertRowCount(), batch.getDataUpdateRowCount(),
                             batch.getDataDeleteRowCount(), batch.getExtractRowCount(), batch.getExtractInsertRowCount(),
                             batch.getExtractUpdateRowCount(), batch.getExtractDeleteRowCount(), batch.getLoadInsertRowCount(),
-                            batch.getLoadUpdateRowCount(), batch.getLoadDeleteRowCount(), batch.getFailedDataId(), batch.isBulkLoadFlag(), batch.getBatchId(),
+                            batch.getLoadUpdateRowCount(), batch.getLoadDeleteRowCount(), batch.getFailedDataId(), batch.isBulkLoaderFlag(), batch.getBatchId(),
                             batch.getNodeId() },
                     new int[] { Types.CHAR, Types.SMALLINT, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
@@ -572,7 +573,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setLoadId(rs.getLong("load_id"));
             batch.setCommonFlag(rs.getBoolean("common_flag"));
             batch.setFailedDataId(rs.getLong("failed_data_id"));
-            batch.setBulkLoadFlag(rs.getBoolean("bulk_loader_flag"));
+            batch.setBulkLoaderFlag(rs.getBoolean("bulk_loader_flag"));
             return batch;
         }
     }

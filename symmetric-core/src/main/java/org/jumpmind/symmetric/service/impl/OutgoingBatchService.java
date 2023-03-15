@@ -216,7 +216,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.getConflictLoseCount(), outgoingBatch.getIgnoreRowCount(), outgoingBatch.getMissingDeleteCount(),
                         outgoingBatch.getSkipCount(), outgoingBatch.getExtractRowCount(), outgoingBatch.getExtractInsertRowCount(),
                         outgoingBatch.getExtractUpdateRowCount(), outgoingBatch.getExtractDeleteRowCount(),
-                        outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(), outgoingBatch.isBulkLoadFlag() ? 1 : 0,
+                        outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(), outgoingBatch.isBulkLoaderFlag() ? 1 : 0,
                         outgoingBatch.getBatchId(), outgoingBatch.getNodeId() },
                 new int[] { Types.CHAR, symmetricDialect.getSqlTypeForIds(), Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
@@ -259,7 +259,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                             outgoingBatch.getConflictLoseCount(), outgoingBatch.getIgnoreRowCount(), outgoingBatch.getMissingDeleteCount(),
                             outgoingBatch.getSkipCount(), outgoingBatch.getExtractRowCount(), outgoingBatch.getExtractInsertRowCount(),
                             outgoingBatch.getExtractUpdateRowCount(), outgoingBatch.getExtractDeleteRowCount(),
-                            outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(), outgoingBatch.isBulkLoadFlag() ? 1 : 0,
+                            outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(), outgoingBatch.isBulkLoaderFlag() ? 1 : 0,
                             outgoingBatch.getBatchId(), outgoingBatch.getNodeId() }, types);
             if (++count >= flushSize) {
                 transaction.flush();
@@ -876,7 +876,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     batch.setIgnoreRowCount(rs.getLong("ignore_row_count"));
                     batch.setMissingDeleteCount(rs.getLong("missing_delete_count"));
                     batch.setSkipCount(rs.getLong("skip_count"));
-                    batch.setBulkLoadFlag(rs.getBoolean("bulk_loader_flag"));
+                    batch.setBulkLoaderFlag(rs.getBoolean("bulk_loader_flag"));
                 }
                 return batch;
             } else {
