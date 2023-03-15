@@ -514,4 +514,13 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
         super.writeCascadeAttributesForForeignKeyDelete(key, ddl);
         key.setOnDeleteAction(original);
     }
+
+    @Override
+    public boolean areMappedTypesTheSame(Column sourceColumn, Column targetColumn) {
+        int sourceTypeCode = sourceColumn.getMappedTypeCode();
+        int targetTypeCode = targetColumn.getMappedTypeCode();
+        return super.areMappedTypesTheSame(sourceColumn, targetColumn)
+                || (sourceTypeCode == Types.CHAR && targetTypeCode == Types.VARCHAR)
+                || (sourceTypeCode == Types.VARCHAR && targetTypeCode == Types.CHAR);
+    }
 }
