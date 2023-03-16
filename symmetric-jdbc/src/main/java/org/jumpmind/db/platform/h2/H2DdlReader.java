@@ -135,7 +135,7 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
             String maxLength = (String) values.get("CHARACTER_MAXIMUM_LENGTH");
             if (isNotBlank(maxLength)) {
                 Integer size = Integer.valueOf(maxLength);
-                if (size.intValue() == Integer.MAX_VALUE && column.getMappedTypeCode() == Types.VARCHAR) {
+                if (!isVersion2 && size.intValue() == Integer.MAX_VALUE && column.getMappedTypeCode() == Types.VARCHAR) {
                     column.setMappedTypeCode(Types.LONGVARCHAR);
                     column.setMappedType("LONGVARCHAR");
                     column.findPlatformColumn(platform.getName()).setType("LONGVARCHAR");
