@@ -781,13 +781,26 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         boolean excludeDefaults = line.hasOption(OPTION_EXCLUDE_DEFAULTS);
         Collection<Node> nodes = getNodes(line);
         if (args.size() == 0) {
-            for (TriggerHistory hist : engine.getTriggerRouterService().getActiveTriggerHistories()) {
+            List<TriggerHistory> activeTriggerHistories = engine.getTriggerRouterService().getActiveTriggerHistories();
+            for (TriggerHistory hist : activeTriggerHistories) {
                 for (Node node : nodes) {
                     if ((catalog == null || catalog.equals(hist.getSourceCatalogName())) &&
                             (schema == null || schema.equals(hist.getSourceSchemaName()))) {
                         getSymmetricEngine().getDataService().sendSchema(node.getNodeId(), hist.getSourceCatalogName(),
                                 hist.getSourceSchemaName(), hist.getSourceTableName(), false,
-                                excludeIndices, excludeForeignKeys, excludeDefaults);
+                                excludeIndices, true, excludeDefaults);
+                    }
+                }
+            }
+            if (!excludeForeignKeys) {
+                for (TriggerHistory hist : activeTriggerHistories) {
+                    for (Node node : nodes) {
+                        if ((catalog == null || catalog.equals(hist.getSourceCatalogName())) &&
+                                (schema == null || schema.equals(hist.getSourceSchemaName()))) {
+                            getSymmetricEngine().getDataService().sendSchema(node.getNodeId(), hist.getSourceCatalogName(),
+                                    hist.getSourceSchemaName(), hist.getSourceTableName(), false,
+                                    excludeIndices, excludeForeignKeys, excludeDefaults);
+                        }
                     }
                 }
             }
@@ -795,7 +808,15 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             for (String tableName : args) {
                 for (Node node : nodes) {
                     getSymmetricEngine().getDataService().sendSchema(node.getNodeId(), catalog,
-                            schema, tableName, false, excludeIndices, excludeForeignKeys, excludeDefaults);
+                            schema, tableName, false, excludeIndices, true, excludeDefaults);
+                }
+            }
+            if (!excludeForeignKeys) {
+                for (String tableName : args) {
+                    for (Node node : nodes) {
+                        getSymmetricEngine().getDataService().sendSchema(node.getNodeId(), catalog,
+                                schema, tableName, false, excludeIndices, excludeForeignKeys, excludeDefaults);
+                    }
                 }
             }
         }

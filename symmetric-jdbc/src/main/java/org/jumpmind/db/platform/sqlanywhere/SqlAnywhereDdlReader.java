@@ -114,6 +114,10 @@ public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
+        if (column.getMappedTypeCode() == Types.CHAR) {
+            column.setMappedTypeCode(Types.VARCHAR);
+            column.setMappedType("VARCHAR");
+        }
         if ((column.getMappedTypeCode() == Types.NUMERIC) && (column.getSizeAsInt() == 19)
                 && (column.getScale() == 0)) {
             // Back-mapping to BIGINT

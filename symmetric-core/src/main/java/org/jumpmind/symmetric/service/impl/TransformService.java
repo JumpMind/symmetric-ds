@@ -291,7 +291,7 @@ public class TransformService extends AbstractService implements ITransformServi
             transform = new TransformTableNodeGroupLink();
             transform.setSourceTableName(tableName);
             transform.setTargetTableName(tableName);
-            transform.setTransformPoint(TransformPoint.LOAD);
+            transform.setTransformPoint(TransformPoint.EXTRACT);
             column = new TransformColumn("node_password", "node_password", false);
             column.setTransformType("bsh");
             column.setTransformExpression(String.format(NODE_FILTER_BSH, "onNodeSecuritySave"));
