@@ -43,6 +43,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +84,11 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
             String maxLength = (String) values.get("CHARACTER_MAXIMUM_LENGTH");
             if (isNotBlank(maxLength)) {
                 Integer size = Integer.valueOf(maxLength);
+                if (size.intValue() == Integer.MAX_VALUE && column.getMappedTypeCode() == Types.VARCHAR) {
+                    column.setMappedTypeCode(Types.LONGVARCHAR);
+                    column.setMappedType("LONGVARCHAR");
+                    column.findPlatformColumn(platform.getName()).setType("LONGVARCHAR");
+                }
                 column.setSize(size.toString());
                 column.findPlatformColumn(platform.getName()).setSize(size);
             }
