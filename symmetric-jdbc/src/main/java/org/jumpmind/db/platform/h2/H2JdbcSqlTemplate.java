@@ -50,6 +50,9 @@ public class H2JdbcSqlTemplate extends JdbcSqlTemplate {
 
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
+        if (this.getDatabaseMajorVersion() == 2) {
+            return "call CURRVAL('" + sequenceName + "_seq')";
+        }
         return "call IDENTITY()";
     }
 
