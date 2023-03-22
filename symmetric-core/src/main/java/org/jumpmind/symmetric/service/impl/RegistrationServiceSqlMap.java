@@ -40,7 +40,7 @@ public class RegistrationServiceSqlMap extends AbstractSqlMap {
         putSql("registrationPendingSql", "update $(node_security) set registration_time = ? where node_id = ?");
         putSql("reopenRegistrationSql", ""
                 + "update $(node_security) set node_password = ?, registration_enabled = 1, "
-                + "registration_time = null, registration_not_before = ?, registration_not_after = ? "
+                + "registration_time = null, registration_not_before = ?, registration_not_after = ?, failed_logins = 0 "
                 + "where node_id = ? and registration_enabled = 0  ");
         putSql("openRegistrationNodeSecuritySql", ""
                 + "insert into $(node_security) (node_id, node_password, registration_enabled, registration_not_before, "
