@@ -115,6 +115,7 @@ public class SymmetricWebServer {
     protected boolean allowSelfSignedCerts = true;
     protected boolean accessLogEnabled = false;
     protected String accessLogFile;
+    protected String cookieName;
 
     public SymmetricWebServer() {
         this(null, DEFAULT_WEBAPP_DIR);
@@ -171,10 +172,15 @@ public class SymmetricWebServer {
         httpsWantClientAuth = serverProperties.is(ServerConstants.HTTPS_WANT_CLIENT_AUTH, false);
         accessLogEnabled = serverProperties.is(ServerConstants.SERVER_ACCESS_LOG_ENABLED, false);
         accessLogFile = serverProperties.get(ServerConstants.SERVER_ACCESS_LOG_FILE);
+        cookieName = serverProperties.get(ServerConstants.SERVER_COOKIE_NAME);
         if (serverProperties.is(ServerConstants.SERVER_HTTP_COOKIES_ENABLED, false)) {
             if (CookieHandler.getDefault() == null) {
                 CookieHandler.setDefault(new CookieManager());
             }
+        }
+        if (StringUtils.isBlank(cookieName)) {
+            cookieName = WebConstants.SESSION_PREFIX + (httpsPort > 0 && httpsEnabled ? httpsPort : "")
+                    + (httpEnabled && httpPort > 0 ? "_" + httpPort : "");
         }
     }
 
@@ -235,8 +241,7 @@ public class SymmetricWebServer {
             webapp.getServletContext().getContextHandler()
                     .setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE, Boolean.toString(true));
         }
-        webapp.getSessionHandler().getSessionCookieConfig().setName(WebConstants.SESSION_PREFIX + (httpsPort > 0 && httpsEnabled ? httpsPort : "")
-                + (httpEnabled && httpPort > 0 ? "_" + httpPort : ""));
+        webapp.getSessionHandler().getSessionCookieConfig().setName(cookieName);
         webapp.getSessionHandler().getSessionCookieConfig().setHttpOnly(true);
         if (httpsEnabled && !httpEnabled) {
             webapp.getSessionHandler().getSessionCookieConfig().setSecure(true);
