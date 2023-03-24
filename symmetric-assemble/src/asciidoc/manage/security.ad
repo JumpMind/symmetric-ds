@@ -1,7 +1,7 @@
 
 === Security
 
-The Security panel manages the SSL/TLS certificates and keys.
+The Security panel manages the SSL/TLS certificates and keys. It also manages break glass users.
 
 ==== Server Certificate
 
@@ -35,3 +35,7 @@ The client will be required to send a valid certificate before HTTPS requests ca
 ==== Console Client Authentication
 
 Authentication of console users using client certificates can be enabled with parameter `console.auth.client.cert`.  The console username is parsed from the distinguished name of the certificate's subject using the first matching group of a regular expression specified by parameter `console.auth.client.cert.subject.regex`.  By default, it will match on the common name of the subject.
+
+==== Break Glass
+
+If the user has the necessary permissions, they can break the glass for another user that has the `is_glass_break_required` flag set. This will generate a new password for the user and allow them to login for the selected duration. It is also possible to expire the glass break before the time period is over.

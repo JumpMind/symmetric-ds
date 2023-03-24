@@ -32,4 +32,9 @@ Authentication Method:: Method to authenticate the user.
 
 |===            
 
+[[email]]Email:: Email address for a user which can be used to recover a forgotten password.
+[[password-reset-required]]Password Reset Required:: If enabled, requires the user to change their password the next time they login.
+[[glass-break-required]]Glass Break Required:: If enabled, another user must break the glass for this user to login. This option is only compatible with internal authentication.
+[[enabled]]Enabled:: If disabled, prevents the user from logging in.
+
 image::images/users-add.png[]
