@@ -409,11 +409,11 @@ public class NodeService extends AbstractService implements INodeService {
         List<Node> nodeList = sqlTemplate.query(getSql("selectNodePrefixSql"), new NodeRowMapper());
         return nodeList;
     }
-    
+
     public List<Node> findAllNodes(boolean useCache) {
         if (useCache) {
             findNode(findIdentityNodeId(), true);
-            return new ArrayList<Node>(nodeCache.values());            
+            return new ArrayList<Node>(nodeCache.values());
         } else {
             return findAllNodes();
         }

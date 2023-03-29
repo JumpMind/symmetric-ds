@@ -115,7 +115,7 @@ public interface INodeService {
     public boolean deleteIdentity();
 
     public List<Node> findAllNodes();
-    
+
     public List<Node> findAllNodes(boolean useCache);
 
     public Map<String, Node> findAllNodesAsMap();
