@@ -74,7 +74,6 @@ class PostgreSqlDdlReaderTest {
      * The regular expression pattern for the postgres conversion of ISO timestamps.
      */
     protected Pattern postgresIsoTimestampPattern;
-    ISqlTemplate sqlTemplate;
     ISqlTransaction sqlTransaction;
     protected AbstractJdbcDdlReader abstractJdbcDdlReader;
     ThreadLocalRandom rand = ThreadLocalRandom.current();
@@ -82,7 +81,6 @@ class PostgreSqlDdlReaderTest {
     @BeforeEach
     public void setUp() throws Exception {
         platform = mock(PostgreSqlDatabasePlatform.class);
-        sqlTemplate = mock(ISqlTemplate.class);
         postgresIsoDatePattern = Pattern.compile("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD'\\)");
         postgresIsoTimePattern = Pattern.compile("TO_DATE\\('([^']*)'\\, 'HH24:MI:SS'\\)");
         postgresIsoTimestampPattern = Pattern.compile("TO_DATE\\('([^']*)'\\, 'YYYY\\-MM\\-DD HH24:MI:SS'\\)");
