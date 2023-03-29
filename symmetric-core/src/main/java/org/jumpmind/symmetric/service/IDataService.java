@@ -65,6 +65,8 @@ public interface IDataService {
     public List<TableReloadRequest> getTableReloadRequestToProcess(final String sourceNodeId);
 
     public List<TableReloadRequest> getTableReloadRequestToProcessByTarget(final String targetNodeId);
+    
+    public Map<Long, List<TableReloadRequest>> getTableReloadRequestByLoadIdMap();
 
     public List<TableReloadStatus> getTableReloadStatus();
 
