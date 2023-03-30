@@ -771,6 +771,7 @@ public class SnapshotUtil {
         try (OutputStream outputStream = new FileOutputStream(file);
                 CsvWriter csvWriter = new CsvWriter(outputStream, ',', Charset.forName("ISO-8859-1"))) {
             csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_DOUBLED);
+            csvWriter.setForceQualifier(true);
             String[] heading = { "Thread", "Allocated Memory (Bytes)", "CPU Time (Seconds)" };
             csvWriter.writeRecord(heading);
             ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
