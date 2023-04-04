@@ -56,7 +56,7 @@ public class PushStatusUriHandler extends AbstractUriHandler {
             } catch (Exception ex) {
                 String msg = "Failed to parse batchToSendCountParam [" + batchToSendCountParam + "] " + req;
                 log.warn(msg, ex);
-                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Couldn't parse batch_to_send_count.");
+                res.sendError(WebConstants.SC_BAD_REQUEST, "Couldn't parse batch_to_send_count.");
             }
         }
     }

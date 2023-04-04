@@ -111,7 +111,7 @@ public class SymmetricServlet extends HttpServlet {
                 } catch (Exception e) {
                     logException(req, engine, e);
                     if (!res.isCommitted()) {
-                        ServletUtils.sendError(res, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                        ServletUtils.sendError(res, WebConstants.SC_INTERNAL_ERROR, "Internal error occurred, see log file");
                     }
                 } finally {
                     if (afterInterceptors != null) {
@@ -125,7 +125,7 @@ public class SymmetricServlet extends HttpServlet {
                         "The request path of the url could not be handled. Check the engine.name of the target node vs. the sync URL of the source node. The request was {} from the host {} with an ip address of {}.  The query string was: {}",
                         new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                                 req.getRemoteAddr(), req.getQueryString() });
-                ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST);
+                ServletUtils.sendError(res, WebConstants.SC_NO_ENGINE, "No engine here with that name");
             }
         } else if (engine.isStarting()) {
             if (shouldLog(engine.getEngineName(), 2)) {

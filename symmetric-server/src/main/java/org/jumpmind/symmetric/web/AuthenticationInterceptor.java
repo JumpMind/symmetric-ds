@@ -91,7 +91,7 @@ public class AuthenticationInterceptor implements IInterceptor {
             }
             nodeId = req.getParameter(WebConstants.NODE_ID);
             if (StringUtils.isEmpty(securityToken) || StringUtils.isEmpty(nodeId)) {
-                ServletUtils.sendError(resp, WebConstants.SC_FORBIDDEN);
+                ServletUtils.sendError(resp, WebConstants.SC_FORBIDDEN, "Missing node ID or security token");
                 return false;
             }
             status = nodeService.getAuthenticationStatus(nodeId, securityToken);

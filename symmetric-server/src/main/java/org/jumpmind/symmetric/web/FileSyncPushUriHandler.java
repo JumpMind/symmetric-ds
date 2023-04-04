@@ -45,11 +45,11 @@ public class FileSyncPushUriHandler extends AbstractUriHandler {
             ServletException, FileUploadException {
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
         if (StringUtils.isBlank(nodeId)) {
-            ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST,
+            ServletUtils.sendError(res, WebConstants.SC_BAD_REQUEST,
                     "Node must be specified");
             return;
         } else if (!ServletFileUpload.isMultipartContent(req)) {
-            ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST,
+            ServletUtils.sendError(res, WebConstants.SC_BAD_REQUEST,
                     "We only handle multipart requests");
             return;
         } else {

@@ -47,7 +47,7 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
             ServletException {
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
         if (StringUtils.isBlank(nodeId)) {
-            ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST,
+            ServletUtils.sendError(res, WebConstants.SC_BAD_REQUEST,
                     "Node must be specified");
             return;
         } else {

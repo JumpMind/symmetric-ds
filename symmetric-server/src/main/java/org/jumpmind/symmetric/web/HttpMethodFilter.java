@@ -63,7 +63,7 @@ public class HttpMethodFilter implements Filter {
 
     protected void forbid(String method, ServletRequest request, ServletResponse response) throws IOException {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-        httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Method " + method + " is not allowed.");
+        httpResponse.sendError(WebConstants.SC_FORBIDDEN, "Method " + method + " is not allowed.");
     }
 
     protected void loadMethods(String configuredValue, Set<String> methods) {

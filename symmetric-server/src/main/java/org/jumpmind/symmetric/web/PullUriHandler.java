@@ -80,7 +80,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
         log.debug("Pull requested from node {} at remote address {}", nodeId, req.getRemoteAddr());
         if (StringUtils.isBlank(nodeId)) {
-            ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST, "Node must be specified");
+            ServletUtils.sendError(res, WebConstants.SC_BAD_REQUEST, "Node must be specified");
             return;
         }
         ChannelMap map = new ChannelMap();
