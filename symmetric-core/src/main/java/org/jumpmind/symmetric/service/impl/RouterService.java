@@ -254,7 +254,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 new ProcessInfoKey(sourceNode.getNodeId(), null, ProcessType.ROUTER_JOB));
         processInfo.setStatus(ProcessInfo.ProcessStatus.PROCESSING);
         try {
-            final List<NodeChannel> channels = engine.getConfigurationService().getNodeChannels(false);
+            final List<NodeChannel> channels = new ArrayList<NodeChannel>(engine.getConfigurationService().getNodeChannels(false));
             Set<String> readyChannels = null;
             if (parameterService.is(ParameterConstants.ROUTING_QUERY_CHANNELS_FIRST)) {
                 readyChannels = getReadyChannels();
