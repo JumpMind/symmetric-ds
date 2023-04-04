@@ -52,7 +52,7 @@ import org.slf4j.MDC;
  * process.
  */
 public class DataGapRouteReader implements IDataToRouteReader {
-    private final static Logger log = LoggerFactory.getLogger(DataGapRouteReader.class);
+    private static final Logger log = LoggerFactory.getLogger(DataGapRouteReader.class);
     protected List<DataGap> dataGaps;
     protected DataGap currentGap;
     protected BlockingQueue<Data> dataQueue;
@@ -68,7 +68,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
     protected boolean isEachGapQueried;
     protected boolean isOracleNoOrder;
     protected String lastTransactionId = null;
-    long lastStatsPrintOutBaselineInMs = System.currentTimeMillis();
+    protected long lastStatsPrintOutBaselineInMs = System.currentTimeMillis();
 
     public DataGapRouteReader(ChannelRouterContext context, ISymmetricEngine engine) {
         this.engine = engine;

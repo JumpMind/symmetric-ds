@@ -44,7 +44,7 @@ import org.slf4j.Logger;
 public class ChannelRouterContext extends SimpleRouterContext {
     public static final String STAT_INSERT_DATA_EVENTS_MS = "data.events.insert.time.ms";
     public static final String STAT_DATA_ROUTER_MS = "data.router.time.ms";
-    public static final String STAT_QUERY_TIME_MS = "data.read.query.time.ms";
+    public static final String STAT_QUERY_EXEC_TIME_MS = "query.exec.time.ms";
     public static final String STAT_READ_DATA_MS = "data.read.total.time.ms";
     public static final String STAT_REREAD_DATA_MS = "data.reread.time.ms";
     public static final String STAT_ENQUEUE_DATA_MS = "data.enqueue.time.ms";
@@ -56,6 +56,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public static final String STAT_BATCHES_COMMON = "batches.common.count";
     public static final String STAT_BATCHES_NONCOMMON = "batches.noncommon.count";
     public static final String STAT_UPDATE_BATCHES_MS = "batches.update.time.ms";
+    public static final String STAT_MULTI_QUERY_COUNT = "multi.query.count";
     public static final String STAT_ROUTE_TOTAL_TIME = "total.time.ms";
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
     private Map<Integer, Map<String, OutgoingBatch>> batchesByGroups = new HashMap<Integer, Map<String, OutgoingBatch>>();
