@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.route;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -55,6 +56,7 @@ import org.jumpmind.symmetric.service.impl.ParameterService;
 import org.jumpmind.symmetric.service.impl.RouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
+import org.jumpmind.util.AppUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -70,6 +72,7 @@ public class DataGapRouteReaderTest {
     final static String TABLE2 = "table2";
     final static String TRAN1 = "1";
     final static String TRAN2 = "2";
+    final static String TRAN3 = "3";
     DataService dataService;
     ISqlTemplate sqlTemplate;
     IParameterService parameterService;
@@ -86,8 +89,12 @@ public class DataGapRouteReaderTest {
     }
 
     protected DataGapRouteReader buildReader(int peekAheadMemoryThreshold, List<DataGap> dataGaps) throws Exception {
+        return buildReader(peekAheadMemoryThreshold, dataGaps, true);
+    }
+
+    protected DataGapRouteReader buildReader(int peekAheadMemoryThreshold, List<DataGap> dataGaps, boolean syncAllJobs) throws Exception {
         when(parameterService.getEngineName()).thenReturn(ENGINE_NAME);
-        when(parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)).thenReturn(true);
+        when(parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)).thenReturn(syncAllJobs);
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_MEMORY_THRESHOLD))
                 .thenReturn(peekAheadMemoryThreshold);
         IStatisticManager statisticManager = mock(StatisticManager.class);
@@ -301,5 +308,55 @@ public class DataGapRouteReaderTest {
             assertEquals(ids[index], d.getDataId());
             index++;
         }
+    }
+
+    @Test
+    public void testStopReading() throws Exception {
+        nodeChannel.setBatchAlgorithm(DefaultBatchAlgorithm.NAME);
+        nodeChannel.setMaxDataToRoute(3);
+        when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(1);
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(0, Long.MAX_VALUE));
+        List<Data> data = new ArrayList<Data>();
+        data.add(new Data(1, null, null, null, TABLE1, null, null, null, TRAN1, null));
+        data.add(new Data(2, null, null, null, TABLE1, null, null, null, TRAN2, null));
+        data.add(new Data(3, null, null, null, TABLE1, null, null, null, TRAN3, null));
+        data.add(new Data(4, null, null, null, TABLE1, null, null, null, TRAN1, null));
+        ISqlRowMapper<Data> mapper = any();
+        when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any()))
+                .thenReturn(new ListReadCursor(data));
+        DataGapRouteReader dataGapRouteReader = buildReader(50, dataGaps, false);
+        Thread thread = new Thread() {
+            public void run() {
+                dataGapRouteReader.execute();
+            }
+        };
+        thread.start();
+        Data d = null;
+        int index = 0;
+        long ids[] = { 1, 2 };
+        AppUtils.sleep(75);
+        while ((d = dataGapRouteReader.take()) != null) {
+            assertEquals(ids[index], d.getDataId());
+            if (++index == 2) {
+                dataGapRouteReader.setReading(false);
+                break;
+            }
+        }
+        assertEquals(2, index);
+        thread.join(1000);
+        assertFalse(thread.isAlive());
+        DataGapRouteReader dataGapRouteReader2 = buildReader(50, dataGaps, false);
+        Thread thread2 = new Thread() {
+            public void run() {
+                dataGapRouteReader2.execute();
+            }
+        };
+        thread2.start();
+        index = 0;
+        AppUtils.sleep(75);
+        dataGapRouteReader2.setReading(false);
+        thread2.join(1000);
+        assertFalse(thread2.isAlive());
     }
 }
