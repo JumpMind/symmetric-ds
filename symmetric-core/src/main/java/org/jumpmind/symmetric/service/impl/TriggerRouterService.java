@@ -2753,6 +2753,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                 }
             } else {
+                log.warn("Timeout of {} reached for {}", timeout, ParameterConstants.SYNC_TRIGGERS_TIMEOUT_IN_SECONDS);
                 executor.shutdownNow();
             }
         } catch (InterruptedException e) {
