@@ -91,7 +91,7 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
                 add(customInterceptors, authInterceptor, concurrencyInterceptor)));
         this.uriHandlers.add(new PingUriHandler(parameterService, customInterceptors));
         this.uriHandlers
-                .add(new InfoUriHandler(parameterService, nodeService, configurationService, customInterceptors));
+                .add(new InfoUriHandler(parameterService, nodeService, configurationService, clusterService, customInterceptors));
         this.uriHandlers.add(new BandwidthSamplerUriHandler(parameterService, add(customInterceptors, authInterceptor, concurrencyInterceptor)));
         this.uriHandlers.add(new PullUriHandler(parameterService, nodeService,
                 configurationService, dataExtractorService, registrationService, statisticManager, outgoingBatchService,
