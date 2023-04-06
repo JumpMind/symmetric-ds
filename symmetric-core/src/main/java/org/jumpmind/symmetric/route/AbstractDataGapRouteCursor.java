@@ -100,7 +100,7 @@ public abstract class AbstractDataGapRouteCursor implements IDataGapRouteCursor 
         if (!channel.isUseOldDataToRoute() || context.isOnlyDefaultRoutersAssigned()) {
             select = select.replace("d.old_data", "''");
         }
-        if (!channel.isUseRowDataToRoute() || context.isOnlyDefaultRoutersAssigned()) {
+        if (!channel.isUseRowDataToRoute() || (context.isOnlyDefaultRoutersAssigned() && !channel.isFileSyncFlag())) {
             select = select.replace("d.row_data", "''");
         }
         if (!channel.isUsePkDataToRoute() || context.isOnlyDefaultRoutersAssigned()) {

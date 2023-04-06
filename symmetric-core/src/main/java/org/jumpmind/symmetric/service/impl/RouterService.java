@@ -49,6 +49,7 @@ import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.ProtocolException;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
@@ -972,7 +973,12 @@ public class RouterService extends AbstractService implements IRouterService {
                 }
                 batch.incrementRowCount(eventType);
                 batch.incrementDataRowCount();
-                batch.incrementTableCount(tableName);
+                if (context.getChannel().getChannel().isFileSyncFlag() && context.getChannel().getChannel().isUseRowDataToRoute()) {
+                    String fileName = dataMetaData.getData().getParsedData(CsvData.ROW_DATA)[3];
+                    batch.incrementFileCount(fileName);
+                } else {
+                    batch.incrementTableCount(tableName);
+                }
                 if (loadId != -1) {
                     batch.setLoadId(loadId);
                 }

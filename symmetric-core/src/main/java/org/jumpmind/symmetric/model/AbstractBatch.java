@@ -117,6 +117,7 @@ public class AbstractBatch implements Serializable {
     private long failedDataId;
     private long failedLineNumber;
     private transient Map<String, Integer> tableCounts = new LinkedHashMap<String, Integer>();
+    private transient Map<String, Integer> fileCounts = new LinkedHashMap<String, Integer>();
     private transient long processedRowCount;
     private Map<String, Map<String, Long>> tableLoadedCount;
     private Map<String, Map<String, Long>> tableExtractedCount;
@@ -147,6 +148,7 @@ public class AbstractBatch implements Serializable {
         otherRowCount = 0;
         reloadRowCount = 0;
         tableCounts.clear();
+        fileCounts.clear();
     }
 
     public void revertStatsOnError() {
@@ -353,6 +355,10 @@ public class AbstractBatch implements Serializable {
     public Map<String, Integer> getTableCounts() {
         return new LinkedHashMap<String, Integer>(tableCounts);
     }
+    
+    public Map<String, Integer> getFileCounts() {
+        return new LinkedHashMap<String, Integer>(fileCounts);
+    }
 
     public String getSummary() {
         if ((summary == null || summary.length() == 0) && tableCounts != null) {
@@ -368,11 +374,20 @@ public class AbstractBatch implements Serializable {
     protected String buildBatchSummary() {
         final int SIZE = 254;
         StringBuilder buff = new StringBuilder(SIZE);
-        for (Entry<String, Integer> tableCount : tableCounts.entrySet()) {
-            buff.append(tableCount.getKey()).append(", ");
-        }
-        if (buff.length() > 2) {
-            buff.setLength(buff.length() - 2);
+        if (tableCounts.isEmpty()) {
+            for (Entry<String, Integer> fileCount : fileCounts.entrySet()) {
+                buff.append(fileCount.getKey()).append(", ");
+            }
+            if (buff.length() > 2) {
+                buff.setLength(buff.length() - 2);
+            }
+        } else {
+            for (Entry<String, Integer> tableCount : tableCounts.entrySet()) {
+                buff.append(tableCount.getKey()).append(", ");
+            }
+            if (buff.length() > 2) {
+                buff.setLength(buff.length() - 2);
+            }
         }
         return StringUtils.abbreviate(buff.toString(), SIZE);
     }
@@ -383,6 +398,15 @@ public class AbstractBatch implements Serializable {
             count = Integer.valueOf(0);
         }
         tableCounts.put(tableName, ++count);
+        summary = null;
+    }
+    
+    public void incrementFileCount(String fileName) {
+        Integer count = fileCounts.get(fileName);
+        if (count == null) {
+            count = Integer.valueOf(0);
+        }
+        fileCounts.put(fileName, ++count);
         summary = null;
     }
 
