@@ -494,6 +494,7 @@ final public class ParameterConstants {
     public final static String SPATIAL_TYPES_ENABLED = "spatial.data.types.enabled";
     public final static String DEFAULT_VALUES_TO_LEAVE_UNQUOTED = "default.values.to.leave.unquoted";
     public final static String DEFAULT_VALUES_TO_TRANSLATE = "default.values.to.translate";
+    public final static String INCLUDE_ROWIDENTIFIER_AS_COLUMN = "include.rowidentifier.as.column";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

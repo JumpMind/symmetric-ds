@@ -21,8 +21,13 @@
 package org.jumpmind.symmetric.db.db2;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerRouter;
 
 public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
     public Db2As400TriggerTemplate(ISymmetricDialect symmetricDialect) {
@@ -227,4 +232,17 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
     protected boolean useTriggerTemplateForColumnTemplatesDuringInitialLoad(Column column) {
         return false;
     }
+    
+    @Override
+    public String createInitalLoadSql(Node node, TriggerRouter triggerRouter, Table originalTable, TriggerHistory triggerHistory, Channel channel,
+            String overrideSelectSql) {
+        String sql = super.createInitalLoadSql(node, triggerRouter, originalTable, triggerHistory, channel, overrideSelectSql);
+        boolean includeRRN = this.symmetricDialect.getParameterService().is(ParameterConstants.INCLUDE_ROWIDENTIFIER_AS_COLUMN, true);
+        if (includeRRN) {
+            sql = sql.replace("\"RRN\"", "RRN(t)");
+        }
+        return sql;
+    }
+    
+    
 }

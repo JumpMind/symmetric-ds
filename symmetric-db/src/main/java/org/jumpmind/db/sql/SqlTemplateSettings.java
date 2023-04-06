@@ -40,6 +40,7 @@ public class SqlTemplateSettings {
     protected boolean allowUpdatesWithResults = false;
     protected boolean allowTriggerCreateOrReplace;
     protected JdbcLobHandling jdbcLobHandling;
+    protected boolean includeRowIdentifierAsColumn = false;
     protected TypedProperties properties = new TypedProperties();
 
     public SqlTemplateSettings() {
@@ -156,4 +157,14 @@ public class SqlTemplateSettings {
     public void setProperties(TypedProperties properties) {
         this.properties = properties;
     }
+
+    public boolean isIncludeRowIdentifierAsColumn() {
+        return includeRowIdentifierAsColumn;
+    }
+
+    public void setIncludeRowIdentifierAsColumn(boolean includeRowIdentifierAsColumn) {
+        this.includeRowIdentifierAsColumn = includeRowIdentifierAsColumn;
+    }
+    
+    
 }
