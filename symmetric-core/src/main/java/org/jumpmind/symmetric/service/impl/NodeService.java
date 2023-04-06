@@ -410,6 +410,15 @@ public class NodeService extends AbstractService implements INodeService {
         return nodeList;
     }
 
+    public List<Node> findAllNodes(boolean useCache) {
+        if (useCache) {
+            findNode(findIdentityNodeId(), true);
+            return new ArrayList<Node>(nodeCache.values());
+        } else {
+            return findAllNodes();
+        }
+    }
+
     public Map<String, Node> findAllNodesAsMap() {
         List<Node> nodes = findAllNodes();
         Map<String, Node> nodeMap = new HashMap<String, Node>(nodes.size());

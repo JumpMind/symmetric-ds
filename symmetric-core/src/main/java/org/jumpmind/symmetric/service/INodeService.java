@@ -116,6 +116,8 @@ public interface INodeService {
 
     public List<Node> findAllNodes();
 
+    public List<Node> findAllNodes(boolean useCache);
+
     public Map<String, Node> findAllNodesAsMap();
 
     public List<Node> findFilteredNodesWithLimit(int offset, int limit, List<FilterCriterion> filter,

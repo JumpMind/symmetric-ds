@@ -49,6 +49,10 @@ public class MockNodeService implements INodeService {
         return null;
     }
 
+    public List<Node> findAllNodes(boolean useCache) {
+        return null;
+    }
+
     @Override
     public List<Node> findNodesWhoPushToMe() {
         return null;

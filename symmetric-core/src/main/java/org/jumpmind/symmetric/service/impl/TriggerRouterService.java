@@ -2661,10 +2661,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     return 1;
                 }
                 Table table1 = null;
-                
                 if (!o1.getSourceTableName().startsWith(tablePrefix)) {
                     table1 = getTargetPlatform().getTableFromCache(o1.getSourceCatalogName(),
-                        o1.getSourceSchemaName(), o1.getSourceTableName(), false);
+                            o1.getSourceSchemaName(), o1.getSourceTableName(), false);
                 }
                 if (table1 == null) {
                     platform.getTableFromCache(o1.getSourceCatalogName(),
@@ -2673,7 +2672,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 Table table2 = null;
                 if (!o2.getSourceTableName().startsWith(tablePrefix)) {
                     table2 = getTargetPlatform().getTableFromCache(o2.getSourceCatalogName(),
-                        o2.getSourceSchemaName(), o2.getSourceTableName(), false);
+                            o2.getSourceSchemaName(), o2.getSourceTableName(), false);
                 }
                 if (table2 == null) {
                     platform.getTableFromCache(o2.getSourceCatalogName(),
@@ -2731,7 +2730,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
                         false);
             }
-           
             if (table == null) {
                 table = platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
                         triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
@@ -2755,6 +2753,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                 }
             } else {
+                log.warn("Timeout of {} reached for {}", timeout, ParameterConstants.SYNC_TRIGGERS_TIMEOUT_IN_SECONDS);
                 executor.shutdownNow();
             }
         } catch (InterruptedException e) {

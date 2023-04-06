@@ -442,6 +442,20 @@ public class DataService extends AbstractService implements IDataService {
         return collapsedRequests;
     }
 
+    @Override
+    public Map<Long, List<TableReloadRequest>> getTableReloadRequestByLoadIdMap() {
+        Map<Long, List<TableReloadRequest>> requestMap = new HashMap<Long, List<TableReloadRequest>>();
+        for (TableReloadRequest request : getTableReloadRequests()) {
+            List<TableReloadRequest> requestList = requestMap.get(request.getLoadId());
+            if (requestList == null) {
+                requestList = new ArrayList<TableReloadRequest>();
+                requestMap.put(request.getLoadId(), requestList);
+            }
+            requestList.add(request);
+        }
+        return requestMap;
+    }
+
     public TableReloadStatus updateTableReloadStatusDataLoaded(ISqlTransaction transaction, long loadId, long batchId, int batchCount, boolean isBulkLoaded) {
         int idType = symmetricDialect.getSqlTypeForIds();
         int count;
