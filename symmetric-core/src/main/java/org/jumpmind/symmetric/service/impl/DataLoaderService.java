@@ -133,6 +133,7 @@ import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.AuthenticationException;
+import org.jumpmind.symmetric.transport.ConnectionDuplicateException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
@@ -668,6 +669,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw (RegistrationNotOpenException) ex;
         } else if (ex instanceof ConnectionRejectedException) {
             throw (ConnectionRejectedException) ex;
+        } else if (ex instanceof ConnectionDuplicateException) {
+            throw (ConnectionDuplicateException) ex;
         } else if (ex instanceof ServiceUnavailableException) {
             throw (ServiceUnavailableException) ex;
         } else if (ex instanceof AuthenticationException) {

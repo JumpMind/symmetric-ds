@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jumpmind.exception.HttpException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -44,10 +43,13 @@ import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationPendingException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
+import org.jumpmind.symmetric.transport.AuthenticationExpiredException;
+import org.jumpmind.symmetric.transport.ConnectionDuplicateException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.NoReservationException;
 import org.jumpmind.symmetric.transport.ServiceUnavailableException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
+import org.jumpmind.util.ExceptionUtils;
 
 /**
  * Abstract service that provides help methods for detecting offline status.
@@ -73,40 +75,28 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
     }
 
     protected void fireOffline(Exception exception, Node remoteNode, RemoteNodeStatus status) {
-        String syncUrl = remoteNode.getSyncUrl() == null ? parameterService.getRegistrationUrl()
-                : remoteNode
-                        .getSyncUrl();
-        Throwable cause = getRootCause(exception);
-        if (cause == null) {
-            cause = exception;
-        }
+        String syncUrl = remoteNode.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remoteNode.getSyncUrl();
         if (isOffline(exception)) {
-            if (shouldLogTransportError(remoteNode.getNodeId())) {
-                log.warn(String.format("Could not communicate with %s at %s because: %s", remoteNode, syncUrl, exception), exception);
-            } else {
-                log.info("Could not communicate with {} at {} because: {}", remoteNode, syncUrl, exception);
-            }
+            logTransportMessage(remoteNode, "Could not communicate with {} at {} because exception {}", remoteNode, syncUrl, getExceptionMessage(exception));
             status.setStatus(Status.OFFLINE);
         } else if (isServiceUnavailable(exception)) {
-            if (shouldLogTransportError(remoteNode.getNodeId())) {
-                log.warn("Remote node {} at {} was unavailable.", new Object[] { remoteNode, syncUrl });
-            } else {
-                log.info("Remote node {} at {} was unavailable.  It may be starting up.", new Object[] { remoteNode, syncUrl });
-            }
+            ServiceUnavailableException e = (ServiceUnavailableException) exception;
+            logTransportMessage(remoteNode, "Remote node {} at {} was unavailable{}", remoteNode, syncUrl, e.getMessage() == null ? "" : ": " + e.getMessage());
             status.setStatus(Status.OFFLINE);
         } else if (isBusy(exception)) {
-            if (shouldLogTransportError(remoteNode.getNodeId())) {
-                log.warn("Remote node {} at {} was busy", new Object[] { remoteNode, syncUrl });
-            } else {
-                log.info("Remote node {} at {} was busy", new Object[] { remoteNode, syncUrl });
-            }
+            logTransportMessage(remoteNode, "Remote node {} at {} was busy", remoteNode, syncUrl);
+            status.setStatus(Status.BUSY);
+        } else if (isDuplicateConnection(exception)) {
+            logTransportMessage(remoteNode, "Remote node {} at {} already processing a connection from this node", remoteNode, syncUrl);
+            status.setStatus(Status.BUSY);
+        } else if (isNoReservation(exception)) {
+            log.warn("Missing reservation during push with {}", new Object[] { remoteNode });
             status.setStatus(Status.BUSY);
         } else if (isNotAuthenticated(exception)) {
-            if (isAuthenticationExpired(exception)) {
-                log.debug("Authentication is required again to renew session");
-            } else {
-                log.warn("Authorization denied from {} at {}", new Object[] { remoteNode, syncUrl });
-            }
+            log.warn("Authorization denied from {} at {}", new Object[] { remoteNode, syncUrl });
+            status.setStatus(Status.NOT_AUTHORIZED);
+        } else if (isAuthenticationExpired(exception)) {
+            log.debug("Authentication is required again to renew session");
             status.setStatus(Status.NOT_AUTHORIZED);
         } else if (isSyncDisabled(exception)) {
             log.warn("Sync was not enabled for {} at {}", new Object[] { remoteNode, syncUrl });
@@ -123,16 +113,10 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         } else if (isInitialLoadPending(exception)) {
             log.info("Initial load is pending for node {}", new Object[] { remoteNode });
             status.setStatus(Status.INITIAL_LOAD_PENDING);
-        } else if (isNoReservation(exception)) {
-            log.warn("Missing reservation during push with {}", new Object[] { remoteNode });
-            status.setStatus(Status.BUSY);
         } else if (getHttpException(exception) != null) {
             HttpException http = getHttpException(exception);
-            if (shouldLogTransportError(remoteNode.getNodeId())) {
-                log.warn(String.format("Could not communicate with %s at %s because it returned HTTP code %s", remoteNode, syncUrl, http.getCode()), exception);
-            } else {
-                log.info("Could not communicate with {} at {} because it returned HTTP code {}", remoteNode, syncUrl, http.getCode());
-            }
+            logTransportMessage(remoteNode, "Could not communicate with {} at {} because it returned HTTP code {} and exception {}",
+                    remoteNode, syncUrl, http.getCode(), getExceptionMessage(exception));
         } else {
             log.warn(String.format("Could not communicate with node '%s' at %s because of unexpected error", remoteNode, syncUrl), exception);
             status.setStatus(Status.UNKNOWN_ERROR);
@@ -157,6 +141,18 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         }
     }
 
+    protected String getExceptionMessage(Exception e) {
+        return e.getClass().getName() + (e.getMessage() == null ? "" : ": " + e.getMessage());
+    }
+
+    protected void logTransportMessage(Node remoteNode, String message, Object...args) {
+        if (shouldLogTransportError(remoteNode.getNodeId())) {
+            log.warn(message, args);
+        } else {
+            log.info(message, args);
+        }
+    }
+
     protected boolean shouldLogTransportError(String nodeId) {
         long maxErrorMillis = parameterService.getLong(ParameterConstants.TRANSPORT_MAX_ERROR_MILLIS, 300000);
         Long errorTime = transportErrorTimeByNode.get(nodeId);
@@ -167,152 +163,62 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         return System.currentTimeMillis() - errorTime >= maxErrorMillis;
     }
 
-    /**
-     * Check to see if the {@link Exception} was caused by an offline scenario.
-     * 
-     * @param ex
-     *            The exception to check. Nested exception will also be checked.
-     * @return true if this exception was caused by the {@link Node} being offline.
-     */
     protected boolean isOffline(Exception ex) {
-        boolean offline = false;
-        if (ex != null) {
-            Throwable cause = getRootCause(ex);
-            if (cause == null) {
-                cause = ex;
-            }
-            offline = cause instanceof SocketException ||
-                    cause instanceof ConnectException ||
-                    cause instanceof SocketTimeoutException ||
-                    cause instanceof UnknownHostException;
-        }
-        return offline;
+        return is(ex, SocketException.class, ConnectException.class, SocketTimeoutException.class, UnknownHostException.class);
     }
 
     protected boolean isNotAuthenticated(Exception ex) {
-        boolean offline = false;
-        if (ex != null) {
-            Throwable cause = getRootCause(ex);
-            offline = ex instanceof AuthenticationException ||
-                    cause instanceof AuthenticationException;
-        }
-        return offline;
+        return is(ex, AuthenticationException.class);
     }
 
     protected boolean isAuthenticationExpired(Exception ex) {
-        boolean expired = false;
-        if (ex != null) {
-            Throwable cause = getRootCause(ex);
-            AuthenticationException authException = null;
-            if (ex instanceof AuthenticationException) {
-                authException = (AuthenticationException) ex;
-            }
-            if (cause instanceof AuthenticationException) {
-                authException = (AuthenticationException) cause;
-            }
-            if (authException != null) {
-                expired = authException.isExpiredSession();
-            }
-        }
-        return expired;
+        return is(ex, AuthenticationExpiredException.class);
     }
 
     protected boolean isBusy(Exception ex) {
-        boolean offline = false;
-        if (ex != null) {
-            Throwable cause = getRootCause(ex);
-            offline = ex instanceof ConnectionRejectedException ||
-                    cause instanceof ConnectionRejectedException;
-        }
-        return offline;
+        return is(ex, ConnectionRejectedException.class);
+    }
+
+    protected boolean isDuplicateConnection(Exception ex) {
+        return is(ex, ConnectionDuplicateException.class);
     }
 
     protected boolean isServiceUnavailable(Exception ex) {
-        boolean offline = false;
-        if (ex != null) {
-            Throwable cause = getRootCause(ex);
-            offline = ex instanceof ServiceUnavailableException ||
-                    cause instanceof ServiceUnavailableException;
-        }
-        return offline;
+        return is(ex, ServiceUnavailableException.class);
     }
 
     protected boolean isSyncDisabled(Exception ex) {
-        boolean syncDisabled = false;
-        if (ex != null) {
-            Throwable cause = getRootCause(ex);
-            syncDisabled = cause instanceof SyncDisabledException;
-            if (syncDisabled == false && ex instanceof SyncDisabledException) {
-                syncDisabled = true;
-            }
-        }
-        return syncDisabled;
+        return is(ex, SyncDisabledException.class);
     }
 
     protected boolean isRegistrationRequired(Exception ex) {
-        boolean registrationRequired = false;
-        if (ex != null) {
-            Throwable cause = getRootCause(ex);
-            registrationRequired = cause instanceof RegistrationRequiredException;
-            if (registrationRequired == false && (ex instanceof RegistrationRequiredException)) {
-                registrationRequired = true;
-            }
-        }
-        return registrationRequired;
+        return is(ex, RegistrationRequiredException.class);
     }
 
     protected boolean isRegistrationPending(Exception ex) {
-        boolean registrationPending = false;
-        if (ex != null) {
-            Throwable cause = getRootCause(ex);
-            registrationPending = cause instanceof RegistrationPendingException;
-            if (registrationPending == false && (ex instanceof RegistrationPendingException)) {
-                registrationPending = true;
-            }
-        }
-        return registrationPending;
+        return is(ex, RegistrationPendingException.class);
     }
 
     protected boolean isInitialLoadPending(Exception ex) {
-        boolean loadPending = false;
-        if (ex != null) {
-            Throwable cause = getRootCause(ex);
-            loadPending = cause instanceof RegistrationPendingException;
-            if (loadPending == false && (ex instanceof InitialLoadPendingException)) {
-                loadPending = true;
-            }
-        }
-        return loadPending;
+        return is(ex, RegistrationPendingException.class, InitialLoadPendingException.class);
     }
 
     protected boolean isRegistrationNotOpen(Exception ex) {
-        boolean registrationNotOpen = false;
-        if (ex != null) {
-            Throwable cause = getRootCause(ex);
-            registrationNotOpen = cause instanceof RegistrationNotOpenException;
-            if (registrationNotOpen == false && (ex instanceof RegistrationNotOpenException)) {
-                registrationNotOpen = true;
-            }
-        }
-        return registrationNotOpen;
+        return is(ex, RegistrationNotOpenException.class);
     }
 
     protected boolean isNoReservation(Exception ex) {
-        boolean noReservation = false;
-        if (ex != null) {
-            Throwable cause = getRootCause(ex);
-            noReservation = cause instanceof NoReservationException;
-            if (noReservation == false && (ex instanceof NoReservationException)) {
-                noReservation = true;
-            }
-        }
-        return noReservation;
+        return is(ex, NoReservationException.class);
+    }
+
+    protected boolean is(Exception e, Class<?>... exceptions) {
+        return ExceptionUtils.is(e, exceptions);
     }
 
     protected HttpException getHttpException(Exception ex) {
         HttpException exception = null;
         if (ex != null) {
-            Throwable cause = getRootCause(ex);
+            Throwable cause = ExceptionUtils.getRootCause(ex);
             if (cause instanceof HttpException) {
                 exception = (HttpException) cause;
             } else if (ex instanceof HttpException) {
@@ -320,13 +226,5 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             }
         }
         return exception;
-    }
-
-    protected Throwable getRootCause(Exception ex) {
-        Throwable cause = ExceptionUtils.getRootCause(ex);
-        if (cause == null) {
-            cause = ex;
-        }
-        return cause;
     }
 }

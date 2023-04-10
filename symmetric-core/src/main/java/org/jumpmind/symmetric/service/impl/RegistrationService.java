@@ -58,9 +58,9 @@ import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.RegistrationRequest;
-import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatus.Status;
+import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -75,6 +75,7 @@ import org.jumpmind.symmetric.service.RegistrationFailedException;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.transport.ConnectionDuplicateException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -515,11 +516,14 @@ public class RegistrationService extends AbstractService implements IRegistratio
                             + e.getMessage());
                 }
             } catch (ConnectionRejectedException e) {
-                log.warn(
-                        "The request to register was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
+                log.warn("The request to register was rejected because the server is busy.");
                 for (INodeRegistrationListener l : registrationListeners) {
-                    l.registrationFailed(
-                            "The request to register was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
+                    l.registrationFailed("The request to register was rejected because the server is busy.");
+                }
+            } catch (ConnectionDuplicateException e) {
+                log.warn("The request to register was rejected because of a duplicate connection.");
+                for (INodeRegistrationListener l : registrationListeners) {
+                    l.registrationFailed("The request to register was rejected because of a duplicate connection.");
                 }
             } catch (RegistrationNotOpenException e) {
                 log.warn("Waiting for registration to be accepted by the server. Registration is not open.");
@@ -827,7 +831,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 log.warn("The request to copy failed because the client failed to connect to the server");
             } catch (UnknownHostException e) {
                 log.warn("The request to copy failed because the host was unknown");
-            } catch (ConnectionRejectedException ex) {
+            } catch (ConnectionRejectedException | ConnectionDuplicateException ex) {
                 log.warn(
                         "The request to copy was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
             } catch (Exception e) {

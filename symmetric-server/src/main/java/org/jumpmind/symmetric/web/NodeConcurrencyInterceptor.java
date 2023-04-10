@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
+import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationStatus;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,15 +65,9 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         String threadChannel = req.getHeader(WebConstants.CHANNEL_QUEUE);
         boolean isPush = ServletUtils.normalizeRequestUri(req).contains("push");
         if (method.equals(WebConstants.METHOD_HEAD) && isPush) {
-            // I read here:
-            // http://java.sun.com/j2se/1.5.0/docs/guide/net/http-keepalive.html
-            // that keepalive likes to have a known content length. I also read
-            // that HEAD is better if no content is going to be returned.
             resp.setContentLength(0);
-            if (!concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.SOFT)) {
-                statisticManager.incrementNodesRejected(1);
-                ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
-            } else {
+            ReservationStatus status = concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.SOFT, false);
+            if (status == ReservationStatus.ACCEPTED) {
                 try {
                     buildSuspendIgnoreResponseHeaders(nodeId, resp);
                 } catch (Exception ex) {
@@ -80,6 +75,10 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                     log.error("Error building response headers", ex);
                     ServletUtils.sendError(resp, WebConstants.SC_SERVICE_ERROR);
                 }
+            } else {
+                statisticManager.incrementNodesRejected(1);
+                sendError(resp, status, nodeId);
+                return false;
             }
             if (configurationService.isMasterToMaster() && nodeService.isDataLoadStarted()) {
                 NodeSecurity identity = nodeService.findNodeSecurity(nodeService.findIdentityNodeId(), true);
@@ -87,6 +86,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                         !nodeId.equals(identity.getCreatedAtNodeId())) {
                     log.debug("Not allowing push from node {} until initial load from {} is complete", nodeId, identity.getCreatedAtNodeId());
                     ServletUtils.sendError(resp, WebConstants.INITIAL_LOAD_PENDING);
+                    return false;
                 }
             }
             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);
@@ -94,15 +94,18 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                 String createdAtNodeId = nodeSecurity.getCreatedAtNodeId();
                 if (nodeSecurity.isRegistrationEnabled() && (createdAtNodeId == null || createdAtNodeId.equals(nodeService.findIdentityNodeId()))) {
                     if (nodeSecurity.getRegistrationTime() != null) {
+                        log.debug("Not allowing push from node {} because registration is pending", nodeId);
                         ServletUtils.sendError(resp, WebConstants.REGISTRATION_PENDING);
+                    } else {
+                        log.debug("Not allowing push from node {} because registration is required", nodeId);
+                        ServletUtils.sendError(resp, WebConstants.REGISTRATION_REQUIRED);
                     }
-                    ServletUtils.sendError(resp, WebConstants.REGISTRATION_REQUIRED);
                 }
             }
             return false;
-            // Support for channel threading
-        } else if (threadChannel != null) {
-            if (concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.HARD)) {
+        } else {
+            ReservationStatus status = concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.HARD, isPush);
+            if (status == ReservationStatus.ACCEPTED) {
                 try {
                     buildSuspendIgnoreResponseHeaders(nodeId, resp);
                     return true;
@@ -114,26 +117,25 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                 }
             } else {
                 statisticManager.incrementNodesRejected(1);
-                if (isPush) {
+                if (isPush && status == ReservationStatus.NOT_FOUND) {
                     log.warn("Missing reservation for push, so rejecting node {}", new Object[] { nodeId });
                 }
-                ServletUtils.sendError(resp, isPush ? WebConstants.SC_NO_RESERVATION : WebConstants.SC_SERVICE_BUSY);
+                sendError(resp, status, nodeId);
                 return false;
             }
-        } else if (concurrentConnectionManager.reserveConnection(nodeId, poolId, ReservationType.HARD)) {
-            try {
-                buildSuspendIgnoreResponseHeaders(nodeId, resp);
-                return true;
-            } catch (Exception ex) {
-                concurrentConnectionManager.releaseConnection(nodeId, threadChannel, poolId);
-                log.error("Error building response headers", ex);
-                ServletUtils.sendError(resp, WebConstants.SC_SERVICE_ERROR);
-                return false;
-            }
+        }
+    }
+
+    protected void sendError(HttpServletResponse resp, ReservationStatus status, String nodeId) throws IOException {
+        if (status == ReservationStatus.DUPLICATE) {
+            log.debug("Node {} is already connected", nodeId);
+            ServletUtils.sendError(resp, WebConstants.SC_ALREADY_CONNECTED);
+        } else if (status == ReservationStatus.NOT_FOUND) {
+            log.debug("Node {} has no reservation here", nodeId);
+            ServletUtils.sendError(resp, WebConstants.SC_NO_RESERVATION);
         } else {
-            statisticManager.incrementNodesRejected(1);
-            ServletUtils.sendError(resp, isPush ? WebConstants.SC_NO_RESERVATION : WebConstants.SC_SERVICE_BUSY);
-            return false;
+            log.debug("Node {} rejected because service is busy", nodeId);
+            ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
         }
     }
 
@@ -156,11 +158,8 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
 
     protected void buildSuspendIgnoreResponseHeaders(final String nodeId, final ServletResponse resp) {
         HttpServletResponse httpResponse = (HttpServletResponse) resp;
-        ChannelMap suspendIgnoreChannels = configurationService
-                .getSuspendIgnoreChannelLists(nodeId);
-        httpResponse.setHeader(WebConstants.SUSPENDED_CHANNELS,
-                suspendIgnoreChannels.getSuspendChannelsAsString());
-        httpResponse.setHeader(WebConstants.IGNORED_CHANNELS,
-                suspendIgnoreChannels.getIgnoreChannelsAsString());
+        ChannelMap suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists(nodeId);
+        httpResponse.setHeader(WebConstants.SUSPENDED_CHANNELS, suspendIgnoreChannels.getSuspendChannelsAsString());
+        httpResponse.setHeader(WebConstants.IGNORED_CHANNELS, suspendIgnoreChannels.getIgnoreChannelsAsString());
     }
 }

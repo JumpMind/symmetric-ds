@@ -74,7 +74,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         return stats;
     }
 
-    synchronized public boolean releaseConnection(String nodeId, String channelId, String poolId) {
+    public synchronized boolean releaseConnection(String nodeId, String channelId, String poolId) {
         String reservationId = getReservationIdentifier(nodeId, channelId);
         log.debug("Releasing connection for {} {}", poolId, reservationId);
         Map<String, Reservation> reservations = getReservationMap(poolId);
@@ -89,7 +89,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         }
     }
 
-    synchronized public boolean releaseConnection(String nodeId, String poolId) {
+    public synchronized boolean releaseConnection(String nodeId, String poolId) {
         Map<String, Reservation> reservations = getReservationMap(poolId);
         Reservation reservation = reservations.remove(nodeId);
         if (reservation != null) {
@@ -101,40 +101,46 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         }
     }
 
-    synchronized public void addToWhitelist(String nodeId) {
+    public synchronized void addToWhitelist(String nodeId) {
         whiteList.add(nodeId);
     }
 
-    synchronized public void removeFromWhiteList(String nodeId) {
+    public synchronized void removeFromWhiteList(String nodeId) {
         whiteList.remove(nodeId);
     }
 
-    synchronized public String[] getWhiteList() {
+    public synchronized String[] getWhiteList() {
         return whiteList.toArray(new String[whiteList.size()]);
     }
 
-    synchronized public int getReservationCount(String poolId) {
+    public synchronized int getReservationCount(String poolId) {
         return getReservationMap(poolId).size();
     }
 
-    synchronized public boolean reserveConnection(String nodeId, String channelId, String poolId,
-            ReservationType reservationRequest) {
+    public synchronized ReservationStatus reserveConnection(String nodeId, String channelId, String poolId,
+            ReservationType reservationRequest, boolean requiresExistingReservation) {
         String reservationId = getReservationIdentifier(nodeId, channelId);
         log.debug("Reserving connection for {} {}", poolId, reservationId);
         Map<String, Reservation> reservations = getReservationMap(poolId);
         int maxPoolSize = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
         long timeout = parameterService.getLong(ParameterConstants.CONCURRENT_RESERVATION_TIMEOUT);
         removeTimedOutReservations(reservations);
-        if (reservations.size() < maxPoolSize || reservations.containsKey(reservationId)
-                || whiteList.contains(reservationId)) {
-            Reservation existingReservation = reservations.get(reservationId);
-            if (existingReservation == null
-                    || existingReservation.getType() == ReservationType.SOFT) {
+        Reservation existingReservation = reservations.get(reservationId);
+        if (requiresExistingReservation && existingReservation == null) {
+            String message = "Node '{}' Channel '{}' requested a {} connection, but was rejected because it was missing a reservation";
+            if (shouldLogTransportError(nodeId)) {
+                log.warn(message, nodeId, channelId, poolId);
+            } else {
+                log.info(message, nodeId, channelId, poolId);
+            }
+            return ReservationStatus.NOT_FOUND;
+        } else if (reservations.size() < maxPoolSize || existingReservation != null || whiteList.contains(reservationId)) {
+            if (existingReservation == null || existingReservation.getType() == ReservationType.SOFT) {
                 reservations.put(reservationId, new Reservation(reservationId,
                         reservationRequest == ReservationType.SOFT ? System.currentTimeMillis()
                                 + timeout : Long.MAX_VALUE, reservationRequest));
                 transportErrorTimeByNode.remove(nodeId);
-                return true;
+                return ReservationStatus.ACCEPTED;
             } else {
                 String message = "Node '{}' Channel '{}' requested a {} connection, but was rejected because it already has one";
                 if (shouldLogTransportError(nodeId)) {
@@ -142,16 +148,11 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
                 } else {
                     log.info(message, nodeId, channelId, poolId);
                 }
-                return false;
+                return ReservationStatus.DUPLICATE;
             }
         } else {
-            return false;
+            return ReservationStatus.BUSY;
         }
-    }
-
-    synchronized public boolean reserveConnection(String nodeId, String poolId,
-            ReservationType reservationRequest) {
-        return reserveConnection(nodeId, null, poolId, reservationRequest);
     }
 
     public Map<String, Date> getPullReservationsByNodeId() {

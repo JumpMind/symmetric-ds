@@ -67,28 +67,20 @@ public class SymmetricServlet extends HttpServlet {
     protected Map<String, Integer> rejectionStatusByEngine = new HashMap<String, Integer>();
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse res)
-            throws ServletException, IOException {
+    protected void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         ServerSymmetricEngine engine = findEngine(req);
         MDC.put("engineName", engine != null ? engine.getEngineName() : "?");
         if (engine == null) {
-            boolean nodesBeingCreated = ServletUtils.getSymmetricEngineHolder(getServletContext())
-                    .areEnginesStarting();
-            if (nodesBeingCreated) {
+            if (ServletUtils.getSymmetricEngineHolder(getServletContext()).areEnginesStarting()) {
                 if (shouldLog(getEngineNameFromUrl(req), 1)) {
-                    log.info("Requests for engine " + getEngineNameFromUrl(req) + " are being rejected because nodes are still initializing");
+                    log.info("Requests for engine {} are being rejected because nodes are still initializing", getEngineNameFromUrl(req));
                 }
-                log.debug(
-                        "The client node request is being rejected because the server node does not exist yet.  There are nodes being initialized.  It might be that the node is not ready or that the database is unavailable.  Please be patient.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
-                        new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                                req.getRemoteAddr(), req.getQueryString() });
+                sendError(req, res, WebConstants.SC_SERVICE_UNAVAILABLE, "Service is starting");
             } else {
-                log.warn(
-                        "The client node request is being rejected because the server node does not exist.  Please check that the engine.name exists in the url.  It should be of the pattern http://host:port/sync/{engine.name}/{action}.  If it does not, then check the sync.url of this node or the registration.url of the client making the request.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
-                        new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                                req.getRemoteAddr(), req.getQueryString() });
+                log.warn("Rejected request for unknown engine {} from host {} with URI of {}", getEngineNameFromUrl(req), getHost(req),
+                        ServletUtils.normalizeRequestUri(req));
+                sendError(req, res, WebConstants.SC_NO_ENGINE, "No engine here with that name");
             }
-            ServletUtils.sendError(res, WebConstants.SC_SERVICE_UNAVAILABLE);
         } else if (engine.isStarted()) {
             IUriHandler handler = findMatchingHandler(engine, req);
             if (handler != null) {
@@ -121,39 +113,23 @@ public class SymmetricServlet extends HttpServlet {
                     }
                 }
             } else {
-                log.warn(
-                        "The request path of the url could not be handled. Check the engine.name of the target node vs. the sync URL of the source node. The request was {} from the host {} with an ip address of {}.  The query string was: {}",
-                        new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                                req.getRemoteAddr(), req.getQueryString() });
-                ServletUtils.sendError(res, WebConstants.SC_NO_ENGINE, "No engine here with that name");
+                sendError(req, res, WebConstants.SC_BAD_REQUEST, "No matching URI handler");
             }
         } else if (engine.isStarting()) {
             if (shouldLog(engine.getEngineName(), 2)) {
-                log.info("Requests for engine " + engine.getEngineName() + " are being rejected while it is starting");
+                log.info("Requests for engine {} are being rejected while it is starting", engine.getEngineName());
             }
-            log.debug(
-                    "The client node request is being rejected because the server node is currently starting.  Please be patient.  The request was {} from the host {} with an ip address of {} will not be processed.  The query string was: {}",
-                    new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                            req.getRemoteAddr(), req.getQueryString() });
-            ServletUtils.sendError(res, WebConstants.SC_SERVICE_UNAVAILABLE);
-        } else if (!engine.isStarted() && !engine.isConfigured()) {
+            sendError(req, res, WebConstants.SC_SERVICE_UNAVAILABLE, "Engine is starting");
+        } else if (!engine.isConfigured()) {
             if (shouldLog(engine.getEngineName(), 3)) {
-                log.info("Requests for engine " + engine.getEngineName() + " are being rejected because it is not configured properly");
+                log.info("Requests for engine {} are being rejected because it is not configured properly", engine.getEngineName());
             }
-            log.debug(
-                    "The client node request is being rejected because the server node was not started because it is not configured properly. The request {} from the host {} with an ip address of {} will not be processed.  The query string was: {}",
-                    new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                            req.getRemoteAddr(), req.getQueryString() });
-            ServletUtils.sendError(res, WebConstants.SC_SERVICE_UNAVAILABLE);
+            sendError(req, res, WebConstants.SC_SERVICE_UNAVAILABLE, "Engine is not configured");
         } else {
             if (shouldLog(engine.getEngineName(), 4)) {
-                log.info("Requests for engine " + engine.getEngineName() + " are being rejected because it is not started");
+                log.info("Requests for engine {} are being rejected because it is not started", engine.getEngineName());
             }
-            log.debug(
-                    "The client node request is being rejected because the server node is not started. The request {} from the host {} with an ip address of {} will not be processed.  The query string was: {}",
-                    new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                            req.getRemoteAddr(), req.getQueryString() });
-            ServletUtils.sendError(res, WebConstants.SC_SERVICE_UNAVAILABLE);
+            sendError(req, res, WebConstants.SC_SERVICE_UNAVAILABLE, "Engine is not started");
         }
     }
 
@@ -165,12 +141,8 @@ public class SymmetricServlet extends HttpServlet {
             if (engineName != null) {
                 engine = holder.getEngines().get(engineName);
             }
-            if (holder.getEngineCount() == 1 && engine == null && holder.getNumerOfEnginesStarting() <= 1 &&
-                    holder.getEngines().size() == 1) {
-                engine = holder.getEngines().values().iterator().next();
-            }
         }
-        return engine != null ? engine : null;
+        return engine;
     }
 
     protected static String getEngineNameFromUrl(HttpServletRequest req) {
@@ -239,27 +211,14 @@ public class SymmetricServlet extends HttpServlet {
     protected void logException(HttpServletRequest req, ServerSymmetricEngine engine, Exception ex) {
         String nodeId = req.getParameter(WebConstants.NODE_ID);
         String externalId = req.getParameter(WebConstants.EXTERNAL_ID);
-        String address = req.getRemoteAddr();
-        String hostName = req.getRemoteHost();
-        String method = req instanceof HttpServletRequest ? ((HttpServletRequest) req).getMethod()
-                : "";
+        String method = req instanceof HttpServletRequest ? ((HttpServletRequest) req).getMethod() : "";
         Throwable root = ExceptionUtils.getRootCause(ex);
         int errorCount = engine.getErrorCountFor(nodeId);
         String msg = String.format("Error while processing %s request for node: %s", method, nodeId);
         if (!StringUtils.isEmpty(externalId) && !StringUtils.equals(nodeId, externalId)) {
             msg += String.format(" externalId: %s", externalId);
         }
-        if (!StringUtils.isEmpty(hostName) && !StringUtils.isEmpty(address)) {
-            if (StringUtils.equals(hostName, address)) {
-                msg += String.format(" at %s", hostName);
-            } else {
-                msg += String.format(" at %s (%s)", address, hostName);
-            }
-        } else if (!StringUtils.isEmpty(hostName)) {
-            msg += String.format(" at %s", hostName);
-        } else if (!StringUtils.isEmpty(address)) {
-            msg += String.format(" at %s", address);
-        }
+        msg += " at " + getHost(req);
         msg += String.format(" with path: %s", ServletUtils.normalizeRequestUri(req));
         if (!(ex instanceof IOException || root instanceof IOException) || errorCount >= MAX_NETWORK_ERROR_FOR_LOGGING) {
             log.error(msg, ex);
@@ -267,15 +226,39 @@ public class SymmetricServlet extends HttpServlet {
             if (log.isDebugEnabled()) {
                 log.info(msg, ex);
             } else {
-                log.info(msg + " The message is: " + ex.getMessage());
+                log.info(msg + " The message is: {} {}", ex.getClass().getName(), ex.getMessage());
             }
         }
         engine.incrementErrorCountForNode(nodeId);
     }
 
+    protected String getHost(HttpServletRequest req) {
+        String address = req.getRemoteAddr();
+        String hostName = req.getRemoteHost();
+        if (!StringUtils.isEmpty(hostName) && !StringUtils.isEmpty(address)) {
+            if (StringUtils.equals(hostName, address)) {
+                return hostName;
+            } else {
+                return hostName + " (" + address + ")";
+            }
+        } else if (!StringUtils.isEmpty(hostName)) {
+            return hostName;
+        } else {
+            return address;
+        }
+    }
+
+    protected void sendError(HttpServletRequest req, HttpServletResponse res, int code, String message) throws IOException {
+        log.debug("Rejecting request {} from host {} with code {} and message: {}", ServletUtils.normalizeRequestUri(req), getHost(req), code, message);
+        ServletUtils.sendError(res, code, message);
+    }
+
     protected boolean shouldLog(String engineName, int status) {
         Integer lastStatus = rejectionStatusByEngine.get(engineName);
         if (lastStatus == null || lastStatus.intValue() < status) {
+            if (rejectionStatusByEngine.size() > 10000) {
+                rejectionStatusByEngine.clear();
+            }
             rejectionStatusByEngine.put(engineName, status);
             return true;
         }

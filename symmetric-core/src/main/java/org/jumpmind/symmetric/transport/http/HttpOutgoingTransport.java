@@ -43,6 +43,8 @@ import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationPendingException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
+import org.jumpmind.symmetric.transport.AuthenticationExpiredException;
+import org.jumpmind.symmetric.transport.ConnectionDuplicateException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.NoReservationException;
@@ -173,15 +175,6 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         }
     }
 
-    /**
-     * Before streaming data to the remote node, make sure it is ok to. We have found that we can be more efficient on a push by relying on HTTP keep-alive.
-     *
-     * @throws IOException
-     * @throws {@link
-     *             ConnectionRejectedException}
-     * @throws {@link
-     *             AuthenticationException}
-     */
     private HttpConnection requestReservation(String queue) {
         try {
             connection = httpTransportManager.openConnection(url, nodeId, securityToken);
@@ -261,12 +254,6 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         return writer;
     }
 
-    /**
-     * @throws {@link
-     *             ConnectionRejectedException}
-     * @throws {@link
-     *             AuthenticationException}
-     */
     private void analyzeResponseCode(int code) {
         if (WebConstants.SC_SERVICE_BUSY == code) {
             throw new ConnectionRejectedException();
@@ -274,12 +261,14 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             throw new ServiceUnavailableException();
         } else if (WebConstants.SC_NO_RESERVATION == code) {
             throw new NoReservationException();
+        } else if (WebConstants.SC_ALREADY_CONNECTED == code) {
+            throw new ConnectionDuplicateException();
         } else if (WebConstants.SC_FORBIDDEN == code) {
             httpTransportManager.clearSession(connection);
             throw new AuthenticationException();
         } else if (WebConstants.SC_AUTH_EXPIRED == code) {
             httpTransportManager.clearSession(connection);
-            throw new AuthenticationException(true);
+            throw new AuthenticationExpiredException();
         } else if (WebConstants.SYNC_DISABLED == code) {
             throw new SyncDisabledException();
         } else if (WebConstants.REGISTRATION_REQUIRED == code) {

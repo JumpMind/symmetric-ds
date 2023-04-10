@@ -35,6 +35,8 @@ import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationPendingException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
+import org.jumpmind.symmetric.transport.AuthenticationExpiredException;
+import org.jumpmind.symmetric.transport.ConnectionDuplicateException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.NoContentException;
@@ -133,6 +135,8 @@ public class HttpIncomingTransport implements IIncomingTransport {
                 throw new SyncDisabledException();
             case WebConstants.SC_SERVICE_BUSY:
                 throw new ConnectionRejectedException();
+            case WebConstants.SC_ALREADY_CONNECTED:
+                throw new ConnectionDuplicateException();
             case WebConstants.SC_SERVICE_UNAVAILABLE:
                 throw new ServiceUnavailableException();
             case WebConstants.SC_FORBIDDEN:
@@ -140,7 +144,7 @@ public class HttpIncomingTransport implements IIncomingTransport {
                 throw new AuthenticationException();
             case WebConstants.SC_AUTH_EXPIRED:
                 httpTransportManager.clearSession(connection);
-                throw new AuthenticationException(true);
+                throw new AuthenticationExpiredException();
             case WebConstants.SC_NO_CONTENT:
                 throw new NoContentException();
             case WebConstants.SC_OK:

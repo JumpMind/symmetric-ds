@@ -38,6 +38,24 @@ public interface IConcurrentConnectionManager {
         SOFT
     };
 
+    public static enum ReservationStatus {
+        /**
+         * Reservation was accepted
+         */
+        ACCEPTED,
+        /**
+         * Second reservation was requested before releasing first one
+         */
+        DUPLICATE,
+        /**
+         * Server is busy and there are no reservations left to hand out
+         */
+        BUSY,
+        /**
+         * Reservation was not found on this server
+         */
+        NOT_FOUND
+    };
     /**
      * @param nodeId
      * @param reservationRequest
@@ -45,9 +63,9 @@ public interface IConcurrentConnectionManager {
      *            the node has actually connected for activity.
      * @return true if the connection has been reserved and the node is meant to proceed with its current operation.
      */
-    public boolean reserveConnection(String nodeId, String poolId, ReservationType reservationRequest);
 
-    public boolean reserveConnection(String nodeId, String channelId, String poolId, ReservationType reservationRequest);
+    public ReservationStatus reserveConnection(String nodeId, String channelId, String poolId, ReservationType reservationRequest,
+            boolean requiresExistingReservation);
 
     public boolean releaseConnection(String nodeId, String poolId);
 

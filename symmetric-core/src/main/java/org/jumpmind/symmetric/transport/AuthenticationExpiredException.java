@@ -20,6 +20,6 @@
  */
 package org.jumpmind.symmetric.transport;
 
-public class AuthenticationException extends OfflineException {
+public class AuthenticationExpiredException extends OfflineException {
     private static final long serialVersionUID = 1L;
 }
