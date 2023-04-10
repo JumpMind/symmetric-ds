@@ -85,6 +85,11 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
     protected DerbyJdbcSqlTemplate createSqlTemplate() {
         return new DerbyJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
+    
+    @Override
+    public boolean allowsUniqueIndexDuplicatesWithNulls() {
+        return false;
+    }
 
     public String getName() {
         return DatabaseNamesConstants.DERBY;

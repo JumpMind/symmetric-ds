@@ -224,6 +224,8 @@ public interface IDatabasePlatform {
     public boolean supportsTransactions();
 
     public boolean supportsMultiThreadedTransactions();
+    
+    public boolean allowsUniqueIndexDuplicatesWithNulls();
 
     public long getEstimatedRowCount(Table table);
 
@@ -244,4 +246,5 @@ public interface IDatabasePlatform {
     public String getCharSetName();
 
     public boolean supportsParametersInSelect();
+        
 }

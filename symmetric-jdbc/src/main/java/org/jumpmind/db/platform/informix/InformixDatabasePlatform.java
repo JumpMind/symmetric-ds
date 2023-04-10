@@ -66,6 +66,11 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
     protected InformixJdbcSqlTemplate createSqlTemplate() {
         return new InformixJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
+    
+    @Override
+    public boolean allowsUniqueIndexDuplicatesWithNulls() {
+        return false;
+    }
 
     public String getName() {
         return DatabaseNamesConstants.INFORMIX;
