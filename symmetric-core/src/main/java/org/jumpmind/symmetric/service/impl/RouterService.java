@@ -549,6 +549,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 context.rollback();
                 dataCount = context.getCommittedDataEventCount();
             }
+            engine.getOutgoingBatchService().updateAbandonedRoutingBatches();
         } finally {
             try {
                 if (dataCount > 0) {
