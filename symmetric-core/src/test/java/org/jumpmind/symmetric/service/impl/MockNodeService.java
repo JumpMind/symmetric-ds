@@ -117,6 +117,10 @@ public class MockNodeService implements INodeService {
         return null;
     }
 
+    public Collection<Node> getEnabledNodesFromDatabase() {
+        return null;
+    }
+
     public Map<String, NodeSecurity> findAllNodeSecurity(boolean useCache) {
         return null;
     }

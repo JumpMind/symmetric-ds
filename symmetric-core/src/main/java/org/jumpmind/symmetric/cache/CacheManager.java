@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.cache;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -253,6 +254,12 @@ public class CacheManager implements ICacheManager {
     public List<Node> getTargetNodesCache(NodeGroupLinkAction eventAction, Node node) {
         initializeNodeCache();
         return nodeCache.getTargetNodesCache(eventAction, node);
+    }
+
+    @Override
+    public Collection<Node> getNodesByGroup(String nodeGroupId) {
+        initializeNodeCache();
+        return nodeCache.getNodesByGroup(nodeGroupId);
     }
 
     @Override

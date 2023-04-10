@@ -54,8 +54,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("findNodeSql", "where node_id = ?   ");
         putSql("findNodeByExternalIdSql", ""
                 + "where node_group_id = ? and external_id = ? order by node_id   ");
-        putSql("findEnabledNodesFromNodeGroupSql", ""
-                + "where node_group_id = ? and sync_enabled=1 order by node_id   ");
+        putSql("findEnabledNodes", "where sync_enabled = 1 order by node_id");
         putSql("findNodesWithOpenRegistrationSql",
                 "where node_id in (select node_id from $(node_security) where registration_enabled=1)   ");
         putSql("findNodesCreatedByMeSql", ""

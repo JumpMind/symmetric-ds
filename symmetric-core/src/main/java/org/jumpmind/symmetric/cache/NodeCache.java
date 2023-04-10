@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.cache;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -40,10 +42,32 @@ public class NodeCache {
     volatile private Map<String, List<Node>> targetNodesCache = new HashMap<String, List<Node>>();
     volatile private Map<String, Long> sourceNodeLinkCacheTime = new HashMap<String, Long>();
     volatile private Map<String, Long> targetNodeLinkCacheTime = new HashMap<String, Long>();
+    volatile private Map<String, List<Node>> nodesByGroupCache;
+    private long nodesByGroupCacheTime;
 
     public NodeCache(ISymmetricEngine engine) {
         this.parameterService = engine.getParameterService();
         this.nodeService = engine.getNodeService();
+    }
+
+    public List<Node> getNodesByGroup(String nodeGroupId) {
+        long cacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);
+        synchronized (nodeCacheLock) {
+            if (nodesByGroupCache == null || System.currentTimeMillis() - nodesByGroupCacheTime >= cacheTimeoutInMs) {
+                nodesByGroupCache = new HashMap<String, List<Node>>();
+                Collection<Node> nodes = nodeService.getEnabledNodesFromDatabase();
+                for (Node node : nodes) {
+                    List<Node> list = nodesByGroupCache.get(node.getNodeGroupId());
+                    if (list == null) {
+                        list = new ArrayList<Node>();
+                        nodesByGroupCache.put(node.getNodeGroupId(), list);
+                    }
+                    list.add(node);
+                }
+                nodesByGroupCacheTime = System.currentTimeMillis();
+            }
+            return nodesByGroupCache.get(nodeGroupId);
+        }
     }
 
     public List<Node> getSourceNodesCache(NodeGroupLinkAction eventAction, Node node) {
@@ -73,6 +97,7 @@ public class NodeCache {
     public void flushTargetNodesCache() {
         synchronized (nodeCacheLock) {
             targetNodeLinkCacheTime.entrySet().stream().forEach(e -> e.setValue(0l));
+            nodesByGroupCacheTime = 0;
         }
     }
 

@@ -103,8 +103,11 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId) {
-        return sqlTemplate.query(getSql("selectNodePrefixSql", "findEnabledNodesFromNodeGroupSql"), new NodeRowMapper(),
-                new Object[] { nodeGroupId });
+        return cacheManager.getNodesByGroup(nodeGroupId);
+    }
+
+    public Collection<Node> getEnabledNodesFromDatabase() {
+        return sqlTemplate.query(getSql("selectNodePrefixSql", "findEnabledNodes"), new NodeRowMapper());
     }
 
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId) {
