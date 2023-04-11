@@ -232,7 +232,7 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
     protected boolean useTriggerTemplateForColumnTemplatesDuringInitialLoad(Column column) {
         return false;
     }
-    
+
     @Override
     public String createInitalLoadSql(Node node, TriggerRouter triggerRouter, Table originalTable, TriggerHistory triggerHistory, Channel channel,
             String overrideSelectSql) {
@@ -243,6 +243,4 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
         }
         return sql;
     }
-    
-    
 }

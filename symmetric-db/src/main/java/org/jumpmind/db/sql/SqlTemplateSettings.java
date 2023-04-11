@@ -165,6 +165,4 @@ public class SqlTemplateSettings {
     public void setIncludeRowIdentifierAsColumn(boolean includeRowIdentifierAsColumn) {
         this.includeRowIdentifierAsColumn = includeRowIdentifierAsColumn;
     }
-    
-    
 }

@@ -629,8 +629,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     table.removeAllColumnDefaults();
                 }
             }
-            
-
             if (!(getTargetPlatform().allowsUniqueIndexDuplicatesWithNulls())) {
                 for (Table table : db.getTables()) {
                     for (IIndex index : table.getUniqueIndices()) {
@@ -656,7 +654,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     }
                 }
             }
-            
             if (writerSettings.isAlterTable()) {
                 getTargetPlatform().alterDatabase(db, !writerSettings.isCreateTableFailOnError(), writerSettings.getAlterDatabaseInterceptors());
             } else {

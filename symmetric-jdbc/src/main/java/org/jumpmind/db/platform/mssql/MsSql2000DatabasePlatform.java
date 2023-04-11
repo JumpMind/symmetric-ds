@@ -85,7 +85,7 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return defaultSchema;
     }
-    
+
     @Override
     public boolean allowsUniqueIndexDuplicatesWithNulls() {
         return false;

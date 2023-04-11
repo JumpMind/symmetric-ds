@@ -1295,7 +1295,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public boolean supportsParametersInSelect() {
         return true;
     }
-    
+
     public boolean allowsUniqueIndexDuplicatesWithNulls() {
         return true;
     }

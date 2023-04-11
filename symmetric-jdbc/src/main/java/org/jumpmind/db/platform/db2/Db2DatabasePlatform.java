@@ -89,7 +89,7 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
     protected Db2JdbcSqlTemplate createSqlTemplate() {
         return new Db2JdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
-    
+
     @Override
     public boolean allowsUniqueIndexDuplicatesWithNulls() {
         return false;
