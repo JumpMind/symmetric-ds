@@ -426,18 +426,19 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         params.put("NODES", nodeIds);
         params.put("CHANNELS", channels);
         params.put("STATUSES", toStringList(statuses));
-        return sqlTemplateDirty.queryForInt(getSql("selectCountBatchesPrefixSql", buildBatchWhere(nodeIds, channels, statuses, loads)),
+        return sqlTemplateDirty.queryForInt(getSql("selectCountBatchesPrefixSql", buildBatchWhere(nodeIds, channels, statuses, loads, null)),
                 params);
     }
 
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
-            List<OutgoingBatch.Status> statuses, List<Long> loads, long startAtBatchId, final int maxRowsToRetrieve,
-            boolean ascending) {
-        String where = buildBatchWhere(nodeIds, channels, statuses, loads);
+            List<OutgoingBatch.Status> statuses, List<Long> loads, long startAtBatchId, Date startAtLastUpdateTime,
+            final int maxRowsToRetrieve, boolean ascending) {
+        String where = buildBatchWhere(nodeIds, channels, statuses, loads, startAtLastUpdateTime);
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("NODES", nodeIds);
         params.put("CHANNELS", channels);
         params.put("STATUSES", toStringList(statuses));
+        params.put("LAST_UPDATE_TIME", startAtLastUpdateTime);
         params.put("LOADS", loads);
         String startAtBatchIdSql = null;
         if (startAtBatchId > 0) {

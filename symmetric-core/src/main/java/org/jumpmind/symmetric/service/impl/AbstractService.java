@@ -177,7 +177,7 @@ abstract public class AbstractService implements IService {
     }
 
     protected String buildBatchWhere(List<String> nodeIds, List<String> channels,
-            List<?> statuses, List<Long> loads) {
+            List<?> statuses, List<Long> loads, Date startAtLastUpdatedTime) {
         boolean containsErrorStatus = statuses.contains(AbstractBatch.Status.ER);
         boolean containsIgnoreStatus = statuses.contains(AbstractBatch.Status.IG);
         StringBuilder where = new StringBuilder();
@@ -212,6 +212,13 @@ abstract public class AbstractService implements IService {
                 where.append(" or ignore_count > 0 ");
             }
             where.append(")");
+            needsAnd = true;
+        }
+        if (startAtLastUpdatedTime != null) {
+            if (needsAnd) {
+                where.append(" and ");
+            }
+            where.append("last_update_time >= :LAST_UPDATE_TIME");
             needsAnd = true;
         }
         if (where.length() > 0) {
