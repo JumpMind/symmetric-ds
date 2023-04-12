@@ -66,7 +66,12 @@ public class NodeCache {
                 }
                 nodesByGroupCacheTime = System.currentTimeMillis();
             }
-            return nodesByGroupCache.get(nodeGroupId);
+            List<Node> nodes = nodesByGroupCache.get(nodeGroupId);
+            if (nodes == null) {
+                nodes = new ArrayList<Node>();
+                nodesByGroupCache.put(nodeGroupId, nodes);
+            }
+            return nodes;
         }
     }
 
