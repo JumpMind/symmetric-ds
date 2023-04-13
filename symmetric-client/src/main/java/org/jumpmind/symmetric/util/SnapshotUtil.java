@@ -98,7 +98,6 @@ import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.monitor.MonitorTypeBlock;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -806,7 +805,7 @@ public class SnapshotUtil {
         List<Transaction> filteredTransactions = new ArrayList<Transaction>();
         String dbUser = engine.getParameterService().getString("db.user");
         for (Transaction transaction : transactions) {
-            MonitorTypeBlock.filterTransactions(transaction, transactionMap, filteredTransactions, dbUser, false, false);
+            SymmetricUtils.filterTransactions(transaction, transactionMap, filteredTransactions, dbUser, false, false);
         }
         File file = new File(parent, "transactions.csv");
         try (OutputStream outputStream = new FileOutputStream(file);

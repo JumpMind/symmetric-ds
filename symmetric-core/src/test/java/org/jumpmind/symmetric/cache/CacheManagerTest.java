@@ -46,19 +46,16 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
-import org.jumpmind.symmetric.model.Notification;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.model.LoadFilter.LoadFilterType;
-import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
-import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITransformService;
@@ -79,7 +76,6 @@ public class CacheManagerTest {
     private IFileSyncService fileSyncService;
     private IGroupletService groupletService;
     private ILoadFilterService loadFilterService;
-    private IMonitorService monitorService;
     private ITransformService transformService;
 
     @BeforeEach
@@ -101,8 +97,6 @@ public class CacheManagerTest {
         when(engine.getGroupletService()).thenReturn(groupletService);
         loadFilterService = mock(ILoadFilterService.class);
         when(engine.getLoadFilterService()).thenReturn(loadFilterService);
-        monitorService = mock(IMonitorService.class);
-        when(engine.getMonitorService()).thenReturn(monitorService);
         transformService = mock(ITransformService.class);
         when(engine.getTransformService()).thenReturn(transformService);
     }
@@ -653,90 +647,6 @@ public class CacheManagerTest {
         assertEquals(1, loadFiltersCache.get(nodeGroupLink).get(loadFilter2.getLoadFilterType()).get(loadFilter2.getTargetTableName()).size());
         assertEquals(loadFilter2.getTargetTableName(), loadFiltersCache.get(nodeGroupLink).get(loadFilter2.getLoadFilterType()).get(loadFilter2
                 .getTargetTableName()).get(0).getTargetTableName());
-    }
-
-    @Test
-    public void activeMonitorsForNodeCacheTest() {
-        String nodeGroupId = "mygroup";
-        String externalId = "myname";
-        Monitor monitor1 = new Monitor();
-        monitor1.setMonitorId("monitor1");
-        when(monitorService.getActiveMonitorsForNodeFromDb(nodeGroupId, externalId)).thenReturn(Arrays.asList(monitor1));
-        when(parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NOTIFICATION_IN_MS)).thenReturn(600000l);
-        CacheManager cacheManager = new CacheManager(engine);
-        List<Monitor> monitorsCache = cacheManager.getActiveMonitorsForNode(nodeGroupId, externalId);
-        assertEquals(1, monitorsCache.size());
-        Monitor monitor2 = new Monitor();
-        monitor2.setMonitorId("monitor2");
-        when(monitorService.getActiveMonitorsForNodeFromDb(nodeGroupId, externalId)).thenReturn(Arrays.asList(monitor1, monitor2));
-        cacheManager.flushMonitorCache();
-        monitorsCache = cacheManager.getActiveMonitorsForNode(nodeGroupId, externalId);
-        assertEquals(2, monitorsCache.size());
-        when(parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NOTIFICATION_IN_MS)).thenReturn(5l);
-        when(monitorService.getActiveMonitorsForNodeFromDb(nodeGroupId, externalId)).thenReturn(Arrays.asList(monitor2));
-        try {
-            Thread.sleep(10l);
-        } catch (InterruptedException e) {
-        }
-        monitorsCache = cacheManager.getActiveMonitorsForNode(nodeGroupId, externalId);
-        assertEquals(1, monitorsCache.size());
-        assertEquals(monitor2.getMonitorId(), monitorsCache.get(0).getMonitorId());
-    }
-
-    @Test
-    public void activeMonitorsUnresolvedForNodeCacheTest() {
-        String nodeGroupId = "mygroup";
-        String externalId = "myname";
-        Monitor monitor1 = new Monitor();
-        monitor1.setMonitorId("monitor1");
-        when(monitorService.getActiveMonitorsUnresolvedForNodeFromDb(nodeGroupId, externalId)).thenReturn(Arrays.asList(monitor1));
-        when(parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NOTIFICATION_IN_MS)).thenReturn(600000l);
-        CacheManager cacheManager = new CacheManager(engine);
-        List<Monitor> monitorsCache = cacheManager.getActiveMonitorsUnresolvedForNode(nodeGroupId, externalId);
-        assertEquals(1, monitorsCache.size());
-        Monitor monitor2 = new Monitor();
-        monitor2.setMonitorId("monitor2");
-        when(monitorService.getActiveMonitorsUnresolvedForNodeFromDb(nodeGroupId, externalId)).thenReturn(Arrays.asList(monitor1, monitor2));
-        cacheManager.flushMonitorCache();
-        monitorsCache = cacheManager.getActiveMonitorsUnresolvedForNode(nodeGroupId, externalId);
-        assertEquals(2, monitorsCache.size());
-        when(parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NOTIFICATION_IN_MS)).thenReturn(5l);
-        when(monitorService.getActiveMonitorsUnresolvedForNodeFromDb(nodeGroupId, externalId)).thenReturn(Arrays.asList(monitor2));
-        try {
-            Thread.sleep(10l);
-        } catch (InterruptedException e) {
-        }
-        monitorsCache = cacheManager.getActiveMonitorsUnresolvedForNode(nodeGroupId, externalId);
-        assertEquals(1, monitorsCache.size());
-        assertEquals(monitor2.getMonitorId(), monitorsCache.get(0).getMonitorId());
-    }
-
-    @Test
-    public void activeNotificationsForNodeCacheTest() {
-        String nodeGroupId = "mygroup";
-        String externalId = "myname";
-        Notification notification1 = new Notification();
-        notification1.setNotificationId("notification1");
-        when(monitorService.getActiveNotificationsForNodeFromDb(nodeGroupId, externalId)).thenReturn(Arrays.asList(notification1));
-        when(parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NOTIFICATION_IN_MS)).thenReturn(600000l);
-        CacheManager cacheManager = new CacheManager(engine);
-        List<Notification> notificationCache = cacheManager.getActiveNotificationsForNode(nodeGroupId, externalId);
-        assertEquals(1, notificationCache.size());
-        Notification notification2 = new Notification();
-        notification2.setNotificationId("notification2");
-        when(monitorService.getActiveNotificationsForNodeFromDb(nodeGroupId, externalId)).thenReturn(Arrays.asList(notification1, notification2));
-        cacheManager.flushNotificationCache();
-        notificationCache = cacheManager.getActiveNotificationsForNode(nodeGroupId, externalId);
-        assertEquals(2, notificationCache.size());
-        when(parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NOTIFICATION_IN_MS)).thenReturn(5l);
-        when(monitorService.getActiveNotificationsForNodeFromDb(nodeGroupId, externalId)).thenReturn(Arrays.asList(notification2));
-        try {
-            Thread.sleep(10l);
-        } catch (InterruptedException e) {
-        }
-        notificationCache = cacheManager.getActiveNotificationsForNode(nodeGroupId, externalId);
-        assertEquals(1, notificationCache.size());
-        assertEquals(notification2.getNotificationId(), notificationCache.get(0).getNotificationId());
     }
 
     @Test

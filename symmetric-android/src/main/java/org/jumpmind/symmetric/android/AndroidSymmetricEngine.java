@@ -48,7 +48,6 @@ import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IFileSyncService;
-import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -138,11 +137,6 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     @Override
     protected IFileSyncService buildFileSyncService() {
         return new AndroidFileSyncService(this);
-    }
-
-    @Override
-    protected IMonitorService buildMonitorService(ISymmetricDialect symmetricDialect) {
-        return new AndroidMonitorService(this);
     }
 
     @Override

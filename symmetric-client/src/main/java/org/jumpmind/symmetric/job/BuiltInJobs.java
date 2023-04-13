@@ -56,10 +56,16 @@ public class BuiltInJobs {
         builtInJobs.add(new FileSyncPullJob(engine, taskScheduler));
         builtInJobs.add(new FileSyncPushJob(engine, taskScheduler));
         builtInJobs.add(new InitialLoadExtractorJob(engine, taskScheduler));
-        builtInJobs.add(new MonitorJob(engine, taskScheduler));
         builtInJobs.add(new ReportStatusJob(engine, taskScheduler));
         builtInJobs.add(new LogMinerJob(engine, taskScheduler));
         builtInJobs.add(new InitialLoadJob(engine, taskScheduler));
+        List<IJob> extendedJobs = engine.getExtensionService().getExtensionPointList(IJob.class);
+        for (IJob extendedJob : extendedJobs) {
+            if (extendedJob instanceof AbstractJob) {
+                ((AbstractJob) extendedJob).setTaskScheduler(taskScheduler);
+            }
+            builtInJobs.add(extendedJob);
+        }
         for (IJob builtInJob : builtInJobs) {
             setBuiltInDefaults(builtInJob);
         }

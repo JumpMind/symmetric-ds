@@ -61,6 +61,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.JdbcSymmetricDialectFactory;
+import org.jumpmind.symmetric.ext.ICached;
 import org.jumpmind.symmetric.io.stage.BatchStagingManager;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
@@ -508,7 +509,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     @Override
     public void clearCaches() {
         super.clearCaches();
-        monitorService.flushMonitorCache();
-        monitorService.flushNotificationCache();
+        for (ICached cachedExtension : extensionService.getExtensionPointList(ICached.class)) {
+            cachedExtension.flushCache();
+        }
     }
 }

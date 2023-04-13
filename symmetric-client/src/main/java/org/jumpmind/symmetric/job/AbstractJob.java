@@ -49,7 +49,7 @@ import org.springframework.scheduling.support.SimpleTriggerContext;
 @ManagedResource(description = "The management interface for a job")
 abstract public class AbstractJob implements Runnable, IJob {
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    private String jobName;
+    protected String jobName;
     private JobDefinition jobDefinition;
     private AtomicBoolean paused = new AtomicBoolean(false);
     private Date lastFinishTime;
@@ -62,10 +62,10 @@ abstract public class AbstractJob implements Runnable, IJob {
     protected ISymmetricEngine engine;
     private ThreadPoolTaskScheduler taskScheduler;
     private ScheduledFuture<?> scheduledJob;
-    private RandomTimeSlot randomTimeSlot;
+    protected RandomTimeSlot randomTimeSlot;
     private CronTrigger cronTrigger;
     private Date periodicFirstRunTime;
-    private IParameterService parameterService;
+    protected IParameterService parameterService;
     private long processedCount;
     private String targetNodeId;
     private int targetNodeCount;
@@ -454,5 +454,9 @@ abstract public class AbstractJob implements Runnable, IJob {
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+    }
+
+    public void setThreadPoolTaskScheduler(ThreadPoolTaskScheduler taskScheduler) {
+        this.taskScheduler = taskScheduler;
     }
 }

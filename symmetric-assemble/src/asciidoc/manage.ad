@@ -264,11 +264,7 @@ include::manage/push-threads.ad[]
 ifdef::pro[]
 include::manage/jvm-properties.ad[]
 include::manage/jvm-threads.ad[]
-endif::pro[]
-
 include::manage/monitors.ad[]
-
-ifdef::pro[]
 include::manage/security.ad[]
 include::manage/rest-keys.ad[]
 endif::pro[]

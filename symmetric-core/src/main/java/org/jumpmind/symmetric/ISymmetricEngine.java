@@ -49,8 +49,6 @@ import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IInitialLoadService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
-import org.jumpmind.symmetric.service.IMailService;
-import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOfflinePullService;
@@ -304,10 +302,6 @@ public interface ISymmetricEngine {
     public Logger getLog();
 
     public IExtensionService getExtensionService();
-
-    public IMonitorService getMonitorService();
-
-    public IMailService getMailService();
 
     public IStagingManager getStagingManager();
 

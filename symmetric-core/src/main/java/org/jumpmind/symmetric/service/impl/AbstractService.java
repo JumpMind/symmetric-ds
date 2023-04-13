@@ -73,6 +73,9 @@ abstract public class AbstractService implements IService {
     private ISqlMap sqlMap;
     private Set<String> logOnce = new HashSet<String>();
 
+    public AbstractService() {
+    }
+
     public AbstractService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
         this.symmetricDialect = symmetricDialect;
         this.parameterService = parameterService;

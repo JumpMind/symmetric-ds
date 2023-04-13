@@ -388,38 +388,6 @@
         <column name="last_locking_server_id" type="VARCHAR" size="255"  description="The server id of the process that last did work on this batch." />
     </table>
 
-    <table name="monitor" description="Defines monitors that will run periodically to look for problems in the system.">
-        <column name="monitor_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a monitor." />
-        <column name="node_group_id" type="VARCHAR" size="50" required="true" default="ALL" description="Target a specific node group to run this monitor.  Target all groups, use a value of 'ALL'." />
-        <column name="external_id" type="VARCHAR" size="255" required="true" default="ALL" description="Target a specific node by its external ID to run this monitor.  Target all nodes, use a value of 'ALL'. "/>
-        <column name="type" type="VARCHAR" size="50" required="true" description="Monitor type to execute.  Built-in types are cpu, disk, memory, batchError, batchUnsent, dataGap, dataUnrouted, and log." />
-        <column name="expression" type="LONGVARCHAR" description="An expression used by the monitor to set options specific to the monitor type." />
-        <column name="threshold" type="BIGINT" required="true" default="0" description="The minimum value returned when the monitor runs that will cause a monitor event to be recorded." />
-        <column name="run_period" type="INTEGER" required="true" default="0" description="Run this monitor periodically every number of seconds." />        
-        <column name="run_count" type="INTEGER" required="true" default="0" description="Average the value across a number of runs before checking threshold." />
-        <column name="severity_level" type="INTEGER" required="true" default="0" description="" />
-        <column name="enabled" type="BOOLEANINT" size="1" required="true" default="0" description="Whether or not this monitor is enabled for execution." />
-        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
-    </table>
-
-    <table name="monitor_event" description="Records an event of when a system problem occurred.">
-        <column name="monitor_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a monitor that caused the event." />
-        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the node that created the event." />
-        <column name="event_time" type="TIMESTAMP" required="true" primaryKey="true" description="Timestamp when the event was created." />
-        <column name="host_name" type="VARCHAR" size="60" description="Host name of the node that created the event." />
-        <column name="type" type="VARCHAR" size="50" required="true" description="Monitor type that detected the value recorded." />
-        <column name="threshold" type="BIGINT" required="true" default="0" description="Minimum value for the monitor to cause an event." />
-        <column name="event_value" type="BIGINT" required="true" default="0" description="Actual value detected by the monitor." />
-        <column name="event_count" type="INTEGER" required="true" default="0" description="Number of times this event has occurred and been updated." />
-        <column name="severity_level" type="INTEGER" required="true" default="0" description="Severity level configured for the monitor." />
-        <column name="is_resolved" type="BOOLEANINT" required="true" default="0" description="Whether an event is resolved because its value dropped below the threshold." />
-        <column name="is_notified" type="BOOLEANINT" required="true" default="0" description="Whether a notification was run." />
-        <column name="details" type="LONGVARCHAR" description="JSON formatted details about the event" />
-        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when the event was last updated." />
-    </table>
-
     <table name="node" description="Representation of an instance of SymmetricDS that synchronizes data with one or more additional nodes. Each node has a unique identifier (nodeId) that is used when communicating, as well as a domain-specific identifier (externalId) that provides context within the local system.">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="A unique identifier for a node." />
         <column name="node_group_id" type="VARCHAR" size="50" required="true" description="The node group that this node belongs to, such as 'store'." />
@@ -627,19 +595,6 @@
         <foreign-key foreignTable="node" name="fk_sec_2_node">
             <reference local="node_id" foreign="node_id" />
         </foreign-key>
-    </table>
-
-    <table name="notification" description="Defines what notification to send when a monitor detects a problem in the system.">
-        <column name="notification_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a notification." />
-        <column name="node_group_id" type="VARCHAR" size="50" required="true" default="ALL" description="Target a specific node group to run this notification.  To target all groups, use a value of 'ALL'." />
-        <column name="external_id" type="VARCHAR" size="255" required="true" default="ALL" description="Target a specific node by its external ID to run this notification.  To target all nodes, use a value of 'ALL'. "/>
-        <column name="severity_level" type="INTEGER" required="true" default="0" description="Look for monitor events using this severity level or above.  To match all severity levels, use a value of 0." />
-        <column name="type" type="VARCHAR" size="50" required="true" description="Notification type that will send a message.  Built-in types are mail and log." />
-        <column name="expression" type="LONGVARCHAR" description="An expression used by the notification to set options specific to the notification type." />
-        <column name="enabled" type="BOOLEANINT" size="1" required="true" default="0" description="Whether or not this notication is enabled." />
-        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
     </table>
 
 	<table name="outgoing_batch" description="Used for tracking the sending a collection of data to a node in the system. A new outgoing_batch is created and given a status of 'NE'. After sending the outgoing_batch to its target node, the status becomes 'SE'. The node responds with either a success status of 'OK' or an error status of 'ER'. An error while sending to the node also results in an error status of 'ER' regardless of whether the node sends that acknowledgement. ">

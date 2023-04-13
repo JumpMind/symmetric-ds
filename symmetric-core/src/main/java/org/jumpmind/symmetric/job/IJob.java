@@ -22,9 +22,10 @@ package org.jumpmind.symmetric.job;
 
 import java.util.Date;
 
+import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.model.JobDefinition;
 
-public interface IJob {
+public interface IJob extends IExtensionPoint {
     public String getName();
 
     public JobDefinition getJobDefinition();

@@ -31,13 +31,11 @@ import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.Grouplet;
 import org.jumpmind.symmetric.model.LoadFilter;
 import org.jumpmind.symmetric.model.LoadFilter.LoadFilterType;
-import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
-import org.jumpmind.symmetric.model.Notification;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -54,7 +52,6 @@ public class CacheManager implements ICacheManager {
     volatile private FileSyncCache fileSyncCache;
     volatile private GroupletCache groupletCache;
     volatile private LoadFilterCache loadFilterCache;
-    volatile private MonitorCache monitorCache;
     volatile private TransformCache transformCache;
 
     public CacheManager(ISymmetricEngine engine) {
@@ -126,16 +123,6 @@ public class CacheManager implements ICacheManager {
             synchronized (constructorCreator) {
                 if (loadFilterCache == null) {
                     loadFilterCache = new LoadFilterCache(engine);
-                }
-            }
-        }
-    }
-
-    private void initializeMonitorCache() {
-        if (monitorCache == null) {
-            synchronized (constructorCreator) {
-                if (monitorCache == null) {
-                    monitorCache = new MonitorCache(engine);
                 }
             }
         }
@@ -375,36 +362,6 @@ public class CacheManager implements ICacheManager {
     public void flushLoadFilters() {
         initializeLoadFilterCache();
         loadFilterCache.flushLoadFilterCache();
-    }
-
-    @Override
-    public List<Monitor> getActiveMonitorsForNode(String nodeGroupId, String externalId) {
-        initializeMonitorCache();
-        return monitorCache.getMonitorsForNode(nodeGroupId, externalId);
-    }
-
-    @Override
-    public List<Monitor> getActiveMonitorsUnresolvedForNode(String nodeGroupId, String externalId) {
-        initializeMonitorCache();
-        return monitorCache.getMonitorsUnresolvedForNode(nodeGroupId, externalId);
-    }
-
-    @Override
-    public List<Notification> getActiveNotificationsForNode(String nodeGroupId, String externalId) {
-        initializeMonitorCache();
-        return monitorCache.getNotificationsForNode(nodeGroupId, externalId);
-    }
-
-    @Override
-    public void flushMonitorCache() {
-        initializeMonitorCache();
-        monitorCache.flushMonitorCache();
-    }
-
-    @Override
-    public void flushNotificationCache() {
-        initializeMonitorCache();
-        monitorCache.flushNotificationCache();
     }
 
     @Override
