@@ -793,7 +793,7 @@
         <column name="source_node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the node that will be the source of the table reload." />
         <column name="trigger_id" type="VARCHAR" size="128" required="true" primaryKey="true" description="Unique identifier for a trigger associated with the table reload. Note the trigger must be linked to the router." />
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique description of the router associated with the table reload. Note the router must be linked to the trigger." />
-        <column name="create_time" type="TIMESTAMP" required="true" primaryKey="true" description="Timestamp when this entry was created." />
+        <column name="create_time" type="TIMESTAMP" size="2" required="true" primaryKey="true" description="Timestamp when this entry was created." />
         <column name="create_table" type="BOOLEANINT" size="1" required="true" default="0"  description="Flag that indicates that a table create script will be sent as part of the reload" />
         <column name="delete_first" type="BOOLEANINT" size="1" required="true" default="0"  description="Flag that indicates that the table will be deleted before loading." />
         <column name="reload_select" type="LONGVARCHAR"  description="Overrides the initial load select." />
