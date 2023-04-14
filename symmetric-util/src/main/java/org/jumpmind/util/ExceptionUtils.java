@@ -49,4 +49,16 @@ public class ExceptionUtils {
         }
         return cause;
     }
+
+    public static boolean is(Exception e, Class<?>... exceptions) {
+        if (e != null) {
+            Throwable cause = getRootCause(e);
+            for (Class<?> ex : exceptions) {
+                if (ex.isInstance(e) || ex.isInstance(cause)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
