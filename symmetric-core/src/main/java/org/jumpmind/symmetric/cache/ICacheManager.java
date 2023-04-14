@@ -50,6 +50,8 @@ public interface ICacheManager {
 
     public Map<String, TriggerRouterRoutersCache> getTriggerRoutersByNodeGroupId(boolean refreshCache);
 
+    public boolean isUsingTargetExternalId(boolean refreshCache);
+
     public Map<String, Trigger> getTriggers(boolean refreshCache);
 
     public Map<String, Router> getRouters(boolean refreshCache);

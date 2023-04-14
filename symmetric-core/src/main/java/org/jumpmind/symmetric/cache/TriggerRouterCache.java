@@ -53,6 +53,8 @@ public class TriggerRouterCache {
     private long triggersCacheTime;
     private Map<String, Router> routersCache;
     private long routersCacheTime;
+    private Boolean usingTargetExternalId;
+    private long targetExternalIdCacheTime;
 
     public TriggerRouterCache(ISymmetricEngine engine) {
         this.parameterService = engine.getParameterService();
@@ -163,7 +165,30 @@ public class TriggerRouterCache {
     public void flushTriggerRoutersByNodeGroupId() {
         synchronized (triggerRouterCacheLock) {
             triggerRoutersByNodeGroupIdCacheTime = 0l;
+            usingTargetExternalId = null;
         }
+    }
+
+    public boolean isUsingTargetExternalId(boolean refreshCache) {
+        long cacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
+        if (usingTargetExternalId == null || refreshCache || System.currentTimeMillis() - targetExternalIdCacheTime > cacheTimeoutInMs) {
+            synchronized (triggerRouterCacheLock) {
+                usingTargetExternalId = false;
+                TriggerRouterRoutersCache cache = getTriggerRoutersByNodeGroupId(false).get(parameterService.getNodeGroupId());
+                if (cache != null) {
+                    for (List<TriggerRouter> list : cache.triggerRoutersByTriggerId.values()) {
+                        for (TriggerRouter triggerRouter : list) {
+                            if (triggerRouter.getTrigger().getSourceTableName().contains("$(targetExternalId)")) {
+                                usingTargetExternalId = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                targetExternalIdCacheTime = System.currentTimeMillis();
+            }
+        }
+        return usingTargetExternalId;
     }
 
     public Map<String, TriggerRouter> getTriggerRoutersById(boolean refreshCache) {

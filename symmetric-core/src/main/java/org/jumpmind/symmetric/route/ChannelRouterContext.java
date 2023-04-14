@@ -57,6 +57,8 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public static final String STAT_BATCHES_NONCOMMON = "batches.noncommon.count";
     public static final String STAT_UPDATE_BATCHES_MS = "batches.update.time.ms";
     public static final String STAT_MULTI_QUERY_COUNT = "multi.query.count";
+    public static final String STAT_LOOKUP_AVAILABLE_NODES_MS = "lookup.avail.nodes.ms";
+    public static final String STAT_LOOKUP_TRIGGER_ROUTERS_MS = "lookup.trigger.routers.ms";
     public static final String STAT_ROUTE_TOTAL_TIME = "total.time.ms";
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
     private Map<Integer, Map<String, OutgoingBatch>> batchesByGroups = new HashMap<Integer, Map<String, OutgoingBatch>>();

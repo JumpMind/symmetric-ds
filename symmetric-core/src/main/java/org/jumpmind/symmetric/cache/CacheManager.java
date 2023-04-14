@@ -181,6 +181,12 @@ public class CacheManager implements ICacheManager {
     }
 
     @Override
+    public boolean isUsingTargetExternalId(boolean refreshCache) {
+        initializeTriggerRouterCache();
+        return triggerRouterCache.isUsingTargetExternalId(refreshCache);
+    }
+
+    @Override
     public void flushTriggerRoutersByNodeGroupId() {
         initializeTriggerRouterCache();
         triggerRouterCache.flushTriggerRoutersByNodeGroupId();
