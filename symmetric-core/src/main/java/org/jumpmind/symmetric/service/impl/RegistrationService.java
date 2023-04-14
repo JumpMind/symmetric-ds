@@ -677,7 +677,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
         Node node = nodeService.findNode(nodeId);
         NodeSecurity security = nodeService.findNodeSecurity(nodeId);
         String password = null;
-        if (security != null && parameterService.is(ParameterConstants.REGISTRATION_REOPEN_USE_SAME_PASSWORD, true)) {
+        if (security != null && StringUtils.isNotBlank(security.getNodePassword())
+                && parameterService.is(ParameterConstants.REGISTRATION_REOPEN_USE_SAME_PASSWORD, true)) {
             password = security.getNodePassword();
         } else {
             password = extensionService.getExtensionPoint(INodeIdCreator.class).generatePassword(node);
