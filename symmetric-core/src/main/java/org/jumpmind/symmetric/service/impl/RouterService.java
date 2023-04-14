@@ -122,6 +122,7 @@ public class RouterService extends AbstractService implements IRouterService {
     protected DataGapDetector gapDetector;
     protected boolean firstTimeCheck = true;
     protected boolean hasMaxDataRoutedOnChannel;
+    protected boolean isUsingTargetExternalId;
 
     public RouterService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -199,6 +200,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
                         long ts = System.currentTimeMillis();
                         hasMaxDataRoutedOnChannel = false;
+                        isUsingTargetExternalId = engine.getCacheManager().isUsingTargetExternalId(false);
                         gapDetector.beforeRouting();
                         dataCount = routeDataForEachChannel();
                         ts = System.currentTimeMillis() - ts;
@@ -637,6 +639,7 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected Set<Node> findAvailableNodes(TriggerRouter triggerRouter, ChannelRouterContext context) {
+        long ts = System.currentTimeMillis();
         Set<Node> nodes = context.getAvailableNodes().get(triggerRouter);
         if (nodes == null) {
             nodes = new HashSet<Node>();
@@ -653,7 +656,9 @@ public class RouterService extends AbstractService implements IRouterService {
             }
             context.getAvailableNodes().put(triggerRouter, nodes);
         }
-        return engine.getGroupletService().getTargetEnabled(triggerRouter, nodes);
+        nodes = engine.getGroupletService().getTargetEnabled(triggerRouter, nodes);
+        context.incrementStat(System.currentTimeMillis() - ts, ChannelRouterContext.STAT_LOOKUP_AVAILABLE_NODES_MS);
+        return nodes;
     }
 
     protected IDataToRouteReader startReading(ChannelRouterContext context) {
@@ -802,9 +807,9 @@ public class RouterService extends AbstractService implements IRouterService {
 
     protected int routeData(ProcessInfo processInfo, Data data, ChannelRouterContext context) {
         int numberOfDataEventsInserted = 0;
-        List<TriggerRouter> triggerRouters = getTriggerRoutersForData(data);
+        List<TriggerRouter> triggerRouters = getTriggerRoutersForData(data, context);
         Table table = null;
-        if (data.getTriggerHistory() != null) {
+        if (!isUsingTargetExternalId && data.getTriggerHistory() != null) {
             table = platform.getTableFromCache(data.getTriggerHistory().getSourceCatalogName(), data.getTriggerHistory().getSourceSchemaName(),
                     data.getTriggerHistory().getSourceTableName(), false);
         }
@@ -1047,7 +1052,8 @@ public class RouterService extends AbstractService implements IRouterService {
         return dataRouter;
     }
 
-    protected List<TriggerRouter> getTriggerRoutersForData(Data data) {
+    protected List<TriggerRouter> getTriggerRoutersForData(Data data, ChannelRouterContext context) {
+        long ts = System.currentTimeMillis();
         List<TriggerRouter> triggerRouters = null;
         if (data != null) {
             if (data.getTriggerHistory() != null) {
@@ -1076,6 +1082,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         data.getDataId());
             }
         }
+        context.incrementStat(System.currentTimeMillis() - ts, ChannelRouterContext.STAT_LOOKUP_TRIGGER_ROUTERS_MS);
         return triggerRouters;
     }
 

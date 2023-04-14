@@ -82,6 +82,7 @@ public class DataGapRouteMultiCursor extends AbstractDataGapRouteCursor {
         ISqlReadCursor<Data> cursor = executeCursor(sql, args, types);
         queryMillis += (System.currentTimeMillis() - ts);
         queryCount++;
+        context.incrementStat(1, ChannelRouterContext.STAT_MULTI_QUERY_COUNT);
         return cursor;
     }
 
