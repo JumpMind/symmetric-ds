@@ -159,7 +159,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
             return processedNode;
         }
         Node identity = nodeService.findIdentity();
-        if (identity == null) {
+        NodeSecurity mySecurity = identity == null ? null : nodeService.findNodeSecurity(identity.getNodeId());
+        if (identity == null || (mySecurity != null && mySecurity.isRegistrationEnabled())) {
             RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                     RegistrationStatus.ER, remoteHost, remoteAddress);
             req.setErrorMessage("Cannot register a client node until this node is registered");
@@ -173,12 +174,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
                  * registration is not allowed until this node has an identity and an initial load
                  */
                 boolean requiresInitialLoad = parameterService.is(ParameterConstants.REGISTRATION_REQUIRE_INITIAL_LOAD, true);
-                NodeSecurity security = nodeService.findNodeSecurity(identity.getNodeId());
-                if (requiresInitialLoad && (security == null || security.getInitialLoadTime() == null)) {
+                if (requiresInitialLoad && (mySecurity == null || mySecurity.getInitialLoadEndTime() == null)) {
                     RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                             RegistrationStatus.ER, remoteHost, remoteAddress);
                     req.setErrorMessage(
-                            "Cannot register a client node until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
+                            "Cannot register a client node until this node has an initial load (ie. node_security.initial_load_end_time is a non null value)");
                     saveRegistrationRequest(req);
                     log.warn(req.getErrorMessage());
                     return processedNode;
@@ -269,7 +269,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             foundNode.setDatabaseName(nodePriorToRegistration.getDatabaseName());
             foundNode.setConfigVersion(Version.version());
             nodeService.save(foundNode);
-            log.info("Completed registration of node " + foundNode);
+            log.info("Registered node " + foundNode + " in my database, but pending acknowledgement");
             /**
              * Only send automatic initial load once or if the client is really re-registering
              */
@@ -321,10 +321,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
         Node processedNode = processRegistration(nodePriorToRegistration, remoteHost,
                 remoteAddress, userId, password, isRequestedRegistration);
         if (processedNode.isSyncEnabled()) {
-            /*
-             * Mark all configuration batches as processed because we are about to reload the configuration for the node
-             */
+            log.info("Preparing to send registration to node {} by clearing its outgoing config batches", processedNode);
             outgoingBatchService.markAllConfigAsSentForNode(processedNode.getNodeId());
+            log.info("Sending registration batch to node {}", processedNode);
             extractConfiguration(out, processedNode);
         }
         return processedNode.isSyncEnabled();
@@ -426,6 +425,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         for (INodeRegistrationListener l : registrationListeners) {
             l.registrationSyncTriggers();
         }
+        log.info("Completed registration of node {}", nodeId);
     }
 
     protected void markNodeAsRegistrationPending(String nodeId) {
@@ -627,7 +627,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 batch.setBatchId(Constants.VIRTUAL_BATCH_FOR_REGISTRATION);
                 extractedBatches.add(batch);
                 try {
+                    log.info("Preparing to send registration to node {} by clearing its outgoing config batches", remote);
                     outgoingBatchService.markAllConfigAsSentForNode(remote.getNodeId());
+                    log.info("Sending registration batch to node {}", remote);
                     extractConfiguration(transport.openStream(), remote);
                 } catch (Exception e) {
                     if (log.isDebugEnabled()) {
