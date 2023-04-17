@@ -104,9 +104,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                 || (batch.getChannelId() != null && batch.getChannelId().equals(
                         Constants.CHANNEL_CONFIG))) {
             if (batch.getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
-                /*
-                 * Remove outgoing configuration batches because we are about to get the complete configuration.
-                 */
+                log.info("Preparing to receive registration from node {} by clearing its outgoing config batches", batch.getSourceNodeId());
                 IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
                 IDataService dataService = engine.getDataService();
                 dataService.deleteCapturedConfigChannelData();
@@ -122,6 +120,9 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
             this.currentBatch = incomingBatch;
             context.put("currentBatch", this.currentBatch);
             if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
+                if (batch.getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
+                    log.info("Loading registration batch from {}", batch.getSourceNodeId());
+                }
                 return true;
             }
         }
