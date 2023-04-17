@@ -324,7 +324,7 @@ abstract public class AbstractService implements IService {
         String orderBy = " order by ";
         if (orderColumn == null) {
             if (this instanceof OutgoingBatchService) {
-                orderBy += "batch_id desc";
+                orderBy += "batch_id desc, node_id desc";
             } else {
                 orderBy += "create_time desc";
             }
