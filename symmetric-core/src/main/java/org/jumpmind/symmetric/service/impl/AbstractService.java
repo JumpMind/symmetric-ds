@@ -365,19 +365,31 @@ abstract public class AbstractService implements IService {
                 exception = e;
             }
             if (statusCode != WebConstants.SC_OK) {
+                String httpMessage = WebConstants.getHttpMessage(statusCode);
+                boolean retry = statusCode != WebConstants.REGISTRATION_REQUIRED && statusCode != WebConstants.REGISTRATION_PENDING &&
+                        statusCode != WebConstants.SYNC_DISABLED && statusCode != WebConstants.SC_FORBIDDEN && statusCode != WebConstants.SC_AUTH_EXPIRED;                
                 String message = String.format("Ack was not sent successfully on try number %s of %s.", i + 1, numberOfStatusSendRetries);
                 if (statusCode > 0) {
-                    message += String.format(" statusCode=%s", statusCode);
+                    message += " httpCode=" + statusCode;
+                }
+                if (httpMessage != null) {
+                    message += " httpMessage=" + httpMessage;
                 }
                 if (exception != null) {
-                    log.info(message + ": " + exception.getClass().getName() + ": " + exception.getMessage());
+                    log.info(message + " " + exception.getClass().getName() + ": " + exception.getMessage());
                 } else {
                     log.info(message);
                 }
-                if (i < numberOfStatusSendRetries - 1) {
+                if (!retry) {
+                    log.info("Leaving ack loop to recover from HTTP code that should not be retried");
+                }
+                if (retry && i < numberOfStatusSendRetries - 1) {
                     AppUtils.sleep(parameterService.getLong(ParameterConstants.DATA_LOADER_TIME_BETWEEN_ACK_RETRIES));
                 } else {
                     log.warn("Ack was not sent successfully.");
+                    if (!retry) {
+                        break;
+                    }
                 }
             }
         }

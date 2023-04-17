@@ -136,6 +136,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     protected int sendMessage(URL url, String nodeId, String securityToken, Map<String, String> requestProperties, String data) throws IOException {
+        int rc = 0;
         try (HttpConnection conn = openConnection(url, nodeId, securityToken)) {
             if (requestProperties != null) {
                 for (String key : requestProperties.keySet()) {
@@ -150,15 +151,18 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
             try (OutputStream os = conn.getOutputStream()) {
                 writeMessage(os, data);
                 checkForConnectionUpgrade(conn);
-                try (InputStream is = conn.getInputStream()) {
-                    byte[] bytes = new byte[32];
-                    while (is.read(bytes) != -1) {
-                        log.debug("Read keep-alive");
+                rc = conn.getResponseCode();
+                if (rc == WebConstants.SC_OK) {
+                    try (InputStream is = conn.getInputStream()) {
+                        byte[] bytes = new byte[32];
+                        while (is.read(bytes) != -1) {
+                            log.debug("Read keep-alive");
+                        }
                     }
                 }
-                return conn.getResponseCode();
             }
         }
+        return rc;
     }
 
     protected void checkForConnectionUpgrade(HttpConnection conn) {
