@@ -379,6 +379,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                             .getNodeId())) {
                         // always route changes to parent nodes
                         return true;
+                    } else if (networkedNodeInQuestion.isInChildHierarchy(nodeThatCouldBeRoutedTo.getNodeId())) {
+                        return true;
                     }
                     String createdAtNodeId = networkedNodeInQuestion.getNode().getCreatedAtNodeId();
                     if (createdAtNodeId != null
