@@ -51,6 +51,7 @@ public class DbExportCommand extends AbstractCommandLauncher {
     private static final String OPTION_DIR = "dir";
     private static final String OPTION_WHERE = "where";
     private static final String OPTION_EXCLUDE_COLUMNS = "exclude-columns";
+    private static final String OPTION_SYMMETRIC_PLATFORM = "symmetric";
 
     public DbExportCommand() {
         super("dbexport", "[tablename...]", "DbExport.Option.");
@@ -97,11 +98,12 @@ public class DbExportCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_WHERE, true);
         addOption(options, "i", OPTION_COMMENTS, false);
         addOption(options, null, OPTION_EXCLUDE_COLUMNS, true);
+        addOption(options, null, OPTION_SYMMETRIC_PLATFORM, false);
     }
 
     @Override
     protected boolean executeWithOptions(CommandLine line) throws Exception {
-        DbExport dbExport = new DbExport(getDatabasePlatform(false));
+        DbExport dbExport = new DbExport(getDatabasePlatform(false, line.hasOption(OPTION_SYMMETRIC_PLATFORM)));
         if (line.hasOption(OPTION_DIR)) {
             String dir = line.getOptionValue(OPTION_DIR);
             if (new File(dir).exists()) {
