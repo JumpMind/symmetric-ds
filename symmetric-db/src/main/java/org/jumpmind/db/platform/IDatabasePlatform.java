@@ -225,6 +225,8 @@ public interface IDatabasePlatform {
 
     public boolean supportsMultiThreadedTransactions();
 
+    public boolean allowsUniqueIndexDuplicatesWithNulls();
+
     public long getEstimatedRowCount(Table table);
 
     public String getTruncateSql(Table table);

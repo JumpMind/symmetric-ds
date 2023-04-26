@@ -90,6 +90,11 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
         return new Db2JdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
 
+    @Override
+    public boolean allowsUniqueIndexDuplicatesWithNulls() {
+        return false;
+    }
+
     public String getName() {
         return DatabaseNamesConstants.DB2;
     }

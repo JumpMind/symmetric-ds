@@ -355,7 +355,7 @@ public class AbstractBatch implements Serializable {
     public Map<String, Integer> getTableCounts() {
         return new LinkedHashMap<String, Integer>(tableCounts);
     }
-    
+
     public Map<String, Integer> getFileCounts() {
         return new LinkedHashMap<String, Integer>(fileCounts);
     }
@@ -400,7 +400,7 @@ public class AbstractBatch implements Serializable {
         tableCounts.put(tableName, ++count);
         summary = null;
     }
-    
+
     public void incrementFileCount(String fileName) {
         Integer count = fileCounts.get(fileName);
         if (count == null) {

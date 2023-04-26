@@ -38,7 +38,7 @@ public class DbCompareDiffWriterTest {
         this.tables = mock(DbCompareTables.class);
         this.test = new DbCompareDiffWriter(targetEngine, tables, stream);
     }
-    
+
     @Test
     void dbCompareDiffWriterWriteDeleteTest() throws Exception {
         // Mocks

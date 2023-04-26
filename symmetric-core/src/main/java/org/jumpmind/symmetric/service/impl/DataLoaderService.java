@@ -897,7 +897,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     public void insertIncomingError(ISqlTransaction transaction, IncomingError incomingError) {
         if (StringUtils.isNotBlank(incomingError.getNodeId()) && incomingError.getBatchId() >= 0) {
             boolean alreadyExists = false;
-            if (symmetricDialect.getDriverName().equalsIgnoreCase(DatabaseNamesConstants.OPENEDGE)) {
+            if (symmetricDialect.getDriverName() != null
+                    && symmetricDialect.getDriverName().equalsIgnoreCase(DatabaseNamesConstants.OPENEDGE)) {
                 if (getIncomingError(incomingError.getBatchId(), incomingError.getNodeId(),
                         incomingError.getFailedRowNumber()) != null) {
                     alreadyExists = true;

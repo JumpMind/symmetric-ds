@@ -116,7 +116,8 @@ public interface IOutgoingBatchService {
             List<OutgoingBatch.Status> statuses, List<Long> loads);
 
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
-            List<OutgoingBatch.Status> statuses, List<Long> loads, long startAtBatchId, int rowsExpected, boolean ascending);
+            List<OutgoingBatch.Status> statuses, List<Long> loads, long startAtBatchId,
+            Date startAtLastUpdateTime, int rowsExpected, boolean ascending);
 
     public List<OutgoingBatch> listOutgoingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter,
             String orderColumn, String orderDirection);

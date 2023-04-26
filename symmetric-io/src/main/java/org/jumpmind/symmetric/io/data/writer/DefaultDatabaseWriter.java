@@ -36,6 +36,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.IndexColumn;
+import org.jumpmind.db.model.NonUniqueIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -624,6 +627,31 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             if (withoutDefaults) {
                 for (Table table : db.getTables()) {
                     table.removeAllColumnDefaults();
+                }
+            }
+            if (!(getTargetPlatform().allowsUniqueIndexDuplicatesWithNulls())) {
+                for (Table table : db.getTables()) {
+                    for (IIndex index : table.getUniqueIndices()) {
+                        boolean needsFixed = false;
+                        for (IndexColumn indexColumn : index.getColumns()) {
+                            Column column = indexColumn.getColumn();
+                            if (column != null && !column.isRequired()) {
+                                needsFixed = true;
+                                log.warn(
+                                        "Detected Unique Index with potential for multiple null values in table: {} on column: {}. Adjusting index to be NonUnique.",
+                                        table.getName(), column.getName());
+                                break;
+                            }
+                        }
+                        if (needsFixed) {
+                            table.removeIndex(index);
+                            IIndex newIndex = new NonUniqueIndex(index.getName());
+                            for (IndexColumn indexColumn : index.getColumns()) {
+                                newIndex.addColumn(indexColumn);
+                            }
+                            table.addIndex(newIndex);
+                        }
+                    }
                 }
             }
             if (writerSettings.isAlterTable()) {

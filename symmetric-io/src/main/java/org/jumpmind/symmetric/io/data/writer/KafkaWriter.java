@@ -616,6 +616,9 @@ public class KafkaWriter extends DynamicDefaultDatabaseWriter {
         String[] rowData = data.getParsedData(CsvData.ROW_DATA);
         if (data.getDataEventType() == DataEventType.DELETE) {
             rowData = data.getParsedData(CsvData.OLD_DATA);
+            if (rowData == null) {
+                rowData = data.getParsedData(CsvData.PK_DATA);
+            }
         }
         StringBuilder kafkaText = new StringBuilder();
         String kafkaKey = null;

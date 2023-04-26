@@ -267,7 +267,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "  $(custom_before_update_text)                                                                                 \n" +
 "  if ($(syncOnIncomingBatchCondition))                                                                         \n" +
 "  begin                                                                                                        \n" +
-"    if ($(hasPrimaryKeysDefined) $(primaryKeysUpdated AND @LOCALROWCOUNT <> @LOCALPKCHANGED) )                                                       \n" +
+"    if ($(hasPrimaryKeysDefined) $(primaryKeysUpdated) AND @LOCALROWCOUNT <> @LOCALPKCHANGED )                                                       \n" +
 "    begin                                                                                                      \n" +
 "      if (@LOCALROWCOUNT = 1)                                                                                  \n" +
 "      begin                                                                                                    \n" +

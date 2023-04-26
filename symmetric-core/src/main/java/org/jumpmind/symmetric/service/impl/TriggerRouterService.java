@@ -1467,7 +1467,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, force,
                                 true, activeTriggerHistories, true);
                         resetTriggerRouterCacheByNodeGroupId();
-                        if (createTriggersForTables) {
+                        if (createTriggersForTables && symmetricDialect.supportsDdlTriggers()) {
                             updateOrCreateDdlTriggers(sqlBuffer);
                         }
                     } finally {

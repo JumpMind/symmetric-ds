@@ -71,6 +71,7 @@ public abstract class AbstractDataGapRouteCursor implements IDataGapRouteCursor 
         ISqlTemplate sqlTemplate = engine.getSymmetricDialect().getPlatform().getSqlTemplate();
         ISqlRowMapper<Data> dataMapper = engine.getDataService().getDataMapper();
         ISqlReadCursor<Data> cursor = null;
+        long ts = System.currentTimeMillis();
         try {
             cursor = sqlTemplate.queryForCursor(sql, dataMapper, args, types);
         } catch (RuntimeException e) {
@@ -78,6 +79,7 @@ public abstract class AbstractDataGapRouteCursor implements IDataGapRouteCursor 
             AppUtils.sleep(1000);
             cursor = sqlTemplate.queryForCursor(sql, dataMapper, args, types);
         }
+        context.incrementStat(System.currentTimeMillis() - ts, ChannelRouterContext.STAT_QUERY_EXEC_TIME_MS);
         if (isSortInMemory) {
             cursor = getDataMemoryCursor(cursor);
         }

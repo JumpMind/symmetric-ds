@@ -271,6 +271,10 @@ public abstract class AbstractCommandLauncher {
     }
 
     protected IDatabasePlatform getDatabasePlatform(boolean testConnection) {
+        return getDatabasePlatform(testConnection, false);
+    }
+    
+    protected IDatabasePlatform getDatabasePlatform(boolean testConnection, boolean symmetricPlatform) {
         if (platform == null) {
             if (testConnection) {
                 testConnection();
@@ -278,11 +282,13 @@ public abstract class AbstractCommandLauncher {
             ITypedPropertiesFactory factory = PropertiesUtil.createTypedPropertiesFactory(propertiesFile, null);
             TypedProperties properties = factory.reload(propertiesFile);
             if (properties.is(ParameterConstants.NODE_LOAD_ONLY, false)) {
-                TypedProperties copiedProperties = new TypedProperties();
-                String prefix = ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX;
-                copyProperties(properties, copiedProperties, prefix, BasicDataSourcePropertyConstants.ALL_PROPS);
-                copyProperties(properties, copiedProperties, prefix, ParameterConstants.ALL_JDBC_PARAMS);
-                properties = copiedProperties;
+                if (!symmetricPlatform) {
+                    TypedProperties copiedProperties = new TypedProperties();
+                    String prefix = ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX;
+                    copyProperties(properties, copiedProperties, prefix, BasicDataSourcePropertyConstants.ALL_PROPS);
+                    copyProperties(properties, copiedProperties, prefix, ParameterConstants.ALL_JDBC_PARAMS);
+                    properties = copiedProperties;
+                }
             }
             platform = ClientSymmetricEngine.createDatabasePlatform(null, properties, null, false);
         }

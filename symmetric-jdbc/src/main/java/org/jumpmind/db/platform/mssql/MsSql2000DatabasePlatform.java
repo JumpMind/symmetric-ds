@@ -87,6 +87,11 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     @Override
+    public boolean allowsUniqueIndexDuplicatesWithNulls() {
+        return false;
+    }
+
+    @Override
     public boolean isClob(int type) {
         return super.isClob(type) ||
         // SQL-Server ntext binary type

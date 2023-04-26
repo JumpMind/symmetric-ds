@@ -91,7 +91,12 @@ public class BasicDataSourceFactory {
         dataSource.setUrl(properties.get(BasicDataSourcePropertyConstants.DB_POOL_URL, null));
         String user = properties.get(BasicDataSourcePropertyConstants.DB_POOL_USER, "");
         if (user != null && user.startsWith(SecurityConstants.PREFIX_ENC)) {
-            user = securityService.decrypt(user.substring(SecurityConstants.PREFIX_ENC.length()));
+            try {
+                user = securityService.decrypt(user.substring(SecurityConstants.PREFIX_ENC.length()));
+            } catch (Exception ex) {
+                throw new IllegalStateException("Failed to decrypt the database user from your engine properties file stored under the "
+                        + BasicDataSourcePropertyConstants.DB_POOL_USER + " property.   Please re-encrypt your user", ex);
+            }
         }
         dataSource.setUsername(user);
         String password = properties.get(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD, "");

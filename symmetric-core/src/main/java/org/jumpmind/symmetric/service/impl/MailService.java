@@ -233,7 +233,12 @@ public class MailService extends AbstractService implements IMailService {
 
     protected String decryptPassword(String password) {
         if (password != null && password.startsWith(SecurityConstants.PREFIX_ENC)) {
-            return securityService.decrypt(password.substring(SecurityConstants.PREFIX_ENC.length()));
+            try {
+                return securityService.decrypt(password.substring(SecurityConstants.PREFIX_ENC.length()));
+            } catch (Exception e) {
+                throw new IllegalStateException(
+                        "Failed to decrypt the mail server password.  Please re-enter the password on the Configure -> Mail Server screen", e);
+            }
         }
         return password;
     }

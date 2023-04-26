@@ -28,6 +28,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.UnrecoverableKeyException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,6 +57,7 @@ import org.jumpmind.symmetric.cache.ICacheManager;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.db.ISoftwareUpgradeListener;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.ISymmetricEngineLifecycle;
@@ -70,6 +72,7 @@ import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
+import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -141,6 +144,7 @@ import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
 import org.jumpmind.symmetric.util.PropertiesUtil;
 import org.jumpmind.util.AppUtils;
+import org.jumpmind.util.ExceptionUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -613,7 +617,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 setup();
                 if (isConfigured()) {
                     Node node = nodeService.findIdentity();
-                    checkSystemIntegrity(node);
+                    node = checkSystemIntegrity(node);
                     isInitialized = true;
                     if (node != null) {
                         log.info(
@@ -682,7 +686,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return started;
     }
 
-    protected void checkSystemIntegrity(Node node) {
+    protected Node checkSystemIntegrity(Node node) {
         if (node != null && (!node.getExternalId().equals(getParameterService().getExternalId())
                 || !node.getNodeGroupId().equals(getParameterService().getNodeGroupId()))) {
             if (parameterService.is(ParameterConstants.NODE_COPY_MODE_ENABLED, false)) {
@@ -705,6 +709,53 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     node != null ? node.getNodeId() : "null", ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB,
                     useExtractJob, ParameterConstants.STREAM_TO_FILE_ENABLED, streamToFile));
         }
+        INodePasswordFilter filter = extensionService.getExtensionPoint(INodePasswordFilter.class);
+        if (filter != null) {
+            log.info("Testing keystore integrity");
+            try {
+                securityService.encrypt(ParameterConstants.EXTERNAL_ID);
+            } catch (Exception e) {
+                if (ExceptionUtils.is(e, UnrecoverableKeyException.class)) {
+                    throw new SymmetricException("Failed to open keystore because keystore password is wrong.  "
+                            + "Check javax.net.ssl.keyStorePassword in conf/sym_service.conf and bin/setenv.", e);
+                }
+                throw e;
+            }
+            log.info("Testing node security integrity");
+            Map<String, NodeSecurity> nodeSecurities = nodeService.findAllNodeSecurity(false);
+            List<NodeSecurity> badNodeSecurities = new ArrayList<NodeSecurity>();
+            for (NodeSecurity nodeSecurity : nodeSecurities.values()) {
+                if (StringUtils.isBlank(nodeSecurity.getNodePassword())) {
+                    badNodeSecurities.add(nodeSecurity);
+                }
+            }
+            if (badNodeSecurities.size() > 0) {
+                if (parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+                    throw new IllegalStateException("Unable to decrypt " + badNodeSecurities.size()
+                            + " node security rows.  Copy the security/keystore file from a working node in the cluster.");
+                } else if (parameterService.isRegistrationServer()) {
+                    log.error("Found {} bad node securities.  Attempting to re-open registration to fix them.", badNodeSecurities.size());
+                    String myNodeId = nodeService.findIdentityNodeId();
+                    for (NodeSecurity nodeSecurity : badNodeSecurities) {
+                        if (nodeSecurity.getNodeId().equals(myNodeId)) {
+                            log.info("Re-generating my node password");
+                            String password = extensionService.getExtensionPoint(INodeIdCreator.class).generatePassword(node);
+                            nodeSecurity.setNodePassword(password);
+                            nodeService.updateNodeSecurity(nodeSecurity);
+                        } else {
+                            registrationService.reOpenRegistration(nodeSecurity.getNodeId());
+                        }
+                    }
+                } else {
+                    log.error(
+                            "Found {} bad node securities.  Removing identity and attempting re-registration to fix them.  You may need to approve the registration request.",
+                            badNodeSecurities.size());
+                    nodeService.deleteIdentity();
+                    node = null;
+                }
+            }
+        }
+        return node;
     }
 
     public String getEngineDescription(String msg) {

@@ -94,13 +94,9 @@ public class TableSelectionLayout extends VerticalLayout {
         } else {
             catalogSelect.setValue(databasePlatform.getDefaultCatalog());
         }
-        schemaSelect = new ComboBox<String>("Schema", getSchemas());
+        schemaSelect = new ComboBox<String>("Schema");
         schemaChooserLayout.add(schemaSelect);
-        if (selectedTablesSet.iterator().hasNext()) {
-            schemaSelect.setValue(selectedTablesSet.iterator().next().getSchema());
-        } else {
-            schemaSelect.setValue(databasePlatform.getDefaultSchema());
-        }
+        refreshSchemas();
         schemaChooserLayout.addAndExpand(new Span());
         filterField = new TextField();
         filterField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
@@ -133,7 +129,7 @@ public class TableSelectionLayout extends VerticalLayout {
         listOfTablesGrid.addColumn(table -> table);
         this.addAndExpand(listOfTablesGrid);
         schemaSelect.addValueChangeListener(event -> refreshTableOfTables());
-        catalogSelect.addValueChangeListener(event -> refreshTableOfTables());
+        catalogSelect.addValueChangeListener(event -> refreshSchemas());
         Button selectAllLink = new Button("Select All");
         selectAllLink.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY_INLINE);
         selectAllLink.addClickListener((event) -> selectAll());
@@ -162,6 +158,16 @@ public class TableSelectionLayout extends VerticalLayout {
             catalogName = null;
         }
         return StringUtils.isBlank(catalogName) ? null : catalogName;
+    }
+    
+    protected void refreshSchemas() {
+        List<String> schemas = getSchemas();
+        schemaSelect.setItems(schemas);
+        if (selectedTablesSet.iterator().hasNext()) {
+            schemaSelect.setValue(selectedTablesSet.iterator().next().getSchema());
+        } else {
+            schemaSelect.setValue(databasePlatform.getDefaultSchema());
+        }
     }
 
     protected void refreshTableOfTables() {
@@ -202,7 +208,7 @@ public class TableSelectionLayout extends VerticalLayout {
     }
 
     public List<String> getSchemas() {
-        return databasePlatform.getDdlReader().getSchemaNames(null);
+        return databasePlatform.getDdlReader().getSchemaNames(catalogSelect.getValue());
     }
 
     public List<String> getCatalogs() {
