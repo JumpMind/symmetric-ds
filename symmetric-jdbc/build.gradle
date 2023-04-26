@@ -37,4 +37,13 @@ apply from: symAssembleDir + '/common.gradle'
         testImplementation "org.voltdb:voltdbclient:8.4.1"
         testImplementation "com.singlestore:singlestore-jdbc-client:1.0.1"
         testImplementation "net.snowflake:snowflake-jdbc:3.13.17"
+        
+        testImplementation "com.amazonaws:aws-java-sdk-core:1.12.448"
+        testImplementation "com.amazonaws:aws-java-sdk-redshiftserverless:1.12.448"
+        testImplementation "com.amazonaws:aws-java-sdk-sts:1.12.448"
+        testImplementation "com.amazonaws:aws-java-sdk-s3:1.12.448"
+        testImplementation "com.amazonaws:aws-java-sdk-redshift:1.12.448"
+        testImplementation "com.amazon.redshift:redshift-jdbc42:2.1.0.13"
+        
+        
     }
