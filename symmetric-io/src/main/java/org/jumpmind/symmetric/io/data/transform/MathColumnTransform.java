@@ -32,7 +32,7 @@ import net.sourceforge.jeval.Evaluator;
 
 public class MathColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
     public final static String NAME = "math";
-    private static Evaluator eval = new Evaluator();
+    public final static String EVALUATOR = "evalutor";
 
     public String getName() {
         return NAME;
@@ -52,6 +52,11 @@ public class MathColumnTransform implements ISingleNewAndOldValueColumnTransform
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
         String transformExpression = column.getTransformExpression();
         try {
+            Evaluator eval = (Evaluator) context.get(EVALUATOR);
+            if (eval == null) {
+                eval = new Evaluator();
+                context.put(EVALUATOR, eval);
+            }
             eval.clearVariables();
             eval.putVariable("currentValue", newValue);
             eval.putVariable("oldValue", oldValue);
