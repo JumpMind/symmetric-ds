@@ -374,6 +374,7 @@ final public class ParameterConstants {
     public final static String MSSQL_BULK_LOAD_FIELD_TERMINATOR = "mssql.bulk.load.field.terminator";
     public final static String MSSQL_BULK_LOAD_USE_BCP = "mssql.bulk.load.use.bcp";
     public final static String MSSQL_BULK_LOAD_BCP_CMD = "mssql.bulk.load.bcp.cmd";
+    public final static String MSSQL_USE_SNAPSHOT_ISOLATION = "mssql.use.snapshot.isolation";
     public final static String SYBASE_ROW_LEVEL_LOCKS_ONLY = "sybase.allow.only.row.level.locks.on.runtime.tables";
     public final static String SYBASE_CHANGE_IDENTITY_GAP = "sybase.change.identity.gap.on.runtime.tables";
     public final static String SQLITE_TRIGGER_FUNCTION_TO_USE = "sqlite.trigger.function.to.use";

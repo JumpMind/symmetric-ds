@@ -277,13 +277,17 @@ abstract public class AbstractTriggerTemplate {
     }
 
     protected String replaceDefaultSchemaAndCatalog(String sql) {
-        String defaultCatalog = symmetricDialect.getPlatform().getDefaultCatalog();
-        String defaultSchema = symmetricDialect.getPlatform().getDefaultSchema();
+       return replaceDefaultSchemaAndCatalog(sql, null, null);
+    }
+
+    protected String replaceDefaultSchemaAndCatalog(String sql, String catalog, String schema) {
+        String defaultCatalog = catalog != null ? catalog : symmetricDialect.getPlatform().getDefaultCatalog();
+        String defaultSchema = schema != null ? schema : symmetricDialect.getPlatform().getDefaultSchema();
         sql = replaceDefaultSchema(sql, defaultSchema);
         sql = replaceDefaultCatalog(sql, defaultCatalog);
         return sql;
     }
-
+    
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Table originalTable,
             Channel channel, String whereClause) {
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
@@ -376,7 +380,7 @@ abstract public class AbstractTriggerTemplate {
         }
         ddl = FormatUtils.replace("triggerName", triggerName, ddl);
         ddl = FormatUtils.replace("prefixName", tablePrefix, ddl);
-        ddl = replaceDefaultSchemaAndCatalog(ddl);
+        ddl = replaceDefaultSchemaAndCatalog(ddl, defaultCatalog, defaultSchema);
         return ddl;
     }
 

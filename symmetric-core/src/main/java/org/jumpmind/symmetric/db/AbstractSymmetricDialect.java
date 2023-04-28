@@ -432,9 +432,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 platform.getDefaultSchema());
     }
 
-    public void createDdlTrigger(final String tablePrefix, StringBuilder sqlBuffer, String triggerName) {
+    public void createDdlTrigger(final String tablePrefix, StringBuilder sqlBuffer, String triggerName, String runtimeCatalog, String runtimeSchema) {
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            String triggerSql = triggerTemplate.createDdlTrigger(tablePrefix, platform.getDefaultCatalog(), platform.getDefaultSchema(),
+            String triggerSql = triggerTemplate.createDdlTrigger(tablePrefix, runtimeCatalog, runtimeSchema,
                     triggerName);
             log.info("Creating DDL trigger " + triggerName);
             if (triggerSql != null) {
