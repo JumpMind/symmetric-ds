@@ -562,7 +562,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             types = new int[] { Types.VARCHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR,
                     Types.CHAR };
         }
-        List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(sql, maxNumberOfBatchesToSelect,
+        List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplateDirty.query(sql, maxNumberOfBatchesToSelect,
                 new OutgoingBatchMapper(includeDisabledChannels), params, types);
         OutgoingBatches batches = new OutgoingBatches(list);
         List<NodeChannel> channels = new ArrayList<NodeChannel>(configurationService.getNodeChannels(nodeId, true));
