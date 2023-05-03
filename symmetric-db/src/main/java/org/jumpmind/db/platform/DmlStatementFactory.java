@@ -68,7 +68,8 @@ final public class DmlStatementFactory {
             return new OracleDmlStatement(dmlType, catalogName, schemaName, tableName, keys,
                     columns, nullKeyValues, ddlBuilder.getDatabaseInfo(),
                     ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
-        } else if (DatabaseNamesConstants.POSTGRESQL.equals(databaseName)) {
+        } else if (DatabaseNamesConstants.POSTGRESQL.equals(databaseName) || (DatabaseNamesConstants.POSTGRESQL95.equals(databaseName) &&
+                System.getProperty("postgres.use.on.conflict", "").equalsIgnoreCase("false"))) {
             return new PostgreSqlDmlStatement(dmlType, catalogName, schemaName, tableName, keys,
                     columns, nullKeyValues, ddlBuilder.getDatabaseInfo(),
                     ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
