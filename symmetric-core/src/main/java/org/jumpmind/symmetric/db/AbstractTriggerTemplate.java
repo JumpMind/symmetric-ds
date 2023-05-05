@@ -192,6 +192,7 @@ abstract public class AbstractTriggerTemplate {
         sql = FormatUtils.replace("whereClause", initialLoadSelect, sql);
         sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
         sql = FormatUtils.replace("schemaName", getSourceTablePrefix(triggerHistory), sql);
+        sql = FormatUtils.replace("schemaNameOnly", getSchemaNameOnly(triggerHistory), sql);
         sql = FormatUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(symmetricDialect.getInitialLoadTableAlias(),
@@ -275,6 +276,17 @@ abstract public class AbstractTriggerTemplate {
         }
         return prefix;
     }
+    
+    protected String getSchemaNameOnly(TriggerHistory triggerHistory) {
+        String prefix = (isNotBlank(triggerHistory.getSourceSchemaName()) ? SymmetricUtils.quote(
+                symmetricDialect, triggerHistory.getSourceSchemaName()) + symmetricDialect.getPlatform().getDatabaseInfo().getSchemaSeparator() : "");
+        if (isBlank(prefix)) {
+            prefix = (isNotBlank(symmetricDialect.getPlatform().getDefaultSchema()) ? SymmetricUtils
+                    .quote(symmetricDialect, symmetricDialect.getPlatform().getDefaultSchema())
+                    + "." : "");
+        }
+        return prefix;
+    }
 
     protected String replaceDefaultSchemaAndCatalog(String sql) {
        return replaceDefaultSchemaAndCatalog(sql, null, null);
@@ -303,6 +315,7 @@ abstract public class AbstractTriggerTemplate {
         sql = replaceOracleQueryHint(sql);
         sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
         sql = FormatUtils.replace("schemaName", getSourceTablePrefix(triggerHistory), sql);
+        sql = FormatUtils.replace("schemaNameOnly", getSchemaNameOnly(triggerHistory), sql);
         sql = FormatUtils.replace("whereClause", whereClause, sql);
         sql = FormatUtils.replace(
                 "primaryKeyWhereString",
@@ -329,6 +342,7 @@ abstract public class AbstractTriggerTemplate {
         sql = FormatUtils.replace("schemaName",
                 triggerHistory == null ? getSourceTablePrefix(table)
                         : getSourceTablePrefix(triggerHistory), sql);
+        sql = FormatUtils.replace("schemaNameOnly", getSchemaNameOnly(triggerHistory), sql);
         sql = FormatUtils.replace("whereClause", whereClause, sql);
         sql = FormatUtils.replace(
                 "primaryKeyWhereString",
@@ -516,6 +530,7 @@ abstract public class AbstractTriggerTemplate {
         // some column templates need tableName and schemaName
         ddl = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), ddl);
         ddl = FormatUtils.replace("schemaName", getSourceTablePrefix(history), ddl);
+        ddl = FormatUtils.replace("schemaNameOnly", getSchemaNameOnly(history), ddl);
         Column[] primaryKeyColumns = table.getPrimaryKeyColumns();
         ddl = FormatUtils.replace(
                 "oldKeys",
