@@ -321,7 +321,8 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
                 nameVersion.setName(DatabaseNamesConstants.MSSQL2016);
             }
         }
-        if (nameVersion.getProtocol().equalsIgnoreCase(SqlAnywhereDatabasePlatform.JDBC_SUBPROTOCOL_SHORT) && nameVersion.getVersion() >= 12 && !nameVersion.getName().equals("Adaptive Server Enterprise")) {
+        if (nameVersion.getProtocol().equalsIgnoreCase(SqlAnywhereDatabasePlatform.JDBC_SUBPROTOCOL_SHORT) && nameVersion.getVersion() >= 12 && !nameVersion
+                .getName().equals("Adaptive Server Enterprise")) {
             nameVersion.setName(DatabaseNamesConstants.SQLANYWHERE12);
         }
     }

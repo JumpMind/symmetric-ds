@@ -1858,17 +1858,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (isCapture) {
             if (isFiltered) {
                 if (allDdlTriggerExists) {
-                    getTargetDialect().removeDdlTrigger(sqlBuffer, getTargetPlatform().getDefaultCatalog(), getTargetPlatform().getDefaultSchema(), allDdlTriggerName);
+                    getTargetDialect().removeDdlTrigger(sqlBuffer, getTargetPlatform().getDefaultCatalog(), getTargetPlatform().getDefaultSchema(),
+                            allDdlTriggerName);
                 }
                 if (!filteredDdlTriggerExists) {
-                    getTargetDialect().createDdlTrigger(tablePrefix, sqlBuffer, filteredDdlTriggerName, platform.getDefaultCatalog(), platform.getDefaultSchema());
+                    getTargetDialect().createDdlTrigger(tablePrefix, sqlBuffer, filteredDdlTriggerName, platform.getDefaultCatalog(), platform
+                            .getDefaultSchema());
                 }
             } else {
                 if (!allDdlTriggerExists) {
                     getTargetDialect().createDdlTrigger(tablePrefix, sqlBuffer, allDdlTriggerName, platform.getDefaultCatalog(), platform.getDefaultSchema());
                 }
                 if (filteredDdlTriggerExists) {
-                    getTargetDialect().removeDdlTrigger(sqlBuffer, getTargetPlatform().getDefaultCatalog(), getTargetPlatform().getDefaultSchema(), filteredDdlTriggerName);
+                    getTargetDialect().removeDdlTrigger(sqlBuffer, getTargetPlatform().getDefaultCatalog(), getTargetPlatform().getDefaultSchema(),
+                            filteredDdlTriggerName);
                 }
             }
         } else {
@@ -1924,14 +1927,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     modifiedTable = platform.makeAllColumnsPrimaryKeys(modifiedTable);
                 }
                 TriggerHistory latestHistoryBeforeRebuild;
-                synchronized(activeTriggerHistories) {
+                synchronized (activeTriggerHistories) {
                     latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
-                        activeTriggerHistories,
-                        trigger.getTriggerId(),
-                        trigger.isSourceCatalogNameWildCarded() ? modifiedTable.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
-                        trigger.isSourceSchemaNameWildCarded() ? modifiedTable.getSchema() : trigger.getSourceSchemaNameUnescaped(),
-                        (trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded()) ? modifiedTable.getName()
-                                : trigger.getSourceTableNameUnescaped());
+                            activeTriggerHistories,
+                            trigger.getTriggerId(),
+                            trigger.isSourceCatalogNameWildCarded() ? modifiedTable.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
+                            trigger.isSourceSchemaNameWildCarded() ? modifiedTable.getSchema() : trigger.getSourceSchemaNameUnescaped(),
+                            (trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded()) ? modifiedTable.getName()
+                                    : trigger.getSourceTableNameUnescaped());
                 }
                 int maxTriggerNameLength = symmetricDialect.getMaxTriggerNameLength();
                 String insertTriggerName = null;
@@ -2068,7 +2071,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (clusterService.lock(ClusterConstants.SYNC_TRIGGERS)) {
             TriggerRouterContext triggerRouterContext = new TriggerRouterContext();
             try {
-                long  ts;
+                long ts;
                 fixMultipleActiveTriggerHistories(triggerRouterContext);
                 StringBuilder sqlBuffer = new StringBuilder();
                 clearCache();
@@ -2260,7 +2263,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (usingTargetDialect) {
             if (hist == null && (oldhist == null || forceRebuild)) {
                 insert(newTriggerHist);
-                synchronized(activeTriggerHistories) {
+                synchronized (activeTriggerHistories) {
                     activeTriggerHistories.add(newTriggerHist);
                     historyMap.put(newTriggerHist.getTriggerHistoryId(), newTriggerHist);
                     hist = getNewestTriggerHistoryForTrigger(activeTriggerHistories, trigger.getTriggerId(),
@@ -2323,7 +2326,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             boolean isDeadTrigger = !trigger.isSyncOnInsert() && !trigger.isSyncOnUpdate() && !trigger.isSyncOnDelete();
             if (hist == null && (oldhist == null || (!triggerExists && triggerIsActive) || (isDeadTrigger && forceRebuild))) {
                 insert(newTriggerHist);
-                synchronized(activeTriggerHistories) {
+                synchronized (activeTriggerHistories) {
                     for (Iterator<TriggerHistory> it = activeTriggerHistories.iterator(); it.hasNext();) {
                         TriggerHistory triggerHistory = it.next();
                         if (StringUtils.equals(triggerHistory.getSourceCatalogName(), newTriggerHist.getSourceCatalogName())) {
@@ -2339,7 +2342,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     hist = getNewestTriggerHistoryForTrigger(activeTriggerHistories, trigger.getTriggerId(),
                             trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
                             trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaNameUnescaped(),
-                            trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded() ? table.getName() : trigger.getSourceTableNameUnescaped());
+                            trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded() ? table.getName()
+                                    : trigger.getSourceTableNameUnescaped());
                 }
             }
             try {
@@ -2740,7 +2744,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 Table table1 = null;
                 if (!o1.getSourceTableName().startsWith(tablePrefix)) {
                     table1 = getTargetPlatform().getTableFromCache(o1.getSourceCatalogName(),
-                        o1.getSourceSchemaName(), o1.getSourceTableName(), false);
+                            o1.getSourceSchemaName(), o1.getSourceTableName(), false);
                 }
                 if (table1 == null) {
                     platform.getTableFromCache(o1.getSourceCatalogName(),
@@ -2749,7 +2753,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 Table table2 = null;
                 if (!o2.getSourceTableName().startsWith(tablePrefix)) {
                     table2 = getTargetPlatform().getTableFromCache(o2.getSourceCatalogName(),
-                        o2.getSourceSchemaName(), o2.getSourceTableName(), false);
+                            o2.getSourceSchemaName(), o2.getSourceTableName(), false);
                 }
                 if (table2 == null) {
                     platform.getTableFromCache(o2.getSourceCatalogName(),
@@ -2903,7 +2907,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         sb.append(" order by trigger_hist_id desc ");
         return sqlTemplate.query(sb.toString(), new TriggerHistoryMapper(), values.toArray());
     }
-    
+
     protected void logTriggerRouterContextAnomalies(TriggerRouterContext triggerRouterContext) {
         for (int triggerHistoryId : triggerRouterContext.getMultipleActiveTriggerRouterKeyset()) {
             log.info("Marked trigger history ID {} inactive.", triggerHistoryId);
@@ -2917,7 +2921,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         }
     }
-    
+
     protected void logTriggerRouterContextTimings(TriggerRouterContext triggerRouterContext) {
         log.info("SyncTriggers: fix multiple active trigger histories took {} ms",
                 triggerRouterContext.getFixMultipleActiveTriggerHistoriesTime());

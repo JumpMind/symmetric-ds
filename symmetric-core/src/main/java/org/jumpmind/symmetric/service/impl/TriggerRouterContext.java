@@ -26,22 +26,22 @@ public class TriggerRouterContext extends Context {
     long tableDoesNotExistTime;
     long updateOrCreateDatabaseTriggersTime;
     long triggerInactivatedTime;
-    
+
     synchronized public void incrementReadTableCount(Trigger trigger) {
         if (trigger != null) {
             CounterStat counterStat = triggerReadTableFromDatabase.get(trigger.getTriggerId());
-            if  (counterStat == null) {
+            if (counterStat == null) {
                 counterStat = new CounterStat(trigger);
                 triggerReadTableFromDatabase.put(trigger.getTriggerId(), counterStat);
             }
             counterStat.incrementCount();
         }
     }
-    
+
     synchronized public Set<String> getTriggerReadTableFromDatabaseKeyset() {
         return triggerReadTableFromDatabase.keySet();
     }
-    
+
     synchronized public long getTriggerReadTableFromDatabaseCount(String triggerId) {
         CounterStat counterStat = triggerReadTableFromDatabase.get(triggerId);
         if (counterStat != null) {
@@ -49,22 +49,22 @@ public class TriggerRouterContext extends Context {
         }
         return 0l;
     }
-    
+
     synchronized public void incrementCopyTableCount(Trigger trigger) {
         if (trigger != null) {
             CounterStat counterStat = triggerCopyTable.get(trigger.getTriggerId());
-            if  (counterStat == null) {
+            if (counterStat == null) {
                 counterStat = new CounterStat(trigger);
                 triggerCopyTable.put(trigger.getTriggerId(), counterStat);
             }
             counterStat.incrementCount();
         }
     }
-    
+
     synchronized public Set<String> getTriggerCopyTableKeyset() {
         return triggerCopyTable.keySet();
     }
-    
+
     synchronized public long getTriggerCopyTableCount(String triggerId) {
         CounterStat counterStat = triggerCopyTable.get(triggerId);
         if (counterStat != null) {
@@ -72,11 +72,11 @@ public class TriggerRouterContext extends Context {
         }
         return 0l;
     }
-    
+
     synchronized public Set<Integer> getMultipleActiveTriggerRouterKeyset() {
         return multipleActiveTriggerRouter.keySet();
     }
-    
+
     synchronized public long getMultipleActiveTriggerRouterCount(Integer triggerRouterId) {
         CounterStat counterStat = multipleActiveTriggerRouter.get(triggerRouterId);
         if (counterStat != null) {
@@ -84,7 +84,7 @@ public class TriggerRouterContext extends Context {
         }
         return 0l;
     }
-    
+
     synchronized public void incrementMultipleActiveTriggerRouterCount(Integer triggerRouterId) {
         if (triggerRouterId != null) {
             CounterStat counterStat = multipleActiveTriggerRouter.get(triggerRouterId);
@@ -119,7 +119,7 @@ public class TriggerRouterContext extends Context {
     synchronized public long getSyncTriggersStartedTime() {
         return syncTriggersStartedTime;
     }
- 
+
     synchronized public void incrementActiveTriggerHistoriesTime(long t) {
         activeTriggerHistoriesTime += t;
     }
@@ -143,7 +143,7 @@ public class TriggerRouterContext extends Context {
     synchronized public long getSyncTriggersEndedTime() {
         return syncTriggersEndedTime;
     }
-    
+
     synchronized public void incrementTablesForTriggerTime(long t) {
         tablesForTriggerTime += t;
     }
@@ -151,7 +151,7 @@ public class TriggerRouterContext extends Context {
     synchronized public long getTablesForTriggerTime() {
         return tablesForTriggerTime;
     }
-    
+
     synchronized public void incrementDropTriggerTime(long t) {
         dropTriggerTime += t;
     }
@@ -159,7 +159,7 @@ public class TriggerRouterContext extends Context {
     synchronized public long getDropTriggerTime() {
         return dropTriggerTime;
     }
-    
+
     synchronized public void incrementDoesTriggerExistTime(long t) {
         doesTriggerExistTime += t;
     }
@@ -167,7 +167,7 @@ public class TriggerRouterContext extends Context {
     synchronized public long getDoesTriggerExistTime() {
         return doesTriggerExistTime;
     }
-    
+
     synchronized public void incrementInactivateTriggerHistTime(long t) {
         inactivateTriggerHistTime += t;
     }
@@ -175,7 +175,7 @@ public class TriggerRouterContext extends Context {
     synchronized public long getInactivateTriggerHistTime() {
         return inactivateTriggerHistTime;
     }
-    
+
     synchronized public void incrementTriggerToTableSupportingInfoTime(long t) {
         triggerToTableSupportingInfoTime += t;
     }
@@ -183,7 +183,7 @@ public class TriggerRouterContext extends Context {
     synchronized public long getTriggerToTableSupportingInfoTime() {
         return triggerToTableSupportingInfoTime;
     }
-    
+
     synchronized public void incrementTableDoesNotExistTime(long t) {
         tableDoesNotExistTime += t;
     }
@@ -191,7 +191,7 @@ public class TriggerRouterContext extends Context {
     synchronized public long getTableDoesNotExistTime() {
         return tableDoesNotExistTime;
     }
-    
+
     synchronized public void incrementUpdateOrCreateDatabaseTriggersTime(long t) {
         updateOrCreateDatabaseTriggersTime += t;
     }
@@ -199,7 +199,7 @@ public class TriggerRouterContext extends Context {
     synchronized public long getUpdateOrCreateDatabaseTriggersTime() {
         return updateOrCreateDatabaseTriggersTime;
     }
-    
+
     synchronized public void incrementTriggerInactivatedTime(long t) {
         triggerInactivatedTime += t;
     }

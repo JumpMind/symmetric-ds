@@ -131,7 +131,7 @@ public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return sql + " rows " + (offset + 1) + " to " + (offset + limit);
     }
-    
+
     @Override
     public boolean supportsParametersInSelect() {
         return false;
