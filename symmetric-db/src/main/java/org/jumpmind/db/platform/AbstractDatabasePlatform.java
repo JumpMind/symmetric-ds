@@ -354,13 +354,13 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames, String[] values) {
-        Column[] metaData = Table.orderColumns(columnNames, table);
+        Column[] metaData = Table.orderColumns(columnNames, table, false);
         return getObjectValues(encoding, values, metaData);
     }
 
     public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames, String[] values, boolean useVariableDates,
             boolean fitToColumn) {
-        Column[] metaData = Table.orderColumns(columnNames, table);
+        Column[] metaData = Table.orderColumns(columnNames, table, false);
         return getObjectValues(encoding, values, metaData, useVariableDates, fitToColumn);
     }
 

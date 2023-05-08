@@ -133,7 +133,7 @@ abstract public class AbstractTriggerTemplate {
         boolean concatInCsv = parameterService.is(
                 ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED);
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
-                triggerHistory.getParsedPkColumnNames(), true);
+                triggerHistory.getParsedPkColumnNames(), true, false);
         Column[] columns = table.getColumns();
         String textColumnExpression = parameterService.getString(ParameterConstants.DATA_EXTRACTOR_TEXT_COLUMN_EXPRESSION);
         String sql = null;
@@ -214,7 +214,7 @@ abstract public class AbstractTriggerTemplate {
         IParameterService parameterService = symmetricDialect.getParameterService();
         boolean concatInCsv = parameterService.is(ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED);
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
-                triggerHistory.getParsedPkColumnNames(), true);
+                triggerHistory.getParsedPkColumnNames(), true, false);
         Column[] columns = table.getColumns();
         boolean[] isColumnPositionUsingTemplate = new boolean[columns.length];
         if (!concatInCsv) {
@@ -287,7 +287,7 @@ abstract public class AbstractTriggerTemplate {
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Table originalTable,
             Channel channel, String whereClause) {
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
-                triggerHistory.getParsedPkColumnNames(), true);
+                triggerHistory.getParsedPkColumnNames(), true, false);
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
         Column[] columns = table.getColumns();
         String columnsText = buildColumnsString(symmetricDialect.getInitialLoadTableAlias(),
@@ -338,7 +338,7 @@ abstract public class AbstractTriggerTemplate {
             Channel channel, String tablePrefix, Table originalTable, String defaultCatalog,
             String defaultSchema) {
         Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
-                history.getParsedPkColumnNames(), true);
+                history.getParsedPkColumnNames(), true, false);
         String ddl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "TriggerTemplate");
         if (trigger.isStreamRow()) {
             String reloadDdl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "ReloadTriggerTemplate");
@@ -358,7 +358,7 @@ abstract public class AbstractTriggerTemplate {
             Channel channel, String tablePrefix, Table originalTable, String defaultCatalog,
             String defaultSchema) {
         Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
-                history.getParsedPkColumnNames(), true);
+                history.getParsedPkColumnNames(), true, false);
         String ddl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "PostTriggerTemplate");
         return replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
                 defaultCatalog, defaultSchema, ddl);

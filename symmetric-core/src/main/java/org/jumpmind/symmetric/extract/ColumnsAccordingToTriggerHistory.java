@@ -52,18 +52,21 @@ public class ColumnsAccordingToTriggerHistory {
         this.targetNode = targetNode;
     }
 
-    public Table lookup(String routerId, TriggerHistory triggerHistory, boolean setTargetTableName, boolean useDatabaseDefinition) {
-        CacheKey key = new CacheKey(routerId, triggerHistory.getTriggerHistoryId(), setTargetTableName, useDatabaseDefinition);
+    public Table lookup(String routerId, TriggerHistory triggerHistory, boolean setTargetTableName,
+            boolean useDatabaseDefinition, boolean addMissingColumns) {
+        CacheKey key = new CacheKey(routerId, triggerHistory.getTriggerHistoryId(), setTargetTableName,
+                useDatabaseDefinition, addMissingColumns);
         Table table = cache.get(key);
         if (table == null) {
-            table = lookupAndOrderColumnsAccordingToTriggerHistory(routerId, triggerHistory, setTargetTableName, useDatabaseDefinition);
+            table = lookupAndOrderColumnsAccordingToTriggerHistory(routerId, triggerHistory, setTargetTableName,
+                    useDatabaseDefinition, addMissingColumns);
             cache.put(key, table);
         }
         return table;
     }
 
-    protected Table lookupAndOrderColumnsAccordingToTriggerHistory(String routerId,
-            TriggerHistory triggerHistory, boolean setTargetTableName, boolean useDatabaseDefinition) {
+    protected Table lookupAndOrderColumnsAccordingToTriggerHistory(String routerId, TriggerHistory triggerHistory,
+            boolean setTargetTableName, boolean useDatabaseDefinition, boolean addMissingColumns) {
         String catalogName = triggerHistory.getSourceCatalogName();
         String schemaName = triggerHistory.getSourceSchemaName();
         String tableName = triggerHistory.getSourceTableName();
@@ -78,7 +81,8 @@ public class ColumnsAccordingToTriggerHistory {
                 table = getTargetPlatform(tableNameLowerCase).getTableFromCache(catalogName, schemaName, tableName, true);
             }
             if (table != null) {
-                table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(), triggerHistory.getParsedPkColumnNames(), true);
+                table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
+                        triggerHistory.getParsedPkColumnNames(), true, addMissingColumns);
             } else {
                 throw new SymmetricException("Could not find the following table.  It might have been dropped: %s",
                         Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
@@ -123,12 +127,15 @@ public class ColumnsAccordingToTriggerHistory {
         private int triggerHistoryId;
         private boolean setTargetTableName;
         private boolean useDatabaseDefinition;
+        private boolean addMissingColumns;
 
-        public CacheKey(String routerId, int triggerHistoryId, boolean setTargetTableName, boolean useDatabaseDefinition) {
+        public CacheKey(String routerId, int triggerHistoryId, boolean setTargetTableName,
+                boolean useDatabaseDefinition, boolean addMissingColumns) {
             this.routerId = routerId;
             this.triggerHistoryId = triggerHistoryId;
             this.setTargetTableName = setTargetTableName;
             this.useDatabaseDefinition = useDatabaseDefinition;
+            this.addMissingColumns = addMissingColumns;
         }
 
         @Override
@@ -139,6 +146,7 @@ public class ColumnsAccordingToTriggerHistory {
             result = prime * result + (setTargetTableName ? 1231 : 1237);
             result = prime * result + triggerHistoryId;
             result = prime * result + (useDatabaseDefinition ? 1231 : 1237);
+            result = prime * result + (addMissingColumns ? 1231 : 1237);
             return result;
         }
 
@@ -168,6 +176,9 @@ public class ColumnsAccordingToTriggerHistory {
                 return false;
             }
             if (useDatabaseDefinition != other.useDatabaseDefinition) {
+                return false;
+            }
+            if (addMissingColumns != other.addMissingColumns) {
                 return false;
             }
             return true;
