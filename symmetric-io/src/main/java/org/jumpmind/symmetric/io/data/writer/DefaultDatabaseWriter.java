@@ -1086,7 +1086,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 if (table != null) {
                     table = table.copyAndFilterColumns(sourceTable.getColumnNames(),
                             sourceTable.getPrimaryKeyColumnNames(),
-                            this.writerSettings.isUsePrimaryKeysFromSource());
+                            this.writerSettings.isUsePrimaryKeysFromSource(), false);
                     if (table.getPrimaryKeyColumnCount() == 0) {
                         table = getPlatform(table).makeAllColumnsPrimaryKeys(table);
                     }
@@ -1138,7 +1138,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     context.getTable().getCatalog(), context.getTable().getSchema(),
                     context.getTable().getName(), false);
 
-            targetTable = targetTable.copyAndFilterColumns(columnNames, keyNames, true);
+            targetTable = targetTable.copyAndFilterColumns(columnNames, keyNames, true, false);
 
             String[] data = context.getData().getParsedData(CsvData.OLD_DATA);
             if (data == null) {

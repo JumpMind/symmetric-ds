@@ -174,7 +174,7 @@ abstract public class AbstractTriggerTemplate {
                 ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED);
         
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
-                triggerHistory.getParsedPkColumnNames(), true);
+                triggerHistory.getParsedPkColumnNames(), true, false);
 
         Column[] columns = table.getColumns();
 
@@ -272,7 +272,7 @@ abstract public class AbstractTriggerTemplate {
         boolean concatInCsv = parameterService.is(ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED);
         
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
-                triggerHistory.getParsedPkColumnNames(), true);
+                triggerHistory.getParsedPkColumnNames(), true, false);
 
         Column[] columns = table.getColumns();
         boolean[] isColumnPositionUsingTemplate = new boolean[columns.length];
@@ -351,7 +351,7 @@ abstract public class AbstractTriggerTemplate {
             Channel channel, String whereClause) {
 
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
-                triggerHistory.getParsedPkColumnNames(), true);
+                triggerHistory.getParsedPkColumnNames(), true, false);
 
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
@@ -415,7 +415,7 @@ abstract public class AbstractTriggerTemplate {
             String defaultSchema) {
 
         Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
-                history.getParsedPkColumnNames(), true);
+                history.getParsedPkColumnNames(), true, false);
 
         String ddl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "TriggerTemplate");
         if (trigger.isStreamRow()) {
@@ -437,7 +437,7 @@ abstract public class AbstractTriggerTemplate {
             String defaultSchema) {
 
         Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
-                history.getParsedPkColumnNames(), true);
+                history.getParsedPkColumnNames(), true, false);
 
         String ddl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "PostTriggerTemplate");
         return replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,

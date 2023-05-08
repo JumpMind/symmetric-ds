@@ -1215,7 +1215,11 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     }
 
     public void orderColumns(String[] columnNames) {
-        Column[] orderedColumns = orderColumns(columnNames, this);
+        orderColumns(columnNames, false);
+    }
+    
+    public void orderColumns(String[] columnNames, boolean addMissingColumns) {
+        Column[] orderedColumns = orderColumns(columnNames, this, addMissingColumns);
         this.columns.clear();
         for (Column column : orderedColumns) {
             if (column != null) {
@@ -1224,7 +1228,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         }
     }
 
-    public static Column[] orderColumns(String[] columnNames, Table table) {
+    public static Column[] orderColumns(String[] columnNames, Table table, boolean addMissingColumns) {
         Column[] unorderedColumns = table.getColumns();
         Column[] orderedColumns = new Column[columnNames.length];
         for (int i = 0; i < columnNames.length; i++) {
@@ -1243,8 +1247,19 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
                     }
                 }                
             }
-            if (orderedColumns[i] == null && log.isDebugEnabled()) {
-                log.debug("Could not find column with the name of {} on table {}", name, table.toVerboseString());
+            if (orderedColumns[i] == null) {
+            	if (!addMissingColumns) {
+                	if (log.isDebugEnabled()) {
+                		log.debug("Could not find column with the name of {} on table {}.", name, table.toVerboseString());
+                	}
+            	} else {
+                	Column newColumn = new Column(name);
+                	orderedColumns[i] = newColumn;
+                	if (log.isDebugEnabled()) {
+						log.debug("Could not find column with the name of {} on table {}. Added this column to the list of columns.",
+								name, table.toVerboseString());
+                	}
+            	}
             }
         }
         return orderedColumns;
@@ -1288,10 +1303,29 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         }
     }
 
+    /**
+     * Creates a copy of this table and orders the columns according to the
+     * supplied array of column names.
+     * 
+     * @param orderedColumnNames
+     *            An array of column names whose order determines the order of
+     *            the returned table's columns
+     * @param pkColumnNames
+     *            An array of the names of the columns that make up the table's
+     *            primary key
+     * @param setPrimaryKeys
+     *            Whether to change the returned table's primary key columns
+     *            based on the supplied array of primary key column names
+     * @param addMissingColumns
+     *            Whether to add columns to the returned table if they are
+     *            present in the supplied array of column names but not in the
+     *            existing table's list of columns
+     * @return A copy of this table
+     */
     public Table copyAndFilterColumns(String[] orderedColumnNames, String[] pkColumnNames,
-            boolean setPrimaryKeys) {
+            boolean setPrimaryKeys, boolean addMissingColumns) {
         Table table = copy();
-        table.orderColumns(orderedColumnNames);
+        table.orderColumns(orderedColumnNames, addMissingColumns);
         
         Set<String> columnNameSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         columnNameSet.addAll(Arrays.asList(orderedColumnNames));

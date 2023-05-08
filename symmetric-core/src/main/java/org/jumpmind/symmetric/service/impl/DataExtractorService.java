@@ -1820,7 +1820,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected Table lookupAndOrderColumnsAccordingToTriggerHistory(String routerId,
             TriggerHistory triggerHistory, Node sourceNode, Node targetNode, 
-            boolean setTargetTableName, boolean useDatabaseDefinition) {
+            boolean setTargetTableName, boolean useDatabaseDefinition, boolean addMissingColumns) {
         String catalogName = triggerHistory.getSourceCatalogName();
         String schemaName = triggerHistory.getSourceSchemaName();
         String tableName = triggerHistory.getSourceTableName();
@@ -1838,7 +1838,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             if (table != null) {
                 table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
-                    triggerHistory.getParsedPkColumnNames(), true);
+                    triggerHistory.getParsedPkColumnNames(), true, addMissingColumns);
             } else {
                 throw new SymmetricException("Could not find the following table.  It might have been dropped: %s", Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             }
@@ -2395,13 +2395,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             private int triggerHistoryId;
             private boolean setTargetTableName;
             private boolean useDatabaseDefinition;
+            private boolean addMissingColumns;
             
             public CacheKey(String routerId, int triggerHistoryId, boolean setTargetTableName,
-                    boolean useDatabaseDefinition) {
+                    boolean useDatabaseDefinition, boolean addMissingColumns) {
                  this.routerId = routerId;
                  this.triggerHistoryId = triggerHistoryId;
                  this.setTargetTableName = setTargetTableName;
                  this.useDatabaseDefinition = useDatabaseDefinition;
+                 this.addMissingColumns = addMissingColumns;
             }
             @Override
             public int hashCode() {
@@ -2411,6 +2413,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 result = prime * result + (setTargetTableName ? 1231 : 1237);
                 result = prime * result + triggerHistoryId;
                 result = prime * result + (useDatabaseDefinition ? 1231 : 1237);
+                result = prime * result + (addMissingColumns ? 1231 : 1237);
                 return result;
             }
             @Override
@@ -2433,6 +2436,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     return false;
                 if (useDatabaseDefinition != other.useDatabaseDefinition)
                     return false;
+                if (addMissingColumns != other.addMissingColumns)
+                	return false;
                 return true;
             }
         }
@@ -2445,12 +2450,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             this.sourceNode = sourceNode;
             this.targetNode = targetNode;
         }
-        public Table lookup(String routerId, TriggerHistory triggerHistory, boolean setTargetTableName, boolean useDatabaseDefinition) {            
-            CacheKey key = new CacheKey(routerId, triggerHistory.getTriggerHistoryId(), setTargetTableName, useDatabaseDefinition);
+
+		public Table lookup(String routerId, TriggerHistory triggerHistory, boolean setTargetTableName,
+				boolean useDatabaseDefinition, boolean addMissingColumns) {
+			CacheKey key = new CacheKey(routerId, triggerHistory.getTriggerHistoryId(), setTargetTableName,
+					useDatabaseDefinition, addMissingColumns);
             Table table = cache.get(key);
             if (table == null) {
                 table = lookupAndOrderColumnsAccordingToTriggerHistory(routerId, triggerHistory, sourceNode,
-                        targetNode, setTargetTableName, useDatabaseDefinition);
+                        targetNode, setTargetTableName, useDatabaseDefinition, addMissingColumns);
                 cache.put(key, table);
             }
             return table;
@@ -2571,7 +2579,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         String initialLoadSelect = data.getRowData();
                         if (initialLoadSelect == null && triggerRouter.getTrigger().isStreamRow()) {
                             sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter
-                                    .getRouter().getRouterId(), triggerHistory, false, true);
+                                    .getRouter().getRouterId(), triggerHistory, false, true, false);
                             Column[] columns = sourceTable.getPrimaryKeyColumns();
                             String[] pkData = data.getParsedData(CsvData.PK_DATA);
                             boolean[] nullKeyValues = new boolean[columns.length];
@@ -2620,10 +2628,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 lastRouterId == null || !lastRouterId.equals(routerId)) {
                             
                             this.sourceTable = columnsAccordingToTriggerHistory.lookup(
-                                        routerId, triggerHistory, false, !isFileParserRouter);
+                                        routerId, triggerHistory, false, !isFileParserRouter, true);
                             
                             this.targetTable = columnsAccordingToTriggerHistory.lookup(
-                                    routerId, triggerHistory, true, false);
+                                    routerId, triggerHistory, true, false, true);
                             
                             if (trigger != null && trigger.isUseStreamLobs() || (data.getRowData() != null && hasLobsThatNeedExtract(sourceTable, data))) {
                                 this.requiresLobSelectedFromSource = true;
@@ -2701,7 +2709,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     sourceTable.getSchema(), sourceTable.getName(), true);
                             
                             this.targetTable = columnsAccordingToTriggerHistory.lookup(
-                                    routerId, triggerHistory, true, true);
+                                    routerId, triggerHistory, true, true, false);
                             Table copyTargetTable = this.targetTable.copy();
                             
                             Database db = new Database();
@@ -2911,9 +2919,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 if (this.currentInitialLoadEvent.containsData()) {
                     data = this.currentInitialLoadEvent.getData();
                     this.sourceTable = columnsAccordingToTriggerHistory.lookup(
-                            currentInitialLoadEvent.getTriggerRouter().getRouterId(), history, false, true);
+                            currentInitialLoadEvent.getTriggerRouter().getRouterId(), history, false, true, false);
                     this.targetTable = columnsAccordingToTriggerHistory.lookup(
-                            currentInitialLoadEvent.getTriggerRouter().getRouterId(), history, true, false);
+                            currentInitialLoadEvent.getTriggerRouter().getRouterId(), history, true, false, false);
                     this.currentInitialLoadEvent = null;
                 } else {
                     this.triggerRouter = this.currentInitialLoadEvent.getTriggerRouter();
@@ -2936,9 +2944,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 channel);
                     }
                     this.sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter
-                            .getRouter().getRouterId(), history, false, true);
+                            .getRouter().getRouterId(), history, false, true, false);
                     this.targetTable = columnsAccordingToTriggerHistory.lookup(triggerRouter
-                            .getRouter().getRouterId(), history, true, false);
+                            .getRouter().getRouterId(), history, true, false, false);
                     
                     this.overrideSelectSql = currentInitialLoadEvent.getInitialLoadSelect();
                     if (overrideSelectSql != null && overrideSelectSql.trim().toUpperCase().startsWith("WHERE")) {

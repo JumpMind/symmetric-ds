@@ -2611,7 +2611,7 @@ public class DataService extends AbstractService implements IDataService {
                 log.info("Unable to lookup table " + hist.getFullyQualifiedSourceTableName());
                 return;
             }
-            table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true);
+            table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true, false);
             Object[] values = targetPlatform.getObjectValues(targetDialect.getBinaryEncoding(), data.getParsedData(CsvData.ROW_DATA), table.getColumns());
     
             List<TableRow> tableRows = new ArrayList<TableRow>();
