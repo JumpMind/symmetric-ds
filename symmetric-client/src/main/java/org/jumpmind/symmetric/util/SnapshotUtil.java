@@ -124,9 +124,6 @@ public class SnapshotUtil {
     }
 
     public static File createSnapshot(ISymmetricEngine engine, IProgressListener listener) {
-        if (listener != null) {
-            listener.checkpoint(engine.getEngineName(), 0, 7);
-        }
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
         String dirName = engine.getEngineName().replaceAll(" ", "-") + "-" + dateFormat.format(new Date());
@@ -134,13 +131,17 @@ public class SnapshotUtil {
         File tmpDir = new File(parameterService.getTempDirectory(), dirName);
         tmpDir.mkdirs();
         log.info("Creating snapshot file in " + tmpDir.getAbsolutePath());
-        for (ISnapshotUtilListener snapshotListener : engine.getExtensionService().getExtensionPointList(ISnapshotUtilListener.class)) {
-            snapshotListener.beforeSnapshot(engine, tmpDir);
+        checkpoint(engine, listener, 0, 7);
+        try {
+            log.info("Calling beforeSnapshot()");
+            for (ISnapshotUtilListener snapshotListener : engine.getExtensionService().getExtensionPointList(ISnapshotUtilListener.class)) {
+                snapshotListener.beforeSnapshot(engine, tmpDir);
+            }
+        } catch (Exception e) {
+            log.info("Call to beforeSnapshot() threw exception", e);
         }
         log.info("Exporting configuration");
-        if (listener != null) {
-            listener.checkpoint(engine.getEngineName(), 1, 7);
-        }
+        checkpoint(engine, listener, 1, 7);
         try (FileWriter fwriter = new FileWriter(new File(tmpDir, "config-export.csv"))) {
             engine.getDataExtractorService().extractConfigurationStandalone(engine.getNodeService().findIdentity(),
                     fwriter, TableConstants.getConfigTablesExcludedFromExport());
@@ -155,9 +156,7 @@ public class SnapshotUtil {
         } catch (Exception e) {
             log.warn("Failed to copy " + serviceConfFile.getName() + " to the snapshot directory", e);
         }
-        if (listener != null) {
-            listener.checkpoint(engine.getEngineName(), 2, 7);
-        }
+        checkpoint(engine, listener, 2, 7);
         log.info("Writing table definitions");
         IDatabasePlatform targetPlatform = engine.getSymmetricDialect().getTargetPlatform();
         ISymmetricDialect targetDialect = engine.getTargetDialect();
@@ -196,9 +195,7 @@ public class SnapshotUtil {
         } catch (Exception e) {
             log.warn("Failed to export table definitions", e);
         }
-        if (listener != null) {
-            listener.checkpoint(engine.getEngineName(), 3, 7);
-        }
+        checkpoint(engine, listener, 3, 7);
         log.info("Writing runtime data");
         String tablePrefix = engine.getTablePrefix();
         DbExport export = new DbExport(engine.getDatabasePlatform());
@@ -369,9 +366,7 @@ public class SnapshotUtil {
             extractQuery(targetPlatform.getSqlTemplate(), tmpDir + File.separator + "mysql-session-variables.csv",
                     "show session variables");
         }
-        if (listener != null) {
-            listener.checkpoint(engine.getEngineName(), 4, 7);
-        }
+        checkpoint(engine, listener, 4, 7);
         if (!engine.getParameterService().is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
             try (FileOutputStream fos = new FileOutputStream(new File(tmpDir, "sym_data_gap_cache.csv"))) {
                 List<DataGap> gaps = engine.getRouterService().getDataGaps();
@@ -433,9 +428,7 @@ public class SnapshotUtil {
                 }
             }
         }
-        if (listener != null) {
-            listener.checkpoint(engine.getEngineName(), 5, 7);
-        }
+        checkpoint(engine, listener, 5, 7);
         File jarFile = null;
         try {
             String filename = tmpDir.getName() + ".zip";
@@ -448,17 +441,28 @@ public class SnapshotUtil {
         } catch (Exception e) {
             throw new IoException("Failed to package snapshot files into archive", e);
         }
-        if (listener != null) {
-            listener.checkpoint(engine.getEngineName(), 6, 7);
+        checkpoint(engine, listener, 6, 7);
+        try {
+            log.info("Calling afterSnapshot()");
+            for (ISnapshotUtilListener snapshotListener : engine.getExtensionService().getExtensionPointList(ISnapshotUtilListener.class)) {
+                snapshotListener.afterSnapshot(engine, tmpDir);
+            }
+        } catch (Exception e) {
+            log.info("Call to afterSnapshot() threw exception", e);
         }
-        for (ISnapshotUtilListener snapshotListener : engine.getExtensionService().getExtensionPointList(ISnapshotUtilListener.class)) {
-            snapshotListener.afterSnapshot(engine, tmpDir);
-        }
-        if (listener != null) {
-            listener.checkpoint(engine.getEngineName(), 7, 7);
-        }
+        checkpoint(engine, listener, 7, 7);
         log.info("Done creating snapshot file");
         return jarFile;
+    }
+
+    protected static void checkpoint(ISymmetricEngine engine, IProgressListener listener, int stepNumber, int totalSteps) {
+        try {
+            if (listener != null) {
+                listener.checkpoint(engine.getEngineName(), stepNumber, totalSteps);
+            }
+        } catch (Exception e) {
+            log.info("Call to checkpoint threw exception", e);
+        }
     }
 
     protected static void extract(DbExport export, File file, String... tables) {
