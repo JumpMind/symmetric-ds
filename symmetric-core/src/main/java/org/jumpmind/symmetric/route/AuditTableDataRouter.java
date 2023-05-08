@@ -67,7 +67,7 @@ public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltIn
             TriggerHistory triggerHistory = dataMetaData.getTriggerHistory();
             Table table = dataMetaData.getTable().copyAndFilterColumns(
                     triggerHistory.getParsedColumnNames(), triggerHistory.getParsedPkColumnNames(),
-                    true);
+                    true, false);
             String tableName = table.getFullyQualifiedTableName();
             Table auditTable = auditTables.get(tableName);
             if (auditTable == null) {

@@ -144,8 +144,8 @@ public class SelectFromSymDataSource extends SelectFromSource {
                     boolean isFileParserRouter = triggerHistory.getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER);
                     if (lastTriggerHistory == null || lastTriggerHistory.getTriggerHistoryId() != triggerHistory.getTriggerHistoryId() ||
                             lastRouterId == null || !lastRouterId.equals(routerId)) {
-                        sourceTable = columnsAccordingToTriggerHistory.lookup(routerId, triggerHistory, false, !isFileParserRouter);
-                        targetTable = columnsAccordingToTriggerHistory.lookup(routerId, triggerHistory, true, false);
+                        sourceTable = columnsAccordingToTriggerHistory.lookup(routerId, triggerHistory, false, !isFileParserRouter, true);
+                        targetTable = columnsAccordingToTriggerHistory.lookup(routerId, triggerHistory, true, false, true);
                         if (trigger != null && trigger.isUseStreamLobs() || (data.getRowData() != null && hasLobsThatNeedExtract(sourceTable, data))) {
                             requiresLobSelectedFromSource = true;
                         } else {
@@ -189,7 +189,7 @@ public class SelectFromSymDataSource extends SelectFromSource {
         processInfo.setCurrentTableName(triggerHistory.getSourceTableName());
         String initialLoadSelect = data.getRowData();
         if (initialLoadSelect == null && triggerRouter.getTrigger().isStreamRow()) {
-            sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter.getRouter().getRouterId(), triggerHistory, false, true);
+            sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter.getRouter().getRouterId(), triggerHistory, false, true, false);
             Column[] columns = sourceTable.getPrimaryKeyColumns();
             String[] pkData = data.getParsedData(CsvData.PK_DATA);
             boolean[] nullKeyValues = new boolean[columns.length];
@@ -261,7 +261,7 @@ public class SelectFromSymDataSource extends SelectFromSource {
          */
         sourceTable = symmetricDialect.getTargetDialect().getPlatform().getTableFromCache(sourceTable.getCatalog(),
                 sourceTable.getSchema(), sourceTable.getName(), true);
-        targetTable = columnsAccordingToTriggerHistory.lookup(routerId, triggerHistory, true, true);
+        targetTable = columnsAccordingToTriggerHistory.lookup(routerId, triggerHistory, true, true, false);
         Table copyTargetTable = targetTable.copy();
         Database db = new Database();
         db.setName("dataextractor");

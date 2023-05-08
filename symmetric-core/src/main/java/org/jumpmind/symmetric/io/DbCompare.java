@@ -380,7 +380,7 @@ public class DbCompare {
                 TriggerHistory hist = sourceEngine.getTriggerRouterService().findTriggerHistory(catalog, schema,
                         sourceTable.getName());
                 if (hist != null) {
-                    sourceTable = sourceTable.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true);
+                    sourceTable = sourceTable.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true, false);
                 } else {
                     log.warn("No trigger history found for {}", sourceTable.getFullyQualifiedTableName());
                 }
