@@ -113,6 +113,12 @@ public interface IStatisticManager {
 
     public void incrementPurgedDataEventRows(long count);
 
+    public void incrementPurgedStrandedDataRows(long count);
+
+    public void incrementPurgedStrandedDataEventRows(long count);
+
+    public void incrementPurgedExpiredDataRows(long count);
+
     public void incrementTriggersRemovedCount(long count);
 
     public void incrementTriggersRebuiltCount(long count);

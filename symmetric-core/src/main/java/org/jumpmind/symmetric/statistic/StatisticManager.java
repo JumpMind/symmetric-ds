@@ -439,6 +439,33 @@ public class StatisticManager implements IStatisticManager {
         }
     }
 
+    public void incrementPurgedStrandedDataRows(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementPurgedStrandedDataRows(count);
+        } finally {
+            hostStatsLock.release();
+        }
+    }
+
+    public void incrementPurgedStrandedDataEventRows(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementPurgedStrandedDataEventRows(count);
+        } finally {
+            hostStatsLock.release();
+        }
+    }
+
+    public void incrementPurgedExpiredDataRows(long count) {
+        hostStatsLock.acquireUninterruptibly();
+        try {
+            getHostStats().incrementPurgedExpiredDataRows(count);
+        } finally {
+            hostStatsLock.release();
+        }
+    }
+
     public void incrementTriggersRemovedCount(long count) {
         hostStatsLock.acquireUninterruptibly();
         try {

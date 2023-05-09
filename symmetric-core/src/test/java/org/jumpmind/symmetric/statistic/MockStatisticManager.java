@@ -165,32 +165,38 @@ public class MockStatisticManager implements IStatisticManager {
 
     @Override
     public void addJobStats(String targetNodeId, int targetNodeCount, String jobName, long startTime, long endTime, long processedCount) {
-        // TODO Auto-generated method stub
     }
 
     @Override
     public TreeMap<Date, Map<String, ChannelStats>> getNodeStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public void incrementDataLoadedOutgoingErrors(String channelId, long count) {
-        // TODO Auto-generated method stub
     }
 
     @Override
     public void incrementDataBytesLoadedOutgoing(String channelId, long count) {
-        // TODO Auto-generated method stub
     }
 
     @Override
     public void incrementDataLoadedOutgoing(String channelId, long count) {
-        // TODO Auto-generated method stub
     }
 
     @Override
     public void incrementTableRows(Map<String, Map<String, Long>> tableCounts, boolean loaded) {
-        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void incrementPurgedStrandedDataRows(long count) {
+    }
+
+    @Override
+    public void incrementPurgedStrandedDataEventRows(long count) {
+    }
+
+    @Override
+    public void incrementPurgedExpiredDataRows(long count) {
     }
 }

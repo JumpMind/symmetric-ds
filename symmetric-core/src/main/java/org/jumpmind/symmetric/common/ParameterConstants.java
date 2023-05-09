@@ -311,10 +311,12 @@ final public class ParameterConstants {
     public final static String PURGE_REGISTRATION_REQUEST_RETENTION_MINUTES = "purge.registration.request.retention.minutes";
     public final static String PURGE_STATS_RETENTION_MINUTES = "purge.stats.retention.minutes";
     public final static String PURGE_TRIGGER_HIST_RETENTION_MINUTES = "purge.trigger.hist.retention.minutes";
+    public final static String PURGE_EXPIRED_DATA_GAP_RETENTION_MINUTES = "purge.expired.data.gap.retention.minutes";
     public final static String PURGE_MAX_NUMBER_OF_DATA_IDS = "job.purge.max.num.data.to.delete.in.tx";
     public final static String PURGE_MAX_NUMBER_OF_BATCH_IDS = "job.purge.max.num.batches.to.delete.in.tx";
     public final static String PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS = "job.purge.max.num.data.event.batches.to.delete.in.tx";
     public final static String PURGE_MAX_LINGERING_BATCHES_READ = "job.purge.max.lingering.batches.read";
+    public final static String PURGE_MAX_EXPIRED_DATA_GAPS_READ = "job.purge.max.data.gaps.read";
     public final static String PURGE_FIRST_PASS = "job.purge.first.pass";
     public final static String PURGE_FIRST_PASS_OUTSTANDING_BATCHES_THRESHOLD = "job.purge.first.pass.outstanding.batches.threshold";
     public final static String JMX_LINE_FEED = "jmx.line.feed";

@@ -302,7 +302,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.statisticManager = createStatisticManager();
         this.concurrentConnectionManager = new ConcurrentConnectionManager(parameterService,
                 statisticManager);
-        this.purgeService = new PurgeService(parameterService, symmetricDialect, clusterService,
+        this.purgeService = new PurgeService(parameterService, symmetricDialect, clusterService, dataService, sequenceService,
                 statisticManager, extensionService, contextService);
         this.transformService = new TransformService(this, symmetricDialect);
         this.loadFilterService = new LoadFilterService(this, symmetricDialect);

@@ -551,4 +551,12 @@ public class DmlStatement {
         this.sql = this.sql.replaceAll(MsSql2008DdlBuilder.CHANGE_TRACKING_SYM_PREFIX + ":",
                 MsSql2008DdlBuilder.CHANGE_TRACKING_SYM_PREFIX + ":" + value);
     }
+
+    public static boolean[] getNullKeyValues(Object[] values) {
+        boolean[] nullKeyValues = new boolean[values.length];
+        for (int i = 0; i < values.length; i++) {
+            nullKeyValues[i] = values == null;
+        }
+        return nullKeyValues;
+    }
 }

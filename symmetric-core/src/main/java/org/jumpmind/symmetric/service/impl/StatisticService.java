@@ -114,14 +114,16 @@ public class StatisticService extends AbstractService implements IStatisticServi
                         stats.getNodesRegistered(), stats.getNodesLoaded(),
                         stats.getNodesDisabled(), stats.getPurgedDataRows(),
                         stats.getPurgedDataEventRows(), stats.getPurgedBatchOutgoingRows(),
-                        stats.getPurgedBatchIncomingRows(), stats.getTriggersCreatedCount(),
+                        stats.getPurgedBatchIncomingRows(), stats.getPurgedStrandedDataRows(),
+                        stats.getPurgedStrandedDataEventRows(), stats.getPurgedExpiredDataRows(),
+                        stats.getTriggersCreatedCount(),
                         stats.getTriggersRebuiltCount(), stats.getTriggersRemovedCount(),
                         stats.getTotalNodesPullTime(), stats.getTotalNodesPushTime() },
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.TIMESTAMP,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
-                        Types.BIGINT });
+                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT });
     }
 
     public TreeMap<Date, HostStats> getHostStatsForPeriod(Date start, Date end, String nodeId,
@@ -201,6 +203,9 @@ public class StatisticService extends AbstractService implements IStatisticServi
             stats.setPurgedDataEventRows(rs.getLong("purged_data_event_rows"));
             stats.setPurgedBatchOutgoingRows(rs.getLong("purged_batch_outgoing_rows"));
             stats.setPurgedBatchIncomingRows(rs.getLong("purged_batch_incoming_rows"));
+            stats.setPurgedStrandedDataRows(rs.getLong("purged_stranded_data_rows"));
+            stats.setPurgedStrandedDataEventRows(rs.getLong("purged_stranded_event_rows"));
+            stats.setPurgedExpiredDataRows(rs.getLong("purged_expired_data_rows"));
             stats.setTriggersCreatedCount(rs.getLong("triggers_created_count"));
             stats.setTriggersRebuiltCount(rs.getLong("triggers_rebuilt_count"));
             stats.setTriggersRemovedCount(rs.getLong("triggers_removed_count"));

@@ -113,6 +113,7 @@
     <table name="data_gap" description="Used only when routing.data.reader.type is set to 'gap.'  Table that tracks gaps in the data table so that they may be processed efficiently, if data shows up.  Gaps can show up in the data table if a database transaction is rolled back.">
         <column name="start_id" type="BIGINT" required="true" primaryKey="true"  description="The first missing data_id from the data table where a gap is detected.  This could be the last data_id inserted plus one." />
         <column name="end_id" type="BIGINT" required="true" primaryKey="true"  description="The last missing data_id from the data table where a gap is detected.  If the start_id is the last data_id inserted plus one, then this field is filled in with a -1." />
+        <column name="is_expired" type="BOOLEANINT" required="true" default="0" description="Routing will watch a gap for data to commit up until the time of routing.stale.dataid.gap.time.ms parameter is reached, then this flag is set to expire it.  The purge job will see any data that commits after expiration as stranded data." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_hostname" type="VARCHAR" size="255"  description="The host who last updated this entry." />
      </table>
@@ -555,6 +556,9 @@
         <column name="nodes_disabled" type="BIGINT" default="0" description="" />
         <column name="purged_data_rows" type="BIGINT" default="0" description="" />
         <column name="purged_data_event_rows" type="BIGINT" default="0" description="" />
+        <column name="purged_stranded_data_rows" type="BIGINT" default="0" description="" />
+        <column name="purged_stranded_event_rows" type="BIGINT" default="0" description="" />
+        <column name="purged_expired_data_rows" type="BIGINT" default="0" description="" />
         <column name="purged_batch_outgoing_rows" type="BIGINT" default="0" description="" />
         <column name="purged_batch_incoming_rows" type="BIGINT" default="0" description="" />
         <column name="triggers_created_count" type="BIGINT" description="" />

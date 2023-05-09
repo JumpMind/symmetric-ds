@@ -77,10 +77,11 @@ public class StatisticServiceSqlMap extends AbstractSqlMap {
                 "  restarted,nodes_pulled,nodes_pushed,nodes_rejected,                             " +
                 "  nodes_registered,nodes_loaded,nodes_disabled,purged_data_rows,                  " +
                 "  purged_data_event_rows,purged_batch_outgoing_rows,purged_batch_incoming_rows,   " +
+                "  purged_stranded_data_rows, purged_stranded_event_rows, purged_expired_data_rows," +
                 "  triggers_created_count,triggers_rebuilt_count,triggers_removed_count,           " +
                 "  total_nodes_pull_time, total_nodes_push_time                                    " +
                 "  )                                                                               " +
-                "  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                 ");
+                "  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                           ");
         putSql("selectHostStatsSql", "" +
                 "select node_id, host_name, start_time, end_time,                                   " +
                 "  restarted,nodes_pulled,nodes_pushed,nodes_rejected,                              " +

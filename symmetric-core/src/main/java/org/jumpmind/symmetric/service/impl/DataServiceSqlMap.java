@@ -217,6 +217,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                         "create_time, trigger_hist_id, channel_id, transaction_id, source_node_id, external_data, node_list, '' as router_id, is_prerouted " +
                         "from $(data) ");
         putSql("whereDataId", "where data_id = ?");
+        putSql("whereDataIdBetween", "where data_id between ? and ? order by data_id");
         putSql("whereNewerData", "where table_name = ? and ((event_type = 'I' and row_data like ?) or " +
                 "(event_type in ('U', 'D') and pk_data like ?)) and create_time >= ? order by create_time desc");
         putSql("selectMaxDataEventDataIdSql", ""
@@ -235,14 +236,15 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + "select create_time from $(data) where data_id=?   ");
         putSql("findMinDataSql", ""
                 + "select min(data_id) from $(data) where data_id >= ?");
-        putSql("countDataGapsSql", "select count(*) from $(data_gap)");
+        putSql("countDataGapsSql", "select count(*) from $(data_gap) where is_expired = 0");
         putSql("findDataGapsSql",
-                "select start_id, end_id, create_time from $(data_gap) order by start_id asc");
+                "select start_id, end_id, create_time from $(data_gap) where is_expired = ? order by start_id asc");
         putSql("insertDataGapSql",
                 "insert into $(data_gap) (last_update_hostname, start_id, end_id, create_time) values(?, ?, ?, ?)");
         putSql("deleteDataGapSql",
                 "delete from $(data_gap) where start_id=? and end_id=?   ");
-        putSql("deleteAllDataGapsSql", "delete from $(data_gap)");
+        putSql("deleteAllDataGapsSql", "delete from $(data_gap) where is_expired = 0");
+        putSql("expireDataGapSql", "update $(data_gap) set is_expired = 1 where start_id = ? and end_id = ?");
         putSql("selectMaxDataIdSql", "select max(data_id) from $(data)   ");
         putSql("selectMinDataIdSql", "select min(data_id) from $(data)   ");
         putSql("deleteCapturedConfigChannelDataSql", "delete from $(data) where channel_id='config'");

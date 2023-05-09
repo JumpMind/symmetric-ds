@@ -47,6 +47,8 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -55,6 +57,7 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.NumberMapper;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.db.util.TableRow;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -2747,12 +2750,20 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public List<DataGap> findDataGapsUnchecked() {
+        return findDataGaps(false);
+    }
+
+    public List<DataGap> findDataGapsExpired() {
+        return findDataGaps(true);
+    }
+
+    protected List<DataGap> findDataGaps(boolean isExpired) {
         return sqlTemplate.query(getSql("findDataGapsSql"), new ISqlRowMapper<DataGap>() {
             public DataGap mapRow(Row rs) {
                 return new DataGap(rs.getLong("start_id"), rs.getLong("end_id"), rs
                         .getDateTime("create_time"));
             }
-        });
+        }, isExpired ? 1 : 0);
     }
 
     public List<DataGap> findDataGaps() {
@@ -2902,8 +2913,33 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
+    @Override
     public void deleteAllDataGaps(ISqlTransaction transaction) {
         transaction.prepareAndExecute(getSql("deleteAllDataGapsSql"));
+    }
+
+    @Override
+    public void expireDataGaps(ISqlTransaction transaction, Collection<DataGap> gaps) {
+        if (gaps.size() > 0) {
+            int[] types = new int[] { symmetricDialect.getSqlTypeForIds(), symmetricDialect.getSqlTypeForIds() };
+            int maxRowsToFlush = engine.getParameterService().getInt(ParameterConstants.ROUTING_FLUSH_JDBC_BATCH_SIZE);
+            long ts = System.currentTimeMillis();
+            int flushCount = 0, totalCount = 0;
+            transaction.setInBatchMode(true);
+            transaction.prepare(getSql("expireDataGapSql"));
+            for (DataGap gap : gaps) {
+                transaction.addRow(gap, new Object[] { gap.getStartId(), gap.getEndId() }, types);
+                if (++flushCount >= maxRowsToFlush) {
+                    transaction.flush();
+                    flushCount = 0;
+                }
+                if (System.currentTimeMillis() - ts > 30000) {
+                    log.info("Expired {} of {} gaps", totalCount, gaps.size());
+                    ts = System.currentTimeMillis();
+                }
+            }
+            transaction.flush();
+        }        
     }
 
     public Date findCreateTimeOfEvent(long dataId) {
@@ -2989,6 +3025,10 @@ public class DataService extends AbstractService implements IDataService {
 
     public Data findData(long dataId) {
         return sqlTemplateDirty.queryForObject(getSql("selectData", "whereDataId"), new DataMapper(), dataId);
+    }
+
+    public List<Data> findData(long startDataId, long endDataId) {
+        return sqlTemplateDirty.query(getSql("selectData", "whereDataIdBetween"), new DataMapper(), startDataId, endDataId);
     }
 
     public ISqlRowMapper<Data> getDataMapper() {
@@ -3229,6 +3269,109 @@ public class DataService extends AbstractService implements IDataService {
             }
             return triggerHistory;
         }
+    }
+
+    public int resendBatchAsReload(long batchId, String nodeId) {
+        List<Data> dataList = new ArrayList<Data>();
+        log.info("Resending as reload for batch {}-{}", nodeId, batchId);
+        ISqlReadCursor<Data> cursor = selectDataFor(batchId, nodeId, true);
+        try {
+            Data data = null;
+            while ((data = cursor.next()) != null) {
+                dataList.add(data);
+            }
+        } finally {
+            cursor.close();
+        }
+        resendDataAsReload(dataList, nodeId);
+        return dataList.size();
+    }
+
+    public int resendDataAsReload(long minDataId, long maxDataId) {
+        List<Data> dataList = findData(minDataId, maxDataId);
+        if (dataList.size() > 0) {
+            resendDataAsReload(dataList, null);
+        }
+        return dataList.size();
+    }
+
+    protected void resendDataAsReload(List<Data> dataList, String nodeId) {
+        IDataService dataService = engine.getDataService();
+        IDatabasePlatform platform = engine.getDatabasePlatform();
+        for (Data data : dataList) {
+            TriggerHistory hist = data.getTriggerHistory();
+            Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
+            if (table != null) {
+                table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true);
+                if (data.getDataEventType() == DataEventType.INSERT || data.getDataEventType() == DataEventType.UPDATE) {
+                    convertDataToReload(data, table, hist, nodeId);
+                } else if (data.getDataEventType() == DataEventType.DELETE) {
+                    String[] pkData = data.getParsedData(CsvData.PK_DATA);
+                    Object[] values = platform.getObjectValues(engine.getSymmetricDialect().getBinaryEncoding(), pkData, table.getPrimaryKeyColumns());
+                    DmlStatement st = platform.createDmlStatement(DmlType.COUNT, table.getCatalog(), table.getSchema(),
+                            table.getName(), table.getPrimaryKeyColumns(), table.getPrimaryKeyColumns(), DmlStatement.getNullKeyValues(values), null);
+                    int count = platform.getSqlTemplateDirty().queryForInt(st.getSql(), values);
+                    if (count > 0) {
+                        convertDataToReload(data, table, hist, nodeId);
+                    } else {
+                        data.setNodeList(nodeId);
+                        data.setExternalData(null);
+                        data.setPreRouted(false);
+                        data.setChannelId(Constants.CHANNEL_RELOAD);
+                    }
+                }
+            }
+        }
+        ISqlTransaction transaction = null;
+        try {
+            transaction = engine.getSqlTemplate().startSqlTransaction();
+            for (Data data : dataList) {
+                dataService.insertData(transaction, data);
+            }
+            transaction.commit();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            if (transaction != null) {
+                transaction.close();
+            }
+        }
+    }
+
+    protected void convertDataToReload(Data data, Table table, TriggerHistory hist, String nodeId) {
+        IDatabasePlatform platform = engine.getDatabasePlatform();
+        BinaryEncoding encoding = engine.getSymmetricDialect().getBinaryEncoding();
+        String[] pkNames = hist.getParsedPkColumnNames();
+        String[] pkData = null;
+        if (data.getDataEventType() == DataEventType.INSERT) {
+            pkData = ArrayUtils.subarray(data.getParsedData(CsvData.ROW_DATA), 0, pkNames.length);
+        } else {
+            pkData = data.getParsedData(CsvData.PK_DATA);
+        }
+        DmlStatement st = platform.createDmlStatement(DmlType.WHERE, table.getCatalog(), table.getSchema(),
+                table.getName(), table.getPrimaryKeyColumns(), table.getPrimaryKeyColumns(), DmlStatement.getNullKeyValues(pkData), null);
+        Row row = new Row(pkNames.length);
+        Object[] values = platform.getObjectValues(encoding, pkData, table.getPrimaryKeyColumns());
+        for (int i = 0; i < pkNames.length; i++) {
+            row.put(pkNames[i], values[i]);
+        }
+        String where = st.buildDynamicSql(encoding, row, false, false);
+        data.setPkData(null);
+        data.setRowData(where);
+        data.setOldData(null);
+        data.setNodeList(nodeId);
+        data.setExternalData(null);
+        data.setPreRouted(false);
+        data.setDataEventType(DataEventType.RELOAD);
+        data.setChannelId(Constants.CHANNEL_RELOAD);
     }
 
     public static class LastCaptureByChannelMapper implements ISqlRowMapper<String> {

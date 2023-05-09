@@ -71,6 +71,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     protected Set<DataGap> gapsAll;
     protected Set<DataGap> gapsAdded;
     protected Set<DataGap> gapsDeleted;
+    protected Set<DataGap> gapsExpired;
     protected boolean detectInvalidGaps;
     protected boolean useInMemoryGaps;
     protected long routingStartTime;
@@ -133,6 +134,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         gapsAll = new HashSet<DataGap>();
         gapsAdded = new HashSet<DataGap>();
         gapsDeleted = new HashSet<DataGap>();
+        gapsExpired = new HashSet<DataGap>();
         routingStartTime = System.currentTimeMillis();
         supportsTransactionViews = symmetricDialect.supportsTransactionViews();
         earliestTransactionTime = 0;
@@ -176,7 +178,6 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         } else if (lastBusyExpireRunTime != 0) {
             setLastBusyExpireRunTime(0);
         }
-        List<DataGap> skippedDataGaps = new ArrayList<>();
         try {
             long ts = System.currentTimeMillis();
             long lastDataId = -1;
@@ -218,8 +219,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                             expireChecked++;
                         }
                         if (isAllDataRead || isGapEmpty) {
-                            skippedDataGaps.add(dataGap);
-                            gapsDeleted.add(dataGap);
+                            gapsExpired.add(dataGap);
                             gapsAll.remove(dataGap);
                         }
                     }
@@ -270,7 +270,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             processInfo.setStatus(ProcessStatus.ERROR);
             throw ex;
         } finally {
-            logSkippedDataGaps(skippedDataGaps);
+            logExpiredDataGaps();
         }
     }
 
@@ -308,7 +308,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
 
     protected void saveDataGaps() {
         ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
-        int totalGapChanges = gapsDeleted.size() + gapsAdded.size();
+        int totalGapChanges = gapsDeleted.size() + gapsAdded.size() + gapsExpired.size();
         if (totalGapChanges > 0) {
             ISqlTransaction transaction = null;
             gaps = new ArrayList<DataGap>(gapsAll);
@@ -336,6 +336,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                     dataService.deleteDataGaps(transaction, gapsDeleted);
                     dataService.insertDataGaps(transaction, gapsAdded);
                 }
+                dataService.expireDataGaps(transaction, gapsExpired);
                 transaction.commit();
             } catch (Error ex) {
                 if (transaction != null) {
@@ -467,12 +468,12 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         }
     }
 
-    protected void logSkippedDataGaps(List<DataGap> skippedDataGaps) {
-        if (skippedDataGaps.isEmpty()) {
+    protected void logExpiredDataGaps() {
+        if (gapsExpired.isEmpty()) {
             return;
         }
         if (log.isDebugEnabled()) {
-            for (DataGap dataGap : skippedDataGaps) {
+            for (DataGap dataGap : gapsExpired) {
                 if (dataGap.getStartId() == dataGap.getEndId()) {
                     log.debug("Expired data gap at data_id {} create_time {}.  Skipping it because " +
                             (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), dataGap.getStartId(), dataGap
@@ -485,22 +486,22 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             }
             return;
         }
-        Date minDate = skippedDataGaps.get(0).getCreateTime();
-        Date maxDate = skippedDataGaps.get(0).getCreateTime();
-        long minDataId = skippedDataGaps.get(0).getStartId();
-        long maxDataId = skippedDataGaps.get(0).getEndId();
-        for (DataGap dataGap : skippedDataGaps) {
-            if (dataGap.getCreateTime().before(minDate)) {
+        Date minDate = null;
+        Date maxDate = null;
+        long minDataId = Long.MAX_VALUE;
+        long maxDataId = 0;
+        for (DataGap dataGap : gapsExpired) {
+            if (minDate == null || dataGap.getCreateTime().before(minDate)) {
                 minDate = dataGap.getCreateTime();
             }
-            if (dataGap.getCreateTime().after(maxDate)) {
+            if (maxDate == null || dataGap.getCreateTime().after(maxDate)) {
                 maxDate = dataGap.getCreateTime();
             }
             minDataId = Math.min(minDataId, dataGap.getStartId());
             maxDataId = Math.max(maxDataId, dataGap.getEndId());
         }
         log.info("Expired {} data gap(s) between data_id {} and {} and between create_time {} and {}",
-                skippedDataGaps.size(), minDataId, maxDataId, minDate, maxDate);
+                gapsExpired.size(), minDataId, maxDataId, minDate, maxDate);
     }
 
     private List<Long> getOracleNextValues() {

@@ -197,6 +197,8 @@ public interface IDataService {
 
     public List<DataGap> findDataGapsUnchecked();
 
+    public List<DataGap> findDataGapsExpired();
+
     public List<DataGap> findDataGaps();
 
     public Date findCreateTimeOfEvent(long dataId);
@@ -231,6 +233,8 @@ public interface IDataService {
 
     public void deleteDataGap(DataGap gap);
 
+    public void expireDataGaps(ISqlTransaction transaction, Collection<DataGap> gaps);
+
     public void deleteCapturedConfigChannelData();
 
     public boolean fixLastDataGap();
@@ -250,4 +254,8 @@ public interface IDataService {
     public Map<String, Date> getLastDataCaptureByChannel();
 
     public String findNodeIdsByNodeGroupId();
+
+    public int resendBatchAsReload(long batchId, String nodeId);
+
+    public int resendDataAsReload(long minDataId, long maxDataId);
 }

@@ -944,7 +944,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 loadId = engine.getSequenceService().nextVal(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
                 context.setLastLoadId(loadId);
             }
-            if (context.getChannel().isReloadFlag()) {
+            if (context.getChannel().isReloadFlag() && StringUtils.isBlank(dataMetaData.getData().getTransactionId())) {
                 context.setNeedsCommitted(true);
             }
         } else if (eventType == DataEventType.CREATE) {

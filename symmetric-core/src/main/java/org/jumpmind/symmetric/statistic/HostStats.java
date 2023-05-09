@@ -36,6 +36,9 @@ public class HostStats extends AbstractNodeHostStats {
     private long purgedDataEventRows;
     private long purgedBatchOutgoingRows;
     private long purgedBatchIncomingRows;
+    private long purgedStrandedDataRows;
+    private long purgedStrandedDataEventRows;
+    private long purgedExpiredDataRows;
     private long triggersCreatedCount;
     private long triggersRebuiltCount;
     private long triggersRemovedCount;
@@ -66,6 +69,9 @@ public class HostStats extends AbstractNodeHostStats {
         purgedDataEventRows += stats.getPurgedDataEventRows();
         purgedBatchOutgoingRows += stats.getPurgedBatchOutgoingRows();
         purgedBatchIncomingRows += stats.getPurgedBatchIncomingRows();
+        purgedStrandedDataRows += stats.getPurgedStrandedDataRows();
+        purgedStrandedDataEventRows += stats.getPurgedStrandedDataEventRows();
+        purgedExpiredDataRows += stats.getPurgedExpiredDataRows();
         triggersCreatedCount += stats.getTriggersCreatedCount();
         triggersRebuiltCount += stats.getTriggersRebuiltCount();
         triggersRemovedCount += stats.getTriggersRemovedCount();
@@ -74,7 +80,8 @@ public class HostStats extends AbstractNodeHostStats {
     public boolean isNonZero() {
         return restarted > 0 || nodesPulled > 0 || totalNodesPullTime > 0 || nodesPushed > 0 || totalNodesPushTime > 0 || nodesRejected > 0
                 || nodesRegistered > 0 || nodesLoaded > 0 || nodesDisabled > 0 || purgedDataRows > 0 || purgedDataEventRows > 0 || purgedBatchOutgoingRows > 0
-                || purgedBatchIncomingRows > 0 || triggersCreatedCount > 0 || triggersRebuiltCount > 0 || triggersRemovedCount > 0;
+                || purgedBatchIncomingRows > 0 || purgedStrandedDataRows > 0 || purgedStrandedDataEventRows > 0 || purgedExpiredDataRows > 0
+                || triggersCreatedCount > 0 || triggersRebuiltCount > 0 || triggersRemovedCount > 0;
     }
 
     public long getRestarted() {
@@ -267,5 +274,41 @@ public class HostStats extends AbstractNodeHostStats {
 
     public void setTriggersRemovedCount(long triggersRemovedCount) {
         this.triggersRemovedCount = triggersRemovedCount;
+    }
+
+    public long getPurgedStrandedDataRows() {
+        return purgedStrandedDataRows;
+    }
+
+    public void setPurgedStrandedDataRows(long purgedStrandedDataRows) {
+        this.purgedStrandedDataRows = purgedStrandedDataRows;
+    }
+
+    public void incrementPurgedStrandedDataRows(long value) {
+        this.purgedStrandedDataRows += value;
+    }
+
+    public long getPurgedStrandedDataEventRows() {
+        return purgedStrandedDataEventRows;
+    }
+
+    public void setPurgedStrandedDataEventRows(long purgedStrandedDataEventRows) {
+        this.purgedStrandedDataEventRows = purgedStrandedDataEventRows;
+    }
+
+    public void incrementPurgedStrandedDataEventRows(long value) {
+        this.purgedStrandedDataEventRows += value;
+    }
+
+    public long getPurgedExpiredDataRows() {
+        return purgedExpiredDataRows;
+    }
+
+    public void setPurgedExpiredDataRows(long purgedExpiredDataRows) {
+        this.purgedExpiredDataRows = purgedExpiredDataRows;
+    }
+
+    public void incrementPurgedExpiredDataRows(long value) {
+        this.purgedExpiredDataRows += value;
     }
 }
