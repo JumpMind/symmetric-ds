@@ -139,6 +139,31 @@ public class ServletUtils {
         return retVal;
     }
 
+    public static ServerSymmetricEngine findEngine(HttpServletRequest req, ServletContext ctx) {
+        String engineName = getEngineNameFromUrl((HttpServletRequest) req);
+        ServerSymmetricEngine engine = null;
+        SymmetricEngineHolder holder = ServletUtils.getSymmetricEngineHolder(ctx);
+        if (holder != null) {
+            if (engineName != null) {
+                engine = holder.getEngines().get(engineName);
+            } else if (holder.getEngineCount() == 1) {
+                engine = holder.getEngines().values().iterator().next();
+            }
+        }
+        return engine;
+    }
+
+    public static String getEngineNameFromUrl(HttpServletRequest req) {
+        String engineName = null;
+        String normalizedUri = ServletUtils.normalizeRequestUri(req);
+        int startIndex = normalizedUri.startsWith("/") ? 1 : 0;
+        int endIndex = normalizedUri.indexOf("/", startIndex);
+        if (endIndex > 0) {
+            engineName = normalizedUri.substring(startIndex, endIndex);
+        }
+        return engineName;
+    }
+
     /**
      * Returns the parameter with that name, trimmed to null
      * 

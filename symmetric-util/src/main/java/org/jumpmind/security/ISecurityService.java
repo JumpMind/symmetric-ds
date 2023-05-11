@@ -38,6 +38,8 @@ public interface ISecurityService {
 
     public void installDefaultSslCert(String host);
 
+    public void installDefaultSamlSslCert(String host);
+
     public void installSslCert(KeyStore.PrivateKeyEntry entry);
 
     public TrustedCertificateEntry createTrustedCert(byte[] content, String fileType, String alias, String password);
@@ -61,6 +63,8 @@ public interface ISecurityService {
     public String obfuscate(String plainText);
 
     public String unobfuscate(String obfText);
+
+    public String unobfuscateIfNeeded(String systemPropertyName);
 
     public KeyStore getKeyStore();
 

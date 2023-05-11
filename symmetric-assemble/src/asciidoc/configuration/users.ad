@@ -14,6 +14,7 @@ Authentication Method:: Method to authenticate the user.
 
 |Internal|Internal refers to users being stored in the SYM_CONSOLE_USER table.  
 |LDAP| LDAP refers to users being authenticated through an LDAP server.  See the <<LDAP>> section for more information.
+|SAML| SAML refers to users being authenticated through a SAML identity provider. See the <<SAML>> section for more information.
 
 !===
 [[user-id]]User Id:: Unique Identifier for a User.
@@ -26,9 +27,9 @@ Authentication Method:: Method to authenticate the user.
 
 |Admin|Admin users have access to all functionalities of the SymmetricDS web console, including the Manage, Configure, and Explore tabs. Admin users also have full access to the connected databases.
 
-|Read|Read users can view the Manage and Configure tabs, but have no control over editing. Read users don't have any access to the Explore tab, LDAP settings, Mail Server Settings, Monitor settings, or Notification settings. 
+|Read|Read users can view the Manage and Configure tabs, but have no control over editing. Read users don't have any access to the Explore tab, SSO settings, Mail Server Settings, Monitor settings, or Notification settings. 
 
-|Write|Write users have access to most functionalities of the SymmetricDS web console, including the Manage, Configure, and Explore tabs. Write users also have full access to the connected databases, but do not have any access to LDAP settings, Mail Server Settings, Monitor settings, or Notification settings.
+|Write|Write users have access to most functionalities of the SymmetricDS web console, including the Manage, Configure, and Explore tabs. Write users also have full access to the connected databases, but do not have any access to SSO settings, Mail Server Settings, Monitor settings, or Notification settings.
 
 |===            
 

@@ -92,7 +92,7 @@ the administrative user for the SymmetricDS web console.  Provide a password for
 
 Additional users can be setup in the web console after the wizard completes.  For more information, see <<Users>>.
 
-SymmetricDS can also use LDAP to secure the SymmetricDS application.  For more information, see <<LDAP>>.
+SymmetricDS can also use LDAP or SAML to secure the SymmetricDS application.  For more information, see <<Single Sign-On>>.
 --
 
 ==== Summary

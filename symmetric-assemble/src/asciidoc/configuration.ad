@@ -48,7 +48,7 @@ include::configuration/parameters.ad[]
 
 ifdef::pro[]
 include::configuration/users.ad[]
-include::configuration/ldap.ad[]
+include::configuration/sso.ad[]
 include::configuration/license-key.ad[]
 include::configuration/mail-server.ad[]
 include::configuration/monitors.ad[]

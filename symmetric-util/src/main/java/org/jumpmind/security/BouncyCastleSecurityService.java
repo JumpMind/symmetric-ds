@@ -116,16 +116,30 @@ public class BouncyCastleSecurityService extends SecurityService {
 
     @Override
     public synchronized void installDefaultSslCert(String host) {
+        String alias = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS, SecurityConstants.ALIAS_SYM_PRIVATE_KEY);
+        installDefaultSslCert(host, alias);
+    }
+
+    @Override
+    public synchronized void installDefaultSamlSslCert(String host) {
+        installDefaultSslCert(host, SecurityConstants.ALIAS_SAML_PRIVATE_KEY);
+    }
+
+    private void installDefaultSslCert(String host, String alias) {
         try {
             KeyStore keyStore = getKeyStore();
             KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(getKeyStorePassword().toCharArray());
-            String alias = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS, SecurityConstants.ALIAS_SYM_PRIVATE_KEY);
             Entry entry = keyStore.getEntry(alias, param);
             if (entry == null) {
                 new BouncyCastleHelper().checkProviderInstalled();
                 PrivateKeyEntry privateEntry = createDefaultSslCert(host);
-                log.info("Installing a default SSL certificate: {}",
-                        ((X509Certificate) privateEntry.getCertificate()).getSubjectX500Principal().getName());
+                if (alias.equals(SecurityConstants.ALIAS_SAML_PRIVATE_KEY)) {
+                    log.info("Installing a default SSL certificate for SAML: {}",
+                            ((X509Certificate) privateEntry.getCertificate()).getSubjectX500Principal().getName());
+                } else {
+                    log.info("Installing a default SSL certificate: {}",
+                            ((X509Certificate) privateEntry.getCertificate()).getSubjectX500Principal().getName());
+                }
                 keyStore.setEntry(alias, privateEntry, param);
                 saveKeyStore(keyStore, getKeyStorePassword());
             }

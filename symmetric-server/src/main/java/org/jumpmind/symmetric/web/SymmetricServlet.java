@@ -68,16 +68,16 @@ public class SymmetricServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-        ServerSymmetricEngine engine = findEngine(req);
+        ServerSymmetricEngine engine = ServletUtils.findEngine(req, getServletContext());
         MDC.put("engineName", engine != null ? engine.getEngineName() : "?");
         if (engine == null) {
             if (ServletUtils.getSymmetricEngineHolder(getServletContext()).areEnginesStarting()) {
-                if (shouldLog(getEngineNameFromUrl(req), 1)) {
-                    log.info("Requests for engine {} are being rejected because nodes are still initializing", getEngineNameFromUrl(req));
+                if (shouldLog(ServletUtils.getEngineNameFromUrl(req), 1)) {
+                    log.info("Requests for engine {} are being rejected because nodes are still initializing", ServletUtils.getEngineNameFromUrl(req));
                 }
                 sendError(req, res, WebConstants.SC_SERVICE_UNAVAILABLE, "Service is starting");
             } else {
-                log.warn("Rejected request for unknown engine {} from host {} with URI of {}", getEngineNameFromUrl(req), getHost(req),
+                log.warn("Rejected request for unknown engine {} from host {} with URI of {}", ServletUtils.getEngineNameFromUrl(req), getHost(req),
                         ServletUtils.normalizeRequestUri(req));
                 sendError(req, res, WebConstants.SC_NO_ENGINE, "No engine here with that name");
             }
@@ -131,31 +131,6 @@ public class SymmetricServlet extends HttpServlet {
             }
             sendError(req, res, WebConstants.SC_SERVICE_UNAVAILABLE, "Engine is not started");
         }
-    }
-
-    protected ServerSymmetricEngine findEngine(HttpServletRequest req) {
-        String engineName = getEngineNameFromUrl((HttpServletRequest) req);
-        ServerSymmetricEngine engine = null;
-        SymmetricEngineHolder holder = ServletUtils.getSymmetricEngineHolder(getServletContext());
-        if (holder != null) {
-            if (engineName != null) {
-                engine = holder.getEngines().get(engineName);
-            } else if (holder.getEngineCount() == 1) {
-                engine = holder.getEngines().values().iterator().next();
-            }
-        }
-        return engine;
-    }
-
-    protected static String getEngineNameFromUrl(HttpServletRequest req) {
-        String engineName = null;
-        String normalizedUri = ServletUtils.normalizeRequestUri(req);
-        int startIndex = normalizedUri.startsWith("/") ? 1 : 0;
-        int endIndex = normalizedUri.indexOf("/", startIndex);
-        if (endIndex > 0) {
-            engineName = normalizedUri.substring(startIndex, endIndex);
-        }
-        return engineName;
     }
 
     protected Collection<IUriHandler> getUriHandlersFrom(ServerSymmetricEngine engine) {

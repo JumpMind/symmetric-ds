@@ -1,0 +1,88 @@
+
+=== Single Sign-On
+
+Users can utilize single sign-on using LDAP or SAML authentication.
+
+==== LDAP
+
+Configuring a <<Users>> authentication on SymmetricDS using LDAP is as simple as setting up the following three <<Parameters>>.
+
+console.auth.ldap.baseDN::  The LDAP base DN to search for a user.
+                            [&#xA0;Default:&#xA0;]
+                        
+
+A list of base DNs can be specified by separating each entry by a pipe ("|") symbol. +
+For example: +
+ou=Users,o=IT,c=US,dc=corp,dc=local|ou=Users,o=Tech,c=US,dc=corp,dc=local
+
+console.auth.ldap.host::  The LDAP server host name.
+                            [&#xA0;Default:&#xA0;]
+                            
+console.auth.ldap.searchAttribute::  LDAP attribute to search for.
+                            [&#xA0;Default:&#xA0;]
+
+These parameters can be set within the LDAP tab on the Configure SSO page by filling out the form and clicking *Save*.
+
+image::images/sso/ldap-save.png[]
+
+These parameters can also be set by manually by entering the desired values in Configure->Parameters.
+
+image::images/sso/ldap-parameters.png[]
+                            
+You may test the values that have been input into the form to test the connection to your LDAP directory.  
+To do this, click the *Test* button, enter the user credentials and click *Test* to test the authentication.  If the authentication succeeded, save the form.
+
+image::images/sso/ldap-authentication.png[]
+
+IMPORTANT: You must have values for all three of the parameter fields or the test will fail.
+
+==== SAML
+
+To configure a <<Users>> authentication on SymmetricDS using SAML, you have to set four <<Parameters>>.
+
+console.auth.saml.sp.nameid.format:: Specifies constraints on the name identifier to be used to represent the requested subject during SAML authentication.
+
+console.auth.saml.idp.entityid:: Identifier of the SAML identity provider entity (must be a URI).
+
+console.auth.saml.idp.sso.service.url:: SSO endpoint info of the SAML identity provider. URL target of the identity provider where the service provider will send the authentication request message.
+
+console.auth.saml.idp.cert:: Path to the public x509 certificate of the SAML identity provider.
+
+These parameters can be set within the SAML tab on the Configure SSO page by filling out the form and clicking *Save*.
+
+image::images/sso/saml-save.png[]
+
+These parameters can also be set by manually by entering the desired values in Configure->Parameters.
+
+image::images/sso/saml-parameters.png[]
+                            
+You may test the values that have been input into the form to test the connection to your SAML identity provider. You must save your changes in the form if you want them to apply when you run the SAML test.
+To do this, make sure that the current node is one that you set the parameters for, and then click the *Test* button. Then click *Test* to test the authentication.
+
+image::images/sso/saml-authentication.png[]
+
+IMPORTANT: You must have values for all four of the required parameter fields or the test will fail.
+
+In addition to configuring these parameters, the console user's ID must match the name ID returned by the identity provider for authentication to succeed.
+The console user must also be configured to use SAML authentication.
+
+When configuring SymmetricDS as a service provider, specify the below endpoints in your identity provider's settings. You can obtain the service provider metadata in XML format by visiting the Metadata URL.
+
+|===
+
+|Service Provider Entity ID / Metadata URL|http://{hostname}:{port}/saml/{engine.name}/metadata
+
+|Service Provider ACS URL|http://{hostname}:{port}/saml/{engine.name}/acs
+
+|===
+
+SymmetricDS is compatible with many different SAML identity providers. The main requirements for compatibility are that the identity provider must accept a SAML authentication request using the HTTP-Redirect binding and return a SAML response using the HTTP-POST binding.
+While compatibility is not limited to only these identity providers, the following IdPs have been tested and are confirmed to be compatible with SymmetricDS:
+
+* Auth0
+* CyberArk
+* JumpCloud
+* miniOrange
+* Okta
+* OneLogin
+* Ping Identity

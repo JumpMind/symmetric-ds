@@ -206,6 +206,10 @@ public class SecurityService implements ISecurityService {
     }
 
     @Override
+    public void installDefaultSamlSslCert(String host) {
+    }
+
+    @Override
     public void installSslCert(KeyStore.PrivateKeyEntry entry) {
         throw new NotImplementedException();
     }
@@ -305,7 +309,7 @@ public class SecurityService implements ISecurityService {
         return new String(rot13(new String(Base64.decodeBase64(obfText.getBytes(Charset.defaultCharset())), Charset.defaultCharset())));
     }
 
-    private String unobfuscateIfNeeded(String systemPropertyName) {
+    public String unobfuscateIfNeeded(String systemPropertyName) {
         String value = System.getProperty(systemPropertyName);
         if (value != null && value.startsWith(SecurityConstants.PREFIX_OBF)) {
             value = unobfuscate(value.substring(SecurityConstants.PREFIX_OBF.length()));
