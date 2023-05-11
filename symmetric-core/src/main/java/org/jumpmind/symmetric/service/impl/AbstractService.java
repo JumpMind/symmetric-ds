@@ -367,7 +367,7 @@ abstract public class AbstractService implements IService {
             if (statusCode != WebConstants.SC_OK) {
                 String httpMessage = WebConstants.getHttpMessage(statusCode);
                 boolean retry = statusCode != WebConstants.REGISTRATION_REQUIRED && statusCode != WebConstants.REGISTRATION_PENDING &&
-                        statusCode != WebConstants.SYNC_DISABLED && statusCode != WebConstants.SC_FORBIDDEN && statusCode != WebConstants.SC_AUTH_EXPIRED;                
+                        statusCode != WebConstants.SYNC_DISABLED && statusCode != WebConstants.SC_FORBIDDEN && statusCode != WebConstants.SC_AUTH_EXPIRED;
                 String message = String.format("Ack was not sent successfully on try number %s of %s.", i + 1, numberOfStatusSendRetries);
                 if (statusCode > 0) {
                     message += " httpCode=" + statusCode;

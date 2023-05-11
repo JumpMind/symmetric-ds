@@ -56,6 +56,7 @@ public interface IConcurrentConnectionManager {
          */
         NOT_FOUND
     };
+
     /**
      * @param nodeId
      * @param reservationRequest
@@ -63,7 +64,6 @@ public interface IConcurrentConnectionManager {
      *            the node has actually connected for activity.
      * @return true if the connection has been reserved and the node is meant to proceed with its current operation.
      */
-
     public ReservationStatus reserveConnection(String nodeId, String channelId, String poolId, ReservationType reservationRequest,
             boolean requiresExistingReservation);
 

@@ -2939,7 +2939,7 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
             transaction.flush();
-        }        
+        }
     }
 
     public Date findCreateTimeOfEvent(long dataId) {

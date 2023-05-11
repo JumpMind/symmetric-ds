@@ -145,7 +145,7 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         return e.getClass().getName() + (e.getMessage() == null ? "" : ": " + e.getMessage());
     }
 
-    protected void logTransportMessage(Node remoteNode, String message, Object...args) {
+    protected void logTransportMessage(Node remoteNode, String message, Object... args) {
         if (shouldLogTransportError(remoteNode.getNodeId())) {
             log.warn(message, args);
         } else {

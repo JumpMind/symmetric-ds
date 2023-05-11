@@ -292,8 +292,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
     }
 
     /**
-     * Set batches to OK status for nodes that don't exist or are sync disabled.
-     * Set batches to OK status for channels that don't exist.
+     * Set batches to OK status for nodes that don't exist or are sync disabled. Set batches to OK status for channels that don't exist.
      * 
      * @return number of rows updated
      */

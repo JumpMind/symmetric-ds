@@ -105,47 +105,47 @@ public class StagingManager implements IStagingManager {
 
     protected void clean(Path path, long ttlInMs, StagingPurgeContext context) throws IOException {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(path, STAGING_FILE_FILTER)) {
-	        if (context.shouldLogStatus()) {
-	            logCleaningProgress(context);
-	            context.setLastLogTime(System.currentTimeMillis());
-	        }
-	        for (Path entry : stream) {
-	            if (Files.isDirectory(entry)) {
-	                clean(entry, ttlInMs, context);
-	            } else {
-	                try {
-	                    String parentDirectory = "";
-	                    Path parentPath = entry.getParent();
-	                    if (parentPath != null) {
-	                        parentDirectory = parentPath.toString();
-	                    }
-	                    String entryName = "";
-	                    Path entryPath = entry.getFileName();
-	                    if (entryPath != null) {
-	                        entryName = entryPath.toString();
-	                    }
-	                    String stagingPath = StagedResource.toPath(directory,
-	                            new File((parentDirectory + "/" + entryName)));
-	                    IStagedResource resource = createStagedResource(stagingPath);
-	                    if (stagingPath != null) {
-	                        if (shouldCleanPath(resource, ttlInMs, context)) {
-	                            if (resource.isMemoryResource()) {
-	                                context.incrementPurgedMemoryCount();
-	                                context.addPurgedMemoryBytes(resource.getSize());
-	                            } else {
-	                                context.incrementPurgedFileCount();
-	                                context.addPurgedFileBytes(resource.getSize());
-	                            }
-	                            cleanPath(resource, ttlInMs, context);
-	                        } else {
-	                            resourcePathsCache.add(stagingPath);
-	                        }
-	                    }
-	                } catch (IllegalStateException ex) {
-	                    log.warn("Failure during clean ", ex);
-	                }
-	            }
-	        }
+            if (context.shouldLogStatus()) {
+                logCleaningProgress(context);
+                context.setLastLogTime(System.currentTimeMillis());
+            }
+            for (Path entry : stream) {
+                if (Files.isDirectory(entry)) {
+                    clean(entry, ttlInMs, context);
+                } else {
+                    try {
+                        String parentDirectory = "";
+                        Path parentPath = entry.getParent();
+                        if (parentPath != null) {
+                            parentDirectory = parentPath.toString();
+                        }
+                        String entryName = "";
+                        Path entryPath = entry.getFileName();
+                        if (entryPath != null) {
+                            entryName = entryPath.toString();
+                        }
+                        String stagingPath = StagedResource.toPath(directory,
+                                new File((parentDirectory + "/" + entryName)));
+                        IStagedResource resource = createStagedResource(stagingPath);
+                        if (stagingPath != null) {
+                            if (shouldCleanPath(resource, ttlInMs, context)) {
+                                if (resource.isMemoryResource()) {
+                                    context.incrementPurgedMemoryCount();
+                                    context.addPurgedMemoryBytes(resource.getSize());
+                                } else {
+                                    context.incrementPurgedFileCount();
+                                    context.addPurgedFileBytes(resource.getSize());
+                                }
+                                cleanPath(resource, ttlInMs, context);
+                            } else {
+                                resourcePathsCache.add(stagingPath);
+                            }
+                        }
+                    } catch (IllegalStateException ex) {
+                        log.warn("Failure during clean ", ex);
+                    }
+                }
+            }
         }
     }
 

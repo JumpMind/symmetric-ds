@@ -400,7 +400,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             return false;
         }
     }
-    
+
     protected boolean isUpgradeFromPre315(String tablePrefix, Database currentModel) {
         Table table = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_TABLE_RELOAD_REQUEST);
         if (table != null) {

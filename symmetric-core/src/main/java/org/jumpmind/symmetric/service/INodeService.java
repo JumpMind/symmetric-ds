@@ -66,7 +66,7 @@ public interface INodeService {
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId, boolean recursive);
 
     public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId);
-    
+
     public Collection<Node> getEnabledNodesFromDatabase();
 
     public Collection<Node> findNodesWithOpenRegistration();
