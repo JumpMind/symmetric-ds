@@ -308,8 +308,8 @@ public class DbCompare {
     }
 
     protected List<DbCompareTables> loadTablesFromConfig() {
-        String sourceNodeGroupId = sourceEngine.getNodeService().getCachedIdentity().getNodeGroupId();
-        String targetNodeGroupId = targetEngine.getNodeService().getCachedIdentity().getNodeGroupId();
+        String sourceNodeGroupId = sourceEngine.getNodeService().findIdentity(true, true).getNodeGroupId();
+        String targetNodeGroupId = targetEngine.getNodeService().findIdentity(true, true).getNodeGroupId();
         List<TriggerRouter> triggerRouters = sourceEngine.getTriggerRouterService()
                 .getTriggerRoutersForSourceAndTargetNodes(sourceNodeGroupId, targetNodeGroupId);
         Set<String> configTables = TableConstants.getTables(sourceEngine.getTablePrefix());
