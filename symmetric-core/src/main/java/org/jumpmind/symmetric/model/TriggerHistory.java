@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.csv.CsvReader;
@@ -345,5 +347,13 @@ public class TriggerHistory implements Serializable {
     @Override
     public boolean equals(Object obj) {
         return obj != null && obj instanceof TriggerHistory && ((TriggerHistory) obj).triggerHistoryId == triggerHistoryId;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("triggerHistoryId", triggerHistoryId).append("triggerId", triggerId).append(
+                "sourceCatalogName", sourceCatalogName).append("sourceSchemaName", sourceSchemaName).append("sourceTableName", sourceTableName).append(
+                        "columnNames", columnNames).append("pkColumnNames", pkColumnNames).append("inactiveTime", inactiveTime).append("createTime", createTime)
+                .toString();
     }
 }

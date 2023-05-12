@@ -749,6 +749,8 @@ public class Trigger implements IModelObject, Cloneable {
         boolean tableMatch = false;
         if (isSourceTableNameWildCarded) {
             tableMatch = matches(sourceTableName, table.getName(), ignoreCase);
+        } else if (isSourceTableNameExpanded) {
+            tableMatch = matches(sourceTableName.replace("$(targetExternalId)", "*"), table.getName(), ignoreCase);
         } else {
             tableMatch = ignoreCase ? table.getName().equalsIgnoreCase(sourceTableNameUnescaped)
                     : table.getName().equals(sourceTableNameUnescaped);
