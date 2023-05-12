@@ -290,8 +290,8 @@
 		<column name="load_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
         <column name="router_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent creating this batch." />
         <column name="extract_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent extracting the data out of the source database." />
-        <column name="transform_extract_millis" type="INTEGER" required="true" default="0" description="Not implemented. The number of milliseconds spent transforming the data on the extract side." />
-        <column name="transform_load_millis" type="INTEGER" required="true" default="0" description="Not implemented. The number of milliseconds spent transforming the data on the load side." />
+        <column name="transform_extract_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent transforming the data on the extract side." />
+        <column name="transform_load_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent transforming the data on the load side." />
 		<column name="load_id" type="BIGINT" description="An id that ties multiple batches together to identify them as being part of an initial load." />
 		<column name="common_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that the data in this batch is shared by other nodes (they will have the same batch_id).  Shared batches will be extracted to a common location." />
 		<column name="fallback_insert_count" type="INTEGER" required="true" default="0" description="The number of times an update was turned into an insert because the data was not already in the target database." />
