@@ -50,13 +50,13 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
         triggerConcatCharacter = "||";
         newTriggerValue = "new";
         oldTriggerValue = "old";
-        stringColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else '\"' || replace(replace($(tableAlias).$(columnName),'\\','\\\\'),'\"','\\\"') || '\"' end";
+        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') || '\"' end";
         clobColumnTemplate = stringColumnTemplate;
         emptyColumnTemplate = "''";
-        numberColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else ('\"' || cast($(tableAlias).$(columnName) as varchar) || '\"') end";
-        datetimeColumnTemplate = "case when strftime('%Y-%m-%d %H:%M:%f',$(tableAlias).$(columnName)) is null then '' else ('\"' || strftime('%Y-%m-%d %H:%M:%f', $(tableAlias).$(columnName)) || '\"') end";
-        booleanColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' when $(tableAlias).$(columnName) = 1 then '\"1\"' else '\"0\"' end";
-        blobColumnTemplate = "case when $(tableAlias).$(columnName) is null then '' else '\"' || replace(replace(hex($(tableAlias).$(columnName)),'\\','\\\\'),'\"','\\\"') || '\"' end ";
+        numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' || cast($(tableAlias).\"$(columnName)\" as varchar) || '\"') end";
+        datetimeColumnTemplate = "case when strftime('%Y-%m-%d %H:%M:%f',$(tableAlias).\"$(columnName)\") is null then '' else ('\"' || strftime('%Y-%m-%d %H:%M:%f', $(tableAlias).\"$(columnName)\") || '\"') end";
+        booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when $(tableAlias).\"$(columnName)\" = 1 then '\"1\"' else '\"0\"' end";
+        blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(hex($(tableAlias).\"$(columnName)\"),'\\','\\\\'),'\"','\\\"') || '\"' end ";
         sqlTemplates = new HashMap<String, String>();
         sqlTemplates
                 .put("insertTriggerTemplate",
