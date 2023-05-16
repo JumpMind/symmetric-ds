@@ -65,6 +65,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
     protected boolean isUpgradeFrom38;
     protected boolean isUpgradeFromPre3125;
     protected boolean isUpgradeFromPre314;
+	protected boolean isUpgradeFromPre315;
 
     @Override
     public String beforeUpgrade(ISymmetricDialect symmetricDialect, String tablePrefix, Database currentModel, Database desiredModel)
@@ -166,7 +167,10 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                 }
             }
         }
-        if (isUpgradeFromPre315(tablePrefix, currentModel)) {
+		if (isUpgradeFromPre315(tablePrefix, currentModel)) {
+			isUpgradeFromPre315 = true;
+		}		
+        if (isUpgradeFromPre315) {
             String name = engine.getDatabasePlatform().getName();
             if (name.contains(DatabaseNamesConstants.MSSQL)) {
                 log.info("Before upgrade, dropping PK constraint for reload request table");
@@ -178,6 +182,51 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                 } catch (Exception e) {
                     log.info("Unable to drop PK for reload request table: {}", e.getMessage());
                 }
+                log.info("Before upgrade, dropping PK constraint for node group channel wnd table");
+                try {
+                    String constraintName = engine.getSqlTemplate().queryForString("select name from sysobjects where xtype = 'PK' and parent_obj = object_id('"
+                            + tablePrefix + "_" + TableConstants.SYM_NODE_GROUP_CHANNEL_WND + "')");
+                    engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_NODE_GROUP_CHANNEL_WND
+                            + " drop constraint " + constraintName);
+                } catch (Exception e) {
+                    log.info("Unable to drop PK for reload request table: {}", e.getMessage());
+                }
+				log.info("Before upgrade, dropping PK constraint for node host channel stats table");
+                try {
+                    String constraintName = engine.getSqlTemplate().queryForString("select name from sysobjects where xtype = 'PK' and parent_obj = object_id('"
+                            + tablePrefix + "_" + TableConstants.SYM_NODE_HOST_CHANNEL_STATS + "')");
+                    engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_NODE_HOST_CHANNEL_STATS
+                            + " drop constraint " + constraintName);
+                } catch (Exception e) {
+                    log.info("Unable to drop PK for node host channel stats table: {}", e.getMessage());
+                }
+				log.info("Before upgrade, dropping PK constraint for node host job stats table");
+                try {
+                    String constraintName = engine.getSqlTemplate().queryForString("select name from sysobjects where xtype = 'PK' and parent_obj = object_id('"
+                            + tablePrefix + "_" + TableConstants.SYM_NODE_HOST_JOB_STATS + "')");
+                    engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_NODE_HOST_JOB_STATS
+                            + " drop constraint " + constraintName);
+                } catch (Exception e) {
+                    log.info("Unable to drop PK for node host job stats table: {}", e.getMessage());
+                }
+				log.info("Before upgrade, dropping PK constraint for node host stats table");
+                try {
+                    String constraintName = engine.getSqlTemplate().queryForString("select name from sysobjects where xtype = 'PK' and parent_obj = object_id('"
+                            + tablePrefix + "_" + TableConstants.SYM_NODE_HOST_STATS + "')");
+                    engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_NODE_HOST_STATS
+                            + " drop constraint " + constraintName);
+                } catch (Exception e) {
+                    log.info("Unable to drop PK for node host stats table: {}", e.getMessage());
+                }
+				log.info("Before upgrade, dropping PK constraint for registration request table");
+                try {
+                    String constraintName = engine.getSqlTemplate().queryForString("select name from sysobjects where xtype = 'PK' and parent_obj = object_id('"
+                            + tablePrefix + "_" + TableConstants.SYM_REGISTRATION_REQUEST + "')");
+                    engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_REGISTRATION_REQUEST
+                            + " drop constraint " + constraintName);
+                } catch (Exception e) {
+                    log.info("Unable to drop PK for registration request table: {}", e.getMessage());
+                }  
             }
             if (name.equals(DatabaseNamesConstants.ORACLE) || name.equals(DatabaseNamesConstants.ORACLE122)) {
                 log.info("Before upgrade, truncating reload request table");
@@ -185,6 +234,36 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                     engine.getSqlTemplate().update("truncate table " + tablePrefix + "_" + TableConstants.SYM_TABLE_RELOAD_REQUEST);
                 } catch (Exception e) {
                     log.info("Unable to truncate reload request table: {}", e.getMessage());
+                }
+                log.info("Before upgrade, truncating node group channel wnd table");
+                try {
+                    engine.getSqlTemplate().update("truncate table " + tablePrefix + "_" + TableConstants.SYM_NODE_GROUP_CHANNEL_WND);
+                } catch (Exception e) {
+                    log.info("Unable to truncate reload request table: {}", e.getMessage());
+                }
+				log.info("Before upgrade, truncating node host channel stats table");
+                try {
+                    engine.getSqlTemplate().update("truncate table " + tablePrefix + "_" + TableConstants.SYM_NODE_HOST_CHANNEL_STATS);
+                } catch (Exception e) {
+                    log.info("Unable to truncate node host channel stats table: {}", e.getMessage());
+                }
+				log.info("Before upgrade, truncating node host job stats table");
+                try {
+                    engine.getSqlTemplate().update("truncate table " + tablePrefix + "_" + TableConstants.SYM_NODE_HOST_JOB_STATS);
+                } catch (Exception e) {
+                    log.info("Unable to truncate node host job stats table: {}", e.getMessage());
+                }
+				log.info("Before upgrade, truncating node host stats table");
+                try {
+                    engine.getSqlTemplate().update("truncate table " + tablePrefix + "_" + TableConstants.SYM_NODE_HOST_STATS);
+                } catch (Exception e) {
+                    log.info("Unable to truncate node host stats table: {}", e.getMessage());
+                }
+				log.info("Before upgrade, truncating registration request table");
+                try {
+                    engine.getSqlTemplate().update("truncate table " + tablePrefix + "_" + TableConstants.SYM_REGISTRATION_REQUEST);
+                } catch (Exception e) {
+                    log.info("Unable to truncate registration request table: {}", e.getMessage());
                 }
             }
         }
