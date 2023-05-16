@@ -22,7 +22,12 @@ package org.jumpmind.db.platform.mariadb;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class MariaDBDatabasePlatform extends MySqlDatabasePlatform {
@@ -40,6 +45,27 @@ public class MariaDBDatabasePlatform extends MySqlDatabasePlatform {
     @Override
     protected MariaDBDdlReader createDdlReader() {
         return new MariaDBDdlReader(this);
+    }
+
+    @Override
+    public PermissionResult getLogMinePermission() {
+        final PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "Use LogMiner");
+        StringBuilder solution = new StringBuilder();
+        Row row = getSqlTemplate().queryForRow("show variables like 'log_bin'");
+        if (row == null || !StringUtils.equalsIgnoreCase(row.getString("Value"), "ON")) {
+            solution.append("Use the --log-bin option at startup. ");
+        }
+        row = getSqlTemplate().queryForRow("show variables like 'binlog_format'");
+        if (row == null || !StringUtils.equalsIgnoreCase(row.getString("Value"), "ROW")) {
+            solution.append("Set the binlog_format system variable to \"ROW\". ");
+        }
+        if (solution.length() > 0) {
+            result.setStatus(Status.FAIL);
+            result.setSolution(solution.toString());
+        } else {
+            result.setStatus(Status.PASS);
+        }
+        return result;
     }
 
     @Override
