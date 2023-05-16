@@ -55,7 +55,8 @@ public interface IDdlReader {
     
     public Collection<ForeignKey> getExportedKeys(Table table);
     
-    public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited);
+	public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows,
+			Set<TableRow> visited, BinaryEncoding encoding);
     
     public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding);
     

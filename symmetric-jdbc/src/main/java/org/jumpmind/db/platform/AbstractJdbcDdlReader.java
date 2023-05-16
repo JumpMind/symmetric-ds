@@ -1699,7 +1699,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     }
 
     @Override
-    public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited) {
+    public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding) {
         List<TableRow> fkDepList = new ArrayList<TableRow>();
         for (TableRow tableRow : tableRows) {
             if (!visited.contains(tableRow)) {
@@ -1730,7 +1730,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                                 DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable.getCatalog(),
                                         foreignTable.getSchema(), foreignTable.getName(), keyColumns,
                                         foreignTable.getColumns(), nullValues, null);
-                                Object[] selectValues = platform.getObjectValues(BinaryEncoding.HEX, selectRow.toStringArray(selectRow.keySet().toArray(new String[0])),
+                                Object[] selectValues = platform.getObjectValues(encoding, selectRow.toStringArray(selectRow.keySet().toArray(new String[0])),
                                         keyColumns);
                                 List<Row> rows = transaction.query(selectSt.getSql(), new RowMapper(), selectValues, selectSt.getTypes());
 
@@ -1770,7 +1770,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                             log.debug("Foreign table '{}' not found for foreign key '{}'", fk.getForeignTableName(), fk.getName());
                         }
                         if (fkDepList.size() > 0) {
-                            fkDepList.addAll(getExportedForeignTableRows(transaction, fkDepList, visited));
+                            fkDepList.addAll(getExportedForeignTableRows(transaction, fkDepList, visited, encoding));
                         }
                     }
                 }
