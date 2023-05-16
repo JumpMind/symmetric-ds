@@ -606,7 +606,8 @@ public class DatabaseXmlUtil {
                 }
             }
             for (ForeignKey fk : table.getForeignKeys()) {
-                output.write("\t\t<foreign-key name=\"" + StringEscapeUtils.escapeXml10(fk.getName()) + "\" foreignTable=\""
+                String name = fk.getName() == null ? "" : fk.getName();
+                output.write("\t\t<foreign-key name=\"" + StringEscapeUtils.escapeXml10(name) + "\" foreignTable=\""
                         + StringEscapeUtils.escapeXml10(fk.getForeignTableName()) + "\" foreignTableCatalog=\""
                         + StringEscapeUtils.escapeXml10(fk.getForeignTableCatalog() == null || fk.getForeignTableCatalog().equals(table.getCatalog())
                                 ? ""
