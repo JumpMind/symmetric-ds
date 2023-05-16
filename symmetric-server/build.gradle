@@ -11,7 +11,8 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         api "org.springframework:spring-jms:$springVersion"
         api "org.springframework:spring-web:$springVersion"
         api "org.springframework:spring-webmvc:$springVersion"
-        api "javax.xml.bind:jaxb-api:$jaxbVersion"
+        api "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbVersion"
+        api "com.sun.xml.bind:jaxb-impl:3.0.2"
         api "org.jdom:jdom2:$jdomVersion"
         api "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
         

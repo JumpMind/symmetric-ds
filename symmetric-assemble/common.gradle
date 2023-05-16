@@ -291,7 +291,7 @@ subprojects { subproject ->
         sqliteVersion = '3.34.0'
         javaMailVersion = '1.6.2'
         jdomVersion = '2.0.6.1'
-        jaxbVersion = '2.3.1'
+        jaxbVersion = '3.0.1'
         gsonVersion = '2.9.0'
         jacksonVersion = '2.13.2.2'
         guavaVersion = '31.1-android'
