@@ -229,6 +229,7 @@ public class DatabaseInfo {
     private String cteExpression;
     private boolean logBased;
     private boolean triggersContainJava = false;
+    private boolean canDeleteUsingExists = true;
 
     /**
      * Creates a new platform info object.
@@ -1342,5 +1343,13 @@ public class DatabaseInfo {
 
     public void setFunctionalIndicesSupported(boolean functionalIndicesSupported) {
         this.functionalIndicesSupported = functionalIndicesSupported;
+    }
+
+    public boolean canDeleteUsingExists() {
+        return canDeleteUsingExists;
+    }
+
+    public void setCanDeleteUsingExists(boolean canDeleteUsingExists) {
+        this.canDeleteUsingExists = canDeleteUsingExists;
     }
 }

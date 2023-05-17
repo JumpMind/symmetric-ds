@@ -64,7 +64,7 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
  */
 public class PurgeService extends AbstractService implements IPurgeService {
     enum MinMaxDeleteSql {
-        DATA, DATA_RANGE, DATA_EVENT, DATA_EVENT_RANGE, OUTGOING_BATCH, OUTGOING_BATCH_RANGE, STRANDED_DATA, STRANDED_DATA_EVENT
+        DATA, DATA_EXISTS, DATA_RANGE, DATA_EVENT, DATA_EVENT_EXISTS, DATA_EVENT_RANGE, OUTGOING_BATCH, OUTGOING_BATCH_EXISTS, OUTGOING_BATCH_RANGE, STRANDED_DATA, STRANDED_DATA_EVENT
     };
 
     private IClusterService clusterService;
@@ -562,12 +562,14 @@ public class PurgeService extends AbstractService implements IPurgeService {
         int totalDeleteStmts = 0;
         int idSqlType = symmetricDialect.getSqlTypeForIds();
         Timestamp cutoffTime = new Timestamp(context.getRetentionCutoff().getTime().getTime());
+        identifier = getIdentifierIfUsingExists(identifier);
+        String name = getIdentifierName(identifier);
         if (minMax[0] > minMax[1] || minMax[0] <= 0) {
-            log.debug("Ending purge early for {} using range {} through {}", identifier.toString().toLowerCase(), minMax[0], minMax[1]);
+            log.debug("Ending purge early for {} using range {} through {}", name, minMax[0], minMax[1]);
             return 0;
         }
         List<DataGap> dataGapsExpired = new ArrayList<DataGap>(context.getDataGapsExpired());
-        log.info("About to purge {} using range {} through {}", identifier.toString().toLowerCase(), minMax[0], minMax[1]);
+        log.info("About to purge {} using range {} through {}", name, minMax[0], minMax[1]);
         while (minId <= purgeUpToId) {
             totalDeleteStmts++;
             maxId = minId + maxNumtoPurgeinTx;
@@ -582,6 +584,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     deleteSql = getSql("deleteDataSql");
                     args = new Object[] { minId, maxId, minId, maxId, minId, maxId, OutgoingBatch.Status.OK.name() };
                     argTypes = new int[] { idSqlType, idSqlType, idSqlType, idSqlType, idSqlType, idSqlType, Types.VARCHAR };
+                    break;
+                case DATA_EXISTS:
+                    deleteSql = getSql("deleteDataExistsSql");
+                    args = new Object[] { minId, maxId, OutgoingBatch.Status.OK.name() };
+                    argTypes = new int[] { idSqlType, idSqlType, Types.VARCHAR };
                     break;
                 case DATA_RANGE:
                     deleteSql = getSql("deleteDataByRangeSql");
@@ -598,6 +605,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     args = new Object[] { minId, maxId, OutgoingBatch.Status.OK.name(), minId, maxId };
                     argTypes = new int[] { idSqlType, idSqlType, Types.VARCHAR, idSqlType, idSqlType };
                     break;
+                case DATA_EVENT_EXISTS:
+                    deleteSql = getSql("deleteDataEventExistsSql");
+                    args = new Object[] { minId, maxId, OutgoingBatch.Status.OK.name() };
+                    argTypes = new int[] { idSqlType, idSqlType, Types.VARCHAR };
+                    break;
                 case DATA_EVENT_RANGE:
                     deleteSql = getSql("deleteDataEventByRangeSql");
                     args = new Object[] { minId, maxId };
@@ -607,6 +619,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     deleteSql = getSql("deleteOutgoingBatchSql");
                     args = new Object[] { OutgoingBatch.Status.OK.name(), minId, maxId, minId, maxId };
                     argTypes = new int[] { Types.VARCHAR, idSqlType, idSqlType, idSqlType, idSqlType };
+                    break;
+                case OUTGOING_BATCH_EXISTS:
+                    deleteSql = getSql("deleteOutgoingBatchExistsSql");
+                    args = new Object[] { OutgoingBatch.Status.OK.name(), minId, maxId };
+                    argTypes = new int[] { Types.VARCHAR, idSqlType, idSqlType };
                     break;
                 case OUTGOING_BATCH_RANGE:
                     deleteSql = getSql("deleteOutgoingBatchByRangeSql");
@@ -636,12 +653,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
             statConsumer.accept(count);
             totalCount += count;
             if (count == 0 && (identifier == MinMaxDeleteSql.STRANDED_DATA || identifier == MinMaxDeleteSql.STRANDED_DATA_EVENT)) {
-                log.info("Ending purge of {} early at {} after finding empty space", identifier.toString().toLowerCase(), maxId);
+                log.info("Ending purge of {} early at {} after finding empty space", name, maxId);
                 break;
             }
             if (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5) {
-                log.info("Purged {} of {} rows so far using {} statements", new Object[] {
-                        totalCount, identifier.toString().toLowerCase(), totalDeleteStmts });
+                log.info("Purged {} of {} rows so far using {} statements", new Object[] { totalCount, name, totalDeleteStmts });
                 ts = System.currentTimeMillis();
                 clusterService.refreshLock(ClusterConstants.PURGE_OUTGOING);
                 saveContextLastId(identifier, maxId);
@@ -649,17 +665,36 @@ public class PurgeService extends AbstractService implements IPurgeService {
             minId = maxId + 1;
         }
         saveContextLastId(identifier, maxId);
-        log.info("Done purging {} of {} rows", totalCount, identifier.toString().toLowerCase());
+        log.info("Done purging {} of {} rows", totalCount, name);
         return totalCount;
+    }
+
+    protected MinMaxDeleteSql getIdentifierIfUsingExists(MinMaxDeleteSql identifier) {
+        if (symmetricDialect.getPlatform().getDdlBuilder().getDatabaseInfo().canDeleteUsingExists()) {
+            if (identifier == MinMaxDeleteSql.DATA) {
+                identifier = MinMaxDeleteSql.DATA_EXISTS;
+            } else if (identifier == MinMaxDeleteSql.DATA_EVENT) {
+                identifier = MinMaxDeleteSql.DATA_EVENT_EXISTS;
+            } else if (identifier == MinMaxDeleteSql.OUTGOING_BATCH) {
+                identifier = MinMaxDeleteSql.OUTGOING_BATCH_EXISTS;
+            }
+        }
+        return identifier;
+    }
+
+    protected String getIdentifierName(MinMaxDeleteSql identifier) {
+        return identifier.toString().toLowerCase().replaceAll("_exists", "");
     }
 
     protected void saveContextLastId(MinMaxDeleteSql identifier, long lastId) {
         if (lastId > 0) {
-            if (identifier == MinMaxDeleteSql.DATA || identifier == MinMaxDeleteSql.DATA_RANGE) {
+            if (identifier == MinMaxDeleteSql.DATA || identifier == MinMaxDeleteSql.DATA_EXISTS || identifier == MinMaxDeleteSql.DATA_RANGE) {
                 contextService.save(ContextConstants.PURGE_LAST_DATA_ID, String.valueOf(lastId));
-            } else if (identifier == MinMaxDeleteSql.DATA_EVENT || identifier == MinMaxDeleteSql.DATA_EVENT_RANGE) {
+            } else if (identifier == MinMaxDeleteSql.DATA_EVENT || identifier == MinMaxDeleteSql.DATA_EVENT_EXISTS
+                    || identifier == MinMaxDeleteSql.DATA_EVENT_RANGE) {
                 contextService.save(ContextConstants.PURGE_LAST_EVENT_BATCH_ID, String.valueOf(lastId));
-            } else if (identifier == MinMaxDeleteSql.OUTGOING_BATCH || identifier == MinMaxDeleteSql.OUTGOING_BATCH_RANGE) {
+            } else if (identifier == MinMaxDeleteSql.OUTGOING_BATCH || identifier == MinMaxDeleteSql.OUTGOING_BATCH_EXISTS
+                    || identifier == MinMaxDeleteSql.OUTGOING_BATCH_RANGE) {
                 contextService.save(ContextConstants.PURGE_LAST_BATCH_ID, String.valueOf(lastId));
             }
         }

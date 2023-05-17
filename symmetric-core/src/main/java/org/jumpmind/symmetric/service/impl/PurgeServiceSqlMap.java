@@ -54,10 +54,16 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
 "  and ? and batch_id not in (select batch_id from $(data_event) where batch_id between ?   " + 
 "  and ?)                                                                                   " );
 
+        putSql("deleteOutgoingBatchExistsSql", "delete from $(outgoing_batch) b where status = ? and batch_id between ? and ? " +
+                "and not exists (select 1 from $(data_event) e where e.batch_id = b.batch_id)");
+
         putSql("deleteDataEventSql" ,
 "delete from $(data_event) where batch_id not in (select batch_id from               " + 
 "  $(outgoing_batch) where batch_id between ? and ? and status != ?)                 " + 
 "  and batch_id between ? and ?                                                      " );
+
+        putSql("deleteDataEventExistsSql", "delete from $(data_event) e where batch_id between ? and ? " +
+                "and not exists (select 1 from $(outgoing_batch) b where b.batch_id = e.batch_id and b.status != ?)");
 
         putSql("minDataId", "select min(data_id) from $(data)");
 
@@ -89,6 +95,11 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
 "  e.batch_id in                                                 " + 
 "  (select batch_id from $(outgoing_batch) where                 " + 
 "  status != ?))                                  " );
+
+        putSql("deleteDataExistsSql", "delete from $(data) d where data_id between ? and ? " +
+                "and exists (select 1 from $(data_event) e where e.data_id = d.data_id) " +
+                "and not exists (select 1 from $(outgoing_batch) b inner join $(data_event) e on e.batch_id = b.batch_id " +
+                "where e.data_id = d.data_id and b.status != ?)");
 
         putSql("selectIncomingBatchRangeSql" ,
 "select node_id, min(batch_id) as min_id, max(batch_id) as max_id from $(incoming_batch) where   " + 
