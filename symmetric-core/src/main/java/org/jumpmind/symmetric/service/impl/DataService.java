@@ -2565,8 +2565,14 @@ public class DataService extends AbstractService implements IDataService {
                         log.info("Issuing foreign key correction for batch {} table {}: foreign table '{}' column '{}' fk name '{}' where '{}'",
                                 batchName, data.getTableName(), Table.getFullyQualifiedTableName(catalog, schema, foreignTable.getName()),
                                 foreignTableRow.getReferenceColumnName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql());
-                        reloadTableImmediate(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(),
-                                dataId == -1 ? Constants.CHANNEL_CONFIG : null);
+                        try {
+                            reloadTableImmediate(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(),
+                                    dataId == -1 ? Constants.CHANNEL_CONFIG : null);
+                        } catch (Exception ex) {
+                            log.info("Failed to issue foreign key correction, but will try again,", ex);
+                            reloadTableImmediate(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(),
+                                    dataId == -1 ? Constants.CHANNEL_CONFIG : null);
+                        }
                     }
                 }
             } else {
