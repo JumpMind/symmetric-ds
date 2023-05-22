@@ -482,7 +482,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         boolean syncChanges = !TableConstants.getTablesThatDoNotSync(tablePrefix).contains(
                 tableName)
                 && (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)
-                        || TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST).equals(tableName));
+                        || TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST).equals(tableName)
+                        || TableConstants.getTableName(tablePrefix, TableConstants.SYM_MONITOR_EVENT).equals(tableName));
         // boolean syncOnIncoming = !configurationService.isMasterToMaster() && (parameterService.is(
         // ParameterConstants.AUTO_SYNC_CONFIGURATION_ON_INCOMING, true)
         // || tableName.equals(TableConstants.getTableName(tablePrefix,
