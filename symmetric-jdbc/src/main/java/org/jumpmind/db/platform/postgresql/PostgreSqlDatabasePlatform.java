@@ -47,6 +47,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 import javax.sql.rowset.serial.SerialBlob;
@@ -366,6 +368,26 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
             sql = sql.substring(0, sql.length() - 1);
         }
         return sql + " limit " + limit + " offset " + offset;
+    }
+
+    @Override
+    public String massageForObjectAlreadyExists(String sql) {
+        String uppercaseSql = sql.trim().toUpperCase();
+        if (uppercaseSql.contains("CREATE TABLE")) {
+            return sql;
+        } else if (uppercaseSql.startsWith("CREATE") && uppercaseSql.contains("VIEW")) {
+            String viewName = null;
+            Pattern pattern = Pattern.compile("\\sview\\s([^\\s(]+)", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(sql);
+            if (matcher.find()) {
+                viewName = matcher.group(1);
+            }
+            if (viewName != null) {
+                return "drop view " + viewName + ";\n" + sql;
+            }
+            return sql;
+        }
+        return StringUtils.replaceOnceIgnoreCase(sql, "create", "create or replace");
     }
 
     @Override

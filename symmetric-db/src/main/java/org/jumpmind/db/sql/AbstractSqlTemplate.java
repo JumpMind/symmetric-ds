@@ -323,4 +323,14 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     public boolean isDeadlock(Throwable ex) {
         return false;
     }
+
+    @Override
+    public boolean doesObjectAlreadyExist(Throwable ex) {
+        return false;
+    }
+
+    @Override
+    public boolean doesObjectNotExist(Throwable ex) {
+        return false;
+    }
 }

@@ -1280,6 +1280,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return sql;
     }
 
+    public String massageForObjectAlreadyExists(String sql) {
+        return sql;
+    }
+
+    public String massageForObjectDoesNotExist(String sql) {
+        return sql;
+    }
+
     public boolean supportsSliceTables() {
         return false;
     }

@@ -37,6 +37,8 @@ public class OracleJdbcSqlTemplate extends JdbcSqlTemplate {
         foreignKeyChildExistsViolationCodes = new int[] { 2292 };
         deadlockCodes = new int[] { 60 };
         dataTruncationCodes = new int[] { 6502 };
+        objectAlreadyExistsCodes = new int[] { 955 };
+        objectDoesNotExistCodes = new int[] { 942, 4043 };
     }
 
     @Override

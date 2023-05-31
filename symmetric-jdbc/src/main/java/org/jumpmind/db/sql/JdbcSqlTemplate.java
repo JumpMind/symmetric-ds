@@ -86,6 +86,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     protected String[] deadlockSqlStates;
     protected int[] dataTruncationCodes;
     protected String[] dataTruncationStates;
+    protected int[] objectAlreadyExistsCodes;
+    protected String[] objectAlreadyExistsStates;
+    protected int[] objectDoesNotExistCodes;
+    protected String[] objectDoesNotExistStates;
     protected int isolationLevel;
 
     public JdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
@@ -1047,6 +1051,68 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             }
         }
         return truncation;
+    }
+
+    @Override
+    public boolean doesObjectAlreadyExist(Throwable ex) {
+        boolean alreadyExists = false;
+        if (objectAlreadyExistsCodes != null || objectAlreadyExistsStates != null) {
+            SQLException sqlEx = findSQLException(ex);
+            if (sqlEx != null) {
+                if (objectAlreadyExistsCodes != null) {
+                    int errorCode = sqlEx.getErrorCode();
+                    for (int objectAlreadyExistsCode : objectAlreadyExistsCodes) {
+                        if (objectAlreadyExistsCode == errorCode) {
+                            alreadyExists = true;
+                            break;
+                        }
+                    }
+                }
+                if (objectAlreadyExistsStates != null) {
+                    String sqlState = sqlEx.getSQLState();
+                    if (sqlState != null) {
+                        for (String objectAlreadyExistsState : objectAlreadyExistsStates) {
+                            if (sqlState.equals(objectAlreadyExistsState)) {
+                                alreadyExists = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return alreadyExists;
+    }
+
+    @Override
+    public boolean doesObjectNotExist(Throwable ex) {
+        boolean doesNotExist = false;
+        if (objectDoesNotExistCodes != null || objectDoesNotExistStates != null) {
+            SQLException sqlEx = findSQLException(ex);
+            if (sqlEx != null) {
+                if (objectDoesNotExistCodes != null) {
+                    int errorCode = sqlEx.getErrorCode();
+                    for (int objectDoesNotExistCode : objectDoesNotExistCodes) {
+                        if (objectDoesNotExistCode == errorCode) {
+                            doesNotExist = true;
+                            break;
+                        }
+                    }
+                }
+                if (objectDoesNotExistStates != null) {
+                    String sqlState = sqlEx.getSQLState();
+                    if (sqlState != null) {
+                        for (String objectDoesNotExistState : objectDoesNotExistStates) {
+                            if (sqlState.equals(objectDoesNotExistState)) {
+                                doesNotExist = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return doesNotExist;
     }
 
     protected SQLException findSQLException(Throwable ex) {

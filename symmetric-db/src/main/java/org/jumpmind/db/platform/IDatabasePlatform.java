@@ -239,6 +239,10 @@ public interface IDatabasePlatform {
 
     public String massageForLimitOffset(String sql, int limit, int offset);
 
+    public String massageForObjectAlreadyExists(String sql);
+
+    public String massageForObjectDoesNotExist(String sql);
+
     public boolean supportsSliceTables();
 
     public String getSliceTableSql(String columnName, int sliceNum, int totalSlices);
