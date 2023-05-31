@@ -30,10 +30,13 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
     String delimiter;
+    String infinityDateExpression;
 
     public PostgreSqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         delimiter = symmetricDialect.getParameterService().getString(ParameterConstants.TRIGGER_CAPTURE_DDL_DELIMITER, "$");
+        infinityDateExpression = symmetricDialect.getParameterService().is(ParameterConstants.POSTGRES_CONVERT_INFINITY_DATE_TO_NULL, true) ? "''"
+                : "cast($(tableAlias).\"$(columnName)\" as varchar)";
         //@formatter:off        
         geometryColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast(ST_AsEWKT($(tableAlias).\"$(columnName)\") as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         geographyColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast(ST_AsEWKT($(tableAlias).\"$(columnName)\") as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
@@ -42,11 +45,13 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
         xmlColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         arrayColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || cast(cast($(tableAlias).\"$(columnName)\" as numeric) as varchar) || '\"' end" ;
-        dateColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS') || '\"' end" ;
-        datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US') || '\"' end" ;
+        dateColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when isfinite($(tableAlias).\"$(columnName)\") then '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS') || '\"' "
+                + "else " + infinityDateExpression + " end" ;
+        datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when isfinite($(tableAlias).\"$(columnName)\") then '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US') || '\"' " 
+                + "else " + infinityDateExpression + " end" ;
         timeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || to_char($(tableAlias).\"$(columnName)\", 'HH24:MI:SS.US') || '\"' end" ;
         dateTimeWithTimeZoneColumnTemplate =
-                "case when $(tableAlias).\"$(columnName)\" is null then '' else                                                      " +
+                "case when $(tableAlias).\"$(columnName)\" is null then '' when isfinite($(tableAlias).\"$(columnName)\") then                                                   " +
                 "   case                                                                                                             " +
                 "   when extract(timezone_hour from $(tableAlias).\"$(columnName)\") <= 0 and                                        " +
                 "        extract(timezone_minute from $(tableAlias).\"$(columnName)\") <= 0 then                                      " +
@@ -63,6 +68,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
                 "     lpad(cast(round(extract(timezone_hour from $(tableAlias).\"$(columnName)\")) as varchar),2,'0')||':'||                " +
                 "     lpad(cast(round(extract(timezone_minute from $(tableAlias).\"$(columnName)\")) as varchar), 2, '0') || '\"'           " +
                 "   end                                                                                                              " +
+                "else " + infinityDateExpression + " " +
                 "end                                                                                                                 ";
         clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || pg_catalog.encode($(tableAlias).\"$(columnName)\", 'base64') || '\"' end" ;

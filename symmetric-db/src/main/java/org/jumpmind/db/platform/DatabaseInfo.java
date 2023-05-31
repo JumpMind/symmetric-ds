@@ -226,6 +226,7 @@ public class DatabaseInfo {
     private boolean requiredCharColumnEmptyStringSameAsNull;
     private boolean notNullColumnsSupported = true;
     private boolean zeroDateAllowed;
+    private boolean infinityDateAllowed;
     private String cteExpression;
     private boolean logBased;
     private boolean triggersContainJava = false;
@@ -1303,6 +1304,14 @@ public class DatabaseInfo {
 
     public void setZeroDateAllowed(boolean zeroDateAllowed) {
         this.zeroDateAllowed = zeroDateAllowed;
+    }
+
+    public boolean isInfinityDateAllowed() {
+        return infinityDateAllowed;
+    }
+
+    public void setInfinityDateAllowed(boolean infinityDateAllowed) {
+        this.infinityDateAllowed = infinityDateAllowed;
     }
 
     public boolean isTriggersCreateOrReplaceSupported() {

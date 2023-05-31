@@ -559,10 +559,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     concatenatedRow.append(row.getBoolean(name) ? "1" : "0");
                 } else if (column.isOfNumericType()) {
                     concatenatedRow.append(row.getString(name));
-                } else if (!column.isTimestampWithTimezone() && (type == Types.DATE || type == Types.TIME)) {
-                    concatenatedRow.append("\"").append(getDateTimeStringValue(name, type, row, false)).append("\"");
-                } else if (!column.isTimestampWithTimezone() && type == Types.TIMESTAMP) {
-                    concatenatedRow.append("\"").append(getTimestampStringValue(name, type, row, false)).append("\"");
+                } else if (column.isTimestampWithTimezone()) {
+                    appendString(concatenatedRow, getTimestampTzStringValue(name, type, row, false));
+                } else if (type == Types.DATE || type == Types.TIME) {
+                    appendString(concatenatedRow, getDateTimeStringValue(name, type, row, false));
+                } else if (type == Types.TIMESTAMP) {
+                    appendString(concatenatedRow, getTimestampStringValue(name, type, row, false));
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
                     if (bytes.length == 0) {
@@ -581,6 +583,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             i++;
         }
         return concatenatedRow.toString();
+    }
+
+    protected void appendString(StringBuilder sb, String value) {
+        if (value != null) {
+            sb.append("\"").append(value).append("\"");
+        }
     }
 
     protected String getDateTimeStringValue(String name, int type, Row row, boolean useVariableDates) {
@@ -611,6 +619,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 return String.format("%tF %tT.%09d", ts, ts, ts.getNanos());
             }
         }
+    }
+
+    protected String getTimestampTzStringValue(String name, int type, Row row, boolean useVariableDates) {
+        return row.getString(name);
     }
 
     public Map<String, String> getSqlScriptReplacementTokens() {

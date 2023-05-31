@@ -27,4 +27,5 @@ abstract public class SqlConstants {
     public static final int DEFAULT_QUERY_TIMEOUT_SECONDS = 300;
     public static final int DEFAULT_STREAMING_FETCH_SIZE = 1000;
     public static final StringMapper STRING_MAPPER = new StringMapper();
+    public static final String POSTGRES_CONVERT_INFINITY_DATE_TO_NULL = "postgres.convert.infinity.date.to.null";
 }
