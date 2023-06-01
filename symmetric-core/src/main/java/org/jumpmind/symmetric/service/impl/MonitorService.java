@@ -230,6 +230,10 @@ public class MonitorService extends AbstractService implements IMonitorService {
                 } else {
                     event.setHostName(hostName);
                     event.setType(monitor.getType());
+                    if (monitor.getType().equals("batchError") && monitor.getExpression() != null
+                            && monitor.getExpression().equals("notifyOnIncrease=true") && eventValue.getValue() > event.getValue()) {
+                        event.setNotified(false);
+                    }
                     event.setValue(eventValue.getValue());
                     if (eventValue.getCount() == 0) {
                         event.setCount(event.getCount() + 1);
@@ -368,8 +372,8 @@ public class MonitorService extends AbstractService implements IMonitorService {
 
     protected boolean updateMonitorEvent(MonitorEvent event) {
         int count = sqlTemplate.update(getSql("updateMonitorEventSql"), event.getHostName(), event.getType(), event.getValue(),
-                event.getCount(), event.getThreshold(), event.getSeverityLevel(), event.getLastUpdateTime(),
-                event.getDetails(), event.getMonitorId(), event.getNodeId(), event.getEventTime());
+                event.getCount(), event.getThreshold(), event.getSeverityLevel(), event.isNotified() ? 1 : 0,
+                event.getLastUpdateTime(), event.getDetails(), event.getMonitorId(), event.getNodeId(), event.getEventTime());
         return count != 0;
     }
 

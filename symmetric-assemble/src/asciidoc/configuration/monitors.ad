@@ -56,6 +56,8 @@ endif::pro[]
 
 |===
 
+Expression:: An expression used by the monitor to set options specific to the monitor type. For batchError monitors, setting the expression to
+"notifyOnIncrease=true" will trigger an additional notification if the number of batches in error has increased since the last time the monitor job ran.
 Threshold:: When this threshold value is reached or exceeded, an event is recorded.
 Run Period:: The time in seconds of how often to run this monitor.  The monitor job runs on a period also, so the monitor can only run as often
 as the monitor job.

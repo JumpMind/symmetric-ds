@@ -74,7 +74,7 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
                         "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         putSql("updateMonitorEventSql",
                 "update $(monitor_event) set host_name = ?, " + type + " = ?, event_value = ?, event_count = ?, threshold = ?, severity_level = ?, " +
-                        "is_resolved = 0, last_update_time = ?, details = ?  where monitor_id = ? and node_id = ? and event_time = ?");
+                        "is_resolved = 0, is_notified = ?, last_update_time = ?, details = ?  where monitor_id = ? and node_id = ? and event_time = ?");
         putSql("updateMonitorEventResolvedSql",
                 "update $(monitor_event) set is_resolved = 1, is_notified = 0, last_update_time = ? where monitor_id = ? and node_id = ? and event_time = ?");
         putSql("updateMonitorEventNotifiedSql",
