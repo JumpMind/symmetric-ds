@@ -258,12 +258,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     }
 
     protected boolean shouldIgnoreInitialFiles(FileTriggerRouter router, FileTrigger trigger, Date contextDate) {
-        if (!router.isInitialLoadEnabled()) {
-            if (contextDate == null || router.getLastUpdateTime().after(contextDate) || trigger.getLastUpdateTime().after(contextDate)) {
-                return true;
-            }
-        }
-        return false;
+        return contextDate == null || router.getLastUpdateTime().after(contextDate) || trigger.getLastUpdateTime().after(contextDate);
     }
 
     protected long saveDirectorySnapshot(FileTriggerRouter fileTriggerRouter, DirectorySnapshot dirSnapshot, boolean shouldIgnore) {
