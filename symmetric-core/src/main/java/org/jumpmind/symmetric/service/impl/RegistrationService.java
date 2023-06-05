@@ -114,7 +114,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
         this.configurationService = engine.getConfigurationService();
         this.outgoingBatchService = engine.getOutgoingBatchService();
         this.extensionService = engine.getExtensionService();
-        this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(), 30);
+        this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(),
+                engine.getParameterService().getInt(ParameterConstants.REGISTRATION_MAX_TIME_BETWEEN_RETRIES, 30));
         setSqlMap(new RegistrationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
