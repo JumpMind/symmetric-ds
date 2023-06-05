@@ -2207,6 +2207,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 log.warn("Trigger '{}' has a channel of '{}' not found in sym_channel table", trigger.getTriggerId(), trigger.getChannelId());
             }
         }
+        trigger.setSyncOnIncomingBatch(trigger.isSyncOnIncomingBatch() && !configurationService.isMasterToMaster());
         try {
             boolean forceRebuildOfTriggers = false;
             if (latestHistoryBeforeRebuild == null) {
