@@ -34,7 +34,7 @@ ifdef::pro[]
 .Advanced Options
 endif::pro[]
 
-Sync Configuration:: Determines if configuration is also sent through this group link.  By default this is checked and configuration will communicate on this path.  There are configurations that might cause configuration to continuously loop through the network as a result this might need to be unchecked for some links.
+Sync Configuration:: Determines if configuration is also sent through this group link.  This affects all SymmetricDS configuration tables except for sym_file_snapshot, sym_monitor_event, sym_node, sym_node_host, sym_node_security, and sym_table_reload_request.  By default this is checked and configuration will communicate on this path.  There are configurations that might cause configuration to continuously loop through the network. As a result, this might need to be unchecked for some links.
 Reversible:: Allows the communication link to send in the reverse direction if specified on the channel.  A push link can be overridden to pull and a pull link can be overridden to push using a setting on the channel.
 
 .Sample Group Links
@@ -71,7 +71,7 @@ endif::pro[]
 
 ifdef::pro[]
 .Group Links Tips and Tricks
-NOTE: The link also defines if configuration data will be synchronized on the link.  For example, you might not want remote nodes to be able to change configuration and effect other nodes in the network.  In this case you would uncheck sync configuration.
+NOTE: The link also defines if configuration data will be synchronized on the link.  For example, you might not want remote nodes to be able to change configuration and affect other nodes in the network.  In this case you would uncheck sync configuration.
 
-NOTE: Turn off sync configuration option where appropriate in non hierarchical setup so that configuration changes to not create a loop.  See "No Config" example above.
+NOTE: Turn off the sync configuration option where appropriate in non hierarchical setup so that configuration changes do not create a loop.  See "Loop" example above.
 endif::pro[]
