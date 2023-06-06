@@ -429,6 +429,14 @@ public class SnapshotUtil {
                 }
             }
         }
+        File backupConfig = new File("conf/.config");
+        if (backupConfig.canRead()) {
+            try {
+                FileUtils.copyFileToDirectory(backupConfig, tmpDir);
+            } catch (IOException e) {
+                log.warn("Failed to copy {}", backupConfig.getName());
+            }
+        }
         checkpoint(engine, listener, 5, 7);
         File jarFile = null;
         try {
