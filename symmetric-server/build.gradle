@@ -94,7 +94,7 @@ apply from: symAssembleDir + '/asciidoc.gradle'
                     fileMode 0600
                     dirMode 0700
                 }
-                into('doc') { from ("$symAssembleDir/build/doc") }
+                into('doc') { from ("../symmetric-server/build/doc") }
                 into('lib') {
                     from configurations.provided {
                         exclude "*animal-sniffer*"
