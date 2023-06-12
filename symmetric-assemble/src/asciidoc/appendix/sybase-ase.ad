@@ -55,6 +55,27 @@ If you're unable to change NOCOUNT for the server, the "db.init.sql" parameter c
 Connections are pooled and expected to be in the database context like a new connection, so avoid using the "USE database" 
 Transact-SQL statement in extension code.
 
+
+.Supported Data Types
+|===
+|Data Type|Supported?
+
+|BigInt, Int, SmallInt, TinyInt|Yes
+|Decimal, Numeric|Yes
+|Bit|Yes
+|Money, SmallMoney|No
+|Float, Real|Yes
+|NChar, NVarchar|No
+|UNIChar, UNIVarchar, UNIText|No	
+|Date, DateTime, SmallDatetime, Time|Yes
+|Char, Varchar, Text|Yes
+|Binary, Varbinary|Yes
+|Image|Yes
+|Blob|Yes
+|===
+
+  
+
 ==== Permissions
 The SymmetricDS database user generally needs privileges for connecting and creating tables (including indexes), triggers, sequences, 
 and procedures (including packages and functions). In Sybase ASE, only the System Administrator can create or drop triggers on tables it does not own. The table owner can create or drop triggers freely on their tables. For change data capture, it is recommended that the application user who controls Sybase and SymmetricDS be the same, so that there will be no permissions errors with dropping or creating triggers. This means that all of the Sybase tables pertaining to and being used by SymmetricDS are owned by the same user, and that is the user who is assigned to SymmetricDS. If this is not possible, the SA user is the only other option, as users cannot be granted the permission to create or delete triggers on tables they do not own. Any outside users that will need to Insert, Update, Delete or read from a Sybase table that they do not own will need the following permissions for any tables they need access to:
