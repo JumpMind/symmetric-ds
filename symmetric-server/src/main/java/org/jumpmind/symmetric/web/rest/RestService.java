@@ -879,8 +879,10 @@ public class RestService {
     @ResponseBody
     public final String postOpenRegistration(
             @RequestParam(value = "nodeGroupId") String nodeGroupId,
-            @RequestParam(value = "externalId") String externalId) {
-        return postOpenRegistration(getSymmetricEngine().getEngineName(), nodeGroupId, externalId);
+            @RequestParam(value = "externalId") String externalId,
+            @RequestParam(value = "hostName", required = false) String hostName,
+            @RequestParam(value = "ipAddress", required = false) String ipAddress) {
+        return postOpenRegistration(getSymmetricEngine().getEngineName(), nodeGroupId, externalId, hostName, ipAddress);
     }
 
     @ApiOperation(value = "Open registration for the specified node at the specified engine")
@@ -889,9 +891,11 @@ public class RestService {
     @ResponseBody
     public final String postOpenRegistration(@PathVariable("engine") String engineName,
             @RequestParam(value = "nodeGroupId") String nodeGroupId,
-            @RequestParam(value = "externalId") String externalId) {
+            @RequestParam(value = "externalId") String externalId,
+            @RequestParam(value = "hostName", required = false) String hostName,
+            @RequestParam(value = "ipAddress", required = false) String ipAddress) {
         ISymmetricEngine engine = getSymmetricEngine(engineName);
-        return engine.getRegistrationService().openRegistration(nodeGroupId, externalId);
+        return engine.getRegistrationService().openRegistration(nodeGroupId, externalId, hostName, ipAddress);
     }
 
     /**
