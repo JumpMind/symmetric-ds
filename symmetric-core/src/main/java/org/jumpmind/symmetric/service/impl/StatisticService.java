@@ -72,15 +72,14 @@ public class StatisticService extends AbstractService implements IStatisticServi
                 getSql("insertJobStatsSql"),
                 new Object[] { stats.getNodeId(), stats.getHostName(), stats.getJobName(),
                         stats.getStartTime(), stats.getEndTime(), stats.getProcessedCount(),
-                        stats.getTargetNodeId(), stats.getTargetNodeCount() }, new int[] {
+                        stats.getTargetNodeId(), stats.getTargetNodeCount(), stats.isErrorFlag() ? 1 : 0,
+                        stats.getErrorMessage() }, new int[] {
                                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-                                Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.INTEGER });
+                                Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR });
     }
 
-    public List<JobStats> getJobStatsForPeriod(Date start, Date end,
-            String nodeId) {
-        return sqlTemplate.query(getSql("selectChannelStatsSql"),
-                new JobStatsMapper(), start, end, nodeId);
+    public List<JobStats> getJobStatsForPeriod(Date start, Date end, String nodeId) {
+        return sqlTemplate.query(getSql("selectJobStatsSql"), new JobStatsMapper(), start, end, nodeId);
     }
 
     public TreeMap<Date, Map<String, ChannelStats>> getChannelStatsForPeriod(Date start, Date end,
@@ -148,6 +147,8 @@ public class StatisticService extends AbstractService implements IStatisticServi
             stats.setStartTime(truncateToMinutes(rs.getDateTime("start_time")));
             stats.setEndTime(truncateToMinutes(rs.getDateTime("end_time")));
             stats.setProcessedCount(rs.getLong("processed_count"));
+            stats.setErrorFlag(rs.getBoolean("error_flag"));
+            stats.setErrorMessage(rs.getString("error_message"));
             return stats;
         }
     }

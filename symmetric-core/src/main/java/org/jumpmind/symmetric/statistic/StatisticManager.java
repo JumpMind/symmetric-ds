@@ -157,6 +157,16 @@ public class StatisticManager implements IStatisticManager {
         }
     }
 
+    public void addJobStats(String jobName, long startTime, long endTime, long processedCount, Exception e) {
+        jobStatsLock.acquireUninterruptibly();
+        try {
+            JobStats stats = new JobStats(jobName, startTime, endTime, processedCount, e);
+            jobStats.add(stats);
+        } finally {
+            jobStatsLock.release();
+        }
+    }
+
     public void addJobStats(String targetNodeId, int targetNodeCount, String jobName, long startTime, long endTime, long processedCount) {
         jobStatsLock.acquireUninterruptibly();
         try {
@@ -551,7 +561,7 @@ public class StatisticManager implements IStatisticManager {
                     String nodeId = node.getNodeId();
                     String serverId = clusterService.getServerId();
                     for (JobStats stats : toFlush) {
-                        if (recordStatisticsCountThreshold > 0 && stats.getProcessedCount() > recordStatisticsCountThreshold) {
+                        if (recordStatisticsCountThreshold != -1 && (stats.isErrorFlag() || stats.getProcessedCount() > recordStatisticsCountThreshold)) {
                             stats.setNodeId(nodeId);
                             stats.setHostName(serverId);
                             statisticService.save(stats);

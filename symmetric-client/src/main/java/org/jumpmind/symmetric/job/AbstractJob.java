@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.JobDefinition;
 import org.jumpmind.symmetric.model.Lock;
@@ -182,7 +181,6 @@ abstract public class AbstractJob implements Runnable, IJob {
         try {
             MDC.put("engineName", engine.getEngineName());
             IParameterService parameterService = engine.getParameterService();
-            long recordStatisticsCountThreshold = parameterService.getLong(ParameterConstants.STATISTIC_RECORD_COUNT_THRESHOLD, -1);
             boolean ok = checkPrerequsites(force);
             if (!ok) {
                 return false;
@@ -209,11 +207,6 @@ abstract public class AbstractJob implements Runnable, IJob {
                     long endTime = System.currentTimeMillis();
                     lastExecutionTimeInMs = endTime - startTime;
                     totalExecutionTimeInMs += lastExecutionTimeInMs;
-                    if (lastExecutionTimeInMs > Constants.LONG_OPERATION_THRESHOLD ||
-                            (recordStatisticsCountThreshold > 0 && getProcessedCount() > recordStatisticsCountThreshold)) {
-                        engine.getStatisticManager().addJobStats(targetNodeId, targetNodeCount, jobName,
-                                startTime, endTime, getProcessedCount());
-                    }
                     numberOfRuns++;
                     running.set(false);
                 }

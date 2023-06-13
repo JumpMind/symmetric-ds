@@ -557,6 +557,8 @@
         <column name="start_time" type="TIMESTAMP" required="true" primaryKey="true" description="The start time for the period which this row represents." />
         <column name="end_time" type="TIMESTAMP" required="true" primaryKey="true" description="The end time for the period which this row represents." />
         <column name="processed_count" type="BIGINT" default="0" description="The number of items that were processed during the job run." />
+		<column name="error_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this job was in error." />
+        <column name="error_message" type="LONGVARCHAR" description="The error message that occurred." />
         <column name="target_node_id" type="VARCHAR" size="50" description="The target node the job is working on." />
         <column name="target_node_count" type="INTEGER" default="0" description="The number of target nodes the job is working on." />
         <index name="idx_nd_hst_job">

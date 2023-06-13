@@ -22,11 +22,15 @@ package org.jumpmind.symmetric.statistic;
 
 import java.util.Date;
 
+import org.jumpmind.util.AppUtils;
+
 public class JobStats extends AbstractNodeHostStats {
     private String jobName;
     private long processedCount;
     private String targetNodeId;
     private int targetNodeCount;
+    private boolean errorFlag;
+    private String errorMessage;
 
     public JobStats() {
     }
@@ -46,6 +50,13 @@ public class JobStats extends AbstractNodeHostStats {
     public JobStats(String jobName, long startTime, long endTime, long processedCount) {
         this(null, null, new Date(startTime), new Date(endTime), jobName);
         this.processedCount = processedCount;
+    }
+
+    public JobStats(String jobName, long startTime, long endTime, long processedCount, Exception e) {
+        this(null, null, new Date(startTime), new Date(endTime), jobName);
+        this.processedCount = processedCount;
+        this.errorFlag = true;
+        this.errorMessage = e.getClass().getName() + ": " + e.getMessage() + "\r\n" + AppUtils.formatStackTrace(e.getStackTrace(), 50, false);
     }
 
     public String getJobName() {
@@ -78,5 +89,21 @@ public class JobStats extends AbstractNodeHostStats {
 
     public void setTargetNodeCount(int targetNodeCount) {
         this.targetNodeCount = targetNodeCount;
+    }
+
+    public boolean isErrorFlag() {
+        return errorFlag;
+    }
+
+    public void setErrorFlag(boolean errorFlag) {
+        this.errorFlag = errorFlag;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }

@@ -1430,6 +1430,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             synchronized (this) {
                 if (clusterService.lock(ClusterConstants.SYNC_TRIGGERS)) {
                     TriggerRouterContext triggerRouterContext = new TriggerRouterContext();
+                    long startTime = System.currentTimeMillis();
                     try {
                         String additionalMessage = "";
                         if (isCalledFromSymmetricAdminTool()
@@ -1490,6 +1491,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             updateOrCreateDdlTriggers(sqlBuffer);
                             triggerRouterContext.incrementUpdateOrCreateDdlTriggersTime(System.currentTimeMillis() - ts);
                         }
+                        statisticManager.addJobStats(ClusterConstants.SYNC_TRIGGERS, startTime, System.currentTimeMillis(), triggersSynced);
+                    } catch (RuntimeException e) {
+                        statisticManager.addJobStats(ClusterConstants.SYNC_TRIGGERS, startTime, System.currentTimeMillis(), triggersSynced, e);
+                        throw e;
                     } finally {
                         long ts = System.currentTimeMillis();
                         for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
@@ -1823,6 +1828,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public boolean syncTriggers(List<Table> tables, boolean force) {
         if (clusterService.lock(ClusterConstants.SYNC_TRIGGERS)) {
             TriggerRouterContext triggerRouterContext = new TriggerRouterContext();
+            long startTime = System.currentTimeMillis();
             try {
                 fixMultipleActiveTriggerHistories(triggerRouterContext);
                 boolean ignoreCase = this.parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE);
@@ -1873,7 +1879,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                 }
                 logTriggerRouterContextTimings(triggerRouterContext);
+                statisticManager.addJobStats(ClusterConstants.SYNC_TRIGGERS, startTime, System.currentTimeMillis(), triggersSynced);
                 return true;
+            } catch (RuntimeException e) {
+                statisticManager.addJobStats(ClusterConstants.SYNC_TRIGGERS, startTime, System.currentTimeMillis(), triggersSynced, e);
+                throw e;
             } finally {
                 logTriggerRouterContextAnomalies(triggerRouterContext);
                 clusterService.unlock(ClusterConstants.SYNC_TRIGGERS);
@@ -2109,6 +2119,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public boolean syncTriggers(List<Trigger> triggers, ITriggerCreationListener listener, boolean force, boolean verifyInDatabase) {
         if (clusterService.lock(ClusterConstants.SYNC_TRIGGERS)) {
             TriggerRouterContext triggerRouterContext = new TriggerRouterContext();
+            long startTime = System.currentTimeMillis();
             try {
                 long ts;
                 fixMultipleActiveTriggerHistories(triggerRouterContext);
@@ -2173,6 +2184,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             }
                         }
                     }
+                    statisticManager.addJobStats(ClusterConstants.SYNC_TRIGGERS, startTime, System.currentTimeMillis(), triggersSynced);
                 } finally {
                     ts = System.currentTimeMillis();
                     for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
@@ -2187,6 +2199,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     log.info("Done synchronizing {} triggers", triggers.size());
                 }
                 return true;
+            } catch (RuntimeException e) {
+                statisticManager.addJobStats(ClusterConstants.SYNC_TRIGGERS, startTime, System.currentTimeMillis(), triggersSynced, e);
+                throw e;
             } finally {
                 clusterService.unlock(ClusterConstants.SYNC_TRIGGERS);
             }

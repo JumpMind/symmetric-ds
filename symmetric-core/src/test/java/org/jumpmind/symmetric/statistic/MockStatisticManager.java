@@ -193,4 +193,9 @@ public class MockStatisticManager implements IStatisticManager {
     public void incrementTableRows(Map<String, Map<String, Long>> tableCounts, boolean loaded) {
         // TODO Auto-generated method stub
     }
+
+    @Override
+    public void addJobStats(String jobName, long startTime, long endTime, long processedCount, Exception e) {
+        // TODO Auto-generated method stub
+    }
 }
