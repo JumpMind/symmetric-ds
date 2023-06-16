@@ -599,6 +599,17 @@ public class StatisticManager implements IStatisticManager {
         }
     }
 
+    public List<JobStats> getWorkingJobStats() {
+        if (jobStats != null) {
+            List<JobStats> stats = new ArrayList<JobStats>();
+            for (JobStats stat : jobStats) {
+                stats.add(new JobStats(stat));
+            }
+            return stats;
+        }
+        return new ArrayList<JobStats>();
+    }
+
     public HostStats getWorkingHostStats() {
         if (this.hostStats != null) {
             return new HostStats(this.hostStats);
