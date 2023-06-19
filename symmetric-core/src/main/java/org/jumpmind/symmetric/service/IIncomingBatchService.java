@@ -40,6 +40,8 @@ public interface IIncomingBatchService {
 
     public int countIncomingBatchesInError(String channelId);
 
+    public Date getIncomingBatchesLatestUpdateSql();
+    
     public IncomingBatch findIncomingBatch(long batchId, String nodeId);
 
     public void refreshIncomingBatch(IncomingBatch batch);

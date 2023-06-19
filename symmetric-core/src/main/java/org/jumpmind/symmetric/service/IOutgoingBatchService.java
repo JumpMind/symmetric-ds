@@ -91,7 +91,11 @@ public interface IOutgoingBatchService {
 
     public int countOutgoingBatchesInError();
 
+    public Date getOutgoingBatchesLatestUpdateSql();
+    
     public int countOutgoingBatchesUnsent();
+
+    public int[] countOutgoingNonSystemBatchesRowsUnsent();
 
     public int countOutgoingBatchesInError(String channelId);
 

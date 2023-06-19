@@ -643,4 +643,16 @@ public class StatisticManager implements IStatisticManager {
     @Override
     public void incrementTableRows(Map<String, Map<String, Long>> tableCounts, boolean loaded) {
     }
+
+    @Override
+    public String getMostRecentActiveTableSynced() {
+        return "";
+    }
+
+    @Override
+    public Map<Integer, Date> getTotalLoadedRows() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

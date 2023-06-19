@@ -30,10 +30,11 @@ import org.jumpmind.symmetric.model.MonitorEvent;
 
 public class MonitorTypeDisk implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
     protected File tempDirectory;
-
+    public static final String NAME = "disk";
+    
     @Override
     public String getName() {
-        return "disk";
+        return NAME;
     }
 
     @Override

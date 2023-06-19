@@ -24,6 +24,7 @@ import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -68,7 +69,19 @@ public class Node implements Serializable, Comparable<Node> {
     private String deploymentType;
     private String deploymentSubType;
     private int[] symmetricVersionParts;
-
+    private Date lastSuccessfulSyncDate;
+    private String mostRecentActiveTableSynced;
+    private int dataRowsToSendCount;
+    private int dataRowsLoadedCount;
+    private Date oldestLoadTime;
+    private long purgeOutgoingLastMs;
+    private Date purgeOutgoingLastRun;
+    private long purgeOutgoingAverageMs;
+    private long routingAverageMs;
+    private Date routingLastRun;
+    private long routingLastMs;
+    private long symDataSize;
+    
     public Node() {
     }
 
@@ -265,6 +278,95 @@ public class Node implements Serializable, Comparable<Node> {
     public void setDeploymentSubType(String deploymentSubType) {
         this.deploymentSubType = deploymentSubType;
     }
+    
+    public Date getLastSuccessfulSyncDate() {
+        return lastSuccessfulSyncDate;
+    }
+
+    public void setLastSuccessfulSyncDate(Date lastSuccessfulSyncDate) {
+        this.lastSuccessfulSyncDate = lastSuccessfulSyncDate;
+    }
+
+    
+    public int getDataRowsToSendCount() {
+        return dataRowsToSendCount;
+    }
+
+    public void setDataRowsToSendCount(int dataRowsToSendCount) {
+        this.dataRowsToSendCount = dataRowsToSendCount;
+    }
+
+    public int getDataRowsLoadedCount() {
+        return dataRowsLoadedCount;
+    }
+
+    public void setDataRowsLoadedCount(int dataRowsLoadedCount) {
+        this.dataRowsLoadedCount = dataRowsLoadedCount;
+    }
+
+    public Date getOldestLoadTime() {
+        return oldestLoadTime;
+    }
+
+    public void setOldestLoadTime(Date oldestLoadTime) {
+        this.oldestLoadTime = oldestLoadTime;
+    }
+    
+    public long getPurgeOutgoingLastMs() {
+        return purgeOutgoingLastMs;
+    }
+
+    public void setPurgeOutgoingLastMs(long purgeOutgoingLastMs) {
+        this.purgeOutgoingLastMs = purgeOutgoingLastMs;
+    }
+
+    public Date getPurgeOutgoingLastRun() {
+        return purgeOutgoingLastRun;
+    }
+
+    public void setPurgeOutgoingLastRun(Date purgeOutgoingLastRun) {
+        this.purgeOutgoingLastRun = purgeOutgoingLastRun;
+    }
+
+    public long getRoutingAverageMs() {
+        return routingAverageMs;
+    }
+
+    public void setRoutingAverageMs(long routingAverageMs) {
+        this.routingAverageMs = routingAverageMs;
+    }
+
+    public Date getRoutingLastRun() {
+        return routingLastRun;
+    }
+
+    public void setRoutingLastRun(Date routingLastRun) {
+        this.routingLastRun = routingLastRun;
+    }
+
+    public long getSymDataSize() {
+        return symDataSize;
+    }
+
+    public void setSymDataSize(long symDataSize) {
+        this.symDataSize = symDataSize;
+    }
+
+    public long getPurgeOutgoingAverageMs() {
+        return purgeOutgoingAverageMs;
+    }
+
+    public void setPurgeOutgoingAverageMs(long purgeOutgoingAverageMs) {
+        this.purgeOutgoingAverageMs = purgeOutgoingAverageMs;
+    }
+
+    public long getRoutingLastMs() {
+        return routingLastMs;
+    }
+
+    public void setRoutingLastMs(long routingLastMs) {
+        this.routingLastMs = routingLastMs;
+    }
 
     public boolean requires13Compatiblity() {
         if (symmetricVersion != null) {
@@ -325,4 +427,15 @@ public class Node implements Serializable, Comparable<Node> {
             return 0;
         }
     }
+
+    public String getMostRecentActiveTableSynced() {
+        return mostRecentActiveTableSynced;
+    }
+
+    public void setMostRecentActiveTableSynced(String mostRecentActiveTableSynced) {
+        this.mostRecentActiveTableSynced = mostRecentActiveTableSynced;
+    }
+
+    
+    
 }

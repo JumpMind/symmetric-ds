@@ -112,6 +112,10 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 "select count(*) from $(outgoing_batch) where error_flag=1");
         putSql("countOutgoingBatchesUnsentSql",
                 "select count(*) from $(outgoing_batch) where status != 'OK'");
+        putSql("countOutgoingNonSystemBatchesUnsentSql",
+                "select count(batch_id) as batch_count, sum(data_row_count) as row_count from $(outgoing_batch) where status != 'OK' and channel_id not in ('heartbeat', 'monitor', 'config')");
+        putSql("getOutgoingBatchesLatestUpdateSql",
+                "select max(last_update_time) from $(outgoing_batch) where status = 'OK' and channel_id not in ('heartbeat', 'monitor', 'config')");
         putSql("countOutgoingBatchesWithStatusSql",
                 "select count(*) from $(outgoing_batch) where status = ? ");
         putSql("countOutgoingBatchesUnsentOnChannelSql",

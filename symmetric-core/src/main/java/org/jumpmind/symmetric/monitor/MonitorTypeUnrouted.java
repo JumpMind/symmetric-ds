@@ -29,7 +29,8 @@ import org.jumpmind.symmetric.service.IRouterService;
 
 public class MonitorTypeUnrouted implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
     protected IRouterService routerService;
-
+    public static final String NAME = "dataUnrouted";
+    
     @Override
     public String getName() {
         return "dataUnrouted";

@@ -195,6 +195,8 @@ public interface IDataService {
      */
     public int countDataInRange(long firstDataId, long secondDataId);
 
+    public int countData();
+
     public long countDataGaps();
 
     public List<DataGap> findDataGapsUnchecked();

@@ -348,6 +348,15 @@ public class MonitorService extends AbstractService implements IMonitorService {
         return sqlTemplate.query(sql, limit, new MonitorEventRowMapper(), args.toArray());
     }
 
+    @Override
+    public List<MonitorEvent> getMonitorEventsByMonitorId(String monitorId) {
+        String sql = getSql("selectMonitorEventSql", "whereMonitorEventIdSql");
+        ArrayList<Object> args = new ArrayList<Object>();
+        
+        sql += " order by event_time desc";
+        return sqlTemplate.query(sql, new MonitorEventRowMapper(), monitorId);
+    }
+    
     protected List<MonitorEvent> getMonitorEventsForNotification(int severityLevel) {
         return sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventForNotificationBySeveritySql"),
                 new MonitorEventRowMapper(), severityLevel);
@@ -481,7 +490,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
         }
     }
 
-    static class MonitorEventRowMapper implements ISqlRowMapper<MonitorEvent> {
+    public static class MonitorEventRowMapper implements ISqlRowMapper<MonitorEvent> {
         public MonitorEvent mapRow(Row row) {
             MonitorEvent m = new MonitorEvent();
             m.setMonitorId(row.getString("monitor_id"));

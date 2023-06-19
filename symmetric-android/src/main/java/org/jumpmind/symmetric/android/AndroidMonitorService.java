@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.android;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -137,4 +138,10 @@ public class AndroidMonitorService implements IMonitorService {
     public List<Monitor> getActiveMonitorsUnresolvedForNodeFromDb(String nodeGroupId, String externalId) {
         return null;
     }
+    
+    @Override
+    public List<MonitorEvent> getMonitorEventsByMonitorId(String monitorId) {
+        return new ArrayList<MonitorEvent>();
+    }
+    
 }

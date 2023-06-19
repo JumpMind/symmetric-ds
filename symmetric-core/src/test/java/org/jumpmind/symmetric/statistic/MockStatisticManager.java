@@ -193,4 +193,16 @@ public class MockStatisticManager implements IStatisticManager {
     public void incrementTableRows(Map<String, Map<String, Long>> tableCounts, boolean loaded) {
         // TODO Auto-generated method stub
     }
+
+    @Override
+    public String getMostRecentActiveTableSynced() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Map<Integer, Date> getTotalLoadedRows() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

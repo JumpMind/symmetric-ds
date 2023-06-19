@@ -42,10 +42,11 @@ public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAwar
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected IOutgoingBatchService outgoingBatchService;
     protected IIncomingBatchService incomingBatchService;
-
+    public static final String NAME = "batchError";
+    
     @Override
     public String getName() {
-        return "batchError";
+        return NAME;
     }
 
     @Override
@@ -97,4 +98,5 @@ public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAwar
         }
         return result;
     }
+
 }

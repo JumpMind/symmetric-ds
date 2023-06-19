@@ -223,6 +223,8 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + "select max(data_id) from $(data_event)   ");
         putSql("countDataInRangeSql", ""
                 + "select count(*) from $(data) where data_id > ? and data_id < ?   ");
+        putSql("countDataSql", ""
+                + "select count(*) from $(data)");
         putSql("insertIntoDataSql",
                 "insert into $(data) (data_id, table_name, event_type, row_data, pk_data, " +
                         "old_data, trigger_hist_id, channel_id, external_data, node_list, is_prerouted, transaction_id, source_node_id, create_time) " +

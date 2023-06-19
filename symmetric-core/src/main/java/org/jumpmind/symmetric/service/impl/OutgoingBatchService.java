@@ -36,6 +36,7 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.LongMapper;
+import org.jumpmind.db.sql.mapper.RowMapper;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -376,11 +377,24 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesErrorsOnChannelSql"), channelId);
     }
 
-    @Override
+    @Override 
+    public Date getOutgoingBatchesLatestUpdateSql() {
+        return sqlTemplateDirty.queryForObject(getSql("getOutgoingBatchesLatestUpdateSql"), Date.class);
+    }
+    
     public int countOutgoingBatchesUnsent() {
         return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesUnsentSql"));
     }
 
+    public int[] countOutgoingNonSystemBatchesRowsUnsent() {
+        int[] batchesRows = new int[2];
+        for (Row row : sqlTemplateDirty.query(getSql("countOutgoingNonSystemBatchesUnsentSql"))) {
+            batchesRows[0] = row.getInt("batch_count");
+            batchesRows[1] = row.getInt("row_count");
+        }
+        return batchesRows;
+    }
+    
     @Override
     public int countOutgoingBatchesUnsent(String channelId) {
         return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesUnsentOnChannelSql"), channelId);

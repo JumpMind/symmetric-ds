@@ -126,4 +126,8 @@ public interface IStatisticManager {
     public HostStats getWorkingHostStats();
 
     public TreeMap<Date, Map<String, ChannelStats>> getNodeStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes);
+    
+    public String getMostRecentActiveTableSynced();
+    
+    public Map<Integer, Date> getTotalLoadedRows();
 }
