@@ -198,4 +198,9 @@ public class MockStatisticManager implements IStatisticManager {
     public void addJobStats(String jobName, long startTime, long endTime, long processedCount, Exception e) {
         // TODO Auto-generated method stub
     }
+    
+    @Override
+    public List<JobStats> getWorkingJobStats() {
+        return null;
+    }
 }
