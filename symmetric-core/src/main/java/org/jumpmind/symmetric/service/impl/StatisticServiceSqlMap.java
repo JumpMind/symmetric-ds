@@ -95,10 +95,15 @@ public class StatisticServiceSqlMap extends AbstractSqlMap {
                 "  (node_id, host_name, job_name, start_time, end_time,   " +
                 "  processed_count, target_node_id, target_node_count, error_flag, error_message) " +
                 "  values(?,?,?,?,?,?,?,?,?,?)");
-        putSql("selectJobStatsSql", "" +
+        putSql("selectJobStatsForPeriodSql", "" +
                 "select node_id, host_name, job_name, start_time, end_time,                         " +
                 "  processed_count, error_flag, error_message " +
                 "  from $(node_host_job_stats)                                                " +
                 "  where  start_time >= ? and end_time <= ? and node_id=? order by start_time asc   ");
+        putSql("selectJobStatsForNodeSql", "" +
+                "select node_id, host_name, job_name, start_time, end_time,                         " +
+                "  processed_count, error_flag, error_message " +
+                "  from $(node_host_job_stats)                                                " +
+                "  where  node_id=? order by start_time desc   ");
     }
 }

@@ -79,7 +79,11 @@ public class StatisticService extends AbstractService implements IStatisticServi
     }
 
     public List<JobStats> getJobStatsForPeriod(Date start, Date end, String nodeId) {
-        return sqlTemplate.query(getSql("selectJobStatsSql"), new JobStatsMapper(), start, end, nodeId);
+        return sqlTemplate.query(getSql("selectJobStatsForPeriodSql"), new JobStatsMapper(), start, end, nodeId);
+    }
+
+    public List<JobStats> getJobStatsForNode(String nodeId) {
+        return sqlTemplate.query(getSql("selectJobStatsForNodeSql"), new JobStatsMapper(), nodeId);
     }
 
     public TreeMap<Date, Map<String, ChannelStats>> getChannelStatsForPeriod(Date start, Date end,

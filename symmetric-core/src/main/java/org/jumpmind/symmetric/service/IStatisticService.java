@@ -50,4 +50,6 @@ public interface IStatisticService {
     public TreeMap<Date, HostStats> getHostStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes);
 
     public List<JobStats> getJobStatsForPeriod(Date start, Date end, String nodeId);
+
+    public List<JobStats> getJobStatsForNode(String nodeId);
 }
