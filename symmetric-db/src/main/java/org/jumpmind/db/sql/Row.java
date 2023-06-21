@@ -305,9 +305,9 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
     final private java.util.Date getDate(String value, String[] patterns) {
         int spaceIndex = value.lastIndexOf(" ");
         int fractionIndex = value.lastIndexOf(".");
-        int plusIndex = value.lastIndexOf("+");
-        int minusIndex = value.substring(fractionIndex).lastIndexOf("-");
         if (spaceIndex > 0 && fractionIndex > 0 && value.substring(fractionIndex, value.length()).length() > 3) {
+            int plusIndex = value.lastIndexOf("+");
+            int minusIndex = value.substring(fractionIndex).lastIndexOf("-");
             if (plusIndex != -1 || minusIndex != -1) {
                 return FormatUtils.parseTimestampWithTimezone(value);
             }
