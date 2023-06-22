@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
+import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.util.SymmetricUtils;
@@ -106,10 +107,12 @@ public class ColumnsAccordingToTriggerHistory {
                 table.setSchema(null);
             } else if (StringUtils.isNotBlank(router.getTargetSchemaName())) {
                 table.setSchema(SymmetricUtils.replaceNodeVariables(sourceNode, targetNode, router.getTargetSchemaName()));
+                table.setSchema(SymmetricUtils.replaceCatalogSchemaVariables(catalogName, schemaName, router.getTargetSchemaName()));
             }
             if (StringUtils.isNotBlank(router.getTargetTableName())) {
                 table.setName(router.getTargetTableName());
             }
+            
         }
         return table;
     }
