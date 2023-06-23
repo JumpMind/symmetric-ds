@@ -142,8 +142,8 @@ public class SelectFromTableSource extends SelectFromSource {
             isFirstRow = true;
             if (currentInitialLoadEvent.containsData()) {
                 data = currentInitialLoadEvent.getData();
-                sourceTable = columnsAccordingToTriggerHistory.lookup(currentInitialLoadEvent.getTriggerRouter().getRouterId(), history, false, true);
-                targetTable = columnsAccordingToTriggerHistory.lookup(currentInitialLoadEvent.getTriggerRouter().getRouterId(), history, true, false);
+                sourceTable = columnsAccordingToTriggerHistory.lookup(currentInitialLoadEvent.getTriggerRouter().getRouterId(), history, false, true, false);
+                targetTable = columnsAccordingToTriggerHistory.lookup(currentInitialLoadEvent.getTriggerRouter().getRouterId(), history, true, false, false);
                 currentInitialLoadEvent = null;
             } else {
                 triggerRouter = currentInitialLoadEvent.getTriggerRouter();
@@ -162,8 +162,8 @@ public class SelectFromTableSource extends SelectFromSource {
                             : new NodeChannel(triggerRouter.getTrigger().getChannelId());
                     routingContext = new SimpleRouterContext(batch == null ? null : batch.getTargetNodeId(), channel);
                 }
-                sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter.getRouter().getRouterId(), history, false, true);
-                targetTable = columnsAccordingToTriggerHistory.lookup(triggerRouter.getRouter().getRouterId(), history, true, false);
+                sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter.getRouter().getRouterId(), history, false, true, false);
+                targetTable = columnsAccordingToTriggerHistory.lookup(triggerRouter.getRouter().getRouterId(), history, true, false, false);
                 overrideSelectSql = currentInitialLoadEvent.getInitialLoadSelect();
                 if (overrideSelectSql != null && overrideSelectSql.trim().toUpperCase().startsWith("WHERE")) {
                     overrideSelectSql = overrideSelectSql.trim().substring(5);

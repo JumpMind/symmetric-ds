@@ -188,6 +188,7 @@ public class RouterService extends AbstractService implements IRouterService {
         Node identity = engine.getNodeService().findIdentity();
         if (identity != null) {
             if (force || engine.getClusterService().lock(ClusterConstants.ROUTE)) {
+                long startTime = System.currentTimeMillis();
                 try {
                     if (firstTimeCheck) {
                         engine.getOutgoingBatchService().updateAbandonedRoutingBatches();
@@ -214,6 +215,12 @@ public class RouterService extends AbstractService implements IRouterService {
                             log.debug("Immediately routing again because a channel reached max data to route");
                         }
                     } while (hasMaxDataRoutedOnChannel);
+                    if (dataCount > 0) {
+                        engine.getStatisticManager().addJobStats(ClusterConstants.ROUTE, startTime, System.currentTimeMillis(), dataCount);
+                    }
+                } catch (RuntimeException e) {
+                    engine.getStatisticManager().addJobStats(ClusterConstants.ROUTE, startTime, System.currentTimeMillis(), dataCount, e);
+                    throw e;
                 } finally {
                     if (!force) {
                         engine.getClusterService().unlock(ClusterConstants.ROUTE);

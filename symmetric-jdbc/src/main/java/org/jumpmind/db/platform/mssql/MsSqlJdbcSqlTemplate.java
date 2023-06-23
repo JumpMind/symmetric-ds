@@ -43,6 +43,8 @@ public class MsSqlJdbcSqlTemplate extends JdbcSqlTemplate {
                 "UPDATE statement conflicted with the SAME TABLE REFERENCE constraint",
                 "UPDATE statement conflicted with the REFERENCE constraint" };
         deadlockCodes = new int[] { 1205 };
+        objectAlreadyExistsCodes = new int[] { 2714 };
+        objectDoesNotExistCodes = new int[] { 208, 3701 };
     }
 
     @Override

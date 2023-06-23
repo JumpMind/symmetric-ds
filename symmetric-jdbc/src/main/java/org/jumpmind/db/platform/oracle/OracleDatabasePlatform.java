@@ -282,6 +282,14 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     @Override
+    public String massageForObjectAlreadyExists(String sql) {
+        if (sql.toUpperCase().contains("CREATE TABLE")) {
+            return sql;
+        }
+        return StringUtils.replaceOnceIgnoreCase(sql, "create", "create or replace");
+    }
+
+    @Override
     public boolean supportsSliceTables() {
         return true;
     }

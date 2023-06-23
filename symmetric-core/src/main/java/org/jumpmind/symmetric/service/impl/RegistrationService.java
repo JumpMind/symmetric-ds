@@ -114,7 +114,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
         this.configurationService = engine.getConfigurationService();
         this.outgoingBatchService = engine.getOutgoingBatchService();
         this.extensionService = engine.getExtensionService();
-        this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(), 30);
+        this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(),
+                engine.getParameterService().getInt(ParameterConstants.REGISTRATION_MAX_TIME_BETWEEN_RETRIES, 30));
         setSqlMap(new RegistrationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -425,6 +426,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
             l.registrationSyncTriggers();
         }
         log.info("Completed registration of node {}", nodeId);
+        if (engine.getCacheManager().isUsingTargetExternalId(false)) {
+            Node node = nodeService.findNode(nodeId);
+            if (node != null) {
+                log.info("Syncing triggers for node {} using target external ID of {}", node.toString(), node.getExternalId());
+                engine.getTriggerRouterService().syncTriggers(node.getExternalId(), false);
+            } else {
+                log.warn("Unable to sync triggers for target external ID because node {} was not found", nodeId);
+            }
+        }
     }
 
     protected void markNodeAsRegistrationPending(String nodeId) {

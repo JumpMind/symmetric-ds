@@ -273,7 +273,7 @@ public abstract class AbstractCommandLauncher {
     protected IDatabasePlatform getDatabasePlatform(boolean testConnection) {
         return getDatabasePlatform(testConnection, false);
     }
-    
+
     protected IDatabasePlatform getDatabasePlatform(boolean testConnection, boolean symmetricPlatform) {
         if (platform == null) {
             if (testConnection) {

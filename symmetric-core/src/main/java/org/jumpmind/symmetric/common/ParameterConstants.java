@@ -108,6 +108,7 @@ final public class ParameterConstants {
     public final static String REGISTRATION_PUSH_CONFIG_ALLOWED = "registration.push.config.allowed";
     public final static String REGISTRATION_AUTO_CREATE_GROUP_LINK = "registration.auto.create.group.link";
     public final static String REGISTRATION_URL = "registration.url";
+    public final static String REGISTRATION_MAX_TIME_BETWEEN_RETRIES = "registration.max.time.between.retries";
     public final static String SYNC_URL = "sync.url";
     public final static String ENGINE_NAME = "engine.name";
     public final static String NODE_GROUP_ID = "group.id";

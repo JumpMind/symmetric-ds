@@ -156,6 +156,22 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
         return result;
     }
 
+    @Override
+    public String massageForObjectAlreadyExists(String sql) {
+        if (sql.toUpperCase().contains("CREATE TABLE")) {
+            return sql;
+        }
+        return StringUtils.replaceOnceIgnoreCase(sql, "create", "alter");
+    }
+
+    @Override
+    public String massageForObjectDoesNotExist(String sql) {
+        if (sql.toUpperCase().contains("ALTER TABLE")) {
+            return sql;
+        }
+        return StringUtils.replaceOnceIgnoreCase(sql, "alter", "create");
+    }
+
     public int getEngineEdition() {
         if (engineEdition < 0) {
             try {

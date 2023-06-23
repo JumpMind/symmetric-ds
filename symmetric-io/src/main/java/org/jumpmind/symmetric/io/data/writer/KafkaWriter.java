@@ -710,7 +710,6 @@ public class KafkaWriter extends DynamicDefaultDatabaseWriter {
                             .append(StringEscapeUtils.escapeXml11(rowData[i])).append("</data>");
                 }
             }
-
             kafkaText.append("</row>");
         } else if (outputFormat.equals(KAFKA_FORMAT_AVRO)) {
             if (confluentUrl != null) {

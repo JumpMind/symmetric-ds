@@ -47,6 +47,7 @@ import org.jumpmind.symmetric.monitor.MonitorTypeCpu;
 import org.jumpmind.symmetric.monitor.MonitorTypeDataGap;
 import org.jumpmind.symmetric.monitor.MonitorTypeDisk;
 import org.jumpmind.symmetric.monitor.MonitorTypeFileHandles;
+import org.jumpmind.symmetric.monitor.MonitorTypeJob;
 import org.jumpmind.symmetric.monitor.MonitorTypeLoadAverage;
 import org.jumpmind.symmetric.monitor.MonitorTypeLog;
 import org.jumpmind.symmetric.monitor.MonitorTypeMemory;
@@ -62,6 +63,7 @@ import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.util.AppUtils;
+import org.jumpmind.util.LogSummary;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -90,7 +92,8 @@ public class MonitorService extends AbstractService implements IMonitorService {
         hostName = StringUtils.left(AppUtils.getHostName(), 60);
         IMonitorType monitorExtensions[] = { new MonitorTypeBatchError(), new MonitorTypeBatchUnsent(), new MonitorTypeCpu(),
                 new MonitorTypeDataGap(), new MonitorTypeDisk(), new MonitorTypeMemory(), new MonitorTypeUnrouted(),
-                new MonitorTypeLog(), new MonitorTypeOfflineNodes(), new MonitorTypeBlock(), new MonitorTypeLoadAverage(), new MonitorTypeFileHandles() };
+                new MonitorTypeLog(), new MonitorTypeOfflineNodes(), new MonitorTypeBlock(), new MonitorTypeLoadAverage(),
+                new MonitorTypeFileHandles(), new MonitorTypeJob() };
         for (IMonitorType ext : monitorExtensions) {
             extensionService.addExtensionPoint(ext.getName(), ext);
         }
@@ -211,6 +214,9 @@ public class MonitorService extends AbstractService implements IMonitorService {
                 updateMonitorEventAsResolved(event);
             } else if (eventValue.getValue() >= monitor.getThreshold()) {
                 if (event == null) {
+                    if (monitor.getType().equals("log") && isLogMonitorEventResolved(monitor, eventValue, identity.getNodeId())) {
+                        return;
+                    }
                     event = new MonitorEvent();
                     event.setMonitorId(monitor.getMonitorId());
                     event.setNodeId(identity.getNodeId());
@@ -230,6 +236,10 @@ public class MonitorService extends AbstractService implements IMonitorService {
                 } else {
                     event.setHostName(hostName);
                     event.setType(monitor.getType());
+                    if (monitor.getType().equals("batchError") && monitor.getExpression() != null
+                            && monitor.getExpression().equals("notifyOnIncrease=true") && eventValue.getValue() > event.getValue()) {
+                        event.setNotified(false);
+                    }
                     event.setValue(eventValue.getValue());
                     if (eventValue.getCount() == 0) {
                         event.setCount(event.getCount() + 1);
@@ -244,6 +254,35 @@ public class MonitorService extends AbstractService implements IMonitorService {
                 saveMonitorEvent(event);
             }
         }
+    }
+
+    private boolean isLogMonitorEventResolved(Monitor monitor, MonitorEvent eventValue, String nodeId) {
+        List<LogSummary> eventLogSummaries = new Gson().fromJson(eventValue.getDetails(), new TypeToken<List<LogSummary>>() {
+        }.getType());
+        List<MonitorEvent> resolvedEvents = getMonitorEventsResolvedForNode(monitor.getMonitorId(), nodeId);
+        for (LogSummary eventLogSummary : eventLogSummaries) {
+            boolean logMessageResolved = false;
+            for (MonitorEvent resolvedEvent : resolvedEvents) {
+                if (resolvedEvent.getLastUpdateTime() == null || eventLogSummary.getMostRecentTime() > resolvedEvent.getLastUpdateTime().getTime()) {
+                    continue;
+                }
+                List<LogSummary> resolvedLogSummaries = new Gson().fromJson(resolvedEvent.getDetails(), new TypeToken<List<LogSummary>>() {
+                }.getType());
+                for (LogSummary resolvedLogSummary : resolvedLogSummaries) {
+                    if (eventLogSummary.getMessage() != null && eventLogSummary.getMessage().equals(resolvedLogSummary.getMessage())) {
+                        logMessageResolved = true;
+                        break;
+                    }
+                }
+                if (logMessageResolved) {
+                    break;
+                }
+            }
+            if (!logMessageResolved) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -317,6 +356,11 @@ public class MonitorService extends AbstractService implements IMonitorService {
         return sqlTemplate.query(getSql("selectMonitorEventSql"), new MonitorEventRowMapper());
     }
 
+    protected List<MonitorEvent> getMonitorEventsResolvedForNode(String monitorId, String nodeId) {
+        return sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventResolvedSql"),
+                new MonitorEventRowMapper(), monitorId, nodeId);
+    }
+
     protected Map<String, MonitorEvent> getMonitorEventsNotResolvedForNode(String nodeId) {
         List<MonitorEvent> list = sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventNotResolvedSql"),
                 new MonitorEventRowMapper(), nodeId);
@@ -377,8 +421,8 @@ public class MonitorService extends AbstractService implements IMonitorService {
 
     protected boolean updateMonitorEvent(MonitorEvent event) {
         int count = sqlTemplate.update(getSql("updateMonitorEventSql"), event.getHostName(), event.getType(), event.getValue(),
-                event.getCount(), event.getThreshold(), event.getSeverityLevel(), event.getLastUpdateTime(),
-                event.getDetails(), event.getMonitorId(), event.getNodeId(), event.getEventTime());
+                event.getCount(), event.getThreshold(), event.getSeverityLevel(), event.isNotified() ? 1 : 0,
+                event.getLastUpdateTime(), event.getDetails(), event.getMonitorId(), event.getNodeId(), event.getEventTime());
         return count != 0;
     }
 

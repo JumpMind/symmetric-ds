@@ -133,7 +133,7 @@ abstract public class AbstractTriggerTemplate {
         boolean concatInCsv = parameterService.is(
                 ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED);
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
-                triggerHistory.getParsedPkColumnNames(), true);
+                triggerHistory.getParsedPkColumnNames(), true, false);
         Column[] columns = table.getColumns();
         String textColumnExpression = parameterService.getString(ParameterConstants.DATA_EXTRACTOR_TEXT_COLUMN_EXPRESSION);
         String sql = null;
@@ -192,6 +192,7 @@ abstract public class AbstractTriggerTemplate {
         sql = FormatUtils.replace("whereClause", initialLoadSelect, sql);
         sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
         sql = FormatUtils.replace("schemaName", getSourceTablePrefix(triggerHistory), sql);
+        sql = FormatUtils.replace("schemaNameOnly", getSchemaNameOnly(triggerHistory), sql);
         sql = FormatUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(symmetricDialect.getInitialLoadTableAlias(),
@@ -214,7 +215,7 @@ abstract public class AbstractTriggerTemplate {
         IParameterService parameterService = symmetricDialect.getParameterService();
         boolean concatInCsv = parameterService.is(ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED);
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
-                triggerHistory.getParsedPkColumnNames(), true);
+                triggerHistory.getParsedPkColumnNames(), true, false);
         Column[] columns = table.getColumns();
         boolean[] isColumnPositionUsingTemplate = new boolean[columns.length];
         if (!concatInCsv) {
@@ -276,8 +277,19 @@ abstract public class AbstractTriggerTemplate {
         return prefix;
     }
 
+    protected String getSchemaNameOnly(TriggerHistory triggerHistory) {
+        String prefix = (isNotBlank(triggerHistory.getSourceSchemaName()) ? SymmetricUtils.quote(
+                symmetricDialect, triggerHistory.getSourceSchemaName()) + symmetricDialect.getPlatform().getDatabaseInfo().getSchemaSeparator() : "");
+        if (isBlank(prefix)) {
+            prefix = (isNotBlank(symmetricDialect.getPlatform().getDefaultSchema()) ? SymmetricUtils
+                    .quote(symmetricDialect, symmetricDialect.getPlatform().getDefaultSchema())
+                    + "." : "");
+        }
+        return prefix;
+    }
+
     protected String replaceDefaultSchemaAndCatalog(String sql) {
-       return replaceDefaultSchemaAndCatalog(sql, null, null);
+        return replaceDefaultSchemaAndCatalog(sql, null, null);
     }
 
     protected String replaceDefaultSchemaAndCatalog(String sql, String catalog, String schema) {
@@ -287,11 +299,11 @@ abstract public class AbstractTriggerTemplate {
         sql = replaceDefaultCatalog(sql, defaultCatalog);
         return sql;
     }
-    
+
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Table originalTable,
             Channel channel, String whereClause) {
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
-                triggerHistory.getParsedPkColumnNames(), true);
+                triggerHistory.getParsedPkColumnNames(), true, false);
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
         Column[] columns = table.getColumns();
         String columnsText = buildColumnsString(symmetricDialect.getInitialLoadTableAlias(),
@@ -303,6 +315,7 @@ abstract public class AbstractTriggerTemplate {
         sql = replaceOracleQueryHint(sql);
         sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
         sql = FormatUtils.replace("schemaName", getSourceTablePrefix(triggerHistory), sql);
+        sql = FormatUtils.replace("schemaNameOnly", getSchemaNameOnly(triggerHistory), sql);
         sql = FormatUtils.replace("whereClause", whereClause, sql);
         sql = FormatUtils.replace(
                 "primaryKeyWhereString",
@@ -329,6 +342,7 @@ abstract public class AbstractTriggerTemplate {
         sql = FormatUtils.replace("schemaName",
                 triggerHistory == null ? getSourceTablePrefix(table)
                         : getSourceTablePrefix(triggerHistory), sql);
+        sql = FormatUtils.replace("schemaNameOnly", getSchemaNameOnly(triggerHistory), sql);
         sql = FormatUtils.replace("whereClause", whereClause, sql);
         sql = FormatUtils.replace(
                 "primaryKeyWhereString",
@@ -342,7 +356,7 @@ abstract public class AbstractTriggerTemplate {
             Channel channel, String tablePrefix, Table originalTable, String defaultCatalog,
             String defaultSchema) {
         Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
-                history.getParsedPkColumnNames(), true);
+                history.getParsedPkColumnNames(), true, false);
         String ddl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "TriggerTemplate");
         if (trigger.isStreamRow()) {
             String reloadDdl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "ReloadTriggerTemplate");
@@ -362,7 +376,7 @@ abstract public class AbstractTriggerTemplate {
             Channel channel, String tablePrefix, Table originalTable, String defaultCatalog,
             String defaultSchema) {
         Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
-                history.getParsedPkColumnNames(), true);
+                history.getParsedPkColumnNames(), true, false);
         String ddl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "PostTriggerTemplate");
         return replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
                 defaultCatalog, defaultSchema, ddl);
@@ -516,6 +530,7 @@ abstract public class AbstractTriggerTemplate {
         // some column templates need tableName and schemaName
         ddl = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), ddl);
         ddl = FormatUtils.replace("schemaName", getSourceTablePrefix(history), ddl);
+        ddl = FormatUtils.replace("schemaNameOnly", getSchemaNameOnly(history), ddl);
         Column[] primaryKeyColumns = table.getPrimaryKeyColumns();
         ddl = FormatUtils.replace(
                 "oldKeys",

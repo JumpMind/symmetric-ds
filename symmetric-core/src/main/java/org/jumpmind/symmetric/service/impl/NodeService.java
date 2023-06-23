@@ -51,6 +51,7 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
+import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.FilterCriterion;
 import org.jumpmind.symmetric.service.FilterCriterion.FilterOption;
@@ -208,6 +209,13 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public void deleteNode(String nodeId, boolean syncChange) {
+        log.info("Unregistering node {} and removing it from database", nodeId);
+        for (ProcessInfo info : engine.getStatisticManager().getProcessInfos()) {
+            if (info.getTargetNodeId() != null && info.getTargetNodeId().equals(nodeId)) {
+                log.info("Sending interrupt to " + info.getKey() + ",batchId=" + info.getCurrentBatchId());
+                info.getThread().interrupt();
+            }
+        }
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();

@@ -120,6 +120,10 @@ public interface ISqlTemplate {
 
     public boolean isDeadlock(Throwable ex);
 
+    public boolean doesObjectAlreadyExist(Throwable ex);
+
+    public boolean doesObjectNotExist(Throwable ex);
+
     public ISqlTransaction startSqlTransaction();
 
     public ISqlTransaction startSqlTransaction(boolean autoCommit);

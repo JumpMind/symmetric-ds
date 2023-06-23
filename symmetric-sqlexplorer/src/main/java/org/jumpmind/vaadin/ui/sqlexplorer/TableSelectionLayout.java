@@ -159,7 +159,7 @@ public class TableSelectionLayout extends VerticalLayout {
         }
         return StringUtils.isBlank(catalogName) ? null : catalogName;
     }
-    
+
     protected void refreshSchemas() {
         List<String> schemas = getSchemas();
         schemaSelect.setItems(schemas);

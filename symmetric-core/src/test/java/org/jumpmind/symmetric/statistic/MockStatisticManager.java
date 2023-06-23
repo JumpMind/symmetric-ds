@@ -194,7 +194,6 @@ public class MockStatisticManager implements IStatisticManager {
         // TODO Auto-generated method stub
     }
 
-    @Override
     public String getMostRecentActiveTableSynced() {
         // TODO Auto-generated method stub
         return null;
@@ -203,6 +202,14 @@ public class MockStatisticManager implements IStatisticManager {
     @Override
     public Map<Integer, Date> getTotalLoadedRows() {
         // TODO Auto-generated method stub
+        return null;
+    }
+           
+    public void addJobStats(String jobName, long startTime, long endTime, long processedCount, Exception e) {
+        // TODO Auto-generated method stub
+    }
+    
+    public List<JobStats> getWorkingJobStats() {
         return null;
     }
 }

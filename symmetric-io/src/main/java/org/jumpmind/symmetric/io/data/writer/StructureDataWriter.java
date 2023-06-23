@@ -100,7 +100,7 @@ public class StructureDataWriter implements IDataWriter {
                 table.getName(), false);
         if (this.currentTable != null) {
             this.currentTable = currentTable.copyAndFilterColumns(table.getColumnNames(),
-                    table.getPrimaryKeyColumnNames(), true);
+                    table.getPrimaryKeyColumnNames(), true, false);
             /*
              * restore the schema and catalog from the passed in table because they might have not been originally set, but were set when looking up the table
              * locally
