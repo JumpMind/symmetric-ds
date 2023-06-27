@@ -84,11 +84,22 @@ public class SelfSignedX509TrustManager implements X509TrustManager
                 log.debug("X509Certificate[" + i + "]=" + certificates[i]);
             }
         }
-        if ((certificates != null) && (certificates.length == 1)) {
-            certificates[0].checkValidity();
-        } else {
-            standardTrustManager.checkServerTrusted(certificates,authType);
+        if (certificates != null) {
+        	if (certificates.length == 1 && certificates[0] != null) {
+        		certificates[0].checkValidity();
+        		return;
+        	} else if (certificates.length > 1 && certificates[0] != null) {
+        		boolean certificatesAreEqual = true;
+        		for (int i = 1; i < certificates.length; i++) {
+        			certificatesAreEqual &= certificates[0].equals(certificates[i]);
+        		}
+        		if (certificatesAreEqual) {
+        			certificates[0].checkValidity();
+        			return;
+        		}
+        	}
         }
+        standardTrustManager.checkServerTrusted(certificates,authType);
     }
 
     /**
