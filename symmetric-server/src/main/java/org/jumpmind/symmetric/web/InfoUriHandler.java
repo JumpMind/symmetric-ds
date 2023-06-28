@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.common.InfoConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -44,13 +45,15 @@ import org.jumpmind.symmetric.service.IParameterService;
 public class InfoUriHandler extends AbstractUriHandler {
     private INodeService nodeService;
     private IConfigurationService configurationService;
+    private IClusterService clusterService;
 
     public InfoUriHandler(IParameterService parameterService,
             INodeService nodeService,
-            IConfigurationService configurationService, IInterceptor[] interceptors) {
+            IConfigurationService configurationService, IClusterService clusterService, IInterceptor[] interceptors) {
         super("/info/*", parameterService, interceptors);
         this.nodeService = nodeService;
         this.configurationService = configurationService;
+        this.clusterService = clusterService;
     }
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
@@ -93,6 +96,11 @@ public class InfoUriHandler extends AbstractUriHandler {
             }
         }
         properties.setProperty(InfoConstants.BULK_LOADER_ENABLED, String.valueOf(configurationService.isBulkLoaderEnabled()));
+        boolean isClustered = parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED);
+        properties.setProperty(ParameterConstants.CLUSTER_LOCKING_ENABLED, Boolean.toString(isClustered));
+        if (isClustered) {
+            properties.setProperty(ParameterConstants.CLUSTER_SERVER_ID, clusterService.getServerId());
+        }
         properties.store(res.getOutputStream(), "SymmetricDS");
         res.flushBuffer();
     }

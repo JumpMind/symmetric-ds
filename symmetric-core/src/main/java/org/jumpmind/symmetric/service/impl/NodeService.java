@@ -51,6 +51,7 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
+import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.FilterCriterion;
 import org.jumpmind.symmetric.service.FilterCriterion.FilterOption;
@@ -211,6 +212,13 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public void deleteNode(String nodeId, boolean syncChange) {
+        log.info("Unregistering node {} and removing it from database", nodeId);
+        for (ProcessInfo info : engine.getStatisticManager().getProcessInfos()) {
+            if (info.getTargetNodeId() != null && info.getTargetNodeId().equals(nodeId)) {
+                log.info("Sending interrupt to " + info.getKey() + ",batchId=" + info.getCurrentBatchId());
+                info.getThread().interrupt();
+            }
+        }
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
@@ -284,13 +292,21 @@ public class NodeService extends AbstractService implements INodeService {
                             node.getSymmetricVersion(), node.getSyncUrl(),
                             node.isSyncEnabled() ? 1 : 0,
                             node.getBatchToSendCount(), node.getBatchInErrorCount(),
+                            node.getLastSuccessfulSyncDate(), node.getMostRecentActiveTableSynced(), 
+                            node.getPurgeOutgoingAverageMs(), node.getPurgeOutgoingLastMs(), node.getPurgeOutgoingLastRun(), node.getRoutingAverageMs(), 
+                            node.getRoutingLastMs(), node.getRoutingLastRun(), node.getSymDataSize(),
                             node.getCreatedAtNodeId(), node.getDeploymentType(),
                             node.getDeploymentSubType(), node.getConfigVersion(),
+                            node.getDataRowsToSendCount(), node.getDataRowsLoadedCount(), node.getOldestLoadTime(),
                             node.getNodeId() },
                     new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+                            Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP, 
+                            Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.TIMESTAMP, 
+                            Types.BIGINT, Types.BIGINT, 
+                            Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, 
+                            Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER, 
+                            Types.TIMESTAMP, Types.VARCHAR });
             flushNodeGroupCache();
         }
         flushNodeCache();
@@ -303,13 +319,22 @@ public class NodeService extends AbstractService implements INodeService {
                         node.getDatabaseVersion(), node.getDatabaseName(), node.getSchemaVersion(),
                         node.getSymmetricVersion(), node.getSyncUrl(),
                         node.isSyncEnabled() ? 1 : 0,
-                        node.getBatchToSendCount(), node.getBatchInErrorCount(),
+                        node.getBatchToSendCount(), node.getBatchInErrorCount(), node.getLastSuccessfulSyncDate(),
+                        node.getMostRecentActiveTableSynced(), node.getPurgeOutgoingAverageMs(),
+                        node.getPurgeOutgoingLastMs(), node.getPurgeOutgoingLastRun(), node.getRoutingAverageMs(), node.getRoutingLastMs(),
+                        node.getRoutingLastRun(), node.getSymDataSize(),
                         node.getCreatedAtNodeId(), node.getDeploymentType(), node.getDeploymentSubType(),
-                        node.getConfigVersion(), node.getNodeId() },
+                        node.getConfigVersion(), 
+                        node.getDataRowsToSendCount(), node.getDataRowsLoadedCount(), node.getOldestLoadTime(),
+                        node.getNodeId() },
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }) == 1;
+                        Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP, 
+                        Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.TIMESTAMP, 
+                        Types.BIGINT, Types.BIGINT, 
+                        Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, 
+                        Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER, 
+                        Types.TIMESTAMP, Types.VARCHAR }) == 1;
         return updated;
     }
 
@@ -411,6 +436,15 @@ public class NodeService extends AbstractService implements INodeService {
     public List<Node> findAllNodes() {
         List<Node> nodeList = sqlTemplate.query(getSql("selectNodePrefixSql"), new NodeRowMapper());
         return nodeList;
+    }
+
+    public List<Node> findAllNodes(boolean useCache) {
+        if (useCache) {
+            findNode(findIdentityNodeId(), true);
+            return new ArrayList<Node>(nodeCache.values());
+        } else {
+            return findAllNodes();
+        }
     }
 
     public Map<String, Node> findAllNodesAsMap() {
@@ -1000,7 +1034,7 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
-    static class NodeRowMapper implements ISqlRowMapper<Node> {
+    public static class NodeRowMapper implements ISqlRowMapper<Node> {
         public Node mapRow(Row rs) {
             Node node = new Node();
             node.setNodeId(rs.getString("node_id"));
@@ -1019,6 +1053,14 @@ public class NodeService extends AbstractService implements INodeService {
             node.setDeploymentType(rs.getString("deployment_type"));
             node.setDeploymentSubType(rs.getString("deployment_sub_type"));
             node.setConfigVersion(rs.getString("config_version"));
+            node.setPurgeOutgoingAverageMs(rs.getLong("purge_outgoing_average_ms"));
+            node.setPurgeOutgoingLastMs(rs.getLong("purge_outgoing_last_run_ms"));
+            node.setPurgeOutgoingLastRun(rs.getDateTime("purge_outgoing_last_finish"));
+            node.setRoutingAverageMs(rs.getLong("routing_average_run_ms"));
+            node.setRoutingLastMs(rs.getLong("routing_last_run_ms"));
+            node.setRoutingLastRun(rs.getDateTime("routing_last_finish"));
+            node.setSymDataSize(rs.getLong("sym_data_size"));
+            
             return node;
         }
     }

@@ -145,6 +145,35 @@ task generateJavadoc(type: Javadoc) {
     title = "SymmetricDS API $version"
 	group = 'SymmetricDS'
 	description = 'Generate JavaDoc HTML pages for API documentation'
+	options.addStringOption 'Xdoclint:none', '-quiet'
+	
+	subprojects.each { proj ->
+		proj.tasks.withType(Javadoc).each { javadocTask ->
+			source += javadocTask.source
+			classpath += javadocTask.classpath
+			excludes += javadocTask.excludes
+			includes += javadocTask.includes
+		}
+	}
+}
+
+task publishJavadoc {
+    dependsOn generateJavadoc
+	group = 'SymmetricDS'
+	description = 'Publish javadoc to SymmetricDS website'
+    doLast {
+        ant.taskdef(name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
+        classpath: configurations.sshAntTask.asPath)
+
+        ant.scp(
+            todir: "$publishUser:$publishPassword@$publishServer:~/www/doc/$majorMinorVersion",
+            port: "$publishPort",
+            trust: 'true',
+            verbose: 'true') {
+            fileset(dir: "$buildDir/doc") { include(name: 'javadoc/')
+            }
+        }
+    }
 }
 
 task buildSymmetric {

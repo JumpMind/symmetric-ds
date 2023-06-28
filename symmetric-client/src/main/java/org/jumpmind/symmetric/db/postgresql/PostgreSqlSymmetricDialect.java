@@ -51,6 +51,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     public PostgreSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new PostgreSqlTriggerTemplate(this);
+        this.supportsDdlTriggers = databaseMajorVersion > 9 || (databaseMajorVersion == 9 && databaseMinorVersion >= 3);
         if (parameterService.is(ParameterConstants.ROUTING_GAPS_USE_TRANSACTION_VIEW)) {
             try {
                 getEarliestTransactionStartTime();

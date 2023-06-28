@@ -36,6 +36,7 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.LongMapper;
+import org.jumpmind.db.sql.mapper.RowMapper;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -376,11 +377,24 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesErrorsOnChannelSql"), channelId);
     }
 
-    @Override
+    @Override 
+    public Date getOutgoingBatchesLatestUpdateSql() {
+        return sqlTemplateDirty.queryForObject(getSql("getOutgoingBatchesLatestUpdateSql"), Date.class);
+    }
+    
     public int countOutgoingBatchesUnsent() {
         return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesUnsentSql"));
     }
 
+    public int[] countOutgoingNonSystemBatchesRowsUnsent() {
+        int[] batchesRows = new int[2];
+        for (Row row : sqlTemplateDirty.query(getSql("countOutgoingNonSystemBatchesUnsentSql"))) {
+            batchesRows[0] = row.getInt("batch_count");
+            batchesRows[1] = row.getInt("row_count");
+        }
+        return batchesRows;
+    }
+    
     @Override
     public int countOutgoingBatchesUnsent(String channelId) {
         return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesUnsentOnChannelSql"), channelId);
@@ -426,18 +440,19 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         params.put("NODES", nodeIds);
         params.put("CHANNELS", channels);
         params.put("STATUSES", toStringList(statuses));
-        return sqlTemplateDirty.queryForInt(getSql("selectCountBatchesPrefixSql", buildBatchWhere(nodeIds, channels, statuses, loads)),
+        return sqlTemplateDirty.queryForInt(getSql("selectCountBatchesPrefixSql", buildBatchWhere(nodeIds, channels, statuses, loads, null)),
                 params);
     }
 
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
-            List<OutgoingBatch.Status> statuses, List<Long> loads, long startAtBatchId, final int maxRowsToRetrieve,
-            boolean ascending) {
-        String where = buildBatchWhere(nodeIds, channels, statuses, loads);
+            List<OutgoingBatch.Status> statuses, List<Long> loads, long startAtBatchId, Date startAtLastUpdateTime,
+            final int maxRowsToRetrieve, boolean ascending) {
+        String where = buildBatchWhere(nodeIds, channels, statuses, loads, startAtLastUpdateTime);
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("NODES", nodeIds);
         params.put("CHANNELS", channels);
         params.put("STATUSES", toStringList(statuses));
+        params.put("LAST_UPDATE_TIME", startAtLastUpdateTime);
         params.put("LOADS", loads);
         String startAtBatchIdSql = null;
         if (startAtBatchId > 0) {
@@ -561,7 +576,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             types = new int[] { Types.VARCHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR,
                     Types.CHAR };
         }
-        List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(sql, maxNumberOfBatchesToSelect,
+        List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplateDirty.query(sql, maxNumberOfBatchesToSelect,
                 new OutgoingBatchMapper(includeDisabledChannels), params, types);
         OutgoingBatches batches = new OutgoingBatches(list);
         List<NodeChannel> channels = new ArrayList<NodeChannel>(configurationService.getNodeChannels(nodeId, true));

@@ -48,6 +48,8 @@ public interface IStatisticManager {
 
     public void addJobStats(String jobName, long startTime, long endTime, long processedCount);
 
+    public void addJobStats(String jobName, long startTime, long endTime, long processedCount, Exception e);
+
     public void addJobStats(String targetNodeId, int targetNodeCount, String jobName, long startTime, long endTime, long processedCount);
 
     public void addRouterStats(long startDataId, long endDataId, long dataReadCount, long peekAheadFillCount,
@@ -129,7 +131,13 @@ public interface IStatisticManager {
 
     public Map<String, ChannelStats> getWorkingChannelStats();
 
+    public List<JobStats> getWorkingJobStats();
+
     public HostStats getWorkingHostStats();
 
     public TreeMap<Date, Map<String, ChannelStats>> getNodeStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes);
+    
+    public String getMostRecentActiveTableSynced();
+    
+    public Map<Integer, Date> getTotalLoadedRows();
 }

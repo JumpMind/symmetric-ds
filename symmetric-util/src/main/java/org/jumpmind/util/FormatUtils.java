@@ -205,7 +205,7 @@ public final class FormatUtils {
                 foundToken = text.equals(card);
             } else if (i == 0 && !pattern.startsWith("*") && pattern.endsWith("*")) {
                 foundToken = text.startsWith(card);
-            } else if (i == 0 && !pattern.startsWith("*")) {
+            } else if (i == 0 && pattern.startsWith("*")) {
                 foundToken = text.startsWith(card);
             } else {
                 foundToken = text.indexOf(card) != -1;
@@ -216,6 +216,9 @@ public final class FormatUtils {
             }
             // Move ahead, towards the right of the text.
             text = text.substring(text.indexOf(card) + card.length());
+        }
+        if (match && text.length() > 0 && !pattern.endsWith("*")) {
+            match = false;
         }
         return match;
     }

@@ -14,8 +14,8 @@ image::images/manage/manage-monitors.png[]
 endif::pro[]
 
 When a <<_monitors,Monitor>> is configured, it is run periodically to check the current value of a system metric and compare it to a threshold value.
-Different monitor types can check the CPU usage, disk usage, memory usage, batch errors, outstanding batches, unrouted data, and number
-of data gaps.
+Different monitor types can check the CPU usage, disk usage, memory usage, batch errors, outstanding batches, unrouted data, number
+of data gaps, and job errors.
 Custom monitor types can be created using <<_extensions,Extensions>> that use the IMonitorType interface.
 When the value returned from the check meets or exceeds the threshold value, a <<_monitor_event>> is recorded.
 The <<_monitor_event>> table is synchronized on the "monitor" channel, which allows a central server to see events from remote nodes,

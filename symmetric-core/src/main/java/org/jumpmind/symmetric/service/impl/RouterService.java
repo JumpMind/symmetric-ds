@@ -49,6 +49,7 @@ import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.ProtocolException;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
@@ -187,6 +188,7 @@ public class RouterService extends AbstractService implements IRouterService {
         Node identity = engine.getNodeService().findIdentity();
         if (identity != null) {
             if (force || engine.getClusterService().lock(ClusterConstants.ROUTE)) {
+                long startTime = System.currentTimeMillis();
                 try {
                     if (firstTimeCheck) {
                         engine.getOutgoingBatchService().updateAbandonedRoutingBatches();
@@ -213,6 +215,12 @@ public class RouterService extends AbstractService implements IRouterService {
                             log.debug("Immediately routing again because a channel reached max data to route");
                         }
                     } while (hasMaxDataRoutedOnChannel);
+                    if (dataCount > 0) {
+                        engine.getStatisticManager().addJobStats(ClusterConstants.ROUTE, startTime, System.currentTimeMillis(), dataCount);
+                    }
+                } catch (RuntimeException e) {
+                    engine.getStatisticManager().addJobStats(ClusterConstants.ROUTE, startTime, System.currentTimeMillis(), dataCount, e);
+                    throw e;
                 } finally {
                     if (!force) {
                         engine.getClusterService().unlock(ClusterConstants.ROUTE);
@@ -978,7 +986,12 @@ public class RouterService extends AbstractService implements IRouterService {
                 }
                 batch.incrementRowCount(eventType);
                 batch.incrementDataRowCount();
-                batch.incrementTableCount(tableName);
+                if (context.getChannel().getChannel().isFileSyncFlag() && context.getChannel().getChannel().isUseRowDataToRoute()) {
+                    String fileName = dataMetaData.getData().getParsedData(CsvData.ROW_DATA)[3];
+                    batch.incrementFileCount(fileName);
+                } else {
+                    batch.incrementTableCount(tableName);
+                }
                 if (loadId != -1) {
                     batch.setLoadId(loadId);
                 }

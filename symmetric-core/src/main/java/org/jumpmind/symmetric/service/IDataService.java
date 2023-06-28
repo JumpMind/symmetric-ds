@@ -66,6 +66,8 @@ public interface IDataService {
 
     public List<TableReloadRequest> getTableReloadRequestToProcessByTarget(final String targetNodeId);
 
+    public Map<Long, List<TableReloadRequest>> getTableReloadRequestByLoadIdMap();
+
     public List<TableReloadStatus> getTableReloadStatus();
 
     public List<TableReloadStatus> getOutgoingTableReloadStatus();
@@ -192,6 +194,8 @@ public interface IDataService {
      * Count the number of data ids in a range
      */
     public int countDataInRange(long firstDataId, long secondDataId);
+
+    public int countData();
 
     public long countDataGaps();
 

@@ -87,6 +87,11 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     public int countIncomingBatchesInError(String channelId) {
         return sqlTemplateDirty.queryForInt(getSql("countIncomingBatchesErrorsOnChannelSql"), channelId);
     }
+    
+    public Date getIncomingBatchesLatestUpdateSql() {
+        return sqlTemplateDirty.queryForObject(getSql("getIncomingBatchesLatestUpdateSql"), Date.class);
+    }
+    
 
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows) {
         return sqlTemplateDirty.query(getSql("selectIncomingBatchPrefixSql", "findIncomingBatchErrorsSql"), maxRows,
@@ -129,7 +134,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
             List<IncomingBatch.Status> statuses, List<Long> loads, boolean ascending) {
-        String whereClause = buildBatchWhere(nodeIds, channels, statuses, loads);
+        String whereClause = buildBatchWhere(nodeIds, channels, statuses, loads, null);
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("NODES", nodeIds);
         params.put("CHANNELS", channels);
@@ -141,14 +146,15 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
             List<IncomingBatch.Status> statuses, List<Long> loads, Date startAtCreateTime,
-            final int maxRowsToRetrieve, boolean ascending) {
+            Date startAtLastUpdateTime, final int maxRowsToRetrieve, boolean ascending) {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("NODES", nodeIds);
         params.put("CHANNELS", channels);
         params.put("STATUSES", toStringList(statuses));
         params.put("CREATE_TIME", startAtCreateTime);
+        params.put("LAST_UPDATE_TIME", startAtLastUpdateTime);
         params.put("LOADS", loads);
-        String where = buildBatchWhere(nodeIds, channels, statuses, loads);
+        String where = buildBatchWhere(nodeIds, channels, statuses, loads, startAtLastUpdateTime);
         String createTimeLimiter = "";
         if (startAtCreateTime != null) {
             if (StringUtils.isBlank(where)) {
@@ -279,7 +285,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         if (batch.isPersistable()) {
             boolean alreadyExists = false;
             if (symmetricDialect.getName().equals(DatabaseNamesConstants.REDSHIFT)
-                    || symmetricDialect.getDriverName().equalsIgnoreCase(DatabaseNamesConstants.OPENEDGE)) {
+                    || (symmetricDialect.getDriverName() != null
+                            && symmetricDialect.getDriverName().equalsIgnoreCase(DatabaseNamesConstants.OPENEDGE))) {
                 if (findIncomingBatch(batch.getBatchId(), batch.getNodeId()) != null) {
                     alreadyExists = true;
                 }

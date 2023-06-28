@@ -54,7 +54,7 @@ public interface ISymmetricDialect {
             Trigger trigger, TriggerHistory hist, Channel channel,
             String tablePrefix, Table table);
 
-    public void createDdlTrigger(String tablePrefix, StringBuilder sqlBuffer, String triggerName);
+    public void createDdlTrigger(String tablePrefix, StringBuilder sqlBuffer, String triggerName, String runtimeCatalog, String runtimeSchema);
 
     /*
      * Get the name of this symmetric instance. This can be set in symmetric.properties using the engine.name property.
@@ -146,6 +146,8 @@ public interface ISymmetricDialect {
      * Indicates if this dialect supports subselects in update statements.
      */
     public boolean supportsSubselectsInUpdate();
+
+    public boolean supportsDdlTriggers();
 
     /*
      * Implement this if the database has some type of cleanup functionality that needs to be run when dropping database objects. An example is Oracle's 'purge

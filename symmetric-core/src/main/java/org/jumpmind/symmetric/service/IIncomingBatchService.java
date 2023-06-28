@@ -40,6 +40,8 @@ public interface IIncomingBatchService {
 
     public int countIncomingBatchesInError(String channelId);
 
+    public Date getIncomingBatchesLatestUpdateSql();
+    
     public IncomingBatch findIncomingBatch(long batchId, String nodeId);
 
     public void refreshIncomingBatch(IncomingBatch batch);
@@ -62,7 +64,8 @@ public interface IIncomingBatchService {
             List<IncomingBatch.Status> statuses, List<Long> loads, boolean ascending);
 
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, List<Long> loads, Date startAtCreateTime, int maxRowsToRetrieve, boolean ascending);
+            List<IncomingBatch.Status> statuses, List<Long> loads, Date startAtCreateTime,
+            Date startAtLastUpdateTime, int maxRowsToRetrieve, boolean ascending);
 
     public List<IncomingBatch> listIncomingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter,
             String orderColumn, String orderDirection);

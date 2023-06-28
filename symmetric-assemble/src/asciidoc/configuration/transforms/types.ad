@@ -564,3 +564,55 @@ This transformation checks to see if the source value is null and if so replaces
 
 For an update, this transform returns a comma-separated list of columns names that were set to null and previously not null.
 
+===== Java Transform
+
+Java Transform ('java'): Use Java code in the transform expression that is included
+in the transform method of a class that extends JavaColumnTransform. The class is compiled
+whenever the transform expression changes and kept in memory for runtime.
+The code must return a String for the new value of the column being mapped.
+
+Some variables are provided to the code: 
+ 
+.Variables
+|===
+|Variable Name|Java Type|Description
+
+|platform|org.jumpmind.db.platform.IDatabasePlatform|The platform for the database that this node is connected to
+|context|org.jumpmind.symmetric.io.data.DataContext|The data cotext for the synchronization of the current batch
+|column|org.jumpmind.symmetric.io.data.transform.TransformColumn|The transform column
+|data|org.jumpmind.symmetric.io.data.transform.TransformedData|The transformed data
+|sourceValues|java.util.Map<java.lang.String, java.lang.String>|The map of source values
+|newValue|java.lang.String|The captured new value
+|oldValue|java.lang.String|The captured old value
+
+|===
+
+.Transform Expression Example Returning a String
+====
+
+----
+if (sourceValues.containsKey("OLDKEY")) {
+    return sourceValues.get("OLDKEY");
+} else {
+    return sourceValues.get("NEWKEY");
+}
+----
+====
+
+ifndef::pro[]
+[source, SQL]
+----
+INSERT INTO SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time,
+	last_update_by, create_time
+) VALUES (
+	'testjava', '*', 'NEWKEY', null, 0,
+	'java', 'if (sourceValues.containsKey("OLDKEY")) {
+    return sourceValues.get("OLDKEY");
+} else {
+    return sourceValues.get("NEWKEY");
+}', 0, current_timestamp, 'Documentation', current_timestamp);
+----
+endif::pro[]
+

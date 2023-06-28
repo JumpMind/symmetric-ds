@@ -62,6 +62,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     public OracleSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new OracleTriggerTemplate(this);
+        this.supportsDdlTriggers = true;
         if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW)) {
             try {
                 areDatabaseTransactionsPendingSince(System.currentTimeMillis());

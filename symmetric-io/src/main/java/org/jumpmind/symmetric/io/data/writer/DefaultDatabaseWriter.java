@@ -36,6 +36,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.IndexColumn;
+import org.jumpmind.db.model.NonUniqueIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -626,6 +629,31 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     table.removeAllColumnDefaults();
                 }
             }
+            if (!(getTargetPlatform().allowsUniqueIndexDuplicatesWithNulls())) {
+                for (Table table : db.getTables()) {
+                    for (IIndex index : table.getUniqueIndices()) {
+                        boolean needsFixed = false;
+                        for (IndexColumn indexColumn : index.getColumns()) {
+                            Column column = indexColumn.getColumn();
+                            if (column != null && !column.isRequired()) {
+                                needsFixed = true;
+                                log.warn(
+                                        "Detected Unique Index with potential for multiple null values in table: {} on column: {}. Adjusting index to be NonUnique.",
+                                        table.getName(), column.getName());
+                                break;
+                            }
+                        }
+                        if (needsFixed) {
+                            table.removeIndex(index);
+                            IIndex newIndex = new NonUniqueIndex(index.getName());
+                            for (IndexColumn indexColumn : index.getColumns()) {
+                                newIndex.addColumn(indexColumn);
+                            }
+                            table.addIndex(newIndex);
+                        }
+                    }
+                }
+            }
             if (writerSettings.isAlterTable()) {
                 getTargetPlatform().alterDatabase(db, !writerSettings.isCreateTableFailOnError(), writerSettings.getAlterDatabaseInterceptors());
             } else {
@@ -693,14 +721,43 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     if (!writerSettings.isIgnoreSqlDataEventFailures()) {
                         throw ex;
                     }
+                } catch (SqlException ex) {
+                    if (platform.getSqlTemplate().doesObjectAlreadyExist(ex)) {
+                        String massagedSql = platform.massageForObjectAlreadyExists(sql);
+                        if (!sql.equals(massagedSql)) {
+                            if (massagedSql.contains("alter")) {
+                                log.info("Changing the following sql to an alter because the created object already exists: {}", sql);
+                            } else if (massagedSql.contains("create or replace")) {
+                                log.info("Changing the following sql to a create or replace because the created object already exists: {}", sql);
+                            } else if (massagedSql.startsWith("drop")) {
+                                log.info("Dropping the object before running the following sql because the created object already exists: {}", sql);
+                            }
+                            count = retryWithMassagedSql(massagedSql, newTransaction, data, captureChanges, count);
+                        } else {
+                            handleRuntimeException(ex, sql, newTransaction);
+                        }
+                    } else if (platform.getSqlTemplate().doesObjectNotExist(ex)) {
+                        if (sql.trim().toUpperCase().startsWith("DROP")) {
+                            log.info("Skipping the following sql because the dropped object does not exist: {}", sql);
+                            if (newTransaction != null) {
+                                newTransaction.rollback();
+                            } else if (transaction != null) {
+                                transaction.rollback();
+                            }
+                        } else {
+                            String massagedSql = platform.massageForObjectDoesNotExist(sql);
+                            if (!sql.equals(massagedSql)) {
+                                log.info("Changing the following sql to a create because the altered object does not exist: {}", sql);
+                                count = retryWithMassagedSql(massagedSql, newTransaction, data, captureChanges, count);
+                            } else {
+                                handleRuntimeException(ex, sql, newTransaction);
+                            }
+                        }
+                    } else {
+                        handleRuntimeException(ex, sql, newTransaction);
+                    }
                 } catch (RuntimeException ex) {
-                    log.error("Failed to run the following sql: {}", sql);
-                    if (newTransaction != null) {
-                        newTransaction.rollback();
-                    }
-                    if (!writerSettings.isIgnoreSqlDataEventFailures()) {
-                        throw ex;
-                    }
+                    handleRuntimeException(ex, sql, newTransaction);
                 } finally {
                     if (newTransaction != null) {
                         newTransaction.close();
@@ -713,6 +770,59 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             return true;
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
+        }
+    }
+
+    private long retryWithMassagedSql(String sql, ISqlTransaction transaction, CsvData data, boolean captureChanges, long count) {
+        try {
+            if (captureChanges) {
+                if (transaction == null) {
+                    transaction = getPlatform().getSqlTemplate().startSqlTransaction();
+                } else {
+                    transaction.rollback();
+                }
+                transaction.prepare(sql);
+                if (log.isDebugEnabled()) {
+                    log.debug("About to run: {}", sql);
+                }
+                count += transaction.prepareAndExecute(sql);
+                if (log.isDebugEnabled()) {
+                    log.debug("{} rows updated when running: {}", count, sql);
+                }
+            } else {
+                if (this.transaction != null) {
+                    this.transaction.rollback();
+                }
+                prepare(sql, data);
+                if (log.isDebugEnabled()) {
+                    log.debug("About to run: {}", sql);
+                }
+                count += prepareAndExecute(sql, data);
+                if (log.isDebugEnabled()) {
+                    log.debug("{} rows updated when running: {}", count, sql);
+                }
+            }
+        } catch (Error ex) {
+            log.error("Failed to run the following sql after changing it: {}", sql);
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            if (!writerSettings.isIgnoreSqlDataEventFailures()) {
+                throw ex;
+            }
+        } catch (RuntimeException ex) {
+            handleRuntimeException(ex, sql, transaction);
+        }
+        return count;
+    }
+
+    private void handleRuntimeException(RuntimeException ex, String sql, ISqlTransaction transaction) throws RuntimeException {
+        log.error("Failed to run the following sql: {}", sql);
+        if (transaction != null) {
+            transaction.rollback();
+        }
+        if (!writerSettings.isIgnoreSqlDataEventFailures()) {
+            throw ex;
         }
     }
 
@@ -1058,7 +1168,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         sourceTable.getName(), false);
                 if (table != null) {
                     table = table.copyAndFilterColumns(sourceTable.getColumnNames(),
-                            sourceTable.getPrimaryKeyColumnNames(), writerSettings.isUsePrimaryKeysFromSource());
+                            sourceTable.getPrimaryKeyColumnNames(), writerSettings.isUsePrimaryKeysFromSource(), false);
                     if (table.getPrimaryKeyColumnCount() == 0) {
                         table = getPlatform(table).makeAllColumnsPrimaryKeys(table);
                     }
@@ -1104,7 +1214,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             org.jumpmind.db.model.Table targetTable = getPlatform().getTableFromCache(
                     context.getTable().getCatalog(), context.getTable().getSchema(),
                     context.getTable().getName(), false);
-            targetTable = targetTable.copyAndFilterColumns(columnNames, keyNames, true);
+            targetTable = targetTable.copyAndFilterColumns(columnNames, keyNames, true, false);
             String[] data = context.getData().getParsedData(CsvData.OLD_DATA);
             if (data == null) {
                 data = context.getData().getParsedData(CsvData.ROW_DATA);

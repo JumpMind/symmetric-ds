@@ -243,6 +243,8 @@ public interface ITriggerRouterService {
 
     public boolean syncTriggers(List<Table> tables, boolean genAlways);
 
+    public boolean syncTriggers(String targetExternalId, boolean force);
+
     public void dropTriggers(TriggerHistory history);
 
     public boolean syncTriggers(boolean genAlways);

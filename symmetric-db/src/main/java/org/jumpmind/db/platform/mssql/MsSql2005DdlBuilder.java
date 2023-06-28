@@ -178,7 +178,9 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
         String sqlType = super.getSqlType(column);
         boolean useVarcharForText = System.getProperty("mssql.use.varchar.for.lob", "false").equalsIgnoreCase("true");
         boolean useNvarChar = System.getProperty("mssql.use.ntypes.for.chars", "false").equalsIgnoreCase("true");
-        if (column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() > 8000) {
+        if (column.getMappedTypeCode() == Types.VARBINARY && column.anyPlatformColumnTypeContains("hierarchyid")) {
+            sqlType = "HIERARCHYID";
+        } else if (column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() > 8000) {
             sqlType = "VARBINARY(MAX)";
         } else if (column.getMappedTypeCode() == Types.VARCHAR && column.getSizeAsInt() > 8000) {
             sqlType = "VARCHAR(MAX)";

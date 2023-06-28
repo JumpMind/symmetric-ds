@@ -192,7 +192,10 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             if (fileTriggerRouter.isEnabled()) {
                 try {
                     FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
-                    checkSourceDir(fileTriggerRouter);
+                    boolean sourceDirReachable = checkSourceDir(fileTriggerRouter);
+                    if (!sourceDirReachable) {
+                        continue;
+                    }
                     boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
                     FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, getDirectorySnapshot(fileTriggerRouter),
                             processInfo, useCrc, engine);
@@ -225,7 +228,10 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             for (final FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
                 if (fileTriggerRouter.isEnabled()) {
                     FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
-                    checkSourceDir(fileTriggerRouter);
+                    boolean sourceDirReachable = checkSourceDir(fileTriggerRouter);
+                    if (!sourceDirReachable) {
+                        continue;
+                    }
                     boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
                     FileAlterationObserver observer = new FileAlterationObserver(fileTriggerRouter.getFileTrigger().getBaseDir(),
                             fileTriggerRouter.getFileTrigger().createIOFileFilter());
@@ -249,22 +255,21 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         }
     }
 
-    protected void checkSourceDir(FileTriggerRouter fileTriggerRouter) {
+    protected boolean checkSourceDir(FileTriggerRouter fileTriggerRouter) {
         File sourceDir = new File(fileTriggerRouter.getFileTrigger().getBaseDir());
         if (!sourceDir.exists()) {
             log.warn("Source directory does not exist: {}", sourceDir.getAbsolutePath());
+            return false;
         } else if (!sourceDir.canRead()) {
             log.warn("Source directory is not readable by user {}: {}", System.getProperty("user.name"), sourceDir.getAbsolutePath());
+            return false;
+        } else {
+            return true;
         }
     }
 
     protected boolean shouldIgnoreInitialFiles(FileTriggerRouter router, FileTrigger trigger, Date contextDate) {
-        if (!router.isInitialLoadEnabled()) {
-            if (contextDate == null || router.getLastUpdateTime().after(contextDate) || trigger.getLastUpdateTime().after(contextDate)) {
-                return true;
-            }
-        }
-        return false;
+        return contextDate == null || router.getLastUpdateTime().after(contextDate) || trigger.getLastUpdateTime().after(contextDate);
     }
 
     protected long saveDirectorySnapshot(FileTriggerRouter fileTriggerRouter, DirectorySnapshot dirSnapshot, boolean shouldIgnore) {

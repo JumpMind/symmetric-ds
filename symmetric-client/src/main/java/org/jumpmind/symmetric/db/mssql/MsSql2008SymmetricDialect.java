@@ -35,6 +35,7 @@ public class MsSql2008SymmetricDialect extends MsSqlSymmetricDialect {
     public MsSql2008SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new MsSql2008TriggerTemplate(this);
+        this.supportsDdlTriggers = true;
     }
 
     @Override

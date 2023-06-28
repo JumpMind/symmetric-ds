@@ -104,6 +104,7 @@ final public class ParameterConstants {
     public final static String REGISTRATION_PUSH_CONFIG_ALLOWED = "registration.push.config.allowed";
     public final static String REGISTRATION_AUTO_CREATE_GROUP_LINK = "registration.auto.create.group.link";
     public final static String REGISTRATION_URL = "registration.url";
+    public final static String REGISTRATION_MAX_TIME_BETWEEN_RETRIES = "registration.max.time.between.retries";
     public final static String SYNC_URL = "sync.url";
     public final static String ENGINE_NAME = "engine.name";
     public final static String NODE_GROUP_ID = "group.id";
@@ -372,6 +373,7 @@ final public class ParameterConstants {
     public final static String MSSQL_BULK_LOAD_FIELD_TERMINATOR = "mssql.bulk.load.field.terminator";
     public final static String MSSQL_BULK_LOAD_USE_BCP = "mssql.bulk.load.use.bcp";
     public final static String MSSQL_BULK_LOAD_BCP_CMD = "mssql.bulk.load.bcp.cmd";
+    public final static String MSSQL_USE_SNAPSHOT_ISOLATION = "mssql.use.snapshot.isolation";
     public final static String SYBASE_ROW_LEVEL_LOCKS_ONLY = "sybase.allow.only.row.level.locks.on.runtime.tables";
     public final static String SYBASE_CHANGE_IDENTITY_GAP = "sybase.change.identity.gap.on.runtime.tables";
     public final static String SQLITE_TRIGGER_FUNCTION_TO_USE = "sqlite.trigger.function.to.use";
@@ -482,6 +484,7 @@ final public class ParameterConstants {
     public final static String SPATIAL_TYPES_ENABLED = "spatial.data.types.enabled";
     public final static String DEFAULT_VALUES_TO_LEAVE_UNQUOTED = "default.values.to.leave.unquoted";
     public final static String DEFAULT_VALUES_TO_TRANSLATE = "default.values.to.translate";
+    public final static String INCLUDE_ROWIDENTIFIER_AS_COLUMN = "include.rowidentifier.as.column";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

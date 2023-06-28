@@ -27,8 +27,9 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.impl.TriggerRouterContext;
 
 public interface ITableResolver extends IExtensionPoint {
     public void resolve(String catalog, String schema, Set<Table> tables, IDatabasePlatform platform,
-            INodeService nodeService, Trigger trigger, boolean useTableCache);
+            INodeService nodeService, Trigger trigger, boolean useTableCache, TriggerRouterContext triggerRouterContext);
 }

@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
@@ -44,10 +45,12 @@ public class JavaDataRouter extends AbstractDataRouter implements IBuiltInExtens
             + "      boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {\n\n";
     public final static String CODE_END = "\n\n   }\n}\n";
     protected ISymmetricEngine engine;
+    protected ISymmetricDialect dialect;
     protected final String ROUTER_KEY = String.format("%d.JavaRouter", hashCode());
 
     public JavaDataRouter(ISymmetricEngine engine) {
         this.engine = engine;
+        this.dialect = engine.getSymmetricDialect();
     }
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,

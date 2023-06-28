@@ -90,16 +90,25 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     public long purgeOutgoing(boolean force) {
         long rowsPurged = 0;
+        long startTime = System.currentTimeMillis();
         Calendar retentionCutoff = Calendar.getInstance();
         retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
         try {
             rowsPurged += purgeOutgoing(retentionCutoff, force);
+            if (rowsPurged != -1) {
+                statisticManager.addJobStats(ClusterConstants.PURGE_OUTGOING, startTime, System.currentTimeMillis(), rowsPurged);
+            }
         } catch (Exception ex) {
             try {
+                statisticManager.addJobStats(ClusterConstants.PURGE_OUTGOING, startTime, System.currentTimeMillis(), rowsPurged, ex);
                 log.info("Failed to execute purge, but will try again,", ex);
                 rowsPurged += purgeOutgoing(retentionCutoff, force);
+                if (rowsPurged != -1) {
+                    statisticManager.addJobStats(ClusterConstants.PURGE_OUTGOING, startTime, System.currentTimeMillis(), rowsPurged);
+                }
             } catch (Exception e) {
-                log.error("Failed to execute purge, so aborting,", ex);
+                log.error("Failed to execute purge, so aborting,", e);
+                statisticManager.addJobStats(ClusterConstants.PURGE_OUTGOING, startTime, System.currentTimeMillis(), rowsPurged, e);
             }
         } finally {
             log.info("The outgoing purge process has completed");
@@ -147,6 +156,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
             }
         } else {
             log.debug("Could not get a lock to run an outgoing purge");
+            rowsPurged = -1;
         }
         return rowsPurged;
     }
@@ -741,6 +751,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     public long purgeIncoming(Calendar retentionCutoff, boolean force) {
         long purgedRowCount = 0;
+        long startTime = System.currentTimeMillis();
         try {
             if (force || clusterService.lock(ClusterConstants.PURGE_INCOMING)) {
                 try {
@@ -754,6 +765,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     for (IPurgeListener purgeListener : purgeListeners) {
                         purgedRowCount += purgeListener.purgeIncoming(force);
                     }
+                    statisticManager.addJobStats(ClusterConstants.PURGE_INCOMING, startTime, System.currentTimeMillis(), purgedRowCount);
                 } finally {
                     if (!force) {
                         clusterService.unlock(ClusterConstants.PURGE_INCOMING);
@@ -765,6 +777,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
             }
         } catch (Exception ex) {
             log.error("", ex);
+            statisticManager.addJobStats(ClusterConstants.PURGE_INCOMING, startTime, System.currentTimeMillis(), purgedRowCount, ex);
         }
         return purgedRowCount;
     }

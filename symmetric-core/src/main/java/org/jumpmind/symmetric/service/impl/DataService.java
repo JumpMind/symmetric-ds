@@ -445,6 +445,20 @@ public class DataService extends AbstractService implements IDataService {
         return collapsedRequests;
     }
 
+    @Override
+    public Map<Long, List<TableReloadRequest>> getTableReloadRequestByLoadIdMap() {
+        Map<Long, List<TableReloadRequest>> requestMap = new HashMap<Long, List<TableReloadRequest>>();
+        for (TableReloadRequest request : getTableReloadRequests()) {
+            List<TableReloadRequest> requestList = requestMap.get(request.getLoadId());
+            if (requestList == null) {
+                requestList = new ArrayList<TableReloadRequest>();
+                requestMap.put(request.getLoadId(), requestList);
+            }
+            requestList.add(request);
+        }
+        return requestMap;
+    }
+
     public TableReloadStatus updateTableReloadStatusDataLoaded(ISqlTransaction transaction, long loadId, long batchId, int batchCount, boolean isBulkLoaded) {
         int idType = symmetricDialect.getSqlTypeForIds();
         int count;
@@ -1856,6 +1870,11 @@ public class DataService extends AbstractService implements IDataService {
         return sqlTemplate.queryForInt(getSql("countDataInRangeSql"), firstDataId, secondDataId);
     }
 
+    public int countData() {
+        return sqlTemplate.queryForInt(getSql("countDataSql"));
+    }
+
+    
     @Override
     public void insertCreateEvent(final Node targetNode, TriggerHistory triggerHistory,
             boolean isLoad, long loadId, String createBy,
@@ -2513,7 +2532,7 @@ public class DataService extends AbstractService implements IDataService {
                 log.info("Unable to lookup table " + hist.getFullyQualifiedSourceTableName());
                 return;
             }
-            table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true);
+            table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true, false);
             Object[] values = targetPlatform.getObjectValues(targetDialect.getBinaryEncoding(), data.getParsedData(CsvData.ROW_DATA), table.getColumns());
             List<TableRow> tableRows = new ArrayList<TableRow>();
             Row row = new Row(values.length);
@@ -2554,8 +2573,14 @@ public class DataService extends AbstractService implements IDataService {
                         log.info("Issuing foreign key correction for batch {} table {}: foreign table '{}' column '{}' fk name '{}' where '{}'",
                                 batchName, data.getTableName(), Table.getFullyQualifiedTableName(catalog, schema, foreignTable.getName()),
                                 foreignTableRow.getReferenceColumnName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql());
-                        reloadTableImmediate(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(),
-                                dataId == -1 ? Constants.CHANNEL_CONFIG : null);
+                        try {
+                            reloadTableImmediate(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(),
+                                    dataId == -1 ? Constants.CHANNEL_CONFIG : null);
+                        } catch (Exception ex) {
+                            log.info("Failed to issue foreign key correction, but will try again,", ex);
+                            reloadTableImmediate(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(),
+                                    dataId == -1 ? Constants.CHANNEL_CONFIG : null);
+                        }
                     }
                 }
             } else {

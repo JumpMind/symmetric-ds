@@ -148,7 +148,7 @@ public class DbExportImportTest extends AbstractServiceTest {
                 && !Version.isOlderThanVersion(engine.getSymmetricDialect().getProductVersion(), "2.0.202")) {
             EXPECTED_VARCHAR_MAX_STRING = "character varying(1000000000)";
         } else {
-            EXPECTED_VARCHAR_MAX_STRING = "varchar(" + Integer.MAX_VALUE + ")";
+            EXPECTED_VARCHAR_MAX_STRING = "longvarchar";
         }
         final int actualVarcharMaxCount = StringUtils.countMatches(output, EXPECTED_VARCHAR_MAX_STRING);
         String msg = String.format("Expected %s, but got %s in the following output %s",

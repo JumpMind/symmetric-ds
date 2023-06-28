@@ -308,8 +308,8 @@ public class DbCompare {
     }
 
     protected List<DbCompareTables> loadTablesFromConfig() {
-        String sourceNodeGroupId = sourceEngine.getNodeService().getCachedIdentity().getNodeGroupId();
-        String targetNodeGroupId = targetEngine.getNodeService().getCachedIdentity().getNodeGroupId();
+        String sourceNodeGroupId = sourceEngine.getNodeService().findIdentity(true, true).getNodeGroupId();
+        String targetNodeGroupId = targetEngine.getNodeService().findIdentity(true, true).getNodeGroupId();
         List<TriggerRouter> triggerRouters = sourceEngine.getTriggerRouterService()
                 .getTriggerRoutersForSourceAndTargetNodes(sourceNodeGroupId, targetNodeGroupId);
         Set<String> configTables = TableConstants.getTables(sourceEngine.getTablePrefix());
@@ -380,7 +380,7 @@ public class DbCompare {
                 TriggerHistory hist = sourceEngine.getTriggerRouterService().findTriggerHistory(catalog, schema,
                         sourceTable.getName());
                 if (hist != null) {
-                    sourceTable = sourceTable.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true);
+                    sourceTable = sourceTable.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true, false);
                 } else {
                     log.warn("No trigger history found for {}", sourceTable.getFullyQualifiedTableName());
                 }

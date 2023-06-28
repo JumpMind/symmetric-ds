@@ -225,6 +225,8 @@ public interface IDatabasePlatform {
 
     public boolean supportsMultiThreadedTransactions();
 
+    public boolean allowsUniqueIndexDuplicatesWithNulls();
+
     public long getEstimatedRowCount(Table table);
 
     public String getTruncateSql(Table table);
@@ -236,6 +238,10 @@ public interface IDatabasePlatform {
     public boolean supportsLimitOffset();
 
     public String massageForLimitOffset(String sql, int limit, int offset);
+
+    public String massageForObjectAlreadyExists(String sql);
+
+    public String massageForObjectDoesNotExist(String sql);
 
     public boolean supportsSliceTables();
 

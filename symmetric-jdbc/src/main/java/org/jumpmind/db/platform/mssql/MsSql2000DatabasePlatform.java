@@ -87,6 +87,11 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     @Override
+    public boolean allowsUniqueIndexDuplicatesWithNulls() {
+        return false;
+    }
+
+    @Override
     public boolean isClob(int type) {
         return super.isClob(type) ||
         // SQL-Server ntext binary type
@@ -149,6 +154,22 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
         result.setSolution("Change Tracking not available");
         result.setStatus(Status.FAIL);
         return result;
+    }
+
+    @Override
+    public String massageForObjectAlreadyExists(String sql) {
+        if (sql.toUpperCase().contains("CREATE TABLE")) {
+            return sql;
+        }
+        return StringUtils.replaceOnceIgnoreCase(sql, "create", "alter");
+    }
+
+    @Override
+    public String massageForObjectDoesNotExist(String sql) {
+        if (sql.toUpperCase().contains("ALTER TABLE")) {
+            return sql;
+        }
+        return StringUtils.replaceOnceIgnoreCase(sql, "alter", "create");
     }
 
     public int getEngineEdition() {

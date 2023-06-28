@@ -79,7 +79,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates = new HashMap<String,String>();
 
         sqlTemplates.put("insertTriggerTemplate" ,
-getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after insert as                                                                                                \n" +
+getCreateTriggerString() + " $(schemaNameOnly)$(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after insert as                                                                                                \n" +
 "   begin                                                                                                                                                                  \n" +
 "     declare @NCT int \n" +
 "     set @NCT = @@OPTIONS & 512 \n" +
@@ -107,7 +107,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with ex
 "---- go");
         
         sqlTemplates.put("insertReloadTriggerTemplate" ,
-getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after insert as                                                                                                \n" +
+getCreateTriggerString() + " $(schemaNameOnly)$(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after insert as                                                                                                \n" +
 "   begin                                                                                                                                                                  \n" +
 "     declare @NCT int \n" +
 "     set @NCT = @@OPTIONS & 512 \n" +
@@ -143,7 +143,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with ex
         IParameterService parameterService = symmetricDialect.getParameterService();
         if (parameterService.is(ParameterConstants.TRIGGER_USE_INSERT_DELETE_FOR_PRIMARY_KEY_CHANGES, true)) {
             sqlTemplates.put("updateTriggerTemplate" ,
-getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)                                                     \n" +
+getCreateTriggerString() + " $(schemaNameOnly)$(triggerName) on $(schemaName)$(tableName)                                                     \n" +
 "       with execute as "+triggerExecuteAs+" after update as                                                    \n" +
 "begin                                                                                                          \n" +
 "  declare @LOCALROWCOUNT int                                                                                   \n" + 
@@ -243,7 +243,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "---- go");
         
             sqlTemplates.put("updateReloadTriggerTemplate" ,
-getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)                                                     \n" +
+getCreateTriggerString() + " $(schemaNameOnly)$(triggerName) on $(schemaName)$(tableName)                                                     \n" +
 "       with execute as "+triggerExecuteAs+" after update as                                                    \n" +
 "begin                                                                                                          \n" +
 "  declare @LOCALROWCOUNT int                                                                                   \n" + 
@@ -267,7 +267,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "  $(custom_before_update_text)                                                                                 \n" +
 "  if ($(syncOnIncomingBatchCondition))                                                                         \n" +
 "  begin                                                                                                        \n" +
-"    if ($(hasPrimaryKeysDefined) $(primaryKeysUpdated AND @LOCALROWCOUNT <> @LOCALPKCHANGED) )                                                       \n" +
+"    if ($(hasPrimaryKeysDefined) $(primaryKeysUpdated) AND @LOCALROWCOUNT <> @LOCALPKCHANGED )                                                       \n" +
 "    begin                                                                                                      \n" +
 "      if (@LOCALROWCOUNT = 1)                                                                                  \n" +
 "      begin                                                                                                    \n" +
@@ -341,7 +341,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
 "---- go");
         } else {
             sqlTemplates.put("updateTriggerTemplate" ,
-                    "create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after update as                                                                                                                             \n" +
+                    getCreateTriggerString() + " $(schemaNameOnly)$(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after update as                                                                                                                             \n" +
                     "   begin                                                                                                                                                                  \n" +
                     "     declare @NCT int \n" +
                     "     set @NCT = @@OPTIONS & 512 \n" +
@@ -369,7 +369,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
                     "---- go");
 
             sqlTemplates.put("updateReloadTriggerTemplate" ,
-                    "create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after update as                                                                                                \n" +
+                    getCreateTriggerString() + " $(schemaNameOnly)$(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after update as                                                                                                \n" +
                     "   begin                                                                                                                                                                  \n" +
                     "     declare @NCT int \n" +
                     "     set @NCT = @@OPTIONS & 512 \n" +
@@ -397,7 +397,7 @@ getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)        
         }
 
         sqlTemplates.put("deleteTriggerTemplate" ,
-getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after delete as                                                                                                                             \n" +
+getCreateTriggerString() + " $(schemaNameOnly)$(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after delete as                                                                                                                             \n" +
 "  begin                                                                                                                                                                  \n" +
 "    declare @NCT int \n" +
 "    set @NCT = @@OPTIONS & 512 \n" +
@@ -425,6 +425,8 @@ getCreateTriggerString() + " $(triggerName) on database\n" +
 "create_function, drop_function, alter_function,\n" +
 "create_procedure, drop_procedure, alter_procedure,\n" +
 "create_trigger, drop_trigger, alter_trigger,\n" +
+"create_type, drop_type, \n" +
+"create_schema, drop_schema, \n" +
 "create_index, drop_index, alter_index as\n" +
 "declare @data xml\n" +
 "declare @eventType nvarchar(128)\n" +
@@ -441,14 +443,14 @@ getCreateTriggerString() + " $(triggerName) on database\n" +
 "    set @tableName = @data.value('(/EVENT_INSTANCE/TargetObjectName)[1]', 'nvarchar(128)')\n" +
 "  select @histId = max(trigger_hist_id) from " + defaultCatalog + "$(defaultSchema)$(prefixName)_trigger_hist where source_table_name = @tableName and inactive_time is null\n" +
 "  if (@histId is not null) begin\n" +
-"    select @channelId = channel_id from sym_trigger where source_table_name = @tableName\n" +
+"    select @channelId = channel_id from " + defaultCatalog + "$(defaultSchema)$(prefixName)_trigger where source_table_name = @tableName\n" +
 "    if (@channelId is null)\n" +
 "      set @channelId = 'config'\n" +
 "    insert into " + defaultCatalog + "$(defaultSchema)$(prefixName)_data\n" +
 "    (table_name, event_type, trigger_hist_id, row_data, channel_id, source_node_id, create_time)\n" +
 "    values (@tableName, '" + DataEventType.SQL.getCode() + "', @histId,\n" +
 "    '\"delimiter " + delimiter + ";' + CHAR(13) + char(10) + replace(replace(@data.value('(/EVENT_INSTANCE/TSQLCommand/CommandText)[1]', 'nvarchar(max)'),'\\','\\\\'),'\"','\\\"') + '\",ddl',\n" +
-"    @channelId, dbo.$(prefixName)_node_disabled(), " + getCreateTimeExpression() + ")\n" +
+"    @channelId, " + defaultCatalog + "$(defaultSchema)$(prefixName)_node_disabled(), " + getCreateTimeExpression() + ")\n" +
 "  end\n" +
 "end\n" + "---- go");
         
@@ -459,6 +461,8 @@ getCreateTriggerString() + " $(triggerName) on database\n" +
 "create_function, drop_function, alter_function,\n" +
 "create_procedure, drop_procedure, alter_procedure,\n" +
 "create_trigger, drop_trigger, alter_trigger,\n" +
+"create_type, drop_type, \n" +
+"create_schema, drop_schema, \n" +
 "create_index, drop_index, alter_index as\n" +
 "declare @data xml\n" +
 "declare @eventType nvarchar(128)\n" +
@@ -477,14 +481,14 @@ getCreateTriggerString() + " $(triggerName) on database\n" +
 "  if (@histId is null)\n" +
 "    set @tableName = '$(prefixName)_node';\n" +
 "    select @histId = max(trigger_hist_id) from " + defaultCatalog + "$(defaultSchema)$(prefixName)_trigger_hist where source_table_name = @tableName and inactive_time is null\n" +
-"  select @channelId = channel_id from sym_trigger where source_table_name = @tableName\n" +
+"  select @channelId = channel_id from " + defaultCatalog + "$(defaultSchema)$(prefixName)_trigger where source_table_name = @tableName\n" +
 "  if (@channelId is null)\n" +
 "    set @channelId = 'config'\n" +
 "  insert into " + defaultCatalog + "$(defaultSchema)$(prefixName)_data\n" +
 "  (table_name, event_type, trigger_hist_id, row_data, channel_id, source_node_id, create_time)\n" +
 "  values (@tableName, '" + DataEventType.SQL.getCode() + "', @histId,\n" +
 "  '\"delimiter " + delimiter + ";' + CHAR(13) + char(10) + replace(replace(@data.value('(/EVENT_INSTANCE/TSQLCommand/CommandText)[1]', 'nvarchar(max)'),'\\','\\\\'),'\"','\\\"') + '\",ddl',\n" +
-"  @channelId, dbo.$(prefixName)_node_disabled(), " + getCreateTimeExpression() + ")\n" +
+"  @channelId, " + defaultCatalog + "$(defaultSchema)$(prefixName)_node_disabled(), " + getCreateTimeExpression() + ")\n" +
 "end\n" + "---- go");
         
         sqlTemplates.put("initialLoadSqlTemplate" ,
