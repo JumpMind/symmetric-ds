@@ -292,8 +292,8 @@ public class NodeService extends AbstractService implements INodeService {
                             node.getSymmetricVersion(), node.getSyncUrl(),
                             node.isSyncEnabled() ? 1 : 0,
                             node.getBatchToSendCount(), node.getBatchInErrorCount(),
-                            node.getLastSuccessfulSyncDate(), node.getMostRecentActiveTableSynced(), 
-                            node.getPurgeOutgoingAverageMs(), node.getPurgeOutgoingLastMs(), node.getPurgeOutgoingLastRun(), node.getRoutingAverageMs(), 
+                            node.getLastSuccessfulSyncDate(), node.getMostRecentActiveTableSynced(),
+                            node.getPurgeOutgoingAverageMs(), node.getPurgeOutgoingLastMs(), node.getPurgeOutgoingLastRun(), node.getRoutingAverageMs(),
                             node.getRoutingLastMs(), node.getRoutingLastRun(), node.getSymDataSize(),
                             node.getCreatedAtNodeId(), node.getDeploymentType(),
                             node.getDeploymentSubType(), node.getConfigVersion(),
@@ -301,11 +301,11 @@ public class NodeService extends AbstractService implements INodeService {
                             node.getNodeId() },
                     new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP, 
-                            Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.TIMESTAMP, 
-                            Types.BIGINT, Types.BIGINT, 
-                            Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, 
-                            Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER, 
+                            Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP,
+                            Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.TIMESTAMP,
+                            Types.BIGINT, Types.BIGINT,
+                            Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER,
                             Types.TIMESTAMP, Types.VARCHAR });
             flushNodeGroupCache();
         }
@@ -324,16 +324,16 @@ public class NodeService extends AbstractService implements INodeService {
                         node.getPurgeOutgoingLastMs(), node.getPurgeOutgoingLastRun(), node.getRoutingAverageMs(), node.getRoutingLastMs(),
                         node.getRoutingLastRun(), node.getSymDataSize(),
                         node.getCreatedAtNodeId(), node.getDeploymentType(), node.getDeploymentSubType(),
-                        node.getConfigVersion(), 
+                        node.getConfigVersion(),
                         node.getDataRowsToSendCount(), node.getDataRowsLoadedCount(), node.getOldestLoadTime(),
                         node.getNodeId() },
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP, 
-                        Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.TIMESTAMP, 
-                        Types.BIGINT, Types.BIGINT, 
-                        Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, 
-                        Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER, 
+                        Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP,
+                        Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.TIMESTAMP,
+                        Types.BIGINT, Types.BIGINT,
+                        Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER,
                         Types.TIMESTAMP, Types.VARCHAR }) == 1;
         return updated;
     }
@@ -1060,7 +1060,6 @@ public class NodeService extends AbstractService implements INodeService {
             node.setRoutingLastMs(rs.getLong("routing_last_run_ms"));
             node.setRoutingLastRun(rs.getDateTime("routing_last_finish"));
             node.setSymDataSize(rs.getLong("sym_data_size"));
-            
             return node;
         }
     }

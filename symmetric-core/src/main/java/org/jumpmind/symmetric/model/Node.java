@@ -81,7 +81,7 @@ public class Node implements Serializable, Comparable<Node> {
     private Date routingLastRun;
     private long routingLastMs;
     private long symDataSize;
-    
+
     public Node() {
     }
 
@@ -278,7 +278,7 @@ public class Node implements Serializable, Comparable<Node> {
     public void setDeploymentSubType(String deploymentSubType) {
         this.deploymentSubType = deploymentSubType;
     }
-    
+
     public Date getLastSuccessfulSyncDate() {
         return lastSuccessfulSyncDate;
     }
@@ -287,7 +287,6 @@ public class Node implements Serializable, Comparable<Node> {
         this.lastSuccessfulSyncDate = lastSuccessfulSyncDate;
     }
 
-    
     public int getDataRowsToSendCount() {
         return dataRowsToSendCount;
     }
@@ -311,7 +310,7 @@ public class Node implements Serializable, Comparable<Node> {
     public void setOldestLoadTime(Date oldestLoadTime) {
         this.oldestLoadTime = oldestLoadTime;
     }
-    
+
     public long getPurgeOutgoingLastMs() {
         return purgeOutgoingLastMs;
     }
@@ -435,7 +434,4 @@ public class Node implements Serializable, Comparable<Node> {
     public void setMostRecentActiveTableSynced(String mostRecentActiveTableSynced) {
         this.mostRecentActiveTableSynced = mostRecentActiveTableSynced;
     }
-
-    
-    
 }

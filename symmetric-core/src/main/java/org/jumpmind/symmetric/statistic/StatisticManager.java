@@ -702,5 +702,4 @@ public class StatisticManager implements IStatisticManager {
         // TODO Auto-generated method stub
         return null;
     }
-
 }

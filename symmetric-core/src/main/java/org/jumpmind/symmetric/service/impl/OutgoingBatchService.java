@@ -377,11 +377,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesErrorsOnChannelSql"), channelId);
     }
 
-    @Override 
+    @Override
     public Date getOutgoingBatchesLatestUpdateSql() {
         return sqlTemplateDirty.queryForObject(getSql("getOutgoingBatchesLatestUpdateSql"), Date.class);
     }
-    
+
     public int countOutgoingBatchesUnsent() {
         return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesUnsentSql"));
     }
@@ -394,7 +394,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
         return batchesRows;
     }
-    
+
     @Override
     public int countOutgoingBatchesUnsent(String channelId) {
         return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesUnsentOnChannelSql"), channelId);

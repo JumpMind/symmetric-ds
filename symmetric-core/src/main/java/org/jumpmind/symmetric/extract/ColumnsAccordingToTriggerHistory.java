@@ -130,7 +130,6 @@ public class ColumnsAccordingToTriggerHistory {
             if (StringUtils.isNotBlank(router.getTargetTableName())) {
                 table.setName(router.getTargetTableName());
             }
-            
         }
         if (useTransforms) {
             TransformTable transform = getTransform(sourceNode.getNodeGroupId(), targetNode.getNodeGroupId(), table,

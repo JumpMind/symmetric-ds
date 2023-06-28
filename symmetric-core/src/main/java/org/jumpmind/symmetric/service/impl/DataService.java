@@ -1874,7 +1874,6 @@ public class DataService extends AbstractService implements IDataService {
         return sqlTemplate.queryForInt(getSql("countDataSql"));
     }
 
-    
     @Override
     public void insertCreateEvent(final Node targetNode, TriggerHistory triggerHistory,
             boolean isLoad, long loadId, String createBy,
