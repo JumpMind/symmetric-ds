@@ -3327,7 +3327,7 @@ public class DataService extends AbstractService implements IDataService {
             TriggerHistory hist = data.getTriggerHistory();
             Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
             if (table != null) {
-                table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true);
+                table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true, false);
                 if (data.getDataEventType() == DataEventType.INSERT || data.getDataEventType() == DataEventType.UPDATE) {
                     convertDataToReload(data, table, hist, nodeId);
                 } else if (data.getDataEventType() == DataEventType.DELETE) {
