@@ -86,4 +86,7 @@ public interface IDataExtractorService {
     public int cancelExtractRequests(long loadId);
 
     public void releaseMissedExtractRequests();
+
+    public void updateExtractRequestStatuses(ISqlTransaction transaction, long loadId, String sourceNodeId,
+            String fromStatus, String toStatus);
 }
