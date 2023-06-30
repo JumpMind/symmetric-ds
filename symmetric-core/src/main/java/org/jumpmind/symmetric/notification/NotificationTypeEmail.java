@@ -149,7 +149,7 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
     protected static List<String> deserializeOfflineNodes(MonitorEvent event) throws IOException {
         List<String> nodes = null;
         if (event.getDetails() != null) {
-            new Gson().fromJson(event.getDetails(), new TypeToken<List<String>>() {
+            nodes = new Gson().fromJson(event.getDetails(), new TypeToken<List<String>>() {
             }.getType());
         }
         if (nodes == null) {
