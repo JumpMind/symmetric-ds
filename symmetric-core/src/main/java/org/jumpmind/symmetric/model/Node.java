@@ -70,7 +70,7 @@ public class Node implements Serializable, Comparable<Node> {
     private String deploymentSubType;
     private int[] symmetricVersionParts;
     private Date lastSuccessfulSyncDate;
-    private String mostRecentActiveTableSynced;
+    private String mostRecentActiveTableSynced="";
     private int dataRowsToSendCount;
     private int dataRowsLoadedCount;
     private Date oldestLoadTime;
@@ -429,7 +429,7 @@ public class Node implements Serializable, Comparable<Node> {
     }
 
     public String getMostRecentActiveTableSynced() {
-        return mostRecentActiveTableSynced;
+        return mostRecentActiveTableSynced == null ? "" : mostRecentActiveTableSynced;
     }
 
     public void setMostRecentActiveTableSynced(String mostRecentActiveTableSynced) {
