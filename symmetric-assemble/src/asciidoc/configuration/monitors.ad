@@ -46,6 +46,8 @@ be compared to a threshold value.
 
 |fileHandles|Percentage from 0 to 100 of Operating System's open file handles. Not implemented for Windows.
 
+|job|Number of jobs that are in error. This only applies to jobs that record statistics in the <<NODE_HOST_JOB_STATS>> table. The built-in jobs that write to this table are Routing, Purge Outgoing, Purge Incoming, and SyncTriggers.
+
 ifdef::pro[]
 |licenseExpire|Percentage from 0 to 100 of the license usage, with expiration occurring at 100%.
 

@@ -160,7 +160,7 @@ abstract public class AbstractTriggerTemplate {
                     if (useTriggerTemplateForColumnTemplatesDuringInitialLoad(column)) {
                         ColumnString columnString = fillOutColumnTemplate(tableAlias,
                                 tableAlias, "", table, column, DataEventType.INSERT, false, channel,
-                                triggerRouter.getTrigger());
+                                triggerRouter.getTrigger(), true);
                         columnExpression = columnString.columnString;
                         if (isNotBlank(textColumnExpression)
                                 && TypeMap.isTextType(column.getMappedTypeCode())) {
@@ -777,7 +777,7 @@ abstract public class AbstractTriggerTemplate {
             Column column = columns[i];
             if (column != null) {
                 ColumnString columnString = fillOutColumnTemplate(origTableAlias, tableAlias,
-                        columnPrefix, table, column, dml, isOld, channel, trigger);
+                        columnPrefix, table, column, dml, isOld, channel, trigger, false);
                 columnsText = columnsText + "\n          " + columnString.columnString
                         + lastCommandToken;
                 containsLob |= columnString.isBlobClob;
@@ -792,7 +792,7 @@ abstract public class AbstractTriggerTemplate {
 
     protected ColumnString fillOutColumnTemplate(String origTableAlias, String tableAlias,
             String columnPrefix, Table table, Column column, DataEventType dml, boolean isOld, Channel channel,
-            Trigger trigger) {
+            Trigger trigger, boolean ignoreStreamLobs) {
         boolean isLob = symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
         String templateToUse = null;
         if (column.getJdbcTypeName() != null
@@ -925,7 +925,7 @@ abstract public class AbstractTriggerTemplate {
         }
         if (dml == DataEventType.DELETE && isLob && requiresEmptyLobTemplateForDeletes()) {
             templateToUse = emptyColumnTemplate;
-        } else if (isLob && trigger.isUseStreamLobs()) {
+        } else if (isLob && trigger.isUseStreamLobs() && !ignoreStreamLobs) {
             templateToUse = emptyColumnTemplate;
         }
         if (templateToUse != null) {

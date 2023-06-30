@@ -65,6 +65,9 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("countIncomingBatchesErrorsOnChannelSql" ,"" + 
 "select count(*) from $(incoming_batch) where error_flag=1 and channel_id=?");
 
+        putSql("getIncomingBatchesLatestUpdateSql",
+                "select max(last_update_time) from $(incoming_batch) where status = 'OK' and channel_id not in ('heartbeat', 'monitor', 'config', 'reload')");
+        
         putSql("selectCountBatchesPrefixSql", "select count(*) from $(incoming_batch) ");
 
         putSql("insertIncomingBatchSql" ,"" + 

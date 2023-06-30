@@ -47,6 +47,7 @@ import org.jumpmind.symmetric.monitor.MonitorTypeCpu;
 import org.jumpmind.symmetric.monitor.MonitorTypeDataGap;
 import org.jumpmind.symmetric.monitor.MonitorTypeDisk;
 import org.jumpmind.symmetric.monitor.MonitorTypeFileHandles;
+import org.jumpmind.symmetric.monitor.MonitorTypeJob;
 import org.jumpmind.symmetric.monitor.MonitorTypeLoadAverage;
 import org.jumpmind.symmetric.monitor.MonitorTypeLog;
 import org.jumpmind.symmetric.monitor.MonitorTypeMemory;
@@ -62,6 +63,7 @@ import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.util.AppUtils;
+import org.jumpmind.util.LogSummary;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -90,7 +92,8 @@ public class MonitorService extends AbstractService implements IMonitorService {
         hostName = StringUtils.left(AppUtils.getHostName(), 60);
         IMonitorType monitorExtensions[] = { new MonitorTypeBatchError(), new MonitorTypeBatchUnsent(), new MonitorTypeCpu(),
                 new MonitorTypeDataGap(), new MonitorTypeDisk(), new MonitorTypeMemory(), new MonitorTypeUnrouted(),
-                new MonitorTypeLog(), new MonitorTypeOfflineNodes(), new MonitorTypeBlock(), new MonitorTypeLoadAverage(), new MonitorTypeFileHandles() };
+                new MonitorTypeLog(), new MonitorTypeOfflineNodes(), new MonitorTypeBlock(), new MonitorTypeLoadAverage(),
+                new MonitorTypeFileHandles(), new MonitorTypeJob() };
         for (IMonitorType ext : monitorExtensions) {
             extensionService.addExtensionPoint(ext.getName(), ext);
         }
@@ -211,6 +214,9 @@ public class MonitorService extends AbstractService implements IMonitorService {
                 updateMonitorEventAsResolved(event);
             } else if (eventValue.getValue() >= monitor.getThreshold()) {
                 if (event == null) {
+                    if (monitor.getType().equals("log") && isLogMonitorEventResolved(monitor, eventValue, identity.getNodeId())) {
+                        return;
+                    }
                     event = new MonitorEvent();
                     event.setMonitorId(monitor.getMonitorId());
                     event.setNodeId(identity.getNodeId());
@@ -248,6 +254,35 @@ public class MonitorService extends AbstractService implements IMonitorService {
                 saveMonitorEvent(event);
             }
         }
+    }
+
+    private boolean isLogMonitorEventResolved(Monitor monitor, MonitorEvent eventValue, String nodeId) {
+        List<LogSummary> eventLogSummaries = new Gson().fromJson(eventValue.getDetails(), new TypeToken<List<LogSummary>>() {
+        }.getType());
+        List<MonitorEvent> resolvedEvents = getMonitorEventsResolvedForNode(monitor.getMonitorId(), nodeId);
+        for (LogSummary eventLogSummary : eventLogSummaries) {
+            boolean logMessageResolved = false;
+            for (MonitorEvent resolvedEvent : resolvedEvents) {
+                if (resolvedEvent.getLastUpdateTime() == null || eventLogSummary.getMostRecentTime() > resolvedEvent.getLastUpdateTime().getTime()) {
+                    continue;
+                }
+                List<LogSummary> resolvedLogSummaries = new Gson().fromJson(resolvedEvent.getDetails(), new TypeToken<List<LogSummary>>() {
+                }.getType());
+                for (LogSummary resolvedLogSummary : resolvedLogSummaries) {
+                    if (eventLogSummary.getMessage() != null && eventLogSummary.getMessage().equals(resolvedLogSummary.getMessage())) {
+                        logMessageResolved = true;
+                        break;
+                    }
+                }
+                if (logMessageResolved) {
+                    break;
+                }
+            }
+            if (!logMessageResolved) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -321,6 +356,11 @@ public class MonitorService extends AbstractService implements IMonitorService {
         return sqlTemplate.query(getSql("selectMonitorEventSql"), new MonitorEventRowMapper());
     }
 
+    protected List<MonitorEvent> getMonitorEventsResolvedForNode(String monitorId, String nodeId) {
+        return sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventResolvedSql"),
+                new MonitorEventRowMapper(), monitorId, nodeId);
+    }
+
     protected Map<String, MonitorEvent> getMonitorEventsNotResolvedForNode(String nodeId) {
         List<MonitorEvent> list = sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventNotResolvedSql"),
                 new MonitorEventRowMapper(), nodeId);
@@ -352,6 +392,15 @@ public class MonitorService extends AbstractService implements IMonitorService {
         return sqlTemplate.query(sql, limit, new MonitorEventRowMapper(), args.toArray());
     }
 
+    @Override
+    public List<MonitorEvent> getMonitorEventsByMonitorId(String monitorId) {
+        String sql = getSql("selectMonitorEventSql", "whereMonitorEventIdSql");
+        ArrayList<Object> args = new ArrayList<Object>();
+        
+        sql += " order by event_time desc";
+        return sqlTemplate.query(sql, new MonitorEventRowMapper(), monitorId);
+    }
+    
     protected List<MonitorEvent> getMonitorEventsForNotification(int severityLevel) {
         return sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventForNotificationBySeveritySql"),
                 new MonitorEventRowMapper(), severityLevel);
@@ -485,7 +534,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
         }
     }
 
-    static class MonitorEventRowMapper implements ISqlRowMapper<MonitorEvent> {
+    public static class MonitorEventRowMapper implements ISqlRowMapper<MonitorEvent> {
         public MonitorEvent mapRow(Row row) {
             MonitorEvent m = new MonitorEvent();
             m.setMonitorId(row.getString("monitor_id"));

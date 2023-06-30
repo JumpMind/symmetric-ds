@@ -36,7 +36,8 @@ import org.slf4j.LoggerFactory;
 public class MonitorTypeMemory extends AbstractMonitorType implements IBuiltInExtensionPoint {
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected MemoryPoolMXBean tenuredPool;
-
+    public static final String NAME = "memory";
+    
     @Override
     public String getName() {
         return "memory";

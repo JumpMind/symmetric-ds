@@ -34,6 +34,8 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
@@ -53,6 +55,10 @@ public class ResizableDialog extends Dialog {
     }
 
     public ResizableDialog(String caption, boolean addEscapeShortcut) {
+        this(caption, addEscapeShortcut, false);
+    }
+
+    public ResizableDialog(String caption, boolean addEscapeShortcut, boolean addCloseIcon) {
         setModal(true);
         setResizable(true);
         VerticalLayout content = new VerticalLayout();
@@ -63,7 +69,20 @@ public class ResizableDialog extends Dialog {
             captionLabel = new Label(caption + "<hr>");
             captionLabel.setWidthFull();
             captionLabel.getStyle().set("margin", null);
-            content.add(captionLabel);
+            if (addCloseIcon) {
+                HorizontalLayout captionLayout = new HorizontalLayout(captionLabel, buildCloseIcon());
+                captionLayout.setWidthFull();
+                captionLayout.expand(captionLabel);
+                content.add(captionLayout);
+            } else {
+                content.add(captionLabel);
+            }
+        } else if (addCloseIcon) {
+            HorizontalLayout closeIconLayout = new HorizontalLayout();
+            closeIconLayout.setWidthFull();
+            closeIconLayout.addAndExpand(new Span());
+            closeIconLayout.add(buildCloseIcon());
+            content.add(closeIconLayout);
         }
         innerContent = new VerticalLayout();
         innerContent.setWidthFull();
@@ -97,6 +116,15 @@ public class ResizableDialog extends Dialog {
         for (Component component : components) {
             innerContent.add(component);
         }
+    }
+
+    protected Icon buildCloseIcon() {
+        Icon closeIcon = new Icon(VaadinIcon.CLOSE);
+        closeIcon.setSize("36px");
+        closeIcon.getStyle().set("min-width", "36px");
+        closeIcon.setClassName("mouse_pointer");
+        closeIcon.addClickListener(event -> close());
+        return closeIcon;
     }
 
     protected Button buildCloseButton() {

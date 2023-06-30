@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.job;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -39,8 +40,11 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IStatisticService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,9 +63,59 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
             boolean updateWithBatchStatus = parameterService.is(ParameterConstants.HEARTBEAT_UPDATE_NODE_WITH_BATCH_STATUS, false);
             int outgoingErrorCount = -1;
             int outgoingUnsentCount = -1;
+            int outgoingUnsentRowCount = -1;
+            Date lastSuccessfulSyncTime = null;
+            String mostRecentActiveTableSynced = null;
+            int totalRowsLoaded = -1;
+            Date oldestLoadedDate = null;
+            long purgeOutgoingLastMs = -1;
+            Date purgeOutgoingLastRun = null;
+            long purgeOutgoingAverage = -1;
+            
+            long routingLastMs = -1;
+            long routingAveragetMs = -1;
+            Date routingLastRun = null;
+            long symDataSize = -1;
+            
             if (updateWithBatchStatus) {
-                outgoingUnsentCount = engine.getOutgoingBatchService().countOutgoingBatchesUnsent();
                 outgoingErrorCount = engine.getOutgoingBatchService().countOutgoingBatchesInError();
+                int[] batchesRowsUnsent = engine.getOutgoingBatchService().countOutgoingNonSystemBatchesRowsUnsent();
+                
+                outgoingUnsentCount = batchesRowsUnsent[0];
+                outgoingUnsentRowCount = batchesRowsUnsent[1];
+                
+                Date outDate = engine.getOutgoingBatchService().getOutgoingBatchesLatestUpdateSql();
+                Date inDate = engine.getIncomingBatchService().getIncomingBatchesLatestUpdateSql();
+                if (outDate == null && inDate == null) {
+                    lastSuccessfulSyncTime = null;
+                } else if (outDate == null) {
+                    lastSuccessfulSyncTime = inDate;
+                } else if (inDate == null) {
+                    lastSuccessfulSyncTime = outDate;
+                } else {
+                    lastSuccessfulSyncTime = outDate.after(inDate) ? outDate : inDate;
+                }
+                
+                IStatisticManager statisticsManager = engine.getStatisticManager();
+                mostRecentActiveTableSynced = statisticsManager.getMostRecentActiveTableSynced();
+                Map<Integer, Date> totalLoadedRowsMap = statisticsManager.getTotalLoadedRows();
+                if (totalLoadedRowsMap != null && totalLoadedRowsMap.size() == 1) {
+                    totalRowsLoaded = totalLoadedRowsMap.keySet().iterator().next();
+                    oldestLoadedDate = totalLoadedRowsMap.values().iterator().next();
+                }
+                
+                IJob purgeOutgoingJob = engine.getJobManager().getJob(ClusterConstants.PURGE_OUTGOING);
+                purgeOutgoingLastMs = purgeOutgoingJob.getLastExecutionTimeInMs();
+                purgeOutgoingLastRun = purgeOutgoingJob.getLastFinishTime();
+                purgeOutgoingAverage = purgeOutgoingJob.getAverageExecutionTimeInMs();
+                
+                IJob routeJob = engine.getJobManager().getJob(ClusterConstants.ROUTE);
+                routingAveragetMs = routeJob.getAverageExecutionTimeInMs();
+                routingLastRun = routeJob.getLastFinishTime();
+                routingLastMs = routeJob.getLastExecutionTimeInMs();
+                
+                symDataSize = engine.getDataService().countData();
+                
             }
             if (!parameterService.getExternalId().equals(me.getExternalId())
                     || !parameterService.getNodeGroupId().equals(me.getNodeGroupId())
@@ -73,7 +127,16 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                     || !symmetricDialect.getName().equals(me.getDatabaseType())
                     || !symmetricDialect.getVersion().equals(me.getDatabaseVersion())
                     || me.getBatchInErrorCount() != outgoingErrorCount
-                    || me.getBatchToSendCount() != outgoingUnsentCount) {
+                    || me.getBatchToSendCount() != outgoingUnsentCount
+                    || me.getLastSuccessfulSyncDate() != lastSuccessfulSyncTime
+                    || me.getMostRecentActiveTableSynced() != mostRecentActiveTableSynced
+                    || me.getPurgeOutgoingLastMs() != purgeOutgoingLastMs
+                    || me.getPurgeOutgoingLastRun() != purgeOutgoingLastRun
+                    || me.getPurgeOutgoingAverageMs() != purgeOutgoingAverage
+                    || me.getRoutingAverageMs() != routingAveragetMs
+                    || me.getRoutingLastRun() != routingLastRun
+                    || me.getRoutingLastMs() != routingLastMs
+                    || me.getSymDataSize() != symDataSize) {
                 log.info("Some attribute(s) of node changed.  Recording changes");
                 me.setDeploymentType(engine.getDeploymentType());
                 me.setDeploymentSubType(engine.getDeploymentSubType());
@@ -83,6 +146,19 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                 me.setDatabaseName(engine.getDatabasePlatform().getName());
                 me.setBatchInErrorCount(outgoingErrorCount);
                 me.setBatchToSendCount(outgoingUnsentCount);
+                me.setLastSuccessfulSyncDate(lastSuccessfulSyncTime);
+                me.setDataRowsToSendCount(outgoingUnsentRowCount);
+                me.setMostRecentActiveTableSynced(mostRecentActiveTableSynced);
+                me.setDataRowsLoadedCount(totalRowsLoaded);
+                me.setOldestLoadTime(oldestLoadedDate);
+                me.setPurgeOutgoingLastMs(purgeOutgoingLastMs);
+                me.setPurgeOutgoingLastRun(purgeOutgoingLastRun);
+                me.setPurgeOutgoingAverageMs(purgeOutgoingAverage);
+                me.setRoutingAverageMs(routingAveragetMs);
+                me.setRoutingLastRun(routingLastRun);
+                me.setRoutingLastMs(routingLastMs);
+                me.setSymDataSize(symDataSize);
+                
                 me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
                 if (engine.getParameterService().isRegistrationServer()) {
                     me.setConfigVersion(Version.version());

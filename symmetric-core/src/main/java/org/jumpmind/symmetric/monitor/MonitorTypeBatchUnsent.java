@@ -29,10 +29,11 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
 public class MonitorTypeBatchUnsent implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
     protected IOutgoingBatchService outgoingBatchService;
-
+    public static final String NAME = "batchUnsent";
+    
     @Override
     public String getName() {
-        return "batchUnsent";
+        return NAME;
     }
 
     @Override
@@ -51,4 +52,5 @@ public class MonitorTypeBatchUnsent implements IMonitorType, ISymmetricEngineAwa
     public void setSymmetricEngine(ISymmetricEngine engine) {
         outgoingBatchService = engine.getOutgoingBatchService();
     }
+
 }

@@ -112,6 +112,10 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 "select count(*) from $(outgoing_batch) where error_flag=1");
         putSql("countOutgoingBatchesUnsentSql",
                 "select count(*) from $(outgoing_batch) where status != 'OK'");
+        putSql("countOutgoingNonSystemBatchesUnsentSql",
+                "select count(batch_id) as batch_count, sum(data_row_count) as row_count from $(outgoing_batch) where status != 'OK' and channel_id not in ('heartbeat', 'monitor', 'config')");
+        putSql("getOutgoingBatchesLatestUpdateSql",
+                "select max(last_update_time) from $(outgoing_batch) where status = 'OK' and channel_id not in ('heartbeat', 'monitor', 'config')");
         putSql("countOutgoingBatchesWithStatusSql",
                 "select count(*) from $(outgoing_batch) where status = ? ");
         putSql("countOutgoingBatchesUnsentOnChannelSql",
@@ -165,5 +169,11 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "   last_update_hostname, ?, create_time, 'copy' from $(outgoing_batch) where node_id=? and channel_id=? and batch_id > ?)     ");
         putSql("getAllBatchesSql", "select batch_id from $(outgoing_batch)");
         putSql("whereInProgressStatusSql", "where status in (?, ?, ?, ?, ?) ");
+        putSql("updateOutgoingSetupBatchStatusByStatus",
+                "update $(outgoing_batch) set status=?, last_update_time=?, last_update_hostname=? where node_id=? and load_id=? and status=? and batch_id < ?");
+        putSql("updateOutgoingLoadBatchStatusByStatus",
+                "update $(outgoing_batch) set status=?, last_update_time=?, last_update_hostname=? where node_id=? and load_id=? and status=? and batch_id between ? and ?");
+        putSql("updateOutgoingFinalizeBatchStatusByStatus",
+                "update $(outgoing_batch) set status=?, last_update_time=?, last_update_hostname=? where node_id=? and load_id=? and status=? and batch_id > ?");
     }
 }

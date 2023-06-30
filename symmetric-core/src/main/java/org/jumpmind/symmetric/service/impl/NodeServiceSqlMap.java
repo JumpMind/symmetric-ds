@@ -44,13 +44,17 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("insertNodeSql",
                 "insert into $(node) (node_group_id, external_id, database_type, database_version, database_name, " +
                         "schema_version, symmetric_version, sync_url," +
-                        "sync_enabled, batch_to_send_count, batch_in_error_count, created_at_node_id, " +
-                        "deployment_type, deployment_sub_type, config_version, node_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                        "sync_enabled, batch_to_send_count, batch_in_error_count, batch_last_successful, most_recent_active_table, " + 
+                        "purge_outgoing_average_ms, purge_outgoing_last_run_ms, purge_outgoing_last_finish, routing_average_run_ms, routing_last_run_ms, routing_last_finish, sym_data_size, " +
+                        "created_at_node_id, deployment_type, deployment_sub_type, config_version, data_rows_to_send_count, " + 
+                        " data_rows_loaded_count,oldest_load_time, node_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
         putSql("updateNodeSql",
                 "update $(node) set node_group_id=?, external_id=?, database_type=?,                                                                       "
                         + "  database_version=?, database_name=?, schema_version=?, symmetric_version=?, sync_url=?, "
-                        + "  sync_enabled=?, batch_to_send_count=?, batch_in_error_count=?, "
-                        + "  created_at_node_id=?, deployment_type=?, deployment_sub_type=?, config_version = ? where node_id = ?");
+                        + "  sync_enabled=?, batch_to_send_count=?, batch_in_error_count=?, batch_last_successful=?, most_recent_active_table=?, "
+                        + "  purge_outgoing_average_ms = ? , purge_outgoing_last_run_ms = ?, purge_outgoing_last_finish = ?, routing_average_run_ms = ?, routing_last_run_ms = ?, routing_last_finish = ?, sym_data_size = ?, "
+                        + "  created_at_node_id=?, deployment_type=?, deployment_sub_type=?, config_version = ?, "
+                        + "  data_rows_to_send_count = ?, data_rows_loaded_count = ?, oldest_load_time = ? where node_id = ?");
         putSql("findNodeSql", "where node_id = ?   ");
         putSql("findNodeByExternalIdSql", ""
                 + "where node_group_id = ? and external_id = ? order by node_id   ");
@@ -114,7 +118,9 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                 "select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,                                                                                                                                    "
                         + " c.schema_version, c.database_type, c.database_version, c.database_name, "
                         + " c.symmetric_version, c.created_at_node_id, c.batch_to_send_count, c.batch_in_error_count, "
-                        + " c.deployment_type, c.deployment_sub_type, c.config_version from   "
+                        + " c.deployment_type, c.deployment_sub_type, c.config_version, " 
+                        + " c.purge_outgoing_last_run_ms, c.purge_outgoing_average_ms, c.purge_outgoing_last_finish, c.routing_average_run_ms, c.routing_last_run_ms, c.routing_last_finish, c.sym_data_size " 
+                        + " from   "
                         + "  $(node) c                                                                                                                                                                                                ");
         putSql("updateNodeSecuritySql", "update $(node_security) set node_password = ?, registration_enabled = ?, "
                 + "registration_time = ?, registration_not_before = ?, registration_not_after = ?, "

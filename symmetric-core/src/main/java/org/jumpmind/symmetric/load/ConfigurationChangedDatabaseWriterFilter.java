@@ -104,6 +104,15 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
                     }
                 }
             }
+        } else if (matchesTable(table, TableConstants.SYM_MONITOR) && (data.getDataEventType() == DataEventType.INSERT)) {
+            Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+            String monitorID = newData.get("MONITOR_ID");
+            if (monitorID != null && (monitorID.equals("SystemBatchErrorMonitor") 
+                    || monitorID.equals("SystemLogMonitor") 
+                    || monitorID.equals("SystemOfflineNodeMonitor"))) {
+                return false;
+            }
+            
         }
         return true;
     }

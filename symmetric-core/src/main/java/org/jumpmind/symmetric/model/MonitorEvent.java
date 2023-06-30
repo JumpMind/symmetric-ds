@@ -22,6 +22,14 @@ package org.jumpmind.symmetric.model;
 
 import java.util.Date;
 
+import org.jumpmind.symmetric.monitor.MonitorTypeBatchError;
+import org.jumpmind.symmetric.monitor.MonitorTypeBatchUnsent;
+import org.jumpmind.symmetric.monitor.MonitorTypeCpu;
+import org.jumpmind.symmetric.monitor.MonitorTypeDisk;
+import org.jumpmind.symmetric.monitor.MonitorTypeMemory;
+import org.jumpmind.symmetric.monitor.MonitorTypeOfflineNodes;
+import org.jumpmind.symmetric.monitor.MonitorTypeUnrouted;
+
 public class MonitorEvent {
     protected String monitorId;
     protected String nodeId;
@@ -176,5 +184,27 @@ public class MonitorEvent {
 
     public void setDetails(String details) {
         this.details = details;
+    }
+    
+    public String getPrettyPrint() {
+        StringBuffer sb = new StringBuffer(String.valueOf(value));
+        if (MonitorTypeBatchError.NAME.equals(getType())) {
+            sb.append(getValue() > 1 ? " batches" : " batch"); 
+        } else if (MonitorTypeBatchUnsent.NAME.equals(getType())) {
+            sb.append(getValue() > 1 ? " batches" : " batch"); 
+        } else if (MonitorTypeUnrouted.NAME.equals(getType())) {
+            sb.append(getValue() > 1 ? " rows" : " row"); 
+        } else if (MonitorTypeOfflineNodes.NAME.equals(getType())) {
+            sb.append(getValue() > 1 ? " nodes" : " node"); 
+        } else if (MonitorTypeCpu.NAME.equals(getType())) {
+            sb.append("%"); 
+        } else if (MonitorTypeMemory.NAME.equals(getType())) {
+            sb.append("%"); 
+        } else if (MonitorTypeDisk.NAME.equals(getType())) {
+            sb.append("%"); 
+        }
+        
+        return sb.toString();
+        
     }
 }

@@ -75,6 +75,15 @@ public interface IOutgoingBatchService {
 
     public void updateOutgoingBatchStatus(ISqlTransaction transaction, Status status, String nodeId, long startBatchId, long endBatchId);
 
+    public void updateOutgoingSetupBatchStatusByStatus(ISqlTransaction transaction, String targetNodeId, long loadId,
+            long maxBatchId, String fromStatus, String toStatus);
+
+    public void updateOutgoingLoadBatchStatusByStatus(ISqlTransaction transaction, String targetNodeId, long loadId,
+            long startDataBatchId, long endDataBatchId, String fromStatus, String toStatus);
+
+    public void updateOutgoingFinalizeBatchStatusByStatus(ISqlTransaction transaction, String targetNodeId, long loadId,
+            long minBatchId, String fromStatus, String toStatus);
+
     public void updateCommonBatchExtractStatistics(OutgoingBatch batch);
 
     public void updateOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch);
@@ -91,7 +100,11 @@ public interface IOutgoingBatchService {
 
     public int countOutgoingBatchesInError();
 
+    public Date getOutgoingBatchesLatestUpdateSql();
+    
     public int countOutgoingBatchesUnsent();
+
+    public int[] countOutgoingNonSystemBatchesRowsUnsent();
 
     public int countOutgoingBatchesInError(String channelId);
 

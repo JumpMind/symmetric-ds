@@ -120,32 +120,33 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         putSql("updateTableReloadStatusTableCount", "update $(table_reload_status) set table_count = ?, last_update_time = ? where load_id = ?");
         putSql("updateTableReloadStatusDataCounts", "update $(table_reload_status) set "
                 + " start_data_batch_id = ?, end_data_batch_id = ?, "
-                + " data_batch_count = data_batch_count + ?, "
+                + " data_batch_count = case when data_batch_count = -1 then 0 else data_batch_count end + ?, "
                 + " rows_count = rows_count + ?, "
                 + " last_update_time = ?  "
                 + " where load_id = ?");
         putSql("updateTableReloadStatusDataCountsNoParamsInSelect", "update $(table_reload_status) set "
                 + " start_data_batch_id = ?, end_data_batch_id = ?, "
-                + " data_batch_count = data_batch_count + $(batchCount), "
+                + " data_batch_count = case when data_batch_count = -1 then 0 else data_batch_count end + $(batchCount), "
                 + " rows_count = rows_count + $(rowCount), "
                 + " last_update_time = ?  "
                 + " where load_id = ?");
         putSql("insertTableReloadStatus",
-                "insert into $(table_reload_status) (load_id, target_node_id, source_node_id, full_load, start_time, last_update_time) values (?, ?, ?, ?, ?, ?)");
+                "insert into $(table_reload_status) (load_id, target_node_id, source_node_id, full_load, start_time, last_update_time, data_batch_count, setup_batch_count, finalize_batch_count) "
+                + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         putSql("deleteTableReloadStatus", "delete from $(table_reload_status) where load_id = ?");
         putSql("updateTableReloadStatusSetupCount", "update $(table_reload_status) set "
                 + " setup_batch_count = ?, last_update_time = ? "
                 + " where load_id = ?");
         putSql("updateTableReloadStatusDataLoaded", "update $(table_reload_status) "
                 + " set completed = case when ("
-                + "    data_batch_count <= (case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end) and "
-                + "    setup_batch_count <= (case when ? < start_data_batch_id then setup_batch_loaded + ? else setup_batch_loaded end) and "
-                + "    finalize_batch_count <= (case when ? > end_data_batch_id then finalize_batch_loaded + ? else finalize_batch_loaded end)) "
+                + "    (data_batch_count > -1 and data_batch_count <= (case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end)) and "
+                + "    (setup_batch_count > -1 and setup_batch_count <= (case when ? < start_data_batch_id then setup_batch_loaded + ? else setup_batch_loaded end)) and "
+                + "    (finalize_batch_count > -1 and finalize_batch_count <= (case when ? > end_data_batch_id then finalize_batch_loaded + ? else finalize_batch_loaded end))) "
                 + "    then 1 else 0 end, "
                 + " end_time = case when ("
-                + "    data_batch_count <= (case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end) and "
-                + "    setup_batch_count <= (case when ? < start_data_batch_id then setup_batch_loaded + ? else setup_batch_loaded end) and "
-                + "    finalize_batch_loaded <= (case when ? > end_data_batch_id then finalize_batch_loaded + ? else finalize_batch_loaded end)) "
+                + "    (data_batch_count > -1 and data_batch_count <= (case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end)) and "
+                + "    (setup_batch_count > -1 and setup_batch_count <= (case when ? < start_data_batch_id then setup_batch_loaded + ? else setup_batch_loaded end)) and "
+                + "    (finalize_batch_count > -1 and finalize_batch_count <= (case when ? > end_data_batch_id then finalize_batch_loaded + ? else finalize_batch_loaded end))) "
                 + "    then ? else end_time end, "
                 + " data_batch_loaded = case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end, "
                 + " setup_batch_loaded = case when ? < start_data_batch_id then setup_batch_loaded + ? else setup_batch_loaded end, "
@@ -158,14 +159,14 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " where load_id = ? and completed = 0");
         putSql("updateTableReloadStatusDataLoadedNoParams", "update $(table_reload_status) "
                 + " set completed = case when ("
-                + "    data_batch_count <= (case when $(batchId) between start_data_batch_id and end_data_batch_id then data_batch_loaded + $(batchCount) else data_batch_loaded end) and "
-                + "    setup_batch_count <= (case when $(batchId) < start_data_batch_id then setup_batch_loaded + $(batchCount) else setup_batch_loaded end) and "
-                + "    finalize_batch_count <= (case when $(batchId) > end_data_batch_id then finalize_batch_loaded + $(batchCount) else finalize_batch_loaded end)) "
+                + "    (data_batch_count > -1 and data_batch_count <= (case when $(batchId) between start_data_batch_id and end_data_batch_id then data_batch_loaded + $(batchCount) else data_batch_loaded end)) and "
+                + "    (setup_batch_count > -1 and setup_batch_count <= (case when $(batchId) < start_data_batch_id then setup_batch_loaded + $(batchCount) else setup_batch_loaded end)) and "
+                + "    (finalize_batch_count > -1 and finalize_batch_count <= (case when $(batchId) > end_data_batch_id then finalize_batch_loaded + $(batchCount) else finalize_batch_loaded end))) "
                 + "    then 1 else 0 end, "
                 + " end_time = case when ("
-                + "    data_batch_count <= (case when $(batchId) between start_data_batch_id and end_data_batch_id then data_batch_loaded + $(batchCount) else data_batch_loaded end) and "
-                + "    setup_batch_count <= (case when $(batchId) < start_data_batch_id then setup_batch_loaded + $(batchCount) else setup_batch_loaded end) and "
-                + "    finalize_batch_loaded <= (case when $(batchId) > end_data_batch_id then finalize_batch_loaded + $(batchCount) else finalize_batch_loaded end)) "
+                + "    (data_batch_count > -1 and data_batch_count <= (case when $(batchId) between start_data_batch_id and end_data_batch_id then data_batch_loaded + $(batchCount) else data_batch_loaded end)) and "
+                + "    (setup_batch_count > -1 and setup_batch_count <= (case when $(batchId) < start_data_batch_id then setup_batch_loaded + $(batchCount) else setup_batch_loaded end)) and "
+                + "    (finalize_batch_count > -1 and finalize_batch_loaded <= (case when $(batchId) > end_data_batch_id then finalize_batch_loaded + $(batchCount) else finalize_batch_loaded end))) "
                 + "    then current_timestamp else end_time end, "
                 + " data_batch_loaded = case when $(batchId) between start_data_batch_id and end_data_batch_id then data_batch_loaded + $(batchCount) else data_batch_loaded end, "
                 + " setup_batch_loaded = case when $(batchId) < start_data_batch_id then setup_batch_loaded + $(batchCount) else setup_batch_loaded end, "
@@ -223,6 +224,8 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + "select max(data_id) from $(data_event)   ");
         putSql("countDataInRangeSql", ""
                 + "select count(*) from $(data) where data_id > ? and data_id < ?   ");
+        putSql("countDataSql", ""
+                + "select count(*) from $(data)");
         putSql("insertIntoDataSql",
                 "insert into $(data) (data_id, table_name, event_type, row_data, pk_data, " +
                         "old_data, trigger_hist_id, channel_id, external_data, node_list, is_prerouted, transaction_id, source_node_id, create_time) " +

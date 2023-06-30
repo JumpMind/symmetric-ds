@@ -163,6 +163,16 @@ final public class SymmetricUtils {
         }
         return str;
     }
+    
+    public static String replaceCatalogSchemaVariables(String catalogName, String schemaName, String str) {
+        if (catalogName != null) {
+            str = FormatUtils.replace("sourceCatalogName", catalogName, str);
+        }
+        if (schemaName != null) {
+            str = FormatUtils.replace("sourceSchemaName", schemaName, str);
+        }
+        return str;
+    }
 
     public static void logNotices() {
         synchronized (SymmetricUtils.class) {
