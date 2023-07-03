@@ -48,7 +48,7 @@ public interface IMonitorService {
     public List<MonitorEvent> getMonitorEventsFiltered(int limit, String type, int severityLevel, String nodeId, Boolean isResolved);
 
     public List<MonitorEvent> getMonitorEventsByMonitorId(String monitorId);
-        
+
     public void saveMonitorEvent(MonitorEvent notificationEvent);
 
     public void deleteMonitorEvent(MonitorEvent event);

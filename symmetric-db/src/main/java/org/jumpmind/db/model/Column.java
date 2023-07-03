@@ -638,7 +638,7 @@ public class Column implements Cloneable, Serializable {
         }
         return false;
     }
-    
+
     public boolean anyPlatformColumnTypeContains(String type) {
         for (PlatformColumn platformColumn : platformColumns.values()) {
             if (platformColumn.getType() != null && platformColumn.getType().contains(type)) {

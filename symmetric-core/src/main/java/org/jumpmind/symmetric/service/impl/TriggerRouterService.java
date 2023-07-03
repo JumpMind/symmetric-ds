@@ -1573,13 +1573,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     MDC.put("engineName", parameterService.getEngineName());
                     boolean removeTrigger = false;
                     Set<Table> tables;
-                    synchronized(tablesByTriggerId) {
+                    synchronized (tablesByTriggerId) {
                         tables = tablesByTriggerId.get(history.getTriggerId());
                     }
                     Trigger trigger = getTriggerFromList(history.getTriggerId(), triggersThatShouldBeActive);
                     if (tables == null && trigger != null) {
                         tables = getTablesForTrigger(trigger, triggersThatShouldBeActive, true, triggerRouterContext);
-                        synchronized(tablesByTriggerId) {
+                        synchronized (tablesByTriggerId) {
                             tablesByTriggerId.put(trigger.getTriggerId(), tables);
                         }
                     }

@@ -116,7 +116,6 @@ public class ColumnsAccordingToTriggerHistory {
             if (StringUtils.isNotBlank(router.getTargetTableName())) {
                 table.setName(router.getTargetTableName());
             }
-            
         }
         return table;
     }
