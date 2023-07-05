@@ -163,7 +163,7 @@ final public class SymmetricUtils {
         }
         return str;
     }
-    
+
     public static String replaceCatalogSchemaVariables(String catalogName, String defaultCatalogName, 
             String schemaName, String defaultSchemaName, String str) {
         if (catalogName == null) {

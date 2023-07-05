@@ -138,10 +138,9 @@ public class AndroidMonitorService implements IMonitorService {
     public List<Monitor> getActiveMonitorsUnresolvedForNodeFromDb(String nodeGroupId, String externalId) {
         return null;
     }
-    
+
     @Override
     public List<MonitorEvent> getMonitorEventsByMonitorId(String monitorId) {
         return new ArrayList<MonitorEvent>();
     }
-    
 }

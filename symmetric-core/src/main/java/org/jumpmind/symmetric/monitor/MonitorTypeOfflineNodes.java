@@ -40,7 +40,7 @@ public class MonitorTypeOfflineNodes implements IMonitorType, ISymmetricEngineAw
     protected INodeService nodeService;
     protected IParameterService parameterService;
     public static final String NAME = "offlineNodes";
-    
+
     @Override
     public String getName() {
         return "offlineNodes";

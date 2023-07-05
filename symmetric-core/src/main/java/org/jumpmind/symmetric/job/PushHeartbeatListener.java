@@ -71,19 +71,15 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
             long purgeOutgoingLastMs = -1;
             Date purgeOutgoingLastRun = null;
             long purgeOutgoingAverage = -1;
-            
             long routingLastMs = -1;
             long routingAveragetMs = -1;
             Date routingLastRun = null;
             long symDataSize = -1;
-            
             if (updateWithBatchStatus) {
                 outgoingErrorCount = engine.getOutgoingBatchService().countOutgoingBatchesInError();
                 int[] batchesRowsUnsent = engine.getOutgoingBatchService().countOutgoingNonSystemBatchesRowsUnsent();
-                
                 outgoingUnsentCount = batchesRowsUnsent[0];
                 outgoingUnsentRowCount = batchesRowsUnsent[1];
-                
                 Date outDate = engine.getOutgoingBatchService().getOutgoingBatchesLatestUpdateSql();
                 Date inDate = engine.getIncomingBatchService().getIncomingBatchesLatestUpdateSql();
                 if (outDate == null && inDate == null) {
@@ -95,7 +91,6 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                 } else {
                     lastSuccessfulSyncTime = outDate.after(inDate) ? outDate : inDate;
                 }
-                
                 IStatisticManager statisticsManager = engine.getStatisticManager();
                 mostRecentActiveTableSynced = statisticsManager.getMostRecentActiveTableSynced();
                 Map<Integer, Date> totalLoadedRowsMap = statisticsManager.getTotalLoadedRows();
@@ -103,19 +98,15 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                     totalRowsLoaded = totalLoadedRowsMap.keySet().iterator().next();
                     oldestLoadedDate = totalLoadedRowsMap.values().iterator().next();
                 }
-                
                 IJob purgeOutgoingJob = engine.getJobManager().getJob(ClusterConstants.PURGE_OUTGOING);
                 purgeOutgoingLastMs = purgeOutgoingJob.getLastExecutionTimeInMs();
                 purgeOutgoingLastRun = purgeOutgoingJob.getLastFinishTime();
                 purgeOutgoingAverage = purgeOutgoingJob.getAverageExecutionTimeInMs();
-                
                 IJob routeJob = engine.getJobManager().getJob(ClusterConstants.ROUTE);
                 routingAveragetMs = routeJob.getAverageExecutionTimeInMs();
                 routingLastRun = routeJob.getLastFinishTime();
                 routingLastMs = routeJob.getLastExecutionTimeInMs();
-                
                 symDataSize = engine.getDataService().countData();
-                
             }
             if (!parameterService.getExternalId().equals(me.getExternalId())
                     || !parameterService.getNodeGroupId().equals(me.getNodeGroupId())
@@ -158,7 +149,6 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                 me.setRoutingLastRun(routingLastRun);
                 me.setRoutingLastMs(routingLastMs);
                 me.setSymDataSize(symDataSize);
-                
                 me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
                 if (engine.getParameterService().isRegistrationServer()) {
                     me.setConfigVersion(Version.version());

@@ -101,7 +101,7 @@ public interface IOutgoingBatchService {
     public int countOutgoingBatchesInError();
 
     public Date getOutgoingBatchesLatestUpdateSql();
-    
+
     public int countOutgoingBatchesUnsent();
 
     public int[] countOutgoingNonSystemBatchesRowsUnsent();

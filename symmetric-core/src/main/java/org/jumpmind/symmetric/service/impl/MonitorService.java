@@ -396,11 +396,10 @@ public class MonitorService extends AbstractService implements IMonitorService {
     public List<MonitorEvent> getMonitorEventsByMonitorId(String monitorId) {
         String sql = getSql("selectMonitorEventSql", "whereMonitorEventIdSql");
         ArrayList<Object> args = new ArrayList<Object>();
-        
         sql += " order by event_time desc";
         return sqlTemplate.query(sql, new MonitorEventRowMapper(), monitorId);
     }
-    
+
     protected List<MonitorEvent> getMonitorEventsForNotification(int severityLevel) {
         return sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventForNotificationBySeveritySql"),
                 new MonitorEventRowMapper(), severityLevel);

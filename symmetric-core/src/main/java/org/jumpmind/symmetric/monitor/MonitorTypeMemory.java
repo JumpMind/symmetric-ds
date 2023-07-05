@@ -37,7 +37,7 @@ public class MonitorTypeMemory extends AbstractMonitorType implements IBuiltInEx
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected MemoryPoolMXBean tenuredPool;
     public static final String NAME = "memory";
-    
+
     @Override
     public String getName() {
         return "memory";

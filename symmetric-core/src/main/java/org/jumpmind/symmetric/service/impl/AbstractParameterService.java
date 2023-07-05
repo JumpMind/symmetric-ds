@@ -181,7 +181,7 @@ abstract public class AbstractParameterService {
         return new Date(lastTimeParameterWereCached);
     }
 
-    public synchronized String getExternalId() {
+    public String getExternalId() {
         if (externalId == null) {
             String value = getString(ParameterConstants.EXTERNAL_ID);
             value = substituteScripts(value);
@@ -193,7 +193,7 @@ abstract public class AbstractParameterService {
         return externalId;
     }
 
-    public synchronized String getSyncUrl() {
+    public String getSyncUrl() {
         if (syncUrl == null) {
             String value = getString(ParameterConstants.SYNC_URL);
             value = substituteScripts(value);
@@ -208,7 +208,7 @@ abstract public class AbstractParameterService {
         return syncUrl;
     }
 
-    public synchronized String getNodeGroupId() {
+    public String getNodeGroupId() {
         if (nodeGroupId == null) {
             String value = getString(ParameterConstants.NODE_GROUP_ID);
             value = substituteScripts(value);
@@ -220,7 +220,7 @@ abstract public class AbstractParameterService {
         return nodeGroupId;
     }
 
-    public synchronized String getRegistrationUrl() {
+    public String getRegistrationUrl() {
         if (registrationUrl == null) {
             String value = getString(ParameterConstants.REGISTRATION_URL);
             value = substituteScripts(value);
@@ -235,7 +235,7 @@ abstract public class AbstractParameterService {
         return registrationUrl;
     }
 
-    public synchronized String getEngineName() {
+    public String getEngineName() {
         if (engineName == null) {
             String value = getString(ParameterConstants.ENGINE_NAME, "SymmetricDS");
             value = substituteScripts(value);

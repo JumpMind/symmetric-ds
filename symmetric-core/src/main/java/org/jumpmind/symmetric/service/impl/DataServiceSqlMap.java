@@ -132,7 +132,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " where load_id = ?");
         putSql("insertTableReloadStatus",
                 "insert into $(table_reload_status) (load_id, target_node_id, source_node_id, full_load, start_time, last_update_time, data_batch_count, setup_batch_count, finalize_batch_count) "
-                + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        + "values (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         putSql("deleteTableReloadStatus", "delete from $(table_reload_status) where load_id = ?");
         putSql("updateTableReloadStatusSetupCount", "update $(table_reload_status) set "
                 + " setup_batch_count = ?, last_update_time = ? "

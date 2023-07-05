@@ -38,7 +38,7 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
     protected RuntimeMXBean runtimeBean;
     protected List<StackTraceElement> ignoreElements;
     public static final String NAME = "cpu";
-    
+
     public MonitorTypeCpu() {
         osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
         runtimeBean = ManagementFactory.getRuntimeMXBean();
