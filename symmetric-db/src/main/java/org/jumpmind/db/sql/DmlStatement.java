@@ -496,7 +496,7 @@ public class DmlStatement {
                     newSql = newSql.replaceFirst(regex, row.getString(name));
                 }
             } else {
-                if (DmlType.INSERT.equals(dmlType)) {
+                if (DmlType.INSERT.equals(dmlType) || (DmlType.UPDATE.equals(dmlType) && i < columns.length - keys.length)) {
                     newSql = newSql.replaceFirst(regex, "null");
                 } else {
                     newSql = newSql.replaceFirst("\\= " + regex, "is null");
