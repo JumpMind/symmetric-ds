@@ -23,8 +23,11 @@ package org.jumpmind.symmetric.service.impl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.codec.binary.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -37,7 +40,6 @@ import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
-import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
@@ -217,12 +219,31 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
     
     protected void sendLoadBasedOnConfig(NodeSecurity security, boolean isReverse, ProcessInfo processInfo) {
         List<Node> nodes = new ArrayList<Node>();
+        List<NodeGroupLink> groupLinks = engine.getConfigurationService().getNodeGroupLinks(false);
+        Node currentNode = engine.getNodeService().findNode(security.getNodeId());
+        
         if (isReverse) {
-            nodes.addAll(engine.getNodeService().findNodesWhoPullFromMe());
-            nodes.addAll(engine.getNodeService().findNodesToPushTo());
+            Set<String> nodeGroups = new HashSet<String>();
+            for (NodeGroupLink link : groupLinks) {
+                if (link.getSourceNodeGroupId().equals(currentNode.getNodeGroupId())) {
+                    nodeGroups.add(link.getTargetNodeGroupId());
+                }
+            }
+            Iterator<String> itr = nodeGroups.iterator();
+            while (itr.hasNext()) {
+                nodes.addAll(engine.getNodeService().findEnabledNodesFromNodeGroup(itr.next()));
+            }
         } else {
-            nodes.addAll(engine.getNodeService().findNodesToPull());
-            nodes.addAll(engine.getNodeService().findNodesWhoPushToMe());
+            Set<String> nodeGroups = new HashSet<String>();
+            for (NodeGroupLink link : groupLinks) {
+                if (link.getTargetNodeGroupId().equals(currentNode.getNodeGroupId())) {
+                    nodeGroups.add(link.getSourceNodeGroupId());
+                }
+            }
+            Iterator<String> itr = nodeGroups.iterator();
+            while (itr.hasNext()) {
+                nodes.addAll(engine.getNodeService().findEnabledNodesFromNodeGroup(itr.next()));
+            }
         }
         
         for (Node node  : nodes) {
