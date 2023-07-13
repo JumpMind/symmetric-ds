@@ -37,6 +37,14 @@ If you want SymmetricDS to install into a schema other than public you can alter
 alter user {user name} set search_path to {schema name};
 ----
 
+You will also need to set privileges on the schema so that the SymmetricDS user can use and write to the schema.
+
+[source, SQL]
+----
+grant usage on schema {schema name} to {user name};
+grant create on schema {schema name} to {user name};
+----
+
 ==== Permissions
 
 If SymmetricDS is connected into a different schema than the application tables and a different user account is used to write to the the application tables the following permissions need to be granted to the application user to access the SymmetricDS schema
