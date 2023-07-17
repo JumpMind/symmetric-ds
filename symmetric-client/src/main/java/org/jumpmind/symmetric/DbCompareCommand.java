@@ -22,6 +22,7 @@ package org.jumpmind.symmetric;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -109,6 +110,10 @@ public class DbCompareCommand extends AbstractCommandLauncher {
             }
         }
         String dateTimeFormatArg = getOptionValue(OPTION_DATE_TIME_FORMAT, "dateTimeFormat", line, config);
+        if (!isValidDateFormat(dateTimeFormatArg)) {
+            System.err.println("The date time format value " + dateTimeFormatArg + " is not a valid date time format.");
+            System.exit(1);
+        }
         if (!StringUtils.isEmpty(dateTimeFormatArg)) {
             config.setDateTimeFormat(dateTimeFormatArg);
         }
@@ -129,6 +134,17 @@ public class DbCompareCommand extends AbstractCommandLauncher {
             }
         }
         return false;
+    }
+
+    private boolean isValidDateFormat(String format) {
+        try {
+            if (format != null) {
+                new SimpleDateFormat(format);
+            }
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     protected String getOptionValue(String optionName, String internalName, CommandLine line, DbCompareConfig config) {

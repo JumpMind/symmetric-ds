@@ -259,6 +259,9 @@ public class MonitorService extends AbstractService implements IMonitorService {
     private boolean isLogMonitorEventResolved(Monitor monitor, MonitorEvent eventValue, String nodeId) {
         List<LogSummary> eventLogSummaries = new Gson().fromJson(eventValue.getDetails(), new TypeToken<List<LogSummary>>() {
         }.getType());
+        if (eventLogSummaries == null) {
+            return false;
+        }
         List<MonitorEvent> resolvedEvents = getMonitorEventsResolvedForNode(monitor.getMonitorId(), nodeId);
         for (LogSummary eventLogSummary : eventLogSummaries) {
             boolean logMessageResolved = false;
