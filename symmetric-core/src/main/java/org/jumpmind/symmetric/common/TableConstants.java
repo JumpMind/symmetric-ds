@@ -66,6 +66,7 @@ public class TableConstants {
     public static final String SYM_NODE_GROUP_CHANNEL_WND = "node_group_channel_wnd";
     public static final String SYM_NODE_HOST_CHANNEL_STATS = "node_host_channel_stats";
     public static final String SYM_INCOMING_ERROR = "incoming_error";
+    public static final String SYM_OUTGOING_ERROR = "outgoing_error";
     public static final String SYM_SEQUENCE = "sequence";
     public static final String SYM_TABLE_RELOAD_REQUEST = "table_reload_request";
     public static final String SYM_GROUPLET = "grouplet";
@@ -105,7 +106,7 @@ public class TableConstants {
                 SYM_NODE_COMMUNICATION, SYM_NODE_GROUP, SYM_NODE_GROUP_CHANNEL_WND, SYM_NODE_GROUP_LINK, SYM_NODE_HOST, SYM_NODE_HOST_CHANNEL_STATS,
                 SYM_NODE_HOST_JOB_STATS, SYM_NODE_HOST_STATS, SYM_NODE_IDENTITY, SYM_NODE_SECURITY, SYM_NOTIFICATION, SYM_OUTGOING_BATCH, SYM_PARAMETER,
                 SYM_REGISTRATION_REDIRECT, SYM_REGISTRATION_REQUEST, SYM_ROUTER, SYM_SEQUENCE, SYM_TABLE_RELOAD_REQUEST, SYM_TABLE_RELOAD_STATUS,
-                SYM_TRANSFORM_TABLE, SYM_TRANSFORM_COLUMN, SYM_TRIGGER, SYM_TRIGGER_HIST, SYM_TRIGGER_ROUTER, SYM_TRIGGER_ROUTER_GROUPLET);
+                SYM_TRANSFORM_TABLE, SYM_TRANSFORM_COLUMN, SYM_TRIGGER, SYM_TRIGGER_HIST, SYM_TRIGGER_ROUTER, SYM_TRIGGER_ROUTER_GROUPLET, SYM_OUTGOING_ERROR);
         if (hasConsoleSchema) {
             tables.addAll(getTablesForConsole(tablePrefix));
         }
@@ -137,7 +138,7 @@ public class TableConstants {
                 SYM_PARAMETER, SYM_CHANNEL, SYM_NODE_GROUP_CHANNEL_WND, SYM_TRIGGER, SYM_ROUTER, SYM_TRIGGER_ROUTER, SYM_TRANSFORM_TABLE, SYM_LOAD_FILTER,
                 SYM_TRANSFORM_COLUMN, SYM_CONFLICT, SYM_GROUPLET, SYM_GROUPLET_LINK, SYM_TRIGGER_ROUTER_GROUPLET, SYM_FILE_TRIGGER, SYM_FILE_TRIGGER_ROUTER,
                 SYM_FILE_SNAPSHOT, SYM_EXTENSION, SYM_MONITOR, SYM_MONITOR_EVENT, SYM_NOTIFICATION, SYM_JOB, SYM_TABLE_RELOAD_REQUEST, SYM_TABLE_RELOAD_STATUS,
-                SYM_EXTRACT_REQUEST);
+                SYM_EXTRACT_REQUEST, SYM_INCOMING_ERROR, SYM_OUTGOING_ERROR);
         if (hasConsoleSchema) {
             addPrefixToTableNames(tables, tablePrefix, SYM_CONSOLE_ROLE, SYM_CONSOLE_USER, SYM_CONSOLE_ROLE_PRIVILEGE, SYM_CONSOLE_USER_HIST,
                     SYM_DESIGN_DIAGRAM, SYM_DIAGRAM_GROUP, SYM_TABLE_GROUP, SYM_TABLE_GROUP_HIER);
@@ -158,6 +159,7 @@ public class TableConstants {
         addPrefixToTableNames(map, tablePrefix, "3.9.0", SYM_JOB);
         addPrefixToTableNames(map, tablePrefix, "3.12.0", SYM_CONSOLE_ROLE, SYM_CONSOLE_ROLE_PRIVILEGE, SYM_DESIGN_DIAGRAM, SYM_DIAGRAM_GROUP);
         addPrefixToTableNames(map, tablePrefix, "3.14.0", SYM_TABLE_RELOAD_STATUS, SYM_EXTRACT_REQUEST, SYM_TABLE_GROUP, SYM_TABLE_GROUP_HIER);
+        addPrefixToTableNames(map, tablePrefix, "3.15.0", SYM_OUTGOING_ERROR, SYM_INCOMING_ERROR);
         return map;
     }
 
@@ -166,7 +168,7 @@ public class TableConstants {
      * changes.
      */
     public static final String[] getConfigTablesExcludedFromRegistration() {
-        return new String[] { SYM_MONITOR_EVENT, SYM_TABLE_RELOAD_REQUEST, SYM_TABLE_RELOAD_STATUS, SYM_EXTRACT_REQUEST };
+        return new String[] { SYM_MONITOR_EVENT, SYM_TABLE_RELOAD_REQUEST, SYM_TABLE_RELOAD_STATUS, SYM_EXTRACT_REQUEST, SYM_OUTGOING_ERROR, SYM_INCOMING_ERROR };
     }
 
     /**
