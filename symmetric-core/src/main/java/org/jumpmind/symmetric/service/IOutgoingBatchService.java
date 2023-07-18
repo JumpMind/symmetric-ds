@@ -37,7 +37,9 @@ import org.jumpmind.symmetric.model.OutgoingBatches;
 public interface IOutgoingBatchService {
     public List<String> getNodesInError();
 
-    public void markAllAsSentForNode(String nodeId, boolean includeConfigChannel);
+	public void updateOutgoingError(long batchId, String nodeId);
+
+	public void markAllAsSentForNode(String nodeId, boolean includeConfigChannel);
 
     public void markAllConfigAsSentForNode(String nodeId);
 

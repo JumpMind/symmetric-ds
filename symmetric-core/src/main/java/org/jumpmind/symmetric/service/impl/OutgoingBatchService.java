@@ -36,7 +36,6 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.LongMapper;
-import org.jumpmind.db.sql.mapper.RowMapper;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -84,6 +83,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         this.extensionService = extensionService;
         setSqlMap(new OutgoingBatchServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
     }
+
+	public void updateOutgoingError(long batchId, String nodeId) {
+		sqlTemplate.update(getSql("updateOutgoingError"), batchId, nodeId);
+	}
 
     @Override
     public int cancelLoadBatches(long loadId) {
