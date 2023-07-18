@@ -342,7 +342,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                     performFallbackToInsert(writer, data, conflict, true);
                 }
             } else {
-                writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.CONFLICTLOSECOUNT);
+                writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.IGNOREROWCOUNT);
             }
         } else {
             throw new ConflictException(data, writer.getTargetTable(), false, conflict,
