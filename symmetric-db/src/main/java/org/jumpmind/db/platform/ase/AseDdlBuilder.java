@@ -118,6 +118,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setMaxSize("TIME", 3);
         databaseInfo.setMaxSize("BIGDATETIME", 6);
         databaseInfo.setMaxSize("BIGTIME", 6);
+        databaseInfo.setHasSize(Types.CLOB, false);
         databaseInfo.setDateOverridesToTimestamp(true);
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
