@@ -132,6 +132,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String OPTION_EXCLUDE_LOG4J = "exclude-log4j";
     private static final String OPTION_EXTERNAL_SECURITY = "external-security";
     private static final String OPTION_ALTERS = "alters";
+    private static final String OPTION_FILE = "file";
     private static final int WIDTH = 120;
     private static final int PAD = 3;
 
@@ -266,6 +267,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             if (cmd.equals(CMD_EXPORT_SYM_TABLES)) {
                 addOption(options, null, OPTION_ALTERS, false);
             }
+            if (cmd.equals(CMD_SEND_SQL)) {
+                addOption(options, "f", OPTION_FILE, true);
+            }
             if (options.getOptions().size() > 0) {
                 format.printWrapped(writer, WIDTH, "\nOptions:");
                 format.printOptions(writer, WIDTH, options, PAD, PAD);
@@ -302,6 +306,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         addOption(options, null, OPTION_EXCLUDE_LOG4J, false);
         addOption(options, null, OPTION_EXTERNAL_SECURITY, false);
         addOption(options, null, OPTION_ALTERS, false);
+        addOption(options, null, OPTION_FILE, true);
         buildCryptoOptions(options);
     }
 
@@ -804,9 +809,20 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private void sendSql(CommandLine line, List<String> args) {
         String tableName = popArg(args, "Table Name");
-        String sql = popArg(args, "SQL");
+        String sql;
         String catalogName = line.getOptionValue(OPTION_CATALOG);
         String schemaName = line.getOptionValue(OPTION_SCHEMA);
+        String fileName = line.getOptionValue(OPTION_FILE);
+        if (fileName != null) {
+            try {
+                File sqlFile = new File(fileName);
+                sql = FileUtils.readFileToString(sqlFile, Charset.defaultCharset());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            sql = popArg(args, "SQL");
+        }
         for (Node node : getNodes(line)) {
             System.out.println("Sending SQL to node '" + node.getNodeId() + "'");
             getSymmetricEngine().getDataService().sendSQL(node.getNodeId(), catalogName,
