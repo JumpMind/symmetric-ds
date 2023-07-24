@@ -104,6 +104,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         } else {
             this.isolationLevel = databaseInfo.getMinIsolationLevelToPreventPhantomReads();
         }
+        if (settings.getLogSqlBuilder() != null) {
+            this.logSqlBuilder = settings.getLogSqlBuilder();
+        }
     }
 
     protected Connection getConnection() throws SQLException {
