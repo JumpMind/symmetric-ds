@@ -622,36 +622,44 @@ public class Column implements Cloneable, Serializable {
     }
 
     private PlatformColumn findDifferentVersionPlatformColumn(String name) {
-        for (Entry<String, PlatformColumn> entry : platformColumns.entrySet()) {
-            if (entry.getKey() != null && entry.getKey().contains(name)) {
-                return entry.getValue();
+        if (platformColumns != null) {
+            for (Entry<String, PlatformColumn> entry : platformColumns.entrySet()) {
+                if (entry.getKey() != null && entry.getKey().contains(name)) {
+                    return entry.getValue();
+                }
             }
         }
         return null;
     }
 
     public boolean anyPlatformColumnNameContains(String name) {
-        for (String platformColumnName : platformColumns.keySet()) {
-            if (platformColumnName != null && platformColumnName.contains(name)) {
-                return true;
+        if (platformColumns != null) {
+            for (String platformColumnName : platformColumns.keySet()) {
+                if (platformColumnName != null && platformColumnName.contains(name)) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
     public boolean anyPlatformColumnTypeContains(String type) {
-        for (PlatformColumn platformColumn : platformColumns.values()) {
-            if (platformColumn.getType() != null && platformColumn.getType().contains(type)) {
-                return true;
+        if (platformColumns != null) {
+            for (PlatformColumn platformColumn : platformColumns.values()) {
+                if (platformColumn.getType() != null && platformColumn.getType().contains(type)) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
     public boolean allPlatformColumnNamesContain(String name) {
-        for (String platformColumnName : platformColumns.keySet()) {
-            if (platformColumnName != null && !platformColumnName.contains(name)) {
-                return false;
+        if (platformColumns != null) {
+            for (String platformColumnName : platformColumns.keySet()) {
+                if (platformColumnName != null && !platformColumnName.contains(name)) {
+                    return false;
+                }
             }
         }
         return true;
