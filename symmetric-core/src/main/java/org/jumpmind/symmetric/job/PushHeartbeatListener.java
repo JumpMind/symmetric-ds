@@ -43,7 +43,6 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,14 +99,16 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                     totalRowsLoaded = totalLoadedRowsMap.keySet().iterator().next();
                     oldestLoadedDate = totalLoadedRowsMap.values().iterator().next();
                 }
-                IJob purgeOutgoingJob = engine.getJobManager().getJob(ClusterConstants.PURGE_OUTGOING);
-                purgeOutgoingLastMs = purgeOutgoingJob.getLastExecutionTimeInMs();
-                purgeOutgoingLastRun = purgeOutgoingJob.getLastFinishTime();
-                purgeOutgoingAverage = purgeOutgoingJob.getAverageExecutionTimeInMs();
-                IJob routeJob = engine.getJobManager().getJob(ClusterConstants.ROUTE);
-                routingAveragetMs = routeJob.getAverageExecutionTimeInMs();
-                routingLastRun = routeJob.getLastFinishTime();
-                routingLastMs = routeJob.getLastExecutionTimeInMs();
+                if (engine.getJobManager().isStarted()) {
+                    IJob purgeOutgoingJob = engine.getJobManager().getJob(ClusterConstants.PURGE_OUTGOING);
+                    purgeOutgoingLastMs = purgeOutgoingJob.getLastExecutionTimeInMs();
+                    purgeOutgoingLastRun = purgeOutgoingJob.getLastFinishTime();
+                    purgeOutgoingAverage = purgeOutgoingJob.getAverageExecutionTimeInMs();
+                    IJob routeJob = engine.getJobManager().getJob(ClusterConstants.ROUTE);
+                    routingAveragetMs = routeJob.getAverageExecutionTimeInMs();
+                    routingLastRun = routeJob.getLastFinishTime();
+                    routingLastMs = routeJob.getLastExecutionTimeInMs();
+                }
                 symDataSize = engine.getDataService().countData();
             }
             if (!parameterService.getExternalId().equals(me.getExternalId())
