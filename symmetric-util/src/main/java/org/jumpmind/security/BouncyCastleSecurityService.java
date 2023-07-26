@@ -208,7 +208,7 @@ public class BouncyCastleSecurityService extends SecurityService {
                     chain = new Certificate[1];
                     chain[0] = store.getCertificate(alias);
                 }
-            } else if (fileType.equalsIgnoreCase("pem") || fileType.equalsIgnoreCase("crt")) {
+            } else if (fileType.equalsIgnoreCase("pem") || fileType.equalsIgnoreCase("crt") || fileType.equalsIgnoreCase("cer")) {
                 List<Certificate> certs = new ArrayList<Certificate>();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                 String line = null;
