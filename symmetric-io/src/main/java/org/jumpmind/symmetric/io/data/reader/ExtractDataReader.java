@@ -20,12 +20,14 @@
  */
 package org.jumpmind.symmetric.io.data.reader;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
@@ -57,12 +59,22 @@ public class ExtractDataReader implements IDataReader {
     protected CsvData data;
     protected DataContext dataContext;
     protected boolean isSybaseASE;
+    protected boolean isUsingUnitypes;
+
 
     public ExtractDataReader(IDatabasePlatform platform, IExtractDataReaderSource source) {
         this.sourcesToUse = new ArrayList<IExtractDataReaderSource>();
         this.sourcesToUse.add(source);
         this.platform = platform;
-        isSybaseASE = platform.getName().equals(DatabaseNamesConstants.ASE);
+        this.isSybaseASE = platform.getName().equals(DatabaseNamesConstants.ASE);
+    }
+    
+    public ExtractDataReader(IDatabasePlatform platform, IExtractDataReaderSource source, Boolean isUsingUnitypes) {
+        this.sourcesToUse = new ArrayList<IExtractDataReaderSource>();
+        this.sourcesToUse.add(source);
+        this.platform = platform;
+        this.isUsingUnitypes=isUsingUnitypes;
+        this.isSybaseASE = platform.getName().equals(DatabaseNamesConstants.ASE);
     }
 
     public ExtractDataReader(IDatabasePlatform platform, List<IExtractDataReaderSource> sources) {
@@ -230,15 +242,25 @@ public class ExtractDataReader implements IDataReader {
                 }
                 String sql = buildSelect(table, uniColumns, pkColumns);
                 Row row = sqlTemplate.queryForRow(sql, args);
+
                 if (row != null) {
                     for (Column uniColumn : uniColumns) {
-                        String valueForCsv = null;
-                        byte[] binaryData = row.getBytes(uniColumn.getName());
-                        if (binaryData != null) {
-                            valueForCsv = new String(binaryData, Charset.defaultCharset());
+                        try {
+                            int index = ArrayUtils.indexOf(columnNames, uniColumn.getName());
+                            String utf16String = null;
+                            if(batch.getChannelId().equalsIgnoreCase("reload")) {
+                                utf16String = new String(Hex.decodeHex(rowData[index]), "UTF-16");
+                            } else {
+                                String baseString = rowData[index];
+                                baseString = "fffe" + baseString;
+                                utf16String = new String(Hex.decodeHex(baseString), "UTF-16");
+                            }
+
+                            String utf8String = new String(utf16String.getBytes(Charset.defaultCharset()), Charset.defaultCharset());
+                            rowData[index] = utf8String;
+                        } catch (UnsupportedEncodingException | DecoderException e) {
+                            e.printStackTrace();
                         }
-                        int index = ArrayUtils.indexOf(columnNames, uniColumn.getName());
-                        rowData[index] = valueForCsv;
                     }
                     data.putParsedData(CsvData.ROW_DATA, rowData);
                 }

@@ -102,16 +102,6 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                 table.removeIndex(0);
             }
         }
-        if (parameterService.is(ParameterConstants.DBDIALECT_SYBASE_ASE_USE_UNITYPES_FOR_SYNC)) {
-            Table table = database.findTable(TableConstants.getTableName(getTablePrefix(), TableConstants.SYM_DATA));
-            PlatformColumn platformColumn = new PlatformColumn(getName(),"UNITEXT", "");
-            table.getColumnWithName("row_data").addPlatformColumn(platformColumn);
-            table.getColumnWithName("old_data").addPlatformColumn(platformColumn);
-            table.getColumnWithName("pk_data").addPlatformColumn(platformColumn);
-//            table.getColumnWithName("row_data").setMappedType(TypeMap.UNITEXT);
-//            table.getColumnWithName("old_data").setMappedType(TypeMap.UNITEXT);
-//            table.getColumnWithName("pk_data").setMappedType(TypeMap.UNITEXT);
-        }
         return database;
     }
 
