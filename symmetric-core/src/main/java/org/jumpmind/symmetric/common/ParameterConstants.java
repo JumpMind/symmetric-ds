@@ -494,6 +494,7 @@ final public class ParameterConstants {
     public final static String OPENSEARCH_LOAD_AWS_SECRET_KEY = "opensearch.load.aws.secret.key";
     public final static String S3_LOAD_AWS_ACCESS_KEY = "s3.load.aws.access.key";
     public final static String S3_LOAD_AWS_SECRET_KEY = "s3.load.aws.secret.key";
+    public final static String S3_LOAD_FORMAT = "s3.load.format";
     public final static String SINGLESTORE_AUDIT_LOG_DIR = "single.store.audit.log.dir";
     public final static String SPATIAL_TYPES_ENABLED = "spatial.data.types.enabled";
     public final static String DEFAULT_VALUES_TO_LEAVE_UNQUOTED = "default.values.to.leave.unquoted";
