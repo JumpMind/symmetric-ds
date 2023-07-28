@@ -2,14 +2,14 @@ apply from: symAssembleDir + '/common.gradle'
 
 buildscript {
     repositories { 
-       maven { url 'https://repo.spring.io/plugins-release' } 
+       maven { url 'https://repo.spring.io/plugins-release' }
        maven { url 'https://plugins.gradle.org/m2/' }
        maven { url "https://maven.vaadin.com/vaadin-addons" }         
        maven { url "https://mvnrepository.com/artifact" }
     }
 
     dependencies { 
-        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
+        classpath("gradle.plugin.cn.bestwu.gradle:propdeps-plugin:0.0.8")
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'     
         classpath 'com.devsoap.plugin:gradle-vaadin-plugin:1.4.1'    
     }    
