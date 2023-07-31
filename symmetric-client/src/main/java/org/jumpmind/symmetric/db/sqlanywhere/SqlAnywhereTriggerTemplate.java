@@ -280,8 +280,12 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
                     throw new NotImplementedException(columns[i] + " is of type "
                             + columns[i].getMappedType());
             }
-            text += ";";
+            text += appendSemicolonAfterDeclare();
         }
         return text;
+    }
+    
+    protected String appendSemicolonAfterDeclare() {
+        return "";
     }
 }

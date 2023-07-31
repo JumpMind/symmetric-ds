@@ -193,7 +193,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
         ddl.append("DROP INDEX ");
-        ddl.append(getFullyQualifiedTableNameShorten(table));
+        ddl.append(table.getSchema()).append(".").append(table.getName());
         ddl.append(".");
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);

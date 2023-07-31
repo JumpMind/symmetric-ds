@@ -182,4 +182,8 @@ public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
         sqlTemplates.put("initialLoadSqlTemplate",
                 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                ");
     }
+    
+    protected String appendSemicolonAfterDeclare() {
+        return ";";
+    }
 }
