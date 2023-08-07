@@ -1600,7 +1600,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 try {
                     List<NodeQueuePair> nodes = getExtractRequestNodes();
                     for (NodeQueuePair pair : nodes) {
-                        clusterService.refreshLock(ClusterConstants.INITIAL_LOAD_EXTRACT);
                         queue(pair.getNodeId(), pair.getQueue(), statuses);
                     }
                 } finally {

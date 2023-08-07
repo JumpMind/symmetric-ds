@@ -107,6 +107,9 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
         this.uriHandlers.add(new FileSyncPullUriHandler(this, add(customInterceptors, authInterceptor, concurrencyInterceptor)));
         this.uriHandlers.add(new FileSyncPushUriHandler(this, add(customInterceptors, authInterceptor, concurrencyInterceptor)));
         this.uriHandlers.add(new CopyNodeUriHandler(this, add(customInterceptors, authInterceptor)));
+        for (IServerSymmetricEngineLifecycle ext : extensionService.getExtensionPointList(IServerSymmetricEngineLifecycle.class)) {
+            ext.initServer(this, uriHandlers, customInterceptors, authInterceptor, concurrencyInterceptor);
+        }
     }
 
     protected IInterceptor[] buildCustomInterceptors() {
@@ -137,7 +140,7 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
         return customInterceptors.toArray(new IInterceptor[customInterceptors.size()]);
     }
 
-    protected IInterceptor[] add(IInterceptor[] array, IInterceptor... elements) {
+    public IInterceptor[] add(IInterceptor[] array, IInterceptor... elements) {
         IInterceptor[] newArray = new IInterceptor[array.length + elements.length];
         int index = 0;
         for (IInterceptor interceptor : elements) {

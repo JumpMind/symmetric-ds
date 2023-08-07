@@ -159,4 +159,16 @@ public class MockTransportManager implements ITransportManager {
     public Map<String, String> readRequestProperties(InputStream is) throws IOException {
         return null;
     }
+
+    @Override
+    public IIncomingTransport getComparePullTransport(Node remote, Node local, String securityToken, String registrationUrl,
+            Map<String, String> requestParameters) throws IOException {
+        return null;
+    }
+
+    @Override
+    public IOutgoingWithResponseTransport getComparePushTransport(Node remote, Node local, String securityToken, String registrationUrl,
+            Map<String, String> requestParameters) throws IOException {
+        return null;
+    }
 }

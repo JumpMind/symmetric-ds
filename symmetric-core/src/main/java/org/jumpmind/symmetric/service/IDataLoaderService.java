@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingError;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
+import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -48,6 +49,8 @@ public interface IDataLoaderService {
     public void loadDataFromPush(Node sourceNode, InputStream in, OutputStream out) throws IOException;
 
     public void loadDataFromPush(Node sourceNode, String channelId, InputStream in, OutputStream out) throws IOException;
+
+    public List<IncomingBatch> loadDataFromTransport(ProcessInfo processInfo, Node sourceNode, IIncomingTransport transport) throws IOException;
 
     public List<IncomingBatch> loadDataFromOfflineTransport(Node remote, RemoteNodeStatus status, IIncomingTransport transport) throws IOException;
 

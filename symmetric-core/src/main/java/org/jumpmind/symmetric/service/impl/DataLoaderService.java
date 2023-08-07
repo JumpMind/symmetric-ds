@@ -133,6 +133,7 @@ import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.AuthenticationException;
+import org.jumpmind.symmetric.transport.AuthenticationExpiredException;
 import org.jumpmind.symmetric.transport.ConnectionDuplicateException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -529,6 +530,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
+    public List<IncomingBatch> loadDataFromTransport(ProcessInfo processInfo, Node sourceNode, IIncomingTransport transport) throws IOException {
+        return loadDataFromTransport(processInfo, sourceNode, transport, null);
+    }
+
     /**
      * Load database from input stream and return a list of batch statuses. This is used for a pull request that responds with data, and the acknowledgment is
      * sent later.
@@ -643,7 +648,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         }
         List<IncomingBatch> batchesProcessed = listener.getBatchesProcessed();
-        if (error != null) {
+        if (error != null && !(error instanceof AuthenticationException || error instanceof AuthenticationExpiredException)) {
             batchesProcessed.add(new IncomingBatch());
         }
         return batchesProcessed;
@@ -673,16 +678,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw (ConnectionDuplicateException) ex;
         } else if (ex instanceof ServiceUnavailableException) {
             throw (ServiceUnavailableException) ex;
-        } else if (ex instanceof AuthenticationException) {
-            throw (AuthenticationException) ex;
         } else if (ex instanceof SyncDisabledException) {
             throw (SyncDisabledException) ex;
         } else if (ex instanceof HttpException) {
             throw (HttpException) ex;
         } else if (ex instanceof InvalidRetryException) {
             throw (InvalidRetryException) ex;
-        } else if (ex instanceof ProtocolException) {
-            log.error("Failed to process batch: {}: {}", ex.getClass().getSimpleName(), ex.getMessage());
+        } else if (ex instanceof ProtocolException || ex instanceof AuthenticationException || ex instanceof AuthenticationExpiredException) {
+            log.error("Failed to process batch: {}{}", ex.getClass().getSimpleName(), StringUtils.isNotBlank(ex.getMessage()) ? ": " + ex.getMessage() : "");
         } else if (ex instanceof StagingLowFreeSpace) {
             log.error("Loading is disabled because disk is almost full: {}", ex.getMessage());
         } else if (!(ex instanceof ConflictException) && !(ex instanceof SqlException) && !(ex instanceof CancellationException)) {

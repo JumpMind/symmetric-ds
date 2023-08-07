@@ -49,6 +49,7 @@ final public class Constants {
     public static final String STAGING_CATEGORY_INCOMING = "incoming";
     public static final String STAGING_CATEGORY_LOG_MINER = "logminer";
     public static final String STAGING_CATEGORY_BULK_LOAD = "bulkloaddir";
+    public static final String STAGING_CATEGORY_COMPARE = "compare";
     public static final String CLIENT_SPRING_XML = "classpath:/symmetric-client.xml";
     public static final String SERVER_SPRING_XML = "classpath:/symmetric-server.xml";
     public static final String PLEASE_SET_ME = "please set me";
@@ -105,6 +106,7 @@ final public class Constants {
     public static final String SEQUENCE_EXTRACT_REQ = TableConstants.SYM_EXTRACT_REQUEST;
     public static final String SEQUENCE_OUTGOING_BATCH = TableConstants.SYM_OUTGOING_BATCH;
     public static final String SEQUENCE_OUTGOING_BATCH_LOAD_ID = "outgoing_batch_load_id";
+    public static final String SEQUENCE_COMPARE_ID = "compare_id";
     public static final String SEND_SCHEMA_EXCLUDE_INDICES = "excludeIndices";
     public static final String SEND_SCHEMA_EXCLUDE_FOREIGN_KEYS = "excludeForeignKeys";
     public static final String SEND_SCHEMA_EXCLUDE_DEFAULTS = "excludeDefaults";

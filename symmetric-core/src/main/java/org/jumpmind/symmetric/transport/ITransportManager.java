@@ -68,6 +68,12 @@ public interface ITransportManager {
     public IOutgoingWithResponseTransport getBandwidthPushTransport(Node remote, Node local, String securityToken,
             Map<String, String> requestProperties, String registrationUrl) throws IOException;
 
+    public IIncomingTransport getComparePullTransport(Node remote, Node local, String securityToken, String registrationUrl,
+            Map<String, String> requestParameters) throws IOException;
+
+    public IOutgoingWithResponseTransport getComparePushTransport(Node remote, Node local, String securityToken, String registrationUrl,
+            Map<String, String> requestParameters) throws IOException;
+
     /**
      * This is the proper way to determine the URL for a node. It delegates to configured extension points when necessary to take in to account custom load
      * balancing and url selection schemes.

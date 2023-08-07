@@ -180,6 +180,16 @@ public class TransformTable implements Cloneable {
         return columns;
     }
 
+    public List<TransformColumn> getTransformColumnTo(String targetColumn) {
+        List<TransformColumn> columns = new ArrayList<TransformColumn>(2);
+        for (TransformColumn column : transformColumns) {
+            if (StringUtils.equalsIgnoreCase(column.getTargetColumnName(), targetColumn)) {
+                columns.add(column);
+            }
+        }
+        return columns;
+    }
+
     public TransformColumn getTransformColumn(String targetColumn, IncludeOnType includeOn) {
         if (transformColumns != null) {
             for (TransformColumn column : transformColumns) {

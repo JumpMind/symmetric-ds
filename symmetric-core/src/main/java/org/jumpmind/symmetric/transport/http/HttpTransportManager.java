@@ -342,6 +342,34 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
                 securityToken, isOutputStreamEnabled(), getOutputStreamSize(), false, requestProperties);
     }
 
+    @Override
+    public IIncomingTransport getComparePullTransport(Node remote, Node local, String securityToken, String registrationUrl,
+            Map<String, String> requestParameters) throws IOException {
+        StringBuilder builder = new StringBuilder(buildURL("compare/pull", remote, local, securityToken, registrationUrl));
+        for (Map.Entry<String, String> entry : requestParameters.entrySet()) {
+            append(builder, entry.getKey(), entry.getValue());
+        }
+        URL url = new URL(builder.toString());
+        HttpConnection conn = createGetConnectionFor(url, local.getNodeId(), securityToken);
+        conn.addRequestProperty(WebConstants.CHANNEL_QUEUE, requestParameters.get(WebConstants.CHANNEL_QUEUE));
+        return new HttpIncomingTransport(this, conn, engine.getParameterService(), local.getNodeId(), securityToken);
+    }
+
+    @Override
+    public IOutgoingWithResponseTransport getComparePushTransport(Node remote, Node local,
+            String securityToken, String registrationUrl, Map<String, String> requestParameters) throws IOException {
+        StringBuilder builder = new StringBuilder(buildURL("compare/push", remote, local, securityToken, registrationUrl));
+        for (Map.Entry<String, String> entry : requestParameters.entrySet()) {
+            append(builder, entry.getKey(), entry.getValue());
+        }
+        URL url = new URL(builder.toString());
+        Map<String, String> param = new HashMap<String, String>();
+        param.put(WebConstants.CHANNEL_QUEUE, requestParameters.get(WebConstants.CHANNEL_QUEUE));
+        return new HttpOutgoingTransport(this, url, getHttpTimeOutInMs(), getHttpConnectTimeOutInMs(), isUseCompression(remote),
+                getCompressionStrategy(), getCompressionLevel(), local.getNodeId(), securityToken, isOutputStreamEnabled(), getOutputStreamSize(),
+                false, param);
+    }
+
     public static String buildRegistrationUrl(String baseUrl, Node node) {
         if (baseUrl == null) {
             baseUrl = "";

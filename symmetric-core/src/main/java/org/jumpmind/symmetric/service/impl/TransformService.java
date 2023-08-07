@@ -298,32 +298,32 @@ public class TransformService extends AbstractService implements ITransformServi
             transform.addTransformColumn(column);
             transform.setNodeGroupLink(nodeGroupLink);
             transforms.add(transform);
-		}
-		TransformTableNodeGroupLink transformOutToIncoming = new TransformTableNodeGroupLink();
-		TransformColumn columnOutToIncoming = new TransformColumn("node_id", "node_id", true);
-		columnOutToIncoming.setTransformType("variable");
-		columnOutToIncoming.setTransformExpression("source_node_id");
-		transformOutToIncoming.setTransformPoint(TransformPoint.LOAD);
-		transformOutToIncoming.setSourceTableName(
-				TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_OUTGOING_ERROR));
-		transformOutToIncoming.setTargetTableName(
-				TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_INCOMING_ERROR));
-		transformOutToIncoming.setNodeGroupLink(nodeGroupLink);
-		transformOutToIncoming.addTransformColumn(columnOutToIncoming);
-		transforms.add(transformOutToIncoming);
-		TransformTableNodeGroupLink transformInToOutgoing = new TransformTableNodeGroupLink();
-		TransformColumn columnInToOutgoing = new TransformColumn("node_id", "node_id", true);
-		transformInToOutgoing.setTransformPoint(TransformPoint.LOAD);
-		columnInToOutgoing.setTransformType("variable");
-		columnInToOutgoing.setTransformExpression("source_node_id");
-		transformInToOutgoing.setSourceTableName(
-				TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_INCOMING_ERROR));
-		transformInToOutgoing.setTargetTableName(
-				TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_OUTGOING_ERROR));
-		transformInToOutgoing.setNodeGroupLink(nodeGroupLink);
-		transformInToOutgoing.addTransformColumn(columnInToOutgoing);
-		transforms.add(transformInToOutgoing);
-		return transforms;
+        }
+        TransformTableNodeGroupLink transformOutToIncoming = new TransformTableNodeGroupLink();
+        TransformColumn columnOutToIncoming = new TransformColumn("node_id", "node_id", true);
+        columnOutToIncoming.setTransformType("variable");
+        columnOutToIncoming.setTransformExpression("source_node_id");
+        transformOutToIncoming.setTransformPoint(TransformPoint.LOAD);
+        transformOutToIncoming.setSourceTableName(
+                TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_OUTGOING_ERROR));
+        transformOutToIncoming.setTargetTableName(
+                TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_INCOMING_ERROR));
+        transformOutToIncoming.setNodeGroupLink(nodeGroupLink);
+        transformOutToIncoming.addTransformColumn(columnOutToIncoming);
+        transforms.add(transformOutToIncoming);
+        TransformTableNodeGroupLink transformInToOutgoing = new TransformTableNodeGroupLink();
+        TransformColumn columnInToOutgoing = new TransformColumn("node_id", "node_id", true);
+        transformInToOutgoing.setTransformPoint(TransformPoint.LOAD);
+        columnInToOutgoing.setTransformType("variable");
+        columnInToOutgoing.setTransformExpression("source_node_id");
+        transformInToOutgoing.setSourceTableName(
+                TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_INCOMING_ERROR));
+        transformInToOutgoing.setTargetTableName(
+                TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_OUTGOING_ERROR));
+        transformInToOutgoing.setNodeGroupLink(nodeGroupLink);
+        transformInToOutgoing.addTransformColumn(columnInToOutgoing);
+        transforms.add(transformInToOutgoing);
+        return transforms;
     }
 
     private List<TransformTableNodeGroupLink> getTransformTablesFromDB(boolean includeColumns, boolean replaceTokens) {

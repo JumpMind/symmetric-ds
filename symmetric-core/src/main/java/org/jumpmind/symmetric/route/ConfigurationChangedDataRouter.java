@@ -93,7 +93,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 routeNodeTables(nodeIds, columnValues, rootNetworkedNode, me, routingContext,
                         dataMetaData, possibleTargetNodes, initialLoad);
             } else if (tableMatches(dataMetaData, TableConstants.SYM_TABLE_RELOAD_REQUEST)
-                    || tableMatches(dataMetaData, TableConstants.SYM_TABLE_RELOAD_STATUS)) {
+                    || tableMatches(dataMetaData, TableConstants.SYM_TABLE_RELOAD_STATUS)
+                    || tableMatches(dataMetaData, TableConstants.SYM_COMPARE_REQUEST)
+                    || tableMatches(dataMetaData, TableConstants.SYM_COMPARE_STATUS)
+                    || tableMatches(dataMetaData, TableConstants.SYM_COMPARE_TABLE_STATUS)) {
                 String sourceNodeId = columnValues.get("SOURCE_NODE_ID");
                 String targetNodeId = columnValues.get("TARGET_NODE_ID");
                 for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {

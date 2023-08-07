@@ -55,7 +55,7 @@ public class SequenceServiceSqlMap extends AbstractSqlMap {
         
         putSql("maxExtractRequestSql", "select max(request_id)+1 from $(extract_request)");
 
-                
+        putSql("maxCompareRequestSql", "select max(compare_id)+1 from $(compare_request)");
        // @formatter:on
     }
 }

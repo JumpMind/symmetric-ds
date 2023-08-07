@@ -27,7 +27,7 @@ public class NodeCommunication implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum CommunicationType {
-        PULL, PUSH, FILE_PUSH, FILE_PULL, OFFLN_PULL, OFFLN_PUSH, EXTRACT, FILE_XTRCT, OFF_FSPULL, OFF_FSPUSH;
+        PULL, PUSH, FILE_PUSH, FILE_PULL, OFFLN_PULL, OFFLN_PUSH, EXTRACT, FILE_XTRCT, OFF_FSPULL, OFF_FSPUSH, COMPARE;
 
         public static boolean isPullType(CommunicationType communicationType) {
             return communicationType == PULL || communicationType == CommunicationType.FILE_PULL
@@ -36,6 +36,7 @@ public class NodeCommunication implements Serializable {
     };
 
     private transient Node node;
+    private transient boolean deleteOnUnlock;
     private String nodeId;
     private String queue = "default";
     private CommunicationType communicationType;
@@ -207,5 +208,13 @@ public class NodeCommunication implements Serializable {
     @Override
     public String toString() {
         return "NodeCommunication [nodeId=" + nodeId + ", queue=" + queue + ", communicationType=" + communicationType + "]";
+    }
+
+    public boolean isDeleteOnUnlock() {
+        return deleteOnUnlock;
+    }
+
+    public void setDeleteOnUnlock(boolean deleteOnUnlock) {
+        this.deleteOnUnlock = deleteOnUnlock;
     }
 }

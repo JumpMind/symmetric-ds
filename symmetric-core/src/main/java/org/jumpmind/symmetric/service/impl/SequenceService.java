@@ -66,6 +66,10 @@ public class SequenceService extends AbstractService implements ISequenceService
             long maxRequestId = sqlTemplate.queryForLong(getSql("maxExtractRequestSql"));
             initSequence(Constants.SEQUENCE_EXTRACT_REQ, maxRequestId, 0);
         }
+        if (sequences.get(Constants.SEQUENCE_COMPARE_ID) == null) {
+            long maxRequestId = sqlTemplate.queryForLong(getSql("maxCompareRequestSql"));
+            initSequence(Constants.SEQUENCE_COMPARE_ID, maxRequestId, 0);
+        }
     }
 
     private void initSequence(String name, long initialValue, int cacheSize) {
