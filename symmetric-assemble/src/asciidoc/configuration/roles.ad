@@ -1,0 +1,18 @@
+
+=== Roles
+
+Additional user roles may be set up to facilitate fine-grained control of permissions and user creation.
+
+Role Id:: Unique identifier for a role.
+Role Description:: Description for the role.
+Parent Role Id:: Role Id of this role's parent role. Leaving this blank makes this role non-hierarchical.
+.RoleTypes
+|===
+
+|Non-Hierarchical|Roles that have neither a parent role nor any children roles, setting them apart from any hierarchy. Users with these roles have control over the creation and manipulation of any other users (except for admins) with non-hierarchical roles. The built-in Read and Write roles are both non-hierarchical by default.
+
+|Hierarchical|Roles that have a parent role, children roles, or both, which situates them in a hierarchy. Users with these roles have control over the creation and manipulation of other users with hierarchical roles that are descendent relative to their own.
+
+|Admin|The built in admin role. Users with this role have control over the creation and manipulation of all users, as well as access to any connected databases and  all functionalities of the SymmetricDS web console.
+
+|===            
