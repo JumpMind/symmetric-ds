@@ -6,55 +6,76 @@ A monitor watches some part of the system for a problem, checking to see if the 
 
 Monitor ID:: The monitor ID is a unique name to refer to the monitor.
 
-ifndef::pro[]
-Node Group ID:: The node group that will run this monitor.  Use "ALL" to match all groups.
-External ID:: The external ID of nodes that will run this monitor.  Use "ALL" to match all nodes. 
-endif::pro[]
-ifdef::pro[]
 Target Nodes:: The group of nodes that will run this monitor.
-endif::pro[]
 
 Monitor Type:: The monitor type is one of several built-in or custom types that run a specific check and return a numeric value that can
 be compared to a threshold value.
 
-[cols="<2,<7", options="header"]
+[cols="<2,<7,^", options="header"]
 |===
 |Type
 |Description
+|Insight
 
-|cpu|Percentage from 0 to 100 of CPU usage for the server process.
+|cpu|Percentage from 0 to 100 of CPU usage for the server process.|
 
-|disk|Percentage from 0 to 100 of disk usage (tmp folder staging area) available to the server process.
+|disk|Percentage from 0 to 100 of disk usage (tmp folder staging area) available to the server process.|
 
-|memory|Percentage from 0 to 100 of memory usage (tenured heap pool) available to the server process.
+|memory|Percentage from 0 to 100 of memory usage (tenured heap pool) available to the server process.|
 
-|batchError|Number of incoming and outgoing batches in error.
+|batchError|Number of incoming and outgoing batches in error.|
 
-|batchUnsent|Number of outgoing batches waiting to be sent. 
+|batchUnsent|Number of outgoing batches waiting to be sent.|
 
-|dataUnrouted|Number of change capture rows that are waiting to be batched and sent.
+|dataUnrouted|Number of change capture rows that are waiting to be batched and sent.|
 
-|dataGaps|Number of active data gaps that are being checked during routing for data to commit.
+|dataGaps|Number of active data gaps that are being checked during routing for data to commit.|
 
-|offlineNodes|The number of nodes that are offline based on the last heartbeat time.  The console.report.as.offline.minutes parameter controls how many minutes before a node is considered offline.
+|offlineNodes|The number of nodes that are offline based on the last heartbeat time.  The console.report.as.offline.minutes parameter controls how many minutes before a node is considered offline.|
 
-|log|Number of entries found in the log for the specified severity level.
+|log|Number of entries found in the log for the specified severity level.|
 
-|block|Number of seconds that a transaction has been blocked for.
+|loadAverage|Sum of the number of runnable entities queued to the available processors and the number of runnable entities running on the available processors averaged over a period of time. Not implemented for Windows.|
 
-|loadAverage|Sum of the number of runnable entities queued to the available processors and the number of runnable entities running on the available processors averaged over a period of time. Not implemented for Windows.
+|fileHandles|Percentage from 0 to 100 of Operating System's open file handles. Not implemented for Windows.|
 
-|fileHandles|Percentage from 0 to 100 of Operating System's open file handles. Not implemented for Windows.
+|job|Number of jobs that are in error. This only applies to jobs that record statistics in the <<NODE_HOST_JOB_STATS>> table. The built-in jobs that write to this table are Routing, Purge Outgoing, Purge Incoming, and SyncTriggers.|
 
-|job|Number of jobs that are in error. This only applies to jobs that record statistics in the <<NODE_HOST_JOB_STATS>> table. The built-in jobs that write to this table are Routing, Purge Outgoing, Purge Incoming, and SyncTriggers.
+|licenseExpire|Percentage from 0 to 100 of the license usage, with expiration occurring at 100%.|
 
-ifdef::pro[]
-|licenseExpire|Percentage from 0 to 100 of the license usage, with expiration occurring at 100%.
+|certExpire|Percentage from 0 to 100 of the TLS/SSL certificate usage, with expiration occurring at 100%.|
 
-|certExpire|Percentage from 0 to 100 of the TLS/SSL certificate usage, with expiration occurring at 100%.
+|licenseRows|Percentage from 0 to 100 of rows used out of the maximum number of rows allowed by the license.|
 
-|licenseRows|Percentage from 0 to 100 of rows used out of the maximum number of rows allowed by the license.
-endif::pro[]
+|jvm64Bit|Value of 0 or 1 indicating whether or not the operating system is 64-bit and the JVM is 32-bit.|✔
+
+|jvmCrash|Number of Java crash files found that were created or modified in the last 24 hours.|✔
+
+|jvmOutOfMemory|Number of times a java.lang.OutOfMemoryError appears in the wrapper.log file.|✔
+
+|jvmThreads|Number of threads that are blocked or calling the same method.|✔
+
+|block|Number of seconds that a transaction has been blocked for.|✔
+
+|mySqlMode|Value of 0 or 1 indicating whether or not a MySQL node is incompatible with one or more other nodes.|✔
+
+|nextDataInGap|Value of 0 or 1 indicating whether the next data ID is within a data gap.|✔
+
+|channelsDisabled|Number of channels that are disabled.|✔
+
+|maxBatchSize|Largest Max Batch Size for a channel.|✔
+
+|maxDataToRoute|Largest Max Data to Route for a channel.|✔
+
+|maxBatchToSend|Smallest Max Batch to Send for a channel.|✔
+
+|maxChannels|Number of channels.|✔
+
+|channelSuspend|Number of channels that are suspended or ignored.|✔
+
+|missingPrimaryKey|Number of tables that are configured for replication and missing a primary key.|✔
+
+|channelsForeignKey|Number of tables that are configured to use a different channel than other tables that they have a foreign key relationship with.|✔
 
 |===
 
@@ -65,5 +86,8 @@ Run Period:: The time in seconds of how often to run this monitor.  The monitor 
 as the monitor job.
 Run Count:: The number of times to run the monitor before calculating an average value to compare against the threshold.
 Severity Level:: The importance of this monitor event when it exceeds the threshold.
+Display Order:: The order in which this monitor will be displayed in the web console.
+Is Insight:: Whether or not this monitor is an insight. Insights are optional recommendations for changing the system settings, while other monitors are for errors that must be resolved. Insights do not trigger notifications and they are displayed via the Insight Manager and the Insights Dialog rather than the Manage Monitors screen. This option is only available for some monitor types.
+Is Pinned:: Whether or not this monitor is pinned in the web console. A pinned monitor will be displayed to the user even if there are no unresolved events for it.
 Enabled:: Whether or not this monitor is enabled to run.
 
