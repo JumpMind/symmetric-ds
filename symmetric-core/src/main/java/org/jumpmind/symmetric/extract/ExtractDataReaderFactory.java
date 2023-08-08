@@ -22,6 +22,8 @@ package org.jumpmind.symmetric.extract;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
 import org.jumpmind.symmetric.io.data.reader.IExtractDataReaderSource;
 import org.jumpmind.symmetric.model.Node;
@@ -34,11 +36,8 @@ public class ExtractDataReaderFactory implements IExtractDataReaderFactory {
     }
 
     public ExtractDataReader getReader(IDatabasePlatform platform, IExtractDataReaderSource source, Node sourceNode, Node targetNode) {
-        return new ExtractDataReader(platform, source);
+        ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
+        boolean isUsingUnitypes = symmetricDialect.getParameterService().is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC);
+        return new ExtractDataReader(platform, source,isUsingUnitypes);
     }
-//    public ExtractDataReader getReader(IDatabasePlatform platform, IExtractDataReaderSource source, Node sourceNode, Node targetNode) {
-//        ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
-//        boolean isUsingUnitypes = symmetricDialect.getParameterService().is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC);
-//        return new ExtractDataReader(platform, source,isUsingUnitypes);
-//    }
 }

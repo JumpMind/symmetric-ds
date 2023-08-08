@@ -141,7 +141,7 @@ public class ExtractDataReader implements IDataReader {
                 Table targetTable = this.currentSource.getTargetTable();
                 if (targetTable != null && targetTable.equals(this.table)) {
                     data = enhanceWithLobsFromSourceIfNeeded(this.currentSource.getSourceTable(), data);
-                    if (isSybaseASE) {
+                    if (isSybaseASE && isUsingUnitypes) {
                         data = convertUtf16toUTF8(this.currentSource.getSourceTable(), data);
                     }
                 } else {
