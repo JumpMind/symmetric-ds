@@ -7,7 +7,7 @@ buildscript {
     }
 
     dependencies { 
-        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
+        classpath("gradle.plugin.cn.bestwu.gradle:propdeps-plugin:0.0.8")
         classpath 'com.devsoap.plugin:gradle-vaadin-plugin:2.0.0.beta1'    
     }    
 }
