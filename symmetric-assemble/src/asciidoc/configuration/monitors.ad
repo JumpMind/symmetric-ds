@@ -39,7 +39,7 @@ be compared to a threshold value.
 
 |fileHandles|Percentage from 0 to 100 of Operating System's open file handles. Not implemented for Windows.|
 
-|job|Number of jobs that are in error. This only applies to jobs that record statistics in the <<NODE_HOST_JOB_STATS>> table. The built-in jobs that write to this table are Routing, Purge Outgoing, Purge Incoming, and SyncTriggers.|
+|jobError|Number of jobs that are in error. This only applies to jobs that record statistics in the <<NODE_HOST_JOB_STATS>> table. The built-in jobs that write to this table are Routing, Purge Outgoing, Purge Incoming, Push, Pull, and SyncTriggers.|
 
 |licenseExpire|Percentage from 0 to 100 of the license usage, with expiration occurring at 100%.|
 
@@ -76,6 +76,8 @@ be compared to a threshold value.
 |missingPrimaryKey|Number of tables that are configured for replication and missing a primary key.|✔
 
 |channelsForeignKey|Number of tables that are configured to use a different channel than other tables that they have a foreign key relationship with.|✔
+
+|jobTrending|Largest percentage by which a job's most recent runtime has exceeded its previous peak runtime. This only applies to jobs that record statistics in the <<NODE_HOST_JOB_STATS>> table (see jobError monitor above). This will only take effect for a particular job when the <<NODE_HOST_JOB_STATS>> table contains a sufficient amount of statistics for that job (10 or 100 rows, depending on the job). |✔
 
 |===
 
