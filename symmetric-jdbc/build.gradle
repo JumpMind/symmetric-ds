@@ -16,7 +16,8 @@ apply from: symAssembleDir + '/common.gradle'
         testImplementation "com.h2database:h2:$h2Version"
         testImplementation "mysql:mysql-connector-java:$mysqlVersion"
         testImplementation "org.postgresql:postgresql:$postgresqlVersion"
-        testImplementation "com.oracle.database.jdbc:ojdbc8:21.5.0.0"
+        testImplementation 'com.oracle.database.jdbc:ojdbc11:23.2.0.0'
+
         testImplementation "net.sourceforge.jtds:jtds:$jtdsVersion"
         testImplementation "jdbc.sybase:jconnect:7.7"
         testImplementation "org.apache.derby:derby:$derbyVersion"

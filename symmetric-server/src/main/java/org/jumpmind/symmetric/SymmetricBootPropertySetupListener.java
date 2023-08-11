@@ -13,15 +13,15 @@ import java.util.Properties;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class SymmetricBootPropertySetupListener implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
-  public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
-    TypedProperties serverProperties = new TypedProperties(System.getProperties());
-    ConfigurableEnvironment environment = event.getEnvironment();
-    Properties props = new Properties();
-    String httpPort = serverProperties.getProperty(ServerConstants.HTTP_PORT, "31415");
-    String httpsPort = serverProperties.getProperty(ServerConstants.HTTPS_PORT,null);
-    if (isNotBlank(httpPort)) {
-      props.put("server.port", httpPort);
+    public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
+        TypedProperties serverProperties = new TypedProperties(System.getProperties());
+        ConfigurableEnvironment environment = event.getEnvironment();
+        Properties props = new Properties();
+        String httpPort = serverProperties.getProperty(ServerConstants.HTTP_PORT, "31415");
+        String httpsPort = serverProperties.getProperty(ServerConstants.HTTPS_PORT, null);
+        if (isNotBlank(httpPort)) {
+            props.put("server.port", httpPort);
+        }
+        environment.getPropertySources().addFirst(new PropertiesPropertySource("myProps", props));
     }
-    environment.getPropertySources().addFirst(new PropertiesPropertySource("myProps", props));
-  }
 }
