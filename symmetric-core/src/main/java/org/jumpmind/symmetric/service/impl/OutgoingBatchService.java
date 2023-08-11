@@ -427,8 +427,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     @Override
-    public int countUnsentBatchesByTargetNode(String nodeId) {
-        return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesByTargetNodeSql"), new Object[] { nodeId });
+    public int countUnsentBatchesByTargetNode(String nodeId, boolean includeHeartbeats) {
+        if (includeHeartbeats) {
+            return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesByTargetNodeSql"), new Object[] { nodeId });
+        }
+        return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesByTargetNodeExcludingHeartbeatsSql"), new Object[] { nodeId });
     }
 
     @Override

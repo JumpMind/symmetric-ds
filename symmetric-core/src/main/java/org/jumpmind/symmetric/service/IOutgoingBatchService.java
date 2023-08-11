@@ -109,7 +109,7 @@ public interface IOutgoingBatchService {
 
     public long countUnsentRowsByTargetNode(String nodeId);
 
-    public int countUnsentBatchesByTargetNode(String nodeId);
+    public int countUnsentBatchesByTargetNode(String nodeId, boolean includeHeartbeats);
 
     public List<OutgoingBatchSummary> findOutgoingBatchSummary(OutgoingBatch.Status... statuses);
 

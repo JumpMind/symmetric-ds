@@ -107,6 +107,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("countOutgoingRowsByTargetNodeSql",
                 "select sum(data_row_count) as row_count from $(outgoing_batch) where node_id = ? and channel_id <> 'heartbeat' and status in ('ER','RQ','NE','QY','RT')");
         putSql("countOutgoingBatchesByTargetNodeSql",
+                "select count(*) as row_count from $(outgoing_batch) where node_id = ? and status != 'OK'");
+        putSql("countOutgoingBatchesByTargetNodeExcludingHeartbeatsSql",
                 "select count(*) as row_count from $(outgoing_batch) where node_id = ? and channel_id <> 'heartbeat' and status in ('ER','RQ','NE','QY','RT')");
         putSql("countOutgoingBatchesErrorsSql",
                 "select count(*) from $(outgoing_batch) where error_flag=1");

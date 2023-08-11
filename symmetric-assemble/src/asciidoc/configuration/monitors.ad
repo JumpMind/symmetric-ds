@@ -25,7 +25,9 @@ be compared to a threshold value.
 
 |batchError|Number of incoming and outgoing batches in error.|
 
-|batchUnsent|Number of outgoing batches waiting to be sent.|
+|batchUnsent|Number of outgoing batches waiting to be sent to online nodes.|
+
+|batchUnsentOffline|Number of outgoing batches waiting to be sent to offline nodes.|
 
 |dataUnrouted|Number of change capture rows that are waiting to be batched and sent.|
 
