@@ -57,6 +57,17 @@ github {
 }
 
 idea {
+    module {
+        testResourceDirs = []
+        testSourceDirs = [ file('src/test/java') ]
+        resourceDirs += file('src/test/resources')
+        excludeDirs += file('bin')
+        excludeDirs += file('build')
+        excludeDirs += file('dist')
+        excludeDirs += file('node_modules')
+        downloadJavadoc = true
+        downloadSources = true
+    }
     project {
         ipr {
             //you can tinker with the output *.ipr file before it's written out

@@ -33,23 +33,17 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         api "org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion"        
                 
         compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
-        
-        provided "javax.servlet:javax.servlet-api:$servletVersion"
-        provided "org.eclipse.jetty:jetty-webapp:$jettyVersion"
-        provided "javax.websocket:javax.websocket-api:$websocketVersion"
-        provided ("org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion") {
-           exclude group: "org.eclipse.jetty", module: "jetty-annotations"
-           exclude group: "org.eclipse.jetty", module: "jetty-jmx"
-           exclude group: "org.eclipse.jetty", module: "jetty-jndi"
-           exclude group: "org.eclipse.jetty", module: "jetty-plus"
-           exclude group: "org.ow2.asm"
+        api ("org.springframework.boot:spring-boot-starter-web:${springBootVersion}") {
+            exclude module: "spring-boot-starter-tomcat"
+            exclude module: "spring-boot-starter-logging"
+        }
+        api ("org.springframework.boot:spring-boot-starter-jetty:${springBootVersion}"){
+            exclude module: "spring-boot-starter-logging"
         }
 
+        provided "javax.websocket:javax.websocket-api:$websocketVersion"
         provided "org.eclipse.jetty.http2:http2-server:$jettyVersion"
         provided "org.eclipse.jetty:jetty-alpn-conscrypt-server:$jettyVersion"
-        provided "org.mortbay.jetty.alpn:alpn-boot:$alpnBootVersion"
-        compileOnly "org.eclipse.jetty.alpn:alpn-api:$alpnApiVersion"
-    
         testImplementation project(path: ':symmetric-util', configuration: 'testArtifacts')
         testImplementation project(path: ':symmetric-io', configuration: 'testArtifacts')
         testImplementation project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
