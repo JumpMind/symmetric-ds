@@ -41,6 +41,8 @@ public interface IStagedResource {
 
     public OutputStream getOutputStream();
 
+    public OutputStream getOutputStream(boolean append);
+
     public InputStream getInputStream();
 
     public File getFile();

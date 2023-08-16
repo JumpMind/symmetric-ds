@@ -312,16 +312,20 @@ public class StagedResource implements IStagedResource {
     }
 
     public OutputStream getOutputStream() {
+        return getOutputStream(false);
+    }
+
+    public OutputStream getOutputStream(boolean append) {
         refreshLastUpdateTime();
         try {
             if (outputStream == null && file != null) {
-                if (file.exists()) {
+                if (!append && file.exists()) {
                     log.warn("getOutputStream had to delete {} because it already existed",
                             file.getAbsolutePath());
                     file.delete();
                 }
                 file.getParentFile().mkdirs();
-                outputStream = createOutputStream();
+                outputStream = createOutputStream(append);
             }
             return outputStream;
         } catch (FileNotFoundException e) {
@@ -329,8 +333,8 @@ public class StagedResource implements IStagedResource {
         }
     }
 
-    protected OutputStream createOutputStream() throws FileNotFoundException {
-        return new BufferedOutputStream(new FileOutputStream(file));
+    protected OutputStream createOutputStream(boolean append) throws FileNotFoundException {
+        return new BufferedOutputStream(new FileOutputStream(file, append));
     }
 
     public synchronized InputStream getInputStream() {
