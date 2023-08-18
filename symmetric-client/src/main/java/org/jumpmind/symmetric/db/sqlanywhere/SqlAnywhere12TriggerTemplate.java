@@ -15,7 +15,7 @@ public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
                         +
                         "                                  $(declareNewKeyVariables)                                                                                                                                            "
                         +
-                        "                                  declare @ChannelId varchar(20);                                                                                                                                     "
+                        "                                  declare @ChannelId varchar(128);                                                                                                                                     "
                         +
                         "                                  declare @err_notfound EXCEPTION FOR SQLSTATE VALUE '02000';                                                                                                    "
                         +
@@ -76,7 +76,7 @@ public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
                         +
                         "                                  declare @OldDataRow varchar(16384);                                                                                                                                   "
                         +
-                        "                                  declare @ChannelId varchar(20);"
+                        "                                  declare @ChannelId varchar(128);"
                         +
                         "                                  declare @err_notfound EXCEPTION FOR SQLSTATE VALUE '02000';                                                                                                    "
                         +
@@ -137,7 +137,7 @@ public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
                         +
                         "                                  declare @OldDataRow varchar(16384);                                                                                                                                  "
                         +
-                        "                                  declare @ChannelId varchar(20);                                                                                                                                     "
+                        "                                  declare @ChannelId varchar(128);                                                                                                                                     "
                         +
                         "                                  declare @err_notfound EXCEPTION FOR SQLSTATE VALUE '02000';                                                                                                    "
                         +
@@ -182,7 +182,7 @@ public class SqlAnywhere12TriggerTemplate extends SqlAnywhereTriggerTemplate {
         sqlTemplates.put("initialLoadSqlTemplate",
                 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                ");
     }
-    
+
     protected String appendSemicolonAfterDeclare() {
         return ";";
     }

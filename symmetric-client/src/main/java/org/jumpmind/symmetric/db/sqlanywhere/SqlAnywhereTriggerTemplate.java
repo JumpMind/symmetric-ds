@@ -61,7 +61,7 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
                         +
                         "                                  $(declareNewKeyVariables)                                                                                                                                            "
                         +
-                        "                                  declare @ChannelId varchar(20)                                                                                                                                      "
+                        "                                  declare @ChannelId varchar(128)                                                                                                                                      "
                         +
                         "                                  $(custom_before_insert_text) \n" +
                         "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           "
@@ -112,7 +112,7 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
                         +
                         "                                  declare @OldDataRow varchar(16384)                                                                                                                                   "
                         +
-                        "                                  declare @ChannelId varchar(20)                                                                                                                                      "
+                        "                                  declare @ChannelId varchar(128)                                                                                                                                      "
                         +
                         "                                  $(declareOldKeyVariables)                                                                                                                                            "
                         +
@@ -165,7 +165,7 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
                         +
                         "                                  declare @OldDataRow varchar(16384)                                                                                                                                   "
                         +
-                        "                                  declare @ChannelId varchar(20)                                                                                                                                      "
+                        "                                  declare @ChannelId varchar(128)                                                                                                                                      "
                         +
                         "                                  $(declareOldKeyVariables)                                                                                                                                            "
                         +
@@ -284,7 +284,7 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
         }
         return text;
     }
-    
+
     protected String appendSemicolonAfterDeclare() {
         return "";
     }
