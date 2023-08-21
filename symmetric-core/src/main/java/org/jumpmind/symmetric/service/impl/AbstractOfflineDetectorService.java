@@ -58,6 +58,9 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
     protected IExtensionService extensionService;
     private Map<String, Long> transportErrorTimeByNode = new HashMap<String, Long>();
 
+    public AbstractOfflineDetectorService() {
+    }
+
     public AbstractOfflineDetectorService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IExtensionService extensionService) {
         super(parameterService, symmetricDialect);

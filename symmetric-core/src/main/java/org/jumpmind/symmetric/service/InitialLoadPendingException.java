@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.service;
 
-public class InitialLoadPendingException extends RuntimeException {
+import org.jumpmind.symmetric.transport.OfflineException;
+
+public class InitialLoadPendingException extends OfflineException {
     private static final long serialVersionUID = 1L;
 }

@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.service;
 
-public class RegistrationPendingException extends RuntimeException {
+import org.jumpmind.symmetric.transport.OfflineException;
+
+public class RegistrationPendingException extends OfflineException {
     private static final long serialVersionUID = 1L;
 }

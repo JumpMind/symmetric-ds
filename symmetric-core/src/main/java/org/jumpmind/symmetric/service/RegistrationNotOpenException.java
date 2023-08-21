@@ -20,10 +20,12 @@
  */
 package org.jumpmind.symmetric.service;
 
+import org.jumpmind.symmetric.transport.OfflineException;
+
 /**
  * Throw this exception to indicate that registration is not allowed or is not open for a specific node.
  */
-public class RegistrationNotOpenException extends RuntimeException {
+public class RegistrationNotOpenException extends OfflineException {
     private static final long serialVersionUID = 1L;
 
     public RegistrationNotOpenException() {
