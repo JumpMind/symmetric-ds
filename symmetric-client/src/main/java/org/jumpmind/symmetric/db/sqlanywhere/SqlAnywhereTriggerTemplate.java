@@ -27,6 +27,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -287,5 +288,16 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
 
     protected String appendSemicolonAfterDeclare() {
         return "";
+    }
+
+    @Override
+    protected boolean useTriggerTemplateForColumnTemplatesDuringInitialLoad(Column column) {
+        boolean result = super.useTriggerTemplateForColumnTemplatesDuringInitialLoad(column);
+        if (column != null) {
+            if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
+                result = true;
+            }
+        }
+        return result;
     }
 }
