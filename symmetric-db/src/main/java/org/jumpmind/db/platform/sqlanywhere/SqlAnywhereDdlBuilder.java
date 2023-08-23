@@ -105,6 +105,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
         databaseInfo.addNativeTypeMapping("BOOLEAN", "SMALLINT", "SMALLINT");
         databaseInfo.addNativeTypeMapping("DATALINK", "IMAGE", "LONGVARBINARY");
+        databaseInfo.addNativeTypeMapping(Types.LONGNVARCHAR, "LONG NVARCHAR", Types.LONGNVARCHAR);
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
         databaseInfo.setDefaultSize(Types.CHAR, 254);
