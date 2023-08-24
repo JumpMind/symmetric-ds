@@ -6,9 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JettyCustomizer implements WebServerFactoryCustomizer<JettyServletWebServerFactory> {
-
     @Override
     public void customize(JettyServletWebServerFactory factory) {
     }
-
 }
