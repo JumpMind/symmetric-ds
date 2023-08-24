@@ -106,7 +106,8 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
         buttonLayout.setWidthFull();
         add(buttonLayout);
         if (value != null && isEncodedInHex) {
-            displayBox = new Select<String>("Hex", "Text", "Decimal");
+            displayBox = new Select<String>();
+            displayBox.setItems("Hex", "Text", "Decimal");
             displayBox.setLabel("Display As");
             displayBox.setEmptySelectionAllowed(false);
             displayBox.setValue("Hex");

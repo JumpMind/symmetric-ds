@@ -64,6 +64,7 @@ public class ResizableDialog extends Dialog {
         VerticalLayout content = new VerticalLayout();
         content.setSizeFull();
         content.setPadding(false);
+        content.setSpacing(false);
         super.add(content);
         if (caption != null) {
             captionLabel = new Label(caption + "<hr>");

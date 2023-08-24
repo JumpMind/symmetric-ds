@@ -37,7 +37,7 @@ dependencies {
     
     api "org.springframework:spring-webmvc:$springVersion"
 
-    api "de.f0rce:ace:1.3.0"
+    api "de.f0rce:ace:3.3.2"
     api "com.vaadin:vaadin-context-menu:3.1.0"
     
     testImplementation "com.h2database:h2:$h2Version"

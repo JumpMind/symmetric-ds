@@ -106,7 +106,7 @@ public class DbImportDialog extends ResizableDialog {
         VerticalLayout importContent = new VerticalLayout();
         importContent.setSizeFull();
         importContent.setMargin(false);
-        importContent.setSpacing(true);
+        importContent.setSpacing(false);
         importContent.add(new Label("Please select from the following options"));
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();

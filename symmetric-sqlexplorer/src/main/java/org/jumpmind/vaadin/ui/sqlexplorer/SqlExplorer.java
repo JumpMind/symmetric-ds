@@ -165,6 +165,10 @@ public class SqlExplorer extends CustomSplitLayout {
             setSplitterPosition(0);
             setPrimaryStyle("max-width", "0%");
             showButton.setVisible(true);
+            resetContentMenuBar();
+            if (selected instanceof QueryPanel) {
+                ((DefaultButtonBar) ((QueryPanel) selected).getButtonBar()).populate(contentMenuBar);
+            }
         });
         hideButton.getElement().setAttribute("title", "Hide the database explorer");
         MenuItem refreshButton = leftMenu.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.REFRESH), event -> {
