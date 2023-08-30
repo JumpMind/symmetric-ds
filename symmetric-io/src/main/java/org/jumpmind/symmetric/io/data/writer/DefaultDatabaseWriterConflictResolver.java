@@ -279,6 +279,13 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         boolean isWinner = true;
         for (IIndex index : targetTable.getIndices()) {
             if (index.isUnique()) {
+                boolean containsPk = true;
+                for (Column column : targetTable.getPrimaryKeyColumns()) {
+                    containsPk &= index.hasColumn(column);
+                }
+                if (containsPk) {
+                    break;
+                }
                 Map<String, String> rowDataMap = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
                 Column[] uniqueKeyColumns = new Column[index.getColumnCount()];
                 ukData = new String[index.getColumnCount()];
@@ -320,8 +327,8 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 if (count > 0) {
                     String sql = "select source_node_id, create_time from " + databaseWriter.getTablePrefix() +
                             "_data where table_name = ? and event_type in ('I', 'U') and row_data like ? and " +
-                            "create_time >= ? order by create_time desc";
-                    Object[] args = new Object[] { targetTable.getName(), ukCsv.toString(), loadingTs };
+                            "create_time >= ? and (source_node_id is null or source_node_id != ?) order by create_time desc";
+                    Object[] args = new Object[] { targetTable.getName(), ukCsv.toString(), loadingTs, writer.getBatch().getSourceNodeId() };
                     Row row = null;
                     if (databaseWriter.getPlatform(targetTable).supportsMultiThreadedTransactions()) {
                         // we may have waited for another transaction to commit, so query with a new transaction
