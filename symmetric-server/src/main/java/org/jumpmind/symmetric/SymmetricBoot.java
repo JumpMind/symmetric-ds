@@ -1,7 +1,7 @@
 package org.jumpmind.symmetric;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.web.SymmetricContextListener;

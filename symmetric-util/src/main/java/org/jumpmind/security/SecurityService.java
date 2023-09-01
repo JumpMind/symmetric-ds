@@ -184,10 +184,12 @@ public class SecurityService implements ISecurityService {
             if (alias == null) {
                 alias = String.valueOf(entry.getTrustedCertificate().hashCode());
                 keyStore.setEntry(alias, entry, null);
-                log.info("Installing trusted certificate: {}", ((X509Certificate) entry.getTrustedCertificate()).getSubjectDN().getName());
+                log.info("Installing trusted certificate: {}",
+                        ((X509Certificate) entry.getTrustedCertificate()).getSubjectX500Principal().getName());
                 saveTrustStore(keyStore);
             } else {
-                log.info("Trusted certificate already installed: {}", ((X509Certificate) entry.getTrustedCertificate()).getSubjectDN().getName());
+                log.info("Trusted certificate already installed: {}",
+                        ((X509Certificate) entry.getTrustedCertificate()).getSubjectX500Principal().getName());
             }
         } catch (RuntimeException e) {
             throw e;

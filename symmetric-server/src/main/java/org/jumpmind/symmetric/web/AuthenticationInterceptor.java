@@ -26,9 +26,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.security.ISecurityService;
@@ -66,7 +66,7 @@ public class AuthenticationInterceptor implements IInterceptor {
         AuthenticationStatus status = null;
         AuthenticationSession session = null;
         if (log.isDebugEnabled()) {
-            X509Certificate[] certs = (X509Certificate[]) req.getAttribute("javax.servlet.request.X509Certificate");
+            X509Certificate[] certs = (X509Certificate[]) req.getAttribute("jakarta.servlet.request.X509Certificate");
             if (certs != null && certs.length > 0) {
                 log.debug("Client cert: " + certs[0].getSubjectX500Principal().getName());
             }

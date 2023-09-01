@@ -48,7 +48,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
@@ -107,7 +107,7 @@ public class DbImportDialog extends ResizableDialog {
         importContent.setSizeFull();
         importContent.setMargin(false);
         importContent.setSpacing(false);
-        importContent.add(new Label("Please select from the following options"));
+        importContent.add(new NativeLabel("Please select from the following options"));
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
         importContent.addAndExpand(formLayout);

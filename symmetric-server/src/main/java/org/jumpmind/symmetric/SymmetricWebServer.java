@@ -25,10 +25,10 @@ import java.net.CookieManager;
 import java.util.ArrayList;
 import java.util.EnumSet;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.ServletContext;
-import javax.websocket.server.ServerContainer;
-import javax.websocket.server.ServerEndpointConfig;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.ServletContext;
+import jakarta.websocket.server.ServerContainer;
+import jakarta.websocket.server.ServerEndpointConfig;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -50,7 +50,7 @@ import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.util.component.LifeCycle.Listener;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
+import org.eclipse.jetty.websocket.jakarta.server.internal.JakartaWebSocketServerContainer;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
@@ -253,7 +253,7 @@ public class SymmetricWebServer {
         server.setHandler(webapp);
         Class<?> remoteStatusEndpoint = loadRemoteStatusEndpoint();
         if (remoteStatusEndpoint != null) {
-            ServerContainer container = WebSocketServerContainerInitializer.initialize(webapp);
+            ServerContainer container = JakartaWebSocketServerContainer.getContainer(webapp.getServletContext());
             container.setDefaultMaxBinaryMessageBufferSize(Integer.MAX_VALUE);
             container.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
             ServerEndpointConfig websocketConfig = ServerEndpointConfig.Builder.create(remoteStatusEndpoint, "/control").build();
@@ -262,7 +262,7 @@ public class SymmetricWebServer {
                 System.setProperty("org.eclipse.jetty.websocket.jsr356.ssl-trust-all", "true");
             }
         }
-        server.addLifeCycleListener(new Listener() {
+        server.addEventListener(new Listener() {
             public void lifeCycleStarted(LifeCycle event) {
                 System.out.println("Started");
             }

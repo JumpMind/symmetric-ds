@@ -5,7 +5,7 @@ apply from: symAssembleDir + '/common.gradle'
     dependencies {
         api project(":symmetric-io")
         api project(":symmetric-util")
-        api "com.sun.mail:javax.mail:$javaMailVersion"
+        api "org.eclipse.angus:jakarta.mail:$jakartaMailVersion"
         api "com.google.code.gson:gson:$gsonVersion"
         api "org.springframework:spring-core:$springVersion"
         api "org.springframework:spring-beans:$springVersion"

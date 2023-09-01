@@ -88,7 +88,7 @@ public class SqlSuggester {
     }
 
     public void updateSuggestions(String text, int cursor) {
-        this.editor.setCustomAutocompletion(new ArrayList<String>());
+        this.editor.addStaticWordCompleter(new ArrayList<String>());
         if (enabled) {
             try {
                 this.text = text;
@@ -115,7 +115,7 @@ public class SqlSuggester {
                     suggestions.addAll(getTableNameSuggestions(null, null));
                 }
                 removeRepeats(suggestions);
-                this.editor.setCustomAutocompletion(suggestions);
+                this.editor.addStaticWordCompleter(suggestions);
             } catch (Exception ex) {
                 logger.debug("Failed to generate suggestions. cursor=" + cursor + " text=" + text, ex);
             }
