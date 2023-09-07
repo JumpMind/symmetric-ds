@@ -94,6 +94,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     private String tableNameLowerCase;
     private ArrayList<Column> lobColumns;
     private CompressionTypes compressionType = CompressionTypes.NONE;
+    private boolean madeAllColumnsPrimaryKey;
 
     public Table() {
     }
@@ -1549,6 +1550,14 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
 
     public void setCompressionType(CompressionTypes compressionType) {
         this.compressionType = compressionType;
+    }
+
+    public boolean isMadeAllColumnsPrimaryKey() {
+        return madeAllColumnsPrimaryKey;
+    }
+
+    public void setMadeAllColumnsPrimaryKey(boolean madeAllColumnsPrimaryKey) {
+        this.madeAllColumnsPrimaryKey = madeAllColumnsPrimaryKey;
     }
 
     static class ColumnPkSequenceComparator implements Comparator<Column> {

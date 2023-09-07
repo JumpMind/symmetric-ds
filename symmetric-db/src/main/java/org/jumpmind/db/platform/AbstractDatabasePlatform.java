@@ -723,6 +723,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     column.setPrimaryKey(true);
                 }
             }
+            result.setMadeAllColumnsPrimaryKey(true);
         }
         return result;
     }
