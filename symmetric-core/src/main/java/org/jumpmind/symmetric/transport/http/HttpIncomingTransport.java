@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.transport.ConnectionDuplicateException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.NoContentException;
+import org.jumpmind.symmetric.transport.ServiceNotReadyException;
 import org.jumpmind.symmetric.transport.ServiceUnavailableException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.TransportUtils;
@@ -139,6 +140,8 @@ public class HttpIncomingTransport implements IIncomingTransport {
                 throw new ConnectionDuplicateException();
             case WebConstants.SC_SERVICE_UNAVAILABLE:
                 throw new ServiceUnavailableException();
+            case WebConstants.SC_SERVICE_NOT_READY:
+                throw new ServiceNotReadyException();
             case WebConstants.SC_FORBIDDEN:
                 httpTransportManager.clearSession(connection);
                 throw new AuthenticationException();

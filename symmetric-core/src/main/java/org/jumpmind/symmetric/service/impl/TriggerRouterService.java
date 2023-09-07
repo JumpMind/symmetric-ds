@@ -559,7 +559,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         } else if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_MONITOR_EVENT).equals(tableName) ||
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_TABLE_RELOAD_REQUEST).equals(tableName) ||
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_TABLE_RELOAD_STATUS).equals(tableName) ||
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_EXTRACT_REQUEST).equals(tableName)) {
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_EXTRACT_REQUEST).equals(tableName) ||
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_COMPARE_REQUEST).equals(tableName) ||
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_COMPARE_STATUS).equals(tableName) ||
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_COMPARE_TABLE_STATUS).equals(tableName)) {
             trigger.setChannelId(Constants.CHANNEL_MONITOR);
             trigger.setUseCaptureOldData(true);
         } else if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT)

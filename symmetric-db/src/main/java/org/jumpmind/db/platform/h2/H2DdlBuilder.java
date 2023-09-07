@@ -106,6 +106,8 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setNullAsDefaultValueRequired(true);
         databaseInfo.setGeneratedColumnsSupported(true);
+        databaseInfo.setBinaryQuoteStart("X'");
+        databaseInfo.setBinaryQuoteEnd("'");
     }
 
     @Override

@@ -47,6 +47,7 @@ import org.jumpmind.symmetric.transport.AuthenticationExpiredException;
 import org.jumpmind.symmetric.transport.ConnectionDuplicateException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.NoReservationException;
+import org.jumpmind.symmetric.transport.ServiceNotReadyException;
 import org.jumpmind.symmetric.transport.ServiceUnavailableException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.util.ExceptionUtils;
@@ -84,7 +85,11 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             status.setStatus(Status.OFFLINE);
         } else if (isServiceUnavailable(exception)) {
             ServiceUnavailableException e = (ServiceUnavailableException) exception;
-            logTransportMessage(remoteNode, "Remote node {} at {} was unavailable{}", remoteNode, syncUrl, e.getMessage() == null ? "" : ": " + e.getMessage());
+            logTransportMessage(remoteNode, "Remote node {} at {} was unavailable {}", remoteNode, syncUrl, e.getMessage() == null ? ""
+                    : ": " + e.getMessage());
+            status.setStatus(Status.OFFLINE);
+        } else if (isServiceNotReady(exception)) {
+            logTransportMessage(remoteNode, "Remote node {} at {} service not ready", remoteNode, syncUrl);
             status.setStatus(Status.OFFLINE);
         } else if (isBusy(exception)) {
             logTransportMessage(remoteNode, "Remote node {} at {} was busy", remoteNode, syncUrl);
@@ -188,6 +193,10 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
 
     protected boolean isServiceUnavailable(Exception ex) {
         return is(ex, ServiceUnavailableException.class);
+    }
+
+    protected boolean isServiceNotReady(Exception ex) {
+        return is(ex, ServiceNotReadyException.class);
     }
 
     protected boolean isSyncDisabled(Exception ex) {

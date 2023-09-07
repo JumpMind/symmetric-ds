@@ -439,7 +439,7 @@ public class DmlStatement {
 
     public String buildDynamicSql(BinaryEncoding encoding, Row row,
             boolean useVariableDates, boolean useJdbcTimestampFormat, Column[] columns) {
-        String newSql = sql;
+        String newSql = getSql(false);
         String quote = databaseInfo.getValueQuoteToken();
         String binaryQuoteStart = databaseInfo.getBinaryQuoteStart();
         String binaryQuoteEnd = databaseInfo.getBinaryQuoteEnd();
@@ -472,6 +472,10 @@ public class DmlStatement {
                     } else if (type == Types.TIME) {
                         newSql = newSql.replaceFirst(regex, (useJdbcTimestampFormat ? "{t " : "")
                                 + quote + FormatUtils.TIME_FORMATTER.format(date) + quote
+                                + (useJdbcTimestampFormat ? "}" : ""));
+                    } else if (type == Types.DATE) {
+                        newSql = newSql.replaceFirst(regex, (useJdbcTimestampFormat ? "{d " : "")
+                                + quote + FormatUtils.DATE_FORMATTER.format(date) + quote
                                 + (useJdbcTimestampFormat ? "}" : ""));
                     } else {
                         newSql = newSql.replaceFirst(regex, (useJdbcTimestampFormat ? "{ts " : "")

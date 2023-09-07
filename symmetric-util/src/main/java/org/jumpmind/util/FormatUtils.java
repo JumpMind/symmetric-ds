@@ -54,6 +54,7 @@ public final class FormatUtils {
     };
     public static final FastDateFormat TIMESTAMP_FORMATTER = FastDateFormat
             .getInstance("yyyy-MM-dd HH:mm:ss.SSS");
+    public static final FastDateFormat DATE_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd");
     public static final DateTimeFormatter TIMESTAMP9_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnnnn").withZone(ZoneId.systemDefault());
     public static final FastDateFormat TIME_FORMATTER = FastDateFormat.getInstance("HH:mm:ss.SSS");
     public static final DateTimeFormatter TIME9_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.nnnnnnnnn").withZone(ZoneId.systemDefault());

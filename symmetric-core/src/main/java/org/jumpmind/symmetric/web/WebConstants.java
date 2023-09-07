@@ -46,6 +46,7 @@ public class WebConstants {
     public static final int SC_AUTH_EXPIRED = 669;
     public static final int SC_SERVICE_UNAVAILABLE = 660;
     public static final int SC_SERVICE_BUSY = 670;
+    public static final int SC_SERVICE_NOT_READY = 671;
     public static final int SC_SERVICE_ERROR = 601;
     public static final int SC_NO_RESERVATION = 604;
     public static final int SC_ALREADY_CONNECTED = 605;

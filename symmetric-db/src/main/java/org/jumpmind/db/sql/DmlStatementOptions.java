@@ -97,6 +97,11 @@ public class DmlStatementOptions {
         return this;
     }
 
+    public DmlStatementOptions dmlType(DmlType dmlType) {
+        this.dmlType = dmlType;
+        return this;
+    }
+
     public DmlType getDmlType() {
         return dmlType;
     }
