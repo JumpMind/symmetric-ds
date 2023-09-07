@@ -108,7 +108,7 @@ public class TriggerHistory implements Serializable {
         this.triggerId = trigger.getTriggerId();
         this.pkColumnNames = Table.getCommaDeliminatedColumns(trigger.filterExcludedAndIncludedColumns(trigger
                 .getSyncKeysColumnsForTable(table)));
-        this.isMissingPk = !table.hasPrimaryKey() || Objects.equals(pkColumnNames, columnNames) || StringUtils.isBlank(pkColumnNames);
+        this.isMissingPk = !table.hasPrimaryKey() || table.isMadeAllColumnsPrimaryKey() || StringUtils.isBlank(pkColumnNames);
         this.triggerRowHash = trigger.toHashedValue();
         this.triggerTemplateHash = triggerTemplate.toHashedValue();
         this.tableHash = table.calculateTableHashcode();
