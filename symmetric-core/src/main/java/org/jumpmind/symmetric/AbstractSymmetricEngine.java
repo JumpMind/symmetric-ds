@@ -487,7 +487,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected boolean hasSoftwareVersionChanged() {
         Node identity = nodeService.findIdentity();
         if (identity != null) {
-            return !Version.version().equals(identity.getSymmetricVersion()) || Version.isDevelopment(identity.getSymmetricVersion());
+            return !Version.version().equals(identity.getSymmetricVersion()) || !StringUtils.equals(identity.getDeploymentType(), getDeploymentType()) || 
+                    Version.isDevelopment(identity.getSymmetricVersion());
         }
         return true;
     }
