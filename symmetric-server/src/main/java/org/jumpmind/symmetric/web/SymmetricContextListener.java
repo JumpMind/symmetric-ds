@@ -27,14 +27,34 @@ import java.net.URL;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
+import jakarta.websocket.DeploymentException;
+import jakarta.websocket.server.ServerContainer;
+import jakarta.websocket.server.ServerEndpointConfig;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.SystemConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 public class SymmetricContextListener implements ServletContextListener {
+    private static final Logger log = LoggerFactory.getLogger(SymmetricContextListener.class);
+    
     public void contextInitialized(ServletContextEvent sce) {
+        Class<?> remoteStatusEndpoint = loadRemoteStatusEndpoint();
+        if (remoteStatusEndpoint != null) {
+            ServerContainer container = (ServerContainer) sce.getServletContext().getAttribute(ServerContainer.class.getName());
+            container.setDefaultMaxBinaryMessageBufferSize(Integer.MAX_VALUE);
+            container.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
+            ServerEndpointConfig websocketConfig = ServerEndpointConfig.Builder.create(remoteStatusEndpoint, "/control").build();
+            try {
+                container.addEndpoint(websocketConfig);
+            } catch (DeploymentException e) {
+                log.error("An exception occurred while adding the remote status endpoint", e);
+            }
+        }
         SymmetricEngineHolder engineHolder = new SymmetricEngineHolder();
         ServletContext ctx = sce.getServletContext();
         String autoStart = ctx.getInitParameter(WebConstants.INIT_PARAM_AUTO_START);
@@ -68,6 +88,18 @@ public class SymmetricContextListener implements ServletContextListener {
             }
         }
         engineHolder.start();
+    }
+    
+    protected Class<?> loadRemoteStatusEndpoint() {
+        try {
+            Class<?> clazz = ClassUtils.getClass("com.jumpmind.symmetric.console.remote.ServerEndpoint");
+            return clazz;
+        } catch (ClassNotFoundException ex) {
+            // ServerEndpoint not found. This is an expected condition.
+        } catch (Exception ex) {
+            log.debug("Failed to load remote status endpoint.", ex);
+        }
+        return null;
     }
 
     public void contextDestroyed(ServletContextEvent sce) {

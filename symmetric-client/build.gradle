@@ -30,6 +30,7 @@ apply from: symAssembleDir + '/common.gradle'
             exclude group: 'log4j'
             exclude group: 'org.slf4j'
             exclude group: 'io.netty'
+            exclude group: 'asm'
         }
 
         compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"

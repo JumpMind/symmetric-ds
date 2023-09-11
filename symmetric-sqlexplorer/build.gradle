@@ -5,10 +5,6 @@ buildscript {
        maven { url "https://maven.vaadin.com/vaadin-addons" }         
        maven { url "https://mvnrepository.com/artifact" }
     }
-
-    dependencies { 
-        classpath 'com.devsoap.plugin:gradle-vaadin-plugin:2.0.0.beta1'    
-    }    
 }
 
 plugins {

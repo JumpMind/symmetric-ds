@@ -27,8 +27,6 @@ import java.util.EnumSet;
 
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.ServletContext;
-import jakarta.websocket.server.ServerContainer;
-import jakarta.websocket.server.ServerEndpointConfig;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -50,7 +48,6 @@ import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.util.component.LifeCycle.Listener;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.websocket.jakarta.server.internal.JakartaWebSocketServerContainer;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
@@ -222,6 +219,7 @@ public class SymmetricWebServer {
         webapp.setWar(webAppDir);
         webapp.setResourceBase(webAppDir);
         webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", allowDirListing);
+        webapp.setAttribute("org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern", ".*\\.jar|.*/classes/.*");
         FilterHolder filterHolder = new FilterHolder(HttpMethodFilter.class);
         filterHolder.setInitParameter("server.allow.http.methods", allowedMethods);
         filterHolder.setInitParameter("server.disallow.http.methods", disallowedMethods);
@@ -252,15 +250,8 @@ public class SymmetricWebServer {
         }
         server.setHandler(webapp);
         Class<?> remoteStatusEndpoint = loadRemoteStatusEndpoint();
-        if (remoteStatusEndpoint != null) {
-            ServerContainer container = JakartaWebSocketServerContainer.getContainer(webapp.getServletContext());
-            container.setDefaultMaxBinaryMessageBufferSize(Integer.MAX_VALUE);
-            container.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
-            ServerEndpointConfig websocketConfig = ServerEndpointConfig.Builder.create(remoteStatusEndpoint, "/control").build();
-            container.addEndpoint(websocketConfig);
-            if (allowSelfSignedCerts) {
-                System.setProperty("org.eclipse.jetty.websocket.jsr356.ssl-trust-all", "true");
-            }
+        if (remoteStatusEndpoint != null && allowSelfSignedCerts) {
+            System.setProperty("org.eclipse.jetty.websocket.jsr356.ssl-trust-all", "true");
         }
         server.addEventListener(new Listener() {
             public void lifeCycleStarted(LifeCycle event) {

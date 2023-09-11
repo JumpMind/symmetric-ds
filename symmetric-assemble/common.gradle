@@ -10,9 +10,8 @@ configurations {
 
 configurations.all {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-        if (details.requested.group == 'org.ow2.asm') {
-            details.useVersion '7.2'
-            //details.useVersion '5.2'
+        if (details.requested.group == 'org.ow2.asm' && !details.requested.name.contains('debug-all')) {
+            details.useVersion '9.5'
         }
     }
 }
