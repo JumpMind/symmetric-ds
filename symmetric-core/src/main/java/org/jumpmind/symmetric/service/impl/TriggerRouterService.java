@@ -1818,7 +1818,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 return syncTriggers(tables, force);
             }
         }
-        return false;
+        return true;
     }
 
     public boolean syncTriggers(Table table, boolean force) {
