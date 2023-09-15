@@ -356,16 +356,16 @@ public class MonitorService extends AbstractService implements IMonitorService {
 
     @Override
     public List<MonitorEvent> getMonitorEvents() {
-        return sqlTemplate.query(getSql("selectMonitorEventSql"), new MonitorEventRowMapper());
+        return sqlTemplateDirty.query(getSql("selectMonitorEventSql"), new MonitorEventRowMapper());
     }
 
     protected List<MonitorEvent> getMonitorEventsResolvedForNode(String monitorId, String nodeId) {
-        return sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventResolvedSql"),
+        return sqlTemplateDirty.query(getSql("selectMonitorEventSql", "whereMonitorEventResolvedSql"),
                 new MonitorEventRowMapper(), monitorId, nodeId);
     }
 
     protected Map<String, MonitorEvent> getMonitorEventsNotResolvedForNode(String nodeId) {
-        List<MonitorEvent> list = sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventNotResolvedSql"),
+        List<MonitorEvent> list = sqlTemplateDirty.query(getSql("selectMonitorEventSql", "whereMonitorEventNotResolvedSql"),
                 new MonitorEventRowMapper(), nodeId);
         Map<String, MonitorEvent> map = new HashMap<String, MonitorEvent>();
         for (MonitorEvent monitorEvent : list) {
@@ -392,7 +392,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
             args.add(nodeId);
         }
         sql += " order by event_time desc";
-        return sqlTemplate.query(sql, limit, new MonitorEventRowMapper(), args.toArray());
+        return sqlTemplateDirty.query(sql, limit, new MonitorEventRowMapper(), args.toArray());
     }
 
     @Override
@@ -400,11 +400,11 @@ public class MonitorService extends AbstractService implements IMonitorService {
         String sql = getSql("selectMonitorEventSql", "whereMonitorEventIdSql");
         ArrayList<Object> args = new ArrayList<Object>();
         sql += " order by event_time desc";
-        return sqlTemplate.query(sql, new MonitorEventRowMapper(), monitorId);
+        return sqlTemplateDirty.query(sql, new MonitorEventRowMapper(), monitorId);
     }
 
     protected List<MonitorEvent> getMonitorEventsForNotification(int severityLevel) {
-        return sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventForNotificationBySeveritySql"),
+        return sqlTemplateDirty.query(getSql("selectMonitorEventSql", "whereMonitorEventForNotificationBySeveritySql"),
                 new MonitorEventRowMapper(), severityLevel);
     }
 
