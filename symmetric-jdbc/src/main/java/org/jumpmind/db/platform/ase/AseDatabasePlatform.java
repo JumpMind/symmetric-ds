@@ -44,6 +44,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
@@ -53,6 +54,7 @@ import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.jumpmind.db.util.BinaryEncoding;
 
 /*
  * The platform implementation for Sybase.
@@ -106,8 +108,7 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     public String getDefaultSchema() {
         if (StringUtils.isBlank(defaultSchema)) {
-            defaultSchema = (String) getSqlTemplate().queryForObject("select USER_NAME()",
-                    String.class);
+            defaultSchema = (String) getSqlTemplate().queryForObject("select USER_NAME()", String.class);
         }
         return defaultSchema;
     }
@@ -126,7 +127,8 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-        String triggerSql = "create trigger TEST_TRIGGER on " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " for insert as begin select 1 end";
+        String triggerSql = "create trigger TEST_TRIGGER on " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
+                + " for insert as begin select 1 end";
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
         try {
             getSqlTemplate().update(triggerSql);
@@ -136,5 +138,26 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
         }
         return result;
+    }
+
+    @Override
+    protected Object getObjectValue(String value, Column column, BinaryEncoding encoding, boolean useVariableDates, boolean fitToColumn)
+            throws DecoderException {
+        Object objectValue = value;
+        String typeName = column.getJdbcTypeName();
+        if (typeName.equalsIgnoreCase("unichar") || typeName.equalsIgnoreCase("unitext") || typeName.equalsIgnoreCase("univarchar")) {
+            String stringValue = cleanTextForTextBasedColumns((String) objectValue);
+            int size = column.getSizeAsInt();
+            if (settings.isRightTrimCharValues()) {
+                stringValue = StringUtils.stripEnd(stringValue, null);
+            }
+            if (fitToColumn && size > 0 && stringValue.length() > size) {
+                stringValue = stringValue.substring(0, size);
+            }
+            objectValue = stringValue;
+            return objectValue;
+        } else {
+            return super.getObjectValue(value, column, encoding, useVariableDates, fitToColumn);
+        }
     }
 }
