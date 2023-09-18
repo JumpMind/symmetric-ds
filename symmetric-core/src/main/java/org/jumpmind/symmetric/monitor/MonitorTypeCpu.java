@@ -20,15 +20,19 @@
  */
 package org.jumpmind.symmetric.monitor;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
@@ -67,22 +71,58 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
     }
 
     public int getCpuUsage() {
-        int availableProcessors = osBean.getAvailableProcessors();
-        long prevUpTime = runtimeBean.getUptime();
-        long prevProcessCpuTime = getProcessCpuTime();
-        try {
-            Thread.sleep(500);
-        } catch (Exception ignore) {
+        int cpuUsage = 0;
+        int pid = getProcessId();
+        if (pid >= 0 && (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_LINUX)) {
+            if (SystemUtils.IS_OS_WINDOWS) {
+                String line = runCommand(3, "powershell", "-Command", "Get-WmiObject -Query " +
+                        "\\\"Select * from Win32_PerfFormattedData_PerfProc_Process where IDProcess = " + pid +
+                        "\\\" | Select-Object -Property PercentProcessorTime");
+                cpuUsage = Integer.parseInt(line.replace(" ", ""));
+            } else if (SystemUtils.IS_OS_MAC) {
+                String line = runCommand(25, "top", "-l2", "-pid", String.valueOf(pid));
+                String[] fields = line.trim().split("\\s+");
+                if (fields.length > 2) {
+                    cpuUsage = (int) Float.parseFloat(fields[2]);
+                }
+            } else {
+                String line = runCommand(7, "top", "-bn1", "-p", String.valueOf(pid));
+                String[] fields = line.trim().split("\\s+");
+                if (fields.length > 9) {
+                    cpuUsage = (int) Float.parseFloat(fields[8]);
+                }
+            }
+        } else {
+            int availableProcessors = osBean.getAvailableProcessors();
+            long prevUpTime = runtimeBean.getUptime();
+            long prevProcessCpuTime = getProcessCpuTime();
+            try {
+                Thread.sleep(500);
+            } catch (Exception ignore) {
+            }
+            long upTime = runtimeBean.getUptime();
+            long processCpuTime = getProcessCpuTime();
+            long elapsedCpu = processCpuTime - prevProcessCpuTime;
+            long elapsedTime = upTime - prevUpTime;
+            cpuUsage = (int) (elapsedCpu / (elapsedTime * 1000f * availableProcessors));
         }
-        long upTime = runtimeBean.getUptime();
-        long processCpuTime = getProcessCpuTime();
-        long elapsedCpu = processCpuTime - prevProcessCpuTime;
-        long elapsedTime = upTime - prevUpTime;
-        int cpuUsage = (int) (elapsedCpu / (elapsedTime * 1000f * availableProcessors));
         if (cpuUsage > 100) {
             cpuUsage = 100;
         }
         return cpuUsage;
+    }
+
+    protected int getProcessId() {
+        try {
+            RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+            Field jvm = runtime.getClass().getDeclaredField("jvm");
+            jvm.setAccessible(true);
+            Method pid_method = jvm.get(runtime).getClass().getDeclaredMethod("getProcessId");
+            pid_method.setAccessible(true);
+            return (Integer) pid_method.invoke(jvm.get(runtime));
+        } catch (Exception e) {
+            return -1;
+        }
     }
 
     protected long getProcessCpuTime() {
@@ -94,6 +134,40 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
         } catch (Exception ignore) {
         }
         return cpuTime;
+    }
+
+    protected String runCommand(int lineNumber, String... args) {
+        String ret = null;
+        List<String> cmd = new ArrayList<String>();
+        for (String arg : args) {
+            cmd.add(arg);
+        }
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.redirectErrorStream(true);
+        Process process = null;
+        try {
+            process = pb.start();
+            process.waitFor();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+        if (process != null) {
+            ArrayList<String> cmdOutput = new ArrayList<String>();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    cmdOutput.add(line);
+                }
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+            }
+            if (cmdOutput != null && cmdOutput.size() > 0) {
+                ret = cmdOutput.get(lineNumber);
+            }
+        }
+        return ret;
     }
 
     protected String getNotificationMessage(long value, long threshold, long period) {
@@ -124,11 +198,13 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
         text.append(value).append("%").append(System.lineSeparator()).append(System.lineSeparator());
         for (int i = 0; i < infos.length; i++) {
             if (infos[i] != null) {
-                text.append("Top #").append((i + 1)).append(" CPU thread ").append(infos[i].getThreadName())
-                        .append(" (ID ").append(infos[i].getThreadId()).append(") is using ").append((cpuUsages[i] / 1000000000f))
-                        .append("s").append(System.lineSeparator());
-                text.append(logStackTrace(threadBean.getThreadInfo(infos[i].getThreadId(), MAX_STACK_DEPTH)))
-                        .append(System.lineSeparator()).append(System.lineSeparator());
+                ThreadInfo info = threadBean.getThreadInfo(infos[i].getThreadId(), MAX_STACK_DEPTH);
+                if (info != null) {
+                    text.append("Top #").append((i + 1)).append(" CPU thread ").append(infos[i].getThreadName())
+                            .append(" (ID ").append(infos[i].getThreadId()).append(") is using ").append((cpuUsages[i] / 1000000000f))
+                            .append("s").append(System.lineSeparator());
+                    text.append(logStackTrace(info)).append(System.lineSeparator()).append(System.lineSeparator());
+                }
             }
         }
         return text.toString();
