@@ -40,11 +40,13 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         }
         api ("org.springframework.boot:spring-boot-starter-jetty:${springBootVersion}"){
             exclude module: "spring-boot-starter-logging"
+            exclude module: "tomcat-embed-el"
         }
 
         provided "jakarta.websocket:jakarta.websocket-api:$websocketVersion"
         provided "org.eclipse.jetty.http2:http2-server:$jettyVersion"
-        provided "org.eclipse.jetty:jetty-alpn-conscrypt-server:$jettyVersion"
+        provided "org.eclipse.jetty:jetty-alpn-server:$jettyVersion"
+        provided "org.eclipse.jetty:jetty-alpn-java-server:$jettyVersion"
         testImplementation project(path: ':symmetric-util', configuration: 'testArtifacts')
         testImplementation project(path: ':symmetric-io', configuration: 'testArtifacts')
         testImplementation project(path: ':symmetric-jdbc', configuration: 'testArtifacts')

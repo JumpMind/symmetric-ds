@@ -100,7 +100,7 @@ public class BouncyCastleSecurityService extends SecurityService {
      * Bouncy Castle library is needed for signing a public key to generate a certificate
      */
     protected X509Certificate generateV1Certificate(String host, KeyPair pair) throws Exception {
-        host = host == null ? AppUtils.getHostName() : host;
+        host = host == null || host.equals("0.0.0.0") ? AppUtils.getHostName() : host;
         String certString = String.format("CN=%s, OU=SymmetricDS, O=JumpMind", host);
         SubjectPublicKeyInfo publicKeyInfo = new BouncyCastleHelper().getInstance(pair.getPublic());
         X509v1CertificateBuilder builder = new X509v1CertificateBuilder(new X500Name(certString), BigInteger.valueOf(System.currentTimeMillis()),

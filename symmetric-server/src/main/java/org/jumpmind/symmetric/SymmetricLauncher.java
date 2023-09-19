@@ -50,9 +50,6 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
     private static final String OPTION_START_CLIENT = "client";
     private static final String OPTION_START_SECURE_SERVER = "secure-server";
     private static final String OPTION_START_MIXED_SERVER = "mixed-server";
-    private static final String OPTION_NO_NIO = "no-nio";
-    private static final String OPTION_NO_DIRECT_BUFFER = "no-directbuffer";
-    private static final String OPTION_WINXP = "winxp";
 
     public SymmetricLauncher(String app, String argSyntax, String messageKeyPrefix) {
         super(app, argSyntax, messageKeyPrefix);
@@ -92,9 +89,6 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         addOption(options, "P", OPTION_PORT_SERVER, true);
         addOption(options, "Q", OPTION_SECURE_PORT_SERVER, true);
         addOption(options, "I", OPTION_MAX_IDLE_TIME, true);
-        addOption(options, "nnio", OPTION_NO_NIO, false);
-        addOption(options, "ndb", OPTION_NO_DIRECT_BUFFER, false);
-        addOption(options, OPTION_WINXP, OPTION_WINXP, false);
     }
 
     @Override
@@ -104,8 +98,6 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         int httpSecurePort = 0;
         String webDir = SymmetricWebServer.DEFAULT_WEBAPP_DIR;
         int maxIdleTime = SymmetricWebServer.DEFAULT_MAX_IDLE_TIME;
-        boolean noNio = false;
-        boolean noDirectBuffer = false;
         configureCrypto(line);
         removeOldHeapDumps();
         if (line.hasOption(OPTION_HOST_SERVER)) {
@@ -120,39 +112,13 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_MAX_IDLE_TIME)) {
             maxIdleTime = Integer.valueOf(line.getOptionValue(OPTION_MAX_IDLE_TIME));
         }
-        if (line.hasOption(OPTION_NO_NIO)) {
-            noNio = true;
-        }
-        if (line.hasOption(OPTION_NO_DIRECT_BUFFER)) {
-            noDirectBuffer = true;
-        }
-        if (line.hasOption(OPTION_WINXP)) {
-            new Thread() {
-                {
-                    this.setDaemon(true);
-                    this.start();
-                }
-
-                @Override
-                public void run() {
-                    log.info("Starting workaround thread to prevent system clock acceleration on Windows XP");
-                    while (true) {
-                        try {
-                            Thread.sleep(Integer.MAX_VALUE);
-                        } catch (InterruptedException ex) {
-                            // ignored.
-                        }
-                    }
-                }
-            };
-        }
         if (line.hasOption(OPTION_START_CLIENT)) {
             getSymmetricEngine(false).start();
             System.out.println("Started");
         } else {
             SymmetricWebServer webServer = new SymmetricWebServer(chooseWebDir(line, webDir),
                     maxIdleTime, propertiesFile != null ? propertiesFile.getCanonicalPath() : null,
-                    true, noNio, noDirectBuffer);
+                    true);
             if (isNotBlank(host)) {
                 webServer.setHost(host);
             }

@@ -307,10 +307,8 @@ subprojects { subproject ->
         jtdsVersion = '1.3.1'
         bouncyCastleVersion = '1.70'
         animalSnifferVersion = '1.21'
-        jnaVersion = '5.11.0'
+        jnaVersion = '5.13.0'
         jettyVersion = '11.0.15'
-        alpnBootVersion = '8.1.13.v20181017'
-        alpnApiVersion = '1.1.3.v20160715'
         websocketVersion = '2.1.0'
         env = System.getenv()
     }

@@ -42,7 +42,11 @@ public class ServerConstants {
     public final static String STREAM_TO_FILE_COMPRESSION_ENABLED = "stream.to.file.compression.enabled";
     public final static String STREAM_TO_FILE_COMPRESSION_LEVEL = "stream.to.file.compression.level";
     public final static String SERVER_ENGINE_URI_INTERCEPTORS = "server.engine.uri.interceptors";
+    public final static String HTTP_TRANSPORT_MANAGER_CLASS = "http.transport.manager.class";
     public final static String SERVER_ACCESS_LOG_ENABLED = "server.access.log.enabled";
     public final static String SERVER_ACCESS_LOG_FILE = "server.access.log.file";
     public final static String SERVER_COOKIE_NAME = "server.cookie.name";
+    public final static String SERVER_CONNECTION_IDLE_TIMEOUT = "server.connection.idle.timeout";
+    public final static String SERVER_SERVLET_CONTEXT_PATH = "symmetric.server.web.home";
+    public final static String SERVER_SINGLE_PROPERTIES_FILE = "server.single.properties.file";
 }

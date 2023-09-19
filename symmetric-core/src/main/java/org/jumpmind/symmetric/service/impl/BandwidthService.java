@@ -39,7 +39,7 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.transport.BandwidthTestResults;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
-import org.jumpmind.symmetric.transport.http.Http2Connection;
+import org.jumpmind.symmetric.transport.http.HttpConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +77,7 @@ public class BandwidthService implements IBandwidthService {
         BandwidthTestResults bw = new BandwidthTestResults();
         URL u = new URL(String.format("%s/bandwidth?direction=pull&sampleSize=%s", syncUrl, sampleSize));
         bw.start();
-        try (Http2Connection conn = new Http2Connection(u)) {
+        try (HttpConnection conn = new HttpConnection(u)) {
             try (InputStream is = conn.getInputStream()) {
                 int r;
                 while (-1 != (r = is.read(buffer)) && bw.getElapsed() <= maxTestDuration) {
