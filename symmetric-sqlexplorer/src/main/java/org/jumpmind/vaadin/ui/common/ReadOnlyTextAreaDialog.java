@@ -31,6 +31,8 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import javax.sql.DataSource;
@@ -47,9 +49,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -65,7 +67,7 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
     private static final long serialVersionUID = 1L;
     final Logger log = LoggerFactory.getLogger(getClass());
     VerticalLayout wrapper;
-    protected HorizontalLayout buttonLayout;
+    protected List<Component> leftComponentList;
     protected TextArea textField;
     protected Select<String> displayBox;
     protected Button downloadButton;
@@ -97,14 +99,10 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
         wrapper.setHeight("100px");
         wrapper.setWidthFull();
         textField = new TextArea();
-        textField.getStyle().set("max-height", "480px");
         textField.setSizeFull();
         wrapper.add(textField);
         add(wrapper, 1);
-        buttonLayout = new HorizontalLayout();
-        buttonLayout.setSpacing(true);
-        buttonLayout.setWidthFull();
-        add(buttonLayout);
+        leftComponentList = new ArrayList<Component>();
         if (value != null && isEncodedInHex) {
             displayBox = new Select<String>();
             displayBox.setItems("Hex", "Text", "Decimal");
@@ -112,16 +110,18 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
             displayBox.setEmptySelectionAllowed(false);
             displayBox.setValue("Hex");
             displayBox.addValueChangeListener(event -> updateTextField((String) displayBox.getValue(), value));
-            buttonLayout.add(displayBox);
+            leftComponentList.add(displayBox);
         }
         if (table != null && isLob) {
             buildUploadButton(title, value);
             buildDownloadButton(title);
         }
-        buttonLayout.addAndExpand(new Span());
         Button closeButton = buildCloseButton();
-        buttonLayout.add(closeButton);
-        buttonLayout.setVerticalComponentAlignment(Alignment.END, closeButton);
+        if (!leftComponentList.isEmpty()) {
+            buildButtonFooter(leftComponentList, closeButton);
+        } else {
+            buildButtonFooter(closeButton);
+        }
         textField.setValue(value);
         textField.addValueChangeListener(event -> {
             if (displayBox != null) {
@@ -149,16 +149,30 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
         uploadButton.addClickListener(event -> {
             wrapper.replace(textField, upload);
             wrapper.setHorizontalComponentAlignment(Alignment.CENTER, upload);
-            buttonLayout.replace(uploadButton, viewTextButton);
+            getFooter().removeAll();
+            if (!leftComponentList.isEmpty()) {
+                buildButtonFooter(leftComponentList, viewTextButton, buildCloseButton());
+            } else {
+                buildButtonFooter(viewTextButton, buildCloseButton());
+            }
         });
         viewTextButton.addClickListener(event -> {
             wrapper.replace(upload, textField);
             wrapper.setHorizontalComponentAlignment(Alignment.END, textField);
-            buttonLayout.replace(viewTextButton, uploadButton);
+            getFooter().removeAll();
+            if (!leftComponentList.isEmpty()) {
+                buildButtonFooter(leftComponentList, uploadButton, buildCloseButton());
+            } else {
+                buildButtonFooter(uploadButton, buildCloseButton());
+            }
         });
         if (value != null) {
-            buttonLayout.add(uploadButton);
-            buttonLayout.setVerticalComponentAlignment(Alignment.END, uploadButton);
+            getFooter().removeAll();
+            if (!leftComponentList.isEmpty()) {
+                buildButtonFooter(leftComponentList, uploadButton, buildCloseButton());
+            } else {
+                buildButtonFooter(uploadButton, buildCloseButton());
+            }
         } else {
             wrapper.replace(textField, upload);
             wrapper.setHorizontalComponentAlignment(Alignment.CENTER, upload);
@@ -172,8 +186,6 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
             StreamResource resource = new StreamResource(title, () -> new ByteArrayInputStream(lobData));
             Anchor fileDownloader = new Anchor(resource, null);
             fileDownloader.add(downloadButton);
-            buttonLayout.add(fileDownloader);
-            buttonLayout.setVerticalComponentAlignment(Alignment.END, fileDownloader);
             long fileSize = lobData.length;
             String sizeText = fileSize + " Bytes";
             if (fileSize / 1024 > 0) {
@@ -188,8 +200,12 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
                 sizeText = Math.round(fileSize / 1024.0) + " GB";
             }
             Span sizeSpan = new Span(sizeText);
-            buttonLayout.addAndExpand(sizeSpan);
-            buttonLayout.setVerticalComponentAlignment(Alignment.END, sizeSpan);
+            getFooter().removeAll();
+            if (!leftComponentList.isEmpty()) {
+                buildButtonFooter(leftComponentList, fileDownloader, sizeSpan, buildCloseButton());
+            } else {
+                buildButtonFooter(fileDownloader, sizeSpan, buildCloseButton());
+            }
         }
     }
 

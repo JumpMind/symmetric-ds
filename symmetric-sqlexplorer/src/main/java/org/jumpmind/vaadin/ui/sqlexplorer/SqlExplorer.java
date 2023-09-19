@@ -44,8 +44,6 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
-import org.jumpmind.vaadin.ui.common.ConfirmDialog;
-import org.jumpmind.vaadin.ui.common.ConfirmDialog.IConfirmListener;
 import org.jumpmind.vaadin.ui.common.CustomSplitLayout;
 import org.jumpmind.vaadin.ui.common.Label;
 import org.jumpmind.vaadin.ui.common.TabSheet.EnhancedTab;
@@ -53,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
@@ -375,30 +374,25 @@ public class SqlExplorer extends CustomSplitLayout {
             Table table = tables.get(0);
             msg = "Do you want to drop " + table.getFullyQualifiedTableName() + "?";
         }
-        ConfirmDialog.show("Drop Tables?", msg, new IConfirmListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public boolean onOk() {
-                for (Table table : tables) {
-                    DbTreeNode treeNode = tableToTreeNode.get(table);
-                    IDb db = dbTree.getDbForNode(treeNode);
-                    try {
-                        db.getPlatform().dropTables(false, table);
-                    } catch (Exception e) {
-                        String msg = "Failed to drop " + table.getFullyQualifiedTableName() + ".  ";
-                        CommonUiUtils.notify(msg + "See log file for more details");
-                        log.warn(msg, e);
-                    }
+        new ConfirmDialog("Drop Tables?", msg, "Ok", e -> {
+            for (Table table : tables) {
+                DbTreeNode treeNode = tableToTreeNode.get(table);
+                IDb db = dbTree.getDbForNode(treeNode);
+                try {
+                    db.getPlatform().dropTables(false, table);
+                } catch (Exception ex) {
+                    String message = "Failed to drop " + table.getFullyQualifiedTableName() + ".  ";
+                    CommonUiUtils.notify(message + "See log file for more details");
+                    log.warn(message, ex);
                 }
-                for (IContentTab panel : infoTabs) {
-                    contentTabs.remove(contentTabs.getTab((Component) panel));
-                }
-                infoTabs.clear();
-                dbTree.refresh(true);
-                return true;
             }
-        });
+            for (IContentTab panel : infoTabs) {
+                contentTabs.remove(contentTabs.getTab((Component) panel));
+            }
+            infoTabs.clear();
+            dbTree.refresh(true);
+        }, "Cancel", e -> {
+        }).open();
     }
 
     protected DbTree buildDbTree() {

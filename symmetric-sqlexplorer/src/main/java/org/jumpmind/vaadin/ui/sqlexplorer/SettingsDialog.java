@@ -66,7 +66,7 @@ public class SettingsDialog extends ResizableDialog {
         setCloseOnOutsideClick(false);
         setWidth("800px");
         add(createSettingsLayout(), 1);
-        add(createButtonLayout());
+        createButtonLayout();
     }
 
     protected HorizontalLayout createSettingsLayout() {
@@ -142,13 +142,13 @@ public class SettingsDialog extends ResizableDialog {
         return layout;
     }
 
-    protected HorizontalLayout createButtonLayout() {
+    protected void createButtonLayout() {
         Button saveButton = CommonUiUtils.createPrimaryButton("Save", event -> {
             if (save()) {
                 close();
             }
         });
-        return buildButtonFooter(new Button("Cancel", new CloseButtonListener()), saveButton);
+        buildButtonFooter(new Button("Cancel", new CloseButtonListener()), saveButton);
     }
 
     protected boolean save() {

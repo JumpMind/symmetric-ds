@@ -55,7 +55,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Receiver;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller.ScrollDirection;
@@ -238,9 +237,7 @@ public class DbImportDialog extends ResizableDialog {
         importLayout.setSizeFull();
         cancelButton = new Button("Cancel", event -> close());
         add(importLayout, 1);
-        HorizontalLayout buttonLayout = buildButtonFooter(cancelButton);
-        buttonLayout.add(upload);
-        add(buttonLayout);
+        buildButtonFooter(cancelButton, upload);
     }
 
     protected void deleteFileAndResource() {

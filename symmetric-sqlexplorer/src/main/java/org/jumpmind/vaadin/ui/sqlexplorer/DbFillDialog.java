@@ -30,14 +30,13 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.data.DbFill;
 import org.jumpmind.symmetric.io.data.DmlWeight;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
-import org.jumpmind.vaadin.ui.common.ConfirmDialog;
 import org.jumpmind.vaadin.ui.common.ResizableDialog;
-import org.jumpmind.vaadin.ui.common.ConfirmDialog.IConfirmListener;
 
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
@@ -139,7 +138,7 @@ public class DbFillDialog extends ResizableDialog {
             }
         });
         fillButton.setVisible(false);
-        add(buildButtonFooter(cancelButton, previousButton, nextButton, fillButton));
+        buildButtonFooter(cancelButton, previousButton, nextButton, fillButton);
     }
 
     protected void createOptionLayout() {
@@ -201,28 +200,25 @@ public class DbFillDialog extends ResizableDialog {
     }
 
     protected void confirm() {
-        ConfirmDialog.show("Confirm",
+        enableShortcuts(false);
+        new ConfirmDialog("Confirm",
                 "Are you sure?  Please note that this will affect data in the selected tables.  Make sure you have a backup of your data.",
-                new IConfirmListener() {
-                    private static final long serialVersionUID = 1L;
+                "Ok", e -> {
+                    fill();
+                    close();
+                }, "Cancel", e -> enableShortcuts(true)).open();
+    }
 
-                    @Override
-                    public boolean onOk() {
-                        fill();
-                        close();
-                        return true;
-                    }
-                }, opened -> {
-                    if (!opened && cancelShortcutRegistration == null && fillShortcutRegistration == null) {
-                        cancelShortcutRegistration = cancelButton.addClickShortcut(Key.ESCAPE);
-                        fillShortcutRegistration = fillButton.addClickShortcut(Key.ENTER);
-                    } else if (opened && cancelShortcutRegistration != null && fillShortcutRegistration != null) {
-                        cancelShortcutRegistration.remove();
-                        cancelShortcutRegistration = null;
-                        fillShortcutRegistration.remove();
-                        fillShortcutRegistration = null;
-                    }
-                });
+    protected void enableShortcuts(boolean enabled) {
+        if (enabled && cancelShortcutRegistration == null && fillShortcutRegistration == null) {
+            cancelShortcutRegistration = cancelButton.addClickShortcut(Key.ESCAPE);
+            fillShortcutRegistration = fillButton.addClickShortcut(Key.ENTER);
+        } else if (!enabled && cancelShortcutRegistration != null && fillShortcutRegistration != null) {
+            cancelShortcutRegistration.remove();
+            cancelShortcutRegistration = null;
+            fillShortcutRegistration.remove();
+            fillShortcutRegistration = null;
+        }
     }
 
     protected void fill() {
