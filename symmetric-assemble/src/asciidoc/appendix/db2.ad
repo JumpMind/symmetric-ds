@@ -151,6 +151,17 @@ STRJRNPF FILE(sym/SYM_C00001 sym/SYM_C00002 sym/SYM_C00003 sym/SYM_C00004 sym/SY
 |Binary, VarBinary|No
 |===    
 
+ifndef::pro[]
+==== Log Based 
+
+Log based capture for DB2 for IBM iSeries uses a journal to read changes.   The journal that is used to read changes must have USE permission by the SymmetricDS user.
+
+Also the journal must be setup to for BOTH before and after image data if you old data is required during replication or if primary key updates are to be replicated.
+
+endif::pro[]
+
+
+
 === DB2 for IBM z/OS
 
 ifndef::pro[]

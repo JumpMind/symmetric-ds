@@ -20,6 +20,7 @@
  */
 package org.jumpmind.db.platform;
 
+import org.jumpmind.db.platform.ase.AseDmlStatement;
 import org.jumpmind.db.platform.hbase.HbaseDmlStatement;
 import org.jumpmind.db.platform.mssql.MsSqlDmlStatement;
 import org.jumpmind.db.platform.mysql.MySqlDmlStatement;
@@ -66,6 +67,8 @@ public class DmlStatementFactory implements IDmlStatementFactory {
             return new MsSqlDmlStatement(options);
         } else if (DatabaseNamesConstants.HBASE.equals(databaseName)) {
             return new HbaseDmlStatement(options);
+        } else if (DatabaseNamesConstants.ASE.equals(databaseName)){
+            return new AseDmlStatement(options);
         } else {
             return new DmlStatement(options);
         }

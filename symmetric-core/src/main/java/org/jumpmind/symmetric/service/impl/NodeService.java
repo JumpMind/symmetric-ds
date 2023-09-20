@@ -646,7 +646,7 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
-    public Map<String, NodeSecurity> findAllNodeSecurity(boolean useCache) {
+    public synchronized Map<String, NodeSecurity> findAllNodeSecurity(boolean useCache) {
         long maxSecurityCacheTime = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_SECURITY_IN_MS);
         Map<String, NodeSecurity> all = securityCache;
         if (all == null || System.currentTimeMillis() - securityCacheTime >= maxSecurityCacheTime || securityCacheTime == 0 || !useCache) {
