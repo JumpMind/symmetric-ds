@@ -46,13 +46,15 @@ public class SymmetricContextListener implements ServletContextListener {
         Class<?> remoteStatusEndpoint = loadRemoteStatusEndpoint();
         if (remoteStatusEndpoint != null) {
             ServerContainer container = (ServerContainer) sce.getServletContext().getAttribute(ServerContainer.class.getName());
-            container.setDefaultMaxBinaryMessageBufferSize(Integer.MAX_VALUE);
-            container.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
-            ServerEndpointConfig websocketConfig = ServerEndpointConfig.Builder.create(remoteStatusEndpoint, "/control").build();
-            try {
-                container.addEndpoint(websocketConfig);
-            } catch (DeploymentException e) {
-                log.error("An exception occurred while adding the remote status endpoint", e);
+            if (container != null) {
+                container.setDefaultMaxBinaryMessageBufferSize(Integer.MAX_VALUE);
+                container.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
+                ServerEndpointConfig websocketConfig = ServerEndpointConfig.Builder.create(remoteStatusEndpoint, "/control").build();
+                try {
+                    container.addEndpoint(websocketConfig);
+                } catch (DeploymentException e) {
+                    log.error("An exception occurred while adding the remote status endpoint", e);
+                }
             }
         }
         SymmetricEngineHolder engineHolder = new SymmetricEngineHolder();
