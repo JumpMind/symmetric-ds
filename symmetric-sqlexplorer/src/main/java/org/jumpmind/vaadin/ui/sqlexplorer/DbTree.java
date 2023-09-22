@@ -34,6 +34,7 @@ import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlReader;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
+import org.jumpmind.vaadin.ui.common.Label;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +42,8 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.ValueProvider;
 
 public class DbTree extends TreeGrid<DbTreeNode> {
     public static final String PROPERTY_SCHEMA_NAME = "schemaName";
@@ -69,14 +70,20 @@ public class DbTree extends TreeGrid<DbTreeNode> {
         this.settingsProvider = settingsProvider;
         setWidthFull();
         setClassNameGenerator(new DbTreeClassNameGenerator());
+        addThemeName("dbTree");
         expandedNodes = new LinkedHashSet<DbTreeNode>();
-        addColumn(TemplateRenderer.<DbTreeNode> of("<span style='display:flex'>"
-                + "<vaadin-grid-tree-toggle leaf='[[item.leaf]]' expanded='{{expanded}}' level='[[level]]'></vaadin-grid-tree-toggle>"
-                + "<iron-icon icon='[[item.icon]]' style='align-self:flex-start;min-width:24px;margin-right:5px'></iron-icon>"
-                + "<div style='width:100%'> [[item.name]] </div></span>")
-                .withProperty("leaf", node -> !getDataCommunicator().hasChildren(node))
-                .withProperty("name", node -> node.getName())
-                .withProperty("icon", node -> node.getIcon() != null ? "vaadin:" + node.getIcon().toString().toLowerCase() : ""));
+        addComponentHierarchyColumn(new ValueProvider<DbTreeNode, Label>() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Label apply(DbTreeNode node) {
+                Label label = new Label(node.getName());
+                if (node.getIcon() != null) {
+                    label.setLeftIcon(node.getIcon());
+                }
+                return label;
+            }
+        });
         addExpandListener(event -> {
             Collection<DbTreeNode> items = event.getItems();
             if (!items.isEmpty()) {

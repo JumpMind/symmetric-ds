@@ -67,6 +67,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -151,6 +152,7 @@ public class TabularResultLayout extends VerticalLayout {
         this.showSql = showSql;
     }
 
+    @SuppressWarnings("unchecked")
     protected void createTabularResultLayout() {
         this.setSizeFull();
         this.setSpacing(false);
@@ -194,7 +196,6 @@ public class TabularResultLayout extends VerticalLayout {
             }
             editor.setBinder(binder);
             if (resultTable != null) {
-                @SuppressWarnings("unchecked")
                 List<Object>[] unchangedValue = (List<Object>[]) new List[1];
                 Object[] pkParams = new Object[resultTable.getPrimaryKeyColumnCount()];
                 int[] pkTypes = new int[pkParams.length];
@@ -210,7 +211,7 @@ public class TabularResultLayout extends VerticalLayout {
                     }
                 });
                 editor.addSaveListener(event -> {
-                    grid.setDataProvider(grid.getDataProvider());
+                    grid.setItems((DataProvider<List<Object>, Void>) grid.getDataProvider());
                     List<Object> row = event.getItem();
                     List<String> colNames = new ArrayList<String>();
                     List<Object> params = new ArrayList<Object>();

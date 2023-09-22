@@ -48,14 +48,13 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Receiver;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller.ScrollDirection;
@@ -106,8 +105,8 @@ public class DbImportDialog extends ResizableDialog {
         VerticalLayout importContent = new VerticalLayout();
         importContent.setSizeFull();
         importContent.setMargin(false);
-        importContent.setSpacing(true);
-        importContent.add(new Label("Please select from the following options"));
+        importContent.setSpacing(false);
+        importContent.add(new NativeLabel("Please select from the following options"));
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
         importContent.addAndExpand(formLayout);
@@ -238,9 +237,7 @@ public class DbImportDialog extends ResizableDialog {
         importLayout.setSizeFull();
         cancelButton = new Button("Cancel", event -> close());
         add(importLayout, 1);
-        HorizontalLayout buttonLayout = buildButtonFooter(cancelButton);
-        buttonLayout.add(upload);
-        add(buttonLayout);
+        buildButtonFooter(cancelButton, upload);
     }
 
     protected void deleteFileAndResource() {

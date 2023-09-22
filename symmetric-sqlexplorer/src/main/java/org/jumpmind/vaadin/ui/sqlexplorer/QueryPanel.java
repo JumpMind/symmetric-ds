@@ -523,18 +523,18 @@ public class QueryPanel extends CustomSplitLayout implements IContentTab {
     protected String selectSqlToRun() {
         String delimiter = settingsProvider.get().getProperties().get(SQL_EXPLORER_DELIMITER);
         String sql = sqlArea.getValue();
-        String selectedText = sqlArea.getSelectedText();
+        String selectedText = sqlArea.getSelection().getSelectedText();
         boolean selected = selectedText != null && !selectedText.trim().isEmpty();
         if (selected) {
-            sql = sqlArea.getSelectedText();
+            sql = sqlArea.getSelection().getSelectedText();
         } else {
             StringBuilder sqlBuffer = new StringBuilder();
             String[] lines = sql.split("\n");
-            int[] cursorPosition = sqlArea.getCursorPosition();
+            int cursorPosition = sqlArea.getCursorPosition().getRow();
             boolean pastCursor = false;
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
-                if (i == cursorPosition[0]) {
+                if (i == cursorPosition) {
                     pastCursor = true;
                 }
                 if (!pastCursor) {

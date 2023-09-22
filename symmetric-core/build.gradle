@@ -5,21 +5,15 @@ apply from: symAssembleDir + '/common.gradle'
     dependencies {
         api project(":symmetric-io")
         api project(":symmetric-util")
-        api "com.sun.mail:javax.mail:$javaMailVersion"
+        api "org.eclipse.angus:jakarta.mail:$jakartaMailVersion"
         api "com.google.code.gson:gson:$gsonVersion"
         api "org.springframework:spring-core:$springVersion"
         api "org.springframework:spring-beans:$springVersion"
-
-        compileOnly "org.eclipse.jetty:jetty-alpn-conscrypt-server:$jettyVersion"
-        // force okhttp3 to use newer version of kotlin
-        api "org.jetbrains.kotlin:kotlin-stdlib:1.6.20"
-        api "com.squareup.okhttp3:okhttp:4.9.3"
         
         compileOnly ("nl.cad:tps-parse:1.0.15-SNAPSHOT") {
             exclude group: 'commons-lang', module: 'commons-lang'
             exclude group: 'joda-time', module: 'joda-time'
         }
-       
 
         testImplementation project(path: ':symmetric-util', configuration: 'testArtifacts')
         testImplementation project(path: ':symmetric-jdbc', configuration: 'testArtifacts')

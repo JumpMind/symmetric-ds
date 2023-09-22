@@ -76,7 +76,7 @@ public class SqlSuggester {
         });
         this.editor.addValueChangeListener(event -> updateSuggestions(event.getValue(), getCursorPosition()));
         this.editor.addSelectionChangeListener(event -> {
-            if (setCursorPosition && event.getSelectionTo() != cursor) {
+            if (setCursorPosition && event.getSelection().getEndIndex() != cursor) {
                 this.editor.setCursorPosition(cursor);
             }
             setCursorPosition = false;
@@ -88,7 +88,7 @@ public class SqlSuggester {
     }
 
     public void updateSuggestions(String text, int cursor) {
-        this.editor.setCustomAutoCompletion(new String[] {});
+        this.editor.addStaticWordCompleter(new ArrayList<String>());
         if (enabled) {
             try {
                 this.text = text;
@@ -115,7 +115,7 @@ public class SqlSuggester {
                     suggestions.addAll(getTableNameSuggestions(null, null));
                 }
                 removeRepeats(suggestions);
-                this.editor.setCustomAutoCompletion(suggestions.toArray(new String[suggestions.size()]));
+                this.editor.addStaticWordCompleter(suggestions);
             } catch (Exception ex) {
                 logger.debug("Failed to generate suggestions. cursor=" + cursor + " text=" + text, ex);
             }
@@ -128,12 +128,13 @@ public class SqlSuggester {
 
     private int getCursorPosition() {
         String value = editor.getValue();
-        int[] cursorCoordinates = editor.getCursorPosition();
+        int cursorRow = editor.getCursorPosition().getRow();
+        int cursorColumn = editor.getCursorPosition().getColumn();
         int row = 0;
         int column = 0;
         int index = 0;
         for (char c : value.toCharArray()) {
-            if (row == cursorCoordinates[0] && column == cursorCoordinates[1]) {
+            if (row == cursorRow && column == cursorColumn) {
                 return index;
             }
             if (c == '\n') {
@@ -144,7 +145,7 @@ public class SqlSuggester {
             }
             index++;
         }
-        if (row == cursorCoordinates[0] && column == cursorCoordinates[1]) {
+        if (row == cursorRow && column == cursorColumn) {
             return index;
         }
         return -1;

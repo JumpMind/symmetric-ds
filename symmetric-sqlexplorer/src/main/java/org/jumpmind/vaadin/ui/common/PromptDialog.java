@@ -29,7 +29,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -49,7 +48,7 @@ public class PromptDialog extends Dialog {
         setCloseOnEsc(false);
         setCloseOnOutsideClick(false);
         if (caption != null) {
-            add(new Label(caption + "<hr>"));
+            setHeaderTitle(caption);
         }
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(true);
@@ -66,13 +65,9 @@ public class PromptDialog extends Dialog {
             field.focus();
         }
         layout.add(field);
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.setSpacing(true);
-        buttonLayout.addAndExpand(new Span());
         Button cancelButton = new Button("Cancel");
         cancelButton.addClickShortcut(Key.ESCAPE);
         cancelButton.addClickListener(event -> close());
-        buttonLayout.add(cancelButton);
         Button okButton = new Button("Ok");
         okButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         okButton.addClickShortcut(Key.ENTER);
@@ -81,8 +76,7 @@ public class PromptDialog extends Dialog {
                 close();
             }
         });
-        buttonLayout.add(okButton);
-        layout.add(buttonLayout);
+        getFooter().add(cancelButton, okButton);
         field.focus();
     }
 

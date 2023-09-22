@@ -97,7 +97,7 @@ public class SqlHistoryDialog extends ResizableDialog {
         Button applyButton = CommonUiUtils.createPrimaryButton("Select");
         applyButton.addClickShortcut(Key.ENTER);
         applyButton.addClickListener(event -> select());
-        add(buildButtonFooter(cancelButton, applyButton));
+        buildButtonFooter(cancelButton, applyButton);
     }
 
     private void filter(String filter) {

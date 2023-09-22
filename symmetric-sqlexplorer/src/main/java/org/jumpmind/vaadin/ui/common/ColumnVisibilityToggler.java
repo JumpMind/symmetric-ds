@@ -31,15 +31,16 @@ import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class ColumnVisibilityToggler extends Button {
-    private ContextMenu menu;
+    private VerticalLayout checkboxLayout;
     private Map<Column<?>, Checkbox> columnMap;
     private static final long serialVersionUID = 1L;
 
     public ColumnVisibilityToggler() {
         super();
-        menu = new ContextMenu(this);
+        ContextMenu menu = new ContextMenu(this);
         columnMap = new HashMap<Column<?>, Checkbox>();
         menu.setOpenOnClick(true);
         menu.addOpenedChangeListener(event -> {
@@ -49,6 +50,11 @@ public class ColumnVisibilityToggler extends Button {
                 }
             }
         });
+        checkboxLayout = new VerticalLayout();
+        checkboxLayout.setPadding(false);
+        checkboxLayout.setSpacing(false);
+        checkboxLayout.getStyle().set("margin", "0").set("padding-bottom", "2px");
+        menu.add(checkboxLayout);
         setIcon(new Icon(VaadinIcon.COG));
         getElement().setAttribute("title", "Hide/show columns");
     }
@@ -73,11 +79,11 @@ public class ColumnVisibilityToggler extends Button {
     }
 
     private void rebuildMenuItems() {
-        menu.removeAll();
+        checkboxLayout.removeAll();
         List<Checkbox> checkboxes = columnMap.values().stream().collect(Collectors.toList());
         checkboxes.sort((box0, box1) -> box0.getLabel().compareTo(box1.getLabel()));
         for (Checkbox checkbox : checkboxes) {
-            menu.add(checkbox);
+            checkboxLayout.add(checkbox);
         }
     }
 }

@@ -47,8 +47,6 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.transport.file.FileTransportManager;
-import org.jumpmind.symmetric.transport.http.ConscryptHelper;
-import org.jumpmind.symmetric.transport.http.Http2Connection;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.http.SelfSignedX509TrustManager;
 import org.jumpmind.symmetric.transport.http.SimpleHostnameVerifier;
@@ -72,7 +70,6 @@ public class TransportManagerFactory {
                 if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
                     HostnameVerifier hostnameVerifier = new SimpleHostnameVerifier(httpSslVerifiedServerNames);
                     HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
-                    Http2Connection.setDefaultHostnameVerifier(hostnameVerifier);
                 }
                 if (allowSelfSignedCerts) {
                     initSelfSignedSocketFactory(enableHttps2);
@@ -110,7 +107,7 @@ public class TransportManagerFactory {
     }
 
     protected HttpTransportManager createHttpTransportManager(ISymmetricEngine symmetricEngine) {
-        String impl = symmetricEngine.getParameterService().getString("http.transport.manager.class");
+        String impl = symmetricEngine.getParameterService().getString(ServerConstants.HTTP_TRANSPORT_MANAGER_CLASS);
         if (StringUtils.isEmpty(impl)) {
             return new HttpTransportManager(symmetricEngine);
         } else {
@@ -144,9 +141,6 @@ public class TransportManagerFactory {
      */
     private static void initSelfSignedSocketFactory(boolean enableHttps2)
             throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
-        if (enableHttps2) {
-            new ConscryptHelper().checkProviderInstalled();
-        }
         SSLContext context = SSLContext.getInstance("TLS");
         ISecurityService securityService = SecurityServiceFactory.create();
         KeyStore trustStore = null;
@@ -165,7 +159,5 @@ public class TransportManagerFactory {
         context.init(keyManagers, new TrustManager[] { trustManager }, new SecureRandom());
         SSLSocketFactory sslSocketFactory = context.getSocketFactory();
         HttpsURLConnection.setDefaultSSLSocketFactory(sslSocketFactory);
-        Http2Connection.setDefaultSslSocketFactory(sslSocketFactory);
-        Http2Connection.setDefaultTrustManager(trustManager);
     }
 }

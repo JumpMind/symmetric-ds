@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.job;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -87,8 +89,8 @@ abstract public class AbstractJob implements Runnable, IJob {
             if (isCronSchedule()) {
                 String cronExpression = getSchedule();
                 cronTrigger = new CronTrigger(cronExpression);
-                log.info("Starting job '{}' on cron schedule '{}' with the first run at {}", jobName, cronExpression, cronTrigger.nextExecutionTime(
-                        new SimpleTriggerContext()));
+                log.info("Starting job '{}' on cron schedule '{}' with the first run at {}", jobName, cronExpression,
+                        Date.from(cronTrigger.nextExecution(new SimpleTriggerContext())));
                 try {
                     this.scheduledJob = taskScheduler.schedule(this, cronTrigger);
                 } catch (Exception ex) {
@@ -119,7 +121,7 @@ abstract public class AbstractJob implements Runnable, IJob {
                 log.info("Starting job '{}' on periodic schedule every {}ms with the first run at {}", new Object[] { jobName,
                         timeBetweenRunsInMs, periodicFirstRunTime });
                 this.scheduledJob = taskScheduler.scheduleWithFixedDelay(this,
-                        periodicFirstRunTime, timeBetweenRunsInMs);
+                        periodicFirstRunTime.toInstant(), Duration.ofMillis(timeBetweenRunsInMs));
                 started = true;
             }
         }
@@ -329,22 +331,23 @@ abstract public class AbstractJob implements Runnable, IJob {
     @Override
     public Date getNextExecutionTime() {
         if (isCronSchedule() && cronTrigger != null) {
-            return cronTrigger.nextExecutionTime(new TriggerContext() {
+            return Date.from(cronTrigger.nextExecution(new TriggerContext() {
                 @Override
-                public Date lastScheduledExecutionTime() {
+                public Instant lastScheduledExecution() {
                     return null;
                 }
 
                 @Override
-                public Date lastCompletionTime() {
-                    return getLastFinishTime();
+                public Instant lastCompletion() {
+                    Date lastFinishTime = getLastFinishTime();
+                    return lastFinishTime != null ? lastFinishTime.toInstant() : null;
                 }
 
                 @Override
-                public Date lastActualExecutionTime() {
+                public Instant lastActualExecution() {
                     return null;
                 }
-            });
+            }));
         } else if (isPeriodicSchedule()) {
             if (getLastFinishTime() != null) {
                 return new Date(getLastFinishTime().getTime() + getTimeBetweenRunsInMs());

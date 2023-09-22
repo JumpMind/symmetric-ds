@@ -5,10 +5,6 @@ buildscript {
        maven { url "https://maven.vaadin.com/vaadin-addons" }         
        maven { url "https://mvnrepository.com/artifact" }
     }
-
-    dependencies { 
-        classpath 'com.devsoap.plugin:gradle-vaadin-plugin:2.0.0.beta1'    
-    }    
 }
 
 plugins {
@@ -37,13 +33,13 @@ dependencies {
     
     api "org.springframework:spring-webmvc:$springVersion"
 
-    api "de.f0rce:ace:1.3.0"
+    api "de.f0rce:ace:3.4.2"
     api "com.vaadin:vaadin-context-menu:3.1.0"
     
     testImplementation "com.h2database:h2:$h2Version"
-    testImplementation "javax.websocket:javax.websocket-api:$websocketVersion"    
+    testImplementation "jakarta.websocket:jakarta.websocket-api:$websocketVersion"    
     testImplementation "org.eclipse.jetty:jetty-webapp:$jettyVersion"
-    testImplementation "org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion"    
+    testImplementation "org.eclipse.jetty.websocket:websocket-jakarta-server:$jettyVersion"    
 	
 	implementation "com.vaadin:vaadin-core:$vaadinVersion"
 }

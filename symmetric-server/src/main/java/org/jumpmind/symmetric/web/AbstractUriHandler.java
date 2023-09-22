@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IParameterService;

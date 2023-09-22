@@ -42,7 +42,6 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
@@ -64,7 +63,6 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     protected Map<String, String> sessionIdByUri = new HashMap<String, String>();
     protected boolean useHeaderSecurityToken;
     protected boolean useSessionAuth;
-    protected boolean isHttp2Enabled;
 
     public HttpTransportManager() {
     }
@@ -74,7 +72,6 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         this.engine = engine;
         useHeaderSecurityToken = engine.getParameterService().is(ParameterConstants.TRANSPORT_HTTP_USE_HEADER_SECURITY_TOKEN);
         useSessionAuth = engine.getParameterService().is(ParameterConstants.TRANSPORT_HTTP_USE_SESSION_AUTH);
-        isHttp2Enabled = engine.getParameterService().is(ServerConstants.HTTPS2_ENABLE, false);
     }
 
     public int sendCopyRequest(Node local) throws IOException {
@@ -170,12 +167,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     public HttpConnection openConnection(URL url, String nodeId, String securityToken)
             throws IOException {
-        HttpConnection conn = null;
-        if (isHttp2Enabled) {
-            conn = new Http2Connection(url);
-        } else {
-            conn = new HttpConnection(url);
-        }
+        HttpConnection conn = new HttpConnection(url);
         conn.setRequestProperty(WebConstants.HEADER_ACCEPT_CHARSET, StandardCharsets.UTF_8.name());
         boolean hasSession = false;
         if (useSessionAuth) {

@@ -18,25 +18,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.transport.http;
+package org.jumpmind.symmetric;
 
-import java.security.Provider;
-import java.security.Security;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationFailedEvent;
+import org.springframework.context.ApplicationListener;
 
-import org.conscrypt.Conscrypt;
+public class SymmetricBootFailedListener implements ApplicationListener<ApplicationFailedEvent> {
+    private static final Logger log = LoggerFactory.getLogger(SymmetricBootFailedListener.class);
 
-public class ConscryptHelper {
-    protected final static String PROVIDER_NAME = "Conscrypt";
-
-    public void checkProviderInstalled() {
-        if (Security.getProvider(PROVIDER_NAME) == null) {
-            Security.insertProviderAt(Conscrypt.newProvider(), 1);
-        } else {
-            Provider[] providers = Security.getProviders();
-            if (providers.length > 0 && !providers[0].getName().equals(PROVIDER_NAME)) {
-                Security.removeProvider(PROVIDER_NAME);
-                Security.insertProviderAt(Conscrypt.newProvider(), 1);
-            }
+    @Override
+    public void onApplicationEvent(ApplicationFailedEvent event) {
+        Throwable t = event.getException();
+        if (t != null) {
+            log.error("Web server failed to start", t);
         }
     }
 }

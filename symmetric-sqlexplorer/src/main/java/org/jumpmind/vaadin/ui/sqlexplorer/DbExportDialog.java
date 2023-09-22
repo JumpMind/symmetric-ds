@@ -53,7 +53,6 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller.ScrollDirection;
@@ -89,7 +88,6 @@ public class DbExportDialog extends ResizableDialog {
     private ShortcutRegistration doneShortcutRegistration;
     private TableSelectionLayout tableSelectionLayout;
     private Scroller optionLayout;
-    private HorizontalLayout buttonFooter;
     private Anchor fileDownloader;
     private DbExport dbExport;
     private RadioButtonGroup<String> exportFormatOptionGroup;
@@ -147,9 +145,8 @@ public class DbExportDialog extends ResizableDialog {
         });
         buildFileDownloader();
         fileDownloader.setVisible(false);
-        buttonFooter = buildButtonFooter(new Button[] {}, cancelButton, previousButton, nextButton, fileDownloader,
-                exportEditorButton, doneButton);
-        add(buttonFooter);
+        buildButtonFooter(new Button[] {}, cancelButton, previousButton, nextButton, fileDownloader, exportEditorButton,
+                doneButton);
     }
 
     protected void createOptionLayout() {
@@ -356,15 +353,13 @@ public class DbExportDialog extends ResizableDialog {
     protected void buildFileDownloader() {
         if (fileDownloader != null) {
             fileDownloader.remove();
-            innerContent.remove(buttonFooter);
         }
         fileDownloader = new Anchor(createResource(), null);
         fileDownloader.getElement().setAttribute("download", true);
         fileDownloader.add(exportFileButton);
         fileDownloader.setVisible(exportFormatOptionGroup.getValue().equals(EXPORT_AS_A_FILE));
-        buttonFooter = buildButtonFooter(new Button[] {}, cancelButton, previousButton, nextButton, fileDownloader,
-                exportEditorButton, doneButton);
-        add(buttonFooter);
+        buildButtonFooter(new Button[] {}, cancelButton, previousButton, nextButton, fileDownloader, exportEditorButton,
+                doneButton);
     }
 
     private StreamResource createResource() {

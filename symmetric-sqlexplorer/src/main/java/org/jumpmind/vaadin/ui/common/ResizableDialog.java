@@ -20,6 +20,8 @@
  */
 package org.jumpmind.vaadin.ui.common;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +34,6 @@ import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.UI;
@@ -43,7 +43,6 @@ public class ResizableDialog extends Dialog {
     private static final long serialVersionUID = 1L;
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected VerticalLayout innerContent;
-    protected Label captionLabel;
     protected ShortcutRegistration escapeShortcutRegistration;
 
     public ResizableDialog() {
@@ -64,25 +63,13 @@ public class ResizableDialog extends Dialog {
         VerticalLayout content = new VerticalLayout();
         content.setSizeFull();
         content.setPadding(false);
+        content.setSpacing(false);
         super.add(content);
         if (caption != null) {
-            captionLabel = new Label(caption + "<hr>");
-            captionLabel.setWidthFull();
-            captionLabel.getStyle().set("margin", null);
-            if (addCloseIcon) {
-                HorizontalLayout captionLayout = new HorizontalLayout(captionLabel, buildCloseIcon());
-                captionLayout.setWidthFull();
-                captionLayout.expand(captionLabel);
-                content.add(captionLayout);
-            } else {
-                content.add(captionLabel);
-            }
-        } else if (addCloseIcon) {
-            HorizontalLayout closeIconLayout = new HorizontalLayout();
-            closeIconLayout.setWidthFull();
-            closeIconLayout.addAndExpand(new Span());
-            closeIconLayout.add(buildCloseIcon());
-            content.add(closeIconLayout);
+            setHeaderTitle(caption);
+        }
+        if (addCloseIcon) {
+            getHeader().add(buildCloseIcon());
         }
         innerContent = new VerticalLayout();
         innerContent.setWidthFull();
@@ -135,23 +122,28 @@ public class ResizableDialog extends Dialog {
         return closeButton;
     }
 
-    protected HorizontalLayout buildButtonFooter(Component... toTheRightButtons) {
-        return buildButtonFooter((Component[]) null, toTheRightButtons);
+    protected void buildButtonFooter(Component... toTheRightButtons) {
+        buildButtonFooter((Component[]) null, toTheRightButtons);
     }
 
-    protected HorizontalLayout buildButtonFooter(Component[] toTheLeftButtons, Component... toTheRightButtons) {
-        HorizontalLayout footer = new HorizontalLayout();
-        footer.setSpacing(true);
+    protected void buildButtonFooter(List<Component> toTheLeftButtons, Component... toTheRightButtons) {
+        buildButtonFooter(toTheLeftButtons.toArray(new Component[toTheLeftButtons.size()]), toTheRightButtons);
+    }
+
+    protected void buildButtonFooter(Component[] toTheLeftButtons, Component... toTheRightButtons) {
         if (toTheLeftButtons != null) {
-            footer.add(toTheLeftButtons);
+            int buttonCount = toTheLeftButtons.length;
+            if (buttonCount > 0) {
+                for (int i = 0; i < buttonCount - 1; i++) {
+                    getFooter().add(toTheLeftButtons[i]);
+                }
+                toTheLeftButtons[buttonCount - 1].getStyle().set("margin-right", "auto");
+                getFooter().add(toTheLeftButtons[buttonCount - 1]);
+            }
         }
-        Span footerText = new Span("");
-        footerText.setSizeUndefined();
-        footer.addAndExpand(footerText);
         if (toTheRightButtons != null) {
-            footer.add(toTheRightButtons);
+            getFooter().add(toTheRightButtons);
         }
-        return footer;
     }
 
     protected boolean onClose() {

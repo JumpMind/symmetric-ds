@@ -10,9 +10,8 @@ configurations {
 
 configurations.all {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-        if (details.requested.group == 'org.ow2.asm') {
-            details.useVersion '7.2'
-            //details.useVersion '5.2'
+        if (details.requested.group == 'org.ow2.asm' && !details.requested.name.contains('debug-all')) {
+            details.useVersion '9.5'
         }
     }
 }
@@ -123,8 +122,8 @@ subprojects { subproject ->
 		}
     }
 
-    sourceCompatibility=1.8
-    targetCompatibility=1.8
+    sourceCompatibility=JavaVersion.VERSION_17
+    targetCompatibility=JavaVersion.VERSION_17
     
     compileJava {
     	options.compilerArgs += '-Xlint:deprecation'
@@ -151,8 +150,8 @@ subprojects { subproject ->
         }
         
         jdt {
-            sourceCompatibility = 1.8
-            targetCompatibility = 1.8
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
         }
         
         project.file.whenMerged { project ->
@@ -276,7 +275,7 @@ subprojects { subproject ->
         commonsBeanUtilsVersion = '1.9.4'
         commonsCliVersion = '1.5.0'
         commonsDbcpVersion = '2.9.0'
-        commonsFileuploadVersion = '1.4'
+        commonsFileuploadVersion = '2.0.0-M1'
         commonsIoVersion = '2.11.0'
         commonsLangVersion = '3.12.0'
         commonsTextVersion = '1.10.0'
@@ -289,36 +288,35 @@ subprojects { subproject ->
         postgresqlVersion =  '42.5.1'
         hsqldbVersion = '2.5.1'
         sqliteVersion = '3.34.0'
-        javaMailVersion = '1.6.2'
+        jakartaMailVersion = '2.0.2'
         jdomVersion = '2.0.6.1'
-        jaxbVersion = '3.0.1'
+        jaxbVersion = '4.0.3'
         gsonVersion = '2.9.0'
         jacksonVersion = '2.13.2.2'
         guavaVersion = '31.1-android'
         junitVersion = '5.8.2'
         spotBugsVersion = '4.6.0'
-        log4jVersion = '2.17.2'
-        slf4jVersion = '1.7.36'
+        log4jVersion = '2.20.0'
+        slf4jVersion = '2.0.7'
         mockitoVersion = '4.4.0'
         powerMockVersion = '2.0.9'
         mysqlVersion = '8.0.28'
         servletVersion = '4.0.1'
-        springVersion = '5.3.27'
+        springVersion = '6.0.11'
+        springBootVersion = '3.1.3'
         jtdsVersion = '1.3.1'
         bouncyCastleVersion = '1.70'
         animalSnifferVersion = '1.21'
-        jnaVersion = '5.11.0'
-        jettyVersion = '9.4.49.v20220914'
-        alpnBootVersion = '8.1.13.v20181017'
-        alpnApiVersion = '1.1.3.v20160715'
-        websocketVersion = '1.1'
+        jnaVersion = '5.13.0'
+        jettyVersion = '11.0.15'
+        websocketVersion = '2.1.0'
         env = System.getenv()
     }
 
     dependencies {
         api "org.apache.logging.log4j:log4j-core:$log4jVersion"
         api "org.apache.logging.log4j:log4j-api:$log4jVersion"
-        api "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
+        api "org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion"
         api "org.apache.logging.log4j:log4j-web:$log4jVersion"
         api "org.slf4j:slf4j-api:$slf4jVersion"
         api "org.slf4j:jul-to-slf4j:$slf4jVersion"

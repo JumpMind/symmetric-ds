@@ -98,7 +98,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
                 event -> new SqlHistoryDialog(settingsProvider, queryPanel).showAtSize(0.6));
         historyButton.getElement().setAttribute("title", "Sql History");
         historyButton.setEnabled(true);
-        MenuItem optionsButton = menuBar.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.TASKS), null);
+        MenuItem optionsButton = menuBar.addItem(CommonUiUtils.createMenuBarIcon(VaadinIcon.TASKS));
         optionsButton.getElement().setAttribute("title", "Options");
         SubMenu optionsSubMenu = optionsButton.getSubMenu();
         HorizontalLayout importLayout = new HorizontalLayout();

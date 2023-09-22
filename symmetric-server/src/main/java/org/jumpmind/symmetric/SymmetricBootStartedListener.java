@@ -18,18 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.web;
+package org.jumpmind.symmetric;
 
-import java.io.IOException;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.ApplicationListener;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-public interface IInterceptor {
-    public boolean before(HttpServletRequest req, HttpServletResponse res) throws IOException,
-            ServletException;
-
-    public void after(HttpServletRequest req, HttpServletResponse res) throws IOException,
-            ServletException;
+public class SymmetricBootStartedListener implements ApplicationListener<ApplicationStartedEvent> {
+    @Override
+    public void onApplicationEvent(ApplicationStartedEvent event) {
+        System.out.println("Started");
+    }
 }

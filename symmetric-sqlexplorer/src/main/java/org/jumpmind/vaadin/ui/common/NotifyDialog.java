@@ -25,7 +25,9 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.NotificationVariant;
 
@@ -47,7 +49,10 @@ public class NotifyDialog extends ResizableDialog {
                 : (ex != null ? ex.getMessage()
                         : "");
         if (type == NotificationVariant.LUMO_ERROR) {
-            captionLabel.setLeftIcon(VaadinIcon.BAN);
+            setHeaderTitle(null);
+            Span captionSpan = new Span(caption);
+            captionSpan.addComponentAsFirst(new Icon(VaadinIcon.BAN));
+            getHeader().add(captionSpan);
         }
         final String message = text;
         final Label textLabel = new Label(message);
@@ -73,7 +78,7 @@ public class NotifyDialog extends ResizableDialog {
                 setHeight("320px");
             }
         });
-        innerContent.add(buildButtonFooter(detailsButton, buildCloseButton()));
+        buildButtonFooter(detailsButton, buildCloseButton());
     }
 
     public static void show(String caption, String text, Throwable throwable, NotificationVariant type) {
