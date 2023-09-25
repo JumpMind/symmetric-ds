@@ -105,7 +105,7 @@ public class TriggerRouterServiceTest {
         when(symmetricDialect.getPlatform().getSqlTemplateDirty()).thenReturn(sqlTemplate);
         doNothing().when(extensionService).addExtensionPoint(failureListener);
 
-        TriggerRouterService triggerRouterService = new TriggerRouterService(engine);
+        new TriggerRouterService(engine);
     }
 
     @Test
