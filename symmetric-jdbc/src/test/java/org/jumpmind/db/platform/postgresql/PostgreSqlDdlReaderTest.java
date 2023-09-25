@@ -51,7 +51,6 @@ import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlTemplateSettings;

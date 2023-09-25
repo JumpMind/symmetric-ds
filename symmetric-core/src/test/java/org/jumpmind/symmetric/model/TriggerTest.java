@@ -33,7 +33,6 @@ import org.jumpmind.db.model.Table;
 import org.junit.jupiter.api.Test;
 
 class TriggerTest {
-    private static final String DEFAULT_CONDITION = "1=1";
 
     @Test
     void testFilterExcludedColumnsForNull() throws Exception {
