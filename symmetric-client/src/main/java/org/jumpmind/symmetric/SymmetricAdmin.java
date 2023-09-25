@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
@@ -62,6 +64,10 @@ import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
+import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.io.data.DbExportUtils;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -70,9 +76,9 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.util.PropertiesUtil;
 import org.jumpmind.symmetric.util.ModuleException;
 import org.jumpmind.symmetric.util.ModuleManager;
+import org.jumpmind.symmetric.util.PropertiesUtil;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.JarBuilder;
 import org.jumpmind.util.ZipBuilder;
@@ -107,6 +113,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String CMD_SEND_SCHEMA = "send-schema";
     private static final String CMD_BACKUP_FILE_CONFIGURATION = "backup-config";
     private static final String CMD_RESTORE_FILE_CONFIGURATION = "restore-config";
+    private static final String CMD_IMPORT_CONFIG = "import-config";
+    private static final String CMD_EXPORT_CONFIG = "export-config";
     private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES, CMD_ENCRYPT_TEXT, CMD_OBFUSCATE_TEXT, CMD_UNOBFUSCATE_TEXT, CMD_LIST_ENGINES,
             CMD_MODULE, CMD_BACKUP_FILE_CONFIGURATION, CMD_RESTORE_FILE_CONFIGURATION, CMD_CREATE_WAR };
     private static final String OPTION_NODE = "node";
@@ -124,6 +132,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String OPTION_EXCLUDE_LOG4J = "exclude-log4j";
     private static final String OPTION_EXTERNAL_SECURITY = "external-security";
     private static final String OPTION_ALTERS = "alters";
+    private static final String OPTION_FILE = "file";
     private static final int WIDTH = 120;
     private static final int PAD = 3;
 
@@ -191,6 +200,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             printHelpLine(pw, CMD_RESTORE_FILE_CONFIGURATION);
             printHelpLine(pw, CMD_UNINSTALL);
             printHelpLine(pw, CMD_MODULE);
+            printHelpLine(pw, CMD_IMPORT_CONFIG);
+            printHelpLine(pw, CMD_EXPORT_CONFIG);
             pw.flush();
         }
     }
@@ -256,6 +267,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             if (cmd.equals(CMD_EXPORT_SYM_TABLES)) {
                 addOption(options, null, OPTION_ALTERS, false);
             }
+            if (cmd.equals(CMD_SEND_SQL)) {
+                addOption(options, "f", OPTION_FILE, true);
+            }
             if (options.getOptions().size() > 0) {
                 format.printWrapped(writer, WIDTH, "\nOptions:");
                 format.printOptions(writer, WIDTH, options, PAD, PAD);
@@ -292,6 +306,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         addOption(options, null, OPTION_EXCLUDE_LOG4J, false);
         addOption(options, null, OPTION_EXTERNAL_SECURITY, false);
         addOption(options, null, OPTION_ALTERS, false);
+        addOption(options, null, OPTION_FILE, true);
         buildCryptoOptions(options);
     }
 
@@ -375,6 +390,12 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         } else if (cmd.equals(CMD_RESTORE_FILE_CONFIGURATION)) {
             restore(line, args);
             return true;
+        } else if (cmd.equals(CMD_IMPORT_CONFIG)) {
+            importConfig(line, args);
+            return true;
+        } else if (cmd.equals(CMD_EXPORT_CONFIG)) {
+            exportConfig(line, args);
+            return true;
         } else {
             throw new ParseException("ERROR: no subcommand '" + cmd + "' was found.");
         }
@@ -386,6 +407,52 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             System.exit(1);
         }
         return args.remove(0);
+    }
+
+    private void importConfig(CommandLine line, List<String> args) {
+        String fileName = popArg(args, "file name");
+        try {
+            File configFile = new File(fileName);
+            if (fileName.toLowerCase().endsWith(".csv")) {
+                String content = FileUtils.readFileToString(configFile, Charset.defaultCharset());
+                IDataLoaderService service = getSymmetricEngine().getDataLoaderService();
+                List<IncomingBatch> batches = service.loadDataBatch(content);
+                for (IncomingBatch batch : batches) {
+                    if (batch.getStatus() == Status.ER) {
+                        System.err.println("ERROR: batch failed with batch ID " + batch.getBatchId() + ".");
+                        System.exit(1);
+                    }
+                }
+            } else if (fileName.toLowerCase().endsWith(".sql")) {
+                URL url = configFile.toURI().toURL();
+                SqlScript script = new SqlScript(url, getSymmetricEngine().getDatabasePlatform().getSqlTemplate());
+                script.execute();
+            } else {
+                System.err.println("ERROR: Expected a .csv or .sql file.");
+                System.exit(1);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void exportConfig(CommandLine line, List<String> args) {
+        String fileName = popArg(args, "file name");
+        try (FileWriter fw = new FileWriter(fileName)) {
+            if (fileName.toLowerCase().endsWith(".csv")) {
+                IDataExtractorService dataExtractorService = getSymmetricEngine().getDataExtractorService();
+                Node me = getSymmetricEngine().getNodeService().findIdentity();
+                dataExtractorService.extractConfigurationStandalone(me, fw, TableConstants.getConfigTablesExcludedFromExport());
+            } else if (fileName.toLowerCase().endsWith(".sql")) {
+                DbExportUtils.extractConfigurationStandalone(getSymmetricEngine().getDatabasePlatform(), TableConstants.getConfigTablesForExport(
+                        getSymmetricEngine().getTablePrefix()), fw);
+            } else {
+                System.err.println("ERROR: Expected a .csv or .sql file.");
+                System.exit(1);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void listEngines(CommandLine line, List<String> args) {
@@ -742,9 +809,20 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private void sendSql(CommandLine line, List<String> args) {
         String tableName = popArg(args, "Table Name");
-        String sql = popArg(args, "SQL");
+        String sql;
         String catalogName = line.getOptionValue(OPTION_CATALOG);
         String schemaName = line.getOptionValue(OPTION_SCHEMA);
+        String fileName = line.getOptionValue(OPTION_FILE);
+        if (fileName != null) {
+            try {
+                File sqlFile = new File(fileName);
+                sql = FileUtils.readFileToString(sqlFile, Charset.defaultCharset());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            sql = popArg(args, "SQL");
+        }
         for (Node node : getNodes(line)) {
             System.out.println("Sending SQL to node '" + node.getNodeId() + "'");
             getSymmetricEngine().getDataService().sendSQL(node.getNodeId(), catalogName,

@@ -132,8 +132,8 @@ public class SQLDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
             Map<String, String> oldValues = data.toColumnNameValuePairs(table.getColumnNames(),
                     CsvData.OLD_DATA);
             for (String columnName : oldValues.keySet()) {
-                namedParams.put(OLD_ + columnName, sourceValues.get(columnName));
-                namedParams.put(OLD_ + columnName.toUpperCase(), sourceValues.get(columnName));
+                namedParams.put(OLD_ + columnName, oldValues.get(columnName));
+                namedParams.put(OLD_ + columnName.toUpperCase(), oldValues.get(columnName));
             }
         }
         return namedParams;

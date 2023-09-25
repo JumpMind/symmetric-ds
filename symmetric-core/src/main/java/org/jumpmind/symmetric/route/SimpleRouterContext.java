@@ -41,6 +41,7 @@ public class SimpleRouterContext extends Context {
     protected String nodeId;
     protected boolean requestGapDetection = false;
     protected int batchSizeNotToExceed;
+    protected Map<String, RouterTimer> routerTimers = new HashMap<String, RouterTimer>();
 
     public SimpleRouterContext() {
     }
@@ -48,6 +49,16 @@ public class SimpleRouterContext extends Context {
     public SimpleRouterContext(String nodeId, NodeChannel channel) {
         this.nodeId = nodeId;
         this.channel = channel;
+    }
+
+    public RouterTimer addQueryTime(String routerId, long qt) {
+        RouterTimer rt = routerTimers.get(routerId);
+        if (rt == null) {
+            rt = new RouterTimer();
+            routerTimers.put(routerId, rt);
+        }
+        rt.addQueryTime(qt);
+        return rt;
     }
 
     public BinaryEncoding getBinaryEncoding() {
@@ -127,6 +138,33 @@ public class SimpleRouterContext extends Context {
                 value = 0l;
             }
             incrementStat(value, key);
+        }
+    }
+    
+    public class RouterTimer {
+        private long queryTime;
+        private long totalQueryTime;
+
+        public RouterTimer() {
+            queryTime = 0;
+            totalQueryTime = 0;
+        }
+
+        public void resetQueryTime() {
+            queryTime = 0;
+        }
+
+        public long getQueryTime() {
+            return queryTime;
+        }
+
+        public long getTotalQueryTime() {
+            return totalQueryTime;
+        }
+
+        public void addQueryTime(long qt) {
+            queryTime += qt;
+            totalQueryTime += qt;
         }
     }
 }

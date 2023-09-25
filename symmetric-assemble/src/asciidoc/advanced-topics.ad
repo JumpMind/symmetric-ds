@@ -521,5 +521,23 @@ Examples when `$(externalId)` is set to `1`:
 $(variableName|%05d) - returns 00001
 ----
 
+ifdef::pro[]
+
+=== Display Settings
+
+There are a number of display settings available for the web console. They are accessible by clicking the cog icon in the top right corner of the screen and navigating to the "Display" tab of the settings dialog. These settings apply to the console user that is currently logged in.
+
+image::images/advanced/display-settings.png[]
+
+Appearance:: Determines whether to display the web console in light mode or dark mode.
+
+Date Format:: Determines what format dates are displayed in. Options include YYYY-MM-DD, DD/MM/YYYY, and MM/DD/YYYY.
+
+Time Format:: Determines whether to display times in a 12-hour or 24-hour clock format.
+
+Time Zone:: Determines what time zone dates and times are displayed in. Options include the system's time zone, the browser's time zone, and specific time zone offsets. In order to access this setting, the JVM's time zone must be set to GMT or UTC. The JVM's time zone is determined by the `user.timezone` property, which can be set in `conf/sym_service.conf`.
+
+endif::pro[]
+
 
 

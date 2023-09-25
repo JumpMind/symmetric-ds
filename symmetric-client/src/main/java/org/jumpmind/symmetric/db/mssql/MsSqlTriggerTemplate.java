@@ -503,12 +503,6 @@ getCreateTriggerString() + " $(triggerName) on database\n" +
     {
         ddl =  super.replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
                 defaultCatalog, defaultSchema, ddl);
-        Column[] columns = table.getPrimaryKeyColumns();
-        ddl = FormatUtils.replace("declareOldKeyVariables",
-                buildKeyVariablesDeclare(columns, "old"), ddl);
-        ddl = FormatUtils.replace("declareNewKeyVariables",
-                buildKeyVariablesDeclare(columns, "new"), ddl);
-        
         ddl = FormatUtils.replace("anyNonBlobColumnChanged",
                 buildNonLobColumnsAreNotEqualString(table, newTriggerValue, oldTriggerValue), ddl);
         

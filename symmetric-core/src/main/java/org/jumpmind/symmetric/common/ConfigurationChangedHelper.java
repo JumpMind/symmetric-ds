@@ -190,13 +190,13 @@ public class ConfigurationChangedHelper {
         if (context.remove(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null) {
             flushTransforms();
         }
-        if (context.remove(CTX_KEY_RESTART_JOB_MANAGER_NEEDED) != null) {
+        if (context.remove(CTX_KEY_RESTART_JOB_MANAGER_NEEDED) != null && engine.isStarted()) {
             log.info("Clearing cache for jobs and restarting jobs");
             engine.getJobManager().init();
             engine.getJobManager().startJobs();
             context.remove(CTX_KEY_CHANGED_JOB_IDS);
         }
-        if (context.get(CTX_KEY_CHANGED_JOB_IDS) != null) {
+        if (context.get(CTX_KEY_CHANGED_JOB_IDS) != null && engine.isStarted()) {
             restartJobs(context);
         }
         if (context.remove(CTX_KEY_RESYNC_NEEDED) != null && isSyncTriggersAllowed(context)) {
@@ -274,7 +274,7 @@ public class ConfigurationChangedHelper {
         engine.getConfigurationService().initDefaultChannels();
         engine.getFileSyncService().clearCache();
         IJobManager jobManager = engine.getJobManager();
-        if (jobManager != null) {
+        if (jobManager != null && engine.isStarted()) {
             jobManager.restartJob(ClusterConstants.FILE_SYNC_TRACKER);
             jobManager.restartJob(ClusterConstants.FILE_SYNC_PULL);
             jobManager.restartJob(ClusterConstants.FILE_SYNC_PUSH);

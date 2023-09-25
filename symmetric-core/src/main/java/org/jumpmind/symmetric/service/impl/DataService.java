@@ -78,6 +78,7 @@ import org.jumpmind.symmetric.load.IReloadGenerator;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.load.IReloadVariableFilter;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
+import org.jumpmind.symmetric.model.ExtractRequest.ExtractStatus;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
@@ -604,9 +605,9 @@ public class DataService extends AbstractService implements IDataService {
         Object[] argsDelete = new Object[] { loadId };
         String sqlDelete = getSql("deleteTableReloadStatus");
         int[] typesDelete = new int[] { Types.NUMERIC };
-        Object[] args = new Object[] { loadId, targetNodeId, sourceNodeId, isFullLoad ? 1 : 0, now, now };
+        Object[] args = new Object[] { loadId, targetNodeId, sourceNodeId, isFullLoad ? 1 : 0, now, now, -1, -1, -1 };
         String sql = getSql("insertTableReloadStatus");
-        int[] types = new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP };
+        int[] types = new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC };
         if (transaction == null) {
             try {
                 transaction = sqlTemplate.startSqlTransaction();
@@ -1071,6 +1072,7 @@ public class DataService extends AbstractService implements IDataService {
                             }
                             log.info("Table reload request(s) for load id " + loadId + " have been processed.");
                         }
+                        update_outgoing_batch_and_extract_request_for_processing(transaction, targetNode.getNodeId(), loadId);
                         checkInterrupted();
                         transaction.commit();
                     } catch (Error ex) {
@@ -1113,6 +1115,50 @@ public class DataService extends AbstractService implements IDataService {
             log.info("Not attempting to insert reload events because sync trigger is currently running");
         }
         return extractRequests;
+    }
+
+    private void update_outgoing_batch_and_extract_request_for_processing(
+            ISqlTransaction transaction, String targetNodeId, long loadId) {
+        TableReloadStatus status = getTableReloadStatusByLoadId(loadId);
+        if (status != null) {
+            long startDataBatchId = status.getStartDataBatchId();
+            long endDataBatchId = status.getEndDataBatchId();
+            String reloadUpdateStatus = Status.NE.name();
+            if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
+                reloadUpdateStatus = Status.RQ.name();
+            }
+            update_setup_batches(transaction, targetNodeId, loadId, Status.LS.name(), Status.NE.name(), startDataBatchId);
+            update_load_batches(transaction, targetNodeId, loadId, Status.LS.name(), reloadUpdateStatus,
+                    startDataBatchId, endDataBatchId);
+            update_finalize_batches(transaction, targetNodeId, loadId, Status.LS.name(), Status.NE.name(),
+                    endDataBatchId);
+            update_extract_requests(transaction, loadId, engine.getNodeId(), ExtractStatus.LS.name(),
+                    ExtractStatus.NE.name());
+        }
+    }
+
+    private void update_setup_batches(ISqlTransaction transaction, String targetNodeId, long loadId,
+            String fromStatus, String toStatus, long maxBatchId) {
+        engine.getOutgoingBatchService().updateOutgoingSetupBatchStatusByStatus(transaction, targetNodeId, loadId,
+                maxBatchId, fromStatus, toStatus);
+    }
+
+    private void update_load_batches(ISqlTransaction transaction, String targetNodeId, long loadId,
+            String fromStatus, String toStatus, long startDataBatchId, long endDataBatchId) {
+        engine.getOutgoingBatchService().updateOutgoingLoadBatchStatusByStatus(transaction, targetNodeId, loadId,
+                startDataBatchId, endDataBatchId, fromStatus, toStatus);
+    }
+
+    private void update_finalize_batches(ISqlTransaction transaction, String targetNodeId, long loadId,
+            String fromStatus, String toStatus, long minBatchId) {
+        engine.getOutgoingBatchService().updateOutgoingFinalizeBatchStatusByStatus(transaction, targetNodeId,
+                loadId, minBatchId, fromStatus, toStatus);
+    }
+
+    private void update_extract_requests(ISqlTransaction transaction, long loadId, String sourceNodeId,
+            String fromStatus, String toStatus) {
+        engine.getDataExtractorService().updateExtractRequestStatuses(transaction, loadId, sourceNodeId,
+                fromStatus, toStatus);
     }
 
     private long getBatchCountFor(Map<Integer, ExtractRequest> extractRequests) {
@@ -1229,19 +1275,22 @@ public class DataService extends AbstractService implements IDataService {
             insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(), true,
                     loadId, createBy, channelId);
             batchCount++;
-            long curBatchId = engine.getSequenceService().currVal(transaction, Constants.SEQUENCE_OUTGOING_BATCH);
-            /*
-             * Mark incoming batches as OK at the target node because we marked outgoing batches as OK at the source
-             */
-            insertSqlEvent(
-                    transaction,
-                    targetNode,
-                    String.format(
-                            "update %s_incoming_batch set status='OK', error_flag=0 where node_id='%s' and status != 'OK' "
-                                    + "and batch_id < " + curBatchId,
-                            tablePrefix, engine.getNodeService().findIdentityNodeId()), true,
-                    loadId, createBy);
-            batchCount++;
+            TableReloadRequest t = reloadRequests.get(ParameterConstants.ALL + ParameterConstants.ALL);
+            if (t != null && StringUtils.isBlank(t.getReloadSelect())) {
+                long curBatchId = engine.getSequenceService().currVal(transaction, Constants.SEQUENCE_OUTGOING_BATCH);
+                /*
+                 * Mark incoming batches as OK at the target node because we marked outgoing batches as OK at the source
+                 */
+                insertSqlEvent(
+                        transaction,
+                        targetNode,
+                        String.format(
+                                "update %s_incoming_batch set status='OK', error_flag=0 where node_id='%s' and status != 'OK' "
+                                        + "and batch_id < " + curBatchId,
+                                tablePrefix, engine.getNodeService().findIdentityNodeId()), true,
+                        loadId, createBy, Status.LS);
+                batchCount++;
+            }
         }
         if (isFullLoad) {
             String beforeSql = parameterService.getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_BEFORE_SQL
@@ -1251,7 +1300,7 @@ public class DataService extends AbstractService implements IDataService {
                         transaction,
                         targetNode,
                         beforeSql, true,
-                        loadId, createBy);
+                        loadId, createBy, Status.LS);
                 batchCount++;
             }
         }
@@ -1297,7 +1346,7 @@ public class DataService extends AbstractService implements IDataService {
                             && engine.getGroupletService().isTargetEnabled(triggerRouter,
                                     targetNode)) {
                         insertCreateEvent(transaction, targetNode, triggerHistory, triggerRouter.getTrigger().getReloadChannelId(), true,
-                                loadId, createBy, false, false, false);
+                                loadId, createBy, false, false, false, Status.LS);
                         createEventsSent++;
                         if (!transactional) {
                             transaction.commit();
@@ -1320,7 +1369,7 @@ public class DataService extends AbstractService implements IDataService {
                                 && engine.getGroupletService().isTargetEnabled(triggerRouter,
                                         targetNode)) {
                             insertCreateEvent(transaction, targetNode, triggerHistory, triggerRouter.getRouter().getRouterId(), true,
-                                    loadId, createBy, false, false, false);
+                                    loadId, createBy, false, false, false, Status.LS);
                             createEventsSent++;
                             if (!transactional) {
                                 transaction.commit();
@@ -1359,7 +1408,8 @@ public class DataService extends AbstractService implements IDataService {
                             && engine.getGroupletService().isTargetEnabled(triggerRouter,
                                     targetNode)) {
                         insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory,
-                                true, currentRequest.getBeforeCustomSql(), loadId, createBy);
+                                true, currentRequest.getBeforeCustomSql(), loadId, createBy,
+                                Status.LS);
                         deleteEventsSent++;
                         if (!transactional) {
                             transaction.commit();
@@ -1389,7 +1439,7 @@ public class DataService extends AbstractService implements IDataService {
                                         .getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL)) || !StringUtils
                                                 .isEmpty(triggerRouter.getInitialLoadDeleteStmt()))) {
                             insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory,
-                                    true, null, loadId, createBy);
+                                    true, null, loadId, createBy, Status.LS);
                             deleteEventsSent++;
                             if (!transactional) {
                                 transaction.commit();
@@ -1432,7 +1482,7 @@ public class DataService extends AbstractService implements IDataService {
                         for (String sql : sqlStatements) {
                             insertSqlEvent(transaction, triggerHistory, triggerRouter.getTrigger().getChannelId(),
                                     targetNode, sql,
-                                    true, loadId, createBy);
+                                    true, loadId, createBy, Status.LS);
                             sqlEventsSent++;
                         }
                         if (!transactional) {
@@ -1518,7 +1568,7 @@ public class DataService extends AbstractService implements IDataService {
                                     loadId, createBy, reloadChannel, rowCount, channel.getMaxBatchSize(), numberOfBatches);
                         } else {
                             startBatchId = insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
-                                    selectSql, true, loadId, createBy, Status.NE, null, -1);
+                                    selectSql, true, loadId, createBy, Status.LS, null, -1);
                         }
                         long endBatchId = startBatchId + numberOfBatches - 1;
                         firstBatchId = firstBatchId == 0 ? startBatchId : firstBatchId;
@@ -1687,6 +1737,13 @@ public class DataService extends AbstractService implements IDataService {
     protected void insertPurgeEvent(ISqlTransaction transaction, Node targetNode,
             TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad,
             String overrideDeleteStatement, long loadId, String createBy) {
+        insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory, isLoad,
+                overrideDeleteStatement, loadId, createBy, Status.NE);
+    }
+
+    protected void insertPurgeEvent(ISqlTransaction transaction, Node targetNode,
+            TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad,
+            String overrideDeleteStatement, long loadId, String createBy, Status outgoingBatchStatus) {
         Node sourceNode = engine.getNodeService().findIdentity();
         List<TransformTableNodeGroupLink> transforms = this.engine.getTransformService().findTransformsFor(
                 sourceNode.getNodeGroupId(), targetNode.getNodeGroupId(), triggerRouter.getTargetTable(triggerHistory));
@@ -1694,7 +1751,7 @@ public class DataService extends AbstractService implements IDataService {
             List<String> sqlStatements = resolveTargetTables(overrideDeleteStatement, triggerRouter, triggerHistory, targetNode);
             for (String sql : sqlStatements) {
                 createPurgeEvent(transaction, sql, targetNode, sourceNode,
-                        triggerRouter, triggerHistory, isLoad, loadId, createBy);
+                        triggerRouter, triggerHistory, isLoad, loadId, createBy, outgoingBatchStatus);
             }
         } else if (transforms != null && transforms.size() > 0) {
             List<String> sqlStatements = symmetricDialect.createPurgeSqlForMultipleTables(targetNode, triggerRouter,
@@ -1703,13 +1760,13 @@ public class DataService extends AbstractService implements IDataService {
                 createPurgeEvent(transaction,
                         sql,
                         targetNode, sourceNode,
-                        triggerRouter, triggerHistory, isLoad, loadId, createBy);
+                        triggerRouter, triggerHistory, isLoad, loadId, createBy, outgoingBatchStatus);
             }
         } else {
             createPurgeEvent(transaction,
                     symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter, triggerHistory, transforms),
                     targetNode, sourceNode,
-                    triggerRouter, triggerHistory, isLoad, loadId, createBy);
+                    triggerRouter, triggerHistory, isLoad, loadId, createBy, outgoingBatchStatus);
         }
     }
 
@@ -1748,6 +1805,13 @@ public class DataService extends AbstractService implements IDataService {
     protected void createPurgeEvent(ISqlTransaction transaction, String sql, Node targetNode, Node sourceNode,
             TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad,
             long loadId, String createBy) {
+        createPurgeEvent(transaction, sql, targetNode, sourceNode, triggerRouter, triggerHistory,
+                isLoad, loadId, createBy, Status.NE);
+    }
+
+    protected void createPurgeEvent(ISqlTransaction transaction, String sql, Node targetNode, Node sourceNode,
+            TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad,
+            long loadId, String createBy, Status outgoingBatchStatus) {
         sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
         sql = FormatUtils.replace("externalId", targetNode.getExternalId(), sql);
         sql = FormatUtils.replace("nodeId", targetNode.getNodeId(), sql);
@@ -1769,7 +1833,7 @@ public class DataService extends AbstractService implements IDataService {
         data.setNodeList(targetNode.getNodeId());
         if (isLoad) {
             insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
-                    isLoad, loadId, createBy, Status.NE, null, -1);
+                    isLoad, loadId, createBy, outgoingBatchStatus, null, -1);
         } else {
             insertData(transaction, data);
         }
@@ -1797,15 +1861,27 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql,
             boolean isLoad, long loadId, String createBy) {
+        insertSqlEvent(transaction, targetNode, sql, isLoad, loadId, createBy, Status.NE);
+    }
+
+    public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql,
+            boolean isLoad, long loadId, String createBy, Status outgoingBatchStatus) {
         TriggerHistory history = engine.getTriggerRouterService()
                 .findTriggerHistoryForGenericSync();
         insertSqlEvent(transaction, history, Constants.CHANNEL_CONFIG, targetNode, sql, isLoad,
-                loadId, createBy);
+                loadId, createBy, outgoingBatchStatus);
     }
 
     public void insertSqlEvent(ISqlTransaction transaction, TriggerHistory history,
             String channelId, Node targetNode, String sql, boolean isLoad, long loadId,
             String createBy) {
+        insertSqlEvent(transaction, history, channelId, targetNode, sql, isLoad, loadId,
+                createBy, Status.NE);
+    }
+
+    public void insertSqlEvent(ISqlTransaction transaction, TriggerHistory history,
+            String channelId, Node targetNode, String sql, boolean isLoad, long loadId,
+            String createBy, Status outgoingBatchStatus) {
         Trigger trigger = engine.getTriggerRouterService().getTriggerById(history.getTriggerId(),
                 false);
         String reloadChannelId = getReloadChannelIdForTrigger(trigger, engine
@@ -1816,7 +1892,7 @@ public class DataService extends AbstractService implements IDataService {
         data.setNodeList(targetNode.getNodeId());
         if (isLoad) {
             insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
-                    isLoad, loadId, createBy, Status.NE, null, -1);
+                    isLoad, loadId, createBy, outgoingBatchStatus, null, -1);
         } else {
             insertData(transaction, data);
         }
@@ -1940,6 +2016,13 @@ public class DataService extends AbstractService implements IDataService {
     public void insertCreateEvent(ISqlTransaction transaction, Node targetNode,
             TriggerHistory triggerHistory, String channelId, boolean isLoad, long loadId, String createBy,
             boolean excludeIndices, boolean excludeForeignKeys, boolean excludeDefaults) {
+        insertCreateEvent(transaction, targetNode, triggerHistory, channelId, isLoad, loadId,
+                createBy, excludeIndices, excludeForeignKeys, excludeDefaults, Status.NE);
+    }
+
+    public void insertCreateEvent(ISqlTransaction transaction, Node targetNode,
+            TriggerHistory triggerHistory, String channelId, boolean isLoad, long loadId, String createBy,
+            boolean excludeIndices, boolean excludeForeignKeys, boolean excludeDefaults, Status outgoingBatchStatus) {
         Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.CREATE,
                 null, null, triggerHistory, channelId, null, null);
         data.setNodeList(targetNode.getNodeId());
@@ -1947,7 +2030,7 @@ public class DataService extends AbstractService implements IDataService {
         try {
             if (isLoad) {
                 insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
-                        isLoad, loadId, createBy, Status.NE, null, -1);
+                        isLoad, loadId, createBy, outgoingBatchStatus, null, -1);
             } else {
                 insertData(transaction, data);
             }
@@ -2182,7 +2265,7 @@ public class DataService extends AbstractService implements IDataService {
                 " t.node_id = '" + nodeIdRecord + "'");
         if (data != null) {
             insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNodeId,
-                    isLoad, loadId, createBy, Status.NE, channelId, -1);
+                    isLoad, loadId, createBy, Status.LS, channelId, -1);
         } else {
             throw new SymmetricException(String.format("Unable to issue an update for %s_node_security. " +
                     " Check the %s_trigger_hist for %s_node_security.", tablePrefix, tablePrefix, tablePrefix));

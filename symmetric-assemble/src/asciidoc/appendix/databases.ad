@@ -31,7 +31,7 @@ by database.
 |
 |
 |
-|
+|✔
 |
 
 |DB2
@@ -64,7 +64,7 @@ by database.
 |6
 |
 |✔
-|
+|✔
 |✔
 |
 |✔
@@ -453,6 +453,13 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 .Catalog and Schema Support by Database
 |===
 |Database |Version |Catalog Support |Catalog Default |Schema Support |Schema Default
+
+|BigQuery
+|
+|
+|
+|✔
+|(dataset name)
 
 |DB2
 |

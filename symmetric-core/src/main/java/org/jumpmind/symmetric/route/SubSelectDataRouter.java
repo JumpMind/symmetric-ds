@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.route.SimpleRouterContext.RouterTimer;
 import org.jumpmind.util.FormatUtils;
 
 /**
@@ -78,8 +79,16 @@ public class SubSelectDataRouter extends AbstractDataRouter implements IBuiltInE
                 sqlParams.put("DATA_EVENT_TYPE", dataMetaData.getData().getDataEventType().name());
                 sqlParams.put("TABLE_NAME", dataMetaData.getData().getTableName());
                 ISqlTemplate template = symmetricDialect.getPlatform().getSqlTemplate();
+                long queryStartTime = System.currentTimeMillis();
                 List<String> ids = template.query(String.format("%s(%s)", sql, subSelect),
                         new StringMapper(), sqlParams);
+                long queryEndTime = System.currentTimeMillis();
+                String routerId = dataMetaData.getRouter().getRouterId();
+                RouterTimer rt = routingContext.addQueryTime(routerId, queryEndTime - queryStartTime);
+                if (rt.getQueryTime() > 60000) {
+                    rt.resetQueryTime();
+                    log.info("Subselect data router with id: {} has total query time of {} seconds.", routerId, rt.getTotalQueryTime() / 1000);
+                }
                 if (ids != null) {
                     nodeIds = new HashSet<String>(ids);
                 }

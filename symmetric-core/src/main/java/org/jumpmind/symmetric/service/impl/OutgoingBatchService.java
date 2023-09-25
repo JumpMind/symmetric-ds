@@ -280,6 +280,42 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         symmetricDialect.getSqlTypeForIds(), symmetricDialect.getSqlTypeForIds() });
     }
 
+    public void updateOutgoingSetupBatchStatusByStatus(ISqlTransaction transaction, String targetNodeId, long loadId,
+            long maxBatchId, String fromStatus, String toStatus) {
+        // update $(outgoing_batch)
+        // set status=?, last_update_time=?, last_update_hostname=?
+        // where node_id=? and load_id=? and status=? and batch_id < ?
+        transaction.prepareAndExecute(getSql("updateOutgoingSetupBatchStatusByStatus"),
+                new Object[] { toStatus, new Date(), clusterService.getServerId(),
+                        targetNodeId, loadId, fromStatus, maxBatchId },
+                new int[] { Types.CHAR, Types.TIMESTAMP, Types.VARCHAR,
+                        Types.VARCHAR, Types.NUMERIC, Types.CHAR, Types.NUMERIC });
+    }
+
+    public void updateOutgoingLoadBatchStatusByStatus(ISqlTransaction transaction, String targetNodeId, long loadId,
+            long startDataBatchId, long endDataBatchId, String fromStatus, String toStatus) {
+        // update $(outgoing_batch)
+        // set status=?, last_update_time=?, last_update_hostname=?
+        // where node_id=? and load_id=? and status=? and batch_id between ? and ?
+        transaction.prepareAndExecute(getSql("updateOutgoingLoadBatchStatusByStatus"),
+                new Object[] { toStatus, new Date(), clusterService.getServerId(),
+                        targetNodeId, loadId, fromStatus, startDataBatchId, endDataBatchId },
+                new int[] { Types.CHAR, Types.TIMESTAMP, Types.VARCHAR,
+                        Types.VARCHAR, Types.NUMERIC, Types.CHAR, Types.NUMERIC, Types.NUMERIC });
+    }
+
+    public void updateOutgoingFinalizeBatchStatusByStatus(ISqlTransaction transaction, String targetNodeId, long loadId,
+            long minBatchId, String fromStatus, String toStatus) {
+        // update $(outgoing_batch)
+        // set status=?, last_update_time=?, last_update_hostname=?
+        // where node_id=? and load_id=? and status=? and batch_id > ?
+        transaction.prepareAndExecute(getSql("updateOutgoingFinalizeBatchStatusByStatus"),
+                new Object[] { toStatus, new Date(), clusterService.getServerId(),
+                        targetNodeId, loadId, fromStatus, minBatchId },
+                new int[] { Types.CHAR, Types.TIMESTAMP, Types.VARCHAR,
+                        Types.VARCHAR, Types.NUMERIC, Types.CHAR, Types.NUMERIC });
+    }
+
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
         ISqlTransaction transaction = null;
         try {

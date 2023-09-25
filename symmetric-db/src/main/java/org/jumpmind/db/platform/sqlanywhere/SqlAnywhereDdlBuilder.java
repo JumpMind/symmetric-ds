@@ -105,6 +105,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
         databaseInfo.addNativeTypeMapping("BOOLEAN", "SMALLINT", "SMALLINT");
         databaseInfo.addNativeTypeMapping("DATALINK", "IMAGE", "LONGVARBINARY");
+        databaseInfo.addNativeTypeMapping(Types.LONGNVARCHAR, "LONG NVARCHAR", Types.LONGNVARCHAR);
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
         databaseInfo.setDefaultSize(Types.CHAR, 254);
@@ -193,7 +194,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
         ddl.append("DROP INDEX ");
-        ddl.append(getFullyQualifiedTableNameShorten(table));
+        ddl.append(table.getSchema()).append(".").append(table.getName());
         ddl.append(".");
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);

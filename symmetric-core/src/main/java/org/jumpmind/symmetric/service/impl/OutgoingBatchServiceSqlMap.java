@@ -173,5 +173,11 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("whereInProgressStatusSql", "where status in (?, ?, ?, ?, ?) ");
         putSql("updateOutgoingError",
                 "update $(outgoing_error) set resolve_ignore = 1 where batch_id = ? and node_id = ?");
+        putSql("updateOutgoingSetupBatchStatusByStatus",
+                "update $(outgoing_batch) set status=?, last_update_time=?, last_update_hostname=? where node_id=? and load_id=? and status=? and batch_id < ?");
+        putSql("updateOutgoingLoadBatchStatusByStatus",
+                "update $(outgoing_batch) set status=?, last_update_time=?, last_update_hostname=? where node_id=? and load_id=? and status=? and batch_id between ? and ?");
+        putSql("updateOutgoingFinalizeBatchStatusByStatus",
+                "update $(outgoing_batch) set status=?, last_update_time=?, last_update_hostname=? where node_id=? and load_id=? and status=? and batch_id > ?");
     }
 }

@@ -30,8 +30,8 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
         provided "com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre8"
 
-        api "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
-        api "org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion"        
+        api "org.bouncycastle:bcprov-jdk18on:$bouncyCastleVersion"
+        api "org.bouncycastle:bcpkix-jdk18on:$bouncyCastleVersion"        
                 
         compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
         api ("org.springframework.boot:spring-boot-starter-web:${springBootVersion}") {

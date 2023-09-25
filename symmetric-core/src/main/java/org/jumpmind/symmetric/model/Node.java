@@ -428,7 +428,7 @@ public class Node implements Serializable, Comparable<Node> {
     }
 
     public String getMostRecentActiveTableSynced() {
-        return mostRecentActiveTableSynced;
+        return mostRecentActiveTableSynced == null ? "" : mostRecentActiveTableSynced;
     }
 
     public void setMostRecentActiveTableSynced(String mostRecentActiveTableSynced) {

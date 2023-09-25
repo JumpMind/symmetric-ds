@@ -1724,7 +1724,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             requestId = sequenceService.nextVal(transaction, Constants.SEQUENCE_EXTRACT_REQ);
         }
         transaction.prepareAndExecute(getSql("insertExtractRequestSql"),
-                new Object[] { requestId, engine.getNodeId(), nodeId, queue, ExtractStatus.NE.name(), startBatchId, endBatchId,
+                new Object[] { requestId, engine.getNodeId(), nodeId, queue, ExtractStatus.LS.name(), startBatchId, endBatchId,
                         triggerRouter.getTrigger().getTriggerId(), triggerRouter.getRouter().getRouterId(), loadId,
                         table, rows, parentRequestId, new Date(), new Date() },
                 new int[] { Types.BIGINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT,
@@ -1734,7 +1734,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         request.setRequestId(requestId);
         request.setNodeId(nodeId);
         request.setQueue(queue);
-        request.setStatus(ExtractStatus.NE);
+        request.setStatus(ExtractStatus.LS);
         request.setStartBatchId(startBatchId);
         request.setEndBatchId(endBatchId);
         request.setRouterId(triggerRouter.getRouterId());
@@ -2060,6 +2060,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         } else {
             log.info("Could not remove batch {} from staging because it did not exist", batch.getNodeBatchId());
         }
+    }
+
+    @Override
+    public void updateExtractRequestStatuses(ISqlTransaction transaction, long loadId, String sourceNodeId,
+            String fromStatus, String toStatus) {
+        transaction.prepareAndExecute(getSql("updateExtractRequestStatuses"),
+                toStatus, new Date(), loadId, sourceNodeId, fromStatus);
     }
 
     static class FutureExtractStatus {

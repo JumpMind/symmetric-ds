@@ -107,6 +107,7 @@ public class ColumnsAccordingToTriggerHistory {
             table.setPrimaryKeys(triggerHistory.getParsedPkColumnNames());
         }
         Router router = triggerRouterService.getRouterById(routerId, false);
+        
         if (router != null && setTargetTableName) {
             if (router.isUseSourceCatalogSchema()) {
                 table.setCatalog(catalogName);
@@ -119,13 +120,21 @@ public class ColumnsAccordingToTriggerHistory {
                 table.setCatalog(null);
             } else if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
                 table.setCatalog(SymmetricUtils.replaceNodeVariables(sourceNode, targetNode, router.getTargetCatalogName()));
-                table.setCatalog(SymmetricUtils.replaceCatalogSchemaVariables(catalogName, schemaName, router.getTargetCatalogName()));
+                table.setCatalog(SymmetricUtils.replaceCatalogSchemaVariables(catalogName, 
+                        symmetricDialect.getTargetPlatform().getDefaultCatalog(),
+                        schemaName, 
+                        symmetricDialect.getTargetPlatform().getDefaultSchema(),
+                        router.getTargetCatalogName()));
             }
             if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetSchemaName())) {
                 table.setSchema(null);
             } else if (StringUtils.isNotBlank(router.getTargetSchemaName())) {
                 table.setSchema(SymmetricUtils.replaceNodeVariables(sourceNode, targetNode, router.getTargetSchemaName()));
-                table.setSchema(SymmetricUtils.replaceCatalogSchemaVariables(catalogName, schemaName, router.getTargetSchemaName()));
+                table.setSchema(SymmetricUtils.replaceCatalogSchemaVariables(catalogName, 
+                        symmetricDialect.getTargetPlatform().getDefaultCatalog(),
+                        schemaName, 
+                        symmetricDialect.getTargetPlatform().getDefaultSchema(),
+                        router.getTargetSchemaName()));
             }
             if (StringUtils.isNotBlank(router.getTargetTableName())) {
                 table.setName(router.getTargetTableName());

@@ -882,9 +882,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         table.setSchema(targetTable.getSchema());
         table.setName(targetTable.getName() + suffix);
         table.setType(targetTable.getType());
+        table.removeAllColumnDefaults();
         for (int idx = 0; idx < targetTable.getColumnCount(); idx++) {
             try {
-                table.addColumn((Column) targetTable.getColumn(idx).clone());
+                Column clonedColumn = (Column) targetTable.getColumn(idx).clone();
+                clonedColumn.setAutoIncrement(false);
+                clonedColumn.setPrimaryKey(false);
+                table.addColumn(clonedColumn);
             } catch (CloneNotSupportedException ex) {
                 throw new DdlException(ex);
             }

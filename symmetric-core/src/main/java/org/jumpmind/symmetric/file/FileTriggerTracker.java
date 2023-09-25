@@ -85,6 +85,11 @@ public class FileTriggerTracker {
     synchronized public DirectorySnapshot trackChanges() {
         pollForChanges();
         DirectorySnapshot changes = changesSinceLastSnapshot;
+        if (log.isDebugEnabled()) {
+            for (FileSnapshot s : changes) {
+                log.debug(s.getLastEventType().getCode() + ", fileName: " + s.getFileName() + ", relativeDir: " + s.getRelativeDir());
+            }
+        }
         changesSinceLastSnapshot = new DirectorySnapshot(fileTriggerRouter);
         SnapshotUpdater newListener = new SnapshotUpdater(changesSinceLastSnapshot);
         fileObserver.addListener(newListener);

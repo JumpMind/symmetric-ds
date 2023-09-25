@@ -27,6 +27,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -61,7 +62,7 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
                         +
                         "                                  $(declareNewKeyVariables)                                                                                                                                            "
                         +
-                        "                                  declare @ChannelId varchar(20)                                                                                                                                      "
+                        "                                  declare @ChannelId varchar(128)                                                                                                                                      "
                         +
                         "                                  $(custom_before_insert_text) \n" +
                         "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           "
@@ -112,7 +113,7 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
                         +
                         "                                  declare @OldDataRow varchar(16384)                                                                                                                                   "
                         +
-                        "                                  declare @ChannelId varchar(20)                                                                                                                                      "
+                        "                                  declare @ChannelId varchar(128)                                                                                                                                      "
                         +
                         "                                  $(declareOldKeyVariables)                                                                                                                                            "
                         +
@@ -165,7 +166,7 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
                         +
                         "                                  declare @OldDataRow varchar(16384)                                                                                                                                   "
                         +
-                        "                                  declare @ChannelId varchar(20)                                                                                                                                      "
+                        "                                  declare @ChannelId varchar(128)                                                                                                                                      "
                         +
                         "                                  $(declareOldKeyVariables)                                                                                                                                            "
                         +
@@ -280,8 +281,23 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
                     throw new NotImplementedException(columns[i] + " is of type "
                             + columns[i].getMappedType());
             }
-            text += ";";
+            text += appendSemicolonAfterDeclare();
         }
         return text;
+    }
+
+    protected String appendSemicolonAfterDeclare() {
+        return "";
+    }
+
+    @Override
+    protected boolean useTriggerTemplateForColumnTemplatesDuringInitialLoad(Column column) {
+        boolean result = super.useTriggerTemplateForColumnTemplatesDuringInitialLoad(column);
+        if (column != null) {
+            if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
+                result = true;
+            }
+        }
+        return result;
     }
 }

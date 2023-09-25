@@ -30,7 +30,7 @@ The following query will show the number of data rows that have *not* been deliv
 
 [source, sql]
 ----
-select sum(data_event_count), node_id from sym_outgoing_batch 
+select sum(data_row_count), node_id from sym_outgoing_batch 
   where status != 'OK' group by node_id;
 ----
 

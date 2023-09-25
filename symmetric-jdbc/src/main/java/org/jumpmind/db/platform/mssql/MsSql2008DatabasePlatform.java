@@ -27,8 +27,8 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.platform.PermissionResult;
-import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.platform.PermissionResult.Status;
+import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
@@ -63,8 +63,9 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
             catalog = catalog + ".";
         }
         return getSqlTemplateDirty().queryForLong("select sum(p.rows) from " + catalog + "sys.tables t inner join " +
-                catalog + "sys.partitions p on t.object_id = p.object_id and p.index_id IN (0, 1) " +
-                "where t.name = ? and schema_name(t.schema_id) = ?",
+                catalog + "sys.partitions p on t.object_id = p.object_id and p.index_id IN (0, 1) inner join " + catalog
+                + "sys.schemas s on t.schema_id = s.schema_id " +
+                "where t.name = ? and s.name = ?",
                 table.getName(), table.getSchema());
     }
 

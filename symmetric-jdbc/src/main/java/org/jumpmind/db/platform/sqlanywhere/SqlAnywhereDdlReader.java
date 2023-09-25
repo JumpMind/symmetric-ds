@@ -106,6 +106,10 @@ public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.toUpperCase().startsWith("TEXT")) {
             return Types.LONGVARCHAR;
+        } else if (typeName != null && typeName.toUpperCase().startsWith("NTEXT")) {
+            return Types.LONGNVARCHAR;
+        } else if (typeName != null && typeName.toUpperCase().startsWith("LONG NVARCHAR")) {
+            return Types.LONGNVARCHAR;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }

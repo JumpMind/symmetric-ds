@@ -20,18 +20,21 @@
  */
 package org.jumpmind.symmetric.io.data.reader;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
@@ -55,16 +58,29 @@ public class ExtractDataReader implements IDataReader {
     protected Table table;
     protected CsvData data;
     protected DataContext dataContext;
+    protected boolean isSybaseASE;
+    protected boolean isUsingUnitypes;
+
 
     public ExtractDataReader(IDatabasePlatform platform, IExtractDataReaderSource source) {
         this.sourcesToUse = new ArrayList<IExtractDataReaderSource>();
         this.sourcesToUse.add(source);
         this.platform = platform;
+        this.isSybaseASE = platform.getName().equals(DatabaseNamesConstants.ASE);
+    }
+    
+    public ExtractDataReader(IDatabasePlatform platform, IExtractDataReaderSource source, Boolean isUsingUnitypes) {
+        this.sourcesToUse = new ArrayList<IExtractDataReaderSource>();
+        this.sourcesToUse.add(source);
+        this.platform = platform;
+        this.isUsingUnitypes=isUsingUnitypes;
+        this.isSybaseASE = platform.getName().equals(DatabaseNamesConstants.ASE);
     }
 
     public ExtractDataReader(IDatabasePlatform platform, List<IExtractDataReaderSource> sources) {
         this.sourcesToUse = new ArrayList<IExtractDataReaderSource>(sources);
         this.platform = platform;
+        isSybaseASE = platform.getName().equals(DatabaseNamesConstants.ASE);
     }
 
     public void open(DataContext context) {
@@ -125,6 +141,9 @@ public class ExtractDataReader implements IDataReader {
                 Table targetTable = this.currentSource.getTargetTable();
                 if (targetTable != null && targetTable.equals(this.table)) {
                     data = enhanceWithLobsFromSourceIfNeeded(this.currentSource.getSourceTable(), data);
+                    if (isSybaseASE && isUsingUnitypes) {
+                        data = convertUtf16toUTF8(this.currentSource.getSourceTable(), data);
+                    }
                 } else {
                     // the table has changed
                     return null;
@@ -204,6 +223,67 @@ public class ExtractDataReader implements IDataReader {
             }
         }
         return data;
+    }
+    
+    protected CsvData convertUtf16toUTF8(Table table, CsvData data) {
+        if (data.getDataEventType() == DataEventType.UPDATE || data.getDataEventType() == DataEventType.INSERT) {
+            List<Column> uniColumns = getUniColumns(table);
+            if (!uniColumns.isEmpty()) {
+                String[] columnNames = table.getColumnNames();
+                String[] rowData = data.getParsedData(CsvData.ROW_DATA);
+                Column[] orderedColumns = table.getColumns();
+                Object[] objectValues = platform.getObjectValues(batch.getBinaryEncoding(), rowData, orderedColumns);
+                Map<String, Object> columnDataMap = CollectionUtils.toMap(columnNames, objectValues);
+                Column[] pkColumns = table.getPrimaryKeyColumns();
+                ISqlTemplate sqlTemplate = platform.getSqlTemplate();
+                Object[] args = new Object[pkColumns.length];
+                for (int i = 0; i < pkColumns.length; i++) {
+                    args[i] = columnDataMap.get(pkColumns[i].getName());
+                }
+                String sql = buildSelect(table, uniColumns, pkColumns);
+                Row row = sqlTemplate.queryForRow(sql, args);
+
+                if (row != null) {
+                    for (Column uniColumn : uniColumns) {
+                        try {
+                            int index = ArrayUtils.indexOf(columnNames, uniColumn.getName());
+                            if (rowData[index] != null) {
+                                String utf16String = null;
+                                if(batch.getChannelId().equalsIgnoreCase("reload")) {
+                                    utf16String = new String(Hex.decodeHex(rowData[index]), "UTF-16");
+                                } else {
+                                    String baseString = rowData[index];
+                                    baseString = "fffe" + baseString;
+                                    utf16String = new String(Hex.decodeHex(baseString), "UTF-16");
+                                }
+
+                                String utf8String = new String(utf16String.getBytes(Charset.defaultCharset()), Charset.defaultCharset());
+                                rowData[index] = utf8String;
+                            }
+                        } catch (UnsupportedEncodingException | DecoderException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    data.putParsedData(CsvData.ROW_DATA, rowData);
+                }
+            }
+        }
+        return data;
+    }
+    
+    public List<Column> getUniColumns(Table table) {
+        List<Column> uniColumns = new ArrayList<Column>(1);
+        Column[] allColumns = table.getColumns();
+        for (Column column : allColumns) {
+            if (isUniType(column.getJdbcTypeName())) {
+                uniColumns.add(column);
+            }
+        }
+        return uniColumns;
+    }
+    
+    public boolean isUniType(String type) {
+        return type.equalsIgnoreCase("UNITEXT") || type.equalsIgnoreCase("UNICHAR") || type.equalsIgnoreCase("UNIVARCHAR");
     }
 
     protected String buildSelect(Table table, List<Column> lobColumns, Column[] pkColumns) {

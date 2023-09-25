@@ -9,8 +9,8 @@ apply from: symAssembleDir + '/common.gradle'
         api "commons-codec:commons-codec:$commonsCodecVersion"
         api "org.apache.commons:commons-collections4:$commonsCollectionVersion"
         api "com.google.code.gson:gson:$gsonVersion"
-        compileOnly "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
-        compileOnly "org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion"
+        compileOnly "org.bouncycastle:bcprov-jdk18on:$bouncyCastleVersion"
+        compileOnly "org.bouncycastle:bcpkix-jdk18on:$bouncyCastleVersion"
         compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
         compileOnly ("com.azure:azure-security-keyvault-secrets:4.4.3") {
             exclude group: "com.google.guava"

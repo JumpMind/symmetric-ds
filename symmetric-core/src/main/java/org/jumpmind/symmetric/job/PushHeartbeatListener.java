@@ -43,7 +43,6 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +60,7 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
         if (parameterService.is(ParameterConstants.HEARTBEAT_ENABLED)) {
             ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
             boolean updateWithBatchStatus = parameterService.is(ParameterConstants.HEARTBEAT_UPDATE_NODE_WITH_BATCH_STATUS, false);
-            int outgoingErrorCount = -1;
+            int batchInErrorCount = -1;
             int outgoingUnsentCount = -1;
             int outgoingUnsentRowCount = -1;
             Date lastSuccessfulSyncTime = null;
@@ -76,7 +75,8 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
             Date routingLastRun = null;
             long symDataSize = -1;
             if (updateWithBatchStatus) {
-                outgoingErrorCount = engine.getOutgoingBatchService().countOutgoingBatchesInError();
+                batchInErrorCount = engine.getOutgoingBatchService().countOutgoingBatchesInError();
+                batchInErrorCount += engine.getIncomingBatchService().countIncomingBatchesInError();
                 int[] batchesRowsUnsent = engine.getOutgoingBatchService().countOutgoingNonSystemBatchesRowsUnsent();
                 outgoingUnsentCount = batchesRowsUnsent[0];
                 outgoingUnsentRowCount = batchesRowsUnsent[1];
@@ -98,14 +98,16 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                     totalRowsLoaded = totalLoadedRowsMap.keySet().iterator().next();
                     oldestLoadedDate = totalLoadedRowsMap.values().iterator().next();
                 }
-                IJob purgeOutgoingJob = engine.getJobManager().getJob(ClusterConstants.PURGE_OUTGOING);
-                purgeOutgoingLastMs = purgeOutgoingJob.getLastExecutionTimeInMs();
-                purgeOutgoingLastRun = purgeOutgoingJob.getLastFinishTime();
-                purgeOutgoingAverage = purgeOutgoingJob.getAverageExecutionTimeInMs();
-                IJob routeJob = engine.getJobManager().getJob(ClusterConstants.ROUTE);
-                routingAveragetMs = routeJob.getAverageExecutionTimeInMs();
-                routingLastRun = routeJob.getLastFinishTime();
-                routingLastMs = routeJob.getLastExecutionTimeInMs();
+                if (engine.getJobManager().isStarted()) {
+                    IJob purgeOutgoingJob = engine.getJobManager().getJob(ClusterConstants.PURGE_OUTGOING);
+                    purgeOutgoingLastMs = purgeOutgoingJob.getLastExecutionTimeInMs();
+                    purgeOutgoingLastRun = purgeOutgoingJob.getLastFinishTime();
+                    purgeOutgoingAverage = purgeOutgoingJob.getAverageExecutionTimeInMs();
+                    IJob routeJob = engine.getJobManager().getJob(ClusterConstants.ROUTE);
+                    routingAveragetMs = routeJob.getAverageExecutionTimeInMs();
+                    routingLastRun = routeJob.getLastFinishTime();
+                    routingLastMs = routeJob.getLastExecutionTimeInMs();
+                }
                 symDataSize = engine.getDataService().countData();
             }
             if (!parameterService.getExternalId().equals(me.getExternalId())
@@ -117,7 +119,7 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                     || (engine.getParameterService().isRegistrationServer() && !Version.version().equals(me.getConfigVersion()))
                     || !symmetricDialect.getName().equals(me.getDatabaseType())
                     || !symmetricDialect.getVersion().equals(me.getDatabaseVersion())
-                    || me.getBatchInErrorCount() != outgoingErrorCount
+                    || me.getBatchInErrorCount() != batchInErrorCount
                     || me.getBatchToSendCount() != outgoingUnsentCount
                     || me.getLastSuccessfulSyncDate() != lastSuccessfulSyncTime
                     || me.getMostRecentActiveTableSynced() != mostRecentActiveTableSynced
@@ -135,7 +137,7 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                 me.setDatabaseType(engine.getTargetDialect().getName());
                 me.setDatabaseVersion(engine.getTargetDialect().getVersion());
                 me.setDatabaseName(engine.getDatabasePlatform().getName());
-                me.setBatchInErrorCount(outgoingErrorCount);
+                me.setBatchInErrorCount(batchInErrorCount);
                 me.setBatchToSendCount(outgoingUnsentCount);
                 me.setLastSuccessfulSyncDate(lastSuccessfulSyncTime);
                 me.setDataRowsToSendCount(outgoingUnsentRowCount);

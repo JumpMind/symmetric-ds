@@ -136,6 +136,7 @@ public abstract class TypeMap {
     public static final String CIDR = "CIDR";
     public static final String MACADDR = "MACADDR";
     public static final String MACADDR8 = "MACADDR8";
+    public static final String UNITEXT = "UNITEXT";
     /** Maps type names to the corresponding {@link java.sql.Types} constants. */
     private static HashMap<String, Integer> _typeNameToTypeCode = new HashMap<String, Integer>();
     /** Maps {@link java.sql.Types} type code constants to the corresponding type names. */

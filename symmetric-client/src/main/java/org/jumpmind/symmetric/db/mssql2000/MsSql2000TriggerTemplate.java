@@ -22,8 +22,15 @@ package org.jumpmind.symmetric.db.mssql2000;
 
 import java.util.HashMap;
 
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.mssql.MsSqlTriggerTemplate;
+import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.util.FormatUtils;
 
 public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
     public MsSql2000TriggerTemplate(ISymmetricDialect symmetricDialect) {
@@ -203,4 +210,18 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
 
     }
 
+    @Override
+    protected String replaceTemplateVariables(DataEventType dml, Trigger trigger,
+            TriggerHistory history, Channel channel, String tablePrefix, Table originalTable, Table table,
+            String defaultCatalog, String defaultSchema, String ddl)
+    {
+        ddl =  super.replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
+                defaultCatalog, defaultSchema, ddl);
+        Column[] columns = table.getPrimaryKeyColumns();
+        ddl = FormatUtils.replace("declareOldKeyVariables",
+                buildKeyVariablesDeclare(columns, "old"), ddl);
+        ddl = FormatUtils.replace("declareNewKeyVariables",
+                buildKeyVariablesDeclare(columns, "new"), ddl);
+        return ddl;
+    }
 }

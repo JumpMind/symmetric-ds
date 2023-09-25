@@ -27,7 +27,7 @@ public class ExtractRequest implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum ExtractStatus {
-        NE, OK
+        NE, OK, LS
     };
 
     private long requestId;

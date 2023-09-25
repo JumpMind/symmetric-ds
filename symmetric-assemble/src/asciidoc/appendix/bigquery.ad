@@ -17,7 +17,7 @@ Setup the BigQuery node by using the <<Add Node,Connect Database>> wizard and se
 
 image::images/appendix/bigquery-database-settings.png[]
 
-After hitting next you can setup advanced options for your Snowflake node.
+After hitting next you can setup advanced options for your BigQuery node.
 
 endif::pro[]
 
@@ -54,7 +54,7 @@ endif::pro[]
 
 ===== BigQuery Authentication
 
-Create a JSON credentials file through your BigQuery account
+Create a service account within your project. This account will need to be given the roles/bigquery.admin role. Create a JSON credentials file through this service account. 
 
 https://cloud.google.com/docs/authentication/getting-started
 

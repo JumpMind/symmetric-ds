@@ -140,7 +140,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.INFORMIX)) {
             return;
         }
-        final int EXPECTED_VARCHAR_MAX_COUNT = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.SQLITE) ? 318 : 60;
+        final int EXPECTED_VARCHAR_MAX_COUNT = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.SQLITE) ? 318 : 62;
         final String EXPECTED_VARCHAR_MAX_STRING;
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.DERBY)) {
             EXPECTED_VARCHAR_MAX_STRING = "clob";

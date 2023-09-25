@@ -145,4 +145,50 @@ public class RegistrationRequest implements Serializable {
     public String getErrorMessage() {
         return errorMessage;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((createTime == null) ? 0 : createTime.hashCode());
+        result = prime * result + ((externalId == null) ? 0 : externalId.hashCode());
+        result = prime * result + ((nodeGroupId == null) ? 0 : nodeGroupId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        RegistrationRequest other = (RegistrationRequest) obj;
+        if (createTime == null) {
+            if (other.createTime != null) {
+                return false;
+            }
+        } else if (!createTime.equals(other.createTime)) {
+            return false;
+        }
+        if (externalId == null) {
+            if (other.externalId != null) {
+                return false;
+            }
+        } else if (!externalId.equals(other.externalId)) {
+            return false;
+        }
+        if (nodeGroupId == null) {
+            if (other.nodeGroupId != null) {
+                return false;
+            }
+        } else if (!nodeGroupId.equals(other.nodeGroupId)) {
+            return false;
+        }
+        return true;
+    }
 }

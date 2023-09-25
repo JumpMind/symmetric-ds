@@ -286,7 +286,7 @@ if (currentValue > oldValue) {
 
 ----
 if (currentValue != null && currentValue.length() == 0) { 
-	return org.jumpmind.symmetric.io.data.transform.NewAndOldValue(null, oldValue);
+	return new org.jumpmind.symmetric.io.data.transform.NewAndOldValue(null, oldValue);
 } else { 
 	return currentValue;
 }

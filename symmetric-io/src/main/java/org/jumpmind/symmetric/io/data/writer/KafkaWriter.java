@@ -221,6 +221,9 @@ public class KafkaWriter extends DynamicDefaultDatabaseWriter {
         }
         List<ProducerRecord<String, Object>> kafkaDataList = kafkaDataMap.get(kafkaDataKey);
         if (outputFormat.equals(KAFKA_FORMAT_JSON)) {
+            if(!kafkaDataList.isEmpty() && !messageBy.equals(KAFKA_MESSAGE_BY_ROW)) {
+               kafkaText.append(", ");
+            }
             kafkaText.append("{\"").append(table.getName()).append("\": {").append("\"eventType\": \"" + data.getDataEventType() + "\",")
                     .append("\"data\": { ");
             // Let Gson escape the json values
@@ -232,7 +235,7 @@ public class KafkaWriter extends DynamicDefaultDatabaseWriter {
                     kafkaText.append(",");
                 }
             }
-            kafkaText.append(" } } }, ");
+            kafkaText.append(" } } }");
         } else if (outputFormat.equals(KAFKA_FORMAT_CSV)) {
             // Quote every non-null field, escape quote character by
             // doubling the quote character

@@ -181,6 +181,8 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
                     newValue = "TIMEZONE('utc', CURRENT_TIMESTAMP(0))";
                 }
             }
+        } else if (newValue != null && newValue.equals("newid()")) {
+            newValue = "gen_random_uuid()";
         }
         return newValue;
     }
