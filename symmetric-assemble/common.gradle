@@ -293,7 +293,7 @@ subprojects { subproject ->
         jdomVersion = '2.0.6.1'
         jaxbVersion = '3.0.1'
         gsonVersion = '2.9.0'
-        jacksonVersion = '2.13.2.2'
+        jacksonVersion = '2.15.2'
         guavaVersion = '32.1.2-android'
         junitVersion = '5.8.2'
         spotBugsVersion = '4.6.0'
@@ -320,7 +320,11 @@ subprojects { subproject ->
         api "org.apache.logging.log4j:log4j-api:$log4jVersion"
         api "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
         api "org.apache.logging.log4j:log4j-web:$log4jVersion"
-        api "org.slf4j:slf4j-api:$slf4jVersion"
+        api ("org.slf4j:slf4j-api") {
+           version {
+              strictly "$slf4jVersion"
+           }
+        }
         api "org.slf4j:jul-to-slf4j:$slf4jVersion"
         api "org.slf4j:jcl-over-slf4j:$slf4jVersion"
         compileOnly "com.github.spotbugs:spotbugs-annotations:$spotBugsVersion"
