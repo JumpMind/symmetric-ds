@@ -13,6 +13,9 @@ configurations.all {
         if (details.requested.group == 'org.ow2.asm' && !details.requested.name.contains('debug-all')) {
             details.useVersion '9.5'
         }
+        if (details.requested.group == 'io.swagger.core.v3') {
+        	details.useVersion '2.2.15'
+        }
     }
 }
 
