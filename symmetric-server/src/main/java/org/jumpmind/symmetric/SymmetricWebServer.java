@@ -120,7 +120,7 @@ public class SymmetricWebServer {
         setSystemPropertyIfNotNull(ServerConstants.SERVER_SERVLET_CONTEXT_PATH, webHome);
         setSystemPropertyIfNotNull(ServerConstants.SERVER_SINGLE_PROPERTIES_FILE, propertiesFile);
         setSystemPropertyIfNotNull(SystemConstants.SYSPROP_WEB_DIR, webAppDir);
-        SymmetricBoot.main(new String[0]);
+        context = SymmetricBoot.run(new String[0]);
         return this;
     }
 
