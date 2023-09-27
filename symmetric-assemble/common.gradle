@@ -13,6 +13,9 @@ configurations.all {
         if (details.requested.group == 'org.ow2.asm' && !details.requested.name.contains('debug-all')) {
             details.useVersion '9.5'
         }
+        if (details.requested.group == 'io.swagger.core.v3') {
+        	details.useVersion '2.2.15'
+        }
     }
 }
 
@@ -316,6 +319,7 @@ subprojects { subproject ->
     dependencies {
         api "org.apache.logging.log4j:log4j-core:$log4jVersion"
         api "org.apache.logging.log4j:log4j-api:$log4jVersion"
+        annotationProcessor "org.apache.logging.log4j:log4j-core:$log4jVersion"
         api "org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion"
         api "org.apache.logging.log4j:log4j-web:$log4jVersion"
         api "org.slf4j:slf4j-api:$slf4jVersion"
