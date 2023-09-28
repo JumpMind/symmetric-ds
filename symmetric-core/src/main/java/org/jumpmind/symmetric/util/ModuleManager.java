@@ -34,10 +34,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.io.IOUtils;
@@ -56,12 +58,14 @@ public class ModuleManager {
     private static final String PROP_REPOSITORIES = "repos";
     private static final String PROP_VERSION = "sym.version";
     private static final String PROP_DRIVER = "driver.";
+    private static final String PROP_OLD_MODULES = "modules.old";
     private static final String MODULE_ID_ALL = "all";
     private static ModuleManager instance;
     private Properties properties = new Properties();
     private Map<String, List<MavenArtifact>> modules = new TreeMap<String, List<MavenArtifact>>();
     private Map<String, String> driverToModule = new HashMap<String, String>();
     private List<String> repos = new ArrayList<String>();
+    private Set<String> oldModules = new HashSet<String>();
     private String modulesDir;
 
     private ModuleManager() throws ModuleException {
@@ -90,10 +94,15 @@ public class ModuleManager {
                     for (String driver : drivers) {
                         driverToModule.put(driver, key.substring(PROP_DRIVER.length()));
                     }
+                } else if (key.equals(PROP_OLD_MODULES)) {
+                    for (String oldModule : entry.getValue().toString().split(MavenArtifact.REGEX_LIST)) {
+                        oldModules.add(oldModule);
+                    }
                 } else {
                     List<MavenArtifact> list = new ArrayList<MavenArtifact>();
+                    String defaultVersion = Version.version();
                     for (String dependency : entry.getValue().toString().split(MavenArtifact.REGEX_LIST)) {
-                        list.add(new MavenArtifact(dependency));
+                        list.add(new MavenArtifact(dependency, defaultVersion));
                     }
                     modules.put(key, list);
                 }
@@ -196,7 +205,9 @@ public class ModuleManager {
             if (oldDepString == null || !oldDepString.equals(newDepString)) {
                 log.info("Upgrading module {}", moduleId);
                 remove(moduleId);
-                install(moduleId);
+                if (modules.containsKey(moduleId)) {
+                    install(moduleId);
+                }
             }
         } catch (IOException e) {
             logAndThrow("Unable to list files for module " + moduleId + " because: " + e.getMessage(), e);
@@ -305,7 +316,8 @@ public class ModuleManager {
         FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(EXT_PROPERTIES) && modules.containsKey(name.substring(0, name.indexOf(".")));
+                String baseName = name.substring(0, name.indexOf("."));
+                return name.toLowerCase().endsWith(EXT_PROPERTIES) && (modules.containsKey(baseName) || oldModules.contains(baseName));
             }
         };
         return dir.list(filter);
@@ -332,7 +344,8 @@ public class ModuleManager {
                 FileReader reader = new FileReader(file);
                 Properties prop = new Properties();
                 prop.load(reader);
-                for (MavenArtifact artifact : MavenArtifact.parseCsv(prop.getProperty(moduleId))) {
+                String defaultVersion = prop.getProperty(PROP_VERSION, Version.version());
+                for (MavenArtifact artifact : MavenArtifact.parseCsv(prop.getProperty(moduleId), defaultVersion)) {
                     fileNames.add(artifact.toFileName(EXT_JAR));
                 }
             } catch (IOException e) {
@@ -343,7 +356,7 @@ public class ModuleManager {
     }
 
     public List<String> listDependencies(String moduleId) throws ModuleException {
-        checkModuleValid(moduleId);
+        checkModuleValid(moduleId, false);
         List<MavenArtifact> artifacts = resolveArtifacts(moduleId);
         List<String> fileNames = new ArrayList<String>();
         for (MavenArtifact artifact : artifacts) {
@@ -362,7 +375,7 @@ public class ModuleManager {
     }
 
     private void checkModuleInstalled(String moduleId, boolean shouldBeInstalled) throws ModuleException {
-        checkModuleValid(moduleId);
+        checkModuleValid(moduleId, shouldBeInstalled);
         boolean isInstalled = list().contains(moduleId);
         if (isInstalled && !shouldBeInstalled) {
             throw new ModuleException("Module is already installed", false);
@@ -371,8 +384,8 @@ public class ModuleManager {
         }
     }
 
-    private void checkModuleValid(String moduleId) throws ModuleException {
-        if (!modules.containsKey(moduleId)) {
+    private void checkModuleValid(String moduleId, boolean shouldBeInstalled) throws ModuleException {
+        if (!modules.containsKey(moduleId) && (!shouldBeInstalled || !oldModules.contains(moduleId))) {
             throw new ModuleException("Invalid module specified", false);
         }
     }

@@ -23,8 +23,6 @@ package org.jumpmind.symmetric.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jumpmind.symmetric.Version;
-
 public class MavenArtifact {
     public static final String REGEX_LIST = "\\s*,\\s*";
     public static final String REGEX_COMPONENTS = "\\s*:\\s*";
@@ -38,7 +36,7 @@ public class MavenArtifact {
         this.version = version;
     }
 
-    public MavenArtifact(String dependency) {
+    public MavenArtifact(String dependency, String defaultVersion) {
         if (dependency != null) {
             String[] array = dependency.trim().split(REGEX_COMPONENTS);
             if (array.length >= 1) {
@@ -48,7 +46,7 @@ public class MavenArtifact {
                 this.artifactId = array[1];
             }
             if (array.length >= 3) {
-                this.version = array[2].replace("$version", Version.version().replaceAll("x-SNAPSHOT", "0"));
+                this.version = array[2].replace("$version", defaultVersion.replaceAll("x-SNAPSHOT", "0"));
             }
         }
     }
@@ -99,11 +97,11 @@ public class MavenArtifact {
         return true;
     }
 
-    public static List<MavenArtifact> parseCsv(String dependencies) {
+    public static List<MavenArtifact> parseCsv(String dependencies, String defaultVersion) {
         List<MavenArtifact> list = new ArrayList<MavenArtifact>();
         if (dependencies != null) {
             for (String dependency : dependencies.split(REGEX_LIST)) {
-                MavenArtifact artifact = new MavenArtifact(dependency);
+                MavenArtifact artifact = new MavenArtifact(dependency, defaultVersion);
                 if (artifact != null) {
                     list.add(artifact);
                 }
