@@ -46,6 +46,7 @@ public class DatabaseWriterSettings {
     protected boolean ignoreMissingTables = true;
     protected boolean saveCurrentValueOnError = false;
     protected boolean fitToColumn = false;
+    protected boolean autoResolveUniqueIndexIgnoreNullValues = true;
     protected boolean logConflictResolution = false;
     protected boolean logSqlParamsOnError = true;
     protected boolean loadOnlyNode = false;
@@ -264,6 +265,14 @@ public class DatabaseWriterSettings {
 
     public boolean isFitToColumn() {
         return fitToColumn;
+    }
+
+    public boolean isAutoResolveUniqueIndexIgnoreNullValues() {
+        return autoResolveUniqueIndexIgnoreNullValues;
+    }
+
+    public void setAutoResolveUniqueIndexIgnoreNullValues(boolean autoResolveUniqueIndexIgnoreNullValues) {
+        this.autoResolveUniqueIndexIgnoreNullValues = autoResolveUniqueIndexIgnoreNullValues;
     }
 
     public void setLogConflictResolution(boolean logConflictResolution) {

@@ -515,9 +515,17 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         Map<String, String> values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getColumnNames(), CsvData.ROW_DATA);
         List<Column> whereColumns = new ArrayList<Column>();
         List<String> whereValues = new ArrayList<String>();
+        boolean hasNotNullValue = false;
         for (IndexColumn indexColumn : uniqueIndex.getColumns()) {
             whereColumns.add(targetTable.getColumnWithName(indexColumn.getName()));
-            whereValues.add(values.get(indexColumn.getName()));
+            String value = values.get(indexColumn.getName());
+            whereValues.add(value);
+            hasNotNullValue = hasNotNullValue || (value != null);
+        }
+        if (!hasNotNullValue && databaseWriter.getWriterSettings().isAutoResolveUniqueIndexIgnoreNullValues()) {
+            log.debug("Did not issue correction for possible violation of unique index {} on table {} during {} with batch {} because null values are ignored",
+                    uniqueIndex.getName(), targetTable.getName(), data.getDataEventType().toString(), databaseWriter.getContext().getBatch().getNodeBatchId());
+            return 0;
         }
         return deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues, true);
     }

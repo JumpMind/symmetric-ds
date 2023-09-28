@@ -54,6 +54,8 @@ public abstract class AbstractDataLoaderFactory {
         settings.setSaveCurrentValueOnError(
                 parameterService.is(ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
         settings.setFitToColumn(parameterService.is(ParameterConstants.DATA_LOADER_FIT_TO_COLUMN, false));
+        settings.setAutoResolveUniqueIndexIgnoreNullValues(
+                parameterService.is(ParameterConstants.AUTO_RESOLVE_UNIQUE_INDEX_IGNORE_NULL_VALUES, true));
         settings.setLogConflictResolution(parameterService.is(ParameterConstants.LOG_CONFLICT_RESOLUTION));
         settings.setTextColumnExpression(
                 parameterService.getString(ParameterConstants.DATA_LOADER_TEXT_COLUMN_EXPRESSION));
