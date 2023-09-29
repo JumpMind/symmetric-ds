@@ -14,7 +14,7 @@ configurations.all {
             details.useVersion '9.5'
         }
         if (details.requested.group == 'io.swagger.core.v3') {
-        	details.useVersion '2.2.15'
+            details.useVersion '2.2.15'
         }
     }
 }

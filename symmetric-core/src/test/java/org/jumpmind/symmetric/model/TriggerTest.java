@@ -33,7 +33,6 @@ import org.jumpmind.db.model.Table;
 import org.junit.jupiter.api.Test;
 
 class TriggerTest {
-
     @Test
     void testFilterExcludedColumnsForNull() throws Exception {
         Trigger trigger = new Trigger();

@@ -221,8 +221,8 @@ public class KafkaWriter extends DynamicDefaultDatabaseWriter {
         }
         List<ProducerRecord<String, Object>> kafkaDataList = kafkaDataMap.get(kafkaDataKey);
         if (outputFormat.equals(KAFKA_FORMAT_JSON)) {
-            if(!kafkaDataList.isEmpty() && !messageBy.equals(KAFKA_MESSAGE_BY_ROW)) {
-               kafkaText.append(", ");
+            if (!kafkaDataList.isEmpty() && !messageBy.equals(KAFKA_MESSAGE_BY_ROW)) {
+                kafkaText.append(", ");
             }
             kafkaText.append("{\"").append(table.getName()).append("\": {").append("\"eventType\": \"" + data.getDataEventType() + "\",")
                     .append("\"data\": { ");
