@@ -189,7 +189,7 @@ task publishJavadoc {
 task buildSymmetric {
 	group = 'SymmetricDS'
 	description = 'Build software, documentation, and distribution ZIP files'
-    dependsOn ':symmetric-android:androidDistZip', ':symmetric-server:serverDistZip'
+    dependsOn ':symmetric-server:serverDistZip'
 }
 
 task publishSymmetric {
@@ -199,16 +199,6 @@ task publishSymmetric {
     doLast {
         ant.taskdef(name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
         classpath: configurations.sshAntTask.asPath)
-
-        println "Publishing android distribution to source forge"
-        ant.scp(
-            todir: "$sourceforgeUser:$sourceforgePassword@frs.sourceforge.net:/home/frs/project/symmetricds/symmetricds/symmetricds-$majorMinorVersion",
-            trust: 'true',
-            verbose: 'true') {
-            fileset(dir: "../symmetric-android/build/distributions/") {
-                include(name: 'symmetric-android-' + version + '.zip')
-            }
-        }
 
         println "Publishing server distribution to source forge"
         ant.scp(
