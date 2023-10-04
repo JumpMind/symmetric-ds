@@ -30,8 +30,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.security.KeyStore.TrustedCertificateEntry;
+import java.security.PublicKey;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,10 +54,15 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -59,6 +74,7 @@ import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
+import org.jumpmind.security.KeystoreAliasException;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
@@ -76,6 +92,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.transport.http.HttpConnection;
 import org.jumpmind.symmetric.util.ModuleException;
 import org.jumpmind.symmetric.util.ModuleManager;
 import org.jumpmind.symmetric.util.PropertiesUtil;
@@ -115,6 +132,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String CMD_RESTORE_FILE_CONFIGURATION = "restore-config";
     private static final String CMD_IMPORT_CONFIG = "import-config";
     private static final String CMD_EXPORT_CONFIG = "export-config";
+    private static final String CMD_IMPORT_CERT = "import-cert";
     private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES, CMD_ENCRYPT_TEXT, CMD_OBFUSCATE_TEXT, CMD_UNOBFUSCATE_TEXT, CMD_LIST_ENGINES,
             CMD_MODULE, CMD_BACKUP_FILE_CONFIGURATION, CMD_RESTORE_FILE_CONFIGURATION, CMD_CREATE_WAR };
     private static final String OPTION_NODE = "node";
@@ -133,6 +151,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String OPTION_EXTERNAL_SECURITY = "external-security";
     private static final String OPTION_ALTERS = "alters";
     private static final String OPTION_FILE = "file";
+    private static final String OPTION_ACCEPT_ALL = "accept-all";
     private static final int WIDTH = 120;
     private static final int PAD = 3;
 
@@ -202,6 +221,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             printHelpLine(pw, CMD_MODULE);
             printHelpLine(pw, CMD_IMPORT_CONFIG);
             printHelpLine(pw, CMD_EXPORT_CONFIG);
+            printHelpLine(pw, CMD_IMPORT_CERT);
             pw.flush();
         }
     }
@@ -270,6 +290,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             if (cmd.equals(CMD_SEND_SQL)) {
                 addOption(options, "f", OPTION_FILE, true);
             }
+            if (cmd.equals(CMD_IMPORT_CERT)) {
+                addOption(options, null, OPTION_ACCEPT_ALL, false);
+            }
             if (options.getOptions().size() > 0) {
                 format.printWrapped(writer, WIDTH, "\nOptions:");
                 format.printOptions(writer, WIDTH, options, PAD, PAD);
@@ -307,6 +330,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         addOption(options, null, OPTION_EXTERNAL_SECURITY, false);
         addOption(options, null, OPTION_ALTERS, false);
         addOption(options, null, OPTION_FILE, true);
+        addOption(options, null, OPTION_ACCEPT_ALL, false);
         buildCryptoOptions(options);
     }
 
@@ -395,6 +419,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             return true;
         } else if (cmd.equals(CMD_EXPORT_CONFIG)) {
             exportConfig(line, args);
+            return true;
+        } else if (cmd.equals(CMD_IMPORT_CERT)) {
+            importCert(line, args);
             return true;
         } else {
             throw new ParseException("ERROR: no subcommand '" + cmd + "' was found.");
@@ -996,6 +1023,190 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                 System.err.println("ERROR: " + e.getMessage());
             }
             System.exit(1);
+        }
+    }
+
+    private void importCert(CommandLine line, List<String> args) {
+        String urlString = popArg(args, "URL");
+        if (!isValidUrl(urlString)) {
+            System.err.println("ERROR: URL is invalid");
+            System.exit(1);
+        }
+        if (!isValidHttpsUrl(urlString)) {
+            System.err.println("ERROR: URL must use HTTPS protocol");
+            System.exit(1);
+        }
+        URL url;
+        try {
+            url = new URL(urlString);
+        } catch (MalformedURLException e1) {
+            System.err.println("ERROR: URL is invalid");
+            System.exit(1);
+            return;
+        }
+        HttpConnection connection;
+        try {
+            connection = new HttpConnection(url);
+        } catch (IOException ex) {
+            System.err.println("ERROR: Failed to connect to URL");
+            System.exit(1);
+            return;
+        }
+        connection.setHostnameVerifier((string, session) -> true);
+        SSLContext sslContext;
+        X509TrustManager trustManager;
+        try {
+            sslContext = SSLContext.getInstance("TLS");
+            trustManager = new X509TrustManager() {
+                private X509Certificate[] accepted = {};
+
+                @Override
+                public void checkClientTrusted(X509Certificate[] xcs, String string) throws CertificateException {
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] xcs, String string) throws CertificateException {
+                    accepted = xcs;
+                }
+
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return accepted;
+                }
+            };
+            sslContext.init(null, new TrustManager[] { trustManager }, null);
+        } catch (Exception e) {
+            System.err.println("ERROR: Failed to initialize SSL context");
+            connection.close();
+            System.exit(1);
+            return;
+        }
+        connection.setSslSocketFactory(sslContext.getSocketFactory());
+        for (Certificate cert : connection.getServerCertificates()) {
+            if (cert instanceof X509Certificate) {
+                try {
+                    String certString = convertToPem((X509Certificate) cert);
+                    importCert(certString.getBytes(), null, null, line.hasOption(OPTION_ACCEPT_ALL));
+                } catch (CertificateEncodingException e) {
+                }
+            }
+        }
+        connection.disconnect();
+        connection.close();
+    }
+
+    private boolean isValidUrl(String urlString) {
+        try {
+            new URL(urlString);
+            return true;
+        } catch (MalformedURLException e) {
+            return false;
+        }
+    }
+
+    private boolean isValidHttpsUrl(String urlString) {
+        try {
+            return "https".equals(new URL(urlString).getProtocol());
+        } catch (MalformedURLException e) {
+            return false;
+        }
+    }
+
+    private String convertToPem(X509Certificate cert) throws CertificateEncodingException {
+        Base64 encoder = new Base64(64);
+        String cert_begin = "-----BEGIN CERTIFICATE-----\n";
+        String end_cert = "-----END CERTIFICATE-----";
+        byte[] derCert = cert.getEncoded();
+        String pemCertPre = new String(encoder.encode(derCert));
+        String pemCert = cert_begin + pemCertPre + end_cert;
+        return pemCert;
+    }
+
+    private void importCert(byte[] certData, String alias, String password, boolean acceptAll) {
+        try {
+            ISecurityService bouncyCastleSecurityService = SecurityServiceFactory.create(SecurityServiceType.SERVER,
+                    new TypedProperties(System.getProperties()));
+            TrustedCertificateEntry entry = bouncyCastleSecurityService.createTrustedCert(certData, "pem", alias, password);
+            if (acceptAll) {
+                getSymmetricEngine().getSecurityService().installTrustedCert((TrustedCertificateEntry) entry);
+            } else {
+                Certificate trustedCertificate = entry.getTrustedCertificate();
+                String subject = "";
+                String issuer = "";
+                String keyType = "";
+                String effective = "";
+                String expiration = "";
+                boolean isValid = false;
+                if (trustedCertificate instanceof X509Certificate) {
+                    X509Certificate x509Certificate = (X509Certificate) trustedCertificate;
+                    subject = x509Certificate.getSubjectX500Principal().getName().replace(",", ", ");
+                    issuer = x509Certificate.getIssuerX500Principal().getName().replace(",", ", ");
+                    PublicKey publicKey = x509Certificate.getPublicKey();
+                    if (publicKey instanceof RSAPublicKey) {
+                        keyType = "RSA " + ((RSAPublicKey) publicKey).getModulus().bitLength() + "-bit";
+                    } else if (publicKey instanceof DSAPublicKey) {
+                        keyType = "DSA " + ((DSAPublicKey) publicKey).getParams().getP().bitLength() + "-bit";
+                    }
+                    Date effectiveDate = x509Certificate.getNotBefore();
+                    if (effectiveDate != null) {
+                        effective = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss aaa").format(effectiveDate);
+                    }
+                    Date expirationDate = x509Certificate.getNotAfter();
+                    if (expirationDate != null) {
+                        expiration = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss aaa").format(expirationDate);
+                    }
+                    Date now = new Date();
+                    isValid = now.compareTo(effectiveDate) >= 0 && now.compareTo(expirationDate) <= 0;
+                }
+                System.out.println("Subject: " + subject);
+                System.out.println("Issuer: " + issuer);
+                System.out.println("Key Type: " + keyType);
+                System.out.println("Effective Date: " + effective);
+                System.out.println("Expiration Date: " + expiration);
+                if (isValid) {
+                    while (true) {
+                        String answer = System.console().readLine("Accept this certificate? (Y/N): ");
+                        if ("Y".equalsIgnoreCase(answer) || "YES".equalsIgnoreCase(answer)) {
+                            getSymmetricEngine().getSecurityService().installTrustedCert((TrustedCertificateEntry) entry);
+                            break;
+                        } else if ("N".equalsIgnoreCase(answer) || "NO".equalsIgnoreCase(answer)) {
+                            break;
+                        } else {
+                            System.err.println("ERROR: Invalid answer");
+                        }
+                    }
+                } else {
+                    System.out.println("This certificate is not valid!");
+                }
+            }
+        } catch (KeystoreAliasException e) {
+            System.out.println("Select which certificate to import");
+            List<String> aliasList = e.getAliases();
+            for (int i = 0; i < aliasList.size(); i++) {
+                System.out.println((i + 1) + ". " + aliasList.get(i));
+            }
+            while (true) {
+                try {
+                    int selectedIndex = Integer.parseInt(System.console().readLine("Enter your selection: "));
+                    importCert(certData, aliasList.get(selectedIndex - 1), password, acceptAll);
+                    break;
+                } catch (NumberFormatException ex) {
+                    System.err.println("ERROR: Selection was not an integer");
+                } catch (IndexOutOfBoundsException ex) {
+                    System.err.println("ERROR: Invalid selection");
+                }
+            }
+        } catch (Exception e) {
+            if (e.getCause() != null && e.getCause() instanceof UnrecoverableKeyException) {
+                importCert(certData, alias, new String(System.console().readPassword("Enter password to access certificate: ")), acceptAll);
+            } else {
+                if (e.getMessage() != null) {
+                    System.err.println("ERROR: Import failed: " + e.getMessage());
+                } else {
+                    System.err.println("ERROR: Import failed");
+                }
+                e.printStackTrace();
+            }
         }
     }
 }
