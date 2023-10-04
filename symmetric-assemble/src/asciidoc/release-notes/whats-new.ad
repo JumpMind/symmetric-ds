@@ -2,61 +2,92 @@
 
 ifdef::pro[]
 
-=== Snowflake Change Data Capture
+=== DB2 for i Log-based Replication
 --
-Snowflake support was expanded to include change data capture using Snowflake's table streams.
-New configuration items were added for converting relational data into JSON documents suitable for Snowflake.
-Table groups identify which tables to send together in the JSON document, so that a change
-in one table will bring related rows into the document.  Table group hierarchies arrange the
-tables into a parent-child hierarchy using relational join information.
+DB2 for i replication (on IBM iSeries AS/400 platform) was expanded to include log mining of journals,
+in addition to trigger-based change capture.
 --
 
-=== SingleStore Replication
+=== MariaDB Log-based Replication
 --
-SingleStore database was added as a bi-directional replication platform.
-Change data capture is based on log mining of SingleStore's audit log.
-
---
-
-=== MySQL Log-based Replication
---
-MySQL support was expanded to include log mining in additional to trigger-based change capture.
-It is based on parsing statements from the binlog provided by MySQL 5.0 and newer.
+MariaDB support was expanded to include log mining of the binary log,
+in addition to trigger-based change capture.
 --
 
-=== Amazon S3 Integration
+=== Progress OpenEdge Replication
 --
-Amazon S3 can now be used as a target endpoint for receiving change data as comma-separated value (CSV) files.
-Amazon Web Services (AWS), such as Relational Database Services (RDS), Lambda, and Cloud Watch have
-integration with S3 to use data for loading databases, driving business logic, and monitoring data events.
+Replicate changes from Progress OpenEdge database or load data from other databases into it. 
+OpenEdge is a relational database management system with a 4GL programming language for building business applications.
+This dialect has bi-directional support that includes change data capture, sub-setting, transformations, and initial loads.
 --
 
-=== SQL Server BCP Bulk Loader
+=== Compare and Repair
 --
-The bulk loader for SQL-Server is now based on the BCP (bulk copy program) command line utility.
-The BCP automatically handles transfer of data files to a remote server, which supports both SQL Server
-and Azure SQL Server.
+Compare and Repair feature allows comparison of data between a source database and one or more target databases.
+The user has options of all or specific tables, level of comparison, immediate or scheduled, and whether to report or repair data.
+Comparison can use checksums at a table or chunk level to minimize use of the network.
+Parallel threads are used on each database per comparison request (compare.queue.per.request.count) with a maximum
+number of threads available on each server (compare.thread.per.server.count).
+A report of matching, different, missing, and extra rows can be kept, including a SQL file of changes that
+can be viewed or applied automatically to the target database.
+--
+
+=== Insight Manager
+--
+The Insights Manager is a sliding panel on the left side of the Dashboard that presents the user
+with proactive AI-generated recommendations that can help optimize and enhance the system.
+The user can choose to approve actions, schedule reminders for a later time, or dismiss altogether.
+Insights are collected across all nodes in the system and use pattern matching and rules collected
+from support cases.
 --
 
 === UI Improvements
 --
-The web console was enhanced to improve the user’s flow of connecting to databases, enabling change capture, and sending initial loads.
-Notification messages for data replication events can be customized with a screen that edits a notification template.
-Screens now support renaming the ID of an item being edited or using a “Save As Copy” button to copy it as a new item.
-Screens for table triggers and table routing were modified to use JDBC batch mode for faster save performance.
-New user settings include display mode, preferred date and time format, and timezone.
+Screens now use lazy initialization to reduce the time it takes to login and navigate.
+The Manage -> Jobs screen has a new history icon that opens a listing of job runs from the past 30 days along with
+a graph of job statistics.
+--
+
+=== Security Improvements
+--
+Web console users can be put into a hierarchy of roles, giving them permission to create or modify users at or below
+their current role.  Web console users can be given a "break glass" indicator that prevents login unless another
+user breaks the glass for a temporary, time-based password to the account.
+Web console users can now authenticate with single sign-on (SSO) using the SAML security standard with a third party
+identity provider.
 --
 
 endif::pro[]
 
-=== Operational Improvements
+=== Performance Improvements
 --
-For large deployments, new endpoints can be scheduled to register automatically.
-Registration works across push links, in addition to pull links.
-Initial loads can now be monitored at the endpoint with the same level of detail that was previously only available at the source.
-Creation of tables now includes fractional second precision of time and timestamp columns.
-Routing query performance was improved when a large number of gaps is present.
-SQL-Server and Sybase trigger procedures were optimized for the case of a primary key changing, and a parameter
-of trigger.use.insert.delete.for.primary.key.changes was added to revert to the old behavior.
+Purge now uses "exists" clause instead of "in" clause for correlated deletes if the database supports it.
+File sync now stages file changes to improve response time for pull sync requests, which also helps with network timeouts.
+Routing now uses a cached list of enabled nodes it can route changes to for each batch it creates.
+The default push and pull intervals were changed to 10 seconds to reduce the sync time experienced by new users.
 --
 
+=== Operational Improvements
+--
+Old data gaps are marked as expired by routing for performance, but left in the system for purge service to track and remove
+after a longer time period (purge.expired.data.gap.retention.minutes).
+If purge service finds data in an expired gap, it will repair the data by queuing reloads of the rows by primary key values.
+The sym_outgoing_error table was added to mirror sym_incoming_error and allow users to provide resolution for
+data conflicts on the outgoing side.
+All HTTP error codes now use 600 series to distinguish from any network devices that use standard 500 series.
+In some cases, more specific HTTP error codes are now used that may cause older clients to log only a general error message
+with the error code, which include 601 bad request, 602 engine not found, and 605 client already connected.
+ifdef::pro[]
+
+The symconsole command line utility can now perform operations with the license key.
+endif::pro[]
+--
+
+=== Technology Upgrades
+--
+H2 database version 2 is now included.  Users with existing H2 1.x databases may need to add ";MODE=LEGACY" to the end of db.url
+or "set MODE LEGACY" to db.init.sql (the Pro installer will do this automatically).
+Spring framework libraries were updated to version 6.
+Spring Boot 3 is now used to run the Jetty web server in standalone mode.
+Java 17 or later is now required.
+--

@@ -292,24 +292,22 @@ public class SelectFromSymDataSource extends SelectFromSource {
                 }
             }
         }
-        
-        if(parameterService.is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC)) {
-            for(Column column : copyTargetTable.getColumns()) {
-                Map<String,PlatformColumn> platformColumns = column.getPlatformColumns();
+        if (parameterService.is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC)) {
+            for (Column column : copyTargetTable.getColumns()) {
+                Map<String, PlatformColumn> platformColumns = column.getPlatformColumns();
                 String platformColumnType = platformColumns.get("ase").getType();
-                if(platformColumnType.equalsIgnoreCase("UNITEXT")) {
+                if (platformColumnType.equalsIgnoreCase("UNITEXT")) {
                     column.setMappedType("CLOB");
                     column.setMappedTypeCode(Types.CLOB);
-                } else if(platformColumnType.equalsIgnoreCase("UNICHAR")) {
+                } else if (platformColumnType.equalsIgnoreCase("UNICHAR")) {
                     column.setMappedType("CHAR");
                     column.setMappedTypeCode(Types.CHAR);
-                } else if(platformColumnType.equalsIgnoreCase("UNIVARCHAR")) {
+                } else if (platformColumnType.equalsIgnoreCase("UNIVARCHAR")) {
                     column.setMappedType("VARCHAR");
                     column.setMappedTypeCode(Types.VARCHAR);
                 }
             }
         }
-        
         data.setRowData(CsvUtils.escapeCsvData(DatabaseXmlUtil.toXml(db)));
         return true;
     }

@@ -607,7 +607,8 @@ public class DataService extends AbstractService implements IDataService {
         int[] typesDelete = new int[] { Types.NUMERIC };
         Object[] args = new Object[] { loadId, targetNodeId, sourceNodeId, isFullLoad ? 1 : 0, now, now, -1, -1, -1 };
         String sql = getSql("insertTableReloadStatus");
-        int[] types = new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC };
+        int[] types = new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP,
+                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC };
         if (transaction == null) {
             try {
                 transaction = sqlTemplate.startSqlTransaction();

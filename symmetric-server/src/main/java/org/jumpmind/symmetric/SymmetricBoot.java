@@ -40,6 +40,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 import io.micrometer.common.util.StringUtils;
@@ -91,7 +92,7 @@ public class SymmetricBoot {
         return bean;
     }
 
-    public static void main(String[] args) {
+    public static ConfigurableApplicationContext run(String[] args) {
         SymmetricUtils.logNotices();
         TypedProperties sysProps = new TypedProperties(System.getProperties());
         boolean httpsEnabled = sysProps.is(ServerConstants.HTTPS_ENABLE);
@@ -103,8 +104,12 @@ public class SymmetricBoot {
             ISecurityService securityService = SecurityServiceFactory.create(SecurityServiceType.SERVER, sysProps);
             securityService.installDefaultSslCert(sysProps.get(ServerConstants.HOST_BIND_NAME));
         }
-        new SpringApplicationBuilder().registerShutdownHook(false)
+        return new SpringApplicationBuilder().registerShutdownHook(false)
                 .listeners(new SymmetricBootPropertySetupListener(), new SymmetricBootStartedListener())
                 .bannerMode(Banner.Mode.OFF).sources(SymmetricBoot.class).run(args);
+    }
+
+    public static void main(String[] args) {
+        run(args);
     }
 }

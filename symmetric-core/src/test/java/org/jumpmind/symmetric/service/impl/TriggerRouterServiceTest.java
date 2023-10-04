@@ -48,7 +48,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentMatchers;
 
 public class TriggerRouterServiceTest {
-
     protected ICacheManager cacheManager;
     protected IClusterService clusterService;
     protected IConfigurationService configurationService;
@@ -84,7 +83,6 @@ public class TriggerRouterServiceTest {
         sqlTransaction = mock(ISqlTransaction.class);
         failureListener = mock(TriggerFailureListener.class);
         tablePrefix = "test";
-
     }
 
     @Test
@@ -104,14 +102,12 @@ public class TriggerRouterServiceTest {
         when(symmetricDialect.getPlatform().getSqlTemplate()).thenReturn(sqlTemplate);
         when(symmetricDialect.getPlatform().getSqlTemplateDirty()).thenReturn(sqlTemplate);
         doNothing().when(extensionService).addExtensionPoint(failureListener);
-
         new TriggerRouterService(engine);
     }
 
     @Test
     void testRefreshFromDatabase() throws Exception {
         Date date = new Date();
-
         when(engine.getCacheManager()).thenReturn(cacheManager);
         when(engine.getClusterService()).thenReturn(clusterService);
         when(engine.getConfigurationService()).thenReturn(configurationService);
@@ -128,16 +124,13 @@ public class TriggerRouterServiceTest {
         when(symmetricDialect.getPlatform().getSqlTemplateDirty()).thenReturn(sqlTemplate);
         doNothing().when(extensionService).addExtensionPoint(failureListener);
         doReturn(date).when(sqlTemplate).queryForObject("null", Date.class);
-
         TriggerRouterService triggerRouterService = new TriggerRouterService(engine);
         boolean testRefreshFromDatabase = triggerRouterService.refreshFromDatabase();
         assertTrue(testRefreshFromDatabase);
-
     }
 
     @Test
     void testGetTriggers() throws Exception {
-
         List<Trigger> dummyTriggerList = new ArrayList<Trigger>();
         Trigger dummyTrigger = new Trigger();
         dummyTrigger.setTriggerId("test");
@@ -149,7 +142,6 @@ public class TriggerRouterServiceTest {
         replacements.put("schem", "schemTest");
         replacements.put("cat", "catTest");
         replacements.put("table", "tableTest");
-
         when(engine.getCacheManager()).thenReturn(cacheManager);
         when(engine.getClusterService()).thenReturn(clusterService);
         when(engine.getConfigurationService()).thenReturn(configurationService);
@@ -168,7 +160,6 @@ public class TriggerRouterServiceTest {
         doNothing().when(extensionService).addExtensionPoint(failureListener);
         doReturn(dummyTriggerList).when(sqlTemplate).query(ArgumentMatchers.anyString(), ArgumentMatchers.any(),
                 (Object) ArgumentMatchers.any());
-
         TriggerRouterService triggerRouterService = new TriggerRouterService(engine);
         List<Trigger> actualTriggerList = triggerRouterService.getTriggers(true);
         List<Trigger> expectedTriggerList = new ArrayList<Trigger>();
@@ -180,7 +171,6 @@ public class TriggerRouterServiceTest {
         expectedTriggerList.add(expectedTrigger);
         assertEquals(expectedTriggerList, actualTriggerList);
         assertEquals(expectedTriggerList.get(0), actualTriggerList.get(0));
-
     }
 
     @Test
@@ -197,7 +187,6 @@ public class TriggerRouterServiceTest {
         dummyTriggerRouter.setTriggerId("testTriggerRouter");
         dummyTriggerRouter.setTrigger(dummyTrigger);
         dummyTriggerRouterList.add(dummyTriggerRouter);
-
         // initial mocks to get things setup for constructor
         when(engine.getCacheManager()).thenReturn(cacheManager);
         when(engine.getClusterService()).thenReturn(clusterService);
@@ -215,26 +204,21 @@ public class TriggerRouterServiceTest {
         when(symmetricDialect.getPlatform().getSqlTemplateDirty()).thenReturn(sqlTemplate);
         when(parameterService.getInt("data.flush.jdbc.batch.size")).thenReturn(10);
         when(sqlTemplate.startSqlTransaction()).thenReturn(sqlTransaction);
-
         doNothing().when(extensionService).addExtensionPoint(failureListener);
         doReturn(dummyTriggerList).when(sqlTemplate).query(ArgumentMatchers.anyString(), ArgumentMatchers.any(),
                 (Object) ArgumentMatchers.any());
-
         TriggerRouterService triggerRouterService = new TriggerRouterService(engine);
         TriggerRouterService spyTriggerRouterService = spy(triggerRouterService);
         when(spyTriggerRouterService.getTriggerRouters(true)).thenReturn(dummyTriggerRouterList);
-
         spyTriggerRouterService.deleteTriggers(dummyTriggerList);
         verify(sqlTransaction, times(2)).prepare("null");
         verify(sqlTransaction, times(2)).addRow(ArgumentMatchers.any(), (Object[]) ArgumentMatchers.any(), ArgumentMatchers.any());
-
     }
 
     @Test
     void testCreateTriggersOnChannelForTables() throws Exception {
         List<String> tables = new ArrayList<String>();
         tables.add("testTable");
-
         // block for get triggers. cant figure out why it doesnt let me just
         // return and instead goes into the method
         List<Trigger> dummyTriggerList = new ArrayList<Trigger>();
@@ -254,7 +238,6 @@ public class TriggerRouterServiceTest {
         replacements.put("schem", "schemTest");
         replacements.put("cat", "catTest");
         replacements.put("table", "tableTest");
-
         // initial mocks to get things setup for constructor
         when(engine.getCacheManager()).thenReturn(cacheManager);
         when(engine.getClusterService()).thenReturn(clusterService);
@@ -278,15 +261,11 @@ public class TriggerRouterServiceTest {
         doNothing().when(extensionService).addExtensionPoint(failureListener);
         doReturn(dummyTriggerList).when(sqlTemplate).query(ArgumentMatchers.anyString(), ArgumentMatchers.any(),
                 (Object) ArgumentMatchers.any());
-
         TriggerRouterService triggerRouterService = new TriggerRouterService(engine);
         TriggerRouterService spyTriggerRouterService = spy(triggerRouterService);
-
         spyTriggerRouterService.createTriggersOnChannelForTables("test", "cat", "schem", tables, "admin");
-
         // when(spyTriggerRouterService.getTriggers(true)).thenReturn(dummyTriggerList);
         doReturn(dummyTriggerList).when(spyTriggerRouterService).getTriggers();
-
     }
 
     @ParameterizedTest
@@ -313,11 +292,9 @@ public class TriggerRouterServiceTest {
                 dummyTrigger.setNameForUpdateTrigger("testUpdateName");
                 dummyTrigger.setNameForDeleteTrigger("testDeleteName");
             }
-
             if (isTableNameWildCarded) {
                 dummyTrigger.setSourceTableName("*sourceTableName");
             }
-
             if (isTableNameExpanded) {
                 dummyTrigger.setSourceTableNameExpanded(isTableNameExpanded);
             }
@@ -335,21 +312,17 @@ public class TriggerRouterServiceTest {
                 dummyTrigger.setNameForUpdateTrigger("testUpdateName");
                 dummyTrigger.setNameForDeleteTrigger("testDeleteName");
             }
-
             if (isTableNameWildCarded) {
                 dummyTrigger.setSourceTableName("*sourceTableName");
             }
-
             if (isTableNameExpanded) {
                 dummyTrigger.setSourceTableNameExpanded(isTableNameExpanded);
             }
         }
-
         TriggerHistory oldHist = new TriggerHistory();
         oldHist.setTriggerHistoryId(1);
         Table dummyTable = new Table();
         dummyTable.setName("testingTable");
-
         when(engine.getCacheManager()).thenReturn(cacheManager);
         when(engine.getClusterService()).thenReturn(clusterService);
         when(engine.getConfigurationService()).thenReturn(configurationService);
@@ -370,7 +343,6 @@ public class TriggerRouterServiceTest {
                 .thenReturn(1);
         when(parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TRIGGER_PREFIX, tablePrefix)).thenReturn("test");
         when(parameterService.getNodeGroupId()).thenReturn("TestNodeGroup");
-
         TriggerRouterService triggerRouterService = new TriggerRouterService(engine);
         TriggerRouterService spyTriggerRouterService = spy(triggerRouterService);
         DataEventType dml = null;
@@ -413,7 +385,6 @@ public class TriggerRouterServiceTest {
                 expectedTriggerName = "TE";
             }
         }
-
         assertEquals(expectedTriggerName, actualTriggerName);
     }
 
@@ -421,7 +392,6 @@ public class TriggerRouterServiceTest {
     @CsvSource({ "INSERT", "UPDATE", "DELETE" })
     void testGetTriggerNameSimple(String dmlType) throws Exception {
         TriggerTableSupportingInfo mockTriggerTableSupportingInfo = mock(TriggerTableSupportingInfo.class);
-
         when(engine.getCacheManager()).thenReturn(cacheManager);
         when(engine.getClusterService()).thenReturn(clusterService);
         when(engine.getConfigurationService()).thenReturn(configurationService);
@@ -445,10 +415,8 @@ public class TriggerRouterServiceTest {
         when(mockTriggerTableSupportingInfo.getInsertTriggerName()).thenReturn("testInsertTriggerName");
         when(mockTriggerTableSupportingInfo.getUpdateTriggerName()).thenReturn("testUpdateTriggerName");
         when(mockTriggerTableSupportingInfo.getDeleteTriggerName()).thenReturn("testDeleteTriggerName");
-
         TriggerRouterService triggerRouterService = new TriggerRouterService(engine);
         TriggerRouterService spyTriggerRouterService = spy(triggerRouterService);
-
         DataEventType dml = null;
         String expectedTriggerName = null;
         if (dmlType.equals("INSERT")) {
@@ -461,9 +429,7 @@ public class TriggerRouterServiceTest {
             dml = DataEventType.DELETE;
             expectedTriggerName = "testDeleteTriggerName";
         }
-
         String actualTriggerName = spyTriggerRouterService.getTriggerName(dml, mockTriggerTableSupportingInfo);
-
         assertEquals(expectedTriggerName, actualTriggerName);
     }
 
@@ -474,8 +440,6 @@ public class TriggerRouterServiceTest {
         dummyTriggerHist.setTriggerId("testTable");
         dummyTriggerHist.setNameForDeleteTrigger("TESTINSER");
         dummyTriggerHist.setSourceTableName("test_node");
-
-
         when(engine.getCacheManager()).thenReturn(cacheManager);
         when(engine.getClusterService()).thenReturn(clusterService);
         when(engine.getConfigurationService()).thenReturn(configurationService);
@@ -498,23 +462,19 @@ public class TriggerRouterServiceTest {
         when(parameterService.getNodeGroupId()).thenReturn("TestNodeGroup");
         when(sqlTemplate.queryForObject(ArgumentMatchers.anyString(), ArgumentMatchers.any(TriggerHistoryMapper.class), ArgumentMatchers.anyInt()))
                 .thenReturn(dummyTriggerHist);
-
         TriggerRouterService triggerRouterService = new TriggerRouterService(engine);
         TriggerRouterService spyTriggerRouterService = spy(triggerRouterService);
-
         spyTriggerRouterService.getTriggerHistory(2);
-
         TriggerHistory actualTriggerHistory = spyTriggerRouterService.findTriggerHistoryForGenericSync();
-        assertEquals(dummyTriggerHist,actualTriggerHistory);
-
+        assertEquals(dummyTriggerHist, actualTriggerHistory);
     }
-    
+
     @ParameterizedTest
-    @CsvSource({ ""+true+"",""+false+""})
-    void testFindMatchingTriggers(boolean willMatch) throws Exception{
+    @CsvSource({ "" + true + "", "" + false + "" })
+    void testFindMatchingTriggers(boolean willMatch) throws Exception {
         List<Trigger> dummyTriggerList = new ArrayList<Trigger>();
         Trigger dummyTrigger = new Trigger();
-        if(willMatch) {
+        if (willMatch) {
             dummyTrigger.setTriggerId("test");
             dummyTrigger.setSourceCatalogName("cat");
             dummyTrigger.setSourceSchemaName("schem");
@@ -525,7 +485,6 @@ public class TriggerRouterServiceTest {
             dummyTrigger.setSourceSchemaName("schema");
             dummyTrigger.setSourceTableName("tableName");
         }
-        
         dummyTriggerList.add(dummyTrigger);
         when(engine.getCacheManager()).thenReturn(cacheManager);
         when(engine.getClusterService()).thenReturn(clusterService);
@@ -547,18 +506,15 @@ public class TriggerRouterServiceTest {
                 .thenReturn(1);
         when(parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TRIGGER_PREFIX, tablePrefix)).thenReturn("table");
         when(parameterService.getNodeGroupId()).thenReturn("TestNodeGroup");
-        
         TriggerRouterService triggerRouterService = new TriggerRouterService(engine);
         TriggerRouterService spyTriggerRouterService = spy(triggerRouterService);
-        
         Collection<Trigger> actualMatchingTriggers = spyTriggerRouterService.findMatchingTriggers(dummyTriggerList, "cat", "schem", "table");
         Collection<Trigger> expectedMatchingTriggers = new ArrayList<Trigger>();
         expectedMatchingTriggers.add(dummyTrigger);
-        if(willMatch) {
-            assertArrayEquals(expectedMatchingTriggers.toArray(),actualMatchingTriggers.toArray());
+        if (willMatch) {
+            assertArrayEquals(expectedMatchingTriggers.toArray(), actualMatchingTriggers.toArray());
         } else {
-            assertNotEquals(expectedMatchingTriggers,actualMatchingTriggers);
+            assertNotEquals(expectedMatchingTriggers, actualMatchingTriggers);
         }
     }
-
 }

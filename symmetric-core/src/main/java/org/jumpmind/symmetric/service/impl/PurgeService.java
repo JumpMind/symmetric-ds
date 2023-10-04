@@ -541,17 +541,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return count;
     }
 
-    private long purgeMonitorEvents() {
-        Calendar retentionCutoff = Calendar.getInstance();
-        retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_MONITOR_EVENT_RETENTION_MINUTES));
-        log.info("Purging monitor events that are older than {}", fastFormat.format(retentionCutoff.getTime()));
-        long count = sqlTemplate.update(getSql("deleteMonitorEventSql"), retentionCutoff.getTime());
-        if (count > 0) {
-            log.info("Purged {} monitor events", count);
-        }
-        return count;
-    }
-
     private long purgeTriggerHist() {
         Calendar retentionCutoff = Calendar.getInstance();
         retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_TRIGGER_HIST_RETENTION_MINUTES));
@@ -759,7 +748,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     purgedRowCount = purgeIncomingBatch(retentionCutoff);
                     purgedRowCount += purgeIncomingError();
                     purgedRowCount += purgeRegistrationRequests();
-                    purgedRowCount += purgeMonitorEvents();
                     purgedRowCount += purgeTriggerHist();
                     List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
                     for (IPurgeListener purgeListener : purgeListeners) {

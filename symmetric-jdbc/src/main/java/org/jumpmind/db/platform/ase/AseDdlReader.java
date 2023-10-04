@@ -141,11 +141,11 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
             return Types.TIMESTAMP;
         } else if (typeName != null && typeName.equalsIgnoreCase("BIGTIME")) {
             return Types.TIME;
-        } else if(typeName != null && typeName.equalsIgnoreCase("UNITEXT")) {
+        } else if (typeName != null && typeName.equalsIgnoreCase("UNITEXT")) {
             return Types.LONGVARBINARY;
-        } else if(typeName != null && typeName.equalsIgnoreCase("UNICHAR")) {
+        } else if (typeName != null && typeName.equalsIgnoreCase("UNICHAR")) {
             return Types.LONGVARBINARY;
-        } else if(typeName != null && typeName.equalsIgnoreCase("UNIVARCHAR")) {
+        } else if (typeName != null && typeName.equalsIgnoreCase("UNIVARCHAR")) {
             return Types.LONGVARBINARY;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);

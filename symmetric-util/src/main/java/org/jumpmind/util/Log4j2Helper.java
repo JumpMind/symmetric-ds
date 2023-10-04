@@ -55,6 +55,7 @@ public class Log4j2Helper {
             log4jFile = new File(log4jFile.getParent(), "log4j2-debug.xml");
         }
         if (log4jFile.exists()) {
+            System.setProperty("org.springframework.boot.logging.LoggingSystem", "none");
             Configurator.initialize("SYM", log4jFile.getAbsolutePath());
         }
     }
