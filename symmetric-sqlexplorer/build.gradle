@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies { 
-        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
+        classpath 'gradle.plugin.cn.bestwu.gradle:propdeps-plugin:0.0.8'
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'     
         classpath 'com.devsoap.plugin:gradle-vaadin-plugin:1.2.2'    
         classpath 'com.vaadin:vaadin-compatibility-server:8.1.2'
