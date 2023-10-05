@@ -7,7 +7,7 @@ buildscript {
         classpath 'org.asciidoctor:asciidoctorj-pdf:1.6.2'
         classpath 'org.asciidoctor:asciidoctor-gradle-jvm:3.3.2'
 		classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.4.2'
-		//classpath 'com.bmuschko:gradle-docker-plugin:5.3.0'
+		classpath 'com.bmuschko:gradle-docker-plugin:9.3.4'
         classpath 'io.github.humblerookie:gradle-github-plugin:0.5.0'
         classpath 'org.jacoco:org.jacoco.ant:0.8.5'
     }
@@ -22,7 +22,7 @@ plugins {
 apply plugin: 'java-library'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
-//apply plugin: 'com.bmuschko.docker-remote-api'
+apply plugin: 'com.bmuschko.docker-remote-api'
 apply plugin: 'io.github.humblerookie.gradle'
 apply plugin: 'jacoco'
 
@@ -229,7 +229,7 @@ task releaseSymmetric {
 	description = 'Publish software to SourceForge website and online documentation to SymmetricDS website'
 }
 
-/*
+
 docker {
     registryCredentials {
         username = "$dockerUser".toString()
@@ -251,20 +251,21 @@ task copyDockerfile(type: Copy) {
 task buildImage(type: com.bmuschko.gradle.docker.tasks.image.DockerBuildImage) {
     dependsOn copyDockerfile
     inputDir = file("../symmetric-server/build/distributions")
-    tags = ["jumpmind/symmetricds:latest", "jumpmind/symmetricds:${version}".toString()]
+    images = ["jumpmind/symmetricds:latest", "jumpmind/symmetricds:${version}".toString()]
     buildArgs = ["SERVER_ZIP":"symmetric-server-${version}.zip"]
 }
 
 task publishDockerLatest(type: com.bmuschko.gradle.docker.tasks.image.DockerPushImage) {
     dependsOn buildImage
-    imageName = "jumpmind/symmetricds:latest"
+    images.empty()
+    images.add("jumpmind/symmetricds:latest")
 }
 
 task publishDocker(type: com.bmuschko.gradle.docker.tasks.image.DockerPushImage) {
     dependsOn publishDockerLatest
-    imageName = "jumpmind/symmetricds:${version}".toString()
+    images.empty()
+    images.add("jumpmind/symmetricds:${version}".toString())
     doLast {
         println "Pushing Docker Image to the jumpmind/symmetricds Repository"
     }
 }
-*/
