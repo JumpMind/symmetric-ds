@@ -998,7 +998,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         Version.version(), node.getSymmetricVersion());
             }
             try {
-                new URL(parameterService.getSyncUrl()).toURI();
+                String syncUrl = transportManager.resolveURL(parameterService.getSyncUrl(), parameterService.getRegistrationUrl());
+                new URL(syncUrl).toURI();
             } catch (MalformedURLException e) {
                 errorMessage = String.format("The %s property is not a valid URL: %s", ParameterConstants.SYNC_URL, parameterService.getSyncUrl());
             } catch (URISyntaxException e) {
