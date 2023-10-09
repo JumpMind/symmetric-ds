@@ -2170,8 +2170,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                     }
                                 }
                             }
-                            Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(
-                                    Collections.singletonList(trigger), allHistories, true, triggerRouterContext);
+                            Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo;
+                            if (trigger.isSourceWildCarded()) {
+                                triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(
+                                        triggersForCurrentNode, allHistories, true, triggerRouterContext);
+                            } else {
+                                triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(
+                                        Collections.singletonList(trigger), allHistories, true, triggerRouterContext);
+                            }
                             updateOrCreateDatabaseTrigger(trigger, triggersForCurrentNode, sqlBuffer,
                                     force, verifyInDatabase, allHistories, false, triggerToTableSupportingInfo,
                                     triggerRouterContext);
