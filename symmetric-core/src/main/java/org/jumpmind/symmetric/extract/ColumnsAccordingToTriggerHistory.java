@@ -93,7 +93,6 @@ public class ColumnsAccordingToTriggerHistory {
             table.setPrimaryKeys(triggerHistory.getParsedPkColumnNames());
         }
         Router router = triggerRouterService.getRouterById(routerId, false);
-        
         if (router != null && setTargetTableName) {
             if (router.isUseSourceCatalogSchema()) {
                 table.setCatalog(catalogName);
@@ -106,9 +105,9 @@ public class ColumnsAccordingToTriggerHistory {
                 table.setCatalog(null);
             } else if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
                 table.setCatalog(SymmetricUtils.replaceNodeVariables(sourceNode, targetNode, router.getTargetCatalogName()));
-                table.setCatalog(SymmetricUtils.replaceCatalogSchemaVariables(catalogName, 
+                table.setCatalog(SymmetricUtils.replaceCatalogSchemaVariables(catalogName,
                         symmetricDialect.getTargetPlatform().getDefaultCatalog(),
-                        schemaName, 
+                        schemaName,
                         symmetricDialect.getTargetPlatform().getDefaultSchema(),
                         router.getTargetCatalogName()));
             }
@@ -116,9 +115,9 @@ public class ColumnsAccordingToTriggerHistory {
                 table.setSchema(null);
             } else if (StringUtils.isNotBlank(router.getTargetSchemaName())) {
                 table.setSchema(SymmetricUtils.replaceNodeVariables(sourceNode, targetNode, router.getTargetSchemaName()));
-                table.setSchema(SymmetricUtils.replaceCatalogSchemaVariables(catalogName, 
+                table.setSchema(SymmetricUtils.replaceCatalogSchemaVariables(catalogName,
                         symmetricDialect.getTargetPlatform().getDefaultCatalog(),
-                        schemaName, 
+                        schemaName,
                         symmetricDialect.getTargetPlatform().getDefaultSchema(),
                         router.getTargetSchemaName()));
             }

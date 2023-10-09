@@ -61,19 +61,18 @@ public class ExtractDataReader implements IDataReader {
     protected boolean isSybaseASE;
     protected boolean isUsingUnitypes;
 
-
     public ExtractDataReader(IDatabasePlatform platform, IExtractDataReaderSource source) {
         this.sourcesToUse = new ArrayList<IExtractDataReaderSource>();
         this.sourcesToUse.add(source);
         this.platform = platform;
         this.isSybaseASE = platform.getName().equals(DatabaseNamesConstants.ASE);
     }
-    
+
     public ExtractDataReader(IDatabasePlatform platform, IExtractDataReaderSource source, Boolean isUsingUnitypes) {
         this.sourcesToUse = new ArrayList<IExtractDataReaderSource>();
         this.sourcesToUse.add(source);
         this.platform = platform;
-        this.isUsingUnitypes=isUsingUnitypes;
+        this.isUsingUnitypes = isUsingUnitypes;
         this.isSybaseASE = platform.getName().equals(DatabaseNamesConstants.ASE);
     }
 
@@ -224,7 +223,7 @@ public class ExtractDataReader implements IDataReader {
         }
         return data;
     }
-    
+
     protected CsvData convertUtf16toUTF8(Table table, CsvData data) {
         if (data.getDataEventType() == DataEventType.UPDATE || data.getDataEventType() == DataEventType.INSERT) {
             List<Column> uniColumns = getUniColumns(table);
@@ -242,21 +241,19 @@ public class ExtractDataReader implements IDataReader {
                 }
                 String sql = buildSelect(table, uniColumns, pkColumns);
                 Row row = sqlTemplate.queryForRow(sql, args);
-
                 if (row != null) {
                     for (Column uniColumn : uniColumns) {
                         try {
                             int index = ArrayUtils.indexOf(columnNames, uniColumn.getName());
                             if (rowData[index] != null) {
                                 String utf16String = null;
-                                if(batch.getChannelId().equalsIgnoreCase("reload")) {
+                                if (batch.getChannelId().equalsIgnoreCase("reload")) {
                                     utf16String = new String(Hex.decodeHex(rowData[index]), "UTF-16");
                                 } else {
                                     String baseString = rowData[index];
                                     baseString = "fffe" + baseString;
                                     utf16String = new String(Hex.decodeHex(baseString), "UTF-16");
                                 }
-
                                 String utf8String = new String(utf16String.getBytes(Charset.defaultCharset()), Charset.defaultCharset());
                                 rowData[index] = utf8String;
                             }
@@ -270,7 +267,7 @@ public class ExtractDataReader implements IDataReader {
         }
         return data;
     }
-    
+
     public List<Column> getUniColumns(Table table) {
         List<Column> uniColumns = new ArrayList<Column>(1);
         Column[] allColumns = table.getColumns();
@@ -281,7 +278,7 @@ public class ExtractDataReader implements IDataReader {
         }
         return uniColumns;
     }
-    
+
     public boolean isUniType(String type) {
         return type.equalsIgnoreCase("UNITEXT") || type.equalsIgnoreCase("UNICHAR") || type.equalsIgnoreCase("UNIVARCHAR");
     }

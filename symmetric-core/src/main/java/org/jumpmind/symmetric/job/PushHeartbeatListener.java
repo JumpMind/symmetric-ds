@@ -77,7 +77,6 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
             if (updateWithBatchStatus) {
                 batchInErrorCount = engine.getOutgoingBatchService().countOutgoingBatchesInError();
                 batchInErrorCount += engine.getIncomingBatchService().countIncomingBatchesInError();
-                
                 int[] batchesRowsUnsent = engine.getOutgoingBatchService().countOutgoingNonSystemBatchesRowsUnsent();
                 outgoingUnsentCount = batchesRowsUnsent[0];
                 outgoingUnsentRowCount = batchesRowsUnsent[1];

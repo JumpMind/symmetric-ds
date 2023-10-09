@@ -139,7 +139,8 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
         final String sql = "drop trigger " + (StringUtils.isBlank(schemaName) ? platform.getDefaultSchema() : schemaName) + "." + tableName + "." + triggerName;
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            log.info("Dropping {} trigger for {}", triggerName, (StringUtils.isBlank(schemaName) ? platform.getDefaultSchema() : schemaName) + "." + tableName + "." + triggerName);
+            log.info("Dropping {} trigger for {}", triggerName, (StringUtils.isBlank(schemaName) ? platform.getDefaultSchema() : schemaName) + "." + tableName
+                    + "." + triggerName);
             ((JdbcSqlTransaction) transaction)
                     .executeCallback(new IConnectionCallback<Boolean>() {
                         public Boolean execute(Connection con) throws SQLException {

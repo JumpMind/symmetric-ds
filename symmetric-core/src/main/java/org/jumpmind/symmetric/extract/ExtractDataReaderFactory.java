@@ -38,6 +38,6 @@ public class ExtractDataReaderFactory implements IExtractDataReaderFactory {
     public ExtractDataReader getReader(IDatabasePlatform platform, IExtractDataReaderSource source, Node sourceNode, Node targetNode) {
         ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
         boolean isUsingUnitypes = symmetricDialect.getParameterService().is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC);
-        return new ExtractDataReader(platform, source,isUsingUnitypes);
+        return new ExtractDataReader(platform, source, isUsingUnitypes);
     }
 }

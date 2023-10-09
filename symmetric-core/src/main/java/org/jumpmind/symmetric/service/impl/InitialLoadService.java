@@ -168,7 +168,6 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                                     log.info("Creating load request from node " + security.getNodeId() + " to node " + identity.getNodeId());
                                     engine.getDataService().insertTableReloadRequest(request);
                                     processInfo.incrementCurrentDataCount();
-                                    
                                 }
                                 // Reset reverse initial load flag to off
                                 engine.getNodeService().setReverseInitialLoadEnabled(security.getNodeId(), false, true, 0l, "initialLoadService");
@@ -216,12 +215,11 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
             log.error("Error while processing initial loads using node security", e);
         }
     }
-    
+
     protected void sendLoadBasedOnConfig(NodeSecurity security, boolean isReverse, ProcessInfo processInfo) {
         List<Node> nodes = new ArrayList<Node>();
         List<NodeGroupLink> groupLinks = engine.getConfigurationService().getNodeGroupLinks(false);
         Node currentNode = engine.getNodeService().findNode(security.getNodeId());
-        
         if (isReverse) {
             Set<String> nodeGroups = new HashSet<String>();
             for (NodeGroupLink link : groupLinks) {
@@ -245,12 +243,10 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                 nodes.addAll(engine.getNodeService().findEnabledNodesFromNodeGroup(itr.next()));
             }
         }
-        
-        for (Node node  : nodes) {
+        for (Node node : nodes) {
             TableReloadRequest request = new TableReloadRequest();
             request.setTriggerId(ParameterConstants.ALL);
             request.setRouterId(ParameterConstants.ALL);
-            
             if (isReverse) {
                 request.setSourceNodeId(security.getNodeId());
                 request.setTargetNodeId(node.getNodeId());

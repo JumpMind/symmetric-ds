@@ -140,7 +140,7 @@ public class SimpleRouterContext extends Context {
             incrementStat(value, key);
         }
     }
-    
+
     public class RouterTimer {
         private long queryTime;
         private long totalQueryTime;
