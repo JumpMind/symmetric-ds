@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk
+FROM eclipse-temurin:17-alpine
 
 # Input the server zip file used to install SymmetricDS
 # This file must be in the Docker context (i.e. working directory)

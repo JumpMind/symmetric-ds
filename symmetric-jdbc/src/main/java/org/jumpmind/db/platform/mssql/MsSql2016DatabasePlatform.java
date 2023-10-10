@@ -28,11 +28,24 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class MsSql2016DatabasePlatform extends MsSql2008DatabasePlatform {
     public static final String JDBC_SUBPROTOCOL = "sqlserver";
+    public static final int SP1_BUILD_NUMBER = 4001;
 
     public MsSql2016DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         if (settings.isAllowTriggerCreateOrReplace()) {
-            getDatabaseInfo().setTriggersCreateOrReplaceSupported(true);
+            boolean triggersCreateOrReplaceSupported = true;
+            String versionString = sqlTemplateDirty.queryForString("select serverproperty('ProductVersion')", (Object[]) null);
+            if (versionString != null) {
+                String[] versionArray = versionString.split("[.]");
+                if (versionArray.length == 4) {
+                    int majorVersion = Integer.parseInt(versionArray[0]);
+                    if (majorVersion == 13) {
+                        int buildNumber = Integer.parseInt(versionArray[2]);
+                        triggersCreateOrReplaceSupported = (buildNumber >= SP1_BUILD_NUMBER);
+                    }
+                }
+            }
+            getDatabaseInfo().setTriggersCreateOrReplaceSupported(triggersCreateOrReplaceSupported);
         }
     }
 
