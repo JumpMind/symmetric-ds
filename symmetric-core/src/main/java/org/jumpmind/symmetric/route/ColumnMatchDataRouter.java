@@ -29,6 +29,7 @@ import java.util.Set;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.TokenConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -69,17 +70,15 @@ import org.jumpmind.symmetric.service.IConfigurationService;
  */
 public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRouter, IBuiltInExtensionPoint {
     private static final String NULL_VALUE = "NULL";
-    private IConfigurationService configurationService;
-    private ISymmetricDialect symmetricDialect;
+    private ISymmetricEngine engine;
     final static String EXPRESSION_KEY = String.format("%s.Expression.", ColumnMatchDataRouter.class
             .getName());
 
     public ColumnMatchDataRouter() {
     }
 
-    public ColumnMatchDataRouter(IConfigurationService configurationService, ISymmetricDialect symmetricDialect) {
-        this.configurationService = configurationService;
-        this.symmetricDialect = symmetricDialect;
+    public ColumnMatchDataRouter(ISymmetricEngine engine) {
+        this.engine = engine;
     }
 
     public Set<String> routeToNodes(SimpleRouterContext routingContext,
@@ -89,8 +88,9 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
             nodeIds = toNodeIds(nodes, null);
         } else {
             List<Expression> expressions = getExpressions(dataMetaData.getRouter(), routingContext);
-            Map<String, String> columnValues = getDataMap(dataMetaData, symmetricDialect);
+            Map<String, String> columnValues = getDataMap(dataMetaData, engine.getSymmetricDialect());
             if (columnValues != null) {
+                Node identity = engine.getNodeService().findIdentity();
                 for (Expression e : expressions) {
                     String column = e.tokens[0].trim();
                     String value = e.tokens[1];
@@ -100,14 +100,32 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
                             nodeIds = runExpression(e, columnValue, node.getNodeId(), nodes,
                                     nodeIds, node);
                         }
+                    } else if (value.equalsIgnoreCase(TokenConstants.SOURCE_NODE_ID)) {
+                        String sourceNodeId = identity.getNodeId();
+                        for (Node node : nodes) {
+                            nodeIds = runExpression(e, columnValue, sourceNodeId, nodes,
+                                    nodeIds, node);
+                        }
                     } else if (value.equalsIgnoreCase(TokenConstants.EXTERNAL_ID)) {
                         for (Node node : nodes) {
                             nodeIds = runExpression(e, columnValue, node.getExternalId(), nodes,
                                     nodeIds, node);
                         }
+                    } else if (value.equalsIgnoreCase(TokenConstants.SOURCE_EXTERNAL_ID)) {
+                        String sourceExternalId = identity.getExternalId();
+                        for (Node node : nodes) {
+                            nodeIds = runExpression(e, columnValue, sourceExternalId, nodes,
+                                    nodeIds, node);
+                        }
                     } else if (value.equalsIgnoreCase(TokenConstants.NODE_GROUP_ID)) {
                         for (Node node : nodes) {
                             nodeIds = runExpression(e, columnValue, node.getNodeGroupId(), nodes,
+                                    nodeIds, node);
+                        }
+                    } else if (value.equalsIgnoreCase(TokenConstants.SOURCE_NODE_GROUP_ID)) {
+                        String sourceNodeGroupId = identity.getNodeGroupId();
+                        for (Node node : nodes) {
+                            nodeIds = runExpression(e, columnValue, sourceNodeGroupId, nodes,
                                     nodeIds, node);
                         }
                     } else if (e.hasEquals && value.equalsIgnoreCase(TokenConstants.REDIRECT_NODE)) {
@@ -247,7 +265,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
         Map<String, String> redirectMap = (Map<String, String>) ctx.getContextCache().get(
                 CTX_CACHE_KEY);
         if (redirectMap == null) {
-            redirectMap = configurationService.getRegistrationRedirectMap();
+            redirectMap = engine.getConfigurationService().getRegistrationRedirectMap();
             ctx.getContextCache().put(CTX_CACHE_KEY, redirectMap);
         }
         return redirectMap;
