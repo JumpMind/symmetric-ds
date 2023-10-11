@@ -24,7 +24,7 @@ _Permission to use, copy, modify, and distribute this SymmetricDS User Guide for
 This user guide introduces SymmetricDS and its features for data synchronization. 
 It is intended for users, developers, and administrators who want to install the software, configure synchronization, and manage its operation.
 Thank you to all the members of the open source community whose feedback and contributions helped us build better software and documentation. 
-This version of the guide was generated on {docdate}.
+This version of the guide was generated on {localdate}.
 
 :numbered:
 
