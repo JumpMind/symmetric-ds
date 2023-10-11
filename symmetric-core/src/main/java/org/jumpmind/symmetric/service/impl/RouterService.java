@@ -138,8 +138,7 @@ public class RouterService extends AbstractService implements IRouterService {
         extensionService.addExtensionPoint("lookuptable", new LookupTableDataRouter(symmetricDialect));
         extensionService.addExtensionPoint("default", new DefaultDataRouter());
         extensionService.addExtensionPoint("audit", new AuditTableDataRouter(engine));
-        extensionService.addExtensionPoint("column", new ColumnMatchDataRouter(engine.getConfigurationService(),
-                engine.getSymmetricDialect()));
+        extensionService.addExtensionPoint("column", new ColumnMatchDataRouter(engine));
         extensionService.addExtensionPoint(FileSyncDataRouter.ROUTER_TYPE, new FileSyncDataRouter(engine));
         extensionService.addExtensionPoint("dbf", new DBFRouter(engine));
         extensionService.addExtensionPoint("tps", new TPSRouter(engine));
