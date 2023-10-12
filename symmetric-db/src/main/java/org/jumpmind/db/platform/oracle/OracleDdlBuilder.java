@@ -586,6 +586,9 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
 
     @Override
     public String getSqlType(Column column) {
+    	if (column.getMappedTypeCode() == Types.VARCHAR && column.getSizeAsInt() > 4000) {
+    		column.setSize("4000");
+    	}
         PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
         if (platformColumn != null && platformColumn.getType() != null) {
             if (platformColumn.getType().equals(ROWID_TYPE)) {
@@ -616,4 +619,6 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             super.writeCascadeAttributesForForeignKeyDelete(key, ddl);
         }
     }
+    
+   
 }
