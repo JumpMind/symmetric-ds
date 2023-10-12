@@ -632,7 +632,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public String scrubSql(String sql) {
         Map<String, String> replacementTokens = getSqlScriptReplacementTokens();
         if (replacementTokens != null) {
-            return FormatUtils.replaceTokens(sql, replacementTokens, false).trim();
+            return FormatUtils.replaceTokens(sql, replacementTokens, false);
         } else {
             return sql;
         }
