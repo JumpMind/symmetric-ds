@@ -302,6 +302,13 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     @Override
+    public TableReloadRequest getTableReloadRequestByLoadIdAndSourceNodeId(long loadId, String sourceNodeId) {
+        List<TableReloadRequest> requests = sqlTemplate.query(getSql("selectTableReloadRequestsByLoadIdAndSourceNodeId"),
+                new TableReloadRequestMapper(), loadId, sourceNodeId);
+        return requests == null || requests.size() == 0 ? null : requests.get(0);
+    }
+
+    @Override
     public TableReloadRequest getTableReloadRequest(long loadId, String triggerId, String routerId) {
         List<TableReloadRequest> requests = sqlTemplate.query(getSql("selectTableReloadRequestsByLoadIdTriggerRouter"),
                 new TableReloadRequestMapper(), loadId, triggerId, routerId);
@@ -398,6 +405,11 @@ public class DataService extends AbstractService implements IDataService {
     public TableReloadStatus getTableReloadStatusByLoadId(long loadId) {
         return sqlTemplateDirty.queryForObject(getSql("selectTableReloadStatusByLoadId"),
                 new TableReloadStatusMapper(), loadId);
+    }
+
+    public TableReloadStatus getTableReloadStatusByLoadIdAndSourceId(long loadId, String sourceId) {
+        return sqlTemplateDirty.queryForObject(getSql("selectTableReloadStatusByLoadIdAndSourceId"),
+                new TableReloadStatusMapper(), loadId, sourceId);
     }
 
     public List<TableReloadStatus> getTableReloadStatusByTarget(String targetNodeId) {

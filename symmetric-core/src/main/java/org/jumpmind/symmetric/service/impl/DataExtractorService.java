@@ -1414,8 +1414,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     @Override
+    public List<ExtractRequest> getPendingTablesForExtractByLoadIdNodeIdSourceId(long loadId, String nodeId, String sourceId) {
+        return sqlTemplate.query(getSql("selectIncompleteTablesForExtractByLoadIdNodeIdSourceId"), new ExtractRequestMapper(), loadId, nodeId, sourceId);
+    }
+
+    @Override
     public List<ExtractRequest> getCompletedTablesForExtractByLoadIdAndNodeId(long loadId, String nodeId) {
         return sqlTemplate.query(getSql("selectCompletedTablesForExtractByLoadIdAndNodeId"), new ExtractRequestMapper(), loadId, nodeId);
+    }
+
+    @Override
+    public List<ExtractRequest> getCompletedTablesForExtractByLoadIdNodeIdSourceId(long loadId, String nodeId,
+            String sourceId) {
+        return sqlTemplate.query(getSql("selectCompletedTablesForExtractByLoadIdNodeIdSourceId"), new ExtractRequestMapper(), loadId, nodeId, sourceId);
     }
 
     @Override
