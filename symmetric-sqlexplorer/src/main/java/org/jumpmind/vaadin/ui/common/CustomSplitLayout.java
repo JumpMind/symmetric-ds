@@ -70,7 +70,7 @@ public class CustomSplitLayout extends SplitLayout {
         }
     }
 
-    public double getSplitterPosition() {
+    public Double getSplitterPosition() {
         return splitterPosition;
     }
 
