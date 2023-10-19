@@ -25,6 +25,7 @@ public class SecurityConstants {
     public static final String SYSPROP_KEYSTORE_CERT_ALIAS = "sym.keystore.ssl.cert.alias";
     public static final String SYSPROP_KEYSTORE = "sym.keystore.file";
     public static final String SYSPROP_TRUSTSTORE = "javax.net.ssl.trustStore";
+    public static final String SYSPROP_TRUSTSTORE_TYPE = "javax.net.ssl.trustStoreType";
     public static final String SYSPROP_TRUSTSTORE_PASSWORD = "javax.net.ssl.trustStorePassword";
     public static final String SYSPROP_KEYSTORE_PASSWORD = "javax.net.ssl.keyStorePassword";
     public static final String SYSPROP_SSL_IGNORE_PROTOCOLS = "symmetric.ssl.ignore.protocols";
