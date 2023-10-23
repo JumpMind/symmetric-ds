@@ -134,7 +134,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
                 log.info(message, nodeId, channelId, poolId);
             }
             return ReservationStatus.NOT_FOUND;
-        } else if (reservations.size() < maxPoolSize || existingReservation != null || whiteList.contains(reservationId)) {
+        } else if (reservations.size() < maxPoolSize || existingReservation != null || whiteList.contains(nodeId)) {
             if (existingReservation == null || existingReservation.getType() == ReservationType.SOFT) {
                 reservations.put(reservationId, new Reservation(reservationId,
                         reservationRequest == ReservationType.SOFT ? System.currentTimeMillis()
