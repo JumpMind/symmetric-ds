@@ -335,8 +335,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         if (includeRejects) {
             sql = sql.replace(")", ",'" + RegistrationRequest.RegistrationStatus.RJ.name() + "')");
         }
-        List<RegistrationRequest> requests = sqlTemplate.query(
-                getSql("selectRegistrationRequestSql"), new RegistrationRequestMapper());
+        List<RegistrationRequest> requests = sqlTemplate.query(sql, new RegistrationRequestMapper());
         if (!includeNodesWithOpenRegistrations) {
             Collection<Node> nodes = nodeService.findNodesWithOpenRegistration();
             Iterator<RegistrationRequest> i = requests.iterator();
@@ -369,6 +368,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
         for (RegistrationRequest registrationRequest : requests) {
             if (registrationRequest.getNodeGroupId().equals(request.getNodeGroupId()) && registrationRequest.getExternalId().equals(request.getExternalId())) {
                 request.setAttemptCount(registrationRequest.getAttemptCount() + 1);
+                if (registrationRequest.getStatus().equals(RegistrationStatus.RJ) && request.getStatus().equals(RegistrationStatus.RQ)) {
+                    request.setStatus(RegistrationStatus.RJ);
+                }
                 foundOne = true;
                 break;
             }
