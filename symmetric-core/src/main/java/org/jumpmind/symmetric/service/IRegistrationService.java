@@ -118,7 +118,7 @@ public interface IRegistrationService {
      */
     public boolean attemptToRegisterWithServer(int maxNumberOfAttempts);
 
-    public List<RegistrationRequest> getRegistrationRequests(boolean includeNodesWithOpenRegistrations);
+    public List<RegistrationRequest> getRegistrationRequests(boolean includeNodesWithOpenRegistrations, boolean includeRejects);
 
     public boolean deleteRegistrationRequest(RegistrationRequest request);
 

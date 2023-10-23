@@ -330,8 +330,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
         return processedNode.isSyncEnabled();
     }
 
-    public List<RegistrationRequest> getRegistrationRequests(
-            boolean includeNodesWithOpenRegistrations) {
+    public List<RegistrationRequest> getRegistrationRequests(boolean includeNodesWithOpenRegistrations, boolean includeRejects) {
+        String sql = getSql("selectRegistrationRequestSql");
+        if (includeRejects) {
+            sql = sql.replace(")", ",'" + RegistrationRequest.RegistrationStatus.RJ.name() + "')");
+        }
         List<RegistrationRequest> requests = sqlTemplate.query(
                 getSql("selectRegistrationRequestSql"), new RegistrationRequestMapper());
         if (!includeNodesWithOpenRegistrations) {
@@ -362,7 +365,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
          * Lookup existing registration requests to update the attempt count. We previously did this in SQL on the update, but as400 v5 didn't like that
          */
         boolean foundOne = false;
-        List<RegistrationRequest> requests = getRegistrationRequests(true);
+        List<RegistrationRequest> requests = getRegistrationRequests(true, true);
         for (RegistrationRequest registrationRequest : requests) {
             if (registrationRequest.getNodeGroupId().equals(request.getNodeGroupId()) && registrationRequest.getExternalId().equals(request.getExternalId())) {
                 request.setAttemptCount(registrationRequest.getAttemptCount() + 1);
