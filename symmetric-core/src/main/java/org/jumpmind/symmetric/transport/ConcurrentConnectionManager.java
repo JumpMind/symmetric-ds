@@ -126,7 +126,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         long timeout = parameterService.getLong(ParameterConstants.CONCURRENT_RESERVATION_TIMEOUT);
         removeTimedOutReservations(reservations);
         if (reservations.size() < maxPoolSize || reservations.containsKey(reservationId)
-                || whiteList.contains(reservationId)) {
+                || whiteList.contains(nodeId)) {
             Reservation existingReservation = reservations.get(reservationId);
             if (existingReservation == null
                     || existingReservation.getType() == ReservationType.SOFT) {
