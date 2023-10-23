@@ -672,7 +672,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 resource.delete();
                             }
                         } else {
-                            log.error("Failed to extract batch " + currentBatch, e);
+                            log.error("Failed to extract batch " + currentBatch + " on channel '" + currentBatch.getChannelId() + "'", e);
                         }
                     }
                     try {

@@ -89,7 +89,8 @@ public class SecurityService implements ISecurityService {
     @Override
     public KeyStore getTrustStore() {
         try {
-            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_TRUSTSTORE_TYPE, KeyStore.getDefaultType());
+            KeyStore ks = KeyStore.getInstance(keyStoreType);
             if (trustStoreFileName != null) {
                 try (FileInputStream is = new FileInputStream(trustStoreFileName)) {
                     ks.load(is, getTrustStorePassword().toCharArray());
