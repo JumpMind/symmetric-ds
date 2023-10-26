@@ -90,6 +90,10 @@ public class RemoteNodeStatus implements Serializable {
         return dataProcessed;
     }
 
+    public void setDataProcessed(long dataProcessed) {
+        this.dataProcessed = dataProcessed;
+    }
+
     public long getBatchesProcessed() {
         return batchesProcessed;
     }

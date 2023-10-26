@@ -59,11 +59,15 @@ import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.NodeCommunication;
+import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessType;
+import org.jumpmind.symmetric.model.RemoteNodeStatus;
+import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -98,6 +102,8 @@ import org.jumpmind.symmetric.route.TPSRouter;
 import org.jumpmind.symmetric.route.TransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IExtensionService;
+import org.jumpmind.symmetric.service.INodeCommunicationService;
+import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
 import org.jumpmind.symmetric.util.CounterStat;
@@ -106,7 +112,7 @@ import org.jumpmind.util.FormatUtils;
 /**
  * @see IRouterService
  */
-public class RouterService extends AbstractService implements IRouterService {
+public class RouterService extends AbstractService implements IRouterService, INodeCommunicationExecutor {
     final int MAX_LOGGING_LENGTH = 512;
     protected Map<Integer, CounterStat> missingTriggerRouter = new HashMap<Integer, CounterStat>();
     protected Map<String, CounterStat> invalidRouterType = new HashMap<String, CounterStat>();
@@ -123,6 +129,7 @@ public class RouterService extends AbstractService implements IRouterService {
     protected boolean firstTimeCheck = true;
     protected boolean hasMaxDataRoutedOnChannel;
     protected boolean isUsingTargetExternalId;
+    protected boolean useChannelThreading;
 
     public RouterService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -195,12 +202,13 @@ public class RouterService extends AbstractService implements IRouterService {
                             engine.getContextService().save(ContextConstants.ROUTING_FULL_GAP_ANALYSIS, Boolean.TRUE.toString());
                         }
                         firstTimeCheck = false;
+                        engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
                     }
                     do {
-                        engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
                         long ts = System.currentTimeMillis();
                         hasMaxDataRoutedOnChannel = false;
                         isUsingTargetExternalId = engine.getCacheManager().isUsingTargetExternalId(false);
+                        useChannelThreading = parameterService.is(ParameterConstants.ROUTING_USE_CHANNEL_THREADS);
                         gapDetector.beforeRouting();
                         dataCount = routeDataForEachChannel();
                         ts = System.currentTimeMillis() - ts;
@@ -217,6 +225,9 @@ public class RouterService extends AbstractService implements IRouterService {
                     if (dataCount > 0) {
                         engine.getStatisticManager().addJobStats(ClusterConstants.ROUTE, startTime, System.currentTimeMillis(), dataCount);
                     }
+                } catch (org.jumpmind.exception.InterruptedException e) {
+                    engine.getStatisticManager().addJobStats(ClusterConstants.ROUTE, startTime, System.currentTimeMillis(), dataCount, e);
+                    log.warn("Interrupted");
                 } catch (RuntimeException e) {
                     engine.getStatisticManager().addJobStats(ClusterConstants.ROUTE, startTime, System.currentTimeMillis(), dataCount, e);
                     throw e;
@@ -267,19 +278,46 @@ public class RouterService extends AbstractService implements IRouterService {
             Set<String> readyChannels = null;
             if (parameterService.is(ParameterConstants.ROUTING_QUERY_CHANNELS_FIRST)) {
                 readyChannels = getReadyChannels();
+                engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
+            }
+            INodeCommunicationService nodeComService = engine.getNodeCommunicationService();
+            RemoteNodeStatuses nodeStatuses = null;
+            if (useChannelThreading) {
+                nodeStatuses = new RemoteNodeStatuses(engine.getConfigurationService().getChannels(false));
             }
             for (NodeChannel nodeChannel : channels) {
-                engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
                 if (nodeChannel.isEnabled() && (readyChannels == null || readyChannels.contains(nodeChannel.getChannelId()))) {
-                    processInfo.setCurrentTableName("");
-                    processInfo.setCurrentChannelId(nodeChannel.getChannelId());
-                    dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode, false, null, null);
+                    if (useChannelThreading) {
+                        NodeCommunication lock = nodeComService.find(engine.getNodeId(), nodeChannel.getChannelId(), CommunicationType.ROUTE);
+                        nodeComService.execute(lock, nodeStatuses, this);
+                    } else {
+                        processInfo.setCurrentTableName("");
+                        processInfo.setCurrentChannelId(nodeChannel.getChannelId());
+                        dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode, null, null);
+                    }
                 } else if (!nodeChannel.isEnabled()) {
                     gapDetector.setIsAllDataRead(false);
                     if (log.isDebugEnabled()) {
                         log.debug("Not routing the {} channel.  It is either disabled or suspended.", nodeChannel.getChannelId());
                     }
                 }
+            }
+            if (useChannelThreading) {
+                long ts = System.currentTimeMillis();
+                int timeout = parameterService.getInt(ParameterConstants.CLUSTER_LOCK_REFRESH_MS, 1200000);
+                while (!nodeStatuses.isComplete()) {
+                    try {
+                        log.debug("Waiting for threads to complete");
+                        nodeStatuses.waitForComplete(timeout);
+                    } catch (org.jumpmind.exception.InterruptedException e) {
+                        if (e.getCause() != null && e.getCause() instanceof InterruptedException) {
+                            throw e;
+                        }
+                        engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
+                        log.info("Waiting on channel threads for {} seconds", (System.currentTimeMillis() - ts / 1000));
+                    }
+                }
+                dataCount = nodeStatuses.getDataProcessedCount();
             }
             processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
         } catch (RuntimeException ex) {
@@ -460,9 +498,32 @@ public class RouterService extends AbstractService implements IRouterService {
         return onlyDefaultRoutersAssigned;
     }
 
-    protected long routeDataForChannel(ProcessInfo processInfo, final NodeChannel nodeChannel, final Node sourceNode, boolean isOverrideContainsBigLob,
-            Map<String, OutgoingBatch> overrideBatchesByNodes, Map<Integer, Map<String, OutgoingBatch>> overrideBatchesByGroups) {
-        ChannelRouterContext context = null;
+    @Override
+    public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
+        Node sourceNode = engine.getNodeService().findIdentity();
+        String channelId = nodeCommunication.getQueue();
+        List<NodeChannel> nodeChannels = engine.getConfigurationService().getNodeChannels(false);
+        ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(new ProcessInfoKey(sourceNode.getNodeId(),
+                channelId, null, ProcessType.ROUTER_JOB));
+        processInfo.setStatus(ProcessInfo.ProcessStatus.PROCESSING);
+        for (NodeChannel nodeChannel : nodeChannels) {
+            if (nodeChannel.getChannelId().equals(channelId)) {
+                try {
+                    log.debug("Routing on thread for {}", nodeChannel.getChannelId());
+                    long dataProcessed = routeDataForChannel(processInfo, nodeChannel, sourceNode, nodeCommunication, null);
+                    status.setDataProcessed(dataProcessed);
+                    processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
+                } catch (RuntimeException e) {
+                    processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
+                    throw e;
+                }
+                break;
+            }
+        }
+    }
+
+    protected long routeDataForChannel(ProcessInfo processInfo, final NodeChannel nodeChannel, final Node sourceNode, NodeCommunication nodeCommunication,
+            ChannelRouterContext context) {
         long ts = System.currentTimeMillis();
         long dataCount = -1;
         try {
@@ -473,27 +534,22 @@ public class RouterService extends AbstractService implements IRouterService {
             boolean onlyDefaultRoutersAssigned = onlyDefaultRoutersAssigned(nodeChannel.getChannel(),
                     parameterService.getNodeGroupId(), triggerRouters);
             IBatchAlgorithm batchAlgorithm = extensionService.getExtensionPointMap(IBatchAlgorithm.class).get(nodeChannel.getBatchAlgorithm());
-            context = new ChannelRouterContext(sourceNode.getNodeId(), nodeChannel,
-                    symmetricDialect.getPlatform().getSqlTemplate().startSqlTransaction(),
-                    batchAlgorithm);
+            if (context == null) {
+                context = new ChannelRouterContext(sourceNode.getNodeId(), nodeChannel,
+                        symmetricDialect.getPlatform().getSqlTemplate().startSqlTransaction(),
+                        batchAlgorithm);
+            }
             context.setProduceCommonBatches(producesCommonBatches);
             context.setProduceGroupBatches(useCommonGroups);
             context.setNonCommonForIncoming(parameterService.is(ParameterConstants.ROUTING_USE_NON_COMMON_FOR_INCOMING));
             context.setOnlyDefaultRoutersAssigned(onlyDefaultRoutersAssigned);
             context.setDataGaps(gapDetector.getDataGaps());
-            context.setOverrideContainsBigLob(isOverrideContainsBigLob);
             context.setMaxBatchesJdbcFlushSize(parameterService.getInt(ParameterConstants.ROUTING_FLUSH_BATCHES_JDBC_BATCH_SIZE, 5000));
             int maxBatchSizeExceedPercent = parameterService.getInt(ParameterConstants.ROUTING_MAX_BATCH_SIZE_EXCEED_PERCENT);
             if (maxBatchSizeExceedPercent > 0) {
                 context.setBatchSizeNotToExceed((int) (nodeChannel.getMaxBatchSize() * (1 + (maxBatchSizeExceedPercent / 100f))));
             }
-            if (overrideBatchesByNodes != null) {
-                context.getBatchesByNodes().putAll(overrideBatchesByNodes);
-            }
-            if (overrideBatchesByGroups != null) {
-                context.getBatchesByGroups().putAll(overrideBatchesByGroups);
-            }
-            dataCount = selectDataAndRoute(processInfo, context);
+            dataCount = selectDataAndRoute(processInfo, nodeCommunication, context);
             return dataCount;
         } catch (DelayRoutingException ex) {
             log.info("The routing process for the {} channel is being delayed.  {}", nodeChannel.getChannelId(), isNotBlank(ex.getMessage()) ? ex.getMessage()
@@ -520,34 +576,14 @@ public class RouterService extends AbstractService implements IRouterService {
         } catch (ProtocolException ex) {
             if (context != null) {
                 context.rollback();
-                dataCount = context.getCommittedDataEventCount();
-            }
-            if (isOverrideContainsBigLob) {
-                log.error(String.format("Failed to route and batch data on '%s' channel", nodeChannel.getChannelId()), ex);
-                return context.getCommittedDataEventCount();
-            } else if (context != null) {
-                Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>(context.getBatchesByNodes());
-                Map<Integer, Map<String, OutgoingBatch>> batchesByGroups = new HashMap<Integer, Map<String, OutgoingBatch>>(context.getBatchesByGroups());
-                long batchId = -1;
-                for (OutgoingBatch batch : batchesByNodes.values()) {
-                    batch.resetRouterStats();
-                    batchId = batch.getBatchId();
+                if (!nodeChannel.getChannel().isContainsBigLob() && !context.isOverrideContainsBigLob()) {
+                    log.info("Re-attempting routing with contains_big_lobs temporarily enabled for channel {}", nodeChannel.getChannelId());
+                    context.setOverrideContainsBigLob(true);
+                    dataCount = 0;
+                    return routeDataForChannel(processInfo, nodeChannel, sourceNode, nodeCommunication, context);
                 }
-                for (Map<String, OutgoingBatch> groupBatches : batchesByGroups.values()) {
-                    for (OutgoingBatch batch : groupBatches.values()) {
-                        batch.resetRouterStats();
-                        batchId = batch.getBatchId();
-                    }
-                }
-                log.info("Re-attempting routing for batch {} with contains_big_lobs temporarily enabled for channel {}",
-                        batchId, nodeChannel.getChannelId());
-                dataCount = 0;
-                gapDetector.addDataIds(context.getDataIds());
-                gapDetector.afterRouting();
-                gapDetector.beforeRouting();
-                long dataCountWithBigLob = routeDataForChannel(processInfo, nodeChannel, sourceNode, true, batchesByNodes, batchesByGroups);
-                dataCount = context.getCommittedDataEventCount() + dataCountWithBigLob;
             }
+            log.error(String.format("Failed to route and batch data on '%s' channel", nodeChannel.getChannelId()), ex);
         } catch (CommonBatchCollisionException e) {
             log.info(e.getMessage());
             gapDetector.setIsAllDataRead(false);
@@ -590,6 +626,8 @@ public class RouterService extends AbstractService implements IRouterService {
                     // rolled back as exception, but let gap detector know about what was committed before halting
                     gapDetector.addDataIds(context.getDataIds());
                     gapDetector.setIsAllDataRead(false);
+                } else if (context.getUncommittedDataIds().size() > 0) {
+                    context.commitOnlyPrerouted();
                 }
             } catch (Exception e) {
                 if (context != null) {
@@ -705,7 +743,7 @@ public class RouterService extends AbstractService implements IRouterService {
      * @param context
      *            The current context of the routing process
      */
-    protected long selectDataAndRoute(ProcessInfo processInfo, ChannelRouterContext context) throws InterruptedException {
+    protected long selectDataAndRoute(ProcessInfo processInfo, NodeCommunication nodeCommunication, ChannelRouterContext context) throws InterruptedException {
         IDataToRouteReader reader = startReading(context);
         Data data = null;
         Data nextData = null;
@@ -765,7 +803,9 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                         long routeTs = System.currentTimeMillis() - ts;
                         if (routeTs > LOG_PROCESS_SUMMARY_THRESHOLD) {
-                            engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
+                            if (!useChannelThreading) {
+                                engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
+                            }
                             log.info("Routing channel '{}' for {} seconds, "
                                     + "routedCount={}, dataEventCount={}, startDataId={}, endDataId={}, readCount={}, peekAheadFillCount={}, dataGaps={}",
                                     context.getChannel().getChannelId(), ((System.currentTimeMillis() - startTime) / 1000), totalDataCount, totalDataEventCount,
