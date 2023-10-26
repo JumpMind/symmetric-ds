@@ -413,6 +413,9 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             case PUSH:
                 threadCountParameter = ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER;
                 break;
+            case ROUTE:
+                threadCountParameter = ParameterConstants.ROUTING_THREAD_COUNT_PER_SERVER;
+                break;
             case OFFLN_PULL:
                 threadCountParameter = ParameterConstants.OFFLINE_PULL_THREAD_COUNT_PER_SERVER;
                 break;
@@ -485,6 +488,9 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 break;
             case PUSH:
                 parameter = ParameterConstants.PUSH_LOCK_TIMEOUT_MS;
+                break;
+            case ROUTE:
+                parameter = ParameterConstants.ROUTING_LOCK_TIMEOUT_MS;
                 break;
             case OFFLN_PULL:
                 parameter = ParameterConstants.OFFLINE_PULL_LOCK_TIMEOUT_MS;

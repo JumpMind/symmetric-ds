@@ -169,6 +169,15 @@ public class ChannelRouterContext extends SimpleRouterContext {
         }
     }
 
+    public void commitOnlyPrerouted() {
+        dataIds.addAll(uncommittedDataIds);
+        clearState();
+    }
+
+    public List<Long> getUncommittedDataIds() {
+        return uncommittedDataIds;
+    }
+
     protected void clearState() {
         this.usedDataRouters.clear();
         this.timesByRouter.clear();

@@ -541,7 +541,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     }
 
     @Override
-    public void addDataIds(List<Long> dataIds) {
+    public synchronized void addDataIds(List<Long> dataIds) {
         this.dataIds.addAll(dataIds);
     }
 

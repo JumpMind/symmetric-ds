@@ -101,8 +101,7 @@ public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
                             "Timed out after %sms", timeout));
                 }
             } catch (java.lang.InterruptedException e) {
-                throw new InterruptedException(String.format(
-                        "Timed out after %sms", timeout));
+                throw new InterruptedException(e);
             }
         }
     }
