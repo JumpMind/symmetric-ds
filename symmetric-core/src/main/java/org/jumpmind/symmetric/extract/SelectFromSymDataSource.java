@@ -156,7 +156,7 @@ public class SelectFromSymDataSource extends SelectFromSource {
                     data.setNoBinaryOldData(requiresLobSelectedFromSource || dialectHasNoOldBinaryData);
                     outgoingBatch.incrementExtractRowCount();
                     outgoingBatch.incrementExtractRowCount(data.getDataEventType());
-                    if (!containsBigLob && (data.getDataEventType().equals(DataEventType.INSERT) || data.getDataEventType().equals(DataEventType.UPDATE))) {
+                    if (data.getDataEventType().equals(DataEventType.INSERT) || data.getDataEventType().equals(DataEventType.UPDATE)) {
                         int expectedCommaCount = triggerHistory.getParsedColumnNames().length;
                         int commaCount = StringUtils.countMatches(data.getRowData(), ",") + 1;
                         if (commaCount < expectedCommaCount) {
