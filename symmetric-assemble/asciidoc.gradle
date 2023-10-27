@@ -19,6 +19,7 @@ task downloadJars {
 	doFirst{
 		println("Downloading jars for docs...")
 		def previousURL = String.format(downloadURLCore, latestPreviousVersion, latestPreviousVersion)
+		new File(symAssembleDir + '/build').mkdirs()
 		new File(symAssembleDir + '/build/docJars').mkdirs()
 		def out = new BufferedOutputStream(new FileOutputStream(symAssembleDir + '/build/docJars/download-core-' + latestPreviousVersion + '.zip'))
 		out << new URL(previousURL).openStream()
