@@ -35,3 +35,23 @@ endif::pro[]
 From the command line you can use the symadmin utility to uninstall a node.
 
 `bin/symadmin --engine <engine name> uninstall`
+
+===== Changing a Node's Priority
+Setting a node's priority to high means that the node will always be able to reserve a connection with the current node regardless of how busy it is. The priority settings will last until SymmetricDS restarts.
+
+WARNING: Setting too many nodes to high priority can starve the node of database connections.
+
+ifdef::pro[]
+To change a node's priority from normal to high or vice-versa, select the node and click on the *Control* button and choose *Toggle Priority*.
+endif::pro[]
+
+From the command line, you can use JMX to change a node's priority. Below are examples of how to increase priority, decrease priority, and get the list of prioritized node IDs.
+
+[source, cli]
+----
+bin/jmx --engine <engine name> --bean org.jumpmind.symmetric.<engine name>:name=Node --method addNodeToWhiteList --args "<node ID to prioritize>"
+
+bin/jmx --engine <engine name> --bean org.jumpmind.symmetric.<engine name>:name=Node --method removeNodeFromWhiteList --args "<node ID to deprioritize>"
+
+bin/jmx --engine <engine name> --bean org.jumpmind.symmetric.<engine name>:name=Node --method getNodesInWhiteList
+----

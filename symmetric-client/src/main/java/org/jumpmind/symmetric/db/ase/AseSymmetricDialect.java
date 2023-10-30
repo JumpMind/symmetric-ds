@@ -234,6 +234,9 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                             ResultSet rs = null;
                             try {
                                 rs = stmt.executeQuery();
+                                if (rs.next()) {
+                                    return rs.getInt(1) > 0;
+                                }
                             } catch (Exception ex) {
                                 if (catalogName != null) {
                                     log.debug(
@@ -246,6 +249,9 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                                         log.debug("TRY AGAIN Exceute:  select count(*) from {}.dbo.sysobjects where type = 'TR' AND name ='{}'", catalogName,
                                                 triggerName);
                                         rs = stmt2.executeQuery();
+                                        if (rs.next()) {
+                                            return rs.getInt(1) > 0;
+                                        }
                                     } catch (Exception ex2) {
                                         log.error(String.format(
                                                 "Failed again with catalog... select count(*) from %s.dbo.sysobjects where type = 'TR' AND name = '%s'",
@@ -259,10 +265,6 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                                             "Detect trigger query failed. select count(*) from dbo.sysobjects where type = 'TR' AND name ='%s'", triggerName),
                                             ex);
                                 }
-                            }
-                            if (rs.next()) {
-                                int count = rs.getInt(1);
-                                return count > 0;
                             }
                         } finally {
                             if (catalogName != null) {

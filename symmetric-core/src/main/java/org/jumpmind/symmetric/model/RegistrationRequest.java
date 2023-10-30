@@ -29,7 +29,7 @@ public class RegistrationRequest implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public static enum RegistrationStatus {
-        OK, RQ, IG, RR, ER
+        OK, RQ, RJ, RR, ER
     };
 
     private String nodeGroupId;

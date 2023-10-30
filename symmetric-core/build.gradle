@@ -7,6 +7,7 @@ apply from: symAssembleDir + '/common.gradle'
         api project(":symmetric-util")
         api "org.eclipse.angus:jakarta.mail:$jakartaMailVersion"
         api "com.google.code.gson:gson:$gsonVersion"
+        api "com.google.guava:guava:$guavaVersion"
         api "org.springframework:spring-core:$springVersion"
         api "org.springframework:spring-beans:$springVersion"
         

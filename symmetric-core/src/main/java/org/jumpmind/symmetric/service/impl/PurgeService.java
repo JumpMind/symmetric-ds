@@ -533,7 +533,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         log.info("Purging registration requests that are older than {}", fastFormat.format(retentionCutoff.getTime()));
         long count = sqlTemplate.update(getSql("deleteRegistrationRequestSql"),
                 RegistrationRequest.RegistrationStatus.OK.name(),
-                RegistrationRequest.RegistrationStatus.IG.name(),
+                RegistrationRequest.RegistrationStatus.RJ.name(),
                 RegistrationRequest.RegistrationStatus.RR.name(), retentionCutoff.getTime());
         if (count > 0) {
             log.info("Purged {} registration requests", count);

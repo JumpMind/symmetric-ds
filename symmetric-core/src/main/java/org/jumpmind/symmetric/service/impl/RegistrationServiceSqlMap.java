@@ -64,7 +64,7 @@ public class RegistrationServiceSqlMap extends AbstractSqlMap {
                         + "  set attempt_count=?,                                                                                      "
                         + "  last_update_by=?, last_update_time=?, registered_node_id=?, status=?, error_message=?   "
                         + "  where                                                                                                 "
-                        + "  node_group_id=? and external_id=? and host_name=? and (status='RQ' or status='ER')                       ");
+                        + "  node_group_id=? and external_id=? and host_name=? and status in ('RQ','ER','RJ')");
         putSql("selectRegistrationRequestSql",
                 ""
                         + "select node_group_id, external_id, status, host_name, ip_address, error_message,     "

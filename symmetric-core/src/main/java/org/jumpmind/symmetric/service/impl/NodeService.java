@@ -1027,9 +1027,12 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     protected void fireOffline(List<Node> offlineClientNodeList) {
+        Node myNode = findIdentity();
         for (IOfflineServerListener listener : extensionService.getExtensionPointList(IOfflineServerListener.class)) {
             for (Node node : offlineClientNodeList) {
-                listener.clientNodeOffline(node);
+                if (myNode == null || !myNode.equals(node)) {
+                    listener.clientNodeOffline(node);
+                }
             }
         }
     }
