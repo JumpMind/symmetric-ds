@@ -68,6 +68,13 @@ Edit postgresql.conf and restart Postgres after changing:
    wal_level = logical
    max_replication_slots = 10
 
+If the SymmetricDS user is not a superuser, the following role attribute needs to be added:
+
+[source, Sql]
+----
+ALTER USER {SYMMETRICDS USER} REPLICATION
+----
+
 Replication of updates and deletes work as expected for tables with a primary key.
 For tables without a primary key, the user needs to set the REPLICA IDENTITY on the table to either USING INDEX
 to record columns from the named index or FULL to record all columns of the row.

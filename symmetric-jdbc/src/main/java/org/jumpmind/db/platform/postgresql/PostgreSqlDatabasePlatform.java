@@ -260,12 +260,24 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public PermissionResult getLogMinePermission() {
         PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "UNIMPLEMENTED");
         String walLevel = getSqlTemplate().queryForString("select current_setting('wal_level')");
-        if ("logical".equals(walLevel)) {
+        boolean hasReplicationPermission = getSqlTemplate().queryForInt(
+                "select count(*) from pg_roles where (rolsuper or rolreplication) and pg_has_role(current_user, oid, 'member')") > 0;
+        if ("logical".equals(walLevel) && hasReplicationPermission) {
             result.setStatus(Status.PASS);
         } else {
             result.setStatus(Status.FAIL);
-            result.setTestDetails(walLevel);
-            result.setSolution("Set wal_level to logical");
+            if (!"logical".equals(walLevel)) {
+                if (!hasReplicationPermission) {
+                    result.setTestDetails("wal_level=" + walLevel + ", missing REPLICATION role attribute");
+                    result.setSolution("Set wal_level to logical and grant the REPLICATION role attribute to the SymmetricDS user");
+                } else {
+                    result.setTestDetails(walLevel);
+                    result.setSolution("Set wal_level to logical");
+                }
+            } else {
+                result.setTestDetails("Missing REPLICATION role attribute");
+                result.setSolution("Grant the REPLICATION role attribute to the SymmetricDS user");
+            }
         }
         return result;
     }
