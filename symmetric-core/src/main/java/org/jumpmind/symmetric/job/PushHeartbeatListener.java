@@ -119,17 +119,17 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                     || (engine.getParameterService().isRegistrationServer() && !Version.version().equals(me.getConfigVersion()))
                     || !symmetricDialect.getName().equals(me.getDatabaseType())
                     || !symmetricDialect.getVersion().equals(me.getDatabaseVersion())
-                    || me.getBatchInErrorCount() != batchInErrorCount
-                    || me.getBatchToSendCount() != outgoingUnsentCount
-                    || me.getLastSuccessfulSyncDate() != lastSuccessfulSyncTime
-                    || me.getMostRecentActiveTableSynced() != mostRecentActiveTableSynced
-                    || me.getPurgeOutgoingLastMs() != purgeOutgoingLastMs
-                    || me.getPurgeOutgoingLastRun() != purgeOutgoingLastRun
-                    || me.getPurgeOutgoingAverageMs() != purgeOutgoingAverage
-                    || me.getRoutingAverageMs() != routingAveragetMs
-                    || me.getRoutingLastRun() != routingLastRun
-                    || me.getRoutingLastMs() != routingLastMs
-                    || me.getSymDataSize() != symDataSize) {
+                    || (updateWithBatchStatus && (me.getBatchInErrorCount() != batchInErrorCount
+                            || me.getBatchToSendCount() != outgoingUnsentCount
+                            || me.getLastSuccessfulSyncDate() != lastSuccessfulSyncTime
+                            || me.getMostRecentActiveTableSynced() != mostRecentActiveTableSynced
+                            || me.getPurgeOutgoingLastMs() != purgeOutgoingLastMs
+                            || me.getPurgeOutgoingLastRun() != purgeOutgoingLastRun
+                            || me.getPurgeOutgoingAverageMs() != purgeOutgoingAverage
+                            || me.getRoutingAverageMs() != routingAveragetMs
+                            || me.getRoutingLastRun() != routingLastRun
+                            || me.getRoutingLastMs() != routingLastMs
+                            || me.getSymDataSize() != symDataSize))) {
                 log.info("Some attribute(s) of node changed.  Recording changes");
                 me.setDeploymentType(engine.getDeploymentType());
                 me.setDeploymentSubType(engine.getDeploymentSubType());
