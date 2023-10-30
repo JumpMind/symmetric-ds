@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.extract;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -37,19 +38,24 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 
 public class ColumnsAccordingToTriggerHistory {
+    private static Map<String, Map<String, Table>> cacheByEngine = new ConcurrentHashMap<String, Map<String, Table>>();
     private Map<CacheKey, Table> cache = new HashMap<CacheKey, Table>();
+    private ISymmetricEngine engine;
     private Node sourceNode;
     private Node targetNode;
     private ITriggerRouterService triggerRouterService;
     private ISymmetricDialect symmetricDialect;
     private String tablePrefix;
+    private boolean isUsingTargetExternalId;
 
     public ColumnsAccordingToTriggerHistory(ISymmetricEngine engine, Node sourceNode, Node targetNode) {
+        this.engine = engine;
         triggerRouterService = engine.getTriggerRouterService();
         symmetricDialect = engine.getSymmetricDialect();
         tablePrefix = engine.getTablePrefix().toLowerCase();
         this.sourceNode = sourceNode;
         this.targetNode = targetNode;
+        isUsingTargetExternalId = engine.getCacheManager().isUsingTargetExternalId(false);
     }
 
     public Table lookup(String routerId, TriggerHistory triggerHistory, boolean setTargetTableName,
@@ -73,19 +79,11 @@ public class ColumnsAccordingToTriggerHistory {
         String tableNameLowerCase = triggerHistory.getSourceTableNameLowerCase();
         Table table = null;
         if (useDatabaseDefinition) {
-            table = getTargetPlatform(tableNameLowerCase).getTableFromCache(catalogName, schemaName, tableName, false);
-            if (table != null && table.getColumnCount() < triggerHistory.getParsedColumnNames().length) {
-                /*
-                 * If the column count is less than what trigger history reports, then chances are the table cache is out of date.
-                 */
-                table = getTargetPlatform(tableNameLowerCase).getTableFromCache(catalogName, schemaName, tableName, true);
-            }
-            if (table != null) {
-                table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
-                        triggerHistory.getParsedPkColumnNames(), true, addMissingColumns);
+            if (isUsingTargetExternalId && !tableName.startsWith(tablePrefix)) {
+                table = lookupTableExpanded(getTargetPlatform(tableNameLowerCase), catalogName, schemaName, tableName, triggerHistory,
+                        addMissingColumns);
             } else {
-                throw new SymmetricException("Could not find the following table.  It might have been dropped: %s",
-                        Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
+                table = lookupTable(getTargetPlatform(tableNameLowerCase), catalogName, schemaName, tableName, triggerHistory, addMissingColumns);
             }
         } else {
             table = new Table(tableName);
@@ -130,6 +128,58 @@ public class ColumnsAccordingToTriggerHistory {
 
     protected IDatabasePlatform getTargetPlatform(String tableName) {
         return tableName.startsWith(tablePrefix) ? symmetricDialect.getPlatform() : symmetricDialect.getTargetDialect().getPlatform();
+    }
+
+    protected Table lookupTable(IDatabasePlatform platform, String catalogName, String schemaName, String tableName, TriggerHistory triggerHistory,
+            boolean addMissingColumns) {
+        Table table = platform.getTableFromCache(catalogName, schemaName, tableName, false);
+        if (table != null && table.getColumnCount() < triggerHistory.getParsedColumnNames().length) {
+            /*
+             * If the column count is less than what trigger history reports, then chances are the table cache is out of date.
+             */
+            table = platform.getTableFromCache(catalogName, schemaName, tableName, true);
+        }
+        if (table != null) {
+            table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
+                    triggerHistory.getParsedPkColumnNames(), true, addMissingColumns);
+        } else {
+            throw new SymmetricException("Could not find the following table.  It might have been dropped: %s",
+                    Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
+        }
+        return table;
+    }
+
+    protected Table lookupTableExpanded(IDatabasePlatform platform, String catalogName, String schemaName, String tableName,
+            TriggerHistory triggerHistory, boolean addMissingColumns) {
+        Table table = null;
+        if (!tableName.contains(targetNode.getExternalId())) {
+            table = lookupTable(platform, catalogName, schemaName, tableName, triggerHistory, addMissingColumns);
+        } else {
+            String baseTableName = tableName.replace(targetNode.getExternalId(), "") + (addMissingColumns ? "-t" : "-f");
+            Map<String, Table> sourceTableMap = getSourceTableMap(engine.getEngineName());
+            table = sourceTableMap.get(baseTableName);
+            if (table == null) {
+                table = lookupTable(platform, catalogName, schemaName, tableName, triggerHistory, addMissingColumns);
+                sourceTableMap.put(baseTableName, table);
+            }
+            if (table != null) {
+                try {
+                    table = (Table) table.clone();
+                    table.setName(tableName);
+                } catch (CloneNotSupportedException e) {
+                }
+            }
+        }
+        return table;
+    }
+
+    protected Map<String, Table> getSourceTableMap(String engineName) {
+        Map<String, Table> map = cacheByEngine.get(engineName);
+        if (map == null) {
+            map = new ConcurrentHashMap<String, Table>();
+            cacheByEngine.put(engineName, map);
+        }
+        return map;
     }
 
     static class CacheKey {

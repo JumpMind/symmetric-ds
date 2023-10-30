@@ -1160,8 +1160,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
     @Override
     protected Table lookupTableAtTarget(Table sourceTable) {
-        String tableNameKey = sourceTable.getTableKey();
-        Table table = targetTables.get(tableNameKey);
+        String tableNameKey = getTableKey(sourceTable);
+        Table table = lookupTableFromCache(sourceTable, tableNameKey);
         if (table == null) {
             try {
                 table = getPlatform(sourceTable).getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
@@ -1182,7 +1182,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                             }
                         }
                     }
-                    targetTables.put(tableNameKey, table);
+                    putTableInCache(tableNameKey, table);
                 }
             } catch (SqlException sqle) {
                 // TODO: is there really a "does not exist" exception or should this be removed? copied from AbstractJdbcDdlReader.readTable()
@@ -1192,6 +1192,18 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             }
         }
         return table;
+    }
+
+    protected String getTableKey(Table table) {
+        return table.getTableKey();
+    }
+
+    protected Table lookupTableFromCache(Table sourceTable, String tableKey) {
+        return targetTables.get(tableKey);
+    }
+
+    protected void putTableInCache(String tableKey, Table table) {
+        targetTables.put(tableKey, table);
     }
 
     public DmlStatement getCurrentDmlStatement() {

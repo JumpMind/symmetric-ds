@@ -1039,7 +1039,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     }
 
     public String getTableKey() {
-        return getFullyQualifiedTableName() + "-" + calculateTableHashcode();
+        return getFullyQualifiedTableName() + "-" + calculateTableLiteHashcode();
     }
 
     public boolean containsLobColumns(IDatabasePlatform platform) {
@@ -1419,20 +1419,28 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     }
 
     public int calculateTableHashcode() {
+        return calculateTableHashcode(true);
+    }
+
+    public int calculateTableLiteHashcode() {
+        return calculateTableHashcode(false);
+    }
+
+    protected int calculateTableHashcode(boolean includeTypes) {
         final int PRIME = 31;
         int result = 1;
         result = PRIME * result + name.hashCode();
-        result = PRIME * result + calculateHashcodeForColumns(PRIME, getColumns());
-        result = PRIME * result + calculateHashcodeForColumns(PRIME, getPrimaryKeyColumns());
+        result = PRIME * result + calculateHashcodeForColumns(PRIME, getColumns(), includeTypes);
+        result = PRIME * result + calculateHashcodeForColumns(PRIME, getPrimaryKeyColumns(), includeTypes);
         return result;
     }
 
-    private static int calculateHashcodeForColumns(final int PRIME, Column[] cols) {
+    private static int calculateHashcodeForColumns(final int PRIME, Column[] cols, boolean includeTypes) {
         int result = 1;
         if (cols != null && cols.length > 0) {
             for (Column column : cols) {
                 result = PRIME * result + column.getName().hashCode();
-                if (column.getMappedType() != null) {
+                if (includeTypes && column.getMappedType() != null) {
                     result = PRIME * result + column.getMappedType().hashCode();
                 }
                 result = PRIME * result + column.getSizeAsInt();
