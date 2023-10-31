@@ -50,8 +50,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -2943,7 +2943,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected List<TriggerHistory> getMultipleActiveTriggerHistories() {
-        if (getTargetPlatform() instanceof AseDatabasePlatform) {
+        if (DatabaseNamesConstants.ASE.equals(getTargetPlatform().getName())) {
             List<TriggerHistory> activeHistoryList = getActiveTriggerHistories();
             List<SimpleTriggerHistory> activeSimpleHistoryList = new ArrayList<SimpleTriggerHistory>();
             for (TriggerHistory history : activeHistoryList) {
