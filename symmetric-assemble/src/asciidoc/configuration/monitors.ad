@@ -87,6 +87,8 @@ be compared to a threshold value.
 
 |lob|Number of tables that could store rows that are wider than the limit for data capture and have not been configured to account for these wide rows.|✔
 
+|strandedData|Number of stranded data rows detected by the <<Purge Outgoing Job>> and recorded in the <<NODE_HOST_STATS>> table within the past 4 hours.|✔
+
 |===
 
 Expression:: An expression used by the monitor to set options specific to the monitor type. For batchError monitors, setting the expression to
