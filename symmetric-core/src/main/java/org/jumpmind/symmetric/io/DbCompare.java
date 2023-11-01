@@ -250,7 +250,7 @@ public class DbCompare {
     protected String getSourceComparisonSQL(DbCompareTables tables, IDatabasePlatform platform) {
         String whereClause = config.getSourceWhereClause(tables.getSourceTable().getName());
         String sql = getComparisonSQL(tables.getSourceTable(),
-                tables.getSourceTable().getPrimaryKeyColumns(), platform, whereClause);
+                tables.getSourceTable().getPrimaryKeyColumns(), platform, whereClause, true);
         log.info("Source comparison SQL: {}", sql);
         return sql;
     }
@@ -266,12 +266,14 @@ public class DbCompare {
             }
         }
         String whereClause = config.getTargetWhereClause(tables.getTargetTable().getName());
-        String sql = getComparisonSQL(tables.getTargetTable(), tables.getTargetTable().getPrimaryKeyColumns(), platform, whereClause);
+        String sql = getComparisonSQL(tables.getTargetTable(), tables.getTargetTable().getPrimaryKeyColumns(), platform,
+                whereClause, false);
         log.info("Target comparison SQL: {}", sql);
         return sql;
     }
 
-    protected String getComparisonSQL(Table table, Column[] sortByColumns, IDatabasePlatform platform, String whereClause) {
+    protected String getComparisonSQL(Table table, Column[] sortByColumns, IDatabasePlatform platform,
+            String whereClause, boolean isSource) {
         DmlStatement statement = platform.createDmlStatement(DmlType.SELECT,
                 table.getCatalog(), table.getSchema(), table.getName(),
                 null, table.getColumns(),
@@ -280,17 +282,27 @@ public class DbCompare {
         sql.setLength(sql.length() - "where ".length()); // remove the trailing where so we can insert a table alias.
         sql.append(" t where "); // main table alias.
         sql.append(whereClause).append(" ");
-        sql.append(buildOrderBy(table, sortByColumns, platform));
+        sql.append(buildOrderBy(table, sortByColumns, platform, isSource));
         return sql.toString();
     }
 
-    protected String buildOrderBy(Table table, Column[] sortByColumns, IDatabasePlatform platform) {
+    protected String buildOrderBy(Table table, Column[] sortByColumns, IDatabasePlatform platform, boolean isSource) {
         DatabaseInfo databaseInfo = platform.getDatabaseInfo();
         String quote = databaseInfo.getDelimiterToken() == null ? "" : databaseInfo.getDelimiterToken();
         StringBuilder orderByClause = new StringBuilder("ORDER BY ");
         for (Column sortByColumn : sortByColumns) {
-            String columnName = new StringBuilder(quote).append(sortByColumn.getName()).append(quote).toString();
-            orderByClause.append(columnName);
+            String columnName = sortByColumn.getName();
+            String quotedColumnName = new StringBuilder(quote).append(columnName).append(quote).toString();
+            orderByClause.append(quotedColumnName);
+            String suffix;
+            if (isSource) {
+                suffix = config.getSourceOrderBySuffix(table.getName(), columnName);
+            } else {
+                suffix = config.getTargetOrderBySuffix(table.getName(), columnName);
+            }
+            if (StringUtils.isNotBlank(suffix)) {
+                orderByClause.append(" ").append(suffix);
+            }
             orderByClause.append(",");
         }
         orderByClause.setLength(orderByClause.length() - 1);

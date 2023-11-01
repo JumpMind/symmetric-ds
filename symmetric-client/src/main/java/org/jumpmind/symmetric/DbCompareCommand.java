@@ -93,7 +93,8 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         if (targetTables != null) {
             config.setTargetTableNames(Arrays.asList(targetTables.split(",")));
         }
-        config.setWhereClauses(parseWhereClauses(line));
+        config.setWhereClauses(parseProperty(line, DbCompareConfig.WHERE_CLAUSE));
+        config.setOrderBySuffixes(parseProperty(line, DbCompareConfig.ORDER_BY_SUFFIX));
         config.setTablesToExcludedColumns(parseExcludedColumns(line));
         String sourceTables = getOptionValue(OPTION_SOURCE_TABLES, "sourceTableNames", line, config);
         if (sourceTables == null && !CollectionUtils.isEmpty(line.getArgList())) {
@@ -208,18 +209,18 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_CONTINUE_AFTER_ERROR, true);
     }
 
-    protected Map<String, String> parseWhereClauses(CommandLine line) {
+    protected Map<String, String> parseProperty(CommandLine line, String propertyName) {
         Properties props = getConfigProperties(line);
-        Map<String, String> whereClauses = new HashMap<String, String>();
+        Map<String, String> valueMap = new HashMap<String, String>();
         if (props != null) {
             for (Object key : props.keySet()) {
                 String arg = key.toString();
-                if (arg.endsWith(DbCompareConfig.WHERE_CLAUSE)) {
-                    whereClauses.put(arg, props.getProperty(arg));
+                if (arg.endsWith(propertyName)) {
+                    valueMap.put(arg, props.getProperty(arg));
                 }
             }
         }
-        return whereClauses;
+        return valueMap;
     }
 
     protected Map<String, List<String>> parseExcludedColumns(CommandLine line) {
