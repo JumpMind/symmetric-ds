@@ -71,45 +71,46 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
     }
 
     public int getCpuUsage() {
-        int cpuUsage = 0;
         int pid = getProcessId();
         if (pid >= 0 && (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_LINUX)) {
             if (SystemUtils.IS_OS_WINDOWS) {
-                String line = runCommand(3, "powershell", "-Command", "Get-WmiObject -Query " +
-                        "\\\"Select * from Win32_PerfFormattedData_PerfProc_Process where IDProcess = " + pid +
-                        "\\\" | Select-Object -Property PercentProcessorTime");
-                cpuUsage = Integer.parseInt(line.replace(" ", ""));
+                String line = runCommand(3, "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", "-Command",
+                        "Get-WmiObject -Query "
+                                + "\\\"Select * from Win32_PerfFormattedData_PerfProc_Process where IDProcess = " + pid
+                                + "\\\" | Select-Object -Property PercentProcessorTime");
+                if (line != null) {
+                    return Math.min(Integer.parseInt(line.replace(" ", "")), 100);
+                }
             } else if (SystemUtils.IS_OS_MAC) {
                 String line = runCommand(25, "top", "-l2", "-pid", String.valueOf(pid));
-                String[] fields = line.trim().split("\\s+");
-                if (fields.length > 2) {
-                    cpuUsage = (int) Float.parseFloat(fields[2]);
+                if (line != null) {
+                    String[] fields = line.trim().split("\\s+");
+                    if (fields.length > 2) {
+                        return Math.min((int) Float.parseFloat(fields[2]), 100);
+                    }
                 }
             } else {
                 String line = runCommand(7, "top", "-bn1", "-p", String.valueOf(pid));
-                String[] fields = line.trim().split("\\s+");
-                if (fields.length > 9) {
-                    cpuUsage = (int) Float.parseFloat(fields[8]);
+                if (line != null) {
+                    String[] fields = line.trim().split("\\s+");
+                    if (fields.length > 9) {
+                        return Math.min((int) Float.parseFloat(fields[8]), 100);
+                    }
                 }
             }
-        } else {
-            int availableProcessors = osBean.getAvailableProcessors();
-            long prevUpTime = runtimeBean.getUptime();
-            long prevProcessCpuTime = getProcessCpuTime();
-            try {
-                Thread.sleep(500);
-            } catch (Exception ignore) {
-            }
-            long upTime = runtimeBean.getUptime();
-            long processCpuTime = getProcessCpuTime();
-            long elapsedCpu = processCpuTime - prevProcessCpuTime;
-            long elapsedTime = upTime - prevUpTime;
-            cpuUsage = (int) (elapsedCpu / (elapsedTime * 1000f * availableProcessors));
         }
-        if (cpuUsage > 100) {
-            cpuUsage = 100;
+        int availableProcessors = osBean.getAvailableProcessors();
+        long prevUpTime = runtimeBean.getUptime();
+        long prevProcessCpuTime = getProcessCpuTime();
+        try {
+            Thread.sleep(500);
+        } catch (Exception ignore) {
         }
-        return cpuUsage;
+        long upTime = runtimeBean.getUptime();
+        long processCpuTime = getProcessCpuTime();
+        long elapsedCpu = processCpuTime - prevProcessCpuTime;
+        long elapsedTime = upTime - prevUpTime;
+        return Math.min((int) (elapsedCpu / (elapsedTime * 1000f * availableProcessors)), 100);
     }
 
     protected int getProcessId() {
@@ -163,7 +164,7 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
                 System.err.println(e.getMessage());
                 e.printStackTrace();
             }
-            if (cmdOutput != null && cmdOutput.size() > 0) {
+            if (cmdOutput != null && cmdOutput.size() > lineNumber) {
                 ret = cmdOutput.get(lineNumber);
             }
         }
