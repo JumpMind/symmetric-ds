@@ -21,9 +21,9 @@
 package org.jumpmind.symmetric.io;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,13 +33,10 @@ import org.slf4j.LoggerFactory;
  */
 public class DefaultOfflineClientListener implements IOfflineClientListener, IBuiltInExtensionPoint {
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    protected IParameterService parameterService;
-    protected INodeService nodeService;
+    protected ISymmetricEngine engine;
 
-    public DefaultOfflineClientListener(IParameterService parameterService,
-            INodeService nodeService) {
-        this.parameterService = parameterService;
-        this.nodeService = nodeService;
+    public DefaultOfflineClientListener(ISymmetricEngine engine) {
+        this.engine = engine;
     }
 
     public void busy(Node remoteNode) {
@@ -55,11 +52,13 @@ public class DefaultOfflineClientListener implements IOfflineClientListener, IBu
     }
 
     public void syncDisabled(Node remoteNode) {
+        INodeService nodeService = engine.getNodeService();
         Node identity = nodeService.findIdentity();
-        if (identity != null && identity.getCreatedAtNodeId() != null
-                && identity.getCreatedAtNodeId().equals(remoteNode.getNodeId())) {
-            log.warn("Removing identity because sync has been disabled");
-            nodeService.deleteIdentity();
+        if (identity != null && ((identity.getCreatedAtNodeId() != null
+                && identity.getCreatedAtNodeId().equals(remoteNode.getNodeId()))
+                || engine.getConfigurationService().isMasterToMaster())) {
+            log.warn("Uninstalling node because sync has been disabled");
+            engine.uninstall();
         }
     }
 

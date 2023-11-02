@@ -942,8 +942,8 @@ public class NodeService extends AbstractService implements INodeService {
         long offlineNodeDetectionMinutes = parameterService.getLong(ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES);
         List<IOfflineServerListener> offlineServerListeners = extensionService.getExtensionPointList(IOfflineServerListener.class);
         // Only check for offline nodes if there is a listener and the
-        // offline detection period is a positive value. The default value
-        // of -1 disables the feature.
+        // offline detection period is a positive value. A negative value
+        // disables the feature.
         if (offlineServerListeners != null && offlineNodeDetectionMinutes > 0) {
             List<Node> list = findOfflineNodes();
             if (list.size() > 0) {
@@ -1030,8 +1030,16 @@ public class NodeService extends AbstractService implements INodeService {
         Node myNode = findIdentity();
         for (IOfflineServerListener listener : extensionService.getExtensionPointList(IOfflineServerListener.class)) {
             for (Node node : offlineClientNodeList) {
-                if (myNode == null || !myNode.equals(node)) {
-                    listener.clientNodeOffline(node);
+                if (myNode != null && !myNode.equals(node)) {
+                    String myNodeId = myNode.getNodeId();
+                    if (myNodeId.equals(node.getCreatedAtNodeId())) {
+                        listener.clientNodeOffline(node);
+                    } else {
+                        NodeSecurity security = findNodeSecurity(node.getNodeId());
+                        if (security != null && myNodeId.equals(security.getCreatedAtNodeId())) {
+                            listener.clientNodeOffline(node);
+                        }
+                    }
                 }
             }
         }
