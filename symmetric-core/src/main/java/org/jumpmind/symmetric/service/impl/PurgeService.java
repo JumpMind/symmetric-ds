@@ -711,7 +711,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
      *            List of expired data gaps to avoid
      * @return
      */
-    protected long[] getMinMaxAvoidGaps(long minId, long maxId, List<DataGap> dataGapsExpired) {
+    public static long[] getMinMaxAvoidGaps(long minId, long maxId, List<DataGap> dataGapsExpired) {
         if (dataGapsExpired.size() > 0) {
             Iterator<DataGap> iter = dataGapsExpired.iterator();
             while (iter.hasNext()) {
@@ -730,8 +730,9 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     // range is completely inside the gap
                     if (maxId <= gap.getEndId()) {
                         maxId = -(gap.getEndId() + 1);
+                        break;
                     }
-                    break;
+                    iter.remove();
                 }
             }
         }
