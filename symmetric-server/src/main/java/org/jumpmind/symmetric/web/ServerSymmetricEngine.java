@@ -107,6 +107,7 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
         this.uriHandlers.add(new FileSyncPullUriHandler(this, add(customInterceptors, authInterceptor, concurrencyInterceptor)));
         this.uriHandlers.add(new FileSyncPushUriHandler(this, add(customInterceptors, authInterceptor, concurrencyInterceptor)));
         this.uriHandlers.add(new CopyNodeUriHandler(this, add(customInterceptors, authInterceptor)));
+        this.uriHandlers.add(new SnapshotUriHandler(this, customInterceptors));
         for (IServerSymmetricEngineLifecycle ext : extensionService.getExtensionPointList(IServerSymmetricEngineLifecycle.class)) {
             ext.initServer(this, uriHandlers, customInterceptors, authInterceptor, concurrencyInterceptor);
         }
