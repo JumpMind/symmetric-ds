@@ -37,6 +37,7 @@ import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
@@ -156,20 +157,37 @@ public class SelectFromSymDataSource extends SelectFromSource {
                     data.setNoBinaryOldData(requiresLobSelectedFromSource || dialectHasNoOldBinaryData);
                     outgoingBatch.incrementExtractRowCount();
                     outgoingBatch.incrementExtractRowCount(data.getDataEventType());
-                    if (data.getDataEventType().equals(DataEventType.INSERT) || data.getDataEventType().equals(DataEventType.UPDATE)) {
-                        int expectedCommaCount = triggerHistory.getParsedColumnNames().length;
-                        int commaCount = StringUtils.countMatches(data.getRowData(), ",") + 1;
-                        if (commaCount < expectedCommaCount) {
+                    if (data.getDataEventType() == DataEventType.INSERT || data.getDataEventType() == DataEventType.UPDATE) {
+                        int expectedColumnCount = triggerHistory.getParsedColumnNames().length;
+                        int columnCount = 0;
+                        boolean corrupted = false;
+                        if (outgoingBatch.getSqlCode() == ErrorConstants.PROTOCOL_VIOLATION_CODE) {
+                            columnCount = data.getParsedData(CsvData.ROW_DATA).length;
+                            corrupted = columnCount != expectedColumnCount;
+                        } else {
+                            columnCount = StringUtils.countMatches(data.getRowData(), ",") + 1;
+                            corrupted = columnCount < expectedColumnCount;
+                        }
+                        if (corrupted) {
                             String message = "The extracted row for table %s had %d columns but expected %d.  ";
                             if (containsBigLob) {
-                                message += "Corrupted row for data ID " + data.getDataId() + ": " + data.getRowData();
+                                message += "Trigger history " + triggerHistory.getTriggerHistoryId() + " has columns: " + triggerHistory.getColumnNames() +
+                                        ".  Corrupted row for data ID " + data.getDataId() + ": " + data.getRowData();
                             } else {
                                 message += "If this happens often, it might be better to isolate the table with sym_channel.contains_big_lobs enabled.";
                             }
-                            throw new ProtocolException(message, data.getTableName(), commaCount, expectedCommaCount);
+                            throw new ProtocolException(message, data.getTableName(), columnCount, expectedColumnCount);
                         }
-                    }
-                    if (data.getDataEventType() == DataEventType.CREATE && StringUtils.isBlank(data.getCsvData(CsvData.ROW_DATA))) {
+                    } else if (data.getDataEventType() == DataEventType.DELETE && outgoingBatch.getSqlCode() == ErrorConstants.PROTOCOL_VIOLATION_CODE) {
+                        int expectedColumnCount = triggerHistory.getParsedPkColumnNames().length;
+                        int columnCount = data.getParsedData(CsvData.PK_DATA).length;
+                        if (columnCount != expectedColumnCount) {
+                            String message = "The extracted row for table %s had %d pk columns but expected %d.  " +
+                                    "Trigger history " + triggerHistory.getTriggerHistoryId() + " has pk columns: " + triggerHistory.getPkColumnNames() +
+                                    ".  Corrupted row for data ID " + data.getDataId() + ": " + data.getPkData();
+                            throw new ProtocolException(message, data.getTableName(), columnCount, expectedColumnCount);
+                        }
+                    } else if (data.getDataEventType() == DataEventType.CREATE && StringUtils.isBlank(data.getCsvData(CsvData.ROW_DATA))) {
                         if (!processCreateEvent(triggerHistory, routerId, data)) {
                             return null;
                         }
