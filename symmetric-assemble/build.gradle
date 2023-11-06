@@ -170,14 +170,13 @@ task generateJavadoc(type: Javadoc) {
 task publishJavadoc {
     dependsOn generateJavadoc
 	group = 'SymmetricDS'
-	description = 'Publish javadoc to SymmetricDS website'
+	description = 'Publish javadoc to SourceForge website'
     doLast {
         ant.taskdef(name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
         classpath: configurations.sshAntTask.asPath)
 
         ant.scp(
-            todir: "$publishUser:$publishPassword@$publishServer:~/www/doc/$majorMinorVersion",
-            port: "$publishPort",
+            todir: "$sourceforgeUser:$sourceforgePassword@web.sourceforge.net:/home/project-web/symmetricds/htdocs/doc/$majorMinorVersion",
             trust: 'true',
             verbose: 'true') {
             fileset(dir: "$buildDir/doc") { include(name: 'javadoc/')
