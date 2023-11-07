@@ -129,11 +129,13 @@ public class StatisticService extends AbstractService implements IStatisticServi
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT });
     }
 
+    public List<HostStats> getHostStatsForPeriod(Date start, Date end, String nodeId) {
+        return sqlTemplate.query(getSql("selectHostStatsSql"), new HostStatsMapper(), start, end, nodeId);
+    }
+
     public TreeMap<Date, HostStats> getHostStatsForPeriod(Date start, Date end, String nodeId,
             int periodSizeInMinutes) {
-        List<HostStats> list = sqlTemplate.query(getSql("selectHostStatsSql"),
-                new HostStatsMapper(), start, end, nodeId);
-        return new HostStatsByPeriodMap(start, end, list, periodSizeInMinutes);
+        return new HostStatsByPeriodMap(start, end, getHostStatsForPeriod(start, end, nodeId), periodSizeInMinutes);
     }
 
     public Date truncateToMinutes(Date date) {

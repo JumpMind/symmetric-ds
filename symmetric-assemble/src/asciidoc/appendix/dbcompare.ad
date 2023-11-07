@@ -46,7 +46,7 @@ A table name or list of comma separated table names must be included in order fo
 The *--help* option will display all the possible configurable parameters for the compare utility.
 Possible options include:
 
-- *--config <arg>* : A reference to a properties file path containing additional configuration arguments for dbcompare. This properties file allows you to include table specific configuration and specify arguments such as where_clause and exclude_columns. Where clauses in the file should be formatted as [table].[source|target].where_clause. For example, with a table called item, use item.where_clause=field > now()-2. If you do not specify a table before "where_clause", then it will be used on all tables. 
+- *--config <arg>* : A reference to a properties file path containing additional configuration arguments for dbcompare. This properties file allows you to include table specific configuration and specify arguments such as where_clause, order_by_suffix, and exclude_columns. Where clauses in the file should be formatted as [table].[source|target].where_clause. For example, with a table called item, use item.where_clause=field > now()-2. If you do not specify a table before "where_clause", then it will be used on all tables. The same concept applies to order by suffixes, which can also include a column name formatted as [table].[column].[source|target].order_by_suffix.
 
 ** Example of config properties file:
 

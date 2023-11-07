@@ -30,9 +30,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore.TrustedCertificateEntry;
 import java.security.PublicKey;
 import java.security.UnrecoverableKeyException;
@@ -133,6 +136,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String CMD_IMPORT_CONFIG = "import-config";
     private static final String CMD_EXPORT_CONFIG = "export-config";
     private static final String CMD_IMPORT_CERT = "import-cert";
+    private static final String CMD_TAKE_SNAPSHOT = "take-snapshot";
     private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES, CMD_ENCRYPT_TEXT, CMD_OBFUSCATE_TEXT, CMD_UNOBFUSCATE_TEXT, CMD_LIST_ENGINES,
             CMD_MODULE, CMD_BACKUP_FILE_CONFIGURATION, CMD_RESTORE_FILE_CONFIGURATION, CMD_CREATE_WAR };
     private static final String OPTION_NODE = "node";
@@ -222,6 +226,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             printHelpLine(pw, CMD_IMPORT_CONFIG);
             printHelpLine(pw, CMD_EXPORT_CONFIG);
             printHelpLine(pw, CMD_IMPORT_CERT);
+            printHelpLine(pw, CMD_TAKE_SNAPSHOT);
             pw.flush();
         }
     }
@@ -422,6 +427,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             return true;
         } else if (cmd.equals(CMD_IMPORT_CERT)) {
             importCert(line, args);
+            return true;
+        } else if (cmd.equals(CMD_TAKE_SNAPSHOT)) {
+            takeSnapshot(line, args);
             return true;
         } else {
             throw new ParseException("ERROR: no subcommand '" + cmd + "' was found.");
@@ -1206,6 +1214,66 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                     System.err.println("ERROR: Import failed");
                 }
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private void takeSnapshot(CommandLine line, List<String> args) {
+        String tmpDir = System.getProperty("java.io.tmpdir");
+        String secret = getSymmetricEngine().getSecurityService().nextSecureHexString(16);
+        File secretFile = new File(tmpDir, secret);
+        try {
+            secretFile.createNewFile();
+        } catch (IOException e) {
+            System.err.println("ERROR: Failed to create shared secret file in the following directory: " + tmpDir);
+            e.printStackTrace();
+            System.exit(1);
+            return;
+        }
+        String snapshotUrl = getSymmetricEngine().getSyncUrl();
+        if (!snapshotUrl.endsWith("/")) {
+            snapshotUrl += "/";
+        }
+        snapshotUrl += "snapshot";
+        System.out.println("Contacting " + snapshotUrl);
+        HttpURLConnection snapshotHttpUrlConnection = null;
+        boolean success = false;
+        try {
+            URLConnection snapshotUrlConnection = new URL(snapshotUrl).openConnection();
+            if (snapshotUrlConnection instanceof HttpURLConnection) {
+                snapshotHttpUrlConnection = (HttpURLConnection) snapshotUrlConnection;
+                snapshotHttpUrlConnection.setDoInput(true);
+                snapshotHttpUrlConnection.setDoOutput(true);
+                snapshotHttpUrlConnection.setRequestMethod("POST");
+                snapshotHttpUrlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+                System.out.println("Requesting snapshot");
+                snapshotHttpUrlConnection.connect();
+                snapshotHttpUrlConnection.getOutputStream().write(secret.getBytes(StandardCharsets.UTF_8));
+                success = snapshotHttpUrlConnection.getResponseCode() == 200;
+                BufferedReader httpReader = new BufferedReader(new InputStreamReader(snapshotHttpUrlConnection.getInputStream()));
+                String httpOutputLine = null;
+                while ((httpOutputLine = httpReader.readLine()) != null) {
+                    System.out.println(httpOutputLine);
+                }
+                httpReader.close();
+            }
+        } catch (MalformedURLException e) {
+            System.err.println("ERROR: Snapshot URL is invalid");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.err.println("ERROR: Exception when connecting to snapshot URL");
+            e.printStackTrace();
+        } finally {
+            if (snapshotHttpUrlConnection != null) {
+                snapshotHttpUrlConnection.disconnect();
+            }
+            secretFile.delete();
+            if (success) {
+                System.out.println("Success");
+                System.exit(0);
+            } else {
+                System.out.println("Failed");
+                System.exit(1);
             }
         }
     }

@@ -626,8 +626,6 @@ public class RouterService extends AbstractService implements IRouterService, IN
                     // rolled back as exception, but let gap detector know about what was committed before halting
                     gapDetector.addDataIds(context.getDataIds());
                     gapDetector.setIsAllDataRead(false);
-                } else if (context.getUncommittedDataIds().size() > 0) {
-                    context.commitOnlyPrerouted();
                 }
             } catch (Exception e) {
                 if (context != null) {
@@ -765,6 +763,9 @@ public class RouterService extends AbstractService implements IRouterService, IN
                         processInfo.incrementCurrentDataCount();
                         if (data.isPreRouted()) {
                             context.addData(data.getDataId());
+                            statsDataCount++;
+                            totalDataCount++;
+                            totalDataEventCount++;
                         } else {
                             boolean atTransactionBoundary = false;
                             if (nextData != null) {

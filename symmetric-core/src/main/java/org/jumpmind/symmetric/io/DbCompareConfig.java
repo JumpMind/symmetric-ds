@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 public class DbCompareConfig {
     final Logger log = LoggerFactory.getLogger(getClass());
     public final static String WHERE_CLAUSE = "where_clause";
+    public final static String ORDER_BY_SUFFIX = "order_by_suffix";
     public final static String EXCLUDED_COLUMN = "exclude_columns";
     private List<String> sourceTableNames;
     private List<String> targetTableNames;
@@ -41,6 +42,7 @@ public class DbCompareConfig {
     private int numericScale = 3;
     private String dateTimeFormat;
     private Map<String, String> whereClauses = new LinkedHashMap<String, String>();
+    private Map<String, String> orderBySuffixes = new LinkedHashMap<String, String>();
     private Map<String, List<String>> tablesToExcludedColumns = new LinkedHashMap<String, List<String>>();
     private String outputSql;
     private boolean continueAfterError = false;
@@ -54,6 +56,7 @@ public class DbCompareConfig {
         configSources.put("useSymmetricConfig", "default");
         configSources.put("numericScale", "default");
         configSources.put("whereClauses", "default");
+        configSources.put("orderBySuffixes", "default");
         configSources.put("tablesToExcludedColumns", "default");
         configSources.put("sqlDiffFileName", "default");
         configSources.put("outputSql", "default");
@@ -93,6 +96,37 @@ public class DbCompareConfig {
             }
         }
         return null;
+    }
+
+    public String getSourceOrderBySuffix(String tableName, String columnName) {
+        return getOrderBySuffix(tableName, columnName, "source");
+    }
+
+    public String getTargetOrderBySuffix(String tableName, String columnName) {
+        String orderBySuffix = getOrderBySuffix(tableName, columnName, "target");
+        if (StringUtils.isEmpty(orderBySuffix)) {
+            String simpleTableName = DbCompareUtil.getUnqualifiedTableName(tableName);
+            orderBySuffix = getOrderBySuffix(simpleTableName, columnName, "target");
+        }
+        return orderBySuffix;
+    }
+
+    protected String getOrderBySuffix(String tableName, String columnName, String sourceOrTarget) {
+        String tableNameLower = tableName.toLowerCase();
+        String columnNameLower = columnName.toLowerCase();
+        String[] keys = {
+                tableNameLower + "." + columnNameLower + "." + sourceOrTarget + "." + ORDER_BY_SUFFIX,
+                tableNameLower + "." + columnNameLower + "." + ORDER_BY_SUFFIX,
+                tableNameLower + "." + sourceOrTarget + "." + ORDER_BY_SUFFIX,
+                tableNameLower + "." + ORDER_BY_SUFFIX,
+                ORDER_BY_SUFFIX
+        };
+        for (String key : keys) {
+            if (orderBySuffixes.containsKey(key)) {
+                return orderBySuffixes.get(key);
+            }
+        }
+        return "";
     }
 
     protected boolean shouldIncludeColumn(String tableName, String columnName) {
@@ -155,6 +189,14 @@ public class DbCompareConfig {
         this.whereClauses = new CaseInsensitiveMap<String, String>(whereClauses);
     }
 
+    public Map<String, String> getOrderBySuffixes() {
+        return orderBySuffixes;
+    }
+
+    public void setOrderBySuffixes(Map<String, String> orderBySuffixes) {
+        this.orderBySuffixes = new CaseInsensitiveMap<String, String>(orderBySuffixes);
+    }
+
     public List<String> getSourceTableNames() {
         return sourceTableNames;
     }
@@ -203,6 +245,7 @@ public class DbCompareConfig {
         buff.append("\tuseSymmetricConfig=").append(useSymmetricConfig).append(" @").append(configSources.get("useSymmetricConfig")).append("\n");
         buff.append("\tnumericScale=").append(numericScale).append(" @").append(configSources.get("numericScale")).append("\n");
         buff.append("\twhereClauses=").append(whereClauses).append("@").append(configSources.get("whereClauses")).append("\n");
+        buff.append("\torderBySuffixes=").append(orderBySuffixes).append("@").append(configSources.get("orderBySuffixes")).append("\n");
         buff.append("\ttablesToExcludedColumns=").append(tablesToExcludedColumns).append(" @").append(configSources.get("tablesToExcludedColumns")).append(
                 "\n");
         buff.append("\toutputSql=").append(outputSql).append(" @").append(configSources.get("outputSql")).append("\n");

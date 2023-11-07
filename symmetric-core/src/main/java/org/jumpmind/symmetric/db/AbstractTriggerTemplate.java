@@ -89,6 +89,7 @@ abstract public class AbstractTriggerTemplate {
     protected String newColumnPrefix = "";
     protected String otherColumnTemplate;
     protected ISymmetricDialect symmetricDialect;
+    protected int hashedValue = 0;
 
     protected AbstractTriggerTemplate(ISymmetricDialect symmetricDialect) {
         this.symmetricDialect = symmetricDialect;
@@ -1135,8 +1136,7 @@ abstract public class AbstractTriggerTemplate {
     }
 
     public int toHashedValue() {
-        int hashedValue = 0;
-        if (sqlTemplates != null) {
+        if (hashedValue == 0 && sqlTemplates != null) {
             for (String key : sqlTemplates.keySet()) {
                 hashedValue += sqlTemplates.get(key).hashCode();
             }
