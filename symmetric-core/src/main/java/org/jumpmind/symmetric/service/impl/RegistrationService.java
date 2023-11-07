@@ -479,7 +479,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     /**
      * @see IRegistrationService#registerWithServer()
      */
-    public boolean registerWithServer() {
+    public synchronized boolean registerWithServer() {
         boolean wasRegistered = isRegisteredWithServer();
         boolean registered = wasRegistered;
         int maxNumberOfAttempts = parameterService
