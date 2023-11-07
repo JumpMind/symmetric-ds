@@ -67,9 +67,9 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         if (isBlank(sqliteFunctionToOverride)) {
-            contextService.insert(transaction, SYNC_TRIGGERS_DISABLED_USER_VARIABLE, "1");
+            contextService.save(transaction, SYNC_TRIGGERS_DISABLED_USER_VARIABLE, "1");
             if (nodeId != null) {
-                contextService.insert(transaction, SYNC_TRIGGERS_DISABLED_NODE_VARIABLE, nodeId);
+                contextService.save(transaction, SYNC_TRIGGERS_DISABLED_NODE_VARIABLE, nodeId);
             }
         } else {
             String node = nodeId != null ? ":" + nodeId : "";

@@ -27,7 +27,7 @@ public class NodeCommunication implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum CommunicationType {
-        PULL, PUSH, FILE_PUSH, FILE_PULL, OFFLN_PULL, OFFLN_PUSH, EXTRACT, FILE_XTRCT, OFF_FSPULL, OFF_FSPUSH;
+        PULL, PUSH, FILE_PUSH, FILE_PULL, OFFLN_PULL, OFFLN_PUSH, EXTRACT, FILE_XTRCT, OFF_FSPULL, OFF_FSPUSH, ROUTE;
 
         public static boolean isPullType(CommunicationType communicationType) {
             return communicationType == PULL || communicationType == CommunicationType.FILE_PULL

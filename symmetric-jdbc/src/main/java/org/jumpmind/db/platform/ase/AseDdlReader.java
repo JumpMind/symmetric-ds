@@ -81,12 +81,20 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
     private Pattern isoDatePattern = Pattern.compile("'(\\d{4}\\-\\d{2}\\-\\d{2})'");
     /* The regular expression pattern for the ISO times. */
     private Pattern isoTimePattern = Pattern.compile("'(\\d{2}:\\d{2}:\\d{2})'");
+    private int majorVersion;
 
     public AseDdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");
+    }
+
+    protected int getMajorVersion(DatabaseMetaDataWrapper metaData) throws SQLException {
+        if (majorVersion == 0) {
+            majorVersion = metaData.getMetaData().getDatabaseMajorVersion();
+        }
+        return majorVersion;
     }
 
     @Override
@@ -97,7 +105,9 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
             // Sybase does not return the auto-increment status or the generated
             // column status via the database metadata
             determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
-            determineGeneratedColumns(connection, table, table.getColumns());
+            if (getMajorVersion(metaData) >= 15) {
+                determineGeneratedColumns(connection, table, table.getColumns());
+            }
         }
         return table;
     }

@@ -19,6 +19,7 @@ task downloadJars {
 	doFirst{
 		println("Downloading jars for docs...")
 		def previousURL = String.format(downloadURLCore, latestPreviousVersion, latestPreviousVersion)
+		new File(symAssembleDir + '/build').mkdirs()
 		new File(symAssembleDir + '/build/docJars').mkdirs()
 		def out = new BufferedOutputStream(new FileOutputStream(symAssembleDir + '/build/docJars/download-core-' + latestPreviousVersion + '.zip'))
 		out << new URL(previousURL).openStream()
@@ -233,14 +234,13 @@ task generateDocs(type: Copy) {
 task publishDoc {
     dependsOn generateDocs
 	group = 'SymmetricDS'
-	description = 'Publish online documentation to SymmetricDS website'
+	description = 'Publish online documentation to SourceForge website'
     doLast {
         ant.taskdef(name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
         classpath: configurations.sshAntTask.asPath)
 
         ant.scp(
-            todir: "$publishUser:$publishPassword@$publishServer:~/www/doc/$majorMinorVersion",
-            port: "$publishPort",
+            todir: "$sourceforgeUser:$sourceforgePassword@web.sourceforge.net:/home/project-web/symmetricds/htdocs/doc/$majorMinorVersion",
             trust: 'true',
             verbose: 'true') {
             fileset(dir: "$buildDir/doc") { include(name: '**/**')

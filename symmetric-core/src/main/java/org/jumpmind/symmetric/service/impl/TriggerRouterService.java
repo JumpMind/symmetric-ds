@@ -50,6 +50,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -2942,7 +2943,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected List<TriggerHistory> getMultipleActiveTriggerHistories() {
-        return sqlTemplate.query(getSql("multipleActiveTriggerHistSql"), new TriggerHistoryMapper());
+        if (DatabaseNamesConstants.ASE.equals(getTargetPlatform().getName())) {
+            List<TriggerHistory> activeHistoryList = getActiveTriggerHistories();
+            List<SimpleTriggerHistory> activeSimpleHistoryList = new ArrayList<SimpleTriggerHistory>();
+            for (TriggerHistory history : activeHistoryList) {
+                activeSimpleHistoryList.add(new SimpleTriggerHistory(history));
+            }
+            Set<SimpleTriggerHistory> activeSimpleHistorySet = new HashSet<SimpleTriggerHistory>();
+            return activeSimpleHistoryList.stream()
+                    .filter(history -> !activeSimpleHistorySet.add(history))
+                    .distinct()
+                    .collect(Collectors.toList());
+        } else {
+            return sqlTemplate.query(getSql("multipleActiveTriggerHistSql"), new TriggerHistoryMapper());
+        }
     }
 
     protected List<TriggerHistory> getTriggerHistoryIds(TriggerHistory triggerHistory) {
@@ -3028,6 +3042,71 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 thread.setPriority(Thread.NORM_PRIORITY);
             }
             return thread;
+        }
+    }
+
+    class SimpleTriggerHistory extends TriggerHistory {
+        private static final long serialVersionUID = 1L;
+
+        public SimpleTriggerHistory(TriggerHistory history) {
+            setTriggerId(history.getTriggerId());
+            setSourceTableName(history.getSourceTableName());
+            setSourceSchemaName(history.getSourceSchemaName());
+            setSourceCatalogName(history.getSourceCatalogName());
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((getSourceCatalogName() == null) ? 0 : getSourceCatalogName().hashCode());
+            result = prime * result + ((getSourceSchemaName() == null) ? 0 : getSourceSchemaName().hashCode());
+            result = prime * result + ((getSourceTableName() == null) ? 0 : getSourceTableName().hashCode());
+            result = prime * result + ((getTriggerId() == null) ? 0 : getTriggerId().hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            SimpleTriggerHistory other = (SimpleTriggerHistory) obj;
+            if (getSourceCatalogName() == null) {
+                if (other.getSourceCatalogName() != null) {
+                    return false;
+                }
+            } else if (!getSourceCatalogName().equals(other.getSourceCatalogName())) {
+                return false;
+            }
+            if (getSourceSchemaName() == null) {
+                if (other.getSourceSchemaName() != null) {
+                    return false;
+                }
+            } else if (!getSourceSchemaName().equals(other.getSourceSchemaName())) {
+                return false;
+            }
+            if (getSourceTableName() == null) {
+                if (other.getSourceTableName() != null) {
+                    return false;
+                }
+            } else if (!getSourceTableName().equals(other.getSourceTableName())) {
+                return false;
+            }
+            if (getTriggerId() == null) {
+                if (other.getTriggerId() != null) {
+                    return false;
+                }
+            } else if (!getTriggerId().equals(other.getTriggerId())) {
+                return false;
+            }
+            return true;
         }
     }
 }

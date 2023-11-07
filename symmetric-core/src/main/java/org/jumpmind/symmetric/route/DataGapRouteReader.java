@@ -99,7 +99,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
         IDataGapRouteCursor cursor = null;
         processInfo = engine.getStatisticManager().newProcessInfo(
-                new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), null,
+                new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), context.getChannel().getChannelId(), null,
                         ProcessType.ROUTER_READER));
         processInfo.setCurrentChannelId(context.getChannel().getChannelId());
         try {
