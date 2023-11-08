@@ -1,7 +1,18 @@
 
 === Rest Keys
 
-Rest API keys may be set up to access the REST API securely.
+Rest API keys must be set up in order to access the REST API. Attempting to access the REST API without a key will result in HTTP error code 403 (forbidden). When a new key is created, it will only be displayed once, so be sure to copy it and save it for future use.
+
+The following is an example of how to include the key in a `curl` command:
+
+[source, cli]
+----
+curl -X GET "http://localhost:31415/api/engine/corp-000/channelstatus" -H "accept: */*" -H "X-REST-API-KEY: gSrLaAEuKa3FLdUbuUZ1cRv7Mi2nVS"
+----
+
+A user interface for the REST API is available on the Help -> REST API screen. When the screen is first visited, the padlock icons are open to indicate that a REST API key is not being used. To enter the key, click the Authorize button, which is highlighted in red in the below image. After entering the key, the padlocks will close.
+
+image::images/manage/rest-api.png[]
 
 .Required Fields
 
