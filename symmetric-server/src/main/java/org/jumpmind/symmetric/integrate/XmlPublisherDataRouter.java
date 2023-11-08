@@ -92,4 +92,8 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
     public boolean isConfigurable() {
         return true;
     }
+
+    public boolean isDmlOnly() {
+        return true;
+    }
 }

@@ -452,4 +452,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     public boolean isConfigurable() {
         return false;
     }
+
+    @Override
+    public boolean isDmlOnly() {
+        return false;
+    }
 }

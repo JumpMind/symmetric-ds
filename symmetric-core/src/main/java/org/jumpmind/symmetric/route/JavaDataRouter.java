@@ -78,4 +78,9 @@ public class JavaDataRouter extends AbstractDataRouter implements IBuiltInExtens
         }
         return javaRouter;
     }
+
+    @Override
+    public boolean isDmlOnly() {
+        return false;
+    }
 }

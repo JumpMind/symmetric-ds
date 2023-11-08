@@ -50,4 +50,6 @@ public interface IDataRouter extends IExtensionPoint {
     public void contextCommitted(SimpleRouterContext context);
 
     public boolean isConfigurable();
+
+    public boolean isDmlOnly();
 }

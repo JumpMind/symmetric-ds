@@ -139,4 +139,9 @@ public class BshDataRouter extends AbstractDataRouter implements IBuiltInExtensi
         interpreter.set(name, value);
         boundVariableNames.add(name);
     }
+
+    @Override
+    public boolean isDmlOnly() {
+        return false;
+    }
 }
