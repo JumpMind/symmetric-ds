@@ -162,7 +162,7 @@ public class RouterService extends AbstractService implements IRouterService, IN
      */
     public boolean shouldDataBeRouted(SimpleRouterContext context, DataMetaData dataMetaData,
             Node node, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
-        IDataRouter router = getDataRouter(dataMetaData.getRouter());
+        IDataRouter router = getDataRouter(dataMetaData.getRouter(), dataMetaData);
         Set<Node> oneNodeSet = new HashSet<Node>(1);
         oneNodeSet.add(node);
         Collection<String> nodeIds = router.routeToNodes(context, dataMetaData, oneNodeSet, initialLoad,
@@ -893,7 +893,7 @@ public class RouterService extends AbstractService implements IRouterService, IN
                         counterStat.incrementCount();
                     } else {
                         try {
-                            IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
+                            IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter(), dataMetaData);
                             long ts = System.currentTimeMillis();
                             nodeIds = dataRouter.routeToNodes(context, dataMetaData,
                                     findAvailableNodes(triggerRouter, context), false, false,
@@ -1080,7 +1080,7 @@ public class RouterService extends AbstractService implements IRouterService, IN
         return numberOfDataEventsInserted;
     }
 
-    protected IDataRouter getDataRouter(Router router) {
+    protected IDataRouter getDataRouter(Router router, DataMetaData dataMetaData) {
         IDataRouter dataRouter = null;
         Map<String, IDataRouter> routers = getRouters();
         if (!StringUtils.isBlank(router.getRouterType())) {
@@ -1092,6 +1092,8 @@ public class RouterService extends AbstractService implements IRouterService, IN
                     invalidRouterType.put(router.getRouterId(), counterStat);
                 }
                 counterStat.incrementCount();
+            } else if (dataRouter.isDmlOnly() && !dataMetaData.getData().getDataEventType().isDml()) {
+                dataRouter = null;
             }
         }
         if (dataRouter == null) {

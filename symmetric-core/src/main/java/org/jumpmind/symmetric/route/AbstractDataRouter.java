@@ -144,17 +144,15 @@ public abstract class AbstractDataRouter implements IDataRouter {
                 }
                 break;
             default:
+                data = new LinkedCaseInsensitiveMap<Object>(1);
                 break;
         }
-        if (data != null && data.size() == 0) {
+        if (data.size() == 0) {
             data.putAll(getPkDataAsString(dataMetaData, symmetricDialect));
         }
         if (StringUtils.isNotBlank(dataMetaData.getData().getExternalData())) {
-            if (data == null) {
-                data = new LinkedCaseInsensitiveMap<Object>(1);
-            }
             data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
-        } else if (data != null) {
+        } else {
             data.put("EXTERNAL_DATA", null);
         }
         return data;
@@ -268,6 +266,13 @@ public abstract class AbstractDataRouter implements IDataRouter {
      * Override if a router is not configurable.
      */
     public boolean isConfigurable() {
+        return true;
+    }
+
+    /**
+     * Override if a router is able to route non-DML DataEventTypes.
+     */
+    public boolean isDmlOnly() {
         return true;
     }
 }

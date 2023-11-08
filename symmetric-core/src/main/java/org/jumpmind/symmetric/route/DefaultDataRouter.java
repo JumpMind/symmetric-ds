@@ -39,4 +39,9 @@ public class DefaultDataRouter extends AbstractDataRouter implements IBuiltInExt
 
     public void completeBatch(SimpleRouterContext context, OutgoingBatch batch) {
     }
+
+    @Override
+    public boolean isDmlOnly() {
+        return false;
+    }
 }
