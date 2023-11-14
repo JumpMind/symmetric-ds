@@ -146,7 +146,9 @@ public class ServletUtils {
         if (holder != null) {
             if (engineName != null) {
                 engine = holder.getEngines().get(engineName);
-            } else if (holder.getEngineCount() == 1) {
+            }
+            if (holder.getEngineCount() == 1 && engine == null && holder.getNumerOfEnginesStarting() <= 1 &&
+                    holder.getEngines().size() == 1) {
                 engine = holder.getEngines().values().iterator().next();
             }
         }

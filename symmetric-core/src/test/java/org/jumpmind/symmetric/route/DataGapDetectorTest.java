@@ -171,6 +171,7 @@ public class DataGapDetectorTest {
         verify(dataService).findDataGaps();
         verify(dataService).deleteDataGaps(sqlTransaction, deleted);
         verify(dataService).insertDataGaps(sqlTransaction, inserted);
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
         verifyNoMoreInteractions(dataService);
     }
 
@@ -196,6 +197,7 @@ public class DataGapDetectorTest {
         verify(dataService).findDataGaps();
         verify(dataService).deleteDataGaps(sqlTransaction, deleted);
         verify(dataService).insertDataGaps(sqlTransaction, inserted);
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
         verifyNoMoreInteractions(dataService);
     }
 
@@ -217,6 +219,7 @@ public class DataGapDetectorTest {
         verify(dataService).findDataGaps();
         verify(dataService).deleteDataGaps(sqlTransaction, deleted);
         verify(dataService).insertDataGaps(sqlTransaction, inserted);
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
         verifyNoMoreInteractions(dataService);
     }
 
@@ -244,6 +247,7 @@ public class DataGapDetectorTest {
         verify(dataService).findDataGaps();
         verify(dataService).deleteDataGaps(sqlTransaction, deleted);
         verify(dataService).insertDataGaps(sqlTransaction, inserted);
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
         verifyNoMoreInteractions(dataService);
     }
 
@@ -273,6 +277,7 @@ public class DataGapDetectorTest {
         verify(dataService).findDataGaps();
         verify(dataService).deleteDataGaps(sqlTransaction, deleted);
         verify(dataService).insertDataGaps(sqlTransaction, inserted);
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
         verifyNoMoreInteractions(dataService);
     }
 
@@ -318,6 +323,7 @@ public class DataGapDetectorTest {
         verify(dataService).findDataGaps();
         verify(dataService).deleteDataGaps(sqlTransaction, deleted);
         verify(dataService).insertDataGaps(sqlTransaction, inserted);
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
         verifyNoMoreInteractions(dataService);
     }
 
@@ -507,6 +513,7 @@ public class DataGapDetectorTest {
         verify(dataService).insertDataGaps(sqlTransaction, inserted);
         verify(dataService).deleteDataGaps(sqlTransaction, deleted2);
         verify(dataService).insertDataGaps(sqlTransaction, inserted2);
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
         verifyNoMoreInteractions(dataService);
     }
 
@@ -567,6 +574,7 @@ public class DataGapDetectorTest {
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(30953883, 80953883));
         verify(dataService).deleteDataGaps(sqlTransaction, deleted);
         verify(dataService).insertDataGaps(sqlTransaction, inserted);
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
         verifyNoMoreInteractions(dataService);
     }
 
@@ -598,6 +606,7 @@ public class DataGapDetectorTest {
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(30953883, 80953883));
         verify(dataService).deleteDataGaps(sqlTransaction, deleted);
         verify(dataService).insertDataGaps(sqlTransaction, inserted);
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
         verifyNoMoreInteractions(dataService);
     }
 
@@ -621,6 +630,7 @@ public class DataGapDetectorTest {
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953885, 30953885));
         verify(dataService).deleteDataGaps(sqlTransaction, deleted);
         verify(dataService).insertDataGaps(sqlTransaction, inserted);
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
         verifyNoMoreInteractions(dataService);
     }
 
@@ -643,6 +653,7 @@ public class DataGapDetectorTest {
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(31832439, 81832439));
         verify(dataService).deleteDataGaps(sqlTransaction, deleted);
         verify(dataService).insertDataGaps(sqlTransaction, inserted);
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
         verifyNoMoreInteractions(dataService);
     }
 
@@ -666,6 +677,7 @@ public class DataGapDetectorTest {
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(31837983, 81837983));
         verify(dataService).deleteDataGaps(sqlTransaction, deleted);
         verify(dataService).insertDataGaps(sqlTransaction, inserted);
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
         verifyNoMoreInteractions(dataService);
     }
 
@@ -683,6 +695,7 @@ public class DataGapDetectorTest {
         verify(dataService).findDataGaps();
         verify(dataService).deleteAllDataGaps(sqlTransaction);
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 14));
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
         verifyNoMoreInteractions(dataService);
         Mockito.reset(dataService);
         dataIds = new ArrayList<Long>();
@@ -695,6 +708,7 @@ public class DataGapDetectorTest {
         inserted.add(new DataGap(5, 14));
         verify(dataService).deleteAllDataGaps(sqlTransaction);
         verify(dataService).insertDataGaps(sqlTransaction, inserted);
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
         verifyNoMoreInteractions(dataService);
     }
 }
