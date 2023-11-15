@@ -5,9 +5,9 @@ Users can utilize single sign-on using LDAP or SAML authentication.
 
 ==== LDAP
 
-Configuring a <<Users>> authentication on SymmetricDS using LDAP is as simple as setting up the following three <<Parameters>>.
+Configuring a <<Users>> authentication on SymmetricDS using LDAP is as simple as setting up the following four <<Parameters>>.
 
-console.auth.ldap.baseDN::  The LDAP base DN to search for a user.
+console.auth.ldap.baseDN::  The LDAP base DN to search for a user or group (e.g. dc=example,dc=com).
                             [&#xA0;Default:&#xA0;]
                         
 
@@ -15,10 +15,34 @@ A list of base DNs can be specified by separating each entry by a pipe ("|") sym
 For example: +
 ou=Users,o=IT,c=US,dc=corp,dc=local|ou=Users,o=Tech,c=US,dc=corp,dc=local
 
-console.auth.ldap.host::  The LDAP server host name.
+console.auth.ldap.host::  The LDAP server host name (e.g. ldap://hostname:389/).
                             [&#xA0;Default:&#xA0;]
                             
-console.auth.ldap.searchAttribute::  LDAP attribute to search for.
+console.auth.ldap.searchAttribute::  LDAP attribute to search for (e.g. uid).
+                            [&#xA0;Default:&#xA0;]
+
+console.auth.ldap.securityPrincipal:: Format to use for the LDAP security principal (just ${username} may work for Active Directory).
+                            [&#xA0;Default: ${searchAttribute}=${username},${baseDN}&#xA0;]
+
+It is also possible for LDAP users to log in without having a corresponding console user. This feature relies on the following five <<Parameters>>.
+
+console.auth.ldap.role.group.map::  Map of LDAP groups to console role IDs. Allows LDAP users to log in without having a corresponding console user if they are a member of one of the specified groups.
+                            [&#xA0;Default:&#xA0;]
+
+
+If a user is a member of multiple groups, the group that is specified first will take priority. This parameter does not account for group inheritance, meaning that each individual group must be specified. The entire DN must be specified for each group. The map must use the following format: +
+"group0==roleId0","group1==roleId1","group2==roleId2"
+
+console.auth.ldap.adminDN::  The DN of the user to log in as while determining whether a user belongs to one of the groups specified by the console.auth.ldap.role.group.map parameter. If blank, the credentials from the login screen will be used.
+                            [&#xA0;Default:&#xA0;]
+
+console.auth.ldap.admin.password::  The password for the user specified by the console.auth.ldap.adminDN parameter.
+                            [&#xA0;Default:&#xA0;]
+
+console.auth.ldap.admin.use.memberOf::  Whether or not the LDAP server maintains a "memberOf" attribute. This only has an effect if the console.auth.ldap.role.group.map parameter is set.
+                            [&#xA0;Default: true&#xA0;]
+
+console.auth.ldap.admin.memberAttribute::  The attribute of an LDAP group to check to determine whether or not a user is a member of the group. This only has an effect if the console.auth.ldap.role.group.map parameter is set and the console.auth.ldap.use.memberOf parameter is set to false.
                             [&#xA0;Default:&#xA0;]
 
 These parameters can be set within the LDAP tab on the Configure SSO page by filling out the form and clicking *Save*.
@@ -34,7 +58,7 @@ To do this, click the *Test* button, enter the user credentials and click *Test*
 
 image::images/sso/ldap-authentication.png[]
 
-IMPORTANT: You must have values for all three of the parameter fields or the test will fail.
+IMPORTANT: You must have values for the LDAP URL, Base DN, and Search Attributes fields or the test will fail.
 
 ==== SAML
 
