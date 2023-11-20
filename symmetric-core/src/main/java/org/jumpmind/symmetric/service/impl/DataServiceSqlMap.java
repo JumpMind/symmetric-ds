@@ -210,7 +210,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " where load_id = ?");
         putSql("updateTableReloadStatusCancelled", "update $(table_reload_status) set "
                 + " cancelled = 1, completed = 1, end_time = ?, last_update_time = ? "
-                + " where load_id = ? and cancelled = 0 and completed = 0");
+                + " where load_id = ?");
         putSql("updateTableReloadStatusError", "update $(table_reload_status) set "
                 + " error_flag = 1, sql_code = ?, sql_state = ?, sql_message = ? where load_id = ?");
         // Note that the order by data_id is done appended in code
