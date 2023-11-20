@@ -143,6 +143,10 @@ public abstract class AbstractCommandLauncher {
             }
             configureLogging(line);
             configurePropertiesFile(line);
+            String[] cmdArgs = line.getArgs();
+            if (cmdArgs != null) {
+                log.info("Command: {}", ArrayUtils.toString(cmdArgs));   
+            }
             if (line.getOptions() != null) {
                 for (Option option : line.getOptions()) {
                     log.info("Option: name={}, value={}", new Object[] {
