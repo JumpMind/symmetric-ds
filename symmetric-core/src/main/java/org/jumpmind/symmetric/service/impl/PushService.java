@@ -233,7 +233,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     log.info("Removing identity because registration is required");
                     nodeService.deleteIdentity();
                     nodeService.deleteNodeSecurity(identity.getNodeId());
-                    nodeService.deleteNode(identity.getNodeId(), false);
+                    nodeService.deleteNode(identity.getNodeId(), remote.getNodeId(), false);
                 }
             }
         } finally {
