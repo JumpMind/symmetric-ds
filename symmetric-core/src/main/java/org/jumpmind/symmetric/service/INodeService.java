@@ -88,6 +88,8 @@ public interface INodeService {
     public void deleteNodeSecurity(String nodeId);
 
     public void deleteNode(String nodeId, boolean syncChange);
+    
+    public void deleteNode(String myNodeId, String targetNodeIId, boolean syncChange);
 
     public String findSymmetricVersion();
 

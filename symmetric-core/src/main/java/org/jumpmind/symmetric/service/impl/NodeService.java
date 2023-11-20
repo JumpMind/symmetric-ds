@@ -210,23 +210,31 @@ public class NodeService extends AbstractService implements INodeService {
         nodeHostForCurrentNode.refresh(platform, engine.getClusterService().getInstanceId());
         updateNodeHost(nodeHostForCurrentNode);
     }
-
+    
+    @Override
     public void deleteNode(String nodeId, boolean syncChange) {
+        deleteNode(nodeId, null, syncChange);
+    }
+
+    @Override
+    public synchronized void deleteNode(String nodeId, String targetNodeId, boolean syncChange) {
         log.info("Unregistering node {} and removing it from database", nodeId);
-        for (ProcessInfo info : engine.getStatisticManager().getProcessInfos()) {
-            if (info.getTargetNodeId() != null && info.getTargetNodeId().equals(nodeId)) {
-                log.info("Sending interrupt to " + info.getKey() + ",batchId=" + info.getCurrentBatchId());
-                info.getThread().interrupt();
+        if (StringUtils.isNotBlank(nodeId)) {
+            for (ProcessInfo info : engine.getStatisticManager().getProcessInfos()) {
+                if ((info.getTargetNodeId() != null && info.getTargetNodeId().equals(nodeId)) ||
+                        (info.getSourceNodeId() != null && info.getSourceNodeId().equals(nodeId))) {
+                    log.info("Sending interrupt to " + info.getKey() + ",batchId=" + info.getCurrentBatchId());
+                    info.getThread().interrupt();
+                }
             }
-        }
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            if (!syncChange) {
-                symmetricDialect.disableSyncTriggers(transaction, nodeId);
-            }
-            if (StringUtils.isNotBlank(nodeId)) {
-                if (nodeId.equals(findIdentityNodeId())) {
+            ISqlTransaction transaction = null;
+            try {
+                transaction = sqlTemplate.startSqlTransaction();
+                if (!syncChange) {
+                    symmetricDialect.disableSyncTriggers(transaction, nodeId);
+                }
+                String myNode = findIdentityNodeId();
+                if (StringUtils.isNotBlank(myNode) && myNode.equals(nodeId)) {
                     transaction.prepareAndExecute(getSql("deleteNodeIdentitySql"));
                     cachedNodeIdentity = null;
                 }
@@ -234,29 +242,30 @@ public class NodeService extends AbstractService implements INodeService {
                 transaction.prepareAndExecute(getSql("deleteNodeHostSql"), new Object[] { nodeId });
                 transaction.prepareAndExecute(getSql("deleteNodeSql"), new Object[] { nodeId });
                 transaction.prepareAndExecute(getSql("deleteNodeChannelCtlSql"), new Object[] { nodeId });
-                transaction.prepareAndExecute(getSql("deleteIncomingErrorSql"), new Object[] { nodeId });
+                transaction.prepareAndExecute(getSql("deleteIncomingErrorSql"), new Object[] { StringUtils.isNotBlank(targetNodeId) ? targetNodeId : nodeId });
                 transaction.prepareAndExecute(getSql("deleteExtractRequestSql"), new Object[] { nodeId, nodeId });
-                transaction.prepareAndExecute(getSql("deleteNodeCommunicationSql"), new Object[] { nodeId });
+                transaction.prepareAndExecute(getSql("deleteNodeCommunicationSql"), new Object[] { StringUtils.isNotBlank(targetNodeId) ? targetNodeId : nodeId });
                 transaction.prepareAndExecute(getSql("deleteTableReloadRequestSql"), new Object[] { nodeId, nodeId });
                 transaction.prepareAndExecute(getSql("cancelTableReloadStatusSql"), new Object[] { new Date(), new Date(), nodeId, nodeId });
-                transaction.prepareAndExecute(getSql("setOutgoingBatchOkSql"), new Object[] { nodeId });
-                transaction.prepareAndExecute(getSql("deleteIncomingBatchSql"), new Object[] { nodeId });
+                transaction.prepareAndExecute(getSql("setOutgoingBatchOkSql"), new Object[] { StringUtils.isNotBlank(targetNodeId) ? targetNodeId : nodeId });
+                transaction.prepareAndExecute(getSql("deleteIncomingBatchSql"), new Object[] { StringUtils.isNotBlank(targetNodeId) ? targetNodeId : nodeId });
+                transaction.commit();
+            } catch (Error ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } finally {
+                if (!syncChange) {
+                    symmetricDialect.enableSyncTriggers(transaction);
+                }
+                close(transaction);
             }
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            if (!syncChange) {
-                symmetricDialect.enableSyncTriggers(transaction);
-            }
-            close(transaction);
         }
     }
 
