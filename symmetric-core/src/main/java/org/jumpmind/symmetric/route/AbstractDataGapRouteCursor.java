@@ -79,10 +79,10 @@ public abstract class AbstractDataGapRouteCursor implements IDataGapRouteCursor 
             AppUtils.sleep(1000);
             cursor = sqlTemplate.queryForCursor(sql, dataMapper, args, types);
         }
-        context.incrementStat(System.currentTimeMillis() - ts, ChannelRouterContext.STAT_QUERY_EXEC_TIME_MS);
         if (isSortInMemory) {
             cursor = getDataMemoryCursor(cursor);
         }
+        context.incrementStat(System.currentTimeMillis() - ts, ChannelRouterContext.STAT_QUERY_EXEC_TIME_MS);
         return cursor;
     }
 
