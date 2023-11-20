@@ -43,7 +43,7 @@ console.auth.ldap.admin.use.memberOf::  Whether or not the LDAP server maintains
                             [&#xA0;Default: true&#xA0;]
 
 console.auth.ldap.admin.memberAttribute::  The attribute of an LDAP group to check to determine whether or not a user is a member of the group. This only has an effect if the console.auth.ldap.role.group.map parameter is set and the console.auth.ldap.use.memberOf parameter is set to false.
-                            [&#xA0;Default:&#xA0;]
+                            [&#xA0;Default: member&#xA0;]
 
 These parameters can be set within the LDAP tab on the Configure SSO page by filling out the form and clicking *Save*.
 
@@ -72,6 +72,18 @@ console.auth.saml.idp.sso.service.url:: SSO endpoint info of the SAML identity p
 
 console.auth.saml.idp.cert:: Path to the public x509 certificate of the SAML identity provider.
 
+It is also possible for SAML users to log in without having a corresponding console user. This feature relies on the following two <<Parameters>>.
+
+console.auth.saml.role.group.map::  Map of SAML groups to console role IDs. Allows SAML users to log in without having a corresponding console user if they are a member of one of the specified groups.
+                            [&#xA0;Default:&#xA0;]
+
+
+If a user is a member of multiple groups, the group that is specified first will take priority. This parameter does not account for group inheritance, meaning that each individual group must be specified. The map must use the following format: +
+"group0==roleId0","group1==roleId1","group2==roleId2"
+
+console.auth.saml.admin.groupAttribute::  The attribute of an SAML response to check to determine whether or not a user is a member of a SAML group. This only has an effect if the console.auth.saml.role.group.map parameter is set.
+                            [&#xA0;Default: group&#xA0;]
+
 These parameters can be set within the SAML tab on the Configure SSO page by filling out the form and clicking *Save*.
 
 image::images/sso/saml-save.png[]
@@ -87,7 +99,7 @@ image::images/sso/saml-authentication.png[]
 
 IMPORTANT: You must have values for all four of the required parameter fields or the test will fail.
 
-In addition to configuring these parameters, the console user's ID must match the name ID returned by the identity provider for authentication to succeed.
+If you have only specified the first four parameters, the console user's ID must match the name ID returned by the identity provider for authentication to succeed.
 The console user must also be configured to use SAML authentication.
 
 When configuring SymmetricDS as a service provider, specify the below endpoints in your identity provider's settings. You can obtain the service provider metadata in XML format by visiting the Metadata URL.
