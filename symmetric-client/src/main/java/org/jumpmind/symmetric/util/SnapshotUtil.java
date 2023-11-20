@@ -94,6 +94,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -387,7 +388,9 @@ public class SnapshotUtil {
         createThreadsFile(tmpDir.getPath(), false);
         createThreadsFile(tmpDir.getPath(), true);
         createThreadStatsFile(tmpDir.getPath());
+        createProcessInfoFile(engine, tmpDir.getPath());
         try {
+            log.info("Writing transactions file");
             List<Transaction> transactions = targetPlatform.getTransactions();
             if (!transactions.isEmpty()) {
                 createTransactionsFile(engine, tmpDir.getPath(), transactions);
@@ -808,6 +811,44 @@ public class SnapshotUtil {
             log.warn("Failed to export thread information", e);
         }
         return file;
+    }
+
+    public static void createProcessInfoFile(ISymmetricEngine engine, String parent) {
+        try {
+            File file = new File(parent, "process-info.csv");
+            File fileActive = new File(parent, "process-info-active.csv");
+            List<ProcessInfo> infos = engine.getStatisticManager().getProcessInfos();
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            try (OutputStream outputStream = new FileOutputStream(file);
+                    OutputStream outputActiveStream = new FileOutputStream(fileActive);
+                    CsvWriter csvWriter = new CsvWriter(outputStream, ',', Charset.defaultCharset());
+                    CsvWriter csvActiveWriter = new CsvWriter(outputActiveStream, ',', Charset.defaultCharset())) {
+                csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_DOUBLED);
+                String[] heading = { "Thread Name", "Source Node", "Target Node", "Type", "Queue", "Current Channel ID", "Status", "Current Data Count",
+                        "Total Data Count", "Total Batch Count", "Current Batch ID", "Current Batch Count", "Current Table Name", "Batch Start Time", "Load ID",
+                        "Start Time", "End Time" };
+                csvWriter.writeRecord(heading);
+                csvActiveWriter.writeRecord(heading);
+                for (ProcessInfo i : infos) {
+                    Thread t = i.getThread();
+                    String[] row = { t == null ? null : t.getName(), i.getSourceNodeId(), i.getTargetNodeId(), i.getProcessType().toString(),
+                            i.getQueue(), i.getCurrentChannelId(), i.getStatus().toString(), String.valueOf(i.getCurrentDataCount()),
+                            String.valueOf(i.getTotalDataCount()), String.valueOf(i.getTotalBatchCount()), String.valueOf(i.getCurrentBatchId()),
+                            String.valueOf(i.getCurrentBatchCount()), i.getCurrentTableName(),
+                            i.getCurrentBatchStartTime() == null ? null : df.format(i.getCurrentBatchStartTime()),
+                            String.valueOf(i.getCurrentLoadId()), i.getStartTime() == null ? null : df.format(i.getStartTime()),
+                            i.getEndTime() == null ? null : df.format(i.getEndTime()) };                    
+                    csvWriter.writeRecord(row);
+                    if (i.getEndTime() == null) {
+                        csvActiveWriter.writeRecord(row);
+                    }
+                }
+                csvWriter.flush();
+                csvActiveWriter.flush();
+            }
+        } catch (Exception e) {
+            log.warn("Failed to write process info", e);
+        }
     }
 
     private static File createTransactionsFile(ISymmetricEngine engine, String parent, List<Transaction> transactions) {
