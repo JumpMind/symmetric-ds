@@ -32,8 +32,7 @@ public class LogSummary implements Comparable<LogSummary> {
     private Level level;
     @Expose
     private String mostRecentThreadName;
-    @Expose
-    private Throwable throwable;
+    private transient Throwable throwable;
     @Expose
     private long firstOccurranceTime;
     @Expose
