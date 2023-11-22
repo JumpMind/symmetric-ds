@@ -242,15 +242,19 @@ public class SnapshotUtil {
             byChannelId = "channel_id ,";
         }
         extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "sym_outgoing_batch_summary.csv",
-                "select node_id, " + byChannelId + "status, count(*), sum(data_row_count), sum(byte_count), sum(error_flag), min(create_time), " +
-                        "sum(router_millis), sum(extract_millis), sum(network_millis), sum(filter_millis), sum(load_millis), " +
-                        "sum(fallback_insert_count), sum(fallback_update_count), sum(missing_delete_count), sum(skip_count), sum(ignore_count) " +
+                "select node_id, " + byChannelId + "status, count(*) batch_count, sum(data_row_count) data_row_count, sum(byte_count) byte_count, " +
+                        "sum(error_flag) error_flag, min(create_time) min_create_time, sum(router_millis) router_millis, sum(extract_millis) extract_millis, " +
+                        "sum(network_millis) network_millis, sum(filter_millis) filter_millis, sum(load_millis) load_millis, " +
+                        "sum(fallback_insert_count) fallback_insert_count, sum(fallback_update_count) fallback_update_count, " +
+                        "sum(missing_delete_count) missing_delete_count, sum(skip_count) skip_count, sum(ignore_count) ignore_count " +
                         "from " + TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH) +
                         " group by node_id, " + byChannelId + "status");
         extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "sym_incoming_batch_summary.csv",
-                "select node_id, " + byChannelId + "status, count(*), sum(data_row_count), sum(byte_count), sum(error_flag), min(create_time), " +
-                        "sum(router_millis), sum(extract_millis), sum(network_millis), sum(filter_millis), sum(load_millis), " +
-                        "sum(fallback_insert_count), sum(fallback_update_count), sum(missing_delete_count), sum(skip_count), sum(ignore_count) " +
+                "select node_id, " + byChannelId + "status, count(*) batch_count, sum(data_row_count) data_row_count, sum(byte_count) byte_count, " +
+                        "sum(error_flag) error_flag, min(create_time) min_create_time, sum(router_millis) router_millis, sum(extract_millis) extract_millis, " +
+                        "sum(network_millis) network_millis, sum(filter_millis) filter_millis, sum(load_millis) load_millis, " +
+                        "sum(fallback_insert_count) fallback_insert_count, sum(fallback_update_count) fallback_update_count, " +
+                        "sum(missing_delete_count) missing_delete_count, sum(skip_count) skip_count, sum(ignore_count) ignore_count " +
                         "from " + TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH) +
                         " group by node_id, " + byChannelId + "status");
         try {
