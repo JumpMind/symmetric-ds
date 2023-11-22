@@ -41,11 +41,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.SqlTypeValue;
 
-import com.sybase.jdbc4.jdbc.SybPreparedStatement;
-
 public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTemplate {
     private static final Logger log = LoggerFactory.getLogger(SybaseJdbcSqlTemplate.class);
-    int jdbcMajorVersion;
+    protected static final String NATIVE_PREPARED_STATEMENT_NAME = "com.sybase.jdbc4.jdbc.SybPreparedStatement";
+    protected int jdbcMajorVersion;
 
     public SybaseJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
@@ -75,7 +74,7 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
             setNanOrNull(ps, i, arg, argType);
         } else {
             PreparedStatement nativeStatement = getNativeStmt(ps);
-            if (nativeStatement != null && "com.sybase.jdbc4.jdbc.SybPreparedStatement".equals(nativeStatement.getClass().getName())) {
+            if (nativeStatement != null && NATIVE_PREPARED_STATEMENT_NAME.equals(nativeStatement.getClass().getName())) {
                 Class<?> clazz = nativeStatement.getClass();
                 Class<?>[] parameterTypes = new Class[] { int.class, BigDecimal.class, int.class, int.class };
                 BigDecimal value = null;
@@ -148,9 +147,13 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
     private PreparedStatement getNativeStmt(PreparedStatement ps) {
         PreparedStatement stmt = ps;
         try {
-            stmt = (PreparedStatement) ps.unwrap(SybPreparedStatement.class);
+            stmt = (PreparedStatement) ps.unwrap(Class.forName(NATIVE_PREPARED_STATEMENT_NAME));
+        } catch (ClassNotFoundException ex) {
+            log.debug("Cannot get native statement because missing class {}", NATIVE_PREPARED_STATEMENT_NAME);
         } catch (SQLException ex) {
-            log.warn("Could not find a native preparedstatement using {}", ps.getClass().getName(), ex);
+            log.debug("Could not find a native preparedstatement using {}", ps.getClass().getName(), ex);
+        } catch (AbstractMethodError e) {
+            log.debug("Cannot get native statement because not implemented");
         }
         return stmt;
     }

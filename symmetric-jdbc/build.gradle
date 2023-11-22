@@ -10,7 +10,6 @@ apply from: symAssembleDir + '/common.gradle'
         api "org.springframework:spring-jdbc:$springVersion"
 
         compileOnly "com.h2database:h2:$h2Version"
-        compileOnly "jdbc.sybase:jconnect:7.7"
 
         testImplementation project(path: ':symmetric-util', configuration: 'testArtifacts')
         testImplementation "com.h2database:h2:$h2Version"
