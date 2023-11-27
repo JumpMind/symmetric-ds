@@ -90,6 +90,7 @@ endif::pro[]
 |Timestamp, Date, Time, Interval|Yes
 |Enum|No
 |Point, Lseg, Box, Path, Polygon, Circle|Yes
+|Geometry, geography|Yes (With the PostGIS extension)
 |===
 
 ==== Bulk Loading
