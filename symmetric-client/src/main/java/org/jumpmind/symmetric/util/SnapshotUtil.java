@@ -841,7 +841,7 @@ public class SnapshotUtil {
                             String.valueOf(i.getCurrentBatchCount()), i.getCurrentTableName(),
                             i.getCurrentBatchStartTime() == null ? null : df.format(i.getCurrentBatchStartTime()),
                             String.valueOf(i.getCurrentLoadId()), i.getStartTime() == null ? null : df.format(i.getStartTime()),
-                            i.getEndTime() == null ? null : df.format(i.getEndTime()) };                    
+                            i.getEndTime() == null ? null : df.format(i.getEndTime()) };
                     csvWriter.writeRecord(row);
                     if (i.getEndTime() == null) {
                         csvActiveWriter.writeRecord(row);

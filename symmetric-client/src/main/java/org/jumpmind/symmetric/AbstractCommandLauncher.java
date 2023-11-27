@@ -145,7 +145,7 @@ public abstract class AbstractCommandLauncher {
             configurePropertiesFile(line);
             String[] cmdArgs = line.getArgs();
             if (cmdArgs != null) {
-                log.info("Command: {}", ArrayUtils.toString(cmdArgs));   
+                log.info("Command: {}", ArrayUtils.toString(cmdArgs));
             }
             if (line.getOptions() != null) {
                 for (Option option : line.getOptions()) {

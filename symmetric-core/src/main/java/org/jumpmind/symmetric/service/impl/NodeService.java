@@ -210,7 +210,7 @@ public class NodeService extends AbstractService implements INodeService {
         nodeHostForCurrentNode.refresh(platform, engine.getClusterService().getInstanceId());
         updateNodeHost(nodeHostForCurrentNode);
     }
-    
+
     @Override
     public void deleteNode(String nodeId, boolean syncChange) {
         deleteNode(nodeId, null, syncChange);
@@ -244,7 +244,8 @@ public class NodeService extends AbstractService implements INodeService {
                 transaction.prepareAndExecute(getSql("deleteNodeChannelCtlSql"), new Object[] { nodeId });
                 transaction.prepareAndExecute(getSql("deleteIncomingErrorSql"), new Object[] { StringUtils.isNotBlank(targetNodeId) ? targetNodeId : nodeId });
                 transaction.prepareAndExecute(getSql("deleteExtractRequestSql"), new Object[] { nodeId, nodeId });
-                transaction.prepareAndExecute(getSql("deleteNodeCommunicationSql"), new Object[] { StringUtils.isNotBlank(targetNodeId) ? targetNodeId : nodeId });
+                transaction.prepareAndExecute(getSql("deleteNodeCommunicationSql"), new Object[] { StringUtils.isNotBlank(targetNodeId) ? targetNodeId
+                        : nodeId });
                 transaction.prepareAndExecute(getSql("deleteTableReloadRequestSql"), new Object[] { nodeId, nodeId });
                 transaction.prepareAndExecute(getSql("cancelTableReloadStatusSql"), new Object[] { new Date(), new Date(), nodeId, nodeId });
                 transaction.prepareAndExecute(getSql("setOutgoingBatchOkSql"), new Object[] { StringUtils.isNotBlank(targetNodeId) ? targetNodeId : nodeId });
