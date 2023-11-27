@@ -89,6 +89,8 @@ be compared to a threshold value.
 
 |strandedOrExpiredData|Number of stranded or expired data rows detected by the <<Purge Outgoing Job>> and recorded in the <<NODE_HOST_STATS>> table within the past 4 hours.|✔
 
+|unknownCa|Number of nodes that have recently experienced a "PKIX path building failed" error due to an unknown certificate authority. The duration in the past during which this insight checks for errors is determined by the purge.log.summary.retention.minutes parameter, which defaults to 60 minutes.|✔
+
 |===
 
 Expression:: An expression used by the monitor to set options specific to the monitor type. For batchError monitors, setting the expression to

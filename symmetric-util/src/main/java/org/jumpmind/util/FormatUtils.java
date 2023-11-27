@@ -20,6 +20,8 @@
  */
 package org.jumpmind.util;
 
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.sql.Timestamp;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -38,6 +40,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
@@ -495,5 +498,15 @@ public final class FormatUtils {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+
+    public static String convertToPem(X509Certificate cert) throws CertificateEncodingException {
+        Base64 encoder = new Base64(64);
+        String cert_begin = "-----BEGIN CERTIFICATE-----\n";
+        String end_cert = "-----END CERTIFICATE-----";
+        byte[] derCert = cert.getEncoded();
+        String pemCertPre = new String(encoder.encode(derCert));
+        String pemCert = cert_begin + pemCertPre + end_cert;
+        return pemCert;
     }
 }

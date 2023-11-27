@@ -65,7 +65,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -100,6 +99,7 @@ import org.jumpmind.symmetric.util.ModuleException;
 import org.jumpmind.symmetric.util.ModuleManager;
 import org.jumpmind.symmetric.util.PropertiesUtil;
 import org.jumpmind.util.AppUtils;
+import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.JarBuilder;
 import org.jumpmind.util.ZipBuilder;
 
@@ -1093,7 +1093,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         for (Certificate cert : connection.getServerCertificates()) {
             if (cert instanceof X509Certificate) {
                 try {
-                    String certString = convertToPem((X509Certificate) cert);
+                    String certString = FormatUtils.convertToPem((X509Certificate) cert);
                     importCert(certString.getBytes(), null, null, line.hasOption(OPTION_ACCEPT_ALL));
                 } catch (CertificateEncodingException e) {
                 }
@@ -1118,16 +1118,6 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         } catch (MalformedURLException e) {
             return false;
         }
-    }
-
-    private String convertToPem(X509Certificate cert) throws CertificateEncodingException {
-        Base64 encoder = new Base64(64);
-        String cert_begin = "-----BEGIN CERTIFICATE-----\n";
-        String end_cert = "-----END CERTIFICATE-----";
-        byte[] derCert = cert.getEncoded();
-        String pemCertPre = new String(encoder.encode(derCert));
-        String pemCert = cert_begin + pemCertPre + end_cert;
-        return pemCert;
     }
 
     private void importCert(byte[] certData, String alias, String password, boolean acceptAll) {
