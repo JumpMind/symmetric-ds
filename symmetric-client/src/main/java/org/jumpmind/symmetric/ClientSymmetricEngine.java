@@ -56,7 +56,6 @@ import org.jumpmind.extension.IProgressListener;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -158,13 +157,9 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     }
 
     protected final void setDeploymentSubTypeByProperties(Properties properties) {
-        if (properties != null) {
-            String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
-            setDeploymentSubType(loadOnly != null && loadOnly.equals("true") ? Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY : null);
-            boolean isLogBased = Boolean.valueOf(properties.getProperty(ParameterConstants.START_LOG_MINER_JOB, "false"));
-            if (isLogBased) {
-                setDeploymentSubType(Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED);
-            }
+        String deploymentSubType = SymmetricUtils.getDeploymentSubType(properties);
+        if (deploymentSubType != null) {
+            setDeploymentSubType(deploymentSubType);
         }
     }
 

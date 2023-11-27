@@ -29,10 +29,10 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.Version;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,16 +96,7 @@ public class Node implements Serializable, Comparable<Node> {
         setExternalId(properties.getProperty(ParameterConstants.EXTERNAL_ID));
         setSyncUrl(properties.getProperty(ParameterConstants.SYNC_URL));
         setSchemaVersion(properties.getProperty(ParameterConstants.SCHEMA_VERSION));
-        String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
-        String logBased = properties.getProperty(ParameterConstants.START_LOG_MINER_JOB);
-        String deploymentSubType = null;
-        if (loadOnly != null && loadOnly.equals("true")) {
-            deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY;
-        }
-        if (logBased != null && logBased.equals("true")) {
-            deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED;
-        }
-        this.deploymentSubType = deploymentSubType;
+        this.deploymentSubType = SymmetricUtils.getDeploymentSubType(properties);
     }
 
     public Node(IParameterService parameterService, ISymmetricDialect symmetricDialect, String databaseName) {

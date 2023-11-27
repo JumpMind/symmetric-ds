@@ -346,16 +346,7 @@ public class SymmetricEngineHolder {
             validateRequiredProperties(properties);
             engine = new ServerSymmetricEngine(file, springContext, this);
             engine.setDeploymentType(deploymentType);
-            String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
-            String logBased = properties.getProperty(ParameterConstants.START_LOG_MINER_JOB, "false");
-            String deploymentSubType = null;
-            if (loadOnly != null && loadOnly.equals("true")) {
-                deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY;
-            }
-            if (logBased != null && logBased.equals("true")) {
-                deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED;
-            }
-            engine.setDeploymentSubType(deploymentSubType);
+            engine.setDeploymentSubType(SymmetricUtils.getDeploymentSubType(properties));
             synchronized (this) {
                 if (!engines.containsKey(engine.getEngineName())) {
                     engines.put(engine.getEngineName(), engine);

@@ -58,6 +58,7 @@ final public class Constants {
     public static final String DEPLOYMENT_TYPE_CCLIENT = "cclient";
     public static final String DEPLOYMENT_TYPE_REST = "rest";
     public static final String DEPLOYMENT_SUB_TYPE_LOAD_ONLY = "load-only";
+    public static final String DEPLOYMENT_SUB_TYPE_EXTRACT_ONLY = "extract-only";
     public static final String DEPLOYMENT_SUB_TYPE_LOG_BASED = "log-based";
     /**
      * Use this value for the router_id in {@link DataEvent} if the router is unknown.
