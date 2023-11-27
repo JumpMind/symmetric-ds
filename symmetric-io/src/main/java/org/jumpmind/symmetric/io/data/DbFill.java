@@ -170,6 +170,7 @@ public class DbFill {
                 Table table = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
                         tableName);
                 if (table != null) {
+                    table = filterColumns(table);
                     tablesToFill.add(table);
                 } else if (!ignoreMissingTables) {
                     throw new RuntimeException("Cannot find table " + tableName + " in catalog "
@@ -889,7 +890,8 @@ public class DbFill {
             objectValue = randomBytes(randomSize(column, size));
         } else if (type == Types.ARRAY) {
             objectValue = null;
-        } else if (type == Types.VARCHAR || type == Types.LONGVARCHAR || type == Types.CHAR || type == Types.CLOB) {
+        } else if (type == Types.VARCHAR || type == Types.NVARCHAR || type == Types.NCHAR || type == Types.LONGVARCHAR || type == Types.CHAR
+                || type == Types.CLOB) {
             if (column.getJdbcTypeName() != null
                     && (column.getJdbcTypeName().equals("JSON") || column.getJdbcTypeName().equals("jsonb"))) {
                 objectValue = "{\"jumpmind\":\"symmetricds\"}";
@@ -1054,6 +1056,7 @@ public class DbFill {
             allDbTablesCache = new TreeMap<String, Table>(String.CASE_INSENSITIVE_ORDER);
             Table[] allTables = platform.readDatabase(getCatalogToUse(), getSchemaToUse(), null).getTables();
             for (Table table : allTables) {
+                table = filterColumns(table);
                 allDbTablesCache.put(table.getName(), table);
             }
         }
@@ -1064,6 +1067,25 @@ public class DbFill {
         Table table = getAllDbTables().get(tableName);
         if (table == null) {
             table = platform.readTableFromDatabase(catalogName, schemaName, tableName);
+            table = filterColumns(table);
+        }
+        return table;
+    }
+
+    protected Table filterColumns(Table table) {
+        if (platform.getName().startsWith("mssql")) {
+            List<Column> columnsToRemove = new ArrayList<Column>();
+            for (Column column : table.getColumns()) {
+                if (column.getJdbcTypeName().equalsIgnoreCase("timestamp") || column.getJdbcTypeName().equalsIgnoreCase("rowversion")) {
+                    columnsToRemove.add(column);
+                }
+            }
+            if (columnsToRemove.size() > 0) {
+                table = table.copy();
+                for (Column column : columnsToRemove) {
+                    table.removeColumn(column);
+                }
+            }
         }
         return table;
     }
