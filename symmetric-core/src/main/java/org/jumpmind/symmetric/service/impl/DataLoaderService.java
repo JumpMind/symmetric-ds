@@ -676,7 +676,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         }
         List<IncomingBatch> batchesProcessed = listener.getBatchesProcessed();
-        if (error != null) {
+        if (error != null && error instanceof ProtocolException) {
             batchesProcessed.add(new IncomingBatch());
         }
         return batchesProcessed;

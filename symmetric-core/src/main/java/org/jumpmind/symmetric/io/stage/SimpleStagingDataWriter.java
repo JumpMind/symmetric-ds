@@ -147,7 +147,7 @@ public class SimpleStagingDataWriter {
                     writeLine(channelLine);
                     writeLine(line);
 
-                    if (listeners != null) {
+                    if (listeners != null && exception == null) {
                         for (IProtocolDataWriterListener listener : listeners) {
                             listener.start(context, batch);
                         }
@@ -163,7 +163,7 @@ public class SimpleStagingDataWriter {
                     
                     if (batch != null) {
                         batch.setStatistics(batchStats);
-                        if (listeners != null) {
+                        if (listeners != null && exception == null) {
                             for (IProtocolDataWriterListener listener : listeners) {
                                 listener.end(context, batch, resource);
                             }
@@ -200,7 +200,7 @@ public class SimpleStagingDataWriter {
                         debugLine(line);
                     }
 
-                    if (listeners != null) {
+                    if (listeners != null && exception == null) {
                         for (IProtocolDataWriterListener listener : listeners) {
                             listener.start(context, batch);
                         }
@@ -275,7 +275,9 @@ public class SimpleStagingDataWriter {
 
             processInfo.setStatus(ProcessStatus.OK);
         } catch (Exception ex) {
-            exception = ex;
+            if (exception == null) {
+                exception = ex;
+            }
             if (resource != null) {
                 resource.delete();
             }
@@ -327,7 +329,8 @@ public class SimpleStagingDataWriter {
                 writer.write(line);
                 writer.write("\n");
             } else {
-                throw new ProtocolException("Batch data is corrupt because no batch ID is present");
+                exception = new ProtocolException("Batch data is corrupt because no batch ID was present for DML lines");
+                processInfo.setStatus(ProcessStatus.ERROR);
             }
         }
     }

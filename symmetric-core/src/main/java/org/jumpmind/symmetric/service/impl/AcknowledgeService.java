@@ -22,9 +22,8 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.mapper.NumberMapper;
@@ -273,38 +272,32 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         }
         if (hasCorruptBatch && parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
             OutgoingBatches batches = engine.getOutgoingBatchService().getOutgoingBatches(nodeId, queue, false);
+            Iterator<OutgoingBatch> iter = batches.getBatches().iterator();
+            while (iter.hasNext()) {
+                OutgoingBatch batch = iter.next();
+                if (batch.getStatus() == Status.RQ || batch.getStatus() == Status.NE) {
+                    iter.remove();
+                }
+            }
             if (batches.containsBatches()) {
-                Map<Long, OutgoingBatch> batchMap = new HashMap<Long, OutgoingBatch>();
-                for (OutgoingBatch batch : batches.getBatches()) {
-                    if (batch.getStatus() == Status.LD) {
-                        batchMap.put(batch.getBatchId(), batch);
+                OutgoingBatch batch = batches.getBatches().get(0);
+                StringBuilder message = new StringBuilder(128);
+                message.append("Expected but did not receive an ack for batch ");
+                message.append(batch.getNodeBatchId()).append(". ");
+                if (!batch.isLoadFlag()) {
+                    message.append("This could be because the batch is corrupt - removing the batch from staging.");
+                    log.warn(message.toString());
+                    IStagedResource resource = engine.getStagingManager().find(Constants.STAGING_CATEGORY_OUTGOING,
+                            batch.getStagedLocation(), batch.getBatchId());
+                    if (resource != null) {
+                        resource.delete();
+                    } else {
+                        log.warn("Unable to find outgoing staging file for {} that has corrupt batch data", batch.getNodeBatchId());
                     }
-                }
-                for (BatchAck ack : acks) {
-                    batchMap.remove(ack.getBatchId());
-                }
-                if (batchMap.size() > 0) {
-                    for (OutgoingBatch batch : batchMap.values()) {
-                        StringBuilder message = new StringBuilder(128);
-                        message.append("Expected but did not receive an ack for batch ");
-                        message.append(batch.getNodeBatchId()).append(". ");
-
-                        if (!batch.isLoadFlag()) {
-                            message.append("This could be because the batch is corrupt - removing the batch from staging.");
-                            log.warn(message.toString());
-                            IStagedResource resource = engine.getStagingManager().find(Constants.STAGING_CATEGORY_OUTGOING,
-                                    batch.getStagedLocation(), batch.getBatchId());
-                            if (resource != null) {
-                                resource.delete();
-                            } else {
-                                log.warn("Unable to find outgoing staging file for node {} that has corrupt batch data", nodeId);
-                            }
-                        } else {
-                            message.append(
-                                    "This could be because the batch is corrupt. Not removing the batch because it was a load batch, but you may need to clear the batch from staging manually.");
-                            log.warn(message.toString());
-                        }
-                    }
+                } else {
+                    message.append(
+                            "This could be because the batch is corrupt. Not removing the batch because it was a load batch, but you may need to clear the batch from staging manually.");
+                    log.warn(message.toString());
                 }
             } else {
                 log.warn("Unable to find outgoing batch for node {} that has corrupt batch data", nodeId);
