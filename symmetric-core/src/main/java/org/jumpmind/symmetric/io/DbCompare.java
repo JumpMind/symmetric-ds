@@ -385,7 +385,8 @@ public class DbCompare {
                     log.warn("No trigger history found for {}", sourceTable.getFullyQualifiedTableName());
                 }
             }
-            DbCompareTables tables = new DbCompareTables(sourceTable, null);
+            Table sourceTableCopy = sourceTable.copy();
+            DbCompareTables tables = new DbCompareTables(sourceTableCopy, null);
             String targetTableName = tableName;
             if (!CollectionUtils.isEmpty(targetTableNames)) {
                 targetTableName = targetTableNames.get(i);
