@@ -85,7 +85,7 @@ NOTE: 'TARGET_BASE_DIR' should be changed to your target base directory.
 
 endif::pro[]
 
-* Testing.  You are now ready to test your csv to database routing. Add a csv file that matches your table specifications to your base directory or make a change to a pre-existing csv file in the directory. File sync tracker checks for changes in already sync'd files and runs every 5 minutes. File sync pull checks for new files to pull down and runs every 1 minute. Depending on the change you choose (changing a file or adding a file), wait the appropriate amount of time and then verify that the changes are shown in the target table.
+* Testing.  You are now ready to test your csv to database routing. Add a csv file that matches your table specifications to your base directory or make a change to a pre-existing csv file in the directory. Note that this CSV file must have a first row containing the column names for the table into which you want to insert.  File sync tracker checks for changes in already sync'd files and runs every 5 minutes. File sync pull checks for new files to pull down and runs every 1 minute. Depending on the change you choose (changing a file or adding a file), wait the appropriate amount of time and then verify that the changes are shown in the target table.
 
 .The following SQL statement will verify changes to the person table.
 [source, SQL]
