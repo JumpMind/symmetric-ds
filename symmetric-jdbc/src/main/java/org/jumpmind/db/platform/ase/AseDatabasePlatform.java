@@ -54,6 +54,7 @@ import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.db.util.BinaryEncoding;
 
 /*
@@ -69,6 +70,7 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     /* The maximum size that text and binary columns can have. */
     public static final long MAX_TEXT_SIZE = 2147483647;
     private Map<String, String> sqlScriptReplacementTokens;
+    private boolean usingJtds;
 
     public AseDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
@@ -82,7 +84,10 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     protected AseDdlBuilder createDdlBuilder() {
-        return new AseDdlBuilder();
+        usingJtds = settings.getProperties().get(BasicDataSourcePropertyConstants.DB_POOL_URL).startsWith("jdbc:jtds");
+    	AseDdlBuilder ddlBuilder = new AseDdlBuilder();
+    	ddlBuilder.setUsingJtds(usingJtds);
+        return ddlBuilder;
     }
 
     @Override

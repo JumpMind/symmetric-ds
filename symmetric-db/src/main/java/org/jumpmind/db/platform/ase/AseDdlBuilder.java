@@ -73,6 +73,16 @@ import org.jumpmind.db.platform.PlatformUtils;
  * The SQL Builder for Sybase.
  */
 public class AseDdlBuilder extends AbstractDdlBuilder {
+	private boolean usingJtds;
+	
+	public boolean isUsingJtds() {
+		return usingJtds;
+	}
+	
+	public void setUsingJtds(boolean usingJtds) {
+		this.usingJtds = usingJtds;
+	}
+	
     public AseDdlBuilder() {
         super(DatabaseNamesConstants.ASE);
         databaseInfo.setMaxIdentifierLength(128);
