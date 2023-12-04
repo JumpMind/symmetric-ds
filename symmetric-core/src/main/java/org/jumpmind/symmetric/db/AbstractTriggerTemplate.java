@@ -110,6 +110,10 @@ abstract public class AbstractTriggerTemplate {
      */
     protected boolean useTriggerTemplateForColumnTemplatesDuringInitialLoad(Column column) {
         if (!useTriggerTemplateForColumnTemplatesDuringInitialLoad() && column != null) {
+            int mappedType = column.getMappedTypeCode();
+            if (mappedType == ColumnTypes.TIMESTAMPTZ || mappedType == ColumnTypes.TIMESTAMPLTZ || mappedType == ColumnTypes.TIMETZ) {
+                return true;
+            }
             int type = column.getJdbcTypeCode();
             // These column types can be selected directly without a template
             if (type == Types.CHAR || type == Types.NCHAR || type == Types.VARCHAR || type == ColumnTypes.NVARCHAR
