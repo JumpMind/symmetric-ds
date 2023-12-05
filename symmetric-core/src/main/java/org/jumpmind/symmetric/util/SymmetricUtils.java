@@ -210,7 +210,11 @@ final public class SymmetricUtils {
     public static String getDeploymentSubType(Properties properties) {
         if (properties != null) {
             boolean isLoadOnly = Boolean.valueOf(properties.getProperty(ParameterConstants.NODE_LOAD_ONLY, "false"));
+            boolean isLogBased = Boolean.valueOf(properties.getProperty(ParameterConstants.START_LOG_MINER_JOB, "false"));
             if (isLoadOnly) {
+            	if (isLogBased) {
+                    return Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED;
+                }
                 String dbUrl = properties.getProperty("db.url");
                 if (dbUrl != null && dbUrl.startsWith("jdbc:h2:file:") && dbUrl.contains("extract-only")) {
                     return Constants.DEPLOYMENT_SUB_TYPE_EXTRACT_ONLY;
@@ -218,11 +222,8 @@ final public class SymmetricUtils {
                     return Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY;
                 }
             }
-            boolean isLogBased = Boolean.valueOf(properties.getProperty(ParameterConstants.START_LOG_MINER_JOB, "false"));
-            if (isLogBased) {
-                return Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED;
-            }
+            
         }
-        return null;
+        return Constants.DEPLOYMENT_SUB_TYPE_TRIGGER_BASED;
     }
 }
