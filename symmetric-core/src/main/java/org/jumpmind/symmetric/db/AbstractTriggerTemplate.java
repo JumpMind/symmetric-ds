@@ -550,6 +550,10 @@ abstract public class AbstractTriggerTemplate {
                 aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue,
                         primaryKeyColumns.length == 0 ? orderedColumns : primaryKeyColumns), ddl);
         ddl = FormatUtils.replace(
+                "tableNewPrimaryKeyJoinByTableName",
+                aliasedPrimaryKeyJoin(SymmetricUtils.quote(symmetricDialect, table.getName()), newTriggerValue,
+                        primaryKeyColumns.length == 0 ? orderedColumns : primaryKeyColumns), ddl);
+        ddl = FormatUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(dml == DataEventType.DELETE ? oldTriggerValue
                         : newTriggerValue, table.hasPrimaryKey() ? table.getPrimaryKeyColumns()
