@@ -115,6 +115,7 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                     || (parameterService.getSyncUrl() != null && !parameterService.getSyncUrl().equalsIgnoreCase(me.getSyncUrl()))
                     || !parameterService.getString(ParameterConstants.SCHEMA_VERSION, "").equals(me.getSchemaVersion())
                     || (engine.getDeploymentType() != null && !engine.getDeploymentType().equals(me.getDeploymentType()))
+                    || (engine.getDeploymentSubType() != null && !engine.getDeploymentSubType().equals(me.getDeploymentSubType()))
                     || !Version.version().equals(me.getSymmetricVersion())
                     || (engine.getParameterService().isRegistrationServer() && !Version.version().equals(me.getConfigVersion()))
                     || !symmetricDialect.getName().equals(me.getDatabaseType())

@@ -36,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Transaction;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
@@ -204,5 +205,24 @@ final public class SymmetricUtils {
             return true;
         }
         return false;
+    }
+
+    public static String getDeploymentSubType(Properties properties) {
+        if (properties != null) {
+            boolean isLoadOnly = Boolean.valueOf(properties.getProperty(ParameterConstants.NODE_LOAD_ONLY, "false"));
+            if (isLoadOnly) {
+                String dbUrl = properties.getProperty("db.url");
+                if (dbUrl != null && dbUrl.startsWith("jdbc:h2:file:") && dbUrl.contains("extract-only")) {
+                    return Constants.DEPLOYMENT_SUB_TYPE_EXTRACT_ONLY;
+                } else {
+                    return Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY;
+                }
+            }
+            boolean isLogBased = Boolean.valueOf(properties.getProperty(ParameterConstants.START_LOG_MINER_JOB, "false"));
+            if (isLogBased) {
+                return Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED;
+            }
+        }
+        return null;
     }
 }
