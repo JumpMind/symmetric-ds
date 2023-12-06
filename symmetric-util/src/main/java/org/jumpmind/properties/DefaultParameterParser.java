@@ -126,7 +126,7 @@ public class DefaultParameterParser {
                     currentMetaData = new ParameterMetaData();
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("", e);
         }
         return metaData;
