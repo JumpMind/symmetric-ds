@@ -56,7 +56,6 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
     private INodeCommunicationService nodeCommunicationService;
     private IDataLoaderService dataLoaderService;
     private IConfigurationService configurationService;
-    private IStatisticManager statisticManager;
 
     public PullService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             INodeService nodeService, IDataLoaderService dataLoaderService,
@@ -70,7 +69,6 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
         this.nodeCommunicationService = nodeCommunicationService;
         this.dataLoaderService = dataLoaderService;
         this.configurationService = configurationService;
-        this.statisticManager = statisticManager;
     }
 
     synchronized public RemoteNodeStatuses pullData(boolean force) {
@@ -131,8 +129,6 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
             long lastDataProcessed = 0;
             long cumulativeBatchesProcessed = 0;
             long cumulativeDataProcessed = 0;
-            long begin = System.currentTimeMillis();
-            long end = 0;
             do {
                 log.debug("Pull requested for {}", node);
                 if (lastBatchesProcessed > 0) {
@@ -148,15 +144,12 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                 } catch (Exception ex) {
                     fireOffline(ex, node, status);
                 }
-                end = System.currentTimeMillis();
                 lastBatchesProcessed = status.getBatchesProcessed() - cumulativeBatchesProcessed;
                 lastDataProcessed = status.getDataProcessed() - cumulativeDataProcessed;
                 if (!status.failed() && (lastDataProcessed > 0 || lastBatchesProcessed > 0)) {
                     log.info(
                             "Pull data received from {} on queue {}. {} rows and {} batches were processed. ({})",
                             new Object[] { node.toString(), nodeCommunication.getQueue(), lastDataProcessed, lastBatchesProcessed, status.getTableSummary() });
-                    statisticManager.addJobStats(node.getNodeId(), 1, "Pull",
-                            begin, end, status.getDataProcessed());
                 } else if (status.failed()) {
                     log.debug(
                             "There was a failure while pulling data from {} on queue {}. {} rows and {} batches were processed. ({})",

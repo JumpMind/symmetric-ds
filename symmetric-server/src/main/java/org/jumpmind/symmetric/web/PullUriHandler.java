@@ -156,10 +156,6 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
             }
         }
         if (batchesCount > 0) {
-            statisticManager.addJobStats(targetNode.getNodeId(), 1, "Pull Handler",
-                    processInfo.getStartTime().getTime(),
-                    processInfo.getLastStatusChangeTime().getTime(),
-                    dataCount);
             log.info(
                     "{} data and {} batches sent during pull request from {}",
                     new Object[] { dataCount, batchesCount, targetNode.toString() });

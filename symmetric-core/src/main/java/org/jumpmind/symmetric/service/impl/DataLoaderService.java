@@ -439,10 +439,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 log.info("{} data and {} batches loaded during push request from {}",
                         new Object[] { okDataCount, okBatchesCount, sourceNode.toString() });
             }
-            statisticManager.addJobStats(sourceNode.getNodeId(), 1, "Push Handler",
-                    processInfo.getStartTime().getTime(),
-                    processInfo.getLastStatusChangeTime().getTime(),
-                    okDataCount);
         }
     }
 
