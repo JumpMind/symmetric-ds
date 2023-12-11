@@ -420,7 +420,7 @@ getCreateTriggerString() + " $(schemaNameOnly)$(triggerName) on $(schemaName)$(t
 
         sqlTemplates.put("filteredDdlTriggerTemplate",
 getCreateTriggerString() + " $(triggerName) on database\n" + 
-"for create_table, drop_table, alter_table,\n" +
+"for create_table, drop_table, alter_table, rename,\n" +
 "create_view, drop_view, alter_view,\n" +
 "create_function, drop_function, alter_function,\n" +
 "create_procedure, drop_procedure, alter_procedure,\n" +
@@ -456,7 +456,7 @@ getCreateTriggerString() + " $(triggerName) on database\n" +
         
         sqlTemplates.put("allDdlTriggerTemplate",
 getCreateTriggerString() + " $(triggerName) on database\n" + 
-"for create_table, drop_table, alter_table,\n" +
+"for create_table, drop_table, alter_table,rename,\n" +
 "create_view, drop_view, alter_view,\n" +
 "create_function, drop_function, alter_function,\n" +
 "create_procedure, drop_procedure, alter_procedure,\n" +

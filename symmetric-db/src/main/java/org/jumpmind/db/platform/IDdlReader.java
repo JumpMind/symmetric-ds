@@ -37,6 +37,8 @@ public interface IDdlReader {
 
     public Table readTable(String catalog, String schema, String tableName);
 
+    public Table readTable(ISqlTransaction transaction, String catalog, String schema, String table);
+
     public List<String> getTableTypes();
 
     public List<String> getCatalogNames();

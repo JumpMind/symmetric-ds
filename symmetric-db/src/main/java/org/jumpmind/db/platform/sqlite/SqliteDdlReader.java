@@ -118,6 +118,11 @@ public class SqliteDdlReader implements IDdlReader {
         throw new NotImplementedException();
     }
 
+    @Override
+    public Table readTable(ISqlTransaction transaction, String catalog, String schema, String table) {
+        return readTable(catalog, schema, table);
+    }
+
     private String quote(String name) {
         String quote = platform.getDatabaseInfo().getDelimiterToken();
         return quote + name + quote;

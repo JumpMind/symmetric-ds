@@ -51,6 +51,11 @@ public class KafkaDdlReader implements IDdlReader {
     }
 
     @Override
+    public Table readTable(ISqlTransaction transaction, String catalog, String schema, String table) {
+        return readTable(catalog, schema, table);
+    }
+
+    @Override
     public List<String> getTableTypes() {
         return null;
     }

@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,6 +89,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.util.ExceptionUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.MDC;
 
@@ -1704,6 +1706,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     protected Set<Table> getTablesForTrigger(Trigger trigger, List<Trigger> triggers, boolean useTableCache,
             TriggerRouterContext triggerRouterContext) {
+        try {
+            return getTablesForTriggerWithException(trigger, triggers, useTableCache, triggerRouterContext);
+        } catch (RuntimeException e) {
+            if (platform.getSqlTemplate().isDeadlock(e)) {
+                log.warn("Deadlock occurred, so retrying");
+                return getTablesForTriggerWithException(trigger, triggers, useTableCache, triggerRouterContext);
+            }
+            throw e;
+        }
+    }
+
+    protected Set<Table> getTablesForTriggerWithException(Trigger trigger, List<Trigger> triggers, boolean useTableCache,
+            TriggerRouterContext triggerRouterContext) {
         long ts = System.currentTimeMillis();
         Set<Table> tables = new HashSet<Table>();
         IDatabasePlatform sourcePlatform = getTargetPlatform(trigger.getSourceTableName());
@@ -2306,6 +2321,33 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected TriggerHistory rebuildTriggerIfNecessary(StringBuilder sqlBuffer,
+            boolean forceRebuild, Trigger trigger, DataEventType dmlType,
+            TriggerReBuildReason reason, TriggerHistory oldhist, TriggerHistory hist,
+            boolean triggerIsActive, Table table, List<TriggerHistory> activeTriggerHistories,
+            TriggerTableSupportingInfo triggerTableSupportingInfo) {
+        try {
+            return rebuildTriggerIfNecessaryWithException(sqlBuffer, forceRebuild, trigger, dmlType, reason, oldhist, hist, triggerIsActive, table, activeTriggerHistories,
+                    triggerTableSupportingInfo);
+        } catch (Exception e) {
+            SQLException se = ExceptionUtils.unwrapSqlException(e);
+            IDatabasePlatform platform = symmetricDialect.getTargetPlatform(table.getName());
+            if (se != null && se.getMessage() != null && platform.getName().startsWith(DatabaseNamesConstants.MSSQL) && se.getErrorCode() == 207) {
+                log.error("Retrying trigger for {} after exception {} [{}]: {}", table.getName(), e.getClass().getName(), se.getErrorCode(), e.getMessage());
+                table = platform.readTableFromDatabase(table.getCatalog(), table.getSchema(), table.getName());
+                if (table != null) {
+                    return rebuildTriggerIfNecessaryWithException(sqlBuffer, forceRebuild, trigger, dmlType, reason, oldhist, hist, triggerIsActive, table,
+                            activeTriggerHistories, triggerTableSupportingInfo);
+                }
+            } else if (platform.getSqlTemplate().isDeadlock(e)) {
+                log.error("Retrying trigger for {} after deadlock {} [{}]: {}", table.getName(), e.getClass().getName(), se.getErrorCode(), e.getMessage());
+                return rebuildTriggerIfNecessaryWithException(sqlBuffer, forceRebuild, trigger, dmlType, reason, oldhist, hist, triggerIsActive, table,
+                        activeTriggerHistories, triggerTableSupportingInfo);
+            }
+            throw e;
+        }
+    }
+
+    protected TriggerHistory rebuildTriggerIfNecessaryWithException(StringBuilder sqlBuffer,
             boolean forceRebuild, Trigger trigger, DataEventType dmlType,
             TriggerReBuildReason reason, TriggerHistory oldhist, TriggerHistory hist,
             boolean triggerIsActive, Table table, List<TriggerHistory> activeTriggerHistories,

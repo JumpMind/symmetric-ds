@@ -83,6 +83,7 @@ import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.IConnectionHandler;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.mapper.RowMapper;
@@ -530,34 +531,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     @Override
     public Table readTable(final String catalog, final String schema, final String table) {
         try {
-            log.debug("reading table: " + table);
             JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
             return postprocessTableFromDatabase(sqlTemplate.execute(new IConnectionCallback<Table>() {
                 public Table execute(Connection connection) throws SQLException {
-                    DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
-                    metaData.setMetaData(connection.getMetaData());
-                    if (isNotBlank(catalog)) {
-                        metaData.setCatalog(catalog);
-                    }
-                    if (isNotBlank(schema)) {
-                        metaData.setSchemaPattern(schema);
-                    }
-                    metaData.setTableTypes(null);
-                    ResultSet tableData = null;
-                    try {
-                        log.debug("getting table metadata for {}", table);
-                        tableData = metaData.getTables(getTableNamePattern(table));
-                        log.debug("done getting table metadata for {}", table);
-                        if (tableData != null && tableData.next()) {
-                            Map<String, Object> values = readMetaData(tableData, initColumnsForTable());
-                            return readTable(connection, metaData, values);
-                        } else {
-                            log.debug("table {} not found", table);
-                            return null;
-                        }
-                    } finally {
-                        close(tableData);
-                    }
+                    return readTableFromConnection(connection, catalog, schema, table);
                 }
             }));
         } catch (SqlException e) {
@@ -568,6 +545,58 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                         .getMessage());
                 throw e;
             }
+        }
+    }
+
+    @Override
+    public Table readTable(ISqlTransaction transaction, final String catalog, final String schema, final String table) {
+        try {
+            log.debug("reading table {}", table);
+            if (transaction instanceof JdbcSqlTransaction) {
+                return postprocessTableFromDatabase(((JdbcSqlTransaction) transaction).executeCallback(new IConnectionCallback<Table>() {
+                    public Table execute(Connection connection) throws SQLException {
+                        return readTableFromConnection(connection, catalog, schema, table);
+                    }
+                }));
+            } else {
+                return readTable(catalog, schema, table);
+            }
+        } catch (SqlException e) {
+            if (e.getMessage() != null && StringUtils.containsIgnoreCase(e.getMessage(), "does not exist")) {
+                return null;
+            } else {
+                log.error("Failed to get metadata for {} because: {} {}", Table.getFullyQualifiedTableName(catalog, schema, table), e.getClass().getName(), e
+                        .getMessage());
+                throw e;
+            }
+        }
+    }
+
+    protected Table readTableFromConnection(Connection connection, final String catalog, final String schema, final String table) throws SQLException {
+        log.debug("reading table {}", table);
+        DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
+        metaData.setMetaData(connection.getMetaData());
+        if (isNotBlank(catalog)) {
+            metaData.setCatalog(catalog);
+        }
+        if (isNotBlank(schema)) {
+            metaData.setSchemaPattern(schema);
+        }
+        metaData.setTableTypes(null);
+        ResultSet rs = null;
+        try {
+            log.debug("getting table metadata for {}", table);
+            rs = metaData.getTables(getTableNamePattern(table));
+            log.debug("done getting table metadata for {}", table);
+            if (rs != null && rs.next()) {
+                Map<String, Object> values = readMetaData(rs, initColumnsForTable());
+                return readTable(connection, metaData, values);
+            } else {
+                log.debug("table {} not found", table);
+                return null;
+            }
+        } finally {
+            close(rs);
         }
     }
 

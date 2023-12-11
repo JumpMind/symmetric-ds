@@ -51,6 +51,7 @@ import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.DmlStatementOptions;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.util.BinaryEncoding;
 
@@ -110,6 +111,8 @@ public interface IDatabasePlatform {
     public Database readFromDatabase(Table... tables);
 
     public Table readTableFromDatabase(String catalogName, String schemaName, String tablename);
+
+    public Table readTableFromDatabase(ISqlTransaction transaction, String catalogName, String schemaName, String tableName);
 
     public void resetCachedTableModel();
 

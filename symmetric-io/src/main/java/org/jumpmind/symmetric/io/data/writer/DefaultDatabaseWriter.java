@@ -19,7 +19,6 @@
  * under the License.
  */
 package org.jumpmind.symmetric.io.data.writer;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Method;
@@ -30,6 +29,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +55,7 @@ import org.jumpmind.db.sql.LogSqlBuilder;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScriptReader;
+import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
@@ -72,12 +74,15 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     private final String ATTRIBUTE_CHANNEL_ID_RELOAD = "reload";
     private final String TRUNCATE_PATTERN = "^(truncate)( table)?.*";
     private final String DELETE_PATTERN = "^(delete from).*";
+    private final String ALTER_DEF_CONSTRAINT_PATTERN = " *alter +table +[\\[\\\"]{0,1}(.*?)[\\]\\\"]{0,1} +drop +constraint +[\\[\\\"]{0,1}(df__.*?)[\\]\\\"]{0,1} *";
+    private final String ALTER_TABLE_PATTERN = " *alter +table +.*";
     protected IDatabasePlatform platform;
     protected ISqlTransaction transaction;
     protected DmlStatement currentDmlStatement;
     protected Object[] currentDmlValues;
     protected LogSqlBuilder logSqlBuilder = new LogSqlBuilder();
     protected Boolean isCteExpression;
+    protected boolean hasUncommittedDdl;
 
     public DefaultDatabaseWriter(IDatabasePlatform platform) {
         this(platform, null, null);
@@ -185,6 +190,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             }
         }
         super.commit(earlyCommit);
+        hasUncommittedDdl = false;
     }
 
     protected void commit(boolean earlyCommit, ISqlTransaction newTransaction) {
@@ -202,6 +208,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             }
         }
         super.commit(earlyCommit);
+        hasUncommittedDdl = false;
     }
 
     @Override
@@ -216,6 +223,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             }
         }
         super.rollback();
+        hasUncommittedDdl = false;
     }
 
     protected boolean isCteExpression() {
@@ -683,10 +691,25 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             boolean captureChanges = parsedData.length > 1 && parsedData[1].equals("1");
             List<String> sqlStatements = getSqlStatements(script);
             long count = 0;
+            Pattern defConsPattern = Pattern.compile(ALTER_DEF_CONSTRAINT_PATTERN, Pattern.CASE_INSENSITIVE);
+            Pattern alterPattern = Pattern.compile(ALTER_TABLE_PATTERN, Pattern.CASE_INSENSITIVE);
             for (String sql : sqlStatements) {
                 ISqlTransaction newTransaction = null;
                 try {
                     sql = preprocessSqlStatement(sql);
+                    Matcher defConsMatcher = defConsPattern.matcher(sql);
+                    if (getPlatform().getName().startsWith(DatabaseNamesConstants.MSSQL) && defConsMatcher.matches()) {
+                        String tableName = defConsMatcher.group(1);
+                        String constraintName = defConsMatcher.group(2);
+                        String constraintPrefix = constraintName.substring(0, constraintName.lastIndexOf("__"));
+                        String querySql = "select c.name from sys.default_constraints c inner join sys.objects o on o.object_id = c.parent_object_id "
+                                + "where c.name like ? and o.name = ?";
+                        List<String> names = getTransaction().query(querySql, new StringMapper(), new Object[] { constraintPrefix + "%", tableName },
+                                new int[] { Types.VARCHAR, Types.VARCHAR });
+                        if (names.size() > 0) {
+                            sql = sql.replace(constraintName, names.get(0));
+                        }
+                    }
                     if (captureChanges) {
                         newTransaction = getPlatform().getSqlTemplate().startSqlTransaction();
                         if (sql.matches(TRUNCATE_PATTERN) && getPlatform().getName().equals(DatabaseNamesConstants.DB2)) {
@@ -713,6 +736,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                             log.debug("{} rows updated when running: {}", count, sql);
                         }
                     }
+                    Matcher alterMatcher = alterPattern.matcher(sql);
+                    hasUncommittedDdl |= alterMatcher.matches();
                 } catch (Error ex) {
                     log.error("Failed to run the following sql: {}", sql);
                     if (newTransaction != null) {
@@ -1164,8 +1189,13 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         Table table = lookupTableFromCache(sourceTable, tableNameKey);
         if (table == null) {
             try {
-                table = getPlatform(sourceTable).getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
-                        sourceTable.getName(), false);
+                if (hasUncommittedDdl) {
+                    table = getPlatform(sourceTable).readTableFromDatabase(getTransaction(sourceTable), sourceTable.getCatalog(), sourceTable.getSchema(),
+                            sourceTable.getName());
+                } else {
+                    table = getPlatform(sourceTable).getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
+                            sourceTable.getName(), false);
+                }
                 if (table != null) {
                     table = table.copyAndFilterColumns(sourceTable.getColumnNames(),
                             sourceTable.getPrimaryKeyColumnNames(), writerSettings.isUsePrimaryKeysFromSource(), false);
