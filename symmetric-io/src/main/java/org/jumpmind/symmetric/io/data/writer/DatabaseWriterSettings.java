@@ -46,6 +46,9 @@ public class DatabaseWriterSettings {
     protected boolean ignoreMissingTables = true;
     protected boolean saveCurrentValueOnError = false;
     protected boolean fitToColumn = false;
+    protected boolean autoResolveForeignKeyViolationDelete = true;
+    protected boolean autoResolvePrimaryKeyViolation = true;
+    protected boolean autoResolveUniqueIndexViolation = true;
     protected boolean logConflictResolution = false;
     protected boolean logSqlParamsOnError = true;
     protected boolean loadOnlyNode = false;
@@ -264,6 +267,30 @@ public class DatabaseWriterSettings {
 
     public boolean isFitToColumn() {
         return fitToColumn;
+    }
+
+    public boolean isAutoResolveForeignKeyViolationDelete() {
+        return autoResolveForeignKeyViolationDelete;
+    }
+
+    public void setAutoResolveForeignKeyViolationDelete(boolean autoResolveForeignKeyViolationDelete) {
+        this.autoResolveForeignKeyViolationDelete = autoResolveForeignKeyViolationDelete;
+    }
+
+    public boolean isAutoResolvePrimaryKeyViolation() {
+        return autoResolvePrimaryKeyViolation;
+    }
+
+    public void setAutoResolvePrimaryKeyViolation(boolean autoResolvePrimaryKeyViolation) {
+        this.autoResolvePrimaryKeyViolation = autoResolvePrimaryKeyViolation;
+    }
+
+    public boolean isAutoResolveUniqueIndexViolation() {
+        return autoResolveUniqueIndexViolation;
+    }
+
+    public void setAutoResolveUniqueIndexViolation(boolean autoResolveUniqueIndexViolation) {
+        this.autoResolveUniqueIndexViolation = autoResolveUniqueIndexViolation;
     }
 
     public void setLogConflictResolution(boolean logConflictResolution) {
