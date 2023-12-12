@@ -49,6 +49,7 @@ public class DatabaseWriterSettings {
     protected boolean autoResolveForeignKeyViolationDelete = true;
     protected boolean autoResolvePrimaryKeyViolation = true;
     protected boolean autoResolveUniqueIndexViolation = true;
+    protected boolean autoResolveUniqueIndexIgnoreNullValues = true;
     protected boolean logConflictResolution = false;
     protected boolean logSqlParamsOnError = true;
     protected boolean loadOnlyNode = false;
@@ -291,6 +292,14 @@ public class DatabaseWriterSettings {
 
     public void setAutoResolveUniqueIndexViolation(boolean autoResolveUniqueIndexViolation) {
         this.autoResolveUniqueIndexViolation = autoResolveUniqueIndexViolation;
+    }
+
+    public boolean isAutoResolveUniqueIndexIgnoreNullValues() {
+        return autoResolveUniqueIndexIgnoreNullValues;
+    }
+
+    public void setAutoResolveUniqueIndexIgnoreNullValues(boolean autoResolveUniqueIndexIgnoreNullValues) {
+        this.autoResolveUniqueIndexIgnoreNullValues = autoResolveUniqueIndexIgnoreNullValues;
     }
 
     public void setLogConflictResolution(boolean logConflictResolution) {
