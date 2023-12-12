@@ -122,6 +122,9 @@ final public class ParameterConstants {
     public final static String AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_REVERSE = "auto.resolve.foreign.key.violation.reverse";
     public final static String AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_REVERSE_PEERS = "auto.resolve.foreign.key.violation.reverse.peers";
     public final static String AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_REVERSE_RELOAD = "auto.resolve.foreign.key.violation.reverse.reload";
+    public final static String AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_DELETE = "auto.resolve.foreign.key.violation.delete";
+    public final static String AUTO_RESOLVE_PRIMARY_KEY_VIOLATION = "auto.resolve.primary.key.violation";
+    public final static String AUTO_RESOLVE_UNIQUE_INDEX_VIOLATION = "auto.resolve.unique.index.violation";
     public final static String AUTO_RESOLVE_UNIQUE_INDEX_IGNORE_NULL_VALUES = "auto.resolve.unique.index.ignore.null.values";
     public final static String AUTO_INSERT_REG_SVR_IF_NOT_FOUND = "auto.insert.registration.svr.if.not.found";
     public final static String AUTO_SYNC_CONFIGURATION = "auto.sync.configuration";

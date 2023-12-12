@@ -448,19 +448,29 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 isUniqueKeyBlocking = true;
             }
             if (isUniqueKeyBlocking) {
-                log.info("Unique key violation on table {} during {} with batch {}.  Attempting to correct.",
-                        targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
-                for (IIndex index : targetTable.getIndices()) {
-                    if (index.isUnique()) {
-                        log.info("Correcting for possible violation of unique index {} on table {} during {} with batch {}", index.getName(),
-                                targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
-                        count += deleteUniqueConstraintRow(platform, sqlTemplate, databaseWriter, targetTable, index, data);
+                if (writer.getWriterSettings().isAutoResolveUniqueIndexViolation()) {
+                    log.info("Unique key violation on table {} during {} with batch {}.  Attempting to correct.",
+                            targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+                    for (IIndex index : targetTable.getIndices()) {
+                        if (index.isUnique()) {
+                            log.info("Correcting for possible violation of unique index {} on table {} during {} with batch {}", index.getName(),
+                                    targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+                            count += deleteUniqueConstraintRow(platform, sqlTemplate, databaseWriter, targetTable, index, data);
+                        }
                     }
+                } else if (log.isDebugEnabled()) {
+                    log.debug("Did not issue correction for unique key violation on table {} during {} with batch {}.",
+                            targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
                 }
             } else if (isPrimaryKeyBlocking) {
-                log.info("Correcting for update violation of primary key on table {} during {} with batch {}", targetTable.getName(),
-                        data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
-                count += deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues, false);
+                if (writer.getWriterSettings().isAutoResolvePrimaryKeyViolation()) {
+                    log.info("Correcting for update violation of primary key on table {} during {} with batch {}", targetTable.getName(),
+                            data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+                    count += deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues, false);
+                } else if (log.isDebugEnabled()) {
+                    log.debug("Did not issue correction for update violation of primary key on table {} during {} with batch {}", targetTable.getName(),
+                            data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+                }
             }
         }
         return count != 0;
@@ -583,6 +593,13 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
         if (e != null && sqlTemplate.isForeignKeyChildExistsViolation(e)) {
             Table targetTable = writer.getTargetTable();
+            if (!writer.getWriterSettings().isAutoResolveForeignKeyViolationDelete()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Did not issue correction for child exists foreign key violation on table {} during {} with batch {}.",
+                            targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+                }
+                throw new RuntimeException(e);
+            }
             log.info("Child exists foreign key violation on table {} during {} with batch {}.  Attempting to correct.",
                     targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
             if (deleteForeignKeyChildren(platform, sqlTemplate, databaseWriter, writer.getTargetTable(), data)) {

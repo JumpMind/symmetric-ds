@@ -54,6 +54,12 @@ public abstract class AbstractDataLoaderFactory {
         settings.setSaveCurrentValueOnError(
                 parameterService.is(ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
         settings.setFitToColumn(parameterService.is(ParameterConstants.DATA_LOADER_FIT_TO_COLUMN, false));
+        settings.setAutoResolveForeignKeyViolationDelete(
+                parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_DELETE, true));
+        settings.setAutoResolvePrimaryKeyViolation(
+                parameterService.is(ParameterConstants.AUTO_RESOLVE_PRIMARY_KEY_VIOLATION, true));
+        settings.setAutoResolveUniqueIndexViolation(
+                parameterService.is(ParameterConstants.AUTO_RESOLVE_UNIQUE_INDEX_VIOLATION, true));
         settings.setAutoResolveUniqueIndexIgnoreNullValues(
                 parameterService.is(ParameterConstants.AUTO_RESOLVE_UNIQUE_INDEX_IGNORE_NULL_VALUES, true));
         settings.setLogConflictResolution(parameterService.is(ParameterConstants.LOG_CONFLICT_RESOLUTION));
