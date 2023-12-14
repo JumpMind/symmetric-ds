@@ -3472,6 +3472,10 @@ public class DataService extends AbstractService implements IDataService {
             row.put(pkNames[i], values[i]);
         }
         String where = st.buildDynamicSql(encoding, row, false, false);
+        String delimiter = engine.getDatabasePlatform().getDatabaseInfo().getSqlCommandDelimiter();
+        if (where != null && where.endsWith(delimiter)) {
+            where = where.substring(0, where.length() - delimiter.length());
+        }
         data.setPkData(null);
         data.setRowData(where);
         data.setOldData(null);
