@@ -3482,6 +3482,90 @@ public class DataService extends AbstractService implements IDataService {
         data.setChannelId(Constants.CHANNEL_RELOAD);
     }
 
+    public int reCaptureData(long minDataId, long maxDataId) {
+        List<Data> dataList = findData(minDataId, maxDataId);
+        int count = 0;
+        if (dataList.size() > 0) {
+            count = reCaptureData(dataList);
+        }
+        return count;
+    }
+
+    protected int reCaptureData(List<Data> dataList) {
+        List<Data> insertList = new ArrayList<Data>();
+        ISqlTransaction transaction = null;
+        try {
+            for (Data data : dataList) {
+                TriggerHistory hist = data.getTriggerHistory();
+                Set<TriggerRouter> triggerRouters = engine.getTriggerRouterService().getTriggerRouterForTableForCurrentNode(
+                        hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
+                Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
+                if (triggerRouters != null && triggerRouters.size() > 0 && table != null && data.getDataEventType().isDml()) {
+                    Trigger trigger = triggerRouters.iterator().next().getTrigger();
+                    table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true, false);
+                    String[] keys = null;
+                    if (data.getDataEventType() == DataEventType.INSERT) {
+                        keys = data.toParsedRowData();
+                        if (keys != null && keys.length >= table.getPrimaryKeyColumnCount()) {
+                            keys = ArrayUtils.subarray(keys, 0, table.getPrimaryKeyColumnCount());
+                        }
+                    } else {
+                        keys = data.toParsedPkData();
+                    }
+                    Object[] values = platform.getObjectValues(engine.getSymmetricDialect().getBinaryEncoding(), keys, table.getPrimaryKeyColumns());
+                    Row row = new Row(keys.length);
+                    String[] keyNames = table.getPrimaryKeyColumnNames();
+                    for (int i = 0; i < keyNames.length; i++) {
+                        row.put(keyNames[i], values[i]);
+                    }
+                    DmlStatement st = platform.createDmlStatement(DmlType.WHERE, hist.getSourceCatalogName(), hist.getSourceSchemaName(),
+                            hist.getSourceTableName(), table.getPrimaryKeyColumns(), table.getColumns(), DmlStatement.getNullKeyValues(keys), null);
+                    String whereClause = st.buildDynamicSql(symmetricDialect.getBinaryEncoding(), row, false, true).substring(6);
+                    String rowData = null;
+                    String pkData = data.getPkData();
+                    transaction = sqlTemplate.startSqlTransaction();
+                    if (data.getDataEventType() == DataEventType.INSERT || data.getDataEventType() == DataEventType.UPDATE) {
+                        rowData = getCsvDataFor(transaction, trigger, hist, whereClause, false);
+                    }
+                    if (rowData != null && data.getDataEventType() == DataEventType.INSERT) {
+                        pkData = getCsvDataFor(transaction, trigger, hist, whereClause, true);
+                    }
+                    close(transaction);
+                    transaction = null;
+                    if (rowData != null && (data.getDataEventType() == DataEventType.INSERT || data.getDataEventType() == DataEventType.UPDATE)) {
+                        data.setDataEventType(DataEventType.UPDATE);
+                        data.setRowData(rowData);
+                        data.setPkData(pkData);
+                        data.setOldData(null);
+                        insertList.add(data);
+                    } else if (rowData == null && data.getDataEventType() == DataEventType.DELETE) {
+                        data.setPkData(pkData);
+                        data.setOldData(null);
+                        insertList.add(data);
+                    }
+                }
+            }
+        } finally {
+            close(transaction);
+        }
+        IDataService dataService = engine.getDataService();
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            for (Data data : insertList) {
+                dataService.insertData(transaction, data);
+            }
+            transaction.commit();
+        } catch (Exception ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
+        }
+        return insertList.size();
+    }
+
     public static class LastCaptureByChannelMapper implements ISqlRowMapper<String> {
         private Map<String, Date> captureMap;
 

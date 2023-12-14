@@ -445,14 +445,12 @@ public class PurgeService extends AbstractService implements IPurgeService {
             long ts = System.currentTimeMillis();
             int[] argTypes = new int[] { symmetricDialect.getSqlTypeForIds(), symmetricDialect.getSqlTypeForIds() };
             for (DataGap gap : dataGapsExpiredToCheck) {
-                int count = dataService.resendDataAsReload(gap.getStartId(), gap.getEndId());
-                if (count > 0) {
-                    purgedDataRowCount += count;
-                    purgedDataGapCount += count > 0 ? 1 : 0;
-                    Object[] args = new Object[] { gap.getStartId(), gap.getEndId() };
-                    sqlTemplate.update(getSql("deleteDataByRangeSql"), args, argTypes);
-                    statisticManager.incrementPurgedExpiredDataRows(count);
-                }
+                int count = dataService.reCaptureData(gap.getStartId(), gap.getEndId());
+                purgedDataRowCount += count;
+                statisticManager.incrementPurgedExpiredDataRows(count);
+                Object[] args = new Object[] { gap.getStartId(), gap.getEndId() };
+                sqlTemplate.update(getSql("deleteDataByRangeSql"), args, argTypes);
+                purgedDataGapCount++;
                 checkedDataGapCount++;
                 if (System.currentTimeMillis() - ts > 60000) {
                     log.info("Checked {} expired data gaps", checkedDataGapCount);
@@ -638,7 +636,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     }
                     args = new Object[] { minId = minMaxAvoidGaps[0], maxId = minMaxAvoidGaps[1], cutoffTime };
                     argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP };
-                    dataService.resendDataAsReload(minId, maxId);
+                    dataService.reCaptureData(minId, maxId);
                     break;
                 case STRANDED_DATA_EVENT:
                     deleteSql = getSql("deleteStrandedDataEvent");

@@ -262,4 +262,6 @@ public interface IDataService {
     public int resendBatchAsReload(long batchId, String nodeId);
 
     public int resendDataAsReload(long minDataId, long maxDataId);
+
+    public int reCaptureData(long minDataId, long maxDataId);
 }
