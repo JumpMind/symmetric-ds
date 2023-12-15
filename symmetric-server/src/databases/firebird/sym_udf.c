@@ -40,7 +40,7 @@ char *sym_escape(char *str)
    result = (char *) ib_util_malloc(count + len + 1);
    if (result == NULL)
    {
-      return empty_str;
+      return NULL;
    }
 
    for (i = 0, j = 0; i < len; i++, j++)
@@ -66,15 +66,13 @@ char *sym_escape(char *str)
  */
 char *sym_hex(BLOBCALLBACK blob)
 {
-   char empty_char;
    char *result, *hex_result;
    long hex_result_size;
-   long bytes_read;
+   ISC_USHORT bytes_read;
    long total_length;
    long total_bytes_read;
    long i, j;
 
-   empty_char = '\0';
    bytes_read = 0;
    total_bytes_read = 0;
 
@@ -83,7 +81,7 @@ char *sym_hex(BLOBCALLBACK blob)
       result = (char *) malloc(1);
       if (!result)
       {
-          return empty_char;
+          return NULL;
       }
    }
    else
@@ -92,7 +90,7 @@ char *sym_hex(BLOBCALLBACK blob)
       result = (char *) malloc(total_length + 1);
       if (!result)
       {
-          return empty_char;
+          return NULL;
       }
       memset(result, 0, total_length + 1);
       for (i = 0; i < blob->blob_number_segments; ++i)
@@ -106,6 +104,10 @@ char *sym_hex(BLOBCALLBACK blob)
   
    hex_result_size = (total_bytes_read * 2) + 1;
    hex_result = (char *) ib_util_malloc(hex_result_size);
+   if (!hex_result)
+   {
+      return NULL;
+   }
    memset(hex_result, 0, hex_result_size);
    for (i = 0, j = 0; i < total_bytes_read; i++, j += 2)
    {
