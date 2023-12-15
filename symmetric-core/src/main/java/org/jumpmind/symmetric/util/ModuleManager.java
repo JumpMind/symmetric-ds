@@ -192,6 +192,26 @@ public class ModuleManager {
         }
     }
 
+    public List<String> listUpgrade() throws ModuleException {
+        List<String> fileNames = new ArrayList<String>();
+        for (String moduleId : list()) {
+            File file = new File(joinDirName(modulesDir, moduleId + EXT_PROPERTIES));
+            try {
+                FileReader reader = new FileReader(file);
+                Properties prop = new Properties();
+                prop.load(reader);
+                String oldDepString = removeBlankSpace(prop.getProperty(moduleId));
+                String newDepString = removeBlankSpace(properties.getProperty(moduleId));
+                if (oldDepString == null || !oldDepString.equals(newDepString)) {
+                    fileNames.addAll(listFiles(moduleId));
+                }
+            } catch (IOException e) {
+                logAndThrow("Unable to list files for module " + moduleId + " because: " + e.getMessage(), e);
+            }
+        }
+        return fileNames;
+    }
+
     public void upgrade(String moduleId) throws ModuleException {
         checkModuleInstalled(moduleId, true);
         log.info("Checking if module {} needs upgraded", moduleId);
@@ -293,9 +313,14 @@ public class ModuleManager {
         }
         boolean success = true;
         for (String fileName : filesToRemove) {
-            boolean delSuccess = new File(joinDirName(modulesDir, fileName)).delete();
-            log.info("Removing {} ({})", fileName, (delSuccess ? "OK" : "FAIL"));
-            success &= delSuccess;
+            File file = new File(joinDirName(modulesDir, fileName));
+            if (file.exists()) {
+                boolean delSuccess = new File(joinDirName(modulesDir, fileName)).delete();
+                log.info("Removing {} ({})", fileName, (delSuccess ? "OK" : "FAIL"));
+                success &= delSuccess;
+            } else {
+                log.info("Already removed {}", fileName);
+            }
         }
         boolean delSuccess = new File(joinDirName(modulesDir, moduleId + EXT_PROPERTIES)).delete();
         log.info("Removing {} ({})", moduleId + EXT_PROPERTIES, (delSuccess ? "OK" : "FAIL"));

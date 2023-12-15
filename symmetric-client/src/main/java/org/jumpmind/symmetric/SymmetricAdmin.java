@@ -1022,6 +1022,12 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             } else if (action.equals("upgrade")) {
                 System.out.println("Upgrading modules");
                 mgr.upgradeAll();
+            } else if (action.equals("list-upgrade")) {
+                List<String> files = mgr.listUpgrade();
+                System.out.println("Files that need upgraded:");
+                for (String file : files) {
+                    System.out.println(file);
+                }
             } else if (action.equals("convert")) {
                 System.out.println("Converting to modules");
                 mgr.convertToModules();
