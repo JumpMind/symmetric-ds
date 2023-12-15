@@ -7,7 +7,7 @@ The Interbase Dialect requires the installation of a User Defined Function (UDF)
 provide functionality needed by the database triggers. SymmetricDS includes the required UDF library, 
 called SYM_UDF, in both source form (as a C program) and as pre-compiled libraries for both Windows and Linux. 
 
-Download the https://www.symmetricds.org/files/interbase-udf-1.1.zip[SymmetricDS UDF Library].
+Download the https://sourceforge.net/projects/symmetricds/files/symmetricds-extras/interbase-udf-1.1.zip/download[SymmetricDS UDF Library].
 The SYM_UDF library is copied into the UDF folder within the Interbase installation directory.
 
 For Linux users:
