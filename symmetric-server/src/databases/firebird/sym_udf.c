@@ -66,43 +66,42 @@ char *sym_escape(char *str)
  */
 char *sym_hex(BLOBCALLBACK blob)
 {
+   char empty_char;
    char *result, *hex_result;
    long hex_result_size;
    long bytes_read;
-   long bytes_left, total_bytes_read;
+   long total_length;
+   long total_bytes_read;
    long i, j;
 
+   empty_char = '\0';
    bytes_read = 0;
    total_bytes_read = 0;
 
    if (blob->blob_handle == NULL)
    {
       result = (char *) malloc(1);
+      if (!result)
+      {
+          return empty_char;
+      }
    }
    else
    {
-      result = (char *) malloc(blob->blob_total_length + 1);
-      memset(result, 0, blob->blob_total_length + 1);
-
-      bytes_left = blob->blob_total_length;
-      while (bytes_left > 0)
+      total_length = blob->blob_total_length;
+      result = (char *) malloc(total_length + 1);
+      if (!result)
       {
-         if (!blob->blob_get_segment(blob->blob_handle, (char *)result + total_bytes_read,
-                 blob->blob_total_length, &bytes_read))
-         {
-            break;
-         }
-
+          return empty_char;
+      }
+      memset(result, 0, total_length + 1);
+      for (i = 0; i < blob->blob_number_segments; ++i)
+      {
+         bytes_read = 0;
+         blob->blob_get_segment(blob->blob_handle, (char*)result + total_bytes_read, total_length - total_bytes_read, &bytes_read);
          total_bytes_read += bytes_read;
-         bytes_left -= bytes_read;
       }
    }
-   
-   while (total_bytes_read>0 && isspace(result[total_bytes_read-1])) 
-   {
-    --total_bytes_read;
-   }
-
    result[total_bytes_read] = '\0';
   
    hex_result_size = (total_bytes_read * 2) + 1;
