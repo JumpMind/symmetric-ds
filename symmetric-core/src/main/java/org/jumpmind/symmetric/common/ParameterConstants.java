@@ -440,6 +440,10 @@ final public class ParameterConstants {
             KAFKA_TOPIC_BY, KAFKA_CONFLUENT_REGISTRY_URL, KAFKA_AVRO_JAVA_PACKAGE, KAFKACLIENT_SECURITY_PROTOCOL,
             KAFKACLIENT_SSL_KEYSTORE_LOCATION, KAFKACLIENT_SSL_KEYSTORE_PASSWORD, KAFKACLIENT_SSL_TRUSTSTORE_LOCATION,
             KAFKACLIENT_SSL_KEYSTORE_TYPE };
+    public final static String RABBITMQ_FORMAT = "rabbitmq.format";
+    public final static String RABBITMQ_QUEUE_NAME = "rabbitmq.queue.name";
+    public final static String RABBITMQ_MESSAGE_BY = "rabbitmq.message.by";
+    public final static String RABBITMQ_QUEUE_BY = "rabbitmq.queue.by";
     public final static String SNOWFLAKE_STAGING_TYPE = "snowflake.staging.type";
     public final static String SNOWFLAKE_INTERNAL_STAGE_NAME = "snowflake.internal.stage.name";
     public final static String CLOUD_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH = "cloud.bulk.load.max.rows.before.flush";
