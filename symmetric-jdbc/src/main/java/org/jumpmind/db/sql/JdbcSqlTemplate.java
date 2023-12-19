@@ -423,6 +423,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                             .readSqlStatement()) {
                         if (isNotBlank(statement)) {
                             try {
+                                if (resultsListener != null) {
+                                    resultsListener.sqlBefore(statement, statementCount);
+                                }
                                 long startTime = System.currentTimeMillis();
                                 boolean hasResults = stmt.execute(statement);
                                 long endTime = System.currentTimeMillis();

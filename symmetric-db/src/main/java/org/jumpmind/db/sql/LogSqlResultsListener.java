@@ -29,6 +29,10 @@ public class LogSqlResultsListener implements ISqlResultsListener {
     public LogSqlResultsListener() {
     }
 
+    public void sqlBefore(String sql, int lineNumber) {
+        log.info("Executing DDL: {}", sql);
+    }
+
     public void sqlErrored(String sql, SqlException ex, int lineNumber, boolean dropStatement,
             boolean sequenceCreate) {
         if (dropStatement || sequenceCreate) {
@@ -39,6 +43,5 @@ public class LogSqlResultsListener implements ISqlResultsListener {
     }
 
     public void sqlApplied(String sql, int rowsUpdated, int rowsRetrieved, int lineNumber) {
-        log.info("DDL applied: {}", sql);
     }
 }
