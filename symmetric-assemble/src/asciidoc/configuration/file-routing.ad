@@ -97,6 +97,6 @@ endif::pro[]
 ifdef::pro[]
 .Advanced Options
 endif::pro[]
-Initial Enabled:: Indicates whether this file trigger should be initial loaded.
+Initial Load Enabled:: Indicates whether this file trigger should be initial loaded.
 Enabled:: Indicates whether this file trigger router is enabled or not.  
 
