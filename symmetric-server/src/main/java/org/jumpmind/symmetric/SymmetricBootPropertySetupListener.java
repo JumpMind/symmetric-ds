@@ -73,7 +73,9 @@ public class SymmetricBootPropertySetupListener implements ApplicationListener<A
             bootProps.put("server.port", String.valueOf(httpsPort));
             bootProps.put("server.ssl.enabled", Boolean.toString(true));
             setIfNotBlank(ServerConstants.HTTPS2_ENABLE, "server.http2.enabled", sysProps, bootProps);
-            bootProps.setProperty("server.servlet.session.cookie.secure", Boolean.toString(true));
+            if (!httpEnabled) {
+                bootProps.setProperty("server.servlet.session.cookie.secure", Boolean.toString(true));
+            }
             ISecurityService securityService = SecurityServiceFactory.create(SecurityServiceType.SERVER, sysProps);
             bootProps.put("server.ssl.key-store", sysProps.get(SecurityConstants.SYSPROP_KEYSTORE));
             bootProps.put("server.ssl.key-store-password", StringUtils.defaultIfBlank(securityService.unobfuscateIfNeeded(
