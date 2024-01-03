@@ -405,13 +405,6 @@ public abstract class WrapperService {
         return cmd;
     }
 
-    protected ArrayList<String> getPrivilegedCommand() {
-        ArrayList<String> cmd = new ArrayList<String>();
-        String quote = getWrapperCommandQuote();
-        cmd.add(quote + config.getJavaCommand() + quote);
-        return cmd;
-    }
-
     protected String getWrapperCommandQuote() {
         return "";
     }

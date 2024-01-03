@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -356,7 +357,7 @@ public class WindowsService extends WrapperService {
                 service = advapi.CreateService(manager, config.getName(), config.getDisplayName(), Winsvc.SERVICE_ALL_ACCESS,
                         WinsvcEx.SERVICE_WIN32_OWN_PROCESS, config.isAutoStart() || config.isDelayStart() ? WinsvcEx.SERVICE_AUTO_START
                                 : WinsvcEx.SERVICE_DEMAND_START, WinsvcEx.SERVICE_ERROR_NORMAL,
-                        commandToString(getWrapperCommand("init", true)), null, null, dependencies, runAsUser, runAsPassword);
+                        commandToString(getServiceCommand()), null, null, dependencies, runAsUser, runAsPassword);
                 if (service != null) {
                     Advapi32Ex.SERVICE_DESCRIPTION desc = new Advapi32Ex.SERVICE_DESCRIPTION(config.getDescription());
                     advapi.ChangeServiceConfig2(service, WinsvcEx.SERVICE_CONFIG_DESCRIPTION, desc);
@@ -391,6 +392,18 @@ public class WindowsService extends WrapperService {
             closeServiceHandle(service);
             closeServiceHandle(manager);
         }
+    }
+
+    protected ArrayList<String> getServiceCommand() {
+        if (config.getServiceCommand().toLowerCase().endsWith("service.exe")) {
+            String quote = getWrapperCommandQuote();
+            ArrayList<String> cmd = new ArrayList<String>();
+            cmd.add(quote + config.getServiceCommand() + quote);
+            cmd.add("init");
+            cmd.add(quote + config.getConfigFile() + quote);
+            return cmd;
+        }
+        return getWrapperCommand("init", true);
     }
 
     @Override

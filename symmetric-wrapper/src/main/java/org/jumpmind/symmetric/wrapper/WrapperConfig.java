@@ -138,6 +138,14 @@ public class WrapperConfig {
     }
 
     public String getJavaCommand() {
+        String javaCmd = getProperty(prop, "wrapper.java.command", "java");
+        if (javaCmd.toLowerCase().endsWith("service.exe")) {
+            javaCmd = System.getProperty("java.home") + File.separator + "bin" + File.separator + "javaw.exe";
+        }
+        return javaCmd;
+    }
+
+    public String getServiceCommand() {
         return getProperty(prop, "wrapper.java.command", "java");
     }
 
