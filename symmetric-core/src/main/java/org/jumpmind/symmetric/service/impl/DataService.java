@@ -3240,6 +3240,7 @@ public class DataService extends AbstractService implements IDataService {
     public class DataMapper implements ISqlRowMapper<Data> {
         private List<TriggerRouter> triggerRouters;
         private List<TriggerHistory> activeTriggerHistories;
+        private Collection<TriggerHistory> allTriggerHistories;
         private HashMap<String, TriggerHistory> mismatchedTableName;
         private HashSet<Integer> missingConfigTriggerHist;
         private HashSet<Integer> mismatchedTriggerHist;
@@ -3266,7 +3267,7 @@ public class DataService extends AbstractService implements IDataService {
             data.putAttribute(CsvData.ATTRIBUTE_TABLE_ID, triggerHistId);
             TriggerHistory triggerHistory = engine.getTriggerRouterService().getTriggerHistory(triggerHistId);
             if (triggerHistory == null) {
-                triggerHistory = findOrCreateTriggerHistory(tableName, triggerHistId, data.getDataId(), false);
+                triggerHistory = findOrCreateTriggerHistory(tableName, triggerHistId, data, false);
             } else if (!triggerHistory.getSourceTableName().equals(tableName)) {
                 if (mismatchedTableName == null) {
                     mismatchedTableName = new HashMap<String, TriggerHistory>();
@@ -3277,7 +3278,7 @@ public class DataService extends AbstractService implements IDataService {
                             + "table name {} for data_id {}.  Attempting to look up a valid trigger_hist row by table name",
                             new Object[] { data.getTableName(),
                                     triggerHistory.getSourceTableName(), data.getDataId() });
-                    triggerHistory = findOrCreateTriggerHistory(tableName, triggerHistId, data.getDataId(), true);
+                    triggerHistory = findOrCreateTriggerHistory(tableName, triggerHistId, data, true);
                     mismatchedTableName.put(data.getTableName(), triggerHistory);
                 } else {
                     triggerHistory = cachedTriggerHistory;
@@ -3288,10 +3289,11 @@ public class DataService extends AbstractService implements IDataService {
             return data;
         }
 
-        private TriggerHistory findOrCreateTriggerHistory(String tableName, int triggerHistId, long dataId, boolean isExistingTriggerHist) {
+        private TriggerHistory findOrCreateTriggerHistory(String tableName, int triggerHistId, Data data, boolean isExistingTriggerHist) {
             TriggerHistory triggerHistory = null;
             Trigger trigger = null;
             Table table = null;
+            long dataId = data.getDataId();
             if (triggerRouters == null) {
                 triggerRouters = engine.getTriggerRouterService().getAllTriggerRoutersForCurrentNode(engine.getNodeService().findIdentity().getNodeGroupId());
             }
@@ -3305,13 +3307,9 @@ public class DataService extends AbstractService implements IDataService {
             if (table != null && trigger != null) {
                 if (activeTriggerHistories == null) {
                     activeTriggerHistories = engine.getTriggerRouterService().getActiveTriggerHistories();
+                    allTriggerHistories = engine.getTriggerRouterService().getHistoryRecords().values();
                 }
-                for (TriggerHistory hist : activeTriggerHistories) {
-                    if (hist.getTriggerId().equals(trigger.getTriggerId()) && hist.getSourceTableName().equalsIgnoreCase(tableName)) {
-                        triggerHistory = hist;
-                        break;
-                    }
-                }
+                triggerHistory = findMatchingTriggerHistory(trigger, data, tableName);
                 if (triggerHistory == null) {
                     triggerHistory = new TriggerHistory(table, trigger, engine.getSymmetricDialect().getTriggerTemplate());
                     triggerHistory.setTriggerHistoryId(isExistingTriggerHist ? 0 : triggerHistId);
@@ -3327,6 +3325,7 @@ public class DataService extends AbstractService implements IDataService {
                             triggerHistId, tableName, dataId);
                     engine.getTriggerRouterService().insert(triggerHistory);
                     activeTriggerHistories.add(triggerHistory);
+                    allTriggerHistories.add(triggerHistory);
                 } else {
                     if (mismatchedTriggerHist == null) {
                         mismatchedTriggerHist = new HashSet<Integer>();
@@ -3346,6 +3345,34 @@ public class DataService extends AbstractService implements IDataService {
                 }
                 triggerHistory = new TriggerHistory(tableName, "", "");
                 triggerHistory.setTriggerHistoryId(triggerHistId);
+            }
+            return triggerHistory;
+        }
+
+        private TriggerHistory findMatchingTriggerHistory(Trigger trigger, Data data, String tableName) {
+            TriggerHistory triggerHistory = null;
+            int columnCount = 0, pkColumnCount = 0;
+            if (data.getDataEventType() == DataEventType.INSERT || data.getDataEventType() == DataEventType.UPDATE) {
+                columnCount = data.getParsedData(CsvData.ROW_DATA).length;
+            }
+            if (data.getDataEventType() == DataEventType.DELETE || data.getDataEventType() == DataEventType.UPDATE) {
+                pkColumnCount = data.getParsedData(CsvData.PK_DATA).length;
+            }
+            for (TriggerHistory hist : allTriggerHistories) {
+                if (hist.getTriggerId().equals(trigger.getTriggerId()) && hist.getSourceTableName().equalsIgnoreCase(tableName)
+                        && (columnCount == 0 || columnCount == hist.getParsedColumnNames().length)
+                        && (pkColumnCount == 0 || pkColumnCount == hist.getParsedPkColumnNames().length)) {
+                    triggerHistory = hist;
+                    break;
+                }
+            }
+            if (triggerHistory == null) {
+                for (TriggerHistory hist : activeTriggerHistories) {
+                    if (hist.getTriggerId().equals(trigger.getTriggerId()) && hist.getSourceTableName().equalsIgnoreCase(tableName)) {
+                        triggerHistory = hist;
+                        break;
+                    }
+                }
             }
             return triggerHistory;
         }
