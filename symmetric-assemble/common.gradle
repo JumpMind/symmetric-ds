@@ -308,7 +308,7 @@ subprojects { subproject ->
         bouncyCastleVersion = '1.75'
         animalSnifferVersion = '1.21'
         jnaVersion = '5.11.0'
-        jettyVersion = '9.4.52.v20230823'
+        jettyVersion = '9.4.53.v20231009'
         alpnBootVersion = '8.1.13.v20181017'
         alpnApiVersion = '1.1.3.v20160715'
         websocketVersion = '1.1'
