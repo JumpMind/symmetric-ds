@@ -952,7 +952,7 @@ public class SnapshotUtil {
                     addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
                 }
                 if (System.currentTimeMillis() - ts > timeoutMillis) {
-                    log.info("Reached time limit for table definitions");
+                    log.info("Reached time limit for capture table definitions");
                     break;
                 }
             }
@@ -979,6 +979,8 @@ public class SnapshotUtil {
         Map<NodeGroupLink, Map<String, List<TransformTable>>> extractTransformMap = new HashMap<NodeGroupLink, Map<String, List<TransformTable>>>();
         Map<NodeGroupLink, Map<String, List<TransformTable>>> loadTransformMap = new HashMap<NodeGroupLink, Map<String, List<TransformTable>>>();
         List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForTargetNode(parameterService.getNodeGroupId());
+        long timeoutMillis = engine.getParameterService().getLong(ParameterConstants.SNAPSHOT_OPERATION_TIMEOUT_MS, 30000);
+        long ts = System.currentTimeMillis();
         for (TriggerRouter triggerRouter : triggerRouters) {
             Trigger trigger = triggerRouter.getTrigger();
             if (!trigger.isSourceWildCarded()) {
@@ -1035,6 +1037,10 @@ public class SnapshotUtil {
                     if (table != null) {
                         addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
                     }
+                }
+                if (System.currentTimeMillis() - ts > timeoutMillis) {
+                    log.info("Reached time limit for load table definitions");
+                    break;
                 }
             }
         }
