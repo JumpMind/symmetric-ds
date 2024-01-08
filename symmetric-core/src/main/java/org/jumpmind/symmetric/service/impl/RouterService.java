@@ -901,8 +901,6 @@ public class RouterService extends AbstractService implements IRouterService, IN
             table = buildTableFromTriggerHistory(data.getTriggerHistory());
         }
         if (triggerRouters != null && triggerRouters.size() > 0) {
-            boolean isUnrouted = false;
-            boolean alreadyInsertedUnrouted = false;
             for (TriggerRouter triggerRouter : triggerRouters) {
                 DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter.getRouter(),
                         context.getChannel());
@@ -964,16 +962,16 @@ public class RouterService extends AbstractService implements IRouterService, IN
                         nodeIds.remove(engine.getNodeService().findIdentityNodeId());
                     }
                 }
-                isUnrouted = (nodeIds == null || nodeIds.size() == 0);
-                if (!isUnrouted || !alreadyInsertedUnrouted) {
+                if (nodeIds != null && nodeIds.size() > 0) {
                     numberOfDataEventsInserted += insertDataEvents(processInfo, context, dataMetaData, nodeIds);
-                    if (isUnrouted) {
-                        alreadyInsertedUnrouted = true;
-                    }
                 }
                 if (context.isForceNonCommon()) {
                     context.setForceNonCommon(false);
                 }
+            }
+            if (numberOfDataEventsInserted == 0) {
+                DataMetaData dataMetaData = new DataMetaData(data, table, null, context.getChannel());
+                numberOfDataEventsInserted += insertDataEvents(processInfo, context, dataMetaData, null);
             }
         } else {
             Integer triggerHistId = data.getTriggerHistory() != null ? data.getTriggerHistory().getTriggerHistoryId() : -1;
