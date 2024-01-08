@@ -28,9 +28,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -114,20 +116,21 @@ import org.jumpmind.util.FormatUtils;
  */
 public class RouterService extends AbstractService implements IRouterService, INodeCommunicationExecutor {
     final int MAX_LOGGING_LENGTH = 512;
-    protected Map<Integer, CounterStat> missingTriggerRouter = new HashMap<Integer, CounterStat>();
-    protected Map<String, CounterStat> invalidRouterType = new HashMap<String, CounterStat>();
-    protected Map<Integer, CounterStat> missingColumns = new HashMap<Integer, CounterStat>();
+    protected Map<Integer, CounterStat> missingTriggerRouter = new ConcurrentHashMap<Integer, CounterStat>();
+    protected Map<String, CounterStat> invalidRouterType = new ConcurrentHashMap<String, CounterStat>();
+    protected Map<Integer, CounterStat> missingColumns = new ConcurrentHashMap<Integer, CounterStat>();
     protected long triggerRouterCacheTime = 0;
-    protected Map<String, Boolean> commonBatchesLastKnownState = new HashMap<String, Boolean>();
+    protected Map<String, Boolean> commonBatchesLastKnownState = new ConcurrentHashMap<String, Boolean>();
     protected long commonBatchesCacheTime;
-    protected Map<String, Boolean> defaultRouterOnlyLastKnownState = new HashMap<String, Boolean>();
+    protected Map<String, Boolean> defaultRouterOnlyLastKnownState = new ConcurrentHashMap<String, Boolean>();
     protected long defaultRoutersCacheTime;
+    protected Map<String, Boolean> isAllDataReadByChannel = new ConcurrentHashMap<String, Boolean>();
+    protected Map<String, Boolean> hasMaxDataRoutedByChannel = new ConcurrentHashMap<String, Boolean>();
     protected transient ExecutorService readThread = null;
     protected ISymmetricEngine engine;
     protected IExtensionService extensionService;
     protected DataGapDetector gapDetector;
     protected boolean firstTimeCheck = true;
-    protected boolean hasMaxDataRoutedOnChannel;
     protected boolean isUsingTargetExternalId;
     protected boolean useChannelThreading;
 
@@ -206,7 +209,8 @@ public class RouterService extends AbstractService implements IRouterService, IN
                     }
                     do {
                         long ts = System.currentTimeMillis();
-                        hasMaxDataRoutedOnChannel = false;
+                        isAllDataReadByChannel.clear();
+                        hasMaxDataRoutedByChannel.clear();
                         isUsingTargetExternalId = engine.getCacheManager().isUsingTargetExternalId(false);
                         useChannelThreading = parameterService.is(ParameterConstants.ROUTING_USE_CHANNEL_THREADS);
                         gapDetector.beforeRouting();
@@ -218,10 +222,10 @@ public class RouterService extends AbstractService implements IRouterService, IN
                         if (dataCount > 0) {
                             gapDetector.afterRouting();
                         }
-                        if (hasMaxDataRoutedOnChannel) {
-                            log.debug("Immediately routing again because a channel reached max data to route");
+                        if (hasMaxDataRouted()) {
+                            log.info("Immediately routing again because a channel reached max data to route");
                         }
-                    } while (hasMaxDataRoutedOnChannel);
+                    } while (hasMaxDataRouted());
                     if (dataCount > 0) {
                         engine.getStatisticManager().addJobStats(ClusterConstants.ROUTE, startTime, System.currentTimeMillis(), dataCount);
                     }
@@ -296,15 +300,14 @@ public class RouterService extends AbstractService implements IRouterService, IN
                         dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode, null, null);
                     }
                 } else if (!nodeChannel.isEnabled()) {
-                    gapDetector.setIsAllDataRead(false);
+                    isAllDataReadByChannel.put(nodeChannel.getChannelId(), false);
                     if (log.isDebugEnabled()) {
                         log.debug("Not routing the {} channel.  It is either disabled or suspended.", nodeChannel.getChannelId());
                     }
                 }
             }
             if (useChannelThreading) {
-                long ts = System.currentTimeMillis();
-                int timeout = parameterService.getInt(ParameterConstants.CLUSTER_LOCK_REFRESH_MS, 1200000);
+                int timeout = parameterService.getInt(ParameterConstants.JOB_ROUTING_PERIOD_TIME_MS, 10000);
                 while (!nodeStatuses.isComplete()) {
                     try {
                         log.debug("Waiting for threads to complete");
@@ -314,11 +317,42 @@ public class RouterService extends AbstractService implements IRouterService, IN
                             throw e;
                         }
                         engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
-                        log.info("Waiting on channel threads for {} seconds", (System.currentTimeMillis() - ts / 1000));
+                        List<String> busyChannels = new ArrayList<String>();
+                        Iterator<RemoteNodeStatus> iter = nodeStatuses.iterator();
+                        while (iter.hasNext()) {
+                            RemoteNodeStatus nodeStatus = iter.next();
+                            if (nodeStatus.isComplete()) {
+                                dataCount += nodeStatus.getDataProcessed();
+                                iter.remove();
+                            } else {
+                                busyChannels.add(nodeStatus.getQueue());
+                            }
+                        }
+                        if (parameterService.is(ParameterConstants.ROUTING_QUERY_CHANNELS_FIRST)) {
+                            readyChannels = getReadyChannels();
+                        }
+                        List<String> executeChannels = new ArrayList<String>();
+                        for (NodeChannel nodeChannel : channels) {
+                            if (nodeChannel.isEnabled() && (readyChannels == null || readyChannels.contains(nodeChannel.getChannelId()))
+                                    && !busyChannels.contains(nodeChannel.getChannelId())) {
+                                executeChannels.add(nodeChannel.getChannelId());
+                            }
+                        }
+                        if (executeChannels.size() > 0) {
+                            gapDetector.setIsAllDataRead(false);
+                            gapDetector.afterRouting();
+                            for (String channelId : executeChannels) {
+                                log.debug("Submitting {} channel again", channelId);
+                                isAllDataReadByChannel.remove(channelId);
+                                NodeCommunication lock = nodeComService.find(engine.getNodeId(), channelId, CommunicationType.ROUTE);
+                                nodeComService.execute(lock, nodeStatuses, this);
+                            }
+                        }
                     }
                 }
-                dataCount = nodeStatuses.getDataProcessedCount();
+                dataCount += nodeStatuses.getDataProcessedCount();
             }
+            gapDetector.setIsAllDataRead(isAllDataRead());
             processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
         } catch (RuntimeException ex) {
             processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
@@ -554,12 +588,14 @@ public class RouterService extends AbstractService implements IRouterService, IN
         } catch (DelayRoutingException ex) {
             log.info("The routing process for the {} channel is being delayed.  {}", nodeChannel.getChannelId(), isNotBlank(ex.getMessage()) ? ex.getMessage()
                     : "");
+            isAllDataReadByChannel.put(nodeChannel.getChannelId(), false);
             if (context != null) {
                 context.rollback();
                 dataCount = context.getCommittedDataEventCount();
             }
         } catch (InterruptedException ex) {
             log.warn("The routing process was interrupted.  Rolling back changes");
+            isAllDataReadByChannel.put(nodeChannel.getChannelId(), false);
             if (context != null) {
                 context.rollback();
                 dataCount = context.getCommittedDataEventCount();
@@ -569,6 +605,7 @@ public class RouterService extends AbstractService implements IRouterService, IN
                     String.format(
                             "Failed to route and batch data on '%s' channel due to an invalid router expression",
                             nodeChannel.getChannelId()), ex);
+            isAllDataReadByChannel.put(nodeChannel.getChannelId(), false);
             if (context != null) {
                 context.rollback();
                 dataCount = context.getCommittedDataEventCount();
@@ -584,12 +621,14 @@ public class RouterService extends AbstractService implements IRouterService, IN
                 }
             }
             log.error(String.format("Failed to route and batch data on '%s' channel", nodeChannel.getChannelId()), ex);
+            isAllDataReadByChannel.put(nodeChannel.getChannelId(), false);
         } catch (CommonBatchCollisionException e) {
             log.info(e.getMessage());
-            gapDetector.setIsAllDataRead(false);
+            isAllDataReadByChannel.put(nodeChannel.getChannelId(), false);
             dataCount = context == null ? 0 : context.getDataEventList().size(); // we prevented writing the collision, so commit what we have
         } catch (Throwable ex) {
             log.error(String.format("Failed to route and batch data on '%s' channel", nodeChannel.getChannelId()), ex);
+            isAllDataReadByChannel.put(nodeChannel.getChannelId(), false);
             if (context != null) {
                 context.rollback();
                 dataCount = context.getCommittedDataEventCount();
@@ -604,9 +643,6 @@ public class RouterService extends AbstractService implements IRouterService, IN
                     context.clearDataEventsList();
                     context.incrementStat(System.currentTimeMillis() - insertTs, ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
                     completeBatchesAndCommit(context);
-                    gapDetector.addDataIds(context.getDataIds());
-                    gapDetector.setIsAllDataRead(context.getDataIds().size() < context.getChannel().getMaxDataToRoute());
-                    hasMaxDataRoutedOnChannel |= context.getDataIds().size() >= context.getChannel().getMaxDataToRoute();
                     if (parameterService.is(ParameterConstants.ROUTING_COLLECT_STATS_UNROUTED)) {
                         Data lastDataProcessed = context.getLastDataProcessed();
                         if (lastDataProcessed != null && lastDataProcessed.getDataId() > 0) {
@@ -622,11 +658,9 @@ public class RouterService extends AbstractService implements IRouterService, IN
                             engine.getStatisticManager().setDataUnRouted(channelId, dataLeftToRoute);
                         }
                     }
-                } else if (dataCount == -1) {
-                    // rolled back as exception, but let gap detector know about what was committed before halting
-                    gapDetector.addDataIds(context.getDataIds());
-                    gapDetector.setIsAllDataRead(false);
                 }
+                hasMaxDataRoutedByChannel.put(nodeChannel.getChannelId(), context.getCommittedDataIdCount() >= context.getChannel().getMaxDataToRoute());
+                isAllDataReadByChannel.putIfAbsent(nodeChannel.getChannelId(), context.getCommittedDataIdCount() < context.getChannel().getMaxDataToRoute());
             } catch (Exception e) {
                 if (context != null) {
                     context.rollback();
@@ -658,6 +692,8 @@ public class RouterService extends AbstractService implements IRouterService, IN
         for (IDataRouter dataRouter : usedRouters) {
             dataRouter.contextCommitted(context);
         }
+        gapDetector.addDataIds(context.getDataIds());
+        context.getDataIds().clear();
         context.setNeedsCommitted(false);
     }
 
@@ -1185,6 +1221,24 @@ public class RouterService extends AbstractService implements IRouterService, IN
                 rowData = dataMetaData.getData().toParsedRowData();
             }
             return rowData == null || dataMetaData.getTable().getColumnCount() == rowData.length;
+        }
+        return true;
+    }
+
+    protected boolean hasMaxDataRouted() {
+        for (Boolean b : hasMaxDataRoutedByChannel.values()) {
+            if (b != null && b.booleanValue()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected boolean isAllDataRead() {
+        for (Boolean b : isAllDataReadByChannel.values()) {
+            if (b == null || !b.booleanValue()) {
+                return false;
+            }
         }
         return true;
     }

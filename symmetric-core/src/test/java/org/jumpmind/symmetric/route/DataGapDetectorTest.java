@@ -730,4 +730,27 @@ public class DataGapDetectorTest {
 		verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
 		verifyNoMoreInteractions(dataService);
 	}
+
+    @Test
+    public void testDataBeforeGap() throws Exception {
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(3, 3));
+        dataGaps.add(new DataGap(4, 50000004));
+        List<Long> dataIds = new ArrayList<Long>();
+        dataIds.add(1L);
+        dataIds.add(2L);
+        dataIds.add(3L);
+        dataIds.add(4L);
+        runGapDetector(dataGaps, dataIds, true);
+        Set<DataGap> deleted = new HashSet<DataGap>();
+        deleted.add(new DataGap(3, 3));
+        deleted.add(new DataGap(4, 50000004));
+        Set<DataGap> inserted = new HashSet<DataGap>();
+        inserted.add(new DataGap(5, 50000004));
+        verify(dataService).findDataGaps();
+        verify(dataService).deleteDataGaps(sqlTransaction, deleted);
+        verify(dataService).insertDataGaps(sqlTransaction, inserted);
+        verify(dataService).expireDataGaps(sqlTransaction, new HashSet<DataGap>());
+        verifyNoMoreInteractions(dataService);
+    }
 }

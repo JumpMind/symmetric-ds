@@ -149,6 +149,12 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         }
     }
 
+    protected void softReset() {
+        gapsAll = new HashSet<DataGap>();
+        gapsAdded = new HashSet<DataGap>();
+        gapsDeleted = new HashSet<DataGap>();
+    }
+
     /**
      * Always make sure sym_data_gap is up to date to make sure that we don't dual route data.
      */
@@ -271,6 +277,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             throw ex;
         } finally {
             logExpiredDataGaps();
+            softReset();
         }
     }
 
@@ -356,7 +363,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         }
     }
 
-    protected void queryDataIdMap() {
+    protected synchronized void queryDataIdMap() {
         String sql = routerService.getSql("selectDistinctDataIdFromDataEventUsingGapsSql");
         ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
         for (DataGap dataGap : gaps) {
@@ -371,7 +378,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         }
     }
 
-    protected Map<DataGap, List<Long>> getDataIdMap() {
+    protected synchronized Map<DataGap, List<Long>> getDataIdMap() {
         HashMap<DataGap, List<Long>> map = new HashMap<DataGap, List<Long>>();
         Collections.sort(dataIds);
         Iterator<Long> iterator = dataIds.iterator();
@@ -386,7 +393,9 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 map.put(gap, idList);
             }
             do {
-                if (dataId >= gap.getStartId() && dataId <= gap.getEndId()) {
+                if (dataId < gap.getStartId()) {
+                    continue;
+                } else if (dataId <= gap.getEndId()) {
                     idList.add(dataId);
                 } else {
                     break;
@@ -545,12 +554,9 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         this.dataIds.addAll(dataIds);
     }
 
-    /**
-     * This method is called for each channel that is routed. Once it is set for a routing pass it should remain set until the routing pass is done.
-     */
     @Override
     public void setIsAllDataRead(boolean isAllDataRead) {
-        this.isAllDataRead &= isAllDataRead;
+        this.isAllDataRead = isAllDataRead;
     }
 
     public boolean isFullGapAnalysis() {

@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -90,6 +89,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private List<Long> uncommittedDataIds = new ArrayList<Long>();
     private long uncommittedDataEventCount = 0;
     private long committedDataEventCount = 0;
+    private long committedDataIdCount = 0;
     private IBatchAlgorithm batchAlgorithm;
     private Map<Long, DataMetaData> configDataIdsProcessed = new HashMap<Long, DataMetaData>();
 
@@ -124,17 +124,6 @@ public class ChannelRouterContext extends SimpleRouterContext {
         }
     }
 
-    public void removeLastData() {
-        uncommittedDataIds.remove(lastDataId);
-        ListIterator<DataEvent> iter = dataEventsToSend.listIterator();
-        while (iter.hasNext()) {
-            DataEvent dataEvent = iter.next();
-            if (dataEvent.getDataId() == lastDataId) {
-                iter.remove();
-            }
-        }
-    }
-
     public void addConfigDataMetaData(DataMetaData dataMetaData) {
         configDataIdsProcessed.put(dataMetaData.getData().getDataId(), dataMetaData);
     }
@@ -145,6 +134,10 @@ public class ChannelRouterContext extends SimpleRouterContext {
 
     public long getCommittedDataEventCount() {
         return this.committedDataEventCount;
+    }
+
+    public long getCommittedDataIdCount() {
+        return this.committedDataIdCount;
     }
 
     public Map<String, OutgoingBatch> getBatchesByNodes() {
@@ -164,6 +157,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
             sqlTransaction.commit();
             dataIds.addAll(uncommittedDataIds);
             committedDataEventCount += uncommittedDataEventCount;
+            committedDataIdCount += uncommittedDataIds.size();
         } finally {
             clearState();
         }
