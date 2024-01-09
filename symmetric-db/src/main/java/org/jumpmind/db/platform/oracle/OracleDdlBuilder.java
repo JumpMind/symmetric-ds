@@ -85,9 +85,9 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         // Note that the back-mappings are partially done by the model reader,
         // not the driver
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);
-        databaseInfo.addNativeTypeMapping(Types.BIGINT, "NUMBER(38)", Types.NUMERIC);
+        databaseInfo.addNativeTypeMapping(Types.BIGINT, "NUMBER", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.BINARY, "RAW", Types.VARBINARY);
-        databaseInfo.addNativeTypeMapping(Types.BIT, "NUMBER(1)", Types.NUMERIC);
+        databaseInfo.addNativeTypeMapping(Types.BIT, "NUMBER", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.DATE, "DATE", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.DECIMAL, "NUMBER", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.BLOB);
@@ -98,15 +98,15 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "CLOB", Types.CLOB);
         databaseInfo.addNativeTypeMapping(Types.NULL, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.NUMERIC, "NUMBER", Types.NUMERIC);
-        databaseInfo.addNativeTypeMapping(Types.INTEGER, "NUMBER(22)", Types.NUMERIC);
+        databaseInfo.addNativeTypeMapping(Types.INTEGER, "NUMBER", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.OTHER, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.REF, "BLOB", Types.BLOB);
-        databaseInfo.addNativeTypeMapping(Types.SMALLINT, "NUMBER(5)", Types.NUMERIC);
+        databaseInfo.addNativeTypeMapping(Types.SMALLINT, "NUMBER", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.TIME, "TIMESTAMP", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(ColumnTypes.TIMETZ, "TIMESTAMP", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP");
-        databaseInfo.addNativeTypeMapping(Types.TINYINT, "NUMBER(3)", Types.NUMERIC);
+        databaseInfo.addNativeTypeMapping(Types.TINYINT, "NUMBER", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.VARBINARY, "RAW");
         databaseInfo.addNativeTypeMapping(Types.VARCHAR, "VARCHAR2");
         databaseInfo.addNativeTypeMapping("BOOLEAN", "NUMBER(1)", "BIT");
@@ -605,6 +605,13 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         } else if (column.getJdbcTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ || column.getMappedTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ) {
             return "TIMESTAMP(" + column.getSizeAsInt() + ") WITH LOCAL TIME ZONE";
         } else {
+            // This check was added because Oracle has no native support for the following types.
+            if ((column.getMappedTypeCode() == Types.BIGINT || column
+                    .getMappedTypeCode() == Types.INTEGER || column.getMappedTypeCode() == Types.SMALLINT
+                    || column.getMappedTypeCode() == Types.TINYINT || column.getMappedTypeCode() == Types.BIT) && (column.getSizeAsInt() > 0 && column
+                            .getSizeAsInt() < 39)) {
+                return super.getSqlType(column) + "(" + column.getSizeAsInt() + ")";
+            }
             return super.getSqlType(column);
         }
     }

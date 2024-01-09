@@ -547,6 +547,13 @@ public class TiberoDdlBuilder extends AbstractDdlBuilder {
         } else if (column.getJdbcTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ) {
             return "TIMESTAMP(" + column.getSizeAsInt() + ") WITH LOCAL TIME ZONE";
         } else {
+            // This check was added because Tibero has no native support for the following types.
+            if ((column.getMappedTypeCode() == Types.BIGINT || column
+                    .getMappedTypeCode() == Types.INTEGER || column.getMappedTypeCode() == Types.SMALLINT
+                    || column.getMappedTypeCode() == Types.TINYINT || column.getMappedTypeCode() == Types.BIT) && (column.getSizeAsInt() > 0 && column
+                            .getSizeAsInt() < 39)) {
+                return super.getSqlType(column) + "(" + column.getSizeAsInt() + ")";
+            }
             return super.getSqlType(column);
         }
     }
