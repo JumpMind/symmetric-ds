@@ -62,6 +62,7 @@ public class DatabaseWriterSettings {
     protected IAlterDatabaseInterceptor[] alterDatabaseInterceptors;
     protected Set<String> conflictLosingParentRows;
     protected boolean ignoreSqlDataEventFailures = false;
+    protected boolean createIndexConvertUniqueToNonuniqueWhenColumnsNotRequired = true;
 
     public void setAlterDatabaseInterceptors(IAlterDatabaseInterceptor[] alterDatabaseInterceptors) {
         this.alterDatabaseInterceptors = alterDatabaseInterceptors;
@@ -356,5 +357,13 @@ public class DatabaseWriterSettings {
 
     public void setIgnoreSqlDataEventFailures(boolean ignoreSqlDataEventFailures) {
         this.ignoreSqlDataEventFailures = ignoreSqlDataEventFailures;
+    }
+
+    public boolean isCreateIndexConvertUniqueToNonuniqueWhenColumnsNotRequired() {
+        return createIndexConvertUniqueToNonuniqueWhenColumnsNotRequired;
+    }
+
+    public void setCreateIndexConvertUniqueToNonuniqueWhenColumnsNotRequired(boolean createIndexConvertUniqueToNonuniqueWhenColumnsNotRequired) {
+        this.createIndexConvertUniqueToNonuniqueWhenColumnsNotRequired = createIndexConvertUniqueToNonuniqueWhenColumnsNotRequired;
     }
 }

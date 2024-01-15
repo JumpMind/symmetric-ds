@@ -40,6 +40,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.NonUniqueIndex;
+import org.jumpmind.db.model.PlatformIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -637,27 +638,33 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     table.removeAllColumnDefaults();
                 }
             }
-            if (!(getTargetPlatform().allowsUniqueIndexDuplicatesWithNulls())) {
-                for (Table table : db.getTables()) {
-                    for (IIndex index : table.getUniqueIndices()) {
-                        boolean needsFixed = false;
-                        for (IndexColumn indexColumn : index.getColumns()) {
-                            Column column = indexColumn.getColumn();
-                            if (column != null && !column.isRequired()) {
-                                needsFixed = true;
-                                log.warn(
-                                        "Detected Unique Index with potential for multiple null values in table: {} on column: {}. Adjusting index to be NonUnique.",
-                                        table.getName(), column.getName());
-                                break;
-                            }
-                        }
-                        if (needsFixed) {
-                            table.removeIndex(index);
-                            IIndex newIndex = new NonUniqueIndex(index.getName());
+            if (writerSettings.isCreateIndexConvertUniqueToNonuniqueWhenColumnsNotRequired()) {
+                if (!(getTargetPlatform().allowsUniqueIndexDuplicatesWithNulls())) {
+                    for (Table table : db.getTables()) {
+                        for (IIndex index : table.getUniqueIndices()) {
+                            boolean needsFixed = false;
                             for (IndexColumn indexColumn : index.getColumns()) {
-                                newIndex.addColumn(indexColumn);
+                                Column column = indexColumn.getColumn();
+                                if (column != null && !column.isRequired()) {
+                                    needsFixed = true;
+                                    log.warn(
+                                            "Detected Unique Index: {} with potential for multiple null values in table: {} on column: {}. Adjusting index to be NonUnique.",
+                                            index.getName(), table.getName(), column.getName());
+                                    break;
+                                }
                             }
-                            table.addIndex(newIndex);
+                            if (needsFixed) {
+                                table.removeIndex(index);
+                                IIndex newIndex = new NonUniqueIndex(index.getName());
+                                for (IndexColumn indexColumn : index.getColumns()) {
+                                    newIndex.addColumn(indexColumn);
+                                }
+                                // Make sure to add the platform index info to the new non-unique index
+                                for (PlatformIndex platformIndex : index.getPlatformIndexes().values()) {
+                                    newIndex.addPlatformIndex(platformIndex);
+                                }
+                                table.addIndex(newIndex);
+                            }
                         }
                     }
                 }
