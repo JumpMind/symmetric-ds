@@ -70,6 +70,8 @@ public abstract class AbstractDataLoaderFactory {
                 parameterService.is(ParameterConstants.DATA_LOADER_USE_PRIMARY_KEYS_FROM_SOURCE));
         settings.setIgnoreSqlDataEventFailures(parameterService.is(ParameterConstants.DATA_LOADER_IGNORE_SQL_EVENT_ERRORS, false));
         settings.setLogSqlParamsOnError(parameterService.is(ParameterConstants.DATA_LOADER_LOG_SQL_PARAMS_ON_ERROR, true));
+        settings.setCreateIndexConvertUniqueToNonuniqueWhenColumnsNotRequired(
+                parameterService.is(ParameterConstants.CREATE_INDEX_CONVERT_UNIQUE_TO_NONUNIQUE_WHEN_COLUMNS_NOT_REQUIRED, true));
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();
         boolean multipleDefaultSettingsFound = false;
