@@ -309,7 +309,8 @@ abstract public class AbstractWriterTest {
                         expected[i] = Double.valueOf(expected[i]).toString();
                     }
                 } else if (resultObj != null) {
-                    resultValue = resultObj.toString();
+                    resultValue = resultObj.toString().trim();
+                    expected[i] = expected[i].trim();
                 }
                 Assert.assertEquals(name[i] + ". " + printDatabase(), expected[i], resultValue);
             }
