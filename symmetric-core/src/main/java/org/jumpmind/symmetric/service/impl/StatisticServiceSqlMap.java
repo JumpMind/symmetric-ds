@@ -101,7 +101,7 @@ public class StatisticServiceSqlMap extends AbstractSqlMap {
                 "select node_id, host_name, job_name, start_time, end_time,                         " +
                 "  processed_count, error_flag, error_message " +
                 "  from $(node_host_job_stats)                                                " +
-                "  where  start_time >= ? and end_time <= ? and node_id=? order by start_time asc   ");
+                "  where  start_time >= ? and end_time <= ? and node_id=? order by start_time desc");
         putSql("selectJobStatsForNodeSql", "" +
                 "select node_id, host_name, job_name, start_time, end_time,                         " +
                 "  processed_count, error_flag, error_message " +

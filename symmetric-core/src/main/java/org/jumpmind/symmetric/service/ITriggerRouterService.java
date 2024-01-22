@@ -49,6 +49,8 @@ public interface ITriggerRouterService {
 
     public List<TriggerHistory> getActiveTriggerHistories(String tableName);
 
+    public Map<String, TriggerHistory> getLastErrorTriggerHistories();
+
     public List<TriggerRouter> getTriggerRouters(boolean refreshCache);
 
     public List<TriggerRouter> getTriggerRoutersFromDatabase();

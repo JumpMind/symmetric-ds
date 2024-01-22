@@ -12,6 +12,13 @@ public class TriggerRouterContext extends Context {
     Map<String, CounterStat> triggerReadTableFromDatabase = new HashMap<String, CounterStat>();
     Map<String, CounterStat> triggerCopyTable = new HashMap<String, CounterStat>();
     Map<Integer, CounterStat> multipleActiveTriggerRouter = new HashMap<Integer, CounterStat>();
+    int triggersToSyncCount;
+    int triggersSyncedCount;
+    int triggersFailedCount;
+    int tablesNotFoundCount;
+    String tablesNotFoundMessage;
+    String triggersFailedMessage;
+    Exception triggersFailedException;
     long fixMultipleActiveTriggerHistoriesTime;
     long triggersForCurrentNodeTime;
     long syncTriggersStartedTime;
@@ -206,5 +213,68 @@ public class TriggerRouterContext extends Context {
 
     synchronized public long getTriggerInactivatedTime() {
         return triggerInactivatedTime;
+    }
+
+    synchronized public void incrementTriggersToSyncCount(int c) {
+        triggersToSyncCount += c;
+    }
+
+    synchronized public int getTriggersToSyncCount() {
+        return triggersToSyncCount;
+    }
+
+    synchronized public void incrementTriggersSyncedCount(int c) {
+        triggersSyncedCount += c;
+    }
+
+    synchronized public int getTriggersSyncedCount() {
+        return triggersSyncedCount;
+    }
+
+    synchronized public int getTriggersFailedCount() {
+        return triggersFailedCount;
+    }
+
+    synchronized public int getTablesNotFoundCount() {
+        return tablesNotFoundCount;
+    }
+
+    synchronized public void addTablesNotFound(String tableName) {
+        tablesNotFoundCount++;
+        tablesNotFoundMessage = abbreviateMessage(tablesNotFoundMessage, tableName);
+    }
+
+    synchronized public void addTriggersFailed(String tableName, Exception e) {
+        triggersFailedCount++;
+        if (this.triggersFailedException == null) {
+            this.triggersFailedException = e;
+        }
+        triggersFailedMessage = abbreviateMessage(triggersFailedMessage, tableName);
+    }
+
+    protected String abbreviateMessage(String message, String name) {
+        if (message == null) {
+            message = name;
+        } else if (message.length() < 500) {
+            message += ", " + name;
+        } else if (!message.endsWith("...")) {
+            message += "...";
+        }
+        return message;
+    }
+
+    synchronized public String getErrorMessage() {
+        String message = "";
+        if (tablesNotFoundCount > 0) {
+            message += tablesNotFoundCount + " tables were not found: " + tablesNotFoundMessage;
+        }
+        if (triggersFailedCount > 0) {
+            message += (message.isEmpty() ? "" : "\n") + triggersFailedCount + " table triggers failed: " + triggersFailedMessage;
+            if (triggersFailedException != null) {
+                message += "\n" + triggersFailedException.getClass().getSimpleName() + (triggersFailedException.getMessage() == null ? ""
+                        : ": " + triggersFailedException.getMessage());
+            }
+        }
+        return message;
     }
 }

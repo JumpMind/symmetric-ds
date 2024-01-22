@@ -157,6 +157,16 @@ public class StatisticManager implements IStatisticManager {
         }
     }
 
+    public void addJobStats(String jobName, long startTime, long endTime, long processedCount, String errorMessage) {
+        jobStatsLock.acquireUninterruptibly();
+        try {
+            JobStats stats = new JobStats(jobName, startTime, endTime, processedCount, errorMessage);
+            jobStats.add(stats);
+        } finally {
+            jobStatsLock.release();
+        }
+    }
+
     public void addJobStats(String jobName, long startTime, long endTime, long processedCount, Exception e) {
         jobStatsLock.acquireUninterruptibly();
         try {

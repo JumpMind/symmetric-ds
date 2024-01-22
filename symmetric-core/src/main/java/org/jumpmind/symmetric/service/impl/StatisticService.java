@@ -152,8 +152,8 @@ public class StatisticService extends AbstractService implements IStatisticServi
             stats.setNodeId(rs.getString("node_id"));
             stats.setHostName(rs.getString("host_name"));
             stats.setJobName(rs.getString("job_name"));
-            stats.setStartTime(truncateToMinutes(rs.getDateTime("start_time")));
-            stats.setEndTime(truncateToMinutes(rs.getDateTime("end_time")));
+            stats.setStartTime(rs.getDateTime("start_time"));
+            stats.setEndTime(rs.getDateTime("end_time"));
             stats.setProcessedCount(rs.getLong("processed_count"));
             stats.setErrorFlag(rs.getBoolean("error_flag"));
             stats.setErrorMessage(rs.getString("error_message"));

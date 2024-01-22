@@ -231,6 +231,7 @@ public class DatabaseInfo {
     private boolean logBased;
     private boolean triggersContainJava = false;
     private boolean canDeleteUsingExists = true;
+    private boolean canTriggerExistWithoutTable = false;
 
     /**
      * Creates a new platform info object.
@@ -1360,5 +1361,13 @@ public class DatabaseInfo {
 
     public void setCanDeleteUsingExists(boolean canDeleteUsingExists) {
         this.canDeleteUsingExists = canDeleteUsingExists;
+    }
+
+    public boolean canTriggerExistWithoutTable() {
+        return canTriggerExistWithoutTable;
+    }
+
+    public void setCanTriggerExistWithoutTable(boolean canTriggerExistWithoutTable) {
+        this.canTriggerExistWithoutTable = canTriggerExistWithoutTable;
     }
 }

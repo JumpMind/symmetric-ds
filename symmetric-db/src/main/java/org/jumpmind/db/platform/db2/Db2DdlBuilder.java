@@ -106,6 +106,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setBinaryQuoteStart("blob(X'");
         databaseInfo.setBinaryQuoteEnd("')");
+        databaseInfo.setCanTriggerExistWithoutTable(true);
     }
 
     @Override

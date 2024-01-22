@@ -59,6 +59,15 @@ public class JobStats extends AbstractNodeHostStats {
         this.errorMessage = e.getClass().getName() + ": " + e.getMessage() + "\r\n" + AppUtils.formatStackTrace(e.getStackTrace(), 50, false);
     }
 
+    public JobStats(String jobName, long startTime, long endTime, long processedCount, String errorMessage) {
+        this(null, null, new Date(startTime), new Date(endTime), jobName);
+        this.processedCount = processedCount;
+        if (errorMessage != null && !errorMessage.isBlank()) {
+            this.errorFlag = true;
+            this.errorMessage = errorMessage;
+        }
+    }
+
     public JobStats(JobStats source) {
         super(source.getNodeId(), source.getHostName(), source.getStartTime(), source.getEndTime());
         this.jobName = source.getJobName();
