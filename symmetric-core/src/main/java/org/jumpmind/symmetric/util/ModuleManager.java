@@ -341,7 +341,11 @@ public class ModuleManager {
         FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                String baseName = name.substring(0, name.indexOf("."));
+                String baseName = name;
+                int index = name.indexOf(".");
+                if (index != -1) {
+                    baseName = name.substring(0, index);
+                }
                 return name.toLowerCase().endsWith(EXT_PROPERTIES) && (modules.containsKey(baseName) || oldModules.contains(baseName));
             }
         };
