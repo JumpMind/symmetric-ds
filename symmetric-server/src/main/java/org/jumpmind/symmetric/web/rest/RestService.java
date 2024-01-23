@@ -1329,44 +1329,39 @@ public class RestService {
     @RequestMapping(value = "/engine/outgoingBatchSummary", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final BatchSummaries getOutgoingBatchSummary(
-            @RequestParam(value = WebConstants.NODE_ID) String nodeId,
-            @ApiParam(value = "This the password for the nodeId being passed in.  The password is stored in the node_security table.") @RequestParam(
-                    value = WebConstants.SECURITY_TOKEN) String securityToken) {
-        return getOutgoingBatchSummary(getSymmetricEngine().getEngineName(), nodeId, securityToken);
+    public final BatchSummaries getOutgoingBatchSummary(@RequestParam(value = WebConstants.NODE_ID) String nodeId) {
+        return getOutgoingBatchSummary(getSymmetricEngine().getEngineName(), nodeId);
     }
 
     @ApiOperation(value = "Outgoing summary of batches and data counts waiting for a node")
     @RequestMapping(value = "/engine/{engine}/outgoingBatchSummary", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final BatchSummaries getOutgoingBatchSummary(
-            @PathVariable("engine") String engineName,
-            @RequestParam(value = WebConstants.NODE_ID) String nodeId,
-            @ApiParam(value = "This the password for the nodeId being passed in.  The password is stored in the node_security table.") @RequestParam(
-                    value = WebConstants.SECURITY_TOKEN) String securityToken) {
+    public final BatchSummaries getOutgoingBatchSummary(@PathVariable("engine") String engineName,
+            @RequestParam(value = WebConstants.NODE_ID) String nodeId) {
         ISymmetricEngine engine = getSymmetricEngine(engineName);
-        if (securityVerified(nodeId, engine, securityToken)) {
-            BatchSummaries summaries = new BatchSummaries();
-            summaries.setNodeId(nodeId);
-            IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
-            List<OutgoingBatchSummary> list = outgoingBatchService.findOutgoingBatchSummary(
-                    OutgoingBatch.Status.RQ, OutgoingBatch.Status.QY, OutgoingBatch.Status.NE,
-                    OutgoingBatch.Status.SE, OutgoingBatch.Status.LD, OutgoingBatch.Status.ER);
-            for (OutgoingBatchSummary sum : list) {
-                if (sum.getNodeId().equals(nodeId)) {
-                    BatchSummary summary = new BatchSummary();
-                    summary.setBatchCount(sum.getBatchCount());
-                    summary.setDataCount(sum.getDataCount());
-                    summary.setOldestBatchCreateTime(sum.getOldestBatchCreateTime());
-                    summary.setStatus(sum.getStatus().name());
-                    summaries.getBatchSummaries().add(summary);
-                }
-            }
-            return summaries;
-        } else {
+        INodeService nodeService = engine.getNodeService();
+        org.jumpmind.symmetric.model.Node targetNode = nodeService.findNode(nodeId);
+        if (targetNode == null) {
             throw new NotAllowedException();
         }
+        BatchSummaries summaries = new BatchSummaries();
+        summaries.setNodeId(nodeId);
+        IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
+        List<OutgoingBatchSummary> list = outgoingBatchService.findOutgoingBatchSummary(
+                OutgoingBatch.Status.RQ, OutgoingBatch.Status.QY, OutgoingBatch.Status.NE,
+                OutgoingBatch.Status.SE, OutgoingBatch.Status.LD, OutgoingBatch.Status.ER);
+        for (OutgoingBatchSummary sum : list) {
+            if (sum.getNodeId().equals(nodeId)) {
+                BatchSummary summary = new BatchSummary();
+                summary.setBatchCount(sum.getBatchCount());
+                summary.setDataCount(sum.getDataCount());
+                summary.setOldestBatchCreateTime(sum.getOldestBatchCreateTime());
+                summary.setStatus(sum.getStatus().name());
+                summaries.getBatchSummaries().add(summary);
+            }
+        }
+        return summaries;
     }
 
     @ApiOperation(value = "Read parameter value")
