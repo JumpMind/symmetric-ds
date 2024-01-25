@@ -104,7 +104,7 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             log.warn("Authorization denied from {} at {}", new Object[] { remoteNode, syncUrl });
             status.setStatus(Status.NOT_AUTHORIZED);
         } else if (isAuthenticationExpired(exception)) {
-            log.debug("Authentication is required again to renew session");
+            log.info("Session expired, so will re-authenticate");
             status.setStatus(Status.NOT_AUTHORIZED);
         } else if (isSyncDisabled(exception)) {
             log.warn("Sync was not enabled for {} at {}", new Object[] { remoteNode, syncUrl });

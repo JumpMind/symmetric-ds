@@ -680,7 +680,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw (HttpException) ex;
         } else if (ex instanceof InvalidRetryException) {
             throw (InvalidRetryException) ex;
-        } else if (ex instanceof ProtocolException || ex instanceof AuthenticationException || ex instanceof AuthenticationExpiredException) {
+        } else if (ex instanceof AuthenticationException) {
+            throw (AuthenticationException) ex;
+        } else if (ex instanceof AuthenticationExpiredException) {
+            throw (AuthenticationExpiredException) ex;
+        } else if (ex instanceof ProtocolException) {
             log.error("Failed to process incoming batch from node '{}': {}{}", sourceNodeId, ex.getClass().getSimpleName(),
                     StringUtils.isNotBlank(ex.getMessage()) ? ": " + ex.getMessage() : "");
         } else if (ex instanceof StagingLowFreeSpace) {
