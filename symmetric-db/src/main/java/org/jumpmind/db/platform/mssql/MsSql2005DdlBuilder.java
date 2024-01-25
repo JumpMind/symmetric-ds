@@ -32,8 +32,15 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
     public MsSql2005DdlBuilder() {
         super();
         this.databaseName = DatabaseNamesConstants.MSSQL2005;
-        databaseInfo.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.SQLXML, "XML", Types.SQLXML);
+    }
+    
+    @Override
+    protected void addLobMapping() {
+        databaseInfo.addNativeTypeMapping(Types.BLOB, "VARBINARY(MAX)", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.NCLOB, "NVARCHAR(MAX)", Types.NCLOB);
+        databaseInfo.addNativeTypeMapping(Types.CLOB, "VARCHAR(MAX)", Types.CLOB);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR(MAX)", Types.LONGVARCHAR);
     }
 
     protected void dropDefaultConstraint(Table table, String columnName, StringBuilder ddl) {

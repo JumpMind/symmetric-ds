@@ -95,8 +95,6 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         // BIGINT will be mapped back to BIGINT by the model reader
         // databaseInfo.addNativeTypeMapping(Types.BIGINT, "DECIMAL(19,0)");
         databaseInfo.addNativeTypeMapping(Types.BIGINT, "BIGINT", Types.BIGINT);
-        databaseInfo.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.LONGVARBINARY);
-        databaseInfo.addNativeTypeMapping(Types.CLOB, "TEXT", Types.LONGVARCHAR);
         databaseInfo.addNativeTypeMapping(Types.DATE, "DATETIME", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "FLOAT", Types.FLOAT);
@@ -131,6 +129,12 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setGeneratedColumnsSupported(true);
         databaseInfo.setBinaryQuoteStart("0x");
         databaseInfo.setBinaryQuoteEnd("");
+        addLobMapping();
+    }
+
+    protected void addLobMapping() {
+        databaseInfo.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.LONGVARBINARY);
+        databaseInfo.addNativeTypeMapping(Types.CLOB, "TEXT", Types.LONGVARCHAR);
     }
 
     @Override
