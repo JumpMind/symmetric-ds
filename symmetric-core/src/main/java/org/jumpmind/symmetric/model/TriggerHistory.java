@@ -345,6 +345,14 @@ public class TriggerHistory implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + triggerHistoryId;
+        return result;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         return obj != null && obj instanceof TriggerHistory && ((TriggerHistory) obj).triggerHistoryId == triggerHistoryId;
     }
