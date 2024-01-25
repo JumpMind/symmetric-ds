@@ -122,6 +122,8 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
             return Types.LONGVARCHAR;
         } else if (typeName != null && typeName.equalsIgnoreCase("BIT")) {
             return Types.VARCHAR;
+        } else if (typeName != null && typeName.toUpperCase().contains("BOOL")) {
+            return Types.BOOLEAN;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
