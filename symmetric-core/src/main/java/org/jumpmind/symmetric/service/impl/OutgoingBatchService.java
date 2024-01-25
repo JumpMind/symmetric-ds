@@ -110,7 +110,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 }
             });
             for (OutgoingBatch outgoingBatch : list) {
-                if (includeConfigChannel || !outgoingBatch.getChannelId().equals(Constants.CHANNEL_CONFIG)) {
+                if (includeConfigChannel || (!outgoingBatch.getChannelId().equals(Constants.CHANNEL_CONFIG) &&
+                        !outgoingBatch.getChannelId().equals(Constants.CHANNEL_MONITOR))) {
                     outgoingBatch.setStatus(Status.OK);
                     outgoingBatch.setErrorFlag(false);
                     updateOutgoingBatch(outgoingBatch);
