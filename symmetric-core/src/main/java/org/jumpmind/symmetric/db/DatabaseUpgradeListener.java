@@ -118,7 +118,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
              * Workarounds for missing features (bugs) in ddl-utils
              */
             String name = engine.getDatabasePlatform().getName();
-            if (name.equals(DatabaseNamesConstants.ORACLE) || name.equals(DatabaseNamesConstants.ORACLE122)) {
+            if (name.equals(DatabaseNamesConstants.ORACLE) || name.equals(DatabaseNamesConstants.ORACLE122) || name.equals(DatabaseNamesConstants.ORACLE23)) {
                 log.info("Before upgrade, dropping PK constraint for data table");
                 try {
                     engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_DATA
@@ -228,7 +228,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                     log.info("Unable to drop PK for registration request table: {}", e.getMessage());
                 }
             }
-            if (name.equals(DatabaseNamesConstants.ORACLE) || name.equals(DatabaseNamesConstants.ORACLE122)) {
+            if (name.equals(DatabaseNamesConstants.ORACLE) || name.equals(DatabaseNamesConstants.ORACLE122) || name.equals(DatabaseNamesConstants.ORACLE23)) {
                 log.info("Before upgrade, truncating reload request table");
                 try {
                     engine.getSqlTemplate().update("truncate table " + tablePrefix + "_" + TableConstants.SYM_TABLE_RELOAD_REQUEST);

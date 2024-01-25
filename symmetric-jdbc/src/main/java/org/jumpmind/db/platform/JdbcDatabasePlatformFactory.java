@@ -79,6 +79,7 @@ import org.jumpmind.db.platform.mssql.MsSql2016DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.nuodb.NuoDbDatabasePlatform;
 import org.jumpmind.db.platform.oracle.Oracle122DatabasePlatform;
+import org.jumpmind.db.platform.oracle.Oracle23DatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSql95DatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
@@ -142,6 +143,7 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
         addPlatform(platforms, DatabaseNamesConstants.NUODB, NuoDbDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.ORACLE, OracleDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.ORACLE122, Oracle122DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.ORACLE23, Oracle23DatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.POSTGRESQL, PostgreSqlDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.POSTGRESQL95, PostgreSql95DatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.SQLITE, SqliteDatabasePlatform.class);
@@ -307,9 +309,13 @@ public class JdbcDatabasePlatformFactory implements IDatabasePlatformFactory {
         if (nameVersion.getName().equalsIgnoreCase(DatabaseNamesConstants.ORACLE)) {
             int majorVersion = Integer.valueOf(metaData.getDatabaseMajorVersion());
             int minorVersion = Integer.valueOf(metaData.getDatabaseMinorVersion());
-            if (majorVersion > 12 || (majorVersion == 12 && minorVersion >= 2)) {
+            if (majorVersion < 23 && majorVersion > 12 || (majorVersion == 12 && minorVersion >= 2)) {
                 if (isOracle122Compatible(connection)) {
                     nameVersion.setName(DatabaseNamesConstants.ORACLE122);
+                }
+            } else if (majorVersion >= 23) {
+                if (isOracle122Compatible(connection)) {
+                    nameVersion.setName(DatabaseNamesConstants.ORACLE23);
                 }
             }
         }

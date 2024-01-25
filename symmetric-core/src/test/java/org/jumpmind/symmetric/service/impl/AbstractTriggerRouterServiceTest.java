@@ -266,7 +266,8 @@ abstract public class AbstractTriggerRouterServiceTest extends AbstractServiceTe
     @Test
     public void test11BinaryColumnTypesForOracle() {
         ISymmetricDialect dialect = getDbDialect();
-        if (DatabaseNamesConstants.ORACLE.equals(dialect.getName()) || DatabaseNamesConstants.ORACLE122.equals(dialect.getName())) {
+        if (DatabaseNamesConstants.ORACLE.equals(dialect.getName()) || DatabaseNamesConstants.ORACLE122.equals(dialect.getName())
+                || DatabaseNamesConstants.ORACLE23.equals(dialect.getName())) {
             getSqlTemplate().update(CREATE_ORACLE_BINARY_TYPE);
             TriggerRouter trouter = new TriggerRouter();
             Trigger trigger = trouter.getTrigger();

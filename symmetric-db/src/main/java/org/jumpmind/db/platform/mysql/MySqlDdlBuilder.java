@@ -499,6 +499,9 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         if (pc == null) {
             pc = column.getPlatformColumns() == null ? null : column.getPlatformColumns().get(DatabaseNamesConstants.ORACLE122);
         }
+        if (pc == null) {
+            pc = column.getPlatformColumns() == null ? null : column.getPlatformColumns().get(DatabaseNamesConstants.ORACLE23);
+        }
         if (pc != null) {
             if ("NVARCHAR2".equals(pc.getType())) {
                 sqlType = "NVARCHAR(" + pc.getSize() + ")";

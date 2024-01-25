@@ -173,6 +173,8 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             return Types.VARCHAR;
         } else if (typeName != null && typeName.startsWith("ROWID")) {
             return Types.VARCHAR;
+        } else if (typeName != null && typeName.startsWith("BOOL")) {
+            return Types.BOOLEAN;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }

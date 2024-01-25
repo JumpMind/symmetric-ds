@@ -223,7 +223,8 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
                 try {
                     if (column.getMappedTypeCode() == Types.DATE
                             && column.findPlatformColumn(DatabaseNamesConstants.ORACLE) != null
-                            && column.findPlatformColumn(DatabaseNamesConstants.ORACLE122) != null) {
+                            && column.findPlatformColumn(DatabaseNamesConstants.ORACLE122) != null
+                            && column.findPlatformColumn(DatabaseNamesConstants.ORACLE23) != null) {
                         column.setMappedType(TypeMap.TIMESTAMP);
                         column.setMappedTypeCode(Types.TIMESTAMP);
                         column.setScale(6);

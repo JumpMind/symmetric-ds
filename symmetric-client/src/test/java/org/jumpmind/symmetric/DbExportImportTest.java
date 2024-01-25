@@ -71,7 +71,8 @@ public class DbExportImportTest extends AbstractServiceTest {
 
     @Test
     public void testInsertBigIntIntoOracleIntField() {
-        if (getPlatform().getName().equals(DatabaseNamesConstants.ORACLE) || getPlatform().getName().equals(DatabaseNamesConstants.ORACLE122)) {
+        if (getPlatform().getName().equals(DatabaseNamesConstants.ORACLE) || getPlatform().getName().equals(DatabaseNamesConstants.ORACLE122) || getPlatform()
+                .getName().equals(DatabaseNamesConstants.ORACLE23)) {
             ISymmetricEngine engine = getSymmetricEngine();
             IDatabasePlatform platform = engine.getDatabasePlatform();
             Table table = new Table("TEST_ORACLE_INTEGER");
@@ -200,7 +201,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         IDatabasePlatform platform = engine.getDatabasePlatform();
         String dbName = platform.getName();
         if (dbName.equals(DatabaseNamesConstants.ORACLE) || dbName.equals(DatabaseNamesConstants.ORACLE122)
-                || dbName.equals(DatabaseNamesConstants.POSTGRESQL)) {
+                || dbName.equals(DatabaseNamesConstants.ORACLE23) || dbName.equals(DatabaseNamesConstants.POSTGRESQL)) {
             ISqlTemplate template = engine.getSqlTemplate();
             try {
                 template.update(String.format("drop table \"%s\"", TEST_TS_W_TZ));

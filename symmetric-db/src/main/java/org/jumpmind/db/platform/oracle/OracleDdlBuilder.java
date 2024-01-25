@@ -109,7 +109,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "NUMBER", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.VARBINARY, "RAW");
         databaseInfo.addNativeTypeMapping(Types.VARCHAR, "VARCHAR2");
-        databaseInfo.addNativeTypeMapping("BOOLEAN", "NUMBER(1)", "BIT");
+        databaseInfo.addNativeTypeMapping(Types.BOOLEAN, "NUMBER", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping("DATALINK", "BLOB", "BLOB");
         databaseInfo.addNativeTypeMapping(ColumnTypes.NVARCHAR, "NVARCHAR2", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(ColumnTypes.LONGNVARCHAR, "NVARCHAR2", Types.VARCHAR);
@@ -606,10 +606,14 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         } else if (column.getJdbcTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ || column.getMappedTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ) {
             return "TIMESTAMP(" + column.getSizeAsInt() + ") WITH LOCAL TIME ZONE";
         } else {
-            // This check was added because Oracle has no native support for the following types.
+            if (column.getMappedTypeCode() == Types.BOOLEAN && this instanceof Oracle23DdlBuilder) {
+                return "BOOLEAN"; // 0006188: Add boolean data type support for Oracle 23c
+            }
+            // This check was added because Oracle has no native support for the following types. Note: In Oracle 23 they added support for BOOLEAN
             if ((column.getMappedTypeCode() == Types.BIGINT || column
                     .getMappedTypeCode() == Types.INTEGER || column.getMappedTypeCode() == Types.SMALLINT
-                    || column.getMappedTypeCode() == Types.TINYINT || column.getMappedTypeCode() == Types.BIT) && (column.getSizeAsInt() > 0 && column
+                    || column.getMappedTypeCode() == Types.TINYINT || column.getMappedTypeCode() == Types.BIT || column.getMappedTypeCode() == Types.BOOLEAN)
+                    && (column.getSizeAsInt() > 0 && column
                             .getSizeAsInt() < 39)) {
                 return super.getSqlType(column) + "(" + column.getSizeAsInt() + ")";
             }

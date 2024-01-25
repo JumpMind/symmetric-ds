@@ -48,7 +48,8 @@ public class DmlStatementFactory implements IDmlStatementFactory {
     }
 
     public DmlStatement create(String databaseName, DmlStatementOptions options) {
-        if (DatabaseNamesConstants.ORACLE.equals(databaseName) || DatabaseNamesConstants.ORACLE122.equals(databaseName)) {
+        if (DatabaseNamesConstants.ORACLE.equals(databaseName) || DatabaseNamesConstants.ORACLE122.equals(databaseName) || DatabaseNamesConstants.ORACLE23
+                .equals(databaseName)) {
             return new OracleDmlStatement(options);
         } else if (DatabaseNamesConstants.POSTGRESQL.equals(databaseName) || (DatabaseNamesConstants.POSTGRESQL95.equals(databaseName) &&
                 System.getProperty("postgres.use.on.conflict", "").equalsIgnoreCase("false"))) {
