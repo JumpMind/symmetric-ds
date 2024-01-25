@@ -607,7 +607,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             return "TIMESTAMP(" + column.getSizeAsInt() + ") WITH LOCAL TIME ZONE";
         } else {
             if (column.getMappedTypeCode() == Types.BOOLEAN && this instanceof Oracle23DdlBuilder) {
-                return "BOOLEAN"; // 0006188: Add boolean data type support for Oracle 23c
+                return "BOOLEAN";
             }
             // This check was added because Oracle has no native support for the following types. Note: In Oracle 23 they added support for BOOLEAN
             if ((column.getMappedTypeCode() == Types.BIGINT || column
