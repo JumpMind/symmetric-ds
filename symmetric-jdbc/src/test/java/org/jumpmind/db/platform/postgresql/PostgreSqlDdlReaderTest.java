@@ -55,6 +55,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
+import org.jumpmind.properties.TypedProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -189,6 +190,9 @@ class PostgreSqlDdlReaderTest {
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
         // "Real" Components
+        TypedProperties properties = mock(TypedProperties.class);
+        doReturn(properties).when(settings).getProperties();
+        doReturn(true).when(properties).is("postgres.convert.infinity.date.to.null");
         PostgreSqlJdbcSqlTemplate testTemplate = new PostgreSqlJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), databaseInfo);
         PostgreSqlDatabasePlatform platform = new PostgreSqlDatabasePlatform(dataSource, settings);
         // Spied Components
@@ -372,6 +376,9 @@ class PostgreSqlDdlReaderTest {
         DatabaseInfo databaseInfo = mock(DatabaseInfo.class);
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+        TypedProperties properties = mock(TypedProperties.class);
+        doReturn(properties).when(settings).getProperties();
+        doReturn(true).when(properties).is("postgres.convert.infinity.date.to.null");
         // "Real" Components
         PostgreSqlJdbcSqlTemplate testTemplate = new PostgreSqlJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), databaseInfo);
         PostgreSqlDatabasePlatform platform = new PostgreSqlDatabasePlatform(dataSource, settings);
@@ -401,6 +408,7 @@ class PostgreSqlDdlReaderTest {
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
+       
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplate()).thenReturn(spyTemplate);
@@ -570,6 +578,9 @@ class PostgreSqlDdlReaderTest {
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
         // "Real" Components
+        TypedProperties properties = mock(TypedProperties.class);
+        doReturn(properties).when(settings).getProperties();
+        doReturn(true).when(properties).is("postgres.convert.infinity.date.to.null");
         PostgreSqlJdbcSqlTemplate testTemplate = new PostgreSqlJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), databaseInfo);
         PostgreSqlDatabasePlatform platform = new PostgreSqlDatabasePlatform(dataSource, settings);
         // Spied Components
@@ -759,6 +770,9 @@ class PostgreSqlDdlReaderTest {
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
         // "Real" Components
+        TypedProperties properties = mock(TypedProperties.class);
+        doReturn(properties).when(settings).getProperties();
+        doReturn(true).when(properties).is("postgres.convert.infinity.date.to.null");
         PostgreSqlJdbcSqlTemplate testTemplate = new PostgreSqlJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), databaseInfo);
         PostgreSqlDatabasePlatform platform = new PostgreSqlDatabasePlatform(dataSource, settings);
         // Spied Components
@@ -934,6 +948,9 @@ class PostgreSqlDdlReaderTest {
         SqlTemplateSettings settings = mock(SqlTemplateSettings.class);
         DatabaseMetaData metaData = mock(DatabaseMetaData.class);
         // "Real" Components
+        TypedProperties properties = mock(TypedProperties.class);
+        doReturn(properties).when(settings).getProperties();
+        doReturn(true).when(properties).is("postgres.convert.infinity.date.to.null");
         PostgreSqlJdbcSqlTemplate testTemplate = new PostgreSqlJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), databaseInfo);
         PostgreSqlDatabasePlatform platform = new PostgreSqlDatabasePlatform(dataSource, settings);
         // Spied Components
