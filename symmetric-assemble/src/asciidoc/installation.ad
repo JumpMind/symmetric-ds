@@ -309,6 +309,7 @@ Use the following steps to setup a cluster:
 4. Set the `initial.load.use.extract.job.enabled` property to `false` if using local staging
 5. Copy the engine properties, `security/keystore`, and `conf/sym_service.conf` files to each installation
 6. Configure the load balancer for sticky sessions
+7. If the load balancer requires cookies, then client nodes need to set the `server.http.cookies.enabled` property to `true` in `conf/symmetric-server.properties`
 
 With the `cluster.lock.enabled` property set to `true`, jobs will acquire an entry in the <<LOCK>> table to ensure that only
 one instance of the job runs across the cluster.  When a lock is acquired, a row is updated in the lock table with the time of the lock
