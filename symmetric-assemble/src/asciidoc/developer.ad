@@ -150,6 +150,9 @@ Implement this extension point to get callbacks for offline events detected on a
 ==== INodePasswordFilter
 Implement this extension point to intercept the saving and rendering of the node password.
 
+==== ISmtpPasswordFilter
+Implement this extension point to intercept the saving and rendering of the SMTP password.
+
 === Embedding in Android
 SymmetricDS has its web-enabled, fault-tolerant, database synchronization software available on the Android mobile computing platform. 
 The Android client follows all of the same concepts and brings to Android all of the same core SymmetricDS features as the full-featured, 
