@@ -99,7 +99,7 @@ public class ConfigurationChangedHelper {
         updateContext(TableConstants.SYM_TRANSFORM_TABLE, table, context, CTX_KEY_FLUSH_TRANSFORMS_NEEDED);
         updateContext(TableConstants.SYM_TRANSFORM_COLUMN, table, context, CTX_KEY_FLUSH_TRANSFORMS_NEEDED);
         updateContext(TableConstants.SYM_TRIGGER_ROUTER_GROUPLET, table, context, CTX_KEY_FLUSH_GROUPLETS_NEEDED, CTX_KEY_RESYNC_NEEDED);
-        if (matchesTable(table, TableConstants.SYM_PARAMETER) && matchesExternalId(table, data, "external_id")
+        if (matchesTable(table, TableConstants.SYM_PARAMETER) && matchesDmlEventType(data) && matchesExternalId(table, data, "external_id")
                 && matchesNodeGroupId(table, data, "node_group_id")) {
             String jobName = JobDefinition.getJobNameFromData(data);
             if (jobName != null) {
@@ -132,6 +132,14 @@ public class ConfigurationChangedHelper {
         if (listener != null) {
             listener.handleChange(context, table, data);
         }
+    }
+    
+    private boolean matchesDmlEventType(CsvData data) {
+        boolean ret = false;
+        if (data.getDataEventType().equals(DataEventType.INSERT) || data.getDataEventType().equals(DataEventType.UPDATE) || data.getDataEventType().equals(DataEventType.DELETE)) {
+            ret = true;
+        }
+        return ret;
     }
 
     public void contextCommitted(Context context) {
@@ -332,7 +340,7 @@ public class ConfigurationChangedHelper {
             values = data.getParsedData(CsvData.PK_DATA);
         }
         int index = table.getColumnIndex(name);
-        if (values != null && index < values.length) {
+        if (index >= 0 && values != null && index < values.length) {
             return values[index];
         }
         return null;
