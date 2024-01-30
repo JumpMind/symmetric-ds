@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io;
 final public class IoConstants {
     public static final long IGNORE_TABLES_BATCH = -9999;
     public static final String CHANNEL_CONFIG = "config";
+    public static final String CHANNEL_MONITOR = "monitor";
 
     private IoConstants() {
     }
