@@ -152,11 +152,11 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             return ColumnTypes.ORACLE_TIMESTAMPLTZ;
         } else if (typeName != null && typeName.startsWith("NVARCHAR")) {
             // This is for Oracle's NVARCHAR type
-            return Types.VARCHAR;
+            return Types.NVARCHAR;
         } else if (typeName != null && typeName.startsWith("LONGNVARCHAR")) {
             return Types.LONGVARCHAR;
         } else if (typeName != null && typeName.startsWith("NCHAR")) {
-            return Types.CHAR;
+            return Types.NCHAR;
         } else if (typeName != null && typeName.startsWith("XML")) {
             return Types.SQLXML;
         } else if (typeName != null && typeName.startsWith("NCLOB")) {
