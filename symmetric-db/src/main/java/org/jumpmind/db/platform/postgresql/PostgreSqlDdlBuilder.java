@@ -227,6 +227,9 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
         ddl.append("DROP INDEX ");
+        if (StringUtils.isNotBlank(table.getSchema())) {
+            ddl.append(getDelimitedIdentifier(table.getSchema())).append(".");
+        }
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);
     }
