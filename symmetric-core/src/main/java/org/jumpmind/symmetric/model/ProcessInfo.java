@@ -73,6 +73,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     private Date lastStatusChangeTime = new Date();
     private Date endTime;
     private IProcessInfoListener listener;
+    private boolean bulkLoadFlag = false;
 
     public ProcessInfo() {
         this(new ProcessInfoKey("", "", null));
@@ -310,6 +311,14 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     public void setListener(IProcessInfoListener listener) {
         this.listener = listener;
+    }
+
+    public boolean isBulkLoadFlag() {
+        return bulkLoadFlag;
+    }
+
+    public void setBulkLoadFlag(boolean bulkLoadFlag) {
+        this.bulkLoadFlag = bulkLoadFlag;
     }
 
     static public class ThreadData {

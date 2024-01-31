@@ -37,6 +37,15 @@ import org.jumpmind.symmetric.io.data.writer.NestedDataWriter;
 
 public class ProcessInfoDataWriter extends NestedDataWriter {
     private ProcessInfo processInfo;
+    private static Class<?> abstractBulkDatabaseWriter;
+    
+    static {
+        try {
+            abstractBulkDatabaseWriter = Class.forName("org.jumpmind.symmetric.io.AbstractBulkDatabaseWriter");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public ProcessInfoDataWriter(IDataWriter targetWriter, ProcessInfo processInfo) {
         super(targetWriter);
@@ -60,6 +69,12 @@ public class ProcessInfoDataWriter extends NestedDataWriter {
             processInfo.setCurrentChannelId(batch.getChannelId());
             processInfo.incrementBatchCount();
             processInfo.setCurrentDataCount(0);
+            if (abstractBulkDatabaseWriter != null
+                    && abstractBulkDatabaseWriter.isAssignableFrom(nestedWriter.getClass())) {
+                processInfo.setBulkLoadFlag(true);
+            } else {
+                processInfo.setBulkLoadFlag(false);
+            }
         }
         super.start(batch);
     }
