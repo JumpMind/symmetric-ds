@@ -57,6 +57,7 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScriptReader;
 import org.jumpmind.db.sql.mapper.StringMapper;
+import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
@@ -1209,13 +1210,16 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     if (table.getPrimaryKeyColumnCount() == 0) {
                         table = getPlatform(table).makeAllColumnsPrimaryKeys(table);
                     }
-                    Column[] columns = table.getColumns();
-                    for (Column column : columns) {
-                        if (column != null) {
-                            int typeCode = column.getMappedTypeCode();
-                            if (writerSettings.isTreatDateTimeFieldsAsVarchar() && (typeCode == Types.DATE
-                                    || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
-                                column.setMappedTypeCode(Types.VARCHAR);
+                    if (writerSettings.isTreatDateTimeFieldsAsVarchar() && (batch.getChannelId() != null
+                            && !batch.getChannelId().equals(IoConstants.CHANNEL_CONFIG)
+                            && !batch.getChannelId().equals(IoConstants.CHANNEL_MONITOR))) {
+                        Column[] columns = table.getColumns();
+                        for (Column column : columns) {
+                            if (column != null) {
+                                int typeCode = column.getMappedTypeCode();
+                                if (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP) {
+                                    column.setMappedTypeCode(Types.VARCHAR);
+                                }
                             }
                         }
                     }

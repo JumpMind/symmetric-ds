@@ -122,9 +122,9 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
         databaseInfo.addNativeTypeMapping("BOOLEAN", "BIT", "BIT");
         databaseInfo.addNativeTypeMapping("DATALINK", "MEDIUMBLOB", "LONGVARBINARY");
-        databaseInfo.addNativeTypeMapping(ColumnTypes.NVARCHAR, "VARCHAR", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.NVARCHAR, "NVARCHAR", Types.NVARCHAR);
         databaseInfo.addNativeTypeMapping(ColumnTypes.LONGNVARCHAR, "VARCHAR", Types.VARCHAR);
-        databaseInfo.addNativeTypeMapping(ColumnTypes.NCHAR, "CHAR", Types.CHAR);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.NCHAR, "NCHAR", Types.NCHAR);
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
         databaseInfo.setDefaultSize(Types.BINARY, 254);
