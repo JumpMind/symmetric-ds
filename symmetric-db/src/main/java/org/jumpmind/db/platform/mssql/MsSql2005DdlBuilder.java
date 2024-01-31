@@ -37,6 +37,7 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
     
     @Override
     protected void addLobMapping() {
+        databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "VARBINARY(MAX)", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.BLOB, "VARBINARY(MAX)", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.NCLOB, "NVARCHAR(MAX)", Types.NCLOB);
         databaseInfo.addNativeTypeMapping(Types.CLOB, "VARCHAR(MAX)", Types.CLOB);
