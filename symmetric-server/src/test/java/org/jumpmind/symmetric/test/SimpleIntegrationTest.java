@@ -847,6 +847,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void test25TestPurge2() throws Exception {
         logTestRunning();
         Assertions.assertTimeoutPreemptively(Duration.ofMinutes(5), () -> {
+            // do an extra push & pull to make sure we have events cleared out
+            clientPull();
+            clientPush();
             int totalCount = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event");
             int batchId = getServer().getSqlTemplate().queryForInt("select min(batch_id) from sym_outgoing_batch");
             int purgeCount = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event where batch_id = ?", batchId);
@@ -858,7 +861,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             getServer().purge();
             parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, purgeRetentionMinues, "test");
             int count = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event where batch_id = ?", batchId);
-            assertEquals(count, 0);
+            assertEquals(0, count);
             int newTotalCount = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event");
             assertEquals(newTotalCount, totalCount - purgeCount);
         });
