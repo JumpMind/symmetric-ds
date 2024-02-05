@@ -103,7 +103,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
         if (parameterService.is(ParameterConstants.DATA_LOADER_ENABLED)
                 || (batch.getChannelId() != null && batch.getChannelId().equals(
                         Constants.CHANNEL_CONFIG))) {
-            if (batch.getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
+            if (batch.getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION && batch.getSourceNodeId() != null) {
                 log.info("Preparing to receive registration from node {} by clearing its outgoing config batches", batch.getSourceNodeId());
                 IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
                 IDataService dataService = engine.getDataService();
