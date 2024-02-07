@@ -97,14 +97,21 @@ The variable name is placed in transform expression. The following variables are
 .Variables
 |===
 
+|batch_id|Batch number
+|batch_start_time|Timestamp of when the batch started to process
+|delete_indicator_flag|Whether or not this is a delete event, in format of Y or N.
+|null|null value
+|old_column_value|column's old value prior to the DML operation.
+|source_catalog_name|Catalog name of source table
+|source_dml_type|Event type, usually one of INSERT, UPDATE, or DELETE, but possibly one of RELOAD, SQL, CREATE, or BSH. 
+|source_node_id|node id of the source (from the batch)
+|source_node_id_from_data|source_node_id value from sym_data (source of a captured synchronization data change)
+|source_schema_name|Schema name of the source table
+|source_table_name|Name of the source table
 |system_date|current system date
 |system_timestamp|current system date and time using default timezone
 |system_timestamp_utc|current system date and time using UTC timezone
-|source_node_id|node id of the source (from the batch)
 |target_node_id|node id of the target (from the batch)
-|source_node_id_from_data|source_node_id value from sym_data (source of a captured synchronization data change)
-|null|null value 
-|old_column_value|column's old value prior to the DML operation.
 
 |===
 
