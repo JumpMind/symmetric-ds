@@ -489,6 +489,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             parameterService.setDatabaseHasBeenInitialized(true);
             parameterService.rereadParameters();
             extensionService.refresh();
+            stagingManager.clean(0);
         }
         node = nodeService.findIdentity();
         if (node == null && parameterService.isRegistrationServer()
