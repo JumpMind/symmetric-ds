@@ -61,6 +61,7 @@ final public class Constants {
     public static final String DEPLOYMENT_SUB_TYPE_EXTRACT_ONLY = "extract-only";
     public static final String DEPLOYMENT_SUB_TYPE_LOG_BASED = "log-based";
     public static final String DEPLOYMENT_SUB_TYPE_TRIGGER_BASED = "trigger-based";
+    public static final String DEPLOYMENT_SUB_TYPE_TIME_BASED = "time-based";
     /**
      * Use this value for the router_id in {@link DataEvent} if the router is unknown.
      */

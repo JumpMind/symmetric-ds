@@ -80,6 +80,8 @@ public class Trigger implements IModelObject, Cloneable {
     private String excludedColumnNames = null;
     private String includedColumnNames = null;
     private String syncKeyNames = null;
+    private String timeBasedCaptureColumn = null;
+    
     /**
      * This is a SQL expression that creates a unique id which the sync process can use to 'group' events together and commit together.
      */
@@ -139,6 +141,7 @@ public class Trigger implements IModelObject, Cloneable {
         customOnInsertText = StringUtils.trimToNull(customOnInsertText);
         customOnUpdateText = StringUtils.trimToNull(customOnUpdateText);
         customOnDeleteText = StringUtils.trimToNull(customOnDeleteText);
+        timeBasedCaptureColumn = StringUtils.trimToNull(timeBasedCaptureColumn);
     }
 
     public Column[] filterExcludedAndIncludedColumns(Column[] src) {
@@ -612,7 +615,15 @@ public class Trigger implements IModelObject, Cloneable {
         this.streamRow = streamRow;
     }
 
-    @SuppressWarnings("unchecked")
+    public String getTimeBasedCaptureColumn() {
+		return timeBasedCaptureColumn;
+	}
+
+	public void setTimeBasedCaptureColumn(String timeBasedCaptureColumn) {
+		this.timeBasedCaptureColumn = timeBasedCaptureColumn;
+	}
+
+	@SuppressWarnings("unchecked")
     private List<String> getSyncKeyNamesAsList() {
         if (StringUtils.isNotBlank(syncKeyNames)) {
             StringTokenizer tokenizer = new StringTokenizer(syncKeyNames, ",");

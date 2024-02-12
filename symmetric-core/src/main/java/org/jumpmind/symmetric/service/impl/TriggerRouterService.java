@@ -1451,7 +1451,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
-                Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.VARCHAR };
+                Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR };
     }
 
     protected Object[] getTriggerSqlValues(Trigger trigger) {
@@ -1468,7 +1468,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 trigger.getCustomOnUpdateText(), trigger.getCustomOnInsertText(), trigger.getCustomOnDeleteText(),
                 trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getIncludedColumnNames(),
                 trigger.getSyncKeyNames(), trigger.getCreateTime(), trigger.getLastUpdateBy(), trigger.getLastUpdateTime(),
-                trigger.getExternalSelect(), trigger.getChannelExpression(), trigger.isStreamRow(),
+                trigger.getExternalSelect(), trigger.getChannelExpression(), trigger.isStreamRow(),trigger.getTimeBasedCaptureColumn(),
                 trigger.getTriggerId() };
     }
 
@@ -2805,6 +2805,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setExcludedColumnNames(rs.getString("excluded_column_names"));
             trigger.setIncludedColumnNames(rs.getString("included_column_names"));
             trigger.setSyncKeyNames(rs.getString("sync_key_names"));
+            trigger.setTimeBasedCaptureColumn(rs.getString("time_based_column_name"));
             return trigger;
         }
     }
