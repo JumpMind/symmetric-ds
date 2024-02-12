@@ -31,6 +31,6 @@ public class H2DdlTypesTest extends AbstractDdlTypesTest {
 
     @Override
     protected String[] getDdlTypes() {
-        return new String[] { "varchar(55)", "UUID", "VARCHAR_IGNORECASE(100)", "ARRAY" };
+        return new String[] { "VARCHAR(55)", "UUID", "VARCHAR_IGNORECASE(100)", "VARCHAR ARRAY" };
     }
 }
