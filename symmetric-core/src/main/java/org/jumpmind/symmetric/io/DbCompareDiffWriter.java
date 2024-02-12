@@ -66,11 +66,11 @@ public class DbCompareDiffWriter {
                     null, null);
             Row row = new Row(targetCompareRow.getTable().getPrimaryKeyColumnCount());
             for (int i = 0; i < targetCompareRow.getTable().getPrimaryKeyColumnCount(); i++) {
-            	 if(table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("univarchar") || 
-                         table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                         table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("unitext")) {
-                     table.getColumn(i).setMappedType("VARCHAR");
-                 }
+                if (table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+                        table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("unichar") ||
+                        table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                    table.getColumn(i).setMappedType("VARCHAR");
+                }
                 row.put(table.getColumn(i).getName(),
                         targetCompareRow.getRowValues().get(targetCompareRow.getTable().getColumn(i).getName()));
             }
@@ -113,7 +113,7 @@ public class DbCompareDiffWriter {
                 if (targetColumn == null) {
                     continue;
                 }
-                if(targetColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") || 
+                if (targetColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
                         targetColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
                         targetColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
                     targetColumn.setMappedType("VARCHAR");
@@ -145,7 +145,7 @@ public class DbCompareDiffWriter {
                     null, null);
             Row row = new Row(changedColumns.length + table.getPrimaryKeyColumnCount());
             for (Column changedColumn : deltas.keySet()) {
-            	if(changedColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") || 
+                if (changedColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
                         changedColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
                         changedColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
                     changedColumn.setMappedType("VARCHAR");

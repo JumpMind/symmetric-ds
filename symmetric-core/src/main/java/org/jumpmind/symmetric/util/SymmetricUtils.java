@@ -212,12 +212,11 @@ final public class SymmetricUtils {
             boolean isLoadOnly = Boolean.valueOf(properties.getProperty(ParameterConstants.NODE_LOAD_ONLY, "false"));
             boolean isLogBased = Boolean.valueOf(properties.getProperty(ParameterConstants.START_LOG_MINER_JOB, "false"));
             boolean isTimeBased = Boolean.valueOf(properties.getProperty(ParameterConstants.CAPTURE_TYPE_TIME_BASED, "false"));
-            
             if (isLoadOnly) {
-            	if (isLogBased) {
-            		if (isTimeBased) {
-            			return Constants.DEPLOYMENT_SUB_TYPE_TIME_BASED;
-            		}
+                if (isLogBased) {
+                    if (isTimeBased) {
+                        return Constants.DEPLOYMENT_SUB_TYPE_TIME_BASED;
+                    }
                     return Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED;
                 }
                 String dbUrl = properties.getProperty("db.url");
@@ -227,7 +226,6 @@ final public class SymmetricUtils {
                     return Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY;
                 }
             }
-            
         }
         return Constants.DEPLOYMENT_SUB_TYPE_TRIGGER_BASED;
     }

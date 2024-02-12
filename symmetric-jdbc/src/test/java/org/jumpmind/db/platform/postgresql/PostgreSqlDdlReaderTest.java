@@ -408,7 +408,6 @@ class PostgreSqlDdlReaderTest {
         PreparedStatement stmt2 = mock(PreparedStatement.class);
         PreparedStatement stmt3 = mock(PreparedStatement.class);
         PreparedStatement stmt4 = mock(PreparedStatement.class);
-       
         when(spyTemplate.getDataSource().getConnection()).thenReturn(connection);
         doReturn(spyTemplate).when(spyPlatform).createSqlTemplate();
         when(spyPlatform.createSqlTemplate()).thenReturn(spyTemplate);

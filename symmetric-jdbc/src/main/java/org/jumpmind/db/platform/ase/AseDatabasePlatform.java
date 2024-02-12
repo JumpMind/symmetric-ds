@@ -86,8 +86,8 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     protected AseDdlBuilder createDdlBuilder() {
         String dbUrl = settings.getProperties().get(BasicDataSourcePropertyConstants.DB_POOL_URL);
         usingJtds = dbUrl != null && dbUrl.startsWith("jdbc:jtds");
-    	AseDdlBuilder ddlBuilder = new AseDdlBuilder();
-    	ddlBuilder.setUsingJtds(usingJtds);
+        AseDdlBuilder ddlBuilder = new AseDdlBuilder();
+        ddlBuilder.setUsingJtds(usingJtds);
         return ddlBuilder;
     }
 

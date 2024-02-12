@@ -1468,7 +1468,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 trigger.getCustomOnUpdateText(), trigger.getCustomOnInsertText(), trigger.getCustomOnDeleteText(),
                 trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getIncludedColumnNames(),
                 trigger.getSyncKeyNames(), trigger.getCreateTime(), trigger.getLastUpdateBy(), trigger.getLastUpdateTime(),
-                trigger.getExternalSelect(), trigger.getChannelExpression(), trigger.isStreamRow(),trigger.getTimeBasedCaptureColumn(),
+                trigger.getExternalSelect(), trigger.getChannelExpression(), trigger.isStreamRow(), trigger.getTimeBasedCaptureColumn(),
                 trigger.getTriggerId() };
     }
 

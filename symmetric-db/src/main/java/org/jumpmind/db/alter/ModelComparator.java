@@ -84,13 +84,13 @@ public class ModelComparator {
         this.platformInfo = platformInfo;
         this.caseSensitive = caseSensitive;
     }
-    
-	private boolean supportsDefaultValues() {
-		if (ddlBuilder instanceof AseDdlBuilder && ((AseDdlBuilder) ddlBuilder).isUsingJtds()) {
-			return false;
-		}
-		return true;
-	}
+
+    private boolean supportsDefaultValues() {
+        if (ddlBuilder instanceof AseDdlBuilder && ((AseDdlBuilder) ddlBuilder).isUsingJtds()) {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * Compares the two models and returns the changes necessary to create the second model from the first one.
@@ -358,12 +358,12 @@ public class ModelComparator {
                 changes.add(new ColumnSizeChange(sourceTable, sourceColumn, targetColumn.getSizeAsInt(), targetColumn.getScale()));
             }
         }
-		if (supportsDefaultValues() && !defaultValuesAreEqual(sourceColumn, targetColumn)) {
-			log.debug("The {} column on the {} table changed default value from {} to {} ",
-					new Object[] { sourceColumn.getName(), sourceTable.getName(), sourceColumn.getDefaultValue(),
-							targetColumn.getDefaultValue() });
-			changes.add(new ColumnDefaultValueChange(sourceTable, sourceColumn, targetColumn.getDefaultValue()));
-		}
+        if (supportsDefaultValues() && !defaultValuesAreEqual(sourceColumn, targetColumn)) {
+            log.debug("The {} column on the {} table changed default value from {} to {} ",
+                    new Object[] { sourceColumn.getName(), sourceTable.getName(), sourceColumn.getDefaultValue(),
+                            targetColumn.getDefaultValue() });
+            changes.add(new ColumnDefaultValueChange(sourceTable, sourceColumn, targetColumn.getDefaultValue()));
+        }
         if (!targetColumn.isGenerated() && sourceColumn.isRequired() != targetColumn.isRequired()) {
             log.debug(
                     "The {} column on the {} table changed required status from {} to {}",

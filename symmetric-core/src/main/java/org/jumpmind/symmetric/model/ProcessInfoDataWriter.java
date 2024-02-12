@@ -38,7 +38,6 @@ import org.jumpmind.symmetric.io.data.writer.NestedDataWriter;
 public class ProcessInfoDataWriter extends NestedDataWriter {
     private ProcessInfo processInfo;
     private static Class<?> abstractBulkDatabaseWriter;
-    
     static {
         try {
             abstractBulkDatabaseWriter = Class.forName("org.jumpmind.symmetric.io.AbstractBulkDatabaseWriter");

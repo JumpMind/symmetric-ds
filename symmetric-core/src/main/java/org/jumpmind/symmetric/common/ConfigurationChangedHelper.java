@@ -133,10 +133,11 @@ public class ConfigurationChangedHelper {
             listener.handleChange(context, table, data);
         }
     }
-    
+
     private boolean matchesDmlEventType(CsvData data) {
         boolean ret = false;
-        if (data.getDataEventType().equals(DataEventType.INSERT) || data.getDataEventType().equals(DataEventType.UPDATE) || data.getDataEventType().equals(DataEventType.DELETE)) {
+        if (data.getDataEventType().equals(DataEventType.INSERT) || data.getDataEventType().equals(DataEventType.UPDATE) || data.getDataEventType().equals(
+                DataEventType.DELETE)) {
             ret = true;
         }
         return ret;

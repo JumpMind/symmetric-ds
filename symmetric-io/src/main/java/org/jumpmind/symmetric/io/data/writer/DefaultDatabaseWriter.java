@@ -19,6 +19,7 @@
  * under the License.
  */
 package org.jumpmind.symmetric.io.data.writer;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Method;

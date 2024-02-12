@@ -515,7 +515,7 @@ final public class ParameterConstants {
     public final static String COMPARE_THREAD_PER_SERVER_COUNT = "compare.thread.per.server.count";
     public final static String COMPARE_LOCK_TIMEOUT_MS = "compare.lock.timeout.ms";
     public final static String CAPTURE_TYPE_TIME_BASED = "time.based.capture";
-    
+
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

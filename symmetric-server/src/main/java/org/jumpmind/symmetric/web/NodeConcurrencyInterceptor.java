@@ -106,7 +106,8 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             }
             return false;
         } else {
-            ReservationStatus status = concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.HARD, isPush && (!isFileSync));
+            ReservationStatus status = concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.HARD, isPush
+                    && (!isFileSync));
             if (status == ReservationStatus.ACCEPTED) {
                 try {
                     buildSuspendIgnoreResponseHeaders(nodeId, resp);

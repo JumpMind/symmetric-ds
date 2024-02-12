@@ -288,7 +288,7 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
     public void setVersion2(boolean isVersion2) {
         this.isVersion2 = isVersion2;
     }
-    
+
     @Override
     public String getSqlType(Column column) {
         String type = super.getSqlType(column);

@@ -81,7 +81,6 @@ public class Trigger implements IModelObject, Cloneable {
     private String includedColumnNames = null;
     private String syncKeyNames = null;
     private String timeBasedCaptureColumn = null;
-    
     /**
      * This is a SQL expression that creates a unique id which the sync process can use to 'group' events together and commit together.
      */
@@ -616,14 +615,14 @@ public class Trigger implements IModelObject, Cloneable {
     }
 
     public String getTimeBasedCaptureColumn() {
-		return timeBasedCaptureColumn;
-	}
+        return timeBasedCaptureColumn;
+    }
 
-	public void setTimeBasedCaptureColumn(String timeBasedCaptureColumn) {
-		this.timeBasedCaptureColumn = timeBasedCaptureColumn;
-	}
+    public void setTimeBasedCaptureColumn(String timeBasedCaptureColumn) {
+        this.timeBasedCaptureColumn = timeBasedCaptureColumn;
+    }
 
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     private List<String> getSyncKeyNamesAsList() {
         if (StringUtils.isNotBlank(syncKeyNames)) {
             StringTokenizer tokenizer = new StringTokenizer(syncKeyNames, ",");

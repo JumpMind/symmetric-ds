@@ -34,7 +34,7 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
         this.databaseName = DatabaseNamesConstants.MSSQL2005;
         databaseInfo.addNativeTypeMapping(Types.SQLXML, "XML", Types.SQLXML);
     }
-    
+
     @Override
     protected void addLobMapping() {
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "VARBINARY(MAX)", Types.LONGVARBINARY);
