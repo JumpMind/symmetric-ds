@@ -1068,6 +1068,11 @@ public class DataService extends AbstractService implements IDataService {
                             transaction.prepareAndExecute(getSql("updateTableReloadStatusFinalizeCount"), finalizeBatchCount, new Date(), loadId);
                             int rowsAffected = transaction.prepareAndExecute(getSql("updateProcessedTableReloadRequest"), new Date(), loadId);
                             if (rowsAffected == 0) {
+                                List<TableReloadRequest> requests = transaction.query(getSql("selectTableReloadRequestsByLoadId"),
+                                        new TableReloadRequestMapper(), new Object[] { loadId }, new int[] { symmetricDialect.getSqlTypeForIds() });
+                                if (requests != null && requests.size() > 0 && requests.get(0).isProcessed()) {
+                                    throw new InterruptedException("Table reload request appears to be cancelled");
+                                }
                                 throw new SymmetricException(String.format("Failed to update a table_reload_request as processed for loadId '%s' ",
                                         loadId));
                             }
@@ -1095,7 +1100,7 @@ public class DataService extends AbstractService implements IDataService {
                         } else if (ex instanceof RuntimeException) {
                             throw (RuntimeException) ex;
                         } else if (ex instanceof InterruptedException) {
-                            log.info("Insert reload events was interrupted");
+                            log.info("Insert reload events was interrupted: {}", ex.getMessage() == null ? "" : ex.getMessage());
                         }
                     } finally {
                         close(transaction);
@@ -3261,7 +3266,7 @@ public class DataService extends AbstractService implements IDataService {
 
     protected void checkInterrupted() throws InterruptedException {
         if (Thread.interrupted()) {
-            throw new InterruptedException();
+            throw new InterruptedException("Thread received interrupt");
         }
     }
 
