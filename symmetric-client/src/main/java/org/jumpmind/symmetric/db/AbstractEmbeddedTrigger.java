@@ -194,15 +194,15 @@ abstract public class AbstractEmbeddedTrigger {
             out.append(DATE_FORMATTER.format(value));
             out.append("'");
         } else if (value instanceof LocalDate) {
-            out.append("'");
+            out.append("DATE '");
             out.append(((LocalDate) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             out.append("'");
         } else if (value instanceof LocalTime) {
-            out.append("'");
+            out.append("TIME '");
             out.append(((LocalTime) value).format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS")));
             out.append("'");
         } else if (value instanceof LocalDateTime) {
-            out.append("'");
+            out.append("TIMESTAMP '");
             out.append(((LocalDateTime) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
             out.append("'");
         } else if (value instanceof byte[]) {
