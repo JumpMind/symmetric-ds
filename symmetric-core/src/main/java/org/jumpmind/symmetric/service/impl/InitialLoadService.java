@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -104,10 +105,31 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
         log.info("Cancelling {} load {} {} node {}", isSourceNode ? "outgoing" : "incoming", status.getLoadId(),
                 isSourceNode ? "for" : "from", isSourceNode ? status.getTargetNodeId() : status.getSourceNodeId());
         List<ProcessInfo> infos = engine.getStatisticManager().getProcessInfos();
+        List<ProcessInfo> infosToWaitFor = new ArrayList<ProcessInfo>();
         for (ProcessInfo info : infos) {
             if (info.getCurrentLoadId() == status.getLoadId()) {
                 log.info("Sending interrupt to " + info.getKey() + ",batchId=" + info.getCurrentBatchId());
                 info.getThread().interrupt();
+                infosToWaitFor.add(info);
+            }
+        }
+        if (infosToWaitFor.size() > 0) {
+            for (int i = 0; i < 10; i++) {
+                try {
+                    Thread.sleep(500l);
+                } catch (InterruptedException e) {}
+                ListIterator<ProcessInfo> iterator = infosToWaitFor.listIterator();
+                while (iterator.hasNext()) {
+                    ProcessInfo p = iterator.next();
+                    if (p.getEndTime() != null) {
+                        iterator.remove();
+                    } else {
+                        log.info("Still waiting for process {}, load {} to finish", p.getKey(), p.getCurrentLoadId());
+                    }
+                }
+                if (infosToWaitFor.size() == 0) {
+                    break;
+                }
             }
         }
         if (isSourceNode) {
