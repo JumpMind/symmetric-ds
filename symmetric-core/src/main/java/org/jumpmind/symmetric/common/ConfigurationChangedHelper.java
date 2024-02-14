@@ -363,7 +363,7 @@ public class ConfigurationChangedHelper {
         context.put(CTX_KEY_RESYNC_NEEDED, true);
     }
 
-    public Set<Node> filterNodes(Set<Node> nodes, String tableName) {
-        return versionHelper.filterNodes(nodes, tableName);
+    public Set<Node> filterNodes(Set<Node> nodes, String tableName, Map<String, String> columnValues) {
+        return versionHelper.filterNodes(nodes, tableName, columnValues);
     }
 }
