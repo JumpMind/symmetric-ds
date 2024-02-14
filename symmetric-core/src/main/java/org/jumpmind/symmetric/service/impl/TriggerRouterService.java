@@ -153,8 +153,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public List<Trigger> getTriggers(boolean replaceTokens) {
-        List<Trigger> triggers = sqlTemplate.query("select "
-                + getSql("selectTriggersColumnList", "selectTriggersSql"), new TriggerMapper());
+        List<Trigger> triggers = sqlTemplate.query(getSql("selectTriggersSql"), new TriggerMapper());
         if (replaceTokens) {
             @SuppressWarnings({ "rawtypes", "unchecked" })
             Map<String, String> replacements = (Map) parameterService.getAllParameters();
@@ -1377,9 +1376,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void saveTriggerAsCopy(String originalId, Trigger trigger) {
         String newId = trigger.getTriggerId();
-        List<Trigger> triggers = sqlTemplate.query(
-                "select " + getSql("selectTriggersColumnList", "selectTriggersWhereTriggerIdLikeSql"),
-                new TriggerMapper(), newId + "%");
+        List<Trigger> triggers = sqlTemplate.query(getSql("selectTriggersWhereTriggerIdLikeSql"), new TriggerMapper(), newId + "%");
         List<String> ids = triggers.stream().map(Trigger::getTriggerId).collect(Collectors.toList());
         String suffix = "";
         for (int i = 2; ids.contains(newId + suffix); i++) {
@@ -2799,13 +2796,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
             trigger.setChannelExpression(rs.getString("channel_expression"));
             trigger.setTxIdExpression(rs.getString("tx_id_expression"));
-            trigger.setCreateTime(rs.getDateTime("t_create_time"));
-            trigger.setLastUpdateTime(rs.getDateTime("t_last_update_time"));
-            trigger.setLastUpdateBy(rs.getString("t_last_update_by"));
+            trigger.setCreateTime(rs.getDateTime("create_time"));
+            trigger.setLastUpdateTime(rs.getDateTime("last_update_time"));
+            trigger.setLastUpdateBy(rs.getString("last_update_by"));
             trigger.setExcludedColumnNames(rs.getString("excluded_column_names"));
             trigger.setIncludedColumnNames(rs.getString("included_column_names"));
             trigger.setSyncKeyNames(rs.getString("sync_key_names"));
-            trigger.setTimeBasedCaptureColumn(rs.getString("time_based_column_name"));
+            if (rs.containsKey("time_based_column_name")) {
+                trigger.setTimeBasedCaptureColumn(rs.getString("time_based_column_name"));
+            }
             return trigger;
         }
     }

@@ -51,9 +51,9 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
 
         putSql("inactivateTriggerHistorySql", "update $(trigger_hist) set inactive_time = ?, error_message = ? where trigger_hist_id = ?");
 
-        putSql("selectTriggersSql", "" + "from $(trigger) t order by trigger_id asc   ");
+        putSql("selectTriggersSql", "select * from $(trigger) order by trigger_id asc");
         
-        putSql("selectTriggersWhereTriggerIdLikeSql", "" + "from $(trigger) t where trigger_id like ?   ");
+        putSql("selectTriggersWhereTriggerIdLikeSql", "select * from $(trigger) where trigger_id like ?");
 
         putSql("selectTriggerRoutersSql", ""
                 + "from $(trigger_router) tr                                 "
@@ -69,20 +69,6 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                         + "  r.target_catalog_name,r.source_node_group_id,r.target_schema_name,r.target_table_name,r.target_node_group_id,r.router_expression,        "
                         + "  r.router_type,r.router_id,r.create_time as r_create_time,r.last_update_time as r_last_update_time,r.last_update_by as r_last_update_by, "
                         + "  r.use_source_catalog_schema ");
-
-        putSql("selectTriggersColumnList",
-                ""
-                        + "  t.trigger_id,t.channel_id,t.reload_channel_id,t.source_table_name,t.source_schema_name,t.source_catalog_name,        "
-                        + "  t.sync_on_insert,t.sync_on_update,t.sync_on_delete,t.sync_on_incoming_batch,t.use_stream_lobs,   "
-                        + "  t.use_capture_lobs,t.use_capture_old_data,t.use_handle_key_updates,                              "
-                        + "  t.excluded_column_names, t.included_column_names, t.sync_key_names,                              "
-                        + "  t.name_for_delete_trigger,t.name_for_insert_trigger,t.name_for_update_trigger,                   "
-                        + "  t.sync_on_insert_condition,t.sync_on_update_condition,t.sync_on_delete_condition,                "
-                        + "  t.custom_on_insert_text,t.custom_on_update_text,t.custom_on_delete_text,                               "
-                        + "  t.custom_before_insert_text,t.custom_before_update_text,t.custom_before_delete_text,             "
-                        + "  t.tx_id_expression,t.external_select,t.channel_expression, t.stream_row, t.time_based_column_name, " 
-                        + "  t.create_time as t_create_time,                             "
-                        + "  t.last_update_time as t_last_update_time, t.last_update_by as t_last_update_by                   ");
         
         putSql("selectTriggerHistIdSql", "select trigger_hist_id from $(trigger_hist) ");
 
