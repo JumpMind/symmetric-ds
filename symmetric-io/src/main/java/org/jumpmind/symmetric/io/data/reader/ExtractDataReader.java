@@ -247,13 +247,13 @@ public class ExtractDataReader implements IDataReader {
                             int index = ArrayUtils.indexOf(columnNames, uniColumn.getName());
                             if (rowData[index] != null) {
                                 String utf16String = null;
-                                if (batch.getChannelId().equalsIgnoreCase("reload")) {
-                                    utf16String = new String(Hex.decodeHex(rowData[index]), "UTF-16");
-                                } else {
+//                                if (batch.getChannelId().equalsIgnoreCase("reload")) {
+//                                    utf16String = new String(Hex.decodeHex(rowData[index]), "UTF-16");
+//                                } else {
                                     String baseString = rowData[index];
                                     baseString = "fffe" + baseString;
                                     utf16String = new String(Hex.decodeHex(baseString), "UTF-16");
-                                }
+//                                }
                                 String utf8String = new String(utf16String.getBytes(Charset.defaultCharset()), Charset.defaultCharset());
                                 rowData[index] = utf8String;
                             }
