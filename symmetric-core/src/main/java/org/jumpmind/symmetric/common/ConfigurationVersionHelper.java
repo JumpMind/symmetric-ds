@@ -29,14 +29,18 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.model.Node;
 
 public class ConfigurationVersionHelper {
+    protected String tablePrefix;
     protected Set<String> proTables;
     protected Map<String, String> tablesByVersion;
     protected boolean isTargetNodePro;
     protected String targetNodeVersion;
+    protected Map<String, String> monitorTypesByVersion;
 
     public ConfigurationVersionHelper(String tablePrefix) {
+        this.tablePrefix = tablePrefix;
         proTables = TableConstants.getTablesForConsole(tablePrefix);
         tablesByVersion = TableConstants.getConfigTablesByVersion(tablePrefix);
+        monitorTypesByVersion = MonitorConstants.getMonitorTypesByVersion();
     }
 
     public ConfigurationVersionHelper(String tablePrefix, Node targetNode) {
@@ -55,14 +59,16 @@ public class ConfigurationVersionHelper {
         return true;
     }
 
-    public Set<Node> filterNodes(Set<Node> nodes, String tableName) {
+    public Set<Node> filterNodes(Set<Node> nodes, String tableName, Map<String, String> columnValues) {
         boolean isProTable = proTables.contains(tableName);
         String tableVersion = tablesByVersion.get(tableName);
-        if (isProTable || tableVersion != null) {
+        boolean isMonitor = tableName.equalsIgnoreCase(TableConstants.getTableName(tablePrefix, TableConstants.SYM_MONITOR));
+        if (isProTable || tableVersion != null || isMonitor) {
             Set<Node> targetNodes = new HashSet<Node>(nodes.size());
             for (Node node : nodes) {
                 setTargetNode(node);
-                if ((!isProTable || isTargetNodePro) && (tableVersion == null || !Version.isOlderThanVersion(targetNodeVersion, tableVersion))) {
+                if ((!isProTable || isTargetNodePro) && (tableVersion == null || !Version.isOlderThanVersion(targetNodeVersion, tableVersion)) &&
+                        (!isMonitor || !isNodeOlderThanMonitor(columnValues))) {
                     targetNodes.add(node);
                 }
             }
@@ -70,6 +76,15 @@ public class ConfigurationVersionHelper {
         } else {
             return nodes;
         }
+    }
+
+    protected boolean isNodeOlderThanMonitor(Map<String, String> columnValues) {
+        String monitorType = columnValues == null ? null : columnValues.get("TYPE");
+        String monitorVersion = monitorTypesByVersion.get(monitorType);
+        if (monitorVersion == null) {
+            return false;
+        }
+        return Version.isOlderThanVersion(targetNodeVersion, monitorVersion);
     }
 
     public void setTargetNode(Node targetNode) {

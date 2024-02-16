@@ -37,8 +37,10 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.FormatUtils;
 
 public class AseTriggerTemplate extends AbstractTriggerTemplate {
+    private int pagesize;
     public AseTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
+        pagesize = ((AseSymmetricDialect) symmetricDialect).getPageSize();
         String quote = symmetricDialect.getPlatform()
                 .getDatabaseInfo().getDelimiterToken();
         quote = quote == null ? "\"" : quote;
@@ -529,17 +531,17 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
                     text += "bit\n";
                     break;
                 case Types.CLOB:
-                    text += "varchar(32767)\n";
+                    text += "varchar(" + pagesize + ")\n";
                     break;
                 case Types.BLOB:
                 case Types.BINARY:
                 case Types.VARBINARY:
                 case Types.LONGVARBINARY:
                 case -10: // SQL-Server ntext binary type
-                    text += "varbinary(32767)\n";
+                    text += "varbinary(" + pagesize + ")\n";
                     break;
                 case Types.OTHER:
-                    text += "varbinary(32767)\n";
+                    text += "varbinary(" + pagesize + ")\n";
                     break;
                 default:
                     if (columns[i].getJdbcTypeName() != null

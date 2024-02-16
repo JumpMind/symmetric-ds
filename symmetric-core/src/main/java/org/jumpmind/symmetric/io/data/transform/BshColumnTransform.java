@@ -98,7 +98,6 @@ public class BshColumnTransform implements ISingleNewAndOldValueColumnTransform,
             }
             for (String columnName : sourceValues.keySet()) {
                 interpreter.set(columnName.toUpperCase(), sourceValues.get(columnName));
-                interpreter.set(columnName, sourceValues.get(columnName));
             }
             String transformExpression = column.getTransformExpression();
             if (StringUtils.isEmpty(transformExpression)) {
@@ -136,7 +135,6 @@ public class BshColumnTransform implements ISingleNewAndOldValueColumnTransform,
             }
             for (String columnName : sourceValues.keySet()) {
                 interpreter.unset(columnName.toUpperCase());
-                interpreter.unset(columnName);
             }
             if (result instanceof String) {
                 if (data.getTargetDmlType().equals(DataEventType.DELETE) && data.getOldSourceValues() != null) {

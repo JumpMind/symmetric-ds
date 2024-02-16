@@ -114,6 +114,10 @@ abstract public class AbstractTriggerTemplate {
             if (mappedType == ColumnTypes.TIMESTAMPTZ || mappedType == ColumnTypes.TIMESTAMPLTZ || mappedType == ColumnTypes.TIMETZ) {
                 return true;
             }
+            String typeName = column.getJdbcTypeName();
+            if(typeName.equalsIgnoreCase("unichar") || typeName.equalsIgnoreCase("univarchar") || typeName.equalsIgnoreCase("unitext")) {
+            	return true;
+            }
             int type = column.getJdbcTypeCode();
             // These column types can be selected directly without a template
             if (type == Types.CHAR || type == Types.NCHAR || type == Types.VARCHAR || type == ColumnTypes.NVARCHAR

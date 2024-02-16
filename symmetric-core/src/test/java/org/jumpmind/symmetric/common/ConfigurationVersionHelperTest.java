@@ -82,13 +82,52 @@ public class ConfigurationVersionHelperTest {
                     }
                 }
             }
+            Map<String, String> columnValues = new HashMap<String, String>();
+            columnValues.put("TYPE", "cpu");
             for (String table : shouldSendTables) {
-                Set<Node> filteredNodes = helper.filterNodes(nodes, table);
+                if (table.equalsIgnoreCase(TableConstants.getTableName(PREFIX, TableConstants.SYM_MONITOR))) {
+                    columnValues.put("TYPE", "cpu");
+                }
+                Set<Node> filteredNodes = helper.filterNodes(nodes, table, columnValues);
                 assertTrue("Should send table " + table + " to node " + version, filteredNodes.contains(new Node(version, version)));
             }
             for (String table : shouldNotSendTables) {
-                Set<Node> filteredNodes = helper.filterNodes(nodes, table);
+                Set<Node> filteredNodes = helper.filterNodes(nodes, table, columnValues);
                 assertFalse("Should NOT send table " + table + " to node " + version, filteredNodes.contains(new Node(version, version)));
+            }
+        }
+    }
+
+    @Test
+    public void testFilterNodesByMonitorType() {
+        testFilterNodesByMonitorType(MonitorConstants.CPU, new String[] { "3.8.0", "3.8.1", "3.9", "3.11" }, true);
+        testFilterNodesByMonitorType(MonitorConstants.CPU, new String[] { "3.7.0", "3.5.8" }, false);
+        testFilterNodesByMonitorType(MonitorConstants.LOAD_AVERAGE, new String[] { "3.14.0", "3.14.10", "3.15" }, true);
+        testFilterNodesByMonitorType(MonitorConstants.LOAD_AVERAGE, new String[] { "3.8.0", "3.13.15" }, false);
+        testFilterNodesByMonitorType(MonitorConstants.JOB_ERROR, new String[] { "3.15.0", "3.15.10" }, true);
+        testFilterNodesByMonitorType(MonitorConstants.JOB_ERROR, new String[] { "3.14.15", "3.8" }, false);
+        // if old values are turned off, there will be no type
+        testFilterNodesByMonitorType(null, new String[] { "3.8.0" }, true);
+        // an unknown type could be a user custom extension, so we should sync it
+        testFilterNodesByMonitorType("Unknown Type", new String[] { "3.8.0" }, true);
+    }
+
+    protected void testFilterNodesByMonitorType(String monitorType, String[] versions, boolean shouldSend) {
+        ConfigurationVersionHelper helper = new ConfigurationVersionHelper(PREFIX);
+        String table = TableConstants.getTableName(PREFIX, TableConstants.SYM_MONITOR);
+        Map<String, String> columnValues = new HashMap<String, String>();
+        Set<Node> nodes = new HashSet<Node>();
+        Node node = new Node(null, null);
+        node.setDeploymentType(Constants.DEPLOYMENT_TYPE_PROFESSIONAL);
+        nodes.add(node);
+        columnValues.put("TYPE", monitorType);
+        for (String version : versions) {
+            node.setSymmetricVersion(version);
+            Set<Node> filteredNodes = helper.filterNodes(nodes, table, columnValues);
+            if (shouldSend) {
+                assertTrue("Should send monitor " + monitorType + " to node " + version, filteredNodes.contains(node));
+            } else {
+                assertFalse("Should NOT send monitor " + monitorType + " to node " + version, filteredNodes.contains(node));
             }
         }
     }
