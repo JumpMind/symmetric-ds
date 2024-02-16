@@ -320,4 +320,8 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
     public int getMaxTriggerNameLength() {
         return 28;
     }
+
+    public int getPageSize() {
+        return pageSize;
+    }
 }
