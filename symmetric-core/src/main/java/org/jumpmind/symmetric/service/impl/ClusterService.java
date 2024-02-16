@@ -37,6 +37,7 @@ import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_INCOMING;
 import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_OUTGOING;
 import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_STATISTICS;
 import static org.jumpmind.symmetric.service.ClusterConstants.PUSH;
+import static org.jumpmind.symmetric.service.ClusterConstants.RELOAD;
 import static org.jumpmind.symmetric.service.ClusterConstants.ROUTE;
 import static org.jumpmind.symmetric.service.ClusterConstants.STAGE_MANAGEMENT;
 import static org.jumpmind.symmetric.service.ClusterConstants.STATISTICS;
@@ -46,6 +47,7 @@ import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_CLUSTER;
 import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_EXCLUSIVE;
 import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_SHARED;
 import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
+
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -84,7 +86,7 @@ public class ClusterService extends AbstractService implements IClusterService {
     protected static final String[] actions = new String[] { ROUTE, PULL, PUSH, HEARTBEAT, PURGE_INCOMING, PURGE_OUTGOING,
             PURGE_STATISTICS, SYNC_TRIGGERS, PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL,
             FILE_SYNC_PUSH, FILE_SYNC_TRACKER, INITIAL_LOAD_EXTRACT, INITIAL_LOAD_QUEUE, OFFLINE_PUSH, OFFLINE_PULL,
-            MONITOR, SYNC_CONFIG, LOG_MINER };
+            MONITOR, SYNC_CONFIG, LOG_MINER, RELOAD };
     protected static final String[] sharedActions = new String[] { FILE_SYNC_SHARED };
     protected static boolean isUpgradedInstanceId;
     protected static final Logger log = LoggerFactory.getLogger(ClusterService.class);
