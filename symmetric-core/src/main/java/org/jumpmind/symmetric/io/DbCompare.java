@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -43,8 +44,11 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.DbCompareReport.TableReport;
+import org.jumpmind.symmetric.load.IReloadVariableFilter;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
@@ -137,7 +141,6 @@ public class DbCompare {
     protected TableReport compareTables(DbCompareTables tables, OutputStream sqlDiffOutput) {
         String sourceSelect = getSourceComparisonSQL(tables, sourceEngine.getTargetDialect().getTargetPlatform());
         String targetSelect = getTargetComparisonSQL(tables, targetEngine.getTargetDialect().getTargetPlatform());
-        // String targetSelect = getTargetComparisonSQL(tables, targetEngine.getDatabasePlatform());
         CountingSqlReadCursor sourceCursor = new CountingSqlReadCursor(sourceEngine.getTargetDialect().getTargetPlatform().getSqlTemplateDirty().queryForCursor(
                 sourceSelect,
                 defaultRowMapper));
@@ -272,19 +275,49 @@ public class DbCompare {
         return sql;
     }
 
-    protected String getComparisonSQL(Table table, Column[] sortByColumns, IDatabasePlatform platform,
-            String whereClause, boolean isSource) {
-        DmlStatement statement = platform.createDmlStatement(DmlType.SELECT,
-                table.getCatalog(), table.getSchema(), table.getName(),
-                null, table.getColumns(),
-                null, null);
-        StringBuilder sql = new StringBuilder(statement.getSql());
-        sql.setLength(sql.length() - "where ".length()); // remove the trailing where so we can insert a table alias.
-        sql.append(" t where "); // main table alias.
-        sql.append(whereClause).append(" ");
-        sql.append(buildOrderBy(table, sortByColumns, platform, isSource));
-        return sql.toString();
-    }
+	protected String getComparisonSQL(Table table, Column[] sortByColumns, IDatabasePlatform platform,
+			String whereClause, boolean isSource) {
+		
+		DmlStatement statement = platform.createDmlStatement(DmlType.SELECT, table.getCatalog(), table.getSchema(),
+				table.getName(), null, table.getColumns(), null, null);
+		StringBuilder sql = new StringBuilder(statement.getSql());
+		String sybaseUnitypeConversions = statement.getSql();
+		boolean isUsingUnitypes = false;
+		if (platform.getSqlTemplate().toString().contains("ase")) {
+			if (isSource) {
+				ISymmetricDialect symmetricDialect = sourceEngine.getSymmetricDialect();
+				isUsingUnitypes = symmetricDialect.getParameterService()
+						.is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC);
+			} else {
+				ISymmetricDialect symmetricDialect = targetEngine.getSymmetricDialect();
+				isUsingUnitypes = symmetricDialect.getParameterService()
+						.is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC);
+			}
+			if (isUsingUnitypes) {
+				for(Column column : statement.getColumns()) {
+					if(column.getJdbcTypeName().equalsIgnoreCase("unichar") ||
+							column.getJdbcTypeName().equalsIgnoreCase("univarchar") || 
+							column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+						sybaseUnitypeConversions = sybaseUnitypeConversions.replace(column.getName(),"case when " + column.getName() + " is null then null else '\"' +\n"
+								+ "	bintostr(convert(varbinary(16384),"+column.getName()+")) + '\"' end as " +column.getName() );
+						
+					}
+				}
+				
+			}
+		}
+		StringBuilder finalSql = null;
+		if(isUsingUnitypes) {
+			 finalSql = new StringBuilder(sybaseUnitypeConversions.toString());
+		} else {
+			 finalSql = new StringBuilder(sql.toString());
+		}
+		finalSql.setLength(finalSql.length() - "where ".length()); // remove the trailing where so we can insert a table alias.
+		finalSql.append(" t where "); // main table alias.
+		finalSql.append(whereClause).append(" ");
+		finalSql.append(buildOrderBy(table, sortByColumns, platform, isSource));
+		return finalSql.toString();
+	}
 
     protected String buildOrderBy(Table table, Column[] sortByColumns, IDatabasePlatform platform, boolean isSource) {
         DatabaseInfo databaseInfo = platform.getDatabaseInfo();
@@ -398,6 +431,14 @@ public class DbCompare {
                 }
             }
             Table sourceTableCopy = sourceTable.copy();
+            for (Column column : sourceTableCopy.getColumns()) {
+                if (column.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+                        column.getJdbcTypeName().equalsIgnoreCase("unichar") ||
+                        column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                    column.setMappedType("VARCHAR");
+                    column.setMappedTypeCode(Types.VARCHAR);
+                }
+            }
             DbCompareTables tables = new DbCompareTables(sourceTableCopy, null);
             String targetTableName = tableName;
             if (!CollectionUtils.isEmpty(targetTableNames)) {
@@ -489,8 +530,17 @@ public class DbCompare {
                 }
             }
         }
-        tables.setTargetTable(targetTable);
-        return targetTable;
+        Table targetTableCopy = targetTable.copy();
+//        for (Column column : targetTableCopy.getColumns()) {
+//            if (column.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+//                    column.getJdbcTypeName().equalsIgnoreCase("unichar") ||
+//                    column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+//                column.setMappedType("VARCHAR");
+//                column.setMappedTypeCode(Types.VARCHAR);
+//            }
+//        }
+        tables.setTargetTable(targetTableCopy);
+        return targetTableCopy;
     }
 
     protected TriggerRouter getTriggerRouterFor(Table sourceTable) {

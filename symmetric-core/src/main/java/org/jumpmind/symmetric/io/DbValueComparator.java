@@ -20,8 +20,10 @@
  */
 package org.jumpmind.symmetric.io;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.charset.Charset;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +31,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -64,6 +69,11 @@ public class DbValueComparator {
             return 0;
         }
         if (sourceColumn.isOfTextType()) {
+            if(targetColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+                    targetColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
+                    targetColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                targetValue = convertString(targetValue);
+            }
             return compareText(sourceColumn, targetColumn, sourceValue, targetValue);
         } else if (sourceColumn.isOfNumericType()) {
             return compareNumeric(sourceColumn, targetColumn, sourceValue, targetValue);
@@ -72,6 +82,19 @@ public class DbValueComparator {
         } else {
             return compareDefault(sourceColumn, targetColumn, sourceValue, targetValue);
         }
+    }
+    
+    protected String convertString(String string) {
+    	String utf8String = null;
+    	 try {
+             string = new String(Hex.decodeHex(string));
+             string = string.substring(1,string.length()-1);
+             string = "fffe" + string;
+             utf8String = new String(Hex.decodeHex(string), "UTF-16");   
+         } catch (DecoderException | UnsupportedEncodingException e) {
+             e.printStackTrace();
+		}
+        return utf8String;
     }
 
     public int compareText(Column sourceColumn, Column targetColumn, String source, String target) {
