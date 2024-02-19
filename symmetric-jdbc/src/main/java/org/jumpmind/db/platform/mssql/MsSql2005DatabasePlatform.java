@@ -83,15 +83,20 @@ public class MsSql2005DatabasePlatform extends MsSql2000DatabasePlatform {
                 "  on r.session_id = s.session_id " +
                 "cross apply sys.dm_exec_sql_text(r.sql_handle) as sql;";
         List<Transaction> transactions = new ArrayList<Transaction>();
-        for (Row row : getSqlTemplate().query(sql)) {
-            Transaction transaction = new Transaction(row.getString("session_id"), row.getString("login_name"),
-                    row.getString("blocking_session_id"), row.getDateTime("start_time"), row.getString("text"));
-            transaction.setRemoteIp(row.getString("client_net_address"));
-            transaction.setRemoteHost(row.getString("host_name"));
-            transaction.setStatus(row.getString("status"));
-            transaction.setReads(row.getInt("reads"));
-            transaction.setWrites(row.getInt("writes"));
-            transactions.add(transaction);
+        int count = getSqlTemplate().queryForInt("select count(*) from fn_my_permissions(null, 'SERVER') where permission_name = 'VIEW SERVER STATE'");
+        if (count > 0) {
+            for (Row row : getSqlTemplate().query(sql)) {
+                Transaction transaction = new Transaction(row.getString("session_id"), row.getString("login_name"),
+                        row.getString("blocking_session_id"), row.getDateTime("start_time"), row.getString("text"));
+                transaction.setRemoteIp(row.getString("client_net_address"));
+                transaction.setRemoteHost(row.getString("host_name"));
+                transaction.setStatus(row.getString("status"));
+                transaction.setReads(row.getInt("reads"));
+                transaction.setWrites(row.getInt("writes"));
+                transactions.add(transaction);
+            }
+        } else {
+            throw new RuntimeException("Missing permission VIEW SERVER STATE to view blocked transactions");
         }
         return transactions;
     }
