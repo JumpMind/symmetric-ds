@@ -91,6 +91,7 @@ subprojects {
     sonar {
         properties {
             property 'sonar.coverage.jacoco.xmlReportPaths', "${rootDir}/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml"
+            property 'sonar.exclusions',"**/*.js"
         }
     }
     tasks.withType(Test).configureEach {
@@ -141,7 +142,7 @@ sonar {
 	    property "sonar.organization", "jumpmind"
 	    property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.coverage.jacoco.xmlReportPaths", "${rootDir}/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml"
-        property "sonar.exclusions", "**/*.ad"
+        property "sonar.exclusions", "**/*.ad, **/*.js"
     }
 }
 
