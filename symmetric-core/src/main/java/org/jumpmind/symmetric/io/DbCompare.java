@@ -298,8 +298,8 @@ public class DbCompare {
 					if(column.getJdbcTypeName().equalsIgnoreCase("unichar") ||
 							column.getJdbcTypeName().equalsIgnoreCase("univarchar") || 
 							column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
-						sybaseUnitypeConversions = sybaseUnitypeConversions.replace(column.getName(),"case when " + column.getName() + " is null then null else '\"' +\n"
-								+ "	bintostr(convert(varbinary(16384),"+column.getName()+")) + '\"' end as " +column.getName() );
+						sybaseUnitypeConversions = sybaseUnitypeConversions.replace(column.getName() + ",","case when " + column.getName() + " is null then null else '\"' +\n"
+								+ "	bintostr(convert(varbinary(16384),"+column.getName()+")) + '\"' end as " +column.getName() + "," );
 						
 					}
 				}
