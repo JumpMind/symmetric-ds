@@ -64,11 +64,6 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
 
     public AseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        if (getMajorVersion() >= 16) {
-            this.triggerTemplate = new Ase16TriggerTemplate(this);
-        } else {
-            this.triggerTemplate = new AseTriggerTemplate(this);
-        }
         try {
             pageSize = platform.getSqlTemplate().queryForInt(SQL_PAGE_SIZE);
             log.info("Page size is {}", pageSize);
@@ -83,6 +78,11 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
         if (noCount != 0) {
             throw new SymmetricException("Incompatible setting for nocount detected.  Add the following to your\r\n"
                     + "engine properties file: db.init.sql=set nocount off");
+        }
+        if (getMajorVersion() >= 16) {
+            this.triggerTemplate = new Ase16TriggerTemplate(this);
+        } else {
+            this.triggerTemplate = new AseTriggerTemplate(this);
         }
     }
 
