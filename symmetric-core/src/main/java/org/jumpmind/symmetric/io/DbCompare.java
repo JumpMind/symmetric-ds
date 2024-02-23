@@ -48,7 +48,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.DbCompareReport.TableReport;
-import org.jumpmind.symmetric.load.IReloadVariableFilter;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
