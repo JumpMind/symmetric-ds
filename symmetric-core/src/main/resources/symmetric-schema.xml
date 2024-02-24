@@ -959,6 +959,7 @@
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
         <column name="description" type="LONGVARCHAR" description="Optional notes and comments for trigger_router" />
+        <column name="data_refresh_type" type="VARCHAR" size="50" description="If this table should be refreshed when the refresh job runs.  Usually for tables where typical trigger, log, or time-based capture is not available.  Possible values are: 'auto' (attempts difference only refresh unless there are more than the threshold and will switch automatically to a full), 'differences' (Uses the compare feature to send only differences), and 'full' (remove all data at the target and fully load it again using a reload)"/>
         <foreign-key foreignTable="trigger" name="fk_tr_2_trg">
             <reference local="trigger_id" foreign="trigger_id" />
         </foreign-key>
