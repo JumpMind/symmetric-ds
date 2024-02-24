@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.route;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +41,6 @@ import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.route.ColumnMatchDataRouter.Expression;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.impl.NodeService;
 import org.junit.jupiter.api.Test;
 
 public class ColumnMatchDataRouterTest {

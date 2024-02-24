@@ -616,7 +616,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         // little trick to force the rebuild of SymmetricDS triggers every time
         // there is a new version of SymmetricDS
-        trigger.setLastUpdateTime(new Date(Version.version().hashCode() * 1000l));
+        trigger.setLastUpdateTime(new Date(Version.version().hashCode()));
         return trigger;
     }
 
@@ -2293,6 +2293,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             if (channel == null) {
                 log.warn("Trigger '{}' has a channel of '{}' not found in sym_channel table", trigger.getTriggerId(), trigger.getChannelId());
             }
+        }
+        if (table.getName().equalsIgnoreCase("sym_node")) {
+            System.out.println("Here1");
         }
         trigger.setSyncOnIncomingBatch(trigger.isSyncOnIncomingBatch() && !configurationService.isMasterToMaster());
         try {

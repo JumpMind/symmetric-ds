@@ -213,7 +213,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
         Map<String, Set<String>> lookupMap = (Map<String, Set<String>>) routingContext
                 .getContextCache().get(CTX_CACHE_KEY);
         if (lookupMap == null) {
-            ISqlTemplate template = symmetricDialect.getPlatform().getSqlTemplate();
+            ISqlTemplate template = symmetricDialect.getTargetPlatform().getSqlTemplate();
             final Map<String, Set<String>> fillMap = new HashMap<String, Set<String>>();
             RowMapper rowMapper = new RowMapper(fillMap, params);
             template.query(String.format("select %s, %s from %s",
