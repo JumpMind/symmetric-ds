@@ -20,17 +20,22 @@
  */
 package org.jumpmind.symmetric.route;
 
+import java.sql.Types;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IFileSyncService;
@@ -55,6 +60,9 @@ public class FileSyncDataRouter extends AbstractDataRouter implements IBuiltInEx
         String routerId = newData.get("ROUTER_ID");
         String sourceNodeId = newData.get("LAST_UPDATE_BY");
         String lastEventType = newData.get("LAST_EVENT_TYPE");
+        String relativeDir = newData.get("RELATIVE_DIR");
+        // Append calculated top relative dir to old data and new data
+        // Append top relative dir column name to list of columns in sym_file_snapshot trigger history
         if (triggerId == null) {
             Map<String, String> oldData = getOldDataAsString(null, dataMetaData,
                     engine.getSymmetricDialect());
@@ -62,7 +70,10 @@ public class FileSyncDataRouter extends AbstractDataRouter implements IBuiltInEx
             routerId = oldData.get("ROUTER_ID");
             sourceNodeId = oldData.get("LAST_UPDATE_BY");
             lastEventType = oldData.get("LAST_EVENT_TYPE");
+            relativeDir = oldData.get("RELATIVE_DIR");
         }
+        String topRelativeDir = getTopRelativeDir(relativeDir);
+        addTopRelativeDirToData(topRelativeDir, dataMetaData);
         LastEventType eventType = LastEventType.fromCode(lastEventType);
         FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter(
                 triggerId, routerId, true);
@@ -107,6 +118,49 @@ public class FileSyncDataRouter extends AbstractDataRouter implements IBuiltInEx
             }
         }
         return nodeIds;
+    }
+    
+    private String getTopRelativeDir(String relativeDir) {
+        String topRelativeDir = null;
+        if (relativeDir != null) {
+            relativeDir = relativeDir.replace('\\','/');
+            topRelativeDir = (relativeDir.contains("/") ? relativeDir.substring(0, relativeDir.indexOf('/')) : relativeDir);
+        }
+        return topRelativeDir;
+    }
+    
+    private void addTopRelativeDirToData(String topRelativeDir, DataMetaData dataMetaData) {
+        Table copy;
+        try {
+            copy = (Table) dataMetaData.getTable().clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+        copy.addColumn(new Column("top_relative_dir", false, Types.VARCHAR, topRelativeDir.length(), 0));
+        dataMetaData.setTable(copy);
+        Data data = dataMetaData.getData();
+        String oldData = data.getCsvData(Data.OLD_DATA);
+        String newData = data.getCsvData(Data.ROW_DATA);
+        if (oldData != null) {
+            oldData = oldData.concat(",");
+            if (! StringUtils.isBlank(oldData)) {
+                oldData = oldData.concat("\"").concat(topRelativeDir).concat("\"");
+            }
+            data.putCsvData(Data.OLD_DATA, oldData);
+        }
+        if (newData != null) {
+            newData = newData.concat(",");
+            if (! StringUtils.isBlank(newData)) {
+                newData = newData.concat("\"").concat(topRelativeDir).concat("\"");
+            }
+            data.putCsvData(Data.ROW_DATA, newData);
+        }
+        TriggerHistory triggerHistory = data.getTriggerHistory();
+        TriggerHistory newTriggerHistory = new TriggerHistory(
+                triggerHistory.getSourceTableName(),
+                triggerHistory.getPkColumnNames(),
+                triggerHistory.getColumnNames().concat(",").concat("TOP_RELATIVE_DIR"));
+        data.setTriggerHistory(newTriggerHistory);
     }
 
     @Override
