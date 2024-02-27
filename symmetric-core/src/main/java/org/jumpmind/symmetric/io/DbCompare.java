@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -184,10 +185,15 @@ public class DbCompare {
                 int comparePk = comparePk(tables, sourceCompareRow, targetCompareRow);
                 if (comparePk == 0) {
                     Map<Column, String> deltas = sourceCompareRow.compareTo(tables, targetCompareRow);
+                    Map<Column, String> deltasCopy = new LinkedHashMap<Column, String>();
+                    for (Column column : deltas.keySet()) {
+                        deltasCopy.put((Column)column.clone(), deltas.get(column));
+                    }
+
                     if (deltas.isEmpty()) {
                         tableReport.countMatchedRow();
                     } else {
-                        diffWriter.writeUpdate(targetCompareRow, deltas);
+                        diffWriter.writeUpdate(targetCompareRow, deltasCopy);
                         if (!diffWriter.isError()) {
                             tableReport.countDifferentRow();
                         } else {
@@ -219,6 +225,9 @@ public class DbCompare {
                 tableReport.setSourceRows(sourceCursor.count);
                 tableReport.setTargetRows(targetCursor.count);
             }
+        } catch (CloneNotSupportedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         } finally {
             if (stream != null) {
                 try {
@@ -530,14 +539,6 @@ public class DbCompare {
             }
         }
         Table targetTableCopy = targetTable.copy();
-//        for (Column column : targetTableCopy.getColumns()) {
-//            if (column.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-//                    column.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-//                    column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
-//                column.setMappedType("VARCHAR");
-//                column.setMappedTypeCode(Types.VARCHAR);
-//            }
-//        }
         tables.setTargetTable(targetTableCopy);
         return targetTableCopy;
     }

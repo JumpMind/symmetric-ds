@@ -86,7 +86,9 @@ public class DbValueComparator {
     	String utf8String = null;
     	 try {
              string = new String(Hex.decodeHex(string));
-             string = string.substring(1,string.length()-1);
+             if(string.contains("\"")) {
+                 string = string.substring(1,string.length()-1);
+             }
              string = "fffe" + string;
              utf8String = new String(Hex.decodeHex(string), "UTF-16");   
          } catch (DecoderException | UnsupportedEncodingException e) {

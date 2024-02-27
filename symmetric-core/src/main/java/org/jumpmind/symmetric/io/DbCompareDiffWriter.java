@@ -66,6 +66,11 @@ public class DbCompareDiffWriter {
                     null, null);
             Row row = new Row(targetCompareRow.getTable().getPrimaryKeyColumnCount());
             for (int i = 0; i < targetCompareRow.getTable().getPrimaryKeyColumnCount(); i++) {
+                if (table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+                        table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("unichar") ||
+                        table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                    table.getColumn(i).setMappedType("VARCHAR");
+                }
                 row.put(table.getColumn(i).getName(),
                         targetCompareRow.getRowValues().get(targetCompareRow.getTable().getColumn(i).getName()));
             }
@@ -108,6 +113,11 @@ public class DbCompareDiffWriter {
                 if (targetColumn == null) {
                     continue;
                 }
+                if (targetColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+                        targetColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
+                        targetColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                    targetColumn.setMappedType("VARCHAR");
+                }
                 row.put(targetColumn.getName(), sourceCompareRow.getRowValues().get(sourceColumn.getName()));
             }
             String sql = statement.buildDynamicSql(BinaryEncoding.HEX, row, false, false);
@@ -136,6 +146,11 @@ public class DbCompareDiffWriter {
             Row row = new Row(changedColumns.length + table.getPrimaryKeyColumnCount());
             for (Column changedColumn : deltas.keySet()) {
                 String value = deltas.get(changedColumn);
+                if (changedColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+                        changedColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
+                        changedColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                    changedColumn.setMappedType("VARCHAR");
+                }
                 row.put(changedColumn.getName(), value);
             }
             for (String pkColumnName : table.getPrimaryKeyColumnNames()) {
