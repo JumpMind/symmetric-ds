@@ -268,7 +268,7 @@ public class SelectFromSymDataSource extends SelectFromSource {
         String[] pkData = data.getParsedData(CsvData.PK_DATA);
         if (pkData != null && pkData.length > 0) {
             outgoingBatch.setLoadId(Long.parseLong(pkData[0]));
-            TableReloadStatus tableReloadStatus = dataService.getTableReloadStatusByLoadId(outgoingBatch.getLoadId());
+            TableReloadStatus tableReloadStatus = dataService.getTableReloadStatusByLoadIdAndSourceNodeId(outgoingBatch.getLoadId(), engine.getNodeId());
             if (tableReloadStatus != null && tableReloadStatus.isCompleted()) {
                 // Ignore create table (indexes and foreign keys) at end of load if it was cancelled
                 return false;

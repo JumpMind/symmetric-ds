@@ -134,7 +134,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
         }
         if (isSourceNode) {
             IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
-            int count = engine.getDataService().updateTableReloadRequestsCancelled(status.getLoadId());
+            int count = engine.getDataService().updateTableReloadRequestsCancelled(status.getLoadId(), status.getSourceNodeId());
             log.info("Marked {} load requests as OK for node {}", count, status.getTargetNodeId());
             count = engine.getDataExtractorService().cancelExtractRequests(status.getLoadId());
             log.info("Marked {} extract requests as OK for node {}", count, status.getTargetNodeId());
@@ -145,7 +145,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                 engine.getNodeService().setInitialLoadEnded(null, status.getTargetNodeId());
             }
         } else {
-            engine.getDataService().updateTableReloadRequestsCancelled(status.getLoadId());
+            engine.getDataService().updateTableReloadRequestsCancelled(status.getLoadId(), status.getTargetNodeId());
         }
     }
 
