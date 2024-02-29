@@ -232,8 +232,8 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         String identityId = (String) context.get(CTX_KEY_MY_NODE_ID);
         if (loadIds != null && identityId != null) {
             for (Long loadId : loadIds) {
-                TableReloadStatus status = engine.getDataService().getTableReloadStatusByLoadId(loadId);
-                if (status != null && identityId.equals(status.getSourceNodeId())) {
+                TableReloadStatus status = engine.getDataService().getTableReloadStatusByLoadIdAndSourceNodeId(loadId, identityId);
+                if (status != null) {
                     engine.getInitialLoadService().cancelLoad(status);
                 }
             }

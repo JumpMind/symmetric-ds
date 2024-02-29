@@ -82,17 +82,16 @@ public interface IDataService {
 
     public List<TableReloadStatus> getActiveIncomingTableReloadStatus();
 
-    public TableReloadStatus getTableReloadStatusByLoadId(long loadId);
-    
-    public TableReloadStatus getTableReloadStatusByLoadIdAndSourceId(long loadId, String sourceId);
+    public TableReloadStatus getTableReloadStatusByLoadIdAndSourceNodeId(long loadId, String sourceNodeId);
 
     public List<TableReloadStatus> getTableReloadStatusByTarget(String targetNodeId);
 
-    public TableReloadStatus updateTableReloadStatusDataLoaded(ISqlTransaction transcation, long loadId, long batchId, int batchCount, boolean isBulkLoaded);
+    public TableReloadStatus updateTableReloadStatusDataLoaded(ISqlTransaction transcation, long loadId,
+            String sourceNodeId, long batchId, int batchCount, boolean isBulkLoaded);
 
-    public void updateTableReloadStatusFailed(ISqlTransaction transaction, long loadId, long batchId);
+    public void updateTableReloadStatusFailed(ISqlTransaction transaction, long loadId, String sourceNodeId, long batchId);
 
-    public int updateTableReloadRequestsCancelled(long loadId);
+    public int updateTableReloadRequestsCancelled(long loadId, String sourceNodeId);
 
     public int cancelTableReloadRequest(TableReloadRequest request);
 

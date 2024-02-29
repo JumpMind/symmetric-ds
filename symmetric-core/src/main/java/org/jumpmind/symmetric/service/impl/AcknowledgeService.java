@@ -186,7 +186,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     if (status == Status.OK && isFirstTimeAsOkStatus && outgoingBatch.getLoadId() > 0) {
                         engine.getDataExtractorService().updateExtractRequestLoadTime(transaction, new Date(), outgoingBatch);
                     } else if (status == Status.ER && isFirstTimeAsErStatus && outgoingBatch.getLoadId() > 0) {
-                        engine.getDataService().updateTableReloadStatusFailed(transaction, outgoingBatch.getLoadId(), outgoingBatch.getBatchId());
+                        engine.getDataService().updateTableReloadStatusFailed(transaction, outgoingBatch.getLoadId(),
+                                engine.getNodeId(), outgoingBatch.getBatchId());
                     }
                     transaction.commit();
                     if (status == Status.OK) {
