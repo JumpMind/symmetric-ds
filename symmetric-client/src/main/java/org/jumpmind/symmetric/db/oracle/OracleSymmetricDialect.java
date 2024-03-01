@@ -328,7 +328,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
 
     @Override
     public long getCurrentSequenceValue(SequenceIdentifier identifier) {
-        long id = platform.getSqlTemplate().queryForLong("select last_number - cache_size from user_sequences where sequence_name = ?",
+        long id = platform.getSqlTemplate().queryForLong("select last_number from user_sequences where sequence_name = ?",
                 getSequenceName(identifier).toUpperCase());
         return id < 0 ? 0 : id;
     }
