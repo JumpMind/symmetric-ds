@@ -1734,9 +1734,11 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 size = maxSize;
             }
             if (hasSize(column)) {
-                sqlType.append("(");
-                sqlType.append(size);
-                sqlType.append(")");
+                if (size > 0) {
+                    sqlType.append("(");
+                    sqlType.append(size);
+                    sqlType.append(")");
+                }
             } else if (databaseInfo.hasPrecisionAndScale(column.getMappedTypeCode())) {
                 StringBuilder precisionAndScale = new StringBuilder();
                 precisionAndScale.append("(");
@@ -1746,7 +1748,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                     precisionAndScale.append(scale);
                 }
                 precisionAndScale.append(")");
-                if (!"(0,0)".equals(precisionAndScale.toString())) {
+                if (!"(0,0)".equals(precisionAndScale.toString()) && !"(0)".equals(precisionAndScale.toString())) {
                     sqlType.append(precisionAndScale);
                 }
             }
