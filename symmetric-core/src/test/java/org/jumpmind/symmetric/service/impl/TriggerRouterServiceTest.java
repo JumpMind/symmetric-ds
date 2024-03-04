@@ -469,22 +469,14 @@ public class TriggerRouterServiceTest {
         assertEquals(dummyTriggerHist, actualTriggerHistory);
     }
 
-    @ParameterizedTest
-    @CsvSource({ "" + true + "", "" + false + "" })
-    void testFindMatchingTriggers(boolean willMatch) throws Exception {
+    @Test
+    void testFindMatchingTriggers() throws Exception {
         List<Trigger> dummyTriggerList = new ArrayList<Trigger>();
         Trigger dummyTrigger = new Trigger();
-        if (willMatch) {
-            dummyTrigger.setTriggerId("test");
-            dummyTrigger.setSourceCatalogName("cat");
-            dummyTrigger.setSourceSchemaName("schem");
-            dummyTrigger.setSourceTableName("table");
-        } else {
-            dummyTrigger.setTriggerId("testing");
-            dummyTrigger.setSourceCatalogName("catalog");
-            dummyTrigger.setSourceSchemaName("schema");
-            dummyTrigger.setSourceTableName("tableName");
-        }
+        dummyTrigger.setTriggerId("test");
+        dummyTrigger.setSourceCatalogName("cat");
+        dummyTrigger.setSourceSchemaName("schem");
+        dummyTrigger.setSourceTableName("table");
         dummyTriggerList.add(dummyTrigger);
         when(engine.getCacheManager()).thenReturn(cacheManager);
         when(engine.getClusterService()).thenReturn(clusterService);
@@ -498,6 +490,8 @@ public class TriggerRouterServiceTest {
         when(engine.getSymmetricDialect()).thenReturn(symmetricDialect);
         when(parameterService.getTablePrefix()).thenReturn(tablePrefix);
         when(symmetricDialect.getPlatform()).thenReturn(platform);
+        when(platform.getDefaultCatalog()).thenReturn("cat");
+        when(platform.getDefaultSchema()).thenReturn("schem");
         when(symmetricDialect.getPlatform().getSqlTemplate()).thenReturn(sqlTemplate);
         when(symmetricDialect.getPlatform().getSqlTemplateDirty()).thenReturn(sqlTemplate);
         when(parameterService.getInt("data.flush.jdbc.batch.size")).thenReturn(10);
@@ -511,10 +505,77 @@ public class TriggerRouterServiceTest {
         Collection<Trigger> actualMatchingTriggers = spyTriggerRouterService.findMatchingTriggers(dummyTriggerList, "cat", "schem", "table");
         Collection<Trigger> expectedMatchingTriggers = new ArrayList<Trigger>();
         expectedMatchingTriggers.add(dummyTrigger);
-        if (willMatch) {
-            assertArrayEquals(expectedMatchingTriggers.toArray(), actualMatchingTriggers.toArray());
-        } else {
-            assertNotEquals(expectedMatchingTriggers, actualMatchingTriggers);
-        }
+        assertArrayEquals(expectedMatchingTriggers.toArray(), actualMatchingTriggers.toArray());
+        dummyTrigger.setTriggerId("testing");
+        dummyTrigger.setSourceCatalogName("catalog");
+        dummyTrigger.setSourceSchemaName("schema");
+        dummyTrigger.setSourceTableName("tableName");
+        assertNotEquals(expectedMatchingTriggers, actualMatchingTriggers);
+        dummyTriggerList.clear();
+        dummyTrigger = new Trigger();
+        dummyTrigger.setTriggerId("test");
+        dummyTrigger.setSourceCatalogName("");
+        dummyTrigger.setSourceSchemaName("");
+        dummyTrigger.setSourceTableName("table");
+        dummyTriggerList.add(dummyTrigger);
+        expectedMatchingTriggers.clear();
+        expectedMatchingTriggers.add(dummyTrigger);
+        actualMatchingTriggers = spyTriggerRouterService.findMatchingTriggers(dummyTriggerList, "cat", "schem", "table");
+        assertArrayEquals(expectedMatchingTriggers.toArray(), actualMatchingTriggers.toArray());
+        dummyTrigger.setSourceCatalogName(null);
+        dummyTrigger.setSourceSchemaName(null);
+        actualMatchingTriggers = spyTriggerRouterService.findMatchingTriggers(dummyTriggerList, "cat", "schem", "table");
+        assertArrayEquals(expectedMatchingTriggers.toArray(), actualMatchingTriggers.toArray());
+    }
+
+    @Test
+    void testFindTriggerHistories() throws Exception {
+        when(engine.getCacheManager()).thenReturn(cacheManager);
+        when(engine.getClusterService()).thenReturn(clusterService);
+        when(engine.getConfigurationService()).thenReturn(configurationService);
+        when(engine.getStatisticManager()).thenReturn(statisticManager);
+        when(engine.getGroupletService()).thenReturn(groupletService);
+        when(engine.getNodeService()).thenReturn(nodeService);
+        when(engine.getSequenceService()).thenReturn(sequenceService);
+        when(engine.getExtensionService()).thenReturn(extensionService);
+        when(engine.getParameterService()).thenReturn(parameterService);
+        when(engine.getSymmetricDialect()).thenReturn(symmetricDialect);
+        when(parameterService.getTablePrefix()).thenReturn(tablePrefix);
+        when(symmetricDialect.getPlatform()).thenReturn(platform);
+        when(platform.getDefaultCatalog()).thenReturn("cat");
+        when(platform.getDefaultSchema()).thenReturn("schem");
+        when(symmetricDialect.getPlatform().getSqlTemplate()).thenReturn(sqlTemplate);
+        when(symmetricDialect.getPlatform().getSqlTemplateDirty()).thenReturn(sqlTemplate);
+        when(parameterService.getInt("data.flush.jdbc.batch.size")).thenReturn(10);
+        when(sqlTemplate.startSqlTransaction()).thenReturn(sqlTransaction);
+        when(sqlTemplate.update(ArgumentMatchers.anyString(), (Object[]) ArgumentMatchers.any(), (int[]) ArgumentMatchers.any()))
+                .thenReturn(1);
+        when(parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TRIGGER_PREFIX, tablePrefix)).thenReturn("table");
+        when(parameterService.getNodeGroupId()).thenReturn("TestNodeGroup");
+        when(parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE)).thenReturn(true);
+        List<TriggerHistory> expectedList = new ArrayList<TriggerHistory>();
+        TriggerHistory hist = new TriggerHistory();
+        hist.setSourceTableName("table");
+        expectedList.add(hist);
+        TriggerRouterService triggerRouterService = new TriggerRouterService(engine) {
+            public List<TriggerHistory> getActiveTriggerHistories() {
+                return expectedList;
+            }
+        };
+        TriggerRouterService spyTriggerRouterService = spy(triggerRouterService);
+        Collection<TriggerHistory> actualList = spyTriggerRouterService.findTriggerHistories(null, null, "table");
+        assertArrayEquals(expectedList.toArray(), actualList.toArray());
+        actualList = spyTriggerRouterService.findTriggerHistories(null, null, "TABLE");
+        assertArrayEquals(expectedList.toArray(), actualList.toArray());
+        actualList = spyTriggerRouterService.findTriggerHistories("cat", "schem", "TABLE");
+        assertArrayEquals(expectedList.toArray(), actualList.toArray());
+        actualList = spyTriggerRouterService.findTriggerHistories("cat", "schem", "table");
+        assertArrayEquals(expectedList.toArray(), actualList.toArray());
+        actualList = spyTriggerRouterService.findTriggerHistories("cat", "schem", "Table");
+        assertNotEquals(expectedList.size(), actualList.size());
+        actualList = spyTriggerRouterService.findTriggerHistories("cat", null, "table");
+        assertArrayEquals(expectedList.toArray(), actualList.toArray());
+        actualList = spyTriggerRouterService.findTriggerHistories("", "schem", "table");
+        assertArrayEquals(expectedList.toArray(), actualList.toArray());
     }
 }

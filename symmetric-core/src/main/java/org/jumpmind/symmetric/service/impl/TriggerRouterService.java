@@ -398,10 +398,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             for (TriggerHistory triggerHistory : triggerHistories) {
                 boolean matches = true;
                 if (StringUtils.isNotBlank(catalogName)) {
-                    matches = catalogName.equals(triggerHistory.getSourceCatalogName());
+                    matches = catalogName.equals(StringUtils.isNotBlank(triggerHistory.getSourceCatalogName()) ? triggerHistory.getSourceCatalogName()
+                            : platform.getDefaultCatalog());
                 }
                 if (matches && StringUtils.isNotBlank(schemaName)) {
-                    matches = schemaName.equals(triggerHistory.getSourceSchemaName());
+                    matches = schemaName.equals(StringUtils.isNotBlank(triggerHistory.getSourceSchemaName()) ? triggerHistory.getSourceSchemaName()
+                            : platform.getDefaultSchema());
                 }
                 if (matches && StringUtils.isNotBlank(tableName)) {
                     boolean ignoreCase = parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE) &&
