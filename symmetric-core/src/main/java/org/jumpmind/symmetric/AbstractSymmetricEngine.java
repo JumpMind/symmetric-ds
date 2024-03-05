@@ -720,11 +720,16 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 }
             }
             if (badNodeSecurities.size() > 0) {
+                List<String> nodeIds = new ArrayList<String>();
+                for (NodeSecurity nodeSecurity : badNodeSecurities) {
+                    nodeIds.add(nodeSecurity.getNodeId());
+                }
                 if (parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
                     throw new IllegalStateException("Unable to decrypt " + badNodeSecurities.size()
-                            + " node security rows.  Copy the security/keystore file from a working node in the cluster.");
+                            + " node security rows.  Copy the security/keystore file from a working node in the cluster.  Nodes affected: " + nodeIds);
                 } else if (parameterService.isRegistrationServer()) {
-                    log.error("Found {} bad node securities.  Attempting to re-open registration to fix them.", badNodeSecurities.size());
+                    log.error("Found {} bad node securities.  Attempting to re-open registration to fix them.  Nodes affected: {}", badNodeSecurities.size(),
+                            nodeIds);
                     String myNodeId = nodeService.findIdentityNodeId();
                     for (NodeSecurity nodeSecurity : badNodeSecurities) {
                         if (nodeSecurity.getNodeId().equals(myNodeId)) {
@@ -737,9 +742,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         }
                     }
                 } else {
-                    log.error(
-                            "Found {} bad node securities.  Removing identity and attempting re-registration to fix them.  You may need to approve the registration request.",
-                            badNodeSecurities.size());
+                    log.error("Found {} bad node securities.  Removing identity and attempting re-registration to fix them.  " +
+                            "You may need to approve the registration request.  Nodes affected: {}", badNodeSecurities.size(), nodeIds);
                     nodeService.deleteIdentity();
                     node = null;
                 }
