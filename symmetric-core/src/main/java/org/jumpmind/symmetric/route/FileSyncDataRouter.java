@@ -65,7 +65,7 @@ public class FileSyncDataRouter extends AbstractDataRouter implements IBuiltInEx
         }
         LastEventType eventType = LastEventType.fromCode(lastEventType);
         FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter(
-                triggerId, routerId, true);
+                triggerId, routerId, false);
         if (fileTriggerRouter != null && fileTriggerRouter.isEnabled()) {
             if (fileTriggerRouter.getRouter().getNodeGroupLink()
                     .equals(triggerRouter.getRouter().getNodeGroupLink())) {
