@@ -1446,7 +1446,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     outgoingBatch.getBatchId(), outgoingBatch.getNodeId(), outgoingBatch.getLoadId(), engine.getNodeId());
         }
         TableReloadStatus status = dataService.updateTableReloadStatusDataLoaded(transaction,
-                outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1, outgoingBatch.isBulkLoaderFlag());
+                outgoingBatch.getLoadId(), engine.getNodeId(), outgoingBatch.getBatchId(), 1, outgoingBatch.isBulkLoaderFlag());
         if (status != null && status.isFullLoad() && (status.isCancelled() || status.isCompleted())) {
             log.info("Initial load ended for node {}", outgoingBatch.getNodeId());
             nodeService.setInitialLoadEnded(transaction, outgoingBatch.getNodeId());
@@ -1905,8 +1905,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         .getNodeId());
                 // back out statistics from table reload request
                 if (batchLoadedCount > 0 || rowLoadedCount > 0) {
-                    dataService.updateTableReloadStatusDataLoaded(transaction, extractRequest.getLoadId(), extractRequest.getStartBatchId(),
-                            (int) batchLoadedCount * -1, false);
+                    dataService.updateTableReloadStatusDataLoaded(transaction, extractRequest.getLoadId(), engine.getNodeId(),
+                            extractRequest.getStartBatchId(), (int) batchLoadedCount * -1, false);
                 }
                 // set status of batches back to requested
                 outgoingBatchService.updateOutgoingBatchStatus(transaction, Status.RQ, extractRequest.getNodeId(), extractRequest.getStartBatchId(),
@@ -1953,7 +1953,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             dataService.sendSQL(extractRequest.getNodeId(), sql);
         }
         for (ExtractRequest extractRequest : allRequests) {
-            TableReloadStatus reloadStatus = dataService.getTableReloadStatusByLoadId(extractRequest.getLoadId());
+            TableReloadStatus reloadStatus = dataService.getTableReloadStatusByLoadIdAndSourceNodeId(extractRequest.getLoadId(), nodeIdentityId);
             OutgoingBatches setupBatches = outgoingBatchService.getOutgoingBatchByLoadRangeAndTable(extractRequest.getLoadId(), 1,
                     reloadStatus.getStartDataBatchId() - 1, extractRequest.getTableName().toLowerCase());
             // clear incoming batch table for all batches at the target node that were used to setup this load for a specific table (delete, truncate, etc)
