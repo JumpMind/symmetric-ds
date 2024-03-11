@@ -849,13 +849,38 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         if (identity != null) {
             NodeSecurity security = engine.getNodeService().findNodeSecurity(identity.getNodeId(), true);
             if (security != null) {
-                if (nodeCommunication.getCommunicationType() == CommunicationType.FILE_PULL
-                        || nodeCommunication.getCommunicationType() == CommunicationType.OFF_FSPULL) {
-                    pullFilesFromNode(nodeCommunication, status, identity, security);
-                } else if (nodeCommunication.getCommunicationType() == CommunicationType.FILE_PUSH
-                        || nodeCommunication.getCommunicationType() == CommunicationType.OFF_FSPUSH) {
-                    pushFilesToNode(nodeCommunication, status, identity, security);
-                }
+                long cumulativeBatchesProcessed = 0;
+                long lastBatchesProcessed = 0;
+                boolean immediatePullIfDataFound = parameterService.is(ParameterConstants.PULL_IMMEDIATE_IF_DATA_FOUND, false);
+                boolean immediatePushIfDataFound = parameterService.is(ParameterConstants.PUSH_IMMEDIATE_IF_DATA_FOUND, false);
+                boolean isFilePull = nodeCommunication.getCommunicationType() == CommunicationType.FILE_PULL
+                        || nodeCommunication.getCommunicationType() == CommunicationType.OFF_FSPULL;
+                boolean isFilePush = nodeCommunication.getCommunicationType() == CommunicationType.FILE_PUSH
+                        || nodeCommunication.getCommunicationType() == CommunicationType.OFF_FSPUSH;
+                do {
+                    if (lastBatchesProcessed > 0) {
+                        if (engine.getNodeService().isDataLoadStarted()) {
+                            log.info("Immediate pull requested while in reload mode");
+                        } else {
+                            log.info("Immediate pull requested while data found");
+                        }
+                    }
+                    if (isFilePull) {
+                        pullFilesFromNode(nodeCommunication, status, identity, security);
+                    } else if (isFilePush) {
+                        pushFilesToNode(nodeCommunication, status, identity, security);
+                    }
+                    lastBatchesProcessed = status.getBatchesProcessed() - cumulativeBatchesProcessed;
+                    cumulativeBatchesProcessed = status.getBatchesProcessed();
+                } while (
+                        (!status.failed()) &&
+                        (
+                            (
+                                    (isFilePull && immediatePullIfDataFound) || (isFilePush && immediatePushIfDataFound)
+                            )
+                            && lastBatchesProcessed > 0
+                        )
+                    );
             }
         }
     }
