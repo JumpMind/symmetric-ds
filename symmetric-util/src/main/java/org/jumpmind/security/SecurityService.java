@@ -467,9 +467,11 @@ public class SecurityService implements ISecurityService {
     protected byte[] getBytes(int byteSize) {
         byte[] bytes = new byte[byteSize];
         if (keyStoreFileName != null) {
+            log.info("Using random bytes for secret key");
             SecureRandom random = new SecureRandom();
             random.nextBytes(bytes);
         } else {
+            log.info("Using keystore password as bytes for secret key");
             byte[] password = getKeyStorePassword().getBytes(Charset.defaultCharset());
             for (int i = 0; i < byteSize; i++) {
                 bytes[i] = password[i < password.length ? i : password.length - 1];
