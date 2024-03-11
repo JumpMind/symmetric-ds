@@ -35,8 +35,6 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.embedded.jetty.JettyServerCustomizer;
 import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
@@ -46,7 +44,6 @@ import jakarta.servlet.ServletContext;
 
 @Component
 public class JettyCustomizer implements WebServerFactoryCustomizer<JettyServletWebServerFactory>, JettyServerCustomizer {
-    private static final Logger log = LoggerFactory.getLogger(JettyCustomizer.class);
     protected WebAppContext webapp;
 
     @Override
@@ -109,32 +106,9 @@ public class JettyCustomizer implements WebServerFactoryCustomizer<JettyServletW
                 webapp.setParentLoaderPriority(true);
             }
         }
-        Class<?> remoteStatusEndpoint = loadRemoteStatusEndpoint();
-        if (remoteStatusEndpoint != null) {
-            // TODO: get websockets to work
-            /*
-             * ServletContextHandler handler = new ServletContextHandler(server, "/control"); JakartaWebSocketServletContainerInitializer.configure(handler,
-             * (servletContext, container) -> { container.setDefaultMaxBinaryMessageBufferSize(Integer.MAX_VALUE);
-             * container.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE); //container.addEndpoint(remoteStatusEndpoint);
-             * container.addEndpoint(ServerEndpointConfig.Builder.create(remoteStatusEndpoint, "/control") .subprotocols(List.of("my-ws-protocol")).build());
-             * }); server.setHandler(handler);
-             */
-            if (sysProps.is(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS)) {
-                System.setProperty("org.eclipse.jetty.websocket.jsr356.ssl-trust-all", Boolean.toString(true));
-            }
+        if (sysProps.is(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS)) {
+            System.setProperty("org.eclipse.jetty.websocket.jsr356.ssl-trust-all", Boolean.toString(true));
         }
-    }
-
-    protected Class<?> loadRemoteStatusEndpoint() {
-        try {
-            Class<?> clazz = Class.forName("com.jumpmind.symmetric.console.remote.ServerEndpoint");
-            return clazz;
-        } catch (ClassNotFoundException ex) {
-            // ServerEndpoint not found. This is an expected condition.
-        } catch (Exception ex) {
-            log.debug("Failed to load remote status endpoint.", ex);
-        }
-        return null;
     }
 
     public ServletContext getServletContext() {
