@@ -29,7 +29,7 @@ apply from: symAssembleDir + '/common.gradle'
         testImplementation "jdbc.informix:ifxlang:1.0"
         testImplementation "jdbc.interbase:interclient:13.2.0"
         testImplementation "org.mariadb.jdbc:mariadb-java-client:2.7.5"
-        testImplementation "com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre8"
+        testImplementation "com.microsoft.sqlserver:mssql-jdbc:12.6.1.jre8"
         testImplementation "jdbc.nuodb:nuodb-jdbc:3.3.1"
         testImplementation "jdbc.tibero:tibero:6"
         testImplementation "org.voltdb:voltdbclient:8.4.1"
