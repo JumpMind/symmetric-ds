@@ -662,8 +662,10 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                                     newIndex.addColumn(indexColumn);
                                 }
                                 // Make sure to add the platform index info to the new non-unique index
-                                for (PlatformIndex platformIndex : index.getPlatformIndexes().values()) {
-                                    newIndex.addPlatformIndex(platformIndex);
+                                if (index.getPlatformIndexes() != null) {
+	                                for (PlatformIndex platformIndex : index.getPlatformIndexes().values()) {
+	                                    newIndex.addPlatformIndex(platformIndex);
+	                                }
                                 }
                                 table.addIndex(newIndex);
                             }
