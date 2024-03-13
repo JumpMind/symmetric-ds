@@ -382,6 +382,7 @@ final public class ParameterConstants {
     public final static String MSSQL_BULK_LOAD_FIELD_TERMINATOR = "mssql.bulk.load.field.terminator";
     public final static String MSSQL_BULK_LOAD_USE_BCP = "mssql.bulk.load.use.bcp";
     public final static String MSSQL_BULK_LOAD_BCP_CMD = "mssql.bulk.load.bcp.cmd";
+    public final static String MSSQL_BULK_LOAD_BCP_USE_INSTANCE = "mssql.bulk.load.bcp.use.instance";
     public final static String MSSQL_USE_SNAPSHOT_ISOLATION = "mssql.use.snapshot.isolation";
     public final static String DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC = "sybase.ase.convert.unitypes.for.sync";
     public final static String SYBASE_ROW_LEVEL_LOCKS_ONLY = "sybase.allow.only.row.level.locks.on.runtime.tables";
