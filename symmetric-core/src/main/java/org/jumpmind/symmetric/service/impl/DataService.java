@@ -1418,7 +1418,7 @@ public class DataService extends AbstractService implements IDataService {
                     }
                     // Check the delete flag on the specific table reload request
                     if (triggerRouter.getInitialLoadOrder() > -1
-                            && currentRequest.isDeleteFirst()
+                            && (currentRequest == null || currentRequest.isDeleteFirst())
                             && engine.getGroupletService().isTargetEnabled(triggerRouter,
                                     targetNode)) {
                         insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory,
