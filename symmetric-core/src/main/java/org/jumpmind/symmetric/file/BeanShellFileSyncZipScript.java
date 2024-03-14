@@ -125,10 +125,26 @@ public class BeanShellFileSyncZipScript extends FileSyncZipScript {
                         }
                     }
                     command.append("  if (processFile) {\n");
-                    command.append("    if (sourceFile.isDirectory()) {\n");
-                    command.append("      org.apache.commons.io.FileUtils.copyDirectory(sourceFile, targetFile, true);\n");
-                    command.append("    } else {\n");
-                    command.append("      org.apache.commons.io.FileUtils.copyFile(sourceFile, targetFile, true);\n");
+                    command.append("    try {\n");
+                    command.append("      if (sourceFile.isDirectory()) {\n");
+                    command.append("        org.apache.commons.io.FileUtils.copyDirectory(sourceFile, targetFile, true);\n");
+                    command.append("      } else {\n");
+                    command.append("        org.apache.commons.io.FileUtils.copyFile(sourceFile, targetFile, true);\n");
+                    command.append("      }\n");
+                    command.append("    } catch (java.lang.IllegalArgumentException e) {\n");
+                    command.append("      String errorDir = batchDir.toString();\n");
+                    command.append("      errorDir = errorDir.substring(0, errorDir.lastIndexOf('/')) + \"-error/\";\n");
+                    if (!snapshot.getRelativeDir().equals(".")) {
+                        command.append("      errorDir += sourceFilePath + \"/\";\n");
+                    }
+                    command.append(
+                            "      log.error(\"File '\" + targetFile + \"' is not writable. It will be placed in the '\" + errorDir + \"' directory.\");\n");
+                    command.append("      java.io.File errorFile = new java.io.File(errorDir + sourceFileName);\n");
+                    command.append("      if (sourceFile.isDirectory()) {\n");
+                    command.append("        org.apache.commons.io.FileUtils.copyDirectory(sourceFile, errorFile, true);\n");
+                    command.append("      } else {\n");
+                    command.append("        org.apache.commons.io.FileUtils.copyFile(sourceFile, errorFile, true);\n");
+                    command.append("      }\n");
                     command.append("    }\n");
                     command.append("  }\n");
                     command.append("  fileList.put(").append(targetFile)
