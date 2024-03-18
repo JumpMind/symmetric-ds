@@ -266,6 +266,12 @@ public class SnapshotUtil {
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_TABLE_RELOAD_REQUEST));
         extract(export, new File(tmpDir, "sym_table_reload_status.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_TABLE_RELOAD_STATUS));
+        extract(export, new File(tmpDir, "sym_compare_request.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_COMPARE_REQUEST));
+        extract(export, new File(tmpDir, "sym_compare_status.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_COMPARE_STATUS));
+        extract(export, new File(tmpDir, "sym_compare_table_status.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_COMPARE_TABLE_STATUS));
         extract(export, 5000, "order by relative_dir, file_name", new File(tmpDir, "sym_file_snapshot.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
         export.setIgnoreMissingTables(true);
@@ -279,6 +285,8 @@ public class SnapshotUtil {
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_CONTEXT));
         extract(export, 10000, "order by start_time desc", new File(tmpDir, "sym_node_host_channel_stats.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST_CHANNEL_STATS));
+        extract(export, 10000, "order by start_time desc", new File(tmpDir, "sym_node_host_stats.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST_STATS));
         extract(export, new File(tmpDir, "sym_registration_request.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_REGISTRATION_REQUEST));
         try {
