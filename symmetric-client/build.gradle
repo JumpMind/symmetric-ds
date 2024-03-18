@@ -14,7 +14,7 @@ apply from: symAssembleDir + '/common.gradle'
         api "org.jdom:jdom2:$jdomVersion"
 
         provided "com.h2database:h2:$h2Version"
-        provided ("mysql:mysql-connector-java:$mysqlVersion") {
+        provided ("com.mysql:mysql-connector-j:$mysqlVersion") {
             exclude group: "com.google.protobuf"
         }
         provided "org.postgresql:postgresql:$postgresqlVersion"

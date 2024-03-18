@@ -22,7 +22,7 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         provided "javax.jms:jms-api:1.1-rev-1"
         
         provided "com.h2database:h2:$h2Version"
-        provided ("mysql:mysql-connector-java:$mysqlVersion") {
+        provided ("com.mysql:mysql-connector-j:$mysqlVersion") {
             exclude group: "com.google.protobuf"
         }
         provided "org.postgresql:postgresql:$postgresqlVersion"
