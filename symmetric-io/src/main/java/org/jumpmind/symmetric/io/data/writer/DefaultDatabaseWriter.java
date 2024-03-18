@@ -756,12 +756,13 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         throw ex;
                     }
                 } catch (SqlException ex) {
+                    log.info("Attempting to correct SQL statement failure", ex);
                     if (platform.getSqlTemplate().doesObjectAlreadyExist(ex)) {
                         String massagedSql = platform.massageForObjectAlreadyExists(sql);
                         if (!sql.equals(massagedSql)) {
                             if (massagedSql.contains("alter")) {
                                 log.info("Changing the following sql to an alter because the created object already exists: {}", sql);
-                            } else if (massagedSql.contains("create or replace")) {
+                            } else if (massagedSql.contains("create or replace") || massagedSql.contains("create or alter")) {
                                 log.info("Changing the following sql to a create or replace because the created object already exists: {}", sql);
                             } else if (massagedSql.startsWith("drop")) {
                                 log.info("Dropping the object before running the following sql because the created object already exists: {}", sql);
