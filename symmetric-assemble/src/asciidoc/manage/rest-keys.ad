@@ -1,7 +1,7 @@
 
 === Rest Keys
 
-Rest API keys must be set up in order to access the REST API. Attempting to access the REST API without a key will result in HTTP error code 403 (forbidden). When a new key is created, it will only be displayed once, so be sure to copy it and save it for future use.
+Rest API keys must be set up in order to access the REST API. Attempting to access the REST API without a key will result in HTTP error code 659 (forbidden). When a new key is created, it will only be displayed once, so be sure to copy it and save it for future use.
 
 The following is an example of how to include the key in a `curl` command:
 
