@@ -13,7 +13,7 @@ apply from: symAssembleDir + '/common.gradle'
 
         testImplementation project(path: ':symmetric-util', configuration: 'testArtifacts')
         testImplementation "com.h2database:h2:$h2Version"
-        testImplementation "mysql:mysql-connector-java:$mysqlVersion"
+        testImplementation "com.mysql:mysql-connector-j:$mysqlVersion"
         testImplementation "org.postgresql:postgresql:$postgresqlVersion"
         testImplementation 'com.oracle.database.jdbc:ojdbc11:23.2.0.0'
 
