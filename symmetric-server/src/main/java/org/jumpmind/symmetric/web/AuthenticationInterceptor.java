@@ -162,7 +162,7 @@ public class AuthenticationInterceptor implements IInterceptor {
         return session;
     }
 
-    protected void removeOldSessions() {
+    protected synchronized void removeOldSessions() {
         long now = System.currentTimeMillis();
         int removedSessions = 0;
         AuthenticationSession oldestSession = null;
