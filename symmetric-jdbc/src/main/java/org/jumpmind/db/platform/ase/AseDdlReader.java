@@ -391,9 +391,14 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
 
     @Override
     protected StringBuilder appendColumn(StringBuilder query, String identifier) {
-        query.append("\"");
+        boolean useQuote = identifier != null && identifier.length() <= platform.getDatabaseInfo().getMaxColumnNameLength() - 2;
+        if (useQuote) {
+            query.append("\"");
+        }
         query.append(identifier);
-        query.append("\"");
+        if (useQuote) {
+            query.append("\"");
+        }
         return query;
     }
 
