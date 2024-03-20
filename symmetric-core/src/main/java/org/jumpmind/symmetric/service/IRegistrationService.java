@@ -89,6 +89,8 @@ public interface IRegistrationService {
      */
     public void reOpenRegistration(String nodeId);
 
+    public void reOpenRegistration(String nodeId, boolean forceNewPassword);
+
     /**
      * Mark the passed in node as registered in node_security
      * 
