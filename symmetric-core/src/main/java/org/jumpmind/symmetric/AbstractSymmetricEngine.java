@@ -750,7 +750,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                             nodeSecurity.setNodePassword(password);
                             nodeService.updateNodeSecurity(nodeSecurity);
                         } else {
-                            registrationService.reOpenRegistration(nodeSecurity.getNodeId());
+                            registrationService.reOpenRegistration(nodeSecurity.getNodeId(), true);
                         }
                     }
                 } else {
