@@ -126,6 +126,8 @@ public class AuthenticationInterceptor implements IInterceptor {
         } else {
             if (status == AuthenticationStatus.LOCKED) {
                 log.warn("Node '{}' failed to authenticate.  It had too many login attempts", nodeId);
+            } else if (status == AuthenticationStatus.FAILED_DECRYPT) {
+                log.warn("Node '{}' failed to authenticate.  Failed to decrypt node password", nodeId);
             } else {
                 log.warn("Node '{}' failed to authenticate.  It had the wrong password", nodeId);
                 nodeService.incrementNodeFailedLogins(nodeId);

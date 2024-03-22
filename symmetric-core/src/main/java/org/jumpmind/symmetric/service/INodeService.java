@@ -41,7 +41,7 @@ import org.jumpmind.symmetric.model.NodeStatus;
  */
 public interface INodeService {
     public enum AuthenticationStatus {
-        SYNC_DISABLED, REGISTRATION_REQUIRED, FORBIDDEN, ACCEPTED, LOCKED;
+        SYNC_DISABLED, REGISTRATION_REQUIRED, FORBIDDEN, ACCEPTED, LOCKED, FAILED_DECRYPT;
     };
 
     public Node findNode(String nodeId);
