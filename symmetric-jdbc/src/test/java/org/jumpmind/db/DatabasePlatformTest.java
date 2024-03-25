@@ -207,6 +207,13 @@ public class DatabasePlatformTest {
             table.getColumnWithName("NOTES").setTypeCode(Types.VARCHAR);
             table.getColumnWithName("NOTES").setSize("100");
             Table tableFromDatabase = dropCreateAndThenReadTable(table);
+            ISqlTransaction transaction = null;
+            ISqlTemplate template = platform.getSqlTemplate();
+            transaction = template.startSqlTransaction();
+            transaction.execute("CREATE SEQUENCE TEST_UPGRADE_ID_SEQ START WITH 1 INCREMENT BY 1;");
+            transaction.execute("CALL NEXTVAL('TEST_UPGRADE_ID_SEQ')");
+            transaction.commit();
+            transaction.close();
             assertNotNull(tableFromDatabase);
             assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
             String insertSql = "insert into \"TEST_UPGRADE\" (\"ID\",\"NOTES\") values(null,?)";
@@ -222,6 +229,10 @@ public class DatabasePlatformTest {
             tableFromDatabase = platform.getTableFromCache(table.getName(), true);
             assertEquals(Types.BIGINT, table.getColumnWithName("ID").getMappedTypeCode());
             assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
+            transaction = template.startSqlTransaction();
+            transaction.execute("CALL NEXTVAL('TEST_UPGRADE_ID_SEQ')");
+            transaction.commit();
+            transaction.close();
             long id2 = platform.getSqlTemplate()
                     .insertWithGeneratedKey(insertSql, "ID", getSequenceName(platform),
                             new Object[] { "test" }, new int[] { Types.VARCHAR });
