@@ -133,6 +133,7 @@ public class FileSyncTest extends AbstractTest {
         File serverFile = new File(pingbackServerDir, "ping.txt");
         assertFalse(serverFile.exists());
         assertFalse("Should not have pulled any files", pullFiles());
+        getWebServer("client").getEngine().getFileSyncService().trackChanges(true);
         File clientFile = new File(pingbackClientDir, "ping.txt");
         FileUtils.write(clientFile, "test", Charset.defaultCharset(), false);
         assertTrue(pushFiles());
@@ -260,6 +261,7 @@ public class FileSyncTest extends AbstractTest {
         fileTriggerRouter.setConflictStrategy(FileConflictStrategy.MANUAL);
         fileSyncService.saveFileTriggerRouter(fileTriggerRouter);
         pull("client");
+        trackChangesOnServer();
         File allFile1 = new File(allSvrSourceDir, "manual/test.txt");
         allFile1.getParentFile().mkdirs();
         FileUtils.write(allFile1, "server value", Charset.defaultCharset(), false);
@@ -300,6 +302,7 @@ public class FileSyncTest extends AbstractTest {
         fileTriggerRouter.setConflictStrategy(FileConflictStrategy.MANUAL);
         fileSyncService.saveFileTriggerRouter(fileTriggerRouter);
         pull("client");
+        trackChangesOnServer();
         File allFile1 = new File(allSvrSourceDir, "manual/test2.txt");
         allFile1.getParentFile().mkdirs();
         FileUtils.write(allFile1, "base value", Charset.defaultCharset(), false);
