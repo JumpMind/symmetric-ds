@@ -117,7 +117,8 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
             for (int i = 0; i < 10; i++) {
                 try {
                     Thread.sleep(500l);
-                } catch (InterruptedException e) {}
+                } catch (InterruptedException e) {
+                }
                 ListIterator<ProcessInfo> iterator = infosToWaitFor.listIterator();
                 while (iterator.hasNext()) {
                     ProcessInfo p = iterator.next();

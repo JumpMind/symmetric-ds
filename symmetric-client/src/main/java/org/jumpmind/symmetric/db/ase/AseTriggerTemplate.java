@@ -38,6 +38,7 @@ import org.jumpmind.util.FormatUtils;
 
 public class AseTriggerTemplate extends AbstractTriggerTemplate {
     private int pagesize;
+
     public AseTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         pagesize = ((AseSymmetricDialect) symmetricDialect).getPageSize();

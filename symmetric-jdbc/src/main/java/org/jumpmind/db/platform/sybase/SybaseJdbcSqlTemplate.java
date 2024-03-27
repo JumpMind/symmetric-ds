@@ -58,8 +58,8 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
         try {
             c = dataSource.getConnection();
             jdbcMajorVersion = c.getMetaData().getJDBCMajorVersion();
-            if(dataSource.getConnection().getMetaData().getURL().contains("jtds")) {
-            	isUsingJtds = true;
+            if (dataSource.getConnection().getMetaData().getURL().contains("jtds")) {
+                isUsingJtds = true;
             }
         } catch (SQLException ex) {
             jdbcMajorVersion = -1;
@@ -176,13 +176,13 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
     }
 
     public boolean supportsGetGeneratedKeys() {
-    	//needs to return true for jtds
-    	if(jdbcMajorVersion >=4 || isUsingJtds) {
-    		return true;
-    	} else {
-    		return false;
-    	}
-//        return jdbcMajorVersion >= 4;
+        // needs to return true for jtds
+        if (jdbcMajorVersion >= 4 || isUsingJtds) {
+            return true;
+        } else {
+            return false;
+        }
+        // return jdbcMajorVersion >= 4;
     }
 
     protected String getSelectLastInsertIdSql(String sequenceName) {

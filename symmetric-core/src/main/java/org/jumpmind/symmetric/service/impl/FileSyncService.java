@@ -889,15 +889,9 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                     }
                     lastBatchesProcessed = status.getBatchesProcessed() - cumulativeBatchesProcessed;
                     cumulativeBatchesProcessed = status.getBatchesProcessed();
-                } while (
-                        (!status.failed()) &&
-                        (
-                            (
-                                    (isFilePull && immediatePullIfDataFound) || (isFilePush && immediatePushIfDataFound)
-                            )
-                            && lastBatchesProcessed > 0
-                        )
-                    );
+                } while ((!status.failed()) &&
+                        (((isFilePull && immediatePullIfDataFound) || (isFilePush && immediatePushIfDataFound))
+                                && lastBatchesProcessed > 0));
             }
         }
     }

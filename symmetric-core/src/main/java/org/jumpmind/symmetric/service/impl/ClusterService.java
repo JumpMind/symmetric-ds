@@ -48,7 +48,6 @@ import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_EXCLUSIVE;
 import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_SHARED;
 import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
