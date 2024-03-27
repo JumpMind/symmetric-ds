@@ -51,6 +51,17 @@ allprojects {
         majorMinorVersion = version.substring(0, version.indexOf(".", version.indexOf(".")+ 1))
     }
     
+    sonar {
+		properties {
+			property "sonar.organization", "jumpmind"
+		    property "sonar.host.url", "https://sonarcloud.io"
+		    property "sonar.projectKey", "JumpMind_SymmetricDS_Pro"
+	        property 'sonar.coverage.jacoco.xmlReportPaths', "${rootDir}/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml"
+	     	property "sonar.coverage.exclusions", "**/*.ad, **/*.js, **/*.c"
+	    	property "sonar.scm.disabled", "true"    
+		}
+	}
+    
 }
 
 def ignoreDerivedResources(projectDescription, directories = ["build", "test-output"]) {
@@ -312,7 +323,7 @@ subprojects { subproject ->
         bouncyCastleVersion = '1.75'
         animalSnifferVersion = '1.21'
         jnaVersion = '5.13.0'
-        jettyVersion = '11.0.20'
+        jettyVersion = '11.0.19'
         websocketVersion = '2.1.0'
         env = System.getenv()
     }

@@ -91,7 +91,9 @@ subprojects {
     sonar {
         properties {
             property 'sonar.coverage.jacoco.xmlReportPaths', "${rootDir}/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml"
-            property 'sonar.exclusions',"**/*.js"
+       		//this could be set to sonar.coverage.exclusions as that only excludes these files from coverage
+       		property "sonar.coverage.exclusions", "**/*.ad, **/*.js, **/*.c"
+			property "sonar.scm.disabled", "true"    
         }
     }
     tasks.withType(Test).configureEach {
@@ -114,8 +116,8 @@ jacoco {
 task codeCoverageReport(type: JacocoReport) {
 
     // Gather execution data from all subprojects
-    executionData fileTree(project.rootDir.parentFile.path).include("**/jacoco/*.exec")
-    subprojects.each {
+    executionData fileTree(project.rootDir.parentFile.parentFile.path).include("**/jacoco/*.exec")
+    allprojects.each {
         sourceSets it.sourceSets.main
     }
 	//controls what reports are generated. XML is needed for sonarqube to run. HTML is for a human readable option to check things
@@ -127,24 +129,6 @@ task codeCoverageReport(type: JacocoReport) {
     }
 }
 
-
-//This controls what tests are run. If you only want unit test comment out subprojects*.integrationTest
-//codeCoverageReport.dependsOn {
-//    subprojects.test
-//    subprojects.integrationTest
-//}
-
-//sets sonarqube parameters
-sonar {
-    properties {
-        property "sonar.verbose", true
-        property "sonar.projectKey", "JumpMind_symmetric-ds"
-	    property "sonar.organization", "jumpmind"
-	    property "sonar.host.url", "https://sonarcloud.io"
-        property "sonar.coverage.jacoco.xmlReportPaths", "${rootDir}/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml"
-        property "sonar.exclusions", "**/*.ad, **/*.js"
-    }
-}
 
 //forces sonar to require codeCoverageReport which runs all of the tests
 tasks['sonar'].with {
