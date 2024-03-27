@@ -512,6 +512,11 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
                 sqlType = "DOUBLE";
             }
         }
-        return sqlType;
+       
+    	if (sqlType.contains("UNSIGNED")) {
+    		sqlType = sqlType.replaceAll(" UNSIGNED", "");
+    		sqlType = sqlType + " UNSIGNED";
+    	} 
+    	return sqlType;
     }
 }
