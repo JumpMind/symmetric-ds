@@ -1,0 +1,31 @@
+[id="Time-based",reftext="Time-based"]
+=== Time-based
+
+In a time-based replication mode setup the changes are ready in by selecting data out of the source based on a schedule.  This setup is generally used when read only access is all that is available from the source and a trigger-based or log-based approach is not an option.
+
+*Overview*
+
+* Read only access is much easier to achieve on a data source.
+* Less performance impact on application users of the source as data is only selected out of the source system.
+
+*More to Consider*
+
+* Tables to configure as sources must have one of two features.
+	** A timestamp column to be used as a last update column that will be used to select data with each job execution.
+	** A single primary key column that is numeric to be used to select newly inserted data with each job execution.
+* Deletes will not be captured in this approach.
+* Old data will not be captured in this approach.
+* For tables setup based on a numeric primary key only inserts will be captured not updates.
+
+==== Setup
+
+* Use the Add Table wizard to select tables for replication.
+* After tables are selected on a time-based node the following screen will be available to configure the appropriate columns to use as part of the replication.
+
+image::images/appendix/mode-time-based-tables.png[]
+
+* Once tables are selected the changes will be detected as part of the log miner job and the schedule for this job can be configured on the configure jobs screen to run as frequently as needed.
+
+====
+NOTE: Columns selected for time-based can be either a Timestamp column or a numeric column that represents the single PK column on the table.
+====

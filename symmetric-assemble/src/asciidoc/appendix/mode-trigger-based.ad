@@ -1,0 +1,22 @@
+[id="Trigger-based",reftext="Trigger-based"]
+=== Trigger-based
+
+In a trigger-based replication mode application tables are monitered for changes by creating insert, update, and delete triggers on all configured tables.  As changes occur on these tables the triggers will capture the row data and old data for the change which will be used as the starting point in the SymmetricDS replication workflow.
+
+
+*Overview*
+
+* Supported on a wide variety of ANSI SQL databases
+* Transactional guarantee that data as changes are committed triggers capture.
+* Changes will be captured even if SymmetricDS is not running (outage, maintenance etc).
+* Less threat of data loss as long as the database is scaled to grow as more data is collected.
+* Old data can also be captured and used in the replication workflow.
+* Triggers are maintained by SymmetricDS and requires no user interaction.
+* Nightly job to verify triggers are in place and rebuilt if table structure changes (SyncTriggers job, scheduling can be configured).
+* Will work with existing triggers on tables as long as database supports multiple triggers on a table.  SymmetricDS triggers are designed to fire last after all other triggers to ensure the final state of the data is captured.
+
+*More to Consider*
+
+* Requires alter permission to replicated tables so triggers can be installed.
+* Requires SymmetricDS runtime tables to present in the same installation and available for the triggers to write changes.
+* Incurs an additional insert into the SYM_DATA capture table with each DML.

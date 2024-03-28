@@ -2,12 +2,12 @@
 == Setup
 
 ifndef::pro[]
-The first node created is called the Master Node.  The master node is where configuration is managed.  Other nodes typically register with the 
-master node to get their initial configuration.  After nodes are registered, additional configuration changes made at the master node
+The first node created is called the Primary Node.  The primary node is where configuration is managed.  Other nodes typically register with the 
+master node to get their initial configuration.  After nodes are registered, additional configuration changes made at the primary node
 are synchronized to the registered nodes automatically.
 
 All nodes require a properties file that contains identity information and database connection information.  SymmetricDS configuration needs to be inserted via 
-a SQL script at the master node.
+a SQL script at the primary node.
 endif::pro[]
 
 ifdef::pro[]

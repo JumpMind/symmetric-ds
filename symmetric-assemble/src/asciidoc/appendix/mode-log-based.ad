@@ -1,0 +1,19 @@
+[id="Log-based",reftext="Log-based"]
+=== Log-based
+
+In a log-based replication mode application the transactional logs are used to read changes to start the SymmetricDS replication workflow.  The implementation varies from vendor to vendor on how the logs are setup and how they are read.
+
+====
+NOTE: Additional log mining details can be found in Appendix C under each database that supports it.
+====
+
+*Overview*
+
+* Potentially low or no overhead on the existing database.
+* No need for alterations to an existing database structure
+
+*More to Consider*
+
+* Requires that the transactional logging is turned on and available to the SymmetricDS user.
+* Old data is not available and would not be available to drive business decisions in the replication workflow.
+* If logs roll over before SymmetricDS can read from them there is a potential loss of data
