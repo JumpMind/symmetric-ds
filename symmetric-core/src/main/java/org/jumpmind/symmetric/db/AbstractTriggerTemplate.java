@@ -115,7 +115,7 @@ abstract public class AbstractTriggerTemplate {
                 return true;
             }
             String typeName = column.getJdbcTypeName();
-            if (typeName.equalsIgnoreCase("unichar") || typeName.equalsIgnoreCase("univarchar") || typeName.equalsIgnoreCase("unitext")) {
+            if (typeName != null && (typeName.equalsIgnoreCase("unichar") || typeName.equalsIgnoreCase("univarchar") || typeName.equalsIgnoreCase("unitext"))) {
                 return true;
             }
             int type = column.getJdbcTypeCode();
