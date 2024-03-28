@@ -32,7 +32,7 @@ public interface INodePasswordFilter extends IExtensionPoint {
      * @param password
      *            - The password being saved
      */
-    public String onNodeSecuritySave(String password);
+    public String onNodeSecuritySave(String password, String nodeId);
 
     /**
      * Called on when the password has been selected from the DB.
@@ -40,5 +40,5 @@ public interface INodePasswordFilter extends IExtensionPoint {
      * @param password
      *            - The password to be used
      */
-    public String onNodeSecurityRender(String password);
+    public String onNodeSecurityRender(String password, String nodeId);
 }

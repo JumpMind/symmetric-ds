@@ -80,6 +80,9 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         sqlScriptReplacementTokens.put("current_timestamp", "getdate()");
         this.useMultiThreadSyncTriggers = false;
+        if (getSqlTemplate().getDatabaseMajorVersion() <= 12) {
+            ddlBuilder.getDatabaseInfo().setMaxIdentifierLength(30);
+        }
     }
 
     @Override

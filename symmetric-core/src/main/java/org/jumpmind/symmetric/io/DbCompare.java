@@ -187,9 +187,8 @@ public class DbCompare {
                     Map<Column, String> deltas = sourceCompareRow.compareTo(tables, targetCompareRow);
                     Map<Column, String> deltasCopy = new LinkedHashMap<Column, String>();
                     for (Column column : deltas.keySet()) {
-                        deltasCopy.put((Column)column.clone(), deltas.get(column));
+                        deltasCopy.put((Column) column.clone(), deltas.get(column));
                     }
-
                     if (deltas.isEmpty()) {
                         tableReport.countMatchedRow();
                     } else {
@@ -283,49 +282,47 @@ public class DbCompare {
         return sql;
     }
 
-	protected String getComparisonSQL(Table table, Column[] sortByColumns, IDatabasePlatform platform,
-			String whereClause, boolean isSource) {
-		
-		DmlStatement statement = platform.createDmlStatement(DmlType.SELECT, table.getCatalog(), table.getSchema(),
-				table.getName(), null, table.getColumns(), null, null);
-		StringBuilder sql = new StringBuilder(statement.getSql());
-		String sybaseUnitypeConversions = statement.getSql();
-		boolean isUsingUnitypes = false;
-		if (platform.getSqlTemplate().toString().contains("ase")) {
-			if (isSource) {
-				ISymmetricDialect symmetricDialect = sourceEngine.getSymmetricDialect();
-				isUsingUnitypes = symmetricDialect.getParameterService()
-						.is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC);
-			} else {
-				ISymmetricDialect symmetricDialect = targetEngine.getSymmetricDialect();
-				isUsingUnitypes = symmetricDialect.getParameterService()
-						.is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC);
-			}
-			if (isUsingUnitypes) {
-				for(Column column : statement.getColumns()) {
-					if(column.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-							column.getJdbcTypeName().equalsIgnoreCase("univarchar") || 
-							column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
-						sybaseUnitypeConversions = sybaseUnitypeConversions.replace(column.getName() + ",","case when " + column.getName() + " is null then null else '\"' +\n"
-								+ "	bintostr(convert(varbinary(16384),"+column.getName()+")) + '\"' end as " +column.getName() + "," );
-						
-					}
-				}
-				
-			}
-		}
-		StringBuilder finalSql = null;
-		if(isUsingUnitypes) {
-			 finalSql = new StringBuilder(sybaseUnitypeConversions.toString());
-		} else {
-			 finalSql = new StringBuilder(sql.toString());
-		}
-		finalSql.setLength(finalSql.length() - "where ".length()); // remove the trailing where so we can insert a table alias.
-		finalSql.append(" t where "); // main table alias.
-		finalSql.append(whereClause).append(" ");
-		finalSql.append(buildOrderBy(table, sortByColumns, platform, isSource));
-		return finalSql.toString();
-	}
+    protected String getComparisonSQL(Table table, Column[] sortByColumns, IDatabasePlatform platform,
+            String whereClause, boolean isSource) {
+        DmlStatement statement = platform.createDmlStatement(DmlType.SELECT, table.getCatalog(), table.getSchema(),
+                table.getName(), null, table.getColumns(), null, null);
+        StringBuilder sql = new StringBuilder(statement.getSql());
+        String sybaseUnitypeConversions = statement.getSql();
+        boolean isUsingUnitypes = false;
+        if (platform.getSqlTemplate().toString().contains("ase")) {
+            if (isSource) {
+                ISymmetricDialect symmetricDialect = sourceEngine.getSymmetricDialect();
+                isUsingUnitypes = symmetricDialect.getParameterService()
+                        .is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC);
+            } else {
+                ISymmetricDialect symmetricDialect = targetEngine.getSymmetricDialect();
+                isUsingUnitypes = symmetricDialect.getParameterService()
+                        .is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC);
+            }
+            if (isUsingUnitypes) {
+                for (Column column : statement.getColumns()) {
+                    if (column.getJdbcTypeName().equalsIgnoreCase("unichar") ||
+                            column.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+                            column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                        sybaseUnitypeConversions = sybaseUnitypeConversions.replace(column.getName() + ",", "case when " + column.getName()
+                                + " is null then null else '\"' +\n"
+                                + "	bintostr(convert(varbinary(16384)," + column.getName() + ")) + '\"' end as " + column.getName() + ",");
+                    }
+                }
+            }
+        }
+        StringBuilder finalSql = null;
+        if (isUsingUnitypes) {
+            finalSql = new StringBuilder(sybaseUnitypeConversions.toString());
+        } else {
+            finalSql = new StringBuilder(sql.toString());
+        }
+        finalSql.setLength(finalSql.length() - "where ".length()); // remove the trailing where so we can insert a table alias.
+        finalSql.append(" t where "); // main table alias.
+        finalSql.append(whereClause).append(" ");
+        finalSql.append(buildOrderBy(table, sortByColumns, platform, isSource));
+        return finalSql.toString();
+    }
 
     protected String buildOrderBy(Table table, Column[] sortByColumns, IDatabasePlatform platform, boolean isSource) {
         DatabaseInfo databaseInfo = platform.getDatabaseInfo();

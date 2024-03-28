@@ -1920,8 +1920,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 ts = System.currentTimeMillis();
                 List<TriggerHistory> activeTriggerHistories = getActiveTriggerHistories();
                 context.incrementActiveTriggerHistoriesTime(System.currentTimeMillis() - ts);
-                Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(triggersForCurrentNode,
-                        activeTriggerHistories, false, context);
                 Map<Trigger, Table> triggersToProcess = new HashMap<Trigger, Table>();
                 for (Table table : tables) {
                     IDatabasePlatform targetPlatform = symmetricDialect.getTargetPlatform(table.getName());
@@ -1933,6 +1931,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         }
                     }
                 }
+                Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(
+                        new ArrayList<Trigger>(triggersToProcess.keySet()), activeTriggerHistories, false, context);
                 if (triggersToProcess.size() > 0) {
                     context.incrementTriggersToSyncCount(triggersToProcess.size());
                     for (Map.Entry<Trigger, Table> entry : triggersToProcess.entrySet()) {
@@ -1941,7 +1941,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         List<TriggerTableSupportingInfo> triggerTableSupportingInfoList = triggerToTableSupportingInfo.get(trigger.getTriggerId());
                         TriggerTableSupportingInfo triggerTableSupportingInfo = null;
                         for (TriggerTableSupportingInfo t : triggerTableSupportingInfoList) {
-                            if (t.getTable().getFullyQualifiedTableName().equals(table.getFullyQualifiedTableName())) {
+                            if (getFullyQualifiedTableName(t.getTable()).equals(getFullyQualifiedTableName(table))) {
                                 triggerTableSupportingInfo = t;
                                 break;
                             }
@@ -1976,6 +1976,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         }
         return false;
+    }
+
+    protected String getFullyQualifiedTableName(Table table) {
+        IDatabasePlatform targetPlatform = symmetricDialect.getTargetPlatform(table.getName());
+        String catalog = StringUtils.isNotBlank(table.getCatalog()) ? table.getCatalog() : targetPlatform.getDefaultCatalog();
+        String schema = StringUtils.isNotBlank(table.getSchema()) ? table.getSchema() : targetPlatform.getDefaultSchema();
+        return Table.getFullyQualifiedTableName(catalog, schema, table.getName());
     }
 
     protected void updateOrCreateDdlTriggers(StringBuilder sqlBuffer) {
@@ -2295,9 +2302,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             if (channel == null) {
                 log.warn("Trigger '{}' has a channel of '{}' not found in sym_channel table", trigger.getTriggerId(), trigger.getChannelId());
             }
-        }
-        if (table.getName().equalsIgnoreCase("sym_node")) {
-            System.out.println("Here1");
         }
         trigger.setSyncOnIncomingBatch(trigger.isSyncOnIncomingBatch() && !configurationService.isMasterToMaster());
         try {
@@ -2832,10 +2836,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             triggerRouter.setInitialLoadOrder(rs.getInt("initial_load_order"));
             triggerRouter.setInitialLoadSelect(StringUtils.trimToNull(rs.getString("initial_load_select")));
             triggerRouter.setEnabled(rs.getBoolean("enabled"));
-            triggerRouter.setDataRefreshType(rs.getString("data_refresh_type"));
             triggerRouter.setInitialLoadDeleteStmt(StringUtils.trimToNull(rs.getString("initial_load_delete_stmt")));
             triggerRouter.setPingBackEnabled(rs.getBoolean("ping_back_enabled"));
-            triggerRouter.setDataRefreshType(rs.getString("data_refresh_type"));
+            if (rs.containsKey("data_refresh_type")) {
+                triggerRouter.setDataRefreshType(rs.getString("data_refresh_type"));
+            }
             return triggerRouter;
         }
     }

@@ -1418,7 +1418,7 @@ public class DataService extends AbstractService implements IDataService {
                     }
                     // Check the delete flag on the specific table reload request
                     if (triggerRouter.getInitialLoadOrder() > -1
-                            && currentRequest.isDeleteFirst()
+                            && (currentRequest == null || currentRequest.isDeleteFirst())
                             && engine.getGroupletService().isTargetEnabled(triggerRouter,
                                     targetNode)) {
                         insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory,
@@ -3560,7 +3560,7 @@ public class DataService extends AbstractService implements IDataService {
                     Object[] values = platform.getObjectValues(engine.getSymmetricDialect().getBinaryEncoding(), keys, table.getPrimaryKeyColumns());
                     Row row = new Row(keys.length);
                     String[] keyNames = table.getPrimaryKeyColumnNames();
-                    for (int i = 0; i < keyNames.length; i++) {
+                    for (int i = 0; i < keyNames.length && i < values.length; i++) {
                         row.put(keyNames[i], values[i]);
                     }
                     DmlStatement st = platform.createDmlStatement(DmlType.WHERE, hist.getSourceCatalogName(), hist.getSourceSchemaName(),

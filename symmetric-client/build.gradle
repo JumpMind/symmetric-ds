@@ -14,13 +14,13 @@ apply from: symAssembleDir + '/common.gradle'
         api "org.jdom:jdom2:$jdomVersion"
 
         provided "com.h2database:h2:$h2Version"
-        provided ("mysql:mysql-connector-java:$mysqlVersion") {
+        provided ("com.mysql:mysql-connector-j:$mysqlVersion") {
             exclude group: "com.google.protobuf"
         }
         provided "org.postgresql:postgresql:$postgresqlVersion"
         provided 'com.oracle.database.jdbc:ojdbc11:23.2.0.0'
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
-        provided "com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre8"
+        provided "com.microsoft.sqlserver:mssql-jdbc:$mssqlVersion"
 
         compileOnly "org.apache.derby:derby:$derbyVersion"
         compileOnly "org.hsqldb:hsqldb:$hsqldbVersion"

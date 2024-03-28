@@ -51,6 +51,17 @@ allprojects {
         majorMinorVersion = version.substring(0, version.indexOf(".", version.indexOf(".")+ 1))
     }
     
+    sonar {
+		properties {
+			property "sonar.organization", "jumpmind"
+		    property "sonar.host.url", "https://sonarcloud.io"
+		    property "sonar.projectKey", "JumpMind_SymmetricDS_Pro"
+	        property 'sonar.coverage.jacoco.xmlReportPaths', "${rootDir}/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml"
+	     	property "sonar.coverage.exclusions", "**/*.ad, **/*.js, **/*.c"
+	    	property "sonar.scm.disabled", "true"    
+		}
+	}
+    
 }
 
 def ignoreDerivedResources(projectDescription, directories = ["build", "test-output"]) {
@@ -288,9 +299,10 @@ subprojects { subproject ->
         hamcrestVersion = '1.3'
         h2Version = '2.1.214'
         derbyVersion = '10.14.2.0'
-        postgresqlVersion =  '42.5.1'
+        postgresqlVersion =  '42.5.6'
         hsqldbVersion = '2.5.1'
         sqliteVersion = '3.34.0'
+        mssqlVersion = '12.6.1.jre8'
         jakartaMailVersion = '2.0.2'
         jdomVersion = '2.0.6.1'
         jaxbVersion = '4.0.3'
@@ -303,7 +315,7 @@ subprojects { subproject ->
         slf4jVersion = '2.0.7'
         mockitoVersion = '4.4.0'
         powerMockVersion = '2.0.9'
-        mysqlVersion = '8.0.28'
+        mysqlVersion = '8.3.0'
         servletVersion = '4.0.1'
         springVersion = '6.1.4'
         springBootVersion = '3.1.8'

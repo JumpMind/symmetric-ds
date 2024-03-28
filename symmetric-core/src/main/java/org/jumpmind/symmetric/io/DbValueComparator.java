@@ -67,7 +67,7 @@ public class DbValueComparator {
             return 0;
         }
         if (sourceColumn.isOfTextType()) {
-            if(targetColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+            if (targetColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
                     targetColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
                     targetColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
                 targetValue = convertString(targetValue);
@@ -81,19 +81,19 @@ public class DbValueComparator {
             return compareDefault(sourceColumn, targetColumn, sourceValue, targetValue);
         }
     }
-    
+
     protected String convertString(String string) {
-    	String utf8String = null;
-    	 try {
-             string = new String(Hex.decodeHex(string));
-             if(string.contains("\"")) {
-                 string = string.substring(1,string.length()-1);
-             }
-             string = "fffe" + string;
-             utf8String = new String(Hex.decodeHex(string), "UTF-16");   
-         } catch (DecoderException | UnsupportedEncodingException e) {
-             e.printStackTrace();
-		}
+        String utf8String = null;
+        try {
+            string = new String(Hex.decodeHex(string));
+            if (string.contains("\"")) {
+                string = string.substring(1, string.length() - 1);
+            }
+            string = "fffe" + string;
+            utf8String = new String(Hex.decodeHex(string), "UTF-16");
+        } catch (DecoderException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         return utf8String;
     }
 

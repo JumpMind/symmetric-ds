@@ -166,7 +166,7 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     public String massageForObjectDoesNotExist(String sql) {
-        if (sql.toUpperCase().contains("ALTER TABLE")) {
+        if (sql.toUpperCase().contains("ALTER TABLE") || sql.toUpperCase().contains(" OR ALTER ")) {
             return sql;
         }
         return StringUtils.replaceOnceIgnoreCase(sql, "alter", "create");

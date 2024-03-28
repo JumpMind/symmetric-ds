@@ -685,20 +685,25 @@ public class RegistrationService extends AbstractService implements IRegistratio
      * @see IRegistrationService#reOpenRegistration(String)
      */
     public synchronized void reOpenRegistration(String nodeId) {
-        reOpenRegistration(nodeId, null, null, null, null);
+        reOpenRegistration(nodeId, null, null, null, null, false);
     }
 
-    protected synchronized void reOpenRegistration(String nodeId, String remoteHost, String remoteAddress, Date notBefore, Date notAfter) {
+    public synchronized void reOpenRegistration(String nodeId, boolean forceNewPassword) {
+        reOpenRegistration(nodeId, null, null, null, null, forceNewPassword);
+    }
+
+    protected synchronized void reOpenRegistration(String nodeId, String remoteHost, String remoteAddress, Date notBefore, Date notAfter,
+            boolean forceNewPassword) {
         Node node = nodeService.findNode(nodeId);
         NodeSecurity security = nodeService.findNodeSecurity(nodeId);
         String password = null;
         if (security != null && StringUtils.isNotBlank(security.getNodePassword())
-                && parameterService.is(ParameterConstants.REGISTRATION_REOPEN_USE_SAME_PASSWORD, true)) {
+                && parameterService.is(ParameterConstants.REGISTRATION_REOPEN_USE_SAME_PASSWORD, true) && !forceNewPassword) {
             password = security.getNodePassword();
         } else {
             password = extensionService.getExtensionPoint(INodeIdCreator.class).generatePassword(node);
         }
-        password = filterPasswordOnSaveIfNeeded(password);
+        password = filterPasswordOnSaveIfNeeded(password, nodeId);
         if (node != null) {
             int updateCount = sqlTemplate.update(getSql("reopenRegistrationSql"), new Object[] {
                     password, notBefore, notAfter, nodeId });
@@ -772,7 +777,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 // a node row
                 nodeService.deleteNodeSecurity(nodeId);
                 String password = extensionService.getExtensionPoint(INodeIdCreator.class).generatePassword(node);
-                password = filterPasswordOnSaveIfNeeded(password);
+                password = filterPasswordOnSaveIfNeeded(password, nodeId);
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
                         nodeId, password, notBefore, notAfter, me.getNodeId() });
                 if (isNotBlank(remoteHost)) {
@@ -790,7 +795,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         "Just opened registration for external id of {} and a node group of {} and a node id of {}",
                         new Object[] { node.getExternalId(), node.getNodeGroupId(), nodeId });
             } else {
-                reOpenRegistration(nodeId, remoteHost, remoteAddress, notBefore, notAfter);
+                reOpenRegistration(nodeId, remoteHost, remoteAddress, notBefore, notAfter, false);
             }
             return nodeId;
         } else {
@@ -803,11 +808,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
         return parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED);
     }
 
-    private String filterPasswordOnSaveIfNeeded(String password) {
+    private String filterPasswordOnSaveIfNeeded(String password, String nodeId) {
         String s = password;
         INodePasswordFilter nodePasswordFilter = extensionService.getExtensionPoint(INodePasswordFilter.class);
         if (nodePasswordFilter != null) {
-            s = nodePasswordFilter.onNodeSecuritySave(password);
+            s = nodePasswordFilter.onNodeSecuritySave(password, nodeId);
         }
         return s;
     }

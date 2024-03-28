@@ -99,6 +99,7 @@ public class SymmetricWebServer {
         host = serverProperties.get(ServerConstants.HOST_BIND_NAME, host);
         httpsNeedClientAuth = serverProperties.is(ServerConstants.HTTPS_NEED_CLIENT_AUTH, false);
         httpsWantClientAuth = serverProperties.is(ServerConstants.HTTPS_WANT_CLIENT_AUTH, false);
+        webHome = serverProperties.get(ServerConstants.SERVER_SERVLET_CONTEXT_PATH, webHome);
     }
 
     public SymmetricWebServer start() throws Exception {
@@ -108,8 +109,8 @@ public class SymmetricWebServer {
         SymmetricUtils.logNotices();
         String protocolName = httpEnabled ? "HTTP/1.1" : httpsEnabled && https2Enabled ? "HTTPS/2" : "HTTPS/1.1";
         int port = httpEnabled ? httpPort : httpsPort;
-        log.info("About to start {} web server on {}:{}:{}", name, host == null ? "default" : host,
-                port, protocolName);
+        log.info("About to start {} web server on {}:{}:{} with context path {}", name, host == null ? "default" : host,
+                port, protocolName, webHome);
         System.setProperty(SystemConstants.SYSPROP_STANDALONE_WEB, Boolean.toString(true));
         System.setProperty(ServerConstants.HTTP_ENABLE, Boolean.valueOf(httpEnabled).toString());
         System.setProperty(ServerConstants.HTTPS_ENABLE, Boolean.valueOf(httpsEnabled).toString());

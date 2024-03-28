@@ -44,7 +44,7 @@ public class TriggerRouter implements IModelObject, Cloneable {
     private String lastUpdateBy;
     private boolean pingBackEnabled = false;
     private String dataRefreshType;
-    
+
     public TriggerRouter() {
         this(new Trigger(), new Router());
     }
@@ -129,14 +129,14 @@ public class TriggerRouter implements IModelObject, Cloneable {
     }
 
     public String getDataRefreshType() {
-		return dataRefreshType;
-	}
+        return dataRefreshType;
+    }
 
-	public void setDataRefreshType(String dataRefreshType) {
-		this.dataRefreshType = dataRefreshType;
-	}
+    public void setDataRefreshType(String dataRefreshType) {
+        this.dataRefreshType = dataRefreshType;
+    }
 
-	public boolean isRouted(DataEventType event) {
+    public boolean isRouted(DataEventType event) {
         switch (event) {
             case INSERT:
                 return router.isSyncOnInsert();

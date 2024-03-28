@@ -119,16 +119,16 @@ public class FileSyncDataRouter extends AbstractDataRouter implements IBuiltInEx
         }
         return nodeIds;
     }
-    
+
     private String getTopRelativeDir(String relativeDir) {
         String topRelativeDir = null;
         if (relativeDir != null) {
-            relativeDir = relativeDir.replace('\\','/');
+            relativeDir = relativeDir.replace('\\', '/');
             topRelativeDir = (relativeDir.contains("/") ? relativeDir.substring(0, relativeDir.indexOf('/')) : relativeDir);
         }
         return topRelativeDir;
     }
-    
+
     private void addTopRelativeDirToData(String topRelativeDir, DataMetaData dataMetaData) {
         Table copy;
         try {
@@ -143,14 +143,14 @@ public class FileSyncDataRouter extends AbstractDataRouter implements IBuiltInEx
         String newData = data.getCsvData(Data.ROW_DATA);
         if (oldData != null) {
             oldData = oldData.concat(",");
-            if (! StringUtils.isBlank(oldData)) {
+            if (!StringUtils.isBlank(oldData)) {
                 oldData = oldData.concat("\"").concat(topRelativeDir).concat("\"");
             }
             data.putCsvData(Data.OLD_DATA, oldData);
         }
         if (newData != null) {
             newData = newData.concat(",");
-            if (! StringUtils.isBlank(newData)) {
+            if (!StringUtils.isBlank(newData)) {
                 newData = newData.concat("\"").concat(topRelativeDir).concat("\"");
             }
             data.putCsvData(Data.ROW_DATA, newData);

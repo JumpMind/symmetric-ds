@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -635,7 +636,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void insertNodeSecurity(String id) {
         String password = extensionService.getExtensionPoint(INodeIdCreator.class).generatePassword(new Node(id, null, null));
-        password = filterPasswordOnSaveIfNeeded(password);
+        password = filterPasswordOnSaveIfNeeded(password, id);
         sqlTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, password, null });
         flushNodeAuthorizedCache();
     }
@@ -699,6 +700,12 @@ public class NodeService extends AbstractService implements INodeService {
         return false;
     }
 
+    protected boolean isNodePasswordFailedDecrypt(String nodeId) {
+        Map<String, NodeSecurity> nodeSecurities = findAllNodeSecurity(true);
+        NodeSecurity nodeSecurity = nodeSecurities.get(nodeId);
+        return nodeSecurity != null && nodeSecurity.getNodePassword() == null;
+    }
+
     public void flushNodeAuthorizedCache() {
         securityCacheTime = 0;
     }
@@ -726,29 +733,28 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean updateNodeSecurity(ISqlTransaction transaction, NodeSecurity security) {
-        security.setNodePassword(filterPasswordOnSaveIfNeeded(security.getNodePassword()));
-        int updateCount = transaction.prepareAndExecute(
-                getSql("updateNodeSecuritySql"),
-                new Object[] { security.getNodePassword(),
-                        security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
-                        security.getRegistrationNotBefore(), security.getRegistrationNotAfter(),
-                        security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(), security.getInitialLoadEndTime(),
-                        security.getCreatedAtNodeId(),
-                        security.isRevInitialLoadEnabled() ? 1 : 0,
-                        security.getRevInitialLoadTime(),
-                        security.getInitialLoadId(),
-                        security.getInitialLoadCreateBy(),
-                        security.getRevInitialLoadId(),
-                        security.getRevInitialLoadCreateBy(),
-                        security.getFailedLogins(),
-                        security.getNodeId() }, new int[] {
-                                Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP, Types.TIMESTAMP, Types.INTEGER,
-                                Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
-                                Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.INTEGER,
-                                Types.VARCHAR });
-        boolean updated = (updateCount == 1);
+        security.setNodePassword(filterPasswordOnSaveIfNeeded(security.getNodePassword(), security.getNodeId()));
+        String sql = getSql("updateNodeSecuritySql");
+        Object[] values = new Object[] { security.getNodePassword(), security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
+                security.getRegistrationNotBefore(), security.getRegistrationNotAfter(), security.isInitialLoadEnabled() ? 1 : 0,
+                security.getInitialLoadTime(), security.getInitialLoadEndTime(), security.getCreatedAtNodeId(),
+                security.isRevInitialLoadEnabled() ? 1 : 0, security.getRevInitialLoadTime(), security.getInitialLoadId(),
+                security.getInitialLoadCreateBy(), security.getRevInitialLoadId(), security.getRevInitialLoadCreateBy(),
+                security.getFailedLogins(), security.getNodeId() };
+        int[] types = new int[] { Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
+                Types.TIMESTAMP, Types.TIMESTAMP, Types.INTEGER,
+                Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR,
+                Types.INTEGER, Types.TIMESTAMP, Types.BIGINT,
+                Types.VARCHAR, Types.BIGINT, Types.VARCHAR,
+                Types.INTEGER, Types.VARCHAR };
+        if (StringUtils.isBlank(security.getNodePassword())) {
+            sql = sql.replace("node_password = ?,", "");
+            values = ArrayUtils.subarray(values, 1, values.length);
+            types = ArrayUtils.subarray(types, 1, types.length);
+        }
+        int updateCount = transaction.prepareAndExecute(sql, values, types);
         flushNodeAuthorizedCache();
-        return updated;
+        return (updateCount == 1);
     }
 
     public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange,
@@ -932,18 +938,18 @@ public class NodeService extends AbstractService implements INodeService {
         this.nodePasswordFilter = nodePasswordFilter;
     }
 
-    private String filterPasswordOnSaveIfNeeded(String password) {
+    private String filterPasswordOnSaveIfNeeded(String password, String nodeId) {
         String s = password;
         if (nodePasswordFilter != null) {
-            s = nodePasswordFilter.onNodeSecuritySave(password);
+            s = nodePasswordFilter.onNodeSecuritySave(password, nodeId);
         }
         return s;
     }
 
-    private String filterPasswordOnRenderIfNeeded(String password) {
+    private String filterPasswordOnRenderIfNeeded(String password, String nodeId) {
         String s = password;
         if (nodePasswordFilter != null) {
-            s = nodePasswordFilter.onNodeSecurityRender(password);
+            s = nodePasswordFilter.onNodeSecurityRender(password, nodeId);
         }
         return s;
     }
@@ -1089,7 +1095,7 @@ public class NodeService extends AbstractService implements INodeService {
         public NodeSecurity mapRow(Row rs) {
             NodeSecurity nodeSecurity = new NodeSecurity();
             nodeSecurity.setNodeId(rs.getString("node_id"));
-            nodeSecurity.setNodePassword(filterPasswordOnRenderIfNeeded(rs.getString("node_password")));
+            nodeSecurity.setNodePassword(filterPasswordOnRenderIfNeeded(rs.getString("node_password"), nodeSecurity.getNodeId()));
             nodeSecurity.setRegistrationEnabled(rs.getBoolean("registration_enabled"));
             nodeSecurity.setRegistrationTime(rs.getDateTime("registration_time"));
             nodeSecurity.setRegistrationNotBefore(rs.getDateTime("registration_not_before"));
@@ -1151,7 +1157,9 @@ public class NodeService extends AbstractService implements INodeService {
                 retVal = AuthenticationStatus.SYNC_DISABLED;
             }
         } else if (!isNodeAuthorized(nodeId, securityToken)) {
-            if (isNodeAuthorizationLocked(nodeId)) {
+            if (isNodePasswordFailedDecrypt(nodeId)) {
+                retVal = AuthenticationStatus.FAILED_DECRYPT;
+            } else if (isNodeAuthorizationLocked(nodeId)) {
                 retVal = AuthenticationStatus.LOCKED;
             } else {
                 retVal = AuthenticationStatus.FORBIDDEN;

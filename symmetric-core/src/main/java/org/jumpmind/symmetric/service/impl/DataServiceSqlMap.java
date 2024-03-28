@@ -172,7 +172,8 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " data_batch_loaded = case when $(batchId) between start_data_batch_id and end_data_batch_id then data_batch_loaded + $(batchCount) else data_batch_loaded end, "
                 + " setup_batch_loaded = case when $(batchId) < start_data_batch_id then setup_batch_loaded + $(batchCount) else setup_batch_loaded end, "
                 + " finalize_batch_loaded = case when $(batchId) > end_data_batch_id then finalize_batch_loaded + $(batchCount) else finalize_batch_loaded end, "
-                + " rows_loaded = (select case when sum(loaded_rows) is null then 0 else sum(loaded_rows) end from $(extract_request) where load_id = $(loadId) and source_node_id = '$(nodeId)'), "
+                // The parentheses around the rows_loaded column name prevent a syntax error for Progress OpenEdge databases
+                + " (rows_loaded) = (select case when sum(loaded_rows) is null then 0 else sum(loaded_rows) end from $(extract_request) where load_id = $(loadId) and source_node_id = '$(nodeId)'), "
                 + " last_update_time = current_timestamp, "
                 + " batch_bulk_load_count = case when $(batchId) between start_data_batch_id and end_data_batch_id then batch_bulk_load_count + $(isBulkLoaded) else batch_bulk_load_count end, "
                 + " error_flag = case when error_batch_id = $(batchId) then 0 else error_flag end, "

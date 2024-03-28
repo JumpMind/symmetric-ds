@@ -115,8 +115,8 @@ abstract public class AbstractTriggerTemplate {
                 return true;
             }
             String typeName = column.getJdbcTypeName();
-            if(typeName.equalsIgnoreCase("unichar") || typeName.equalsIgnoreCase("univarchar") || typeName.equalsIgnoreCase("unitext")) {
-            	return true;
+            if (typeName.equalsIgnoreCase("unichar") || typeName.equalsIgnoreCase("univarchar") || typeName.equalsIgnoreCase("unitext")) {
+                return true;
             }
             int type = column.getJdbcTypeCode();
             // These column types can be selected directly without a template

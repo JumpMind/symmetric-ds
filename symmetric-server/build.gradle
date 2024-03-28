@@ -20,13 +20,13 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         provided "jakarta.jms:jakarta.jms-api:3.1.0"
         
         provided "com.h2database:h2:$h2Version"
-        provided ("mysql:mysql-connector-java:$mysqlVersion") {
+        provided ("com.mysql:mysql-connector-j:$mysqlVersion") {
             exclude group: "com.google.protobuf"
         }
         provided "org.postgresql:postgresql:$postgresqlVersion"
         provided 'com.oracle.database.jdbc:ojdbc11:23.2.0.0'
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
-        provided "com.microsoft.sqlserver:mssql-jdbc:10.2.0.jre8"
+        provided "com.microsoft.sqlserver:mssql-jdbc:$mssqlVersion"
 
         api "org.bouncycastle:bcprov-jdk18on:$bouncyCastleVersion"
         api "org.bouncycastle:bcpkix-jdk18on:$bouncyCastleVersion"        

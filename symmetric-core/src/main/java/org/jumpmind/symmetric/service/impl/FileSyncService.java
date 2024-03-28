@@ -222,7 +222,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         Date currentDate = new Date();
         // Remove milliseconds - not all operating systems support milliseconds in the file modification time
         currentDate.setTime((currentDate.getTime() / 1000) * 1000);
-        int maxRowsBeforeCommit = engine.getParameterService().getInt(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
+        int maxRowsBeforeCommit = engine.getParameterService().getInt(ParameterConstants.FILESYNCTRACKER_MAX_ROWS_BEFORE_COMMIT);
         try {
             List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode(false);
             for (final FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
@@ -497,14 +497,31 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
 
     public void save(List<FileSnapshot> changes, boolean shouldIgnore) {
         if (changes != null) {
+            long maxRows = engine.getParameterService().getLong(ParameterConstants.FILESYNCTRACKER_MAX_ROWS_BEFORE_COMMIT, 10000);
             ISqlTransaction sqlTransaction = null;
             try {
                 sqlTransaction = sqlTemplate.startSqlTransaction();
                 if (shouldIgnore) {
                     engine.getSymmetricDialect().disableSyncTriggers(sqlTransaction, null);
                 }
+                long count = 0;
+                long totalCountSoFar = 0;
                 for (FileSnapshot fileSnapshot : changes) {
                     save(sqlTransaction, fileSnapshot);
+                    count++;
+                    totalCountSoFar++;
+                    if (count >= maxRows && changes.size() > totalCountSoFar) {
+                        sqlTransaction.commit();
+                        if (shouldIgnore) {
+                            engine.getSymmetricDialect().enableSyncTriggers(sqlTransaction);
+                        }
+                        close(sqlTransaction);
+                        sqlTransaction = sqlTemplate.startSqlTransaction();
+                        if (shouldIgnore) {
+                            engine.getSymmetricDialect().disableSyncTriggers(sqlTransaction, null);
+                        }
+                        count = 0;
+                    }
                 }
                 sqlTransaction.commit();
             } catch (Error ex) {
@@ -872,15 +889,9 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                     }
                     lastBatchesProcessed = status.getBatchesProcessed() - cumulativeBatchesProcessed;
                     cumulativeBatchesProcessed = status.getBatchesProcessed();
-                } while (
-                        (!status.failed()) &&
-                        (
-                            (
-                                    (isFilePull && immediatePullIfDataFound) || (isFilePush && immediatePushIfDataFound)
-                            )
-                            && lastBatchesProcessed > 0
-                        )
-                    );
+                } while ((!status.failed()) &&
+                        (((isFilePull && immediatePullIfDataFound) || (isFilePush && immediatePushIfDataFound))
+                                && lastBatchesProcessed > 0));
             }
         }
     }
