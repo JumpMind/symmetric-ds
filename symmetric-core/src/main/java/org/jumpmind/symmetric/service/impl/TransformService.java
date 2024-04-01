@@ -82,7 +82,8 @@ import org.jumpmind.util.FormatUtils;
 public class TransformService extends AbstractService implements ITransformService {
     private static final String NODE_FILTER_BSH = "filter = null; if (engine != null && engine.getExtensionService() != null) " +
             "filter = engine.getExtensionService().getExtensionPoint(org.jumpmind.symmetric.security.INodePasswordFilter.class); " +
-            "if (filter != null) return filter.%s(currentValue, engine.getNodeId()); else return currentValue;";
+            "identity = engine.getNodeService().getCachedIdentity(); " +
+            "if (filter != null) return filter.%s(currentValue, identity == null ? null : identity.getNodeId()); else return currentValue;";
     private static final String SMTP_PASSWORD_BSH = "if (sourceDmlTypeString.equalsIgnoreCase(\"insert\") || sourceDmlTypeString.equalsIgnoreCase(\"update\")) {"
             + "if (PARAM_KEY.equalsIgnoreCase(\"smtp.password\")) {"
             + "filter = null; if (engine != null && engine.getExtensionService() != null) " +
