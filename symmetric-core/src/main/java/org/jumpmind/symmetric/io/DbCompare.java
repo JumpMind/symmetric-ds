@@ -180,6 +180,10 @@ public class DbCompare {
                         : null;
                 DbCompareRow targetCompareRow = targetRow != null ? new DbCompareRow(targetEngine, dbValueComparator, tables.getTargetTable(), targetRow)
                         : null;
+                DbCompareRow targetCompareRowCopy = targetRow != null ? new DbCompareRow(targetEngine, dbValueComparator, tables.getTargetTable().copy(), (Row) targetRow.clone())
+                        : null;
+                DbCompareRow sourceCompareRowCopy = sourceRow != null ? new DbCompareRow(sourceEngine, dbValueComparator, tables.getSourceTable().copy(), (Row) sourceRow.clone())
+                        : null;
                 diffWriter.setError(false);
                 diffWriter.setThrowable(null);
                 int comparePk = comparePk(tables, sourceCompareRow, targetCompareRow);
@@ -187,12 +191,27 @@ public class DbCompare {
                     Map<Column, String> deltas = sourceCompareRow.compareTo(tables, targetCompareRow);
                     Map<Column, String> deltasCopy = new LinkedHashMap<Column, String>();
                     for (Column column : deltas.keySet()) {
-                        deltasCopy.put((Column) column.clone(), deltas.get(column));
+                        deltasCopy.put((Column)column.clone(), deltas.get(column));
+                    }
+
+                    for(String pkColumnName : targetCompareRowCopy.getTable().getPrimaryKeyColumnNames()) {
+                        if (targetCompareRowCopy.getTable().getColumnWithName(pkColumnName).getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+                                targetCompareRowCopy.getTable().getColumnWithName(pkColumnName).getJdbcTypeName().equalsIgnoreCase("unichar") ||
+                                targetCompareRowCopy.getTable().getColumnWithName(pkColumnName).getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                            targetCompareRowCopy.getTable().getColumnWithName(pkColumnName).setMappedType("VARCHAR");
+                        }
+                    }
+                    for(String pkColumnName : sourceCompareRowCopy.getTable().getPrimaryKeyColumnNames()) {
+                        if (sourceCompareRowCopy.getTable().getColumnWithName(pkColumnName).getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+                                sourceCompareRowCopy.getTable().getColumnWithName(pkColumnName).getJdbcTypeName().equalsIgnoreCase("unichar") ||
+                                sourceCompareRowCopy.getTable().getColumnWithName(pkColumnName).getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                            sourceCompareRowCopy.getTable().getColumnWithName(pkColumnName).setMappedType("VARCHAR");
+                        }
                     }
                     if (deltas.isEmpty()) {
                         tableReport.countMatchedRow();
                     } else {
-                        diffWriter.writeUpdate(targetCompareRow, deltasCopy);
+                        diffWriter.writeUpdate(targetCompareRowCopy, deltasCopy);
                         if (!diffWriter.isError()) {
                             tableReport.countDifferentRow();
                         } else {
@@ -203,7 +222,7 @@ public class DbCompare {
                     sourceRow = sourceCursor.next();
                     targetRow = targetCursor.next();
                 } else if (comparePk < 0) {
-                    diffWriter.writeInsert(sourceCompareRow);
+                    diffWriter.writeInsert(sourceCompareRowCopy);
                     if (!diffWriter.isError()) {
                         tableReport.countMissingRow();
                     } else {
@@ -212,7 +231,7 @@ public class DbCompare {
                     }
                     sourceRow = sourceCursor.next();
                 } else {
-                    diffWriter.writeDelete(targetCompareRow);
+                    diffWriter.writeDelete(targetCompareRowCopy);
                     if (!diffWriter.isError()) {
                         tableReport.countExtraRow();
                     } else {
@@ -225,7 +244,6 @@ public class DbCompare {
                 tableReport.setTargetRows(targetCursor.count);
             }
         } catch (CloneNotSupportedException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } finally {
             if (stream != null) {
@@ -284,6 +302,7 @@ public class DbCompare {
 
     protected String getComparisonSQL(Table table, Column[] sortByColumns, IDatabasePlatform platform,
             String whereClause, boolean isSource) {
+        
         DmlStatement statement = platform.createDmlStatement(DmlType.SELECT, table.getCatalog(), table.getSchema(),
                 table.getName(), null, table.getColumns(), null, null);
         StringBuilder sql = new StringBuilder(statement.getSql());
@@ -300,22 +319,28 @@ public class DbCompare {
                         .is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC);
             }
             if (isUsingUnitypes) {
-                for (Column column : statement.getColumns()) {
-                    if (column.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                            column.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+                for(Column column : statement.getColumns()) {
+                    if(column.getJdbcTypeName().equalsIgnoreCase("unichar") ||
+                            column.getJdbcTypeName().equalsIgnoreCase("univarchar") || 
                             column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
-                        sybaseUnitypeConversions = sybaseUnitypeConversions.replace(column.getName() + ",", "case when " + column.getName()
-                                + " is null then null else '\"' +\n"
-                                + "	bintostr(convert(varbinary(16384)," + column.getName() + ")) + '\"' end as " + column.getName() + ",");
+                        if(sybaseUnitypeConversions.contains(" " +column.getName() + ",")) {
+                            sybaseUnitypeConversions = sybaseUnitypeConversions.replace(" " +column.getName() + ",","case when " + column.getName() + " is null then null else '\"' +\n"
+                                    + " bintostr(convert(varbinary(16384),"+column.getName()+")) + '\"' end as " +column.getName() + "," );
+                        } else {
+                            sybaseUnitypeConversions = sybaseUnitypeConversions.replace(" " +column.getName() + " from","case when " + column.getName() + " is null then null else '\"' +\n"
+                                    + " bintostr(convert(varbinary(16384),"+column.getName()+")) + '\"' end as " +column.getName() + " from" );
+                        }
+                        
                     }
                 }
+                
             }
         }
         StringBuilder finalSql = null;
-        if (isUsingUnitypes) {
-            finalSql = new StringBuilder(sybaseUnitypeConversions.toString());
+        if(isUsingUnitypes) {
+             finalSql = new StringBuilder(sybaseUnitypeConversions.toString());
         } else {
-            finalSql = new StringBuilder(sql.toString());
+             finalSql = new StringBuilder(sql.toString());
         }
         finalSql.setLength(finalSql.length() - "where ".length()); // remove the trailing where so we can insert a table alias.
         finalSql.append(" t where "); // main table alias.
