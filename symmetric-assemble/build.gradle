@@ -15,7 +15,6 @@ buildscript {
 
 plugins {
     id "org.sonarqube" version "4.3.1.3277"
-	id "com.github.hierynomus.license" version "0.16.1"
 	id 'com.vaadin' version "$vaadinPluginVersion" apply false
 }
 
@@ -33,12 +32,6 @@ allprojects {
 		eclipse().configFile(project.rootDir.toString() + '/formatter.eclipse.xml')
 	  }
 	}
-    apply plugin: 'license'
-    license {
-        header rootProject.file("HEADER")
-        include "**/jumpmind/**"
-        exclude "**/flow-build-info.json"
-    }
 }
 
 task develop {
