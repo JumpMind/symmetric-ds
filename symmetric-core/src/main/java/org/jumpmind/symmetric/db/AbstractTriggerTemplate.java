@@ -721,8 +721,8 @@ abstract public class AbstractTriggerTemplate {
             } else {
                 b.append(" and ");
             }
-            b.append(aliasOne).append(".\"").append(column.getName()).append("\"");
-            b.append("=").append(aliasTwo).append(".\"").append(column.getName()).append("\"");
+            b.append(aliasOne).append(".").append(SymmetricUtils.quote(symmetricDialect, column.getName()));
+            b.append("=").append(aliasTwo).append(".").append(SymmetricUtils.quote(symmetricDialect, column.getName()));
         }
         return b.toString();
     }
@@ -730,7 +730,7 @@ abstract public class AbstractTriggerTemplate {
     protected String aliasedPrimaryKeyJoinVar(String alias, String prefix, Column[] columns) {
         String text = "";
         for (int i = 0; i < columns.length; i++) {
-            text += alias + ".\"" + columns[i].getName() + "\"";
+            text += alias + "." + SymmetricUtils.quote(symmetricDialect, columns[i].getName());
             text += "=@" + prefix + "pk" + i;
             if (i + 1 < columns.length) {
                 text += " and ";
