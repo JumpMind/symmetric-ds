@@ -64,6 +64,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
     private static final Logger log = LoggerFactory.getLogger(FileSyncZipDataWriter.class);
     protected long byteCount;
     protected long maxBytesToSync;
+    protected int compressionLevel;
     protected IFileSyncService fileSyncService;
     protected IStagedResource stagedResource;
     protected ZipOutputStream zos;
@@ -76,9 +77,10 @@ public class FileSyncZipDataWriter implements IDataWriter {
     protected IExtensionService extensionService;
     protected IConfigurationService configurationService;
 
-    public FileSyncZipDataWriter(long maxBytesToSync, IFileSyncService fileSyncService,
+    public FileSyncZipDataWriter(long maxBytesToSync, int compressionLevel, IFileSyncService fileSyncService,
             INodeService nodeService, IStagedResource stagedResource, IExtensionService extensionService, IConfigurationService configurationService) {
         this.maxBytesToSync = maxBytesToSync;
+        this.compressionLevel = compressionLevel;
         this.fileSyncService = fileSyncService;
         this.stagedResource = stagedResource;
         this.nodeService = nodeService;
@@ -178,6 +180,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
             if (!inError) {
                 if (zos == null) {
                     zos = new ZipOutputStream(stagedResource.getOutputStream());
+                    zos.setLevel(compressionLevel);
                 }
                 FileSyncZipScript script = createFileSyncZipScript(batch.getTargetNodeId());
                 script.buildScriptStart(batch);

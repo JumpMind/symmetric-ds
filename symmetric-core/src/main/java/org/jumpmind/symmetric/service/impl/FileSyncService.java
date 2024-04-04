@@ -609,8 +609,8 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             return batchesToProcess;
         }
         IStagingManager stagingManager = engine.getStagingManager();
-        long maxBytesToSync = parameterService
-                .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
+        long maxBytesToSync = parameterService.getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
+        int compressionLevel = parameterService.getInt(ParameterConstants.FILE_SYNC_COMPRESSION_LEVEL);
         List<OutgoingBatch> processedBatches = new ArrayList<OutgoingBatch>();
         OutgoingBatch currentBatch = null;
         IStagedResource stagedResource = null;
@@ -634,7 +634,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                     } else {
                         if (dataWriter == null) {
                             stagedResource = stagingManager.create(getStagingPathComponents(currentBatch));
-                            dataWriter = new FileSyncZipDataWriter(maxBytesToSync, this,
+                            dataWriter = new FileSyncZipDataWriter(maxBytesToSync, compressionLevel, this,
                                     engine.getNodeService(), stagedResource, engine.getExtensionService(), engine.getConfigurationService());
                         }
                         log.debug("Extracting batch {} for filesync.", currentBatch.getNodeBatchId());
