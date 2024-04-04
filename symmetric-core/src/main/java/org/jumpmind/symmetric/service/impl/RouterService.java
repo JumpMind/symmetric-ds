@@ -1061,8 +1061,15 @@ public class RouterService extends AbstractService implements IRouterService, IN
                 batch.incrementRowCount(eventType);
                 batch.incrementDataRowCount();
                 if (context.getChannel().getChannel().isFileSyncFlag() && context.getChannel().getChannel().isUseRowDataToRoute()) {
-                    String fileName = dataMetaData.getData().getParsedData(CsvData.ROW_DATA)[3];
-                    batch.incrementFileCount(fileName);
+                    // ROW_DATA is populated for inserts and updates
+                    // PK_DATA is populated for updates and deletes
+                    String[] data = dataMetaData.getData().getParsedData(CsvData.ROW_DATA);
+                    if (data == null) {
+                        data = dataMetaData.getData().getParsedData(CsvData.PK_DATA);
+                    }
+                    if (data != null && data.length >= 4) {
+                        batch.incrementFileCount(data[3]);
+                    }
                 } else {
                     batch.incrementTableCount(tableName);
                 }
