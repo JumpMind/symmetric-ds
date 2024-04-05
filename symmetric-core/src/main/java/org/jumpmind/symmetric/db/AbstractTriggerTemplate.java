@@ -1189,7 +1189,7 @@ abstract public class AbstractTriggerTemplate {
             } else {
                 sb.append("(");
             }
-            sb.append(" UPDATE(\"").append(primaryKey).append("\") ");
+            sb.append(" UPDATE(").append(SymmetricUtils.quote(symmetricDialect, primaryKey)).append(") ");
         }
         if (sb.length() > 0) {
             sb.append(")");
