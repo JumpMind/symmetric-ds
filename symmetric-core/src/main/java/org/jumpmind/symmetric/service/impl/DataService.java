@@ -1697,20 +1697,31 @@ public class DataService extends AbstractService implements IDataService {
                 List<TriggerRouter> triggerRouters = Collections.singletonList(fileSyncSnapshotTriggerRouter);
                 Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = new HashMap<Integer, List<TriggerRouter>>();
                 triggerRoutersByHistoryId.put(fileSyncSnapshotHistory.getTriggerHistoryId(), triggerRouters);
+                String overrideSql = fileSyncSnapshotTriggerRouter.getInitialLoadSelect();
                 if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
                     final String FILTER_ENABLED_FILE_SYNC_TRIGGER_ROUTERS = String.format(
                             "1=(select initial_load_enabled from %s tr where t.trigger_id = tr.trigger_id AND t.router_id = tr.router_id)",
                             TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER_ROUTER));
+                    if (StringUtils.isNotBlank(overrideSql)) {
+                        overrideSql = FILTER_ENABLED_FILE_SYNC_TRIGGER_ROUTERS + " AND " + overrideSql;
+                    } else {
+                        overrideSql = FILTER_ENABLED_FILE_SYNC_TRIGGER_ROUTERS;
+                    }
                     totalBatchCount += getBatchCountFor(insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
-                            triggerRoutersByHistoryId, transactional, transaction, null, processInfo, FILTER_ENABLED_FILE_SYNC_TRIGGER_ROUTERS, null,
+                            triggerRoutersByHistoryId, transactional, transaction, null, processInfo, overrideSql, null,
                             isFullLoad));
                 } else {
                     List<Channel> channels = engine.getConfigurationService().getFileSyncChannels();
                     for (Channel channel : channels) {
                         if (channel.isReloadFlag()) {
+                            String initialSql = "reload_channel_id='" + channel.getChannelId() + "'";
+                            String sql = initialSql;
+                            if (isNotBlank(overrideSql)) {
+                                sql = sql + " AND " + overrideSql;
+                            }
                             insertReloadEvent(transaction, targetNode, fileSyncSnapshotTriggerRouter,
                                     fileSyncSnapshotHistory,
-                                    "reload_channel_id='" + channel.getChannelId() + "'", true, loadId,
+                                    sql, true, loadId,
                                     createBy, Status.NE, channel.getChannelId(), -1);
                             totalBatchCount++;
                             if (!transactional) {
