@@ -988,7 +988,9 @@ public class DataService extends AbstractService implements IDataService {
                                 if (channelId != null) {
                                     List<TriggerHistory> channelTriggerHistories = new ArrayList<TriggerHistory>();
                                     for (TriggerHistory history : triggerHistories) {
-                                        if (channelId.equals(findChannelFor(history, triggerRouters))) {
+                                        Trigger trigger = findTriggerFor(history, triggerRouters);
+                                        if (trigger != null && (channelId.equals(trigger.getChannelId())
+                                                || channelId.equals(trigger.getReloadChannelId()))) {
                                             channelTriggerHistories.add(history);
                                         }
                                     }
@@ -1182,10 +1184,10 @@ public class DataService extends AbstractService implements IDataService {
         return batchCount;
     }
 
-    private String findChannelFor(TriggerHistory history, List<TriggerRouter> triggerRouters) {
+    private Trigger findTriggerFor(TriggerHistory history, List<TriggerRouter> triggerRouters) {
         for (TriggerRouter triggerRouter : triggerRouters) {
             if (triggerRouter.getTrigger().getTriggerId().equals(history.getTriggerId())) {
-                return triggerRouter.getTrigger().getChannelId();
+                return triggerRouter.getTrigger();
             }
         }
         return null;
