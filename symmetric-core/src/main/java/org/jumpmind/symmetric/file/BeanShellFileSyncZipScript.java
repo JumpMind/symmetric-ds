@@ -131,7 +131,7 @@ public class BeanShellFileSyncZipScript extends FileSyncZipScript {
                     command.append("      } else {\n");
                     command.append("        org.apache.commons.io.FileUtils.copyFile(sourceFile, targetFile, true);\n");
                     command.append("      }\n");
-                    command.append("    } catch (java.lang.IllegalArgumentException e) {\n");
+                    command.append("    } catch (java.lang.Throwable e) {\n");
                     command.append("      String errorDir = batchDir.toString();\n");
                     command.append("      errorDir = errorDir.substring(0, errorDir.lastIndexOf('/')) + \"-error/\";\n");
                     if (!snapshot.getRelativeDir().equals(".")) {
