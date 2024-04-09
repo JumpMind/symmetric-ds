@@ -75,6 +75,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
     protected INodeService nodeService;
     protected IExtensionService extensionService;
     protected IConfigurationService configurationService;
+    protected boolean batchInError;
 
     public FileSyncZipDataWriter(long maxBytesToSync, IFileSyncService fileSyncService,
             INodeService nodeService, IStagedResource stagedResource, IExtensionService extensionService, IConfigurationService configurationService) {
@@ -267,6 +268,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                 zos.closeEntry();
             }
         } catch (IOException e) {
+            batchInError = true;
             throw new IoException(e);
         }
     }
@@ -284,8 +286,13 @@ public class FileSyncZipDataWriter implements IDataWriter {
             throw new IoException(e);
         } finally {
             if (stagedResource != null) {
-                stagedResource.setState(IStagedResource.State.DONE);
-                stagedResource.close();
+                if (!batchInError) {
+                    stagedResource.setState(IStagedResource.State.DONE);
+                    stagedResource.close();
+                } else {
+                    stagedResource.delete();
+                    batchInError = false;
+                }
             }
         }
     }
