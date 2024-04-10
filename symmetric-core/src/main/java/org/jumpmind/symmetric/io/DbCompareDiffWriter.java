@@ -70,11 +70,12 @@ public class DbCompareDiffWriter {
                         table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("unichar") ||
                         table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("unitext")) {
                     table.getColumn(i).setMappedType("VARCHAR");
-                    String convertedValue = DbValueComparator.convertString(targetCompareRow.getRowValues().get(targetCompareRow.getTable().getColumn(i).getName()), targetCompareRow.getTable().getColumn(i), false);
-                    row.put(table.getColumn(i).getName(),convertedValue);
+                    String convertedValue = DbValueComparator.convertString(targetCompareRow.getRowValues().get(targetCompareRow.getTable().getColumn(i)
+                            .getName()), targetCompareRow.getTable().getColumn(i), false);
+                    row.put(table.getColumn(i).getName(), convertedValue);
                 } else {
                     row.put(table.getColumn(i).getName(),
-                        targetCompareRow.getRowValues().get(targetCompareRow.getTable().getColumn(i).getName()));
+                            targetCompareRow.getRowValues().get(targetCompareRow.getTable().getColumn(i).getName()));
                 }
             }
             String sql = statement.buildDynamicDeleteSql(BinaryEncoding.HEX, row, false, true);
@@ -155,7 +156,7 @@ public class DbCompareDiffWriter {
             if (!isContinueAfterError()) {
                 throw e;
             }
-        } 
+        }
     }
 
     public void writeUpdate(DbCompareRow targetCompareRow, Map<Column, String> deltas) {

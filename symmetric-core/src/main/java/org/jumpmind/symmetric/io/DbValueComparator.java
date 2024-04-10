@@ -75,7 +75,7 @@ public class DbValueComparator {
                     targetColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
                 targetValue = convertString(targetValue, targetColumn, false);
             }
-            if(sourceColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+            if (sourceColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
                     sourceColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
                     sourceColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
                 sourceValue = convertString(sourceValue, sourceColumn, false);
@@ -97,7 +97,6 @@ public class DbValueComparator {
             if (stringToConvert.contains("\"")) {
                 stringToConvert = stringToConvert.substring(1, stringToConvert.length() - 1);
             }
-           
             if (!stringToConvert.toLowerCase().matches(".*[a-z].*") && !isPrimaryKey) {
                 stringToConvert = new String(Hex.decodeHex(stringToConvert));
                 if (stringToConvert.contains("\"")) {
@@ -129,7 +128,7 @@ public class DbValueComparator {
         }
         ISymmetricDialect symmetricDialect = sourceEngine.getSymmetricDialect();
         boolean isUsingUnitypes = symmetricDialect.getParameterService().is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC);
-        if(isUsingUnitypes) {
+        if (isUsingUnitypes) {
             String normalizedSource = Normalizer.normalize(source, Normalizer.Form.NFD);
             String normalizedTarget = Normalizer.normalize(target, Normalizer.Form.NFD);
             if (normalizedSource != null && normalizedTarget != null) {
