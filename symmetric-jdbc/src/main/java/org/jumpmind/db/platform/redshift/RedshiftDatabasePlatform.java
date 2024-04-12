@@ -20,6 +20,7 @@
  */
 package org.jumpmind.db.platform.redshift;
 
+import java.sql.Connection;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
@@ -70,6 +71,13 @@ public class RedshiftDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     protected RedshiftJdbcSqlTemplate createSqlTemplate() {
         return new RedshiftJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
+    }
+
+    @Override
+    protected RedshiftJdbcSqlTemplate createSqlTemplateDirty() {
+        RedshiftJdbcSqlTemplate sqlTemplateDirty = new RedshiftJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
+        sqlTemplateDirty.setIsolationLevel(Connection.TRANSACTION_READ_UNCOMMITTED);
+        return sqlTemplateDirty;
     }
 
     public String getName() {

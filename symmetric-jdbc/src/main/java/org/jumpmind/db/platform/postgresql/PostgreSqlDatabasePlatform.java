@@ -40,6 +40,7 @@ package org.jumpmind.db.platform.postgresql;
  */
 
 import java.sql.Array;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.text.ParseException;
@@ -122,6 +123,13 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     protected PostgreSqlJdbcSqlTemplate createSqlTemplate() {
         SymmetricLobHandler lobHandler = new PostgresLobHandler();
         return new PostgreSqlJdbcSqlTemplate(dataSource, settings, lobHandler, getDatabaseInfo());
+    }
+
+    @Override
+    protected PostgreSqlJdbcSqlTemplate createSqlTemplateDirty() {
+        PostgreSqlJdbcSqlTemplate sqlTemplateDirty = new PostgreSqlJdbcSqlTemplate(dataSource, settings, new PostgresLobHandler(), getDatabaseInfo());
+        sqlTemplateDirty.setIsolationLevel(Connection.TRANSACTION_READ_UNCOMMITTED);
+        return sqlTemplateDirty;
     }
 
     public String getName() {
