@@ -208,25 +208,27 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         IDataService dataService = engine.getDataService();
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
         List<TriggerHistory> triggerHistories = triggerRouterService.getActiveTriggerHistories(triggerRouter.getTrigger());
-        TriggerHistory triggerHistory = triggerHistories.get(0);
-        ISqlTransaction transaction = null;
-        try {
-            transaction = engine.getDatabasePlatform().getSqlTemplate().startSqlTransaction();
-            for (Node targetNode : targetNodes) {
-                if (!me.getNodeId().equalsIgnoreCase(targetNode.getNodeId()) && notRestClient(targetNode)) {
-                    dataService.insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory, initialLoadSelect, false, -1l, "configRouter",
-                            Status.NE, 0l);
+        if (triggerHistories.size() > 0) {
+            TriggerHistory triggerHistory = triggerHistories.get(0);
+            ISqlTransaction transaction = null;
+            try {
+                transaction = engine.getDatabasePlatform().getSqlTemplate().startSqlTransaction();
+                for (Node targetNode : targetNodes) {
+                    if (!me.getNodeId().equalsIgnoreCase(targetNode.getNodeId()) && notRestClient(targetNode)) {
+                        dataService.insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory, initialLoadSelect, false, -1l, "configRouter",
+                                Status.NE, 0l);
+                    }
                 }
-            }
-            transaction.commit();
-        } catch (Exception e) {
-            log.error("Failed to insert reload events for table " + triggerRouter.getTrigger().getSourceTableName(), e);
-            if (transaction != null) {
-                transaction.rollback();
-            }
-        } finally {
-            if (transaction != null) {
-                transaction.close();
+                transaction.commit();
+            } catch (Exception e) {
+                log.error("Failed to insert reload events for table " + triggerRouter.getTrigger().getSourceTableName(), e);
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+            } finally {
+                if (transaction != null) {
+                    transaction.close();
+                }
             }
         }
     }
