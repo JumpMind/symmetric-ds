@@ -160,6 +160,14 @@ Also the journal must be setup to for BOTH before and after image data if you ol
 
 endif::pro[]
 
+==== Capturing Old Data
+
+In order for SymmetricDS to capture old data for updates, the `IMAGES(*BOTH)` journaling attribute must be specified. One way to specify this attribute is by running the following command:
+
+----
+CHGJRNOBJ OBJ((sym/SYM_C00001 *FILE)) ATR(*IMAGES) IMAGES(*BOTH)
+----
+
 
 
 === DB2 for IBM z/OS
