@@ -979,7 +979,7 @@ public class NodeService extends AbstractService implements INodeService {
         Date lastRestartTime = engine.getLastRestartTime() != null ? engine.getLastRestartTime() : new Date();
         if (myNode != null && System.currentTimeMillis() - lastRestartTime.getTime() > restartDelayMinutes * 60000) {
             long offlineNodeDetectionMillis = minutesOffline * 60 * 1000;
-            List<Row> list = sqlTemplate.query(getSql("findNodeHeartbeatsSql"));
+            List<Row> list = sqlTemplateDirty.query(getSql("findNodeHeartbeatsSql"));
             for (Row node : list) {
                 String nodeId = node.getString("node_id");
                 Date time = node.getDateTime("heartbeat_time");
@@ -1005,7 +1005,7 @@ public class NodeService extends AbstractService implements INodeService {
         Map<String, Date> dates = new HashMap<String, Date>();
         Node myNode = findIdentity();
         if (myNode != null) {
-            List<Row> list = sqlTemplate.query(getSql("findNodeHeartbeatsSql"));
+            List<Row> list = sqlTemplateDirty.query(getSql("findNodeHeartbeatsSql"));
             for (Row node : list) {
                 String nodeId = node.getString("node_id");
                 Date time = node.getDateTime("heartbeat_time");
@@ -1020,7 +1020,7 @@ public class NodeService extends AbstractService implements INodeService {
         Node myNode = findIdentity();
         if (myNode != null) {
             long offlineNodeDetectionMillis = minutesOffline * 60 * 1000;
-            List<Row> list = sqlTemplate.query(getSql("findNodeHeartbeatsSql"));
+            List<Row> list = sqlTemplateDirty.query(getSql("findNodeHeartbeatsSql"));
             for (Row node : list) {
                 String nodeId = node.getString("node_id");
                 Date time = node.getDateTime("heartbeat_time");
