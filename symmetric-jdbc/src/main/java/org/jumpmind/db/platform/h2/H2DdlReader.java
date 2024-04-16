@@ -144,6 +144,19 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
                 column.findPlatformColumn(platform.getName()).setSize(size);
             }
         }
+        if (values.get("COLUMN_SIZE") != null) {
+            String maxLength = (String) values.get("COLUMN_SIZE");
+            if (isNotBlank(maxLength)) {
+                Integer size = Integer.valueOf(maxLength);
+                if (isVersion2 && size.intValue() == 1000000000 && column.getMappedTypeCode() == Types.VARCHAR) {
+                    column.setMappedTypeCode(Types.LONGVARCHAR);
+                    column.setMappedType("LONGVARCHAR");
+                    column.findPlatformColumn(platform.getName()).setType("LONGVARCHAR");
+                    column.setSize(size.toString());
+                    column.findPlatformColumn(platform.getName()).setSize(size);
+                }
+            }
+        }
         if (values.get("COLUMN_DEFAULT") != null) {
             column.setDefaultValue(values.get("COLUMN_DEFAULT").toString());
         }
