@@ -379,6 +379,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         settings.setIncludeRowIdentifierAsColumn(properties.is(ParameterConstants.INCLUDE_ROWIDENTIFIER_AS_COLUMN, false));
         LogSqlBuilder logSqlBuilder = new LogSqlBuilder();
         logSqlBuilder.setLogSlowSqlThresholdMillis(properties.getInt(ParameterConstants.LOG_SLOW_SQL_THRESHOLD_MILLIS, 20000));
+        logSqlBuilder.setConsoleLogSlowSqlThresholdMillis(properties.getInt(ParameterConstants.CONSOLE_LOG_SLOW_SQL_THRESHOLD_MILLIS, 5000));
         logSqlBuilder.setLogSqlParametersInline(properties.is(ParameterConstants.LOG_SQL_PARAMETERS_INLINE, true));
         settings.setLogSqlBuilder(logSqlBuilder);
         if (settings.getOverrideIsolationLevel() >= 0) {

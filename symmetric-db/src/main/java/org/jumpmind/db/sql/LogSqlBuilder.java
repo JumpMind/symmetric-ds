@@ -40,6 +40,7 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class LogSqlBuilder {
     private final static Logger log = LoggerFactory.getLogger(LogSqlBuilder.class);
@@ -47,6 +48,7 @@ public class LogSqlBuilder {
     protected BinaryEncoding encoding = BinaryEncoding.HEX;
     protected boolean useJdbcTimestampFormat = true;
     protected int logSlowSqlThresholdMillis = 20000;
+    protected int consoleLogSlowSqlThresholdMillis = 5000;
     protected boolean logSqlParametersInline = true;
 
     public void logSql(Logger loggerArg, String sql, Object[] args, int[] types, long executionTimeMillis) {
@@ -54,7 +56,12 @@ public class LogSqlBuilder {
     }
 
     public void logSql(Logger loggerArg, String message, String sql, Object[] args, int[] types, long executionTimeMillis) {
-        boolean longRunning = executionTimeMillis >= logSlowSqlThresholdMillis;
+        boolean longRunning = false;
+        if ("gui".equals(MDC.get("engineName"))) {
+            longRunning = executionTimeMillis >= consoleLogSlowSqlThresholdMillis;
+        } else {
+            longRunning = executionTimeMillis >= logSlowSqlThresholdMillis;
+        }
         if (loggerArg.isDebugEnabled() || longRunning) {
             StringBuilder logEntry = new StringBuilder();
             if (longRunning) {
@@ -225,6 +232,14 @@ public class LogSqlBuilder {
 
     public void setLogSlowSqlThresholdMillis(int logSlowSqlThresholdMillis) {
         this.logSlowSqlThresholdMillis = logSlowSqlThresholdMillis;
+    }
+
+    public int getConsoleLogSlowSqlThresholdMillis() {
+        return consoleLogSlowSqlThresholdMillis;
+    }
+
+    public void setConsoleLogSlowSqlThresholdMillis(int consoleLogSlowSqlThresholdMillis) {
+        this.consoleLogSlowSqlThresholdMillis = consoleLogSlowSqlThresholdMillis;
     }
 
     public boolean isLogSqlParametersInline() {
