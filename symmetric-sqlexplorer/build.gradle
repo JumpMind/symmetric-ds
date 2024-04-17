@@ -37,8 +37,8 @@ dependencies {
     
     testImplementation "com.h2database:h2:$h2Version"
     testImplementation "jakarta.websocket:jakarta.websocket-api:$websocketVersion"    
-    testImplementation "org.eclipse.jetty:jetty-webapp:$jettyVersion"
-    testImplementation "org.eclipse.jetty.websocket:websocket-jakarta-server:$jettyVersion"    
+    testImplementation "org.eclipse.jetty.ee10:jetty-ee10-webapp:$jettyVersion"
+    testImplementation "org.eclipse.jetty.ee10.websocket:jetty-ee10-websocket-jakarta-server:$jettyVersion"    
 	
 	implementation "com.vaadin:vaadin-core:$vaadinVersion"
 }
