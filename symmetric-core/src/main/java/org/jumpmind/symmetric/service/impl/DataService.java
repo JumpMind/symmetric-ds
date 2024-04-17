@@ -3564,7 +3564,7 @@ public class DataService extends AbstractService implements IDataService {
                 Set<TriggerRouter> triggerRouters = engine.getTriggerRouterService().getTriggerRouterForTableForCurrentNode(
                         hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
                 table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
-                if (triggerRouters != null && triggerRouters.size() > 0 && table != null && data.getDataEventType().isDml()) {
+                if (triggerRouters != null && triggerRouters.size() > 0 && table != null && data.getDataEventType().isDml() && !data.isPreRouted()) {
                     Trigger trigger = triggerRouters.iterator().next().getTrigger();
                     table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true, false);
                     if (data.getDataEventType() == DataEventType.INSERT) {
