@@ -44,6 +44,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -3552,16 +3553,20 @@ public class DataService extends AbstractService implements IDataService {
     protected int reCaptureData(List<Data> dataList) {
         List<Data> insertList = new ArrayList<Data>();
         ISqlTransaction transaction = null;
+        Table table = null;
+        String[] keys = null;
+        Data lastData = null;
+        long ts = System.currentTimeMillis();
         try {
             for (Data data : dataList) {
+                lastData = data;
                 TriggerHistory hist = data.getTriggerHistory();
                 Set<TriggerRouter> triggerRouters = engine.getTriggerRouterService().getTriggerRouterForTableForCurrentNode(
                         hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
-                Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
+                table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
                 if (triggerRouters != null && triggerRouters.size() > 0 && table != null && data.getDataEventType().isDml()) {
                     Trigger trigger = triggerRouters.iterator().next().getTrigger();
                     table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true, false);
-                    String[] keys = null;
                     if (data.getDataEventType() == DataEventType.INSERT) {
                         keys = data.toParsedRowData();
                         if (keys != null && keys.length >= table.getPrimaryKeyColumnCount()) {
@@ -3601,8 +3606,29 @@ public class DataService extends AbstractService implements IDataService {
                         data.setOldData(null);
                         insertList.add(data);
                     }
+                    data.setTransactionId("recapture-" + ts);
                 }
             }
+        } catch (RuntimeException e) {
+            if (table != null && keys != null && lastData != null) {
+                Column[] columns = table.getPrimaryKeyColumns();
+                String[] names = new String[columns.length];
+                String[] types = new String[columns.length];
+                int i = 0;
+                for (Column col : columns) {
+                    names[i] = col.getName();
+                    types[i++] = col.getMappedType();
+                }
+                StringBuilder failureMessage = new StringBuilder();
+                failureMessage.append("Failed to recapture for data ").append(lastData.getDataId());
+                failureMessage.append(" event type ").append(lastData.getDataEventType().toString());
+                failureMessage.append(" table ").append(table.getName());
+                failureMessage.append(" with primary key ").append(ArrayUtils.toString(names));
+                failureMessage.append(" and types ").append(ArrayUtils.toString(types)).append("\n");
+                lastData.writeCsvDataDetails(failureMessage);
+                log.info(failureMessage.toString());
+            }
+            throw e;
         } finally {
             close(transaction);
         }
