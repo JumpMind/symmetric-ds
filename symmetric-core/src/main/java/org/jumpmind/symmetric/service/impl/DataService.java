@@ -1360,8 +1360,8 @@ public class DataService extends AbstractService implements IDataService {
                     if (triggerRouter.getInitialLoadOrder() > -1
                             && currentRequest != null
                             && currentRequest.isCreateTable()
-                            && engine.getGroupletService().isTargetEnabled(triggerRouter,
-                                    targetNode)) {
+                            && engine.getGroupletService().isTargetEnabled(triggerRouter, targetNode)
+                            && !triggerHistory.getSourceTableNameLowerCase().startsWith(symmetricDialect.getTablePrefix().toLowerCase() + "_")) {
                         insertCreateEvent(transaction, targetNode, triggerHistory, triggerRouter.getTrigger().getReloadChannelId(), true,
                                 loadId, createBy, false, false, false, Status.LS);
                         createEventsSent++;
