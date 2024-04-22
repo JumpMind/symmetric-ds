@@ -313,16 +313,18 @@ public class SelectFromSymDataSource extends SelectFromSource {
         if (parameterService.is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC)) {
             for (Column column : copyTargetTable.getColumns()) {
                 Map<String, PlatformColumn> platformColumns = column.getPlatformColumns();
-                String platformColumnType = platformColumns.get("ase").getType();
-                if (platformColumnType.equalsIgnoreCase("UNITEXT")) {
-                    column.setMappedType("CLOB");
-                    column.setMappedTypeCode(Types.CLOB);
-                } else if (platformColumnType.equalsIgnoreCase("UNICHAR")) {
-                    column.setMappedType("CHAR");
-                    column.setMappedTypeCode(Types.CHAR);
-                } else if (platformColumnType.equalsIgnoreCase("UNIVARCHAR")) {
-                    column.setMappedType("VARCHAR");
-                    column.setMappedTypeCode(Types.VARCHAR);
+                if(platformColumns.containsKey(DatabaseNamesConstants.ASE)) {
+                    String platformColumnType = platformColumns.get(DatabaseNamesConstants.ASE).getType();
+                    if (platformColumnType.equalsIgnoreCase("UNITEXT")) {
+                        column.setMappedType("CLOB");
+                        column.setMappedTypeCode(Types.CLOB);
+                    } else if (platformColumnType.equalsIgnoreCase("UNICHAR")) {
+                        column.setMappedType("CHAR");
+                        column.setMappedTypeCode(Types.CHAR);
+                    } else if (platformColumnType.equalsIgnoreCase("UNIVARCHAR")) {
+                        column.setMappedType("VARCHAR");
+                        column.setMappedTypeCode(Types.VARCHAR);
+                    }  
                 }
             }
         }
