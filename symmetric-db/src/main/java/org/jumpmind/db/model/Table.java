@@ -1080,6 +1080,10 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         return fullyQualifiedTableNameLowerCase;
     }
 
+    public String getFullyQualifiedTableName(String quote) {
+        return getFullyQualifiedTableName(catalog, schema, name, quote, ".", ".");
+    }
+
     public String getNameLowerCase() {
         if (tableNameLowerCase == null) {
             tableNameLowerCase = getName().toLowerCase();
