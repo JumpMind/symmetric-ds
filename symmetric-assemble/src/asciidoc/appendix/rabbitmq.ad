@@ -1,0 +1,83 @@
+
+=== RabbitMQ
+
+Send changes from your relational database to RabbitMQ in a variety of formats.  A RabbitMQ node can be setup as a <<Load Only Node>> to receive changes from another node that is capturing changes.
+
+ifdef::pro[]
+Setup the RabbitMQ node by using the <<Add Node,Connect Database>> wizard and selecting RabbitMQ as the type.   The URL will be the connection point to RabbitMQ.
+
+image::images/appendix/rabbitmq-node-setup.png[]
+
+After hitting next you can setup advanced options for your RabbitMQ node.
+
+image::images/appendix/rabbitmq-advanced-settings.png[]
+endif::pro[]
+
+==== Output Message Format
+
+
+.Set the output message format with the following property
+----
+rabbitmq.format=JSON|XML|CSV
+----
+
+
+[horizontal]        
+JSON::  Json formatted output message 
+[source, json]
+----
+{
+  "table name": {
+    "eventType": "INSERT|UPDATE|DELETE",
+    "data": {
+      "column name": "value",....
+    }
+  }
+}    
+----
+XML::  Xml formatted output message
+[source, xml]
+----
+<row entity="table name" dml="INSERT|UPDATE|DELETE">
+	<data key="column name">value</data>
+	...
+</row>
+----
+CSV::  CSV formatted output message
+[source, csv]
+----
+TABLE,table name,EVENT,INSERT|UPDATE|DELETE,column name,value, ...
+----
+
+==== Setting Messages By
+
+
+.Set following property to determine how messages will be sent.
+----
+rabbitmq.message.by=BATCH|ROW
+----
+
+
+[horizontal]        
+BATCH::  This will send one message for each batch containing all changes.
+ROW:: This will send one messsage for each change captured.
+
+==== Setting Queue By
+
+
+.Set following property to determine what queues will be used to load data to.
+----
+rabbitmq.queue.by=TABLE|CHANNEL|USER
+----
+
+[horizontal]        
+TABLE::  A queue with the name of the table will be created for each table in the batch. For example if you are sending information from a table called "my_table", a queue called "my_table" will be created and the messages will be sent there.
+
+CHANNEL::  A queue with the name of the channel will be created for the name of the channel of the batch. For example, if the batch is sent on the "reload" channel, a queue called "sym_reload" will be created and the messages will be sent there.
+
+USER::  A queue with the name of the user will be created to load data to.
+
+
+==== Queue Name
+
+Enter the queue name you wish to configure with SymmetricDS. If you enter a value for this field, it will override the "Queue By" selection. If you leave this field blank, queue(s) will be created based on the "Queue By" field.
