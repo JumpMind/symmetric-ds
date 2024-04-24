@@ -3584,6 +3584,10 @@ public class DataService extends AbstractService implements IDataService {
                     DmlStatement st = platform.createDmlStatement(DmlType.WHERE, hist.getSourceCatalogName(), hist.getSourceSchemaName(),
                             hist.getSourceTableName(), table.getPrimaryKeyColumns(), table.getColumns(), DmlStatement.getNullKeyValues(keys), null);
                     String whereClause = st.buildDynamicSql(symmetricDialect.getBinaryEncoding(), row, false, true).substring(6);
+                    String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
+                    if (delimiter != null && delimiter.length() > 0) {
+                        whereClause = whereClause.substring(0, whereClause.length() - delimiter.length());
+                    }
                     String rowData = null;
                     String pkData = data.getPkData();
                     transaction = sqlTemplate.startSqlTransaction();
