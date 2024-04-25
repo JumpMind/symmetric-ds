@@ -38,7 +38,11 @@ public class PostgreSqlDmlStatement95 extends PostgreSqlDmlStatement {
         appendColumns(sql, columns, false);
         sql.append(") values (");
         appendColumnParameters(sql, columns);
-        sql.append(") ").append(ON_CONFLICT_DO_NOTHING);
+        if (databaseInfo.isRequiresSavePointsInTransaction()) {
+            sql.append(") ").append(ON_CONFLICT_DO_NOTHING);
+        } else {
+            sql.append(")");
+        }
         return sql.toString();
     }
 

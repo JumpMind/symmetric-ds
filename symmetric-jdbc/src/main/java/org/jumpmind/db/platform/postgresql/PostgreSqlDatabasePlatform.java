@@ -69,6 +69,7 @@ import org.jumpmind.db.sql.SqlConstants;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
+import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.db.util.BinaryEncoding;
 
 /*
@@ -89,6 +90,11 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public PostgreSqlDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, overrideSettings(settings));
         getDatabaseInfo().setInfinityDateAllowed(!settings.getProperties().is(SqlConstants.POSTGRES_CONVERT_INFINITY_DATE_TO_NULL, true));
+        String dbUrl = settings.getProperties().get(BasicDataSourcePropertyConstants.DB_POOL_URL);
+        if (dbUrl != null && dbUrl.contains("autosave=always")) {
+            log.info("Detected driver is using auto savepoints");
+            getDatabaseInfo().setRequiresSavePointsInTransaction(false);
+        }
     }
 
     protected static SqlTemplateSettings overrideSettings(SqlTemplateSettings settings) {

@@ -172,9 +172,11 @@ public class TransformTable implements Cloneable {
 
     public List<TransformColumn> getTransformColumnFor(String columnName) {
         List<TransformColumn> columns = new ArrayList<TransformColumn>(2);
-        for (TransformColumn column : transformColumns) {
-            if (StringUtils.equalsIgnoreCase(column.getSourceColumnName(), columnName)) {
-                columns.add(column);
+        if (transformColumns != null) {
+            for (TransformColumn column : transformColumns) {
+                if (StringUtils.equalsIgnoreCase(column.getSourceColumnName(), columnName)) {
+                    columns.add(column);
+                }
             }
         }
         return columns;
@@ -182,9 +184,11 @@ public class TransformTable implements Cloneable {
 
     public List<TransformColumn> getTransformColumnTo(String targetColumn) {
         List<TransformColumn> columns = new ArrayList<TransformColumn>(2);
-        for (TransformColumn column : transformColumns) {
-            if (StringUtils.equalsIgnoreCase(column.getTargetColumnName(), targetColumn)) {
-                columns.add(column);
+        if (transformColumns != null) {
+            for (TransformColumn column : transformColumns) {
+                if (StringUtils.equalsIgnoreCase(column.getTargetColumnName(), targetColumn)) {
+                    columns.add(column);
+                }
             }
         }
         return columns;

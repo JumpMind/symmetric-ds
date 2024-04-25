@@ -55,7 +55,7 @@ public class MsSqlDmlStatement extends DmlStatement {
     @Override
     protected int getTypeCode(Column column, boolean isDateOverrideToTimestamp) {
         int type = column.getMappedTypeCode();
-        if (type == Types.FLOAT) {
+        if (type == Types.FLOAT || type == Types.REAL) {
             return Types.VARCHAR;
         } else {
             return super.getTypeCode(column, isDateOverrideToTimestamp);
