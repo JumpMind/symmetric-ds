@@ -1681,9 +1681,19 @@ public class DataService extends AbstractService implements IDataService {
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
             IFileSyncService fileSyncService = engine.getFileSyncService();
             if (fileSyncService.getFileTriggerRoutersForCurrentNode(false).size() > 0) {
-                TriggerHistory fileSyncSnapshotHistory = triggerRouterService.findTriggerHistory(
-                        null, null,
-                        TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
+                String fileSnapshotTableName = TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT);
+                TriggerHistory fileSyncSnapshotHistory = triggerRouterService.findTriggerHistory(null, null, fileSnapshotTableName);
+                if (fileSyncSnapshotHistory == null) {
+                    if (isFullLoad || reloadRequests == null || isReloadRequestForFileChannel(reloadRequests)) {
+                        log.warn("Did not include file sync batches in load {} for target node {} because there is no valid trigger history for {}",
+                                loadId, targetNode, fileSnapshotTableName);
+                    } else {
+                        log.warn(
+                                "Could not determine whether to include file sync batches in load {} for target node {} because there is no valid trigger history for {}",
+                                loadId, targetNode, fileSnapshotTableName);
+                    }
+                    return totalBatchCount;
+                }
                 String routerid = triggerRouterService.buildSymmetricTableRouterId(
                         fileSyncSnapshotHistory.getTriggerId(), parameterService.getNodeGroupId(),
                         targetNode.getNodeGroupId());
