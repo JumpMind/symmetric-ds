@@ -126,7 +126,7 @@ public class LogSqlBuilder {
             return StringUtils.abbreviate(formatStringValue(object), MAX_FIELD_SIZE_TO_PRINT_TO_LOG);
         } else if (TypeMap.isDateTimeType(type)) {
             return formatDateTimeValue(object, type);
-        } else if (TypeMap.isBinaryType(type)) {
+        } else if (TypeMap.isBinaryType(type) || object instanceof byte[] || object instanceof Blob) {
             return StringUtils.abbreviate(formatBinaryValue(object), MAX_FIELD_SIZE_TO_PRINT_TO_LOG);
         } else {
             return StringUtils.abbreviate(formatUnknownType(object), MAX_FIELD_SIZE_TO_PRINT_TO_LOG);
