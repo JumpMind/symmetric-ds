@@ -259,7 +259,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     long startTime = System.currentTimeMillis();
                     rs = st.executeQuery();
                     long endTime = System.currentTimeMillis();
-                    logSqlBuilder.logSql(log, sql, args, null, (endTime - startTime));
+                    logSqlBuilder.logSql(log, sql, args, types, (endTime - startTime));
                     List<T> list = new ArrayList<T>();
                     ResultSetMetaData rsMetaData = rs.getMetaData();
                     int columnCount = rsMetaData.getColumnCount();
