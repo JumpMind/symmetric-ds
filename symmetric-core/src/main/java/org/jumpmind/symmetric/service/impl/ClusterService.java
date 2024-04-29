@@ -65,6 +65,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.model.NodeHost;
@@ -111,7 +112,10 @@ public class ClusterService extends AbstractService implements IClusterService {
         }
         initInstanceId();
         if (isUpgradedInstanceId) {
-            nodeService.deleteNodeHost(nodeService.findIdentityNodeId()); // This is cleanup mostly for an upgrade.
+            String nodeHostTableName = TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST);
+            String nodeId = nodeService.findIdentityNodeId();
+            log.info("Deleting the row(s) in {} for node '{}' because the instance ID has changed", nodeHostTableName, nodeId);
+            nodeService.deleteNodeHost(nodeId); // This is cleanup mostly for an upgrade.
         }
         checkSymDbOwnership();
         for (Lock lock : lockCache.values()) {
@@ -165,13 +169,19 @@ public class ClusterService extends AbstractService implements IClusterService {
                 log.debug("Failed to load instance id from classpath '" + instanceIdURL + "'", ex);
             }
         }
-        if (StringUtils.isBlank(instanceId) || (generator != null && !generator.isValid(instanceId))) {
+        boolean isInstanceIdBlank = StringUtils.isBlank(instanceId);
+        if (isInstanceIdBlank || (generator != null && !generator.isValid(instanceId))) {
             String newInstanceId = null;
             if (generator != null) {
                 newInstanceId = generator.generateInstanceId();
             }
             if (newInstanceId == null) {
                 newInstanceId = generateInstanceId(AppUtils.getHostName());
+            }
+            if (isInstanceIdBlank) {
+                log.info("Generated a new instance ID ({}) because the current instance ID is missing or blank", newInstanceId);
+            } else {
+                log.info("Generated a new instance ID ({}) because the current instance ID ({}) is invalid", newInstanceId, instanceId);
             }
             instanceId = newInstanceId;
             isUpgradedInstanceId = true;
