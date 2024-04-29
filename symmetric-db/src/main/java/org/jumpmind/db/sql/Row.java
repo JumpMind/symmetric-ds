@@ -33,6 +33,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
@@ -54,6 +55,12 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
     public Row(String columnName, Object value) {
         super(1);
         put(columnName, value);
+    }
+
+    public Row(String[] names, Object[] values) {
+        for (int i = 0; i < names.length && i < values.length; i++) {
+            put(names[i], values[i]);
+        }
     }
 
     public byte[] bytesValue() {
@@ -320,6 +327,16 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
         Object[] values = new Object[keys.length];
         for (int i = 0; i < keys.length; i++) {
             values[i] = get(keys[i]);
+        }
+        return values;
+    }
+
+    public Object[] toArray() {
+        Set<String> keys = keySet();
+        Object[] values = new Object[keys.size()];
+        int i = 0;
+        for (String key : keys) {
+            values[i++] = get(key);
         }
         return values;
     }
