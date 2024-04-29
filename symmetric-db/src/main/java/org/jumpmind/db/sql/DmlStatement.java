@@ -69,6 +69,7 @@ public class DmlStatement {
     protected Column[] columns;
     protected boolean[] nullKeyValues;
     protected String textColumnExpression;
+    protected boolean supportsJdbcEscape = true;
 
     public DmlStatement(DmlStatementOptions options) {
         init(options.getDmlType(), options.getCatalogName(), options.getSchemaName(), options.getTableName(), options.getKeys(),
@@ -446,6 +447,7 @@ public class DmlStatement {
         String regex = "\\?";
         List<Column> columnsToProcess = new ArrayList<Column>();
         columnsToProcess.addAll(Arrays.asList(columns));
+        useJdbcTimestampFormat = useJdbcTimestampFormat && supportsJdbcEscape;
         for (int i = 0; i < columnsToProcess.size(); i++) {
             Column column = columnsToProcess.get(i);
             String name = column.getName();
