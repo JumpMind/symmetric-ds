@@ -333,7 +333,8 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                         List<TableReloadRequest> fullLoad = new ArrayList<TableReloadRequest>();
                         fullLoad.add(load);
                         List<TriggerRouter> triggerRouters = getTriggerRoutersForNodeGroup(triggerRoutersByNodeGroup, targetNode.getNodeGroupId());
-                        extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, fullLoad, processInfo,
+                        boolean reverse = targetNode.getNodeId().equals(source.getCreatedAtNodeId());
+                        extractRequests = engine.getDataService().insertReloadEvents(targetNode, reverse, fullLoad, processInfo,
                                 triggerRouters, extractRequests, reloadGenerator);
                         loadCountToProcess--;
                         if (++activeLoadCount >= maxLoadCount) {
@@ -370,7 +371,8 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                             targetNode.getNodeGroupId());
                     triggerRoutersByTargetNodeGroupId.put(targetNode.getNodeGroupId(), triggerRouters);
                 }
-                extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, entry.getValue(), processInfo,
+                boolean reverse = targetNode.getNodeId().equals(source.getCreatedAtNodeId());
+                extractRequests = engine.getDataService().insertReloadEvents(targetNode, reverse, entry.getValue(), processInfo,
                         triggerRouters, extractRequests, reloadGenerator);
                 loadCountToProcess--;
                 if (++activeLoadCount >= maxLoadCount) {
