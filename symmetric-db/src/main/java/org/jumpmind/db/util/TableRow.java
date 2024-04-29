@@ -20,8 +20,6 @@
  */
 package org.jumpmind.db.util;
 
-import java.util.Map;
-
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
@@ -41,13 +39,6 @@ public class TableRow {
         this.whereSql = whereSql;
         this.referenceColumnName = referenceColumnName;
         this.fkName = fkName;
-    }
-
-    public TableRow(Table table, Map<String, String> rowValues, String whereSql, String referenceColumnName,
-            String fkName) {
-        this(table, (Row) null, whereSql, referenceColumnName, fkName);
-        row = new Row(rowValues.size());
-        row.putAll(rowValues);
     }
 
     protected String getFkColumnValues() {
