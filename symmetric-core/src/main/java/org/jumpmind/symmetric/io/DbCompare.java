@@ -524,14 +524,14 @@ public class DbCompare {
                 }
             }
             Table sourceTableCopy = sourceTable.copy();
-            for (Column column : sourceTableCopy.getColumns()) {
-                if (column.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                        column.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                        column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
-                    column.setMappedType("VARCHAR");
-                    column.setMappedTypeCode(Types.VARCHAR);
-                }
-            }
+//            for (Column column : sourceTableCopy.getColumns()) {
+//                if (column.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+//                        column.getJdbcTypeName().equalsIgnoreCase("unichar") ||
+//                        column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+//                    column.setMappedType("VARCHAR");
+//                    column.setMappedTypeCode(Types.VARCHAR);
+//                }
+//            }
             DbCompareTables tables = new DbCompareTables(sourceTableCopy, null);
             String targetTableName = tableName;
             if (!CollectionUtils.isEmpty(targetTableNames)) {

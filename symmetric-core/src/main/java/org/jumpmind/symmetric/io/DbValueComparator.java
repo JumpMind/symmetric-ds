@@ -75,16 +75,21 @@ public class DbValueComparator {
                     targetColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
                 targetValue = convertString(targetValue, targetColumn, false);
             }
-            if (sourceColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                    sourceColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                    sourceColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
-                sourceValue = convertString(sourceValue, sourceColumn, false);
-            }
+//            if (sourceColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+//                    sourceColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
+//                    sourceColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+//                sourceValue = convertString(sourceValue, sourceColumn, false);
+//            }
             return compareText(sourceColumn, targetColumn, sourceValue, targetValue);
         } else if (sourceColumn.isOfNumericType()) {
             return compareNumeric(sourceColumn, targetColumn, sourceValue, targetValue);
         } else if (TypeMap.isDateTimeType(sourceColumn.getJdbcTypeCode())) {
             return compareDateTime(sourceColumn, targetColumn, sourceValue, targetValue);
+        } else if (sourceColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
+                sourceColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
+                sourceColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+            sourceValue = convertString(sourceValue, sourceColumn, false);
+            return compareText(sourceColumn, targetColumn, sourceValue, targetValue);
         } else {
             return compareDefault(sourceColumn, targetColumn, sourceValue, targetValue);
         }
