@@ -133,7 +133,8 @@ public class TransformWriter extends NestedDataWriter {
                 List<TransformTable> transformTables = activeTransforms;
                 for (TransformTable transformation : transformTables) {
                     Table transformedTable = new Table(transformation.getTargetCatalogName(),
-                            transformation.getTargetSchemaName(), transformation.getTargetTableName());
+                            transformation.getTargetSchemaName(), transformation.getTargetTableName(),
+                            getTargetColumnNames(transformation.getTransformColumns()), getTargetColumnNames(transformation.getPrimaryKeyColumns()));
                     callWriter(transformedTable, data);
                 }
                 return;
@@ -206,6 +207,15 @@ public class TransformWriter extends NestedDataWriter {
         if (processData || !csvData.requiresTable()) {
             this.nestedWriter.write(csvData);
         }
+    }
+
+    protected String[] getTargetColumnNames(List<TransformColumn> columns) {
+        String[] names = new String[columns.size()];
+        int i = 0;
+        for (TransformColumn column : columns) {
+            names[i++] = column.getTargetColumnName();
+        }
+        return names;
     }
 
     protected List<TransformedData> transform(DataEventType eventType, DataContext context,
