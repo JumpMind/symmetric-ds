@@ -89,10 +89,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
     }
 
     public void beforeBatchEnd(DataContext context) {
-        // Only sync triggers if this is not a load only node.
-        if (engine.getSymmetricDialect().getPlatform().equals(engine.getTargetDialect().getPlatform())) {
-            enableSyncTriggers(context);
-        }
+        enableSyncTriggers(context);
     }
 
     public boolean beforeBatchStarted(DataContext context) {
