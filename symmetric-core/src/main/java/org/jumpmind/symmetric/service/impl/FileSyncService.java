@@ -1004,6 +1004,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                                     incomingBatch
                                             .setLoadRowCount(filesToEventType != null ? filesToEventType
                                                     .size() : 0);
+                                    break;
                                 } catch (Throwable e) {
                                     log.error(e.getMessage(),e);
                                     Throwable target = e;
