@@ -27,7 +27,6 @@ import org.jumpmind.db.sql.DmlStatementOptions;
 public class SqliteDmlStatement extends DmlStatement {
     public SqliteDmlStatement(DmlStatementOptions options) {
         super(options);
-        supportsJdbcEscape = false;
     }
 
     @Override
