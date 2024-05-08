@@ -95,6 +95,7 @@ public class DbImport {
     private boolean alterTables = false;
     private boolean dropIfExists = false;
     private boolean ignoreMissingTables = true;
+    private boolean createIndexConvertUniqueToNonuniqueWhenColumnsNotRequired = true;
     protected IDatabasePlatform symmetricPlatform;
     protected List<IDatabaseWriterFilter> databaseWriterFilters;
 
@@ -179,6 +180,7 @@ public class DbImport {
         settings.setDatabaseWriterFilters(databaseWriterFilters);
         settings.setIgnoreMissingTables(ignoreMissingTables);
         settings.setCreateTableAlterCaseToMatchDatabaseDefault(alterCaseToMatchDatabaseDefaultCase);
+        settings.setCreateIndexConvertUniqueToNonuniqueWhenColumnsNotRequired(createIndexConvertUniqueToNonuniqueWhenColumnsNotRequired);
         if (forceImport) {
             settings.addErrorHandler(new DatabaseWriterErrorIgnorer());
         }
@@ -262,6 +264,14 @@ public class DbImport {
 
     public boolean isIgnoreMissingTables() {
         return ignoreMissingTables;
+    }
+
+    public void setCreateIndexConvertUniqueToNonuniqueWhenColumnsNotRequired(boolean createIndexConvertUniqueToNonuniqueWhenColumnsNotRequired) {
+        this.createIndexConvertUniqueToNonuniqueWhenColumnsNotRequired = createIndexConvertUniqueToNonuniqueWhenColumnsNotRequired;
+    }
+
+    public boolean isCreateIndexConvertUniqueToNonuniqueWhenColumnsNotRequired() {
+        return createIndexConvertUniqueToNonuniqueWhenColumnsNotRequired;
     }
 
     public boolean isUseVariableDates() {
