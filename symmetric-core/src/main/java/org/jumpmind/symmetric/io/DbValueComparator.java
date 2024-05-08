@@ -70,24 +70,15 @@ public class DbValueComparator {
             return 0;
         }
         if (sourceColumn.isOfTextType()) {
-            if (targetColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                    targetColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                    targetColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+            if (isUniType(targetColumn.getJdbcTypeName())) {
                 targetValue = convertString(targetValue, targetColumn, false);
             }
-//            if (sourceColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-//                    sourceColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-//                    sourceColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
-//                sourceValue = convertString(sourceValue, sourceColumn, false);
-//            }
             return compareText(sourceColumn, targetColumn, sourceValue, targetValue);
         } else if (sourceColumn.isOfNumericType()) {
             return compareNumeric(sourceColumn, targetColumn, sourceValue, targetValue);
         } else if (TypeMap.isDateTimeType(sourceColumn.getJdbcTypeCode())) {
             return compareDateTime(sourceColumn, targetColumn, sourceValue, targetValue);
-        } else if (sourceColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                sourceColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                sourceColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+        } else if (isUniType(sourceColumn.getJdbcTypeName())) {
             sourceValue = convertString(sourceValue, sourceColumn, false);
             return compareText(sourceColumn, targetColumn, sourceValue, targetValue);
         } else {
@@ -250,6 +241,10 @@ public class DbValueComparator {
             }
         }
         return date;
+    }
+    
+    public boolean isUniType(String type) {
+        return type.equalsIgnoreCase("UNITEXT") || type.equalsIgnoreCase("UNICHAR") || type.equalsIgnoreCase("UNIVARCHAR");
     }
 
     public int getNumericScale() {

@@ -42,6 +42,8 @@ public class DbCompareDiffWriter {
     private boolean continueAfterError = false;
     private boolean error = false;
     private Throwable throwable = null;
+    private String longVarbinary = "LONGVARBINARY";
+    private String varchar = "VARCHAR";
 
     public DbCompareDiffWriter(ISymmetricEngine targetEngine, DbCompareTables tables, OutputStream stream) {
         super();
@@ -66,10 +68,8 @@ public class DbCompareDiffWriter {
                     null, null);
             Row row = new Row(targetCompareRow.getTable().getPrimaryKeyColumnCount());
             for (int i = 0; i < targetCompareRow.getTable().getPrimaryKeyColumnCount(); i++) {
-                if (table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                        table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                        table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("unitext")) {
-                    table.getColumn(i).setMappedType("VARCHAR");
+                if (isUniType(table.getColumn(i).getJdbcTypeName())) {
+                    table.getColumn(i).setMappedType(varchar);
                     String convertedValue = DbValueComparator.convertString(targetCompareRow.getRowValues().get(targetCompareRow.getTable().getColumn(i)
                             .getName()), targetCompareRow.getTable().getColumn(i), false);
                     row.put(table.getColumn(i).getName(), convertedValue);
@@ -81,10 +81,8 @@ public class DbCompareDiffWriter {
             String sql = statement.buildDynamicDeleteSql(BinaryEncoding.HEX, row, false, true);
             writeLine(sql);
             for (int i = 0; i < targetCompareRow.getTable().getPrimaryKeyColumnCount(); i++) {
-                if (table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                        table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                        table.getColumn(i).getJdbcTypeName().equalsIgnoreCase("unitext")) {
-                    table.getColumn(i).setMappedType("LONGVARBINARY");
+                if (isUniType(table.getColumn(i).getJdbcTypeName())) {
+                    table.getColumn(i).setMappedType(longVarbinary);
                 }
             }
         } catch (RuntimeException e) {
@@ -124,9 +122,7 @@ public class DbCompareDiffWriter {
                 if (targetColumn == null) {
                     continue;
                 }
-                if (targetColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                        targetColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                        targetColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                if (isUniType(targetColumn.getJdbcTypeName())) {
                     targetColumn.setMappedType("VARCHAR");
                 }
                 row.put(targetColumn.getName(), sourceCompareRow.getRowValues().get(sourceColumn.getName()));
@@ -138,15 +134,11 @@ public class DbCompareDiffWriter {
                 if (targetColumn == null) {
                     continue;
                 }
-                if (targetColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                        targetColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                        targetColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
-                    targetColumn.setMappedType("LONGVARBINARY");
+                if (isUniType(targetColumn.getJdbcTypeName())) {
+                    targetColumn.setMappedType(longVarbinary);
                 }
-                if (sourceColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                        sourceColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                        sourceColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
-                    sourceColumn.setMappedType("LONGVARBINARY");
+                if (isUniType(sourceColumn.getJdbcTypeName())) {
+                    sourceColumn.setMappedType(longVarbinary);
                 }
             }
         } catch (RuntimeException e) {
@@ -173,19 +165,15 @@ public class DbCompareDiffWriter {
             Row row = new Row(changedColumns.length + table.getPrimaryKeyColumnCount());
             for (Column changedColumn : deltas.keySet()) {
                 String value = deltas.get(changedColumn);
-                if (changedColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                        changedColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                        changedColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
-                    changedColumn.setMappedType("VARCHAR");
+                if (isUniType(changedColumn.getJdbcTypeName())) {
+                    changedColumn.setMappedType(varchar);
                 }
                 row.put(changedColumn.getName(), value);
             }
             for (String pkColumnName : table.getPrimaryKeyColumnNames()) {
                 String value = targetCompareRow.getRow().getString(pkColumnName);
                 Column pkColumn = targetCompareRow.getTable().getColumnWithName(pkColumnName);
-                if (pkColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                        pkColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                        pkColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                if (isUniType(pkColumn.getJdbcTypeName())) {
                     String convertedValue = DbValueComparator.convertString(value, pkColumn, true);
                     row.put(pkColumnName, convertedValue);
                 } else {
@@ -195,18 +183,14 @@ public class DbCompareDiffWriter {
             String sql = statement.buildDynamicSql(BinaryEncoding.HEX, row, false, true);
             writeLine(sql);
             for (Column changedColumn : deltas.keySet()) {
-                if (changedColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                        changedColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                        changedColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
-                    changedColumn.setMappedType("LONGVARBINARY");
+                if (isUniType(changedColumn.getJdbcTypeName())) {
+                    changedColumn.setMappedType(longVarbinary);
                 }
             }
             for (String pkColumnName : table.getPrimaryKeyColumnNames()) {
                 Column pkColumn = targetCompareRow.getTable().getColumnWithName(pkColumnName);
-                if (pkColumn.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                        pkColumn.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                        pkColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
-                    pkColumn.setMappedType("LONGVARBINARY");
+                if (isUniType(pkColumn.getJdbcTypeName())) {
+                    pkColumn.setMappedType(longVarbinary);
                 }
             }
         } catch (RuntimeException e) {
@@ -237,6 +221,10 @@ public class DbCompareDiffWriter {
         } catch (Exception ex) {
             throw new RuntimeException("failed to write to stream '" + line + "'", ex);
         }
+    }
+    
+    public boolean isUniType(String type) {
+        return type.equalsIgnoreCase("UNITEXT") || type.equalsIgnoreCase("UNICHAR") || type.equalsIgnoreCase("UNIVARCHAR");
     }
 
     public void setContinueAfterError(boolean continueAfterError) {
