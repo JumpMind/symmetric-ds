@@ -3614,11 +3614,9 @@ public class DataService extends AbstractService implements IDataService {
                         data.setDataEventType(DataEventType.UPDATE);
                         data.setRowData(rowData);
                         data.setPkData(pkData);
-                        data.setOldData(null);
                         insertList.add(data);
                     } else if (rowData == null && data.getDataEventType() == DataEventType.DELETE) {
                         data.setPkData(pkData);
-                        data.setOldData(null);
                         insertList.add(data);
                     }
                     data.setTransactionId("recapture-" + ts);
