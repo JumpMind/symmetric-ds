@@ -35,5 +35,6 @@ final public class ContextConstants {
     public static final String LOG_MINER_NEXT_ID = "log.miner.next.id";
     public static final String LOG_MINER_OPEN_TRANSACTIONS = "log.miner.open.transactions";
     public static final String LOG_MINER_LOG_FILE_NAME = "log.miner.log.file.name";
+    public static final String LOG_MINER_INCOMING_TRANSACTIONS = "log.miner.incoming.transactions";
     public static final String MONITOR_LAST_CHECK_TIMES = "monitor.last.check.times";
 }

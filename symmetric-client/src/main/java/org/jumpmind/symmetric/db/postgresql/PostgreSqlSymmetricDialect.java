@@ -22,10 +22,12 @@ package org.jumpmind.symmetric.db.postgresql;
 
 import java.sql.Types;
 import java.util.Date;
+import java.util.List;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -280,6 +282,17 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
         } else {
             return "null";
         }
+    }
+
+    @Override
+    public String getTransactionId(ISqlTransaction transaction) {
+        if (supportsTransactionId()) {
+            List<String> list = transaction.query("select " + TRANSACTION_ID_EXPRESSION, new StringMapper(), null, null);
+            if (list != null && list.size() > 0) {
+                return list.get(0);
+            }
+        }
+        return null;
     }
 
     @Override

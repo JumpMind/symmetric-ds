@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db.mysql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -31,6 +32,7 @@ import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.SymmetricException;
@@ -242,6 +244,22 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
             Trigger trigger) {
         return getTransactionFunctionName() + "()";
+    }
+
+    @Override
+    public String getTransactionId(ISqlTransaction transaction) {
+        String xid = null;
+        if (supportsTransactionId()) {
+            List<String> list = transaction.query("select @@gtid_executed", new StringMapper(), null, null);
+            if (list != null && list.size() > 0) {
+                String gtid = list.get(0);
+                int index = gtid.indexOf(':');
+                if (index != -1) {
+                    xid = gtid.substring(index + 1);
+                }
+            }
+        }
+        return xid;
     }
 
     public void cleanDatabase() {

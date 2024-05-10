@@ -59,6 +59,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IIncomingBatchListener;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.TransportException;
 import org.jumpmind.util.ExceptionUtils;
@@ -77,6 +78,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
     private IStatisticManager statisticManager;
     private ISymmetricDialect symmetricDialect;
     private IDataLoaderService dataLoaderService;
+    private IIncomingBatchListener incomingBatchListener;
 
     public ManageIncomingBatchListener(ProcessInfo processInfo, ISymmetricEngine engine) {
         this.processInfo = processInfo;
@@ -86,9 +88,16 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
         this.dataLoaderService = engine.getDataLoaderService();
         this.incomingBatchService = engine.getIncomingBatchService();
         this.statisticManager = engine.getStatisticManager();
+        this.incomingBatchListener = engine.getExtensionService().getExtensionPoint(IIncomingBatchListener.class);
+        if (!this.incomingBatchListener.isInterestedInBatches()) {
+            this.incomingBatchListener = null;
+        }
     }
 
     public void beforeBatchEnd(DataContext context) {
+        if (incomingBatchListener != null) {
+            incomingBatchListener.batchStarted(context, symmetricDialect);
+        }
         enableSyncTriggers(context);
     }
 
@@ -144,6 +153,9 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
         statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
                 this.currentBatch.getByteCount());
         statisticManager.incrementTableRows(this.currentBatch.getTableLoadedCount(), true);
+        if (incomingBatchListener != null) {
+            incomingBatchListener.batchCommitted(context, symmetricDialect);
+        }
         Status oldStatus = this.currentBatch.getStatus();
         try {
             this.currentBatch.setStatus(Status.OK);

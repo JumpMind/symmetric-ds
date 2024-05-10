@@ -105,6 +105,8 @@ public interface ISymmetricDialect {
 
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger);
 
+    public String getTransactionId(ISqlTransaction transaction);
+
     public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table, TriggerHistory triggerHistory, Channel channel,
             String overrideSelectSql);
 

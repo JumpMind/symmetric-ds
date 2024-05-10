@@ -242,6 +242,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return "null";
     }
 
+    public String getTransactionId(ISqlTransaction transaction) {
+        return null;
+    }
+
     public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table, TriggerHistory triggerHistory, Channel channel,
             String overrideSelectSql) {
         return triggerTemplate.createInitalLoadSql(node, trigger, table, triggerHistory, channel, overrideSelectSql).trim();

@@ -3334,7 +3334,7 @@ public class DataService extends AbstractService implements IDataService {
             TriggerHistory triggerHistory = engine.getTriggerRouterService().getTriggerHistory(triggerHistId);
             if (triggerHistory == null) {
                 triggerHistory = findOrCreateTriggerHistory(tableName, triggerHistId, data, false);
-            } else if (!triggerHistory.getSourceTableName().equals(tableName)) {
+            } else if (!triggerHistory.getSourceTableName().equalsIgnoreCase(tableName)) {
                 if (mismatchedTableName == null) {
                     mismatchedTableName = new HashMap<String, TriggerHistory>();
                 }
