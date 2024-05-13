@@ -79,7 +79,8 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
     public boolean start() {
         try {
             if (engine != null) {
-                engine.getParameterService().saveParameter(ParameterConstants.AUTO_START_ENGINE, "true", Constants.SYSTEM_USER);
+                engine.getParameterService().saveParameter(engine.getParameterService().getExternalId(), engine.getParameterService().getNodeGroupId(),
+                        ParameterConstants.AUTO_START_ENGINE, "true", Constants.SYSTEM_USER);
                 return engine.start();
             } else {
                 return false;
@@ -95,7 +96,8 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         try {
             if (engine != null) {
                 engine.stop();
-                engine.getParameterService().saveParameter(ParameterConstants.AUTO_START_ENGINE, "false", Constants.SYSTEM_USER);
+                engine.getParameterService().saveParameter(engine.getParameterService().getExternalId(), engine.getParameterService().getNodeGroupId(),
+                        ParameterConstants.AUTO_START_ENGINE, "false", Constants.SYSTEM_USER);
             }
         } catch (Exception ex) {
             log.error("", ex);
