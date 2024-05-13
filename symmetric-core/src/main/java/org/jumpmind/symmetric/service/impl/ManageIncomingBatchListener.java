@@ -89,7 +89,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
         this.incomingBatchService = engine.getIncomingBatchService();
         this.statisticManager = engine.getStatisticManager();
         this.incomingBatchListener = engine.getExtensionService().getExtensionPoint(IIncomingBatchListener.class);
-        if (!this.incomingBatchListener.isInterestedInBatches()) {
+        if (this.incomingBatchListener != null && !this.incomingBatchListener.isInterestedInBatches()) {
             this.incomingBatchListener = null;
         }
     }
