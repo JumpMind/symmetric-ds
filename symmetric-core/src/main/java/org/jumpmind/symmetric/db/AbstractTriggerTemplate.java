@@ -68,6 +68,7 @@ abstract public class AbstractTriggerTemplate {
     protected String xmlColumnTemplate;
     protected String arrayColumnTemplate;
     protected String numberColumnTemplate;
+    protected String moneyColumnTemplate;
     protected String datetimeColumnTemplate;
     protected String timeColumnTemplate;
     protected String dateColumnTemplate;
@@ -828,6 +829,9 @@ abstract public class AbstractTriggerTemplate {
                 case Types.NUMERIC:
                 case Types.DECIMAL:
                     templateToUse = numberColumnTemplate;
+                    if (moneyColumnTemplate != null && column.getJdbcTypeName().equalsIgnoreCase("money")) {
+                        templateToUse = moneyColumnTemplate;
+                    }
                     break;
                 case Types.CHAR:
                 case Types.NCHAR:

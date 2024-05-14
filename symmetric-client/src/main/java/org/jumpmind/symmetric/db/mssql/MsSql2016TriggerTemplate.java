@@ -25,7 +25,8 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 public class MsSql2016TriggerTemplate extends MsSql2008TriggerTemplate {
     public MsSql2016TriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
-        numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar(40), $(tableAlias).\"$(columnName)\", 3) + '\"') end" ;
+        numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar(40), $(tableAlias).\"$(columnName)\", 3) + '\"') end";
+        moneyColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar(40), $(tableAlias).\"$(columnName)\", 2) + '\"') end";
     }
 
     @Override
