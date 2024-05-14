@@ -829,7 +829,7 @@ abstract public class AbstractTriggerTemplate {
                 case Types.NUMERIC:
                 case Types.DECIMAL:
                     templateToUse = numberColumnTemplate;
-                    if (moneyColumnTemplate != null && column.getJdbcTypeName().equalsIgnoreCase("money")) {
+                    if (moneyColumnTemplate != null && column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains("MONEY")) {
                         templateToUse = moneyColumnTemplate;
                     }
                     break;
