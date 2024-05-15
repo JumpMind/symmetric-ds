@@ -704,6 +704,9 @@ public class Trigger implements IModelObject, Cloneable {
         if (null != excludedColumnNames) {
             hashedValue += excludedColumnNames.hashCode();
         }
+        if (null != includedColumnNames) {
+            hashedValue += includedColumnNames.hashCode();
+        }
         if (null != externalSelect) {
             hashedValue += externalSelect.hashCode();
         }
