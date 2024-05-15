@@ -214,10 +214,6 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                         && context.getWriter().getStatistics().get(batch) != null) {
                     this.currentBatch.setValues(context.getReader().getStatistics().get(batch),
                             context.getWriter().getStatistics().get(batch), false);
-                    statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(),
-                            this.currentBatch.getLoadRowCount());
-                    statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
-                            this.currentBatch.getByteCount());
                     statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
                 } else {
                     log.error("An error caused a batch to fail without attempting to load data for batch " +
