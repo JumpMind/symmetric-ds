@@ -20,7 +20,11 @@
  */
 package org.jumpmind.symmetric.db.mariadb;
 
+import java.util.List;
+
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.db.mysql.MySqlSymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -31,5 +35,15 @@ public class MariaDBSymmetricDialect extends MySqlSymmetricDialect {
         super(parameterService, platform);
         platform.getDatabaseInfo().setGeneratedColumnsSupported(!Version.isOlderThanVersion(getProductVersion(), "5.2"));
         platform.getDatabaseInfo().setExpressionsAsDefaultValuesSupported(false);
+    }
+
+    @Override
+    public String getTransactionId(ISqlTransaction transaction) {
+        String xid = null;
+        if (supportsTransactionId()) {
+            List<String> list = transaction.query("select @@last_gtid", new StringMapper(), null, null);
+            return list != null && list.size() > 0 ? list.get(0) : null;
+        }
+        return xid;
     }
 }

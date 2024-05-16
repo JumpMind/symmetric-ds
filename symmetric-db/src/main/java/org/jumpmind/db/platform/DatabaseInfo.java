@@ -232,6 +232,7 @@ public class DatabaseInfo {
     private boolean triggersContainJava = false;
     private boolean canDeleteUsingExists = true;
     private boolean canTriggerExistWithoutTable = false;
+    private boolean jdbcTimestampAllowed = true;
 
     /**
      * Creates a new platform info object.
@@ -1369,5 +1370,13 @@ public class DatabaseInfo {
 
     public void setCanTriggerExistWithoutTable(boolean canTriggerExistWithoutTable) {
         this.canTriggerExistWithoutTable = canTriggerExistWithoutTable;
+    }
+
+    public boolean isJdbcTimestampAllowed() {
+        return jdbcTimestampAllowed;
+    }
+
+    public void setJdbcTimestampAllowed(boolean jdbcTimestampAllowed) {
+        this.jdbcTimestampAllowed = jdbcTimestampAllowed;
     }
 }

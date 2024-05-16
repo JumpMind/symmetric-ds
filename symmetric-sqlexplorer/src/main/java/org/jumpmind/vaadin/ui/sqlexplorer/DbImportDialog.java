@@ -75,6 +75,7 @@ public class DbImportDialog extends ResizableDialog {
     private Checkbox ignoreConflicts;
     private Checkbox ignoreMissingTables;
     private Checkbox replace;
+    private Checkbox convertUniIndexes;
     private ComboBox<String> schemaSelect;
     private ComboBox<String> catalogSelect;
     private ComboBox<String> listOfTablesSelect;
@@ -185,6 +186,9 @@ public class DbImportDialog extends ResizableDialog {
         formLayout.add(ignoreMissingTables);
         replace = new Checkbox("Replace rows with conflicts");
         formLayout.add(replace);
+        convertUniIndexes = new Checkbox("Convert unique indexes to non-unique when one of the columns is defined as not required");
+        convertUniIndexes.setValue(true);
+        formLayout.add(convertUniIndexes);
         alter = new Checkbox("Alter existing tables, if needed");
         alter.setEnabled(false);
         alter.setValue(true);
@@ -271,6 +275,7 @@ public class DbImportDialog extends ResizableDialog {
         dbImport.setIgnoreMissingTables(ignoreMissingTables.getValue());
         dbImport.setAlterTables(alter.getValue());
         dbImport.setAlterCaseToMatchDatabaseDefaultCase(alterCase.getValue());
+        dbImport.setCreateIndexConvertUniqueToNonuniqueWhenColumnsNotRequired(convertUniIndexes.getValue());
     }
 
     protected boolean importButtonEnable() {

@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.io;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -233,16 +232,12 @@ public class DbCompare {
                     }
                     if (targetCompareRowCopy != null || sourceCompareRowCopy != null) {
                         for (String pkColumnName : targetCompareRowCopy.getTable().getPrimaryKeyColumnNames()) {
-                            if (targetCompareRowCopy.getTable().getColumnWithName(pkColumnName).getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                                    targetCompareRowCopy.getTable().getColumnWithName(pkColumnName).getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                                    targetCompareRowCopy.getTable().getColumnWithName(pkColumnName).getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                            if (isUniType(targetCompareRowCopy.getTable().getColumnWithName(pkColumnName).getJdbcTypeName())) {
                                 targetCompareRowCopy.getTable().getColumnWithName(pkColumnName).setMappedType("VARCHAR");
                             }
                         }
                         for (String pkColumnName : sourceCompareRowCopy.getTable().getPrimaryKeyColumnNames()) {
-                            if (sourceCompareRowCopy.getTable().getColumnWithName(pkColumnName).getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                                    sourceCompareRowCopy.getTable().getColumnWithName(pkColumnName).getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                                    sourceCompareRowCopy.getTable().getColumnWithName(pkColumnName).getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                            if (isUniType(sourceCompareRowCopy.getTable().getColumnWithName(pkColumnName).getJdbcTypeName())) {
                                 sourceCompareRowCopy.getTable().getColumnWithName(pkColumnName).setMappedType("VARCHAR");
                             }
                         }
@@ -383,9 +378,7 @@ public class DbCompare {
             }
             if (isUsingUnitypes) {
                 for(Column column : statement.getColumns()) {
-                    if(column.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                            column.getJdbcTypeName().equalsIgnoreCase("univarchar") || 
-                            column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                    if(isUniType(column.getJdbcTypeName())) {
                         if(sybaseUnitypeConversions.contains(" " +column.getName() + ",")) {
                             sybaseUnitypeConversions = sybaseUnitypeConversions.replace(" " +column.getName() + ",","case when " + column.getName() + " is null then null else '\"' +\n"
                                     + " bintostr(convert(varbinary(16384),"+column.getName()+")) + '\"' end as _uni_" +column.getName() + " ," );
@@ -524,14 +517,6 @@ public class DbCompare {
                 }
             }
             Table sourceTableCopy = sourceTable.copy();
-            for (Column column : sourceTableCopy.getColumns()) {
-                if (column.getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                        column.getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                        column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
-                    column.setMappedType("VARCHAR");
-                    column.setMappedTypeCode(Types.VARCHAR);
-                }
-            }
             DbCompareTables tables = new DbCompareTables(sourceTableCopy, null);
             String targetTableName = tableName;
             if (!CollectionUtils.isEmpty(targetTableNames)) {
@@ -712,6 +697,10 @@ public class DbCompare {
             Map<String, String> targetTableNameParts = targetEngine.getTargetDialect().getTargetPlatform().parseQualifiedTableName(targetTableName);
             return StringUtils.equalsIgnoreCase(sourceTableNameParts.get("table"), targetTableNameParts.get("table"));
         }
+    }
+    
+    public boolean isUniType(String type) {
+        return type.equalsIgnoreCase("UNITEXT") || type.equalsIgnoreCase("UNICHAR") || type.equalsIgnoreCase("UNIVARCHAR");
     }
 
     static class CountingSqlReadCursor implements ISqlReadCursor<Row>, Closeable {

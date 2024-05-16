@@ -140,7 +140,7 @@ public class ExtractDataReader implements IDataReader {
                 Table targetTable = this.currentSource.getTargetTable();
                 if (targetTable != null && targetTable.equals(this.table)) {
                     data = enhanceWithLobsFromSourceIfNeeded(this.currentSource.getSourceTable(), data);
-                    if (isSybaseASE && isUsingUnitypes) {
+                    if (isSybaseASE && isUsingUnitypes && !this.currentSource.requiresLobsSelectedFromSource(data)) {
                         data = convertUtf16toUTF8(this.currentSource.getSourceTable(), data);
                     }
                 } else {
@@ -190,7 +190,7 @@ public class ExtractDataReader implements IDataReader {
                 Object[] args = new Object[pkColumns.length];
                 for (int i = 0; i < pkColumns.length; i++) {
                     args[i] = columnDataMap.get(pkColumns[i].getName());
-                }
+                }                
                 String sql = buildSelect(table, lobColumns, pkColumns);
                 Row row = sqlTemplate.queryForRow(sql, args);
                 if (row == null) {
@@ -202,7 +202,18 @@ public class ExtractDataReader implements IDataReader {
                         if (platform.isBlob(lobColumn.getMappedTypeCode())) {
                             byte[] binaryData = row.getBytes(lobColumn.getName());
                             if (binaryData != null) {
-                                if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
+                                if(isUniType(lobColumn.getJdbcTypeName())) {
+                                    try {
+                                        String utf16String = null;
+                                        String baseString = row.getString(lobColumn.getName());
+                                        baseString = "fffe" + baseString;
+                                        utf16String = new String(Hex.decodeHex(baseString), "UTF-16");
+                                        String utf8String = new String(utf16String.getBytes(Charset.defaultCharset()), Charset.defaultCharset());
+                                        valueForCsv = utf8String;
+                                    } catch (UnsupportedEncodingException | DecoderException e) {
+                                        e.printStackTrace();
+                                    }
+                                } else if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
                                     valueForCsv = new String(Base64.encodeBase64(binaryData), Charset.defaultCharset());
                                 } else if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
                                     valueForCsv = new String(Hex.encodeHex(binaryData));
@@ -237,9 +248,7 @@ public class ExtractDataReader implements IDataReader {
                 ISqlTemplate sqlTemplate = platform.getSqlTemplate();
                 Object[] args = new Object[pkColumns.length];
                 for (int i = 0; i < pkColumns.length; i++) {
-                    if (pkColumns[i].getJdbcTypeName() != null && (pkColumns[i].getJdbcTypeName().equalsIgnoreCase("univarchar") ||
-                            pkColumns[i].getJdbcTypeName().equalsIgnoreCase("unichar") ||
-                            pkColumns[i].getJdbcTypeName().equalsIgnoreCase("unitext"))) {
+                    if (pkColumns[i].getJdbcTypeName() != null && (isUniType(pkColumns[i].getJdbcTypeName()))) {
                         String utf16String = null;
                         String baseString = (String) columnDataMap.get(pkColumns[i].getName());
                         baseString = "fffe" + baseString;
@@ -262,13 +271,9 @@ public class ExtractDataReader implements IDataReader {
                             int index = ArrayUtils.indexOf(columnNames, uniColumn.getName());
                             if (rowData[index] != null) {
                                 String utf16String = null;
-                                // if (batch.getChannelId().equalsIgnoreCase("reload")) {
-                                // utf16String = new String(Hex.decodeHex(rowData[index]), "UTF-16");
-                                // } else {
                                 String baseString = rowData[index];
                                 baseString = "fffe" + baseString;
                                 utf16String = new String(Hex.decodeHex(baseString), "UTF-16");
-                                // }
                                 String utf8String = new String(utf16String.getBytes(Charset.defaultCharset()), Charset.defaultCharset());
                                 rowData[index] = utf8String;
                             }
@@ -306,6 +311,8 @@ public class ExtractDataReader implements IDataReader {
             if ("XMLTYPE".equalsIgnoreCase(lobColumn.getJdbcTypeName()) && 2009 == lobColumn.getJdbcTypeCode()) {
                 sql.append("extract(").append(quote).append(lobColumn.getName()).append(quote);
                 sql.append(", '/').getClobVal()");
+            } else if(isUniType(lobColumn.getJdbcTypeName())) {
+                sql.append("bintostr(convert(varbinary(16384),"+lobColumn.getName()+")) as " + lobColumn.getName());
             } else {
                 sql.append(quote).append(lobColumn.getName()).append(quote);
             }

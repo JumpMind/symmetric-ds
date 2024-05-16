@@ -47,11 +47,13 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
 import org.jumpmind.db.platform.PermissionResult.Status;
@@ -81,6 +83,14 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         String versionString = getSqlTemplate().getDatabaseProductVersion();
         if (VersionUtil.isOlderThanVersion(versionString, "8.0")) {
             ddlBuilder.getDatabaseInfo().setCanDeleteUsingExists(false);
+        }
+        if (VersionUtil.isOlderThanVersion(versionString, "5.6")) {
+            DatabaseInfo databaseInfo = ddlBuilder.getDatabaseInfo();
+            databaseInfo.setHasSize(Types.TIMESTAMP, false);
+            databaseInfo.setHasSize(ColumnTypes.TIMESTAMPTZ, false);
+            databaseInfo.setHasSize(ColumnTypes.TIMESTAMPLTZ, false);
+            databaseInfo.setHasSize(Types.TIME, false);
+            databaseInfo.setHasSize(ColumnTypes.TIMETZ, false);
         }
     }
 

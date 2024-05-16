@@ -57,6 +57,7 @@ public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform impleme
         sqlScriptReplacementTokens.put("\\{ts([^<]*?)\\}", "$1");
         sqlScriptReplacementTokens.put("\\{d([^<]*?)\\}", "$1");
         supportsTruncate = false;
+        getDatabaseInfo().setJdbcTimestampAllowed(false);
     }
 
     @Override

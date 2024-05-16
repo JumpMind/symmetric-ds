@@ -296,8 +296,14 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                 || (PlatformUtils.supportsJava14JdbcTypes() && (column
                         .getMappedTypeCode() == PlatformUtils
                                 .determineBooleanTypeCode()))) {
-            return getDefaultValueHelper().convert(column.getDefaultValue(),
-                    column.getMappedTypeCode(), Types.SMALLINT);
+            String defaultValue = column.getDefaultValue();
+            if ("NULL".equalsIgnoreCase(defaultValue)) {
+                return defaultValue;
+            }
+            if ("'True'".equalsIgnoreCase(defaultValue)) {
+                return "1";
+            }
+            return getDefaultValueHelper().convert(defaultValue, column.getMappedTypeCode(), Types.SMALLINT);
         }
         if ((column.getMappedTypeCode() == Types.TIMESTAMP) || (column.getMappedTypeCode() == Types.TIME) || (column.getMappedTypeCode() == Types.DATE)) {
             String defaultValue = super.getNativeDefaultValue(column);

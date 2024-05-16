@@ -24,6 +24,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +37,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -306,6 +308,17 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
             Trigger trigger) {
         return parameterService.getTablePrefix() + "_" + "transaction_id()";
+    }
+
+    @Override
+    public String getTransactionId(ISqlTransaction transaction) {
+        if (supportsTransactionId()) {
+            List<String> list = transaction.query("select DBMS_TRANSACTION.local_transaction_id() from dual", new StringMapper(), null, null);
+            if (list != null && list.size() > 0) {
+                return list.get(0);
+            }
+        }
+        return null;
     }
 
     @Override

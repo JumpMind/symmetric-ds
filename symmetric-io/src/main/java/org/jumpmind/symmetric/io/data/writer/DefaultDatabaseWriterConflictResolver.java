@@ -29,7 +29,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -575,8 +574,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                         databaseWriter.getWriterSettings().getTextColumnExpression());
                 // Query the row that we need to delete because it is blocking us
                 Row uniqueRow = queryForRow(platform, databaseWriter, selectStmt.getSql(), objectValues);
-                CsvData uniqueData = new CsvData(DataEventType.INSERT, uniqueRow.toStringArray(targetTable.getColumnNames()));
-                if (deleteForeignKeyChildren(platform, sqlTemplate, databaseWriter, targetTable, uniqueData)) {
+                if (deleteForeignKeyChildren(platform, sqlTemplate, databaseWriter, targetTable, null, uniqueRow)) {
                     count = prepareAndExecute(platform, databaseWriter, sql, objectValues);
                 }
             } else {
@@ -602,7 +600,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             }
             log.info("Child exists foreign key violation on table {} during {} with batch {}.  Attempting to correct.",
                     targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
-            if (deleteForeignKeyChildren(platform, sqlTemplate, databaseWriter, writer.getTargetTable(), data)) {
+            if (deleteForeignKeyChildren(platform, sqlTemplate, databaseWriter, writer.getTargetTable(), data, null)) {
                 return true;
             } else {
                 throw new RuntimeException("Failed to delete foreign table rows to fix foreign key violation for table '"
@@ -613,33 +611,24 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
     }
 
     protected boolean deleteForeignKeyChildren(IDatabasePlatform platform, ISqlTemplate sqlTemplate, DefaultDatabaseWriter databaseWriter, Table targetTable,
-            CsvData data) {
-        Map<String, String> values = null;
+            CsvData data, Row row) {
         List<TableRow> tableRows = new ArrayList<TableRow>();
-        if (data.getDataEventType() == DataEventType.INSERT) {
-            values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getColumnNames(), CsvData.ROW_DATA);
+        BinaryEncoding encoding = databaseWriter.getBatch().getBinaryEncoding();
+        Table sourceTable = databaseWriter.getSourceTable();
+        if (row != null) {
+            tableRows.add(new TableRow(targetTable, row, null, null, null));
+        } else if (data.getDataEventType() == DataEventType.INSERT) {
+            Object[] objectValues = platform.getObjectValues(encoding, data.getParsedData(CsvData.ROW_DATA), sourceTable.getColumns());
+            tableRows.add(new TableRow(targetTable, new Row(sourceTable.getColumnNames(), objectValues), null, null, null));
         } else {
-            values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getColumnNames(), CsvData.OLD_DATA);
-            if (values == null || values.size() == 0) {
-                values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getPrimaryKeyColumnNames(), CsvData.PK_DATA);
-                Row whereRow = new Row(values.size());
-                boolean[] nullValues = new boolean[values.size()];
-                int index = 0;
-                for (Entry<String, String> entry : values.entrySet()) {
-                    nullValues[index++] = entry.getValue() == null;
-                    whereRow.put(entry.getKey(), entry.getValue());
-                }
-                DmlStatement whereSt = platform.createDmlStatement(DmlType.WHERE, targetTable.getCatalog(),
-                        targetTable.getSchema(), targetTable.getName(), targetTable.getPrimaryKeyColumns(),
-                        targetTable.getColumns(), nullValues, null);
-                String whereSql = whereSt.buildDynamicSql(BinaryEncoding.HEX, whereRow, false, true,
-                        targetTable.getPrimaryKeyColumns()).substring(6);
-                String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
-                if (delimiter != null && delimiter.length() > 0) {
-                    whereSql = whereSql.substring(0, whereSql.length() - delimiter.length());
-                }
+            String[] oldData = data.getParsedData(CsvData.OLD_DATA);
+            String[] pkData = data.getParsedData(CsvData.PK_DATA);
+            if (oldData != null && oldData.length > 0) {
+                Object[] objectValues = platform.getObjectValues(encoding, oldData, sourceTable.getColumns());
+                tableRows.add(new TableRow(targetTable, new Row(sourceTable.getColumnNames(), objectValues), null, null, null));
+            } else if (pkData != null && pkData.length > 0) {
+                Object[] keys = platform.getObjectValues(encoding, pkData, sourceTable.getColumns());
                 DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, targetTable, null);
-                Object[] keys = whereRow.toArray(targetTable.getPrimaryKeyColumnNames());
                 Row targetRow = doInTransaction(platform, databaseWriter, new ITransactionCallback<Row>() {
                     public Row execute(ISqlTransaction transaction) {
                         return transaction.queryForRow(selectSt.getSql(), keys);
@@ -651,7 +640,8 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             }
         }
         if (tableRows.isEmpty()) {
-            tableRows.add(new TableRow(targetTable, values, null, null, null));
+            Object[] objectValues = platform.getObjectValues(encoding, data.getParsedData(CsvData.ROW_DATA), sourceTable.getColumns());
+            tableRows.add(new TableRow(targetTable, new Row(sourceTable.getColumnNames(), objectValues), null, null, null));
         }
         List<TableRow> foreignTableRows = doInTransaction(platform, databaseWriter, new ITransactionCallback<List<TableRow>>() {
             public List<TableRow> execute(ISqlTransaction transaction) {

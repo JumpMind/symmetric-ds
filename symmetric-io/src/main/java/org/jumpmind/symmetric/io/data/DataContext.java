@@ -123,6 +123,19 @@ public class DataContext extends Context {
         return transaction;
     }
 
+    public ISqlTransaction findTargetTransaction() {
+        ISqlTransaction transaction = null;
+        if (writer instanceof NestedDataWriter) {
+            DefaultDatabaseWriter dbWriter = ((NestedDataWriter) writer).getNestedWriterOfType(DefaultDatabaseWriter.class);
+            if (dbWriter != null) {
+                transaction = dbWriter.getTargetTransaction();
+            }
+        } else if (writer instanceof DefaultDatabaseWriter) {
+            transaction = ((DefaultDatabaseWriter) writer).getTargetTransaction();
+        }
+        return transaction;
+    }
+
     public ISqlTransaction findSymmetricTransaction(String tablePrefix) {
         ISqlTransaction transaction = null;
         if (writer instanceof NestedDataWriter) {

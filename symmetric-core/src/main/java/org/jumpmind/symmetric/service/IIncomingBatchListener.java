@@ -18,22 +18,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.db.mssql;
+package org.jumpmind.symmetric.service;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.data.DataContext;
 
-public class MsSql2016TriggerTemplate extends MsSql2008TriggerTemplate {
-    public MsSql2016TriggerTemplate(ISymmetricDialect symmetricDialect) {
-        super(symmetricDialect);
-        numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar(40), $(tableAlias).\"$(columnName)\", 3) + '\"') end";
-        moneyColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar(40), $(tableAlias).\"$(columnName)\", 2) + '\"') end";
-    }
+public interface IIncomingBatchListener extends IBuiltInExtensionPoint {
+    public boolean isInterestedInBatches();
 
-    @Override
-    protected String getCreateTriggerString() {
-        if (symmetricDialect.getPlatform().getDatabaseInfo().isTriggersCreateOrReplaceSupported()) {
-            return "create or alter trigger";
-        }
-        return super.getCreateTriggerString();
-    }
+    public void batchStarted(DataContext context, ISymmetricDialect dialect);
+
+    public void batchCommitted(DataContext context, ISymmetricDialect dialect);
 }

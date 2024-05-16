@@ -1681,9 +1681,19 @@ public class DataService extends AbstractService implements IDataService {
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
             IFileSyncService fileSyncService = engine.getFileSyncService();
             if (fileSyncService.getFileTriggerRoutersForCurrentNode(false).size() > 0) {
-                TriggerHistory fileSyncSnapshotHistory = triggerRouterService.findTriggerHistory(
-                        null, null,
-                        TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
+                String fileSnapshotTableName = TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT);
+                TriggerHistory fileSyncSnapshotHistory = triggerRouterService.findTriggerHistory(null, null, fileSnapshotTableName);
+                if (fileSyncSnapshotHistory == null) {
+                    if (isFullLoad || reloadRequests == null || isReloadRequestForFileChannel(reloadRequests)) {
+                        log.warn("Did not include file sync batches in load {} for target node {} because there is no valid trigger history for {}",
+                                loadId, targetNode, fileSnapshotTableName);
+                    } else {
+                        log.warn(
+                                "Could not determine whether to include file sync batches in load {} for target node {} because there is no valid trigger history for {}",
+                                loadId, targetNode, fileSnapshotTableName);
+                    }
+                    return totalBatchCount;
+                }
                 String routerid = triggerRouterService.buildSymmetricTableRouterId(
                         fileSyncSnapshotHistory.getTriggerId(), parameterService.getNodeGroupId(),
                         targetNode.getNodeGroupId());
@@ -3324,7 +3334,7 @@ public class DataService extends AbstractService implements IDataService {
             TriggerHistory triggerHistory = engine.getTriggerRouterService().getTriggerHistory(triggerHistId);
             if (triggerHistory == null) {
                 triggerHistory = findOrCreateTriggerHistory(tableName, triggerHistId, data, false);
-            } else if (!triggerHistory.getSourceTableName().equals(tableName)) {
+            } else if (!triggerHistory.getSourceTableName().equalsIgnoreCase(tableName)) {
                 if (mismatchedTableName == null) {
                     mismatchedTableName = new HashMap<String, TriggerHistory>();
                 }
@@ -3583,7 +3593,8 @@ public class DataService extends AbstractService implements IDataService {
                     }
                     DmlStatement st = platform.createDmlStatement(DmlType.WHERE, hist.getSourceCatalogName(), hist.getSourceSchemaName(),
                             hist.getSourceTableName(), table.getPrimaryKeyColumns(), table.getColumns(), DmlStatement.getNullKeyValues(keys), null);
-                    String whereClause = st.buildDynamicSql(symmetricDialect.getBinaryEncoding(), row, false, true).substring(6);
+                    String whereClause = st.buildDynamicSql(symmetricDialect.getBinaryEncoding(), row, false,
+                            platform.getDatabaseInfo().isJdbcTimestampAllowed()).substring(6);
                     String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
                     if (delimiter != null && delimiter.length() > 0) {
                         whereClause = whereClause.substring(0, whereClause.length() - delimiter.length());
@@ -3603,11 +3614,9 @@ public class DataService extends AbstractService implements IDataService {
                         data.setDataEventType(DataEventType.UPDATE);
                         data.setRowData(rowData);
                         data.setPkData(pkData);
-                        data.setOldData(null);
                         insertList.add(data);
                     } else if (rowData == null && data.getDataEventType() == DataEventType.DELETE) {
                         data.setPkData(pkData);
-                        data.setOldData(null);
                         insertList.add(data);
                     }
                     data.setTransactionId("recapture-" + ts);

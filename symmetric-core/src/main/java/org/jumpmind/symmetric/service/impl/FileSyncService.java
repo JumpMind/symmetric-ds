@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.FileSystemException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
@@ -1020,15 +1021,45 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                                 waitMillis);
                         if (isLocked) {
                             log.debug("The {} node got a shared file sync lock", sourceNodeId);
-                            @SuppressWarnings("unchecked")
-                            Map<String, String> filesToEventType = (Map<String, String>) interpreter
-                                    .eval(script);
-                            if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_PREVENT_PING_BACK)) {
-                                updateFileIncoming(sourceNodeId, filesToEventType);
+                            int retryFileSyncCount = parameterService.getInt(ParameterConstants.FILE_SYNC_RETRY_COUNT, 2);
+                            long retryFileSyncDelayMs = parameterService.getLong(ParameterConstants.FILE_SYNC_RETRY_DELAY_MS, 5000);
+                            for (int i = 0; i < retryFileSyncCount; i++) {
+                                if (i > 0) {
+                                    try {
+                                        log.info("Retrying file sync for batch {}", batchId);
+                                        Thread.sleep(retryFileSyncDelayMs);
+                                    } catch (InterruptedException e) { }
+                                }
+                                try {
+                                    @SuppressWarnings("unchecked")
+                                    Map<String, String> filesToEventType = (Map<String, String>) interpreter
+                                            .eval(script);
+                                    if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_PREVENT_PING_BACK)) {
+                                        updateFileIncoming(sourceNodeId, filesToEventType);
+                                    }
+                                    incomingBatch
+                                            .setLoadRowCount(filesToEventType != null ? filesToEventType
+                                                    .size() : 0);
+                                    break;
+                                } catch (Throwable e) {
+                                    log.error(e.getMessage(),e);
+                                    Throwable target = e;
+                                    if (e instanceof TargetError) {
+                                        Throwable t = ((TargetError) e).getTarget();
+                                        if (t != null) {
+                                            target = t;
+                                        }
+                                    }
+                                    if (target instanceof FileSystemException) {
+                                        if (i + 1 >= retryFileSyncCount) {
+                                            throw target;
+                                        }
+                                        continue;
+                                    } else {
+                                        throw target;
+                                    }
+                                }
                             }
-                            incomingBatch
-                                    .setLoadRowCount(filesToEventType != null ? filesToEventType
-                                            .size() : 0);
                         } else {
                             throw new RuntimeException(
                                     "Could not obtain file sync shared lock within " + waitMillis
