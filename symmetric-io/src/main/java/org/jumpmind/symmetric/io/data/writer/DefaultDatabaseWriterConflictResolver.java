@@ -120,7 +120,11 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
     protected boolean isCaptureTimeNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {
         DynamicDefaultDatabaseWriter databaseWriter = (DynamicDefaultDatabaseWriter) writer;
         Table targetTable = writer.getTargetTable();
-        String[] pkData = data.getPkData(targetTable);
+        Map<String, String> keyData = getLookupDataMap(data, writer.getSourceTable());
+        DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(),
+                targetTable.getName(), targetTable.getPrimaryKeyColumns(), targetTable.getPrimaryKeyColumns(),
+                new boolean[targetTable.getPrimaryKeyColumnCount()], databaseWriter.getWriterSettings().getTextColumnExpression());
+        String[] pkData = st.getLookupKeyData(keyData);
         Timestamp loadingTs = data.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME);
         Date existingTs = null;
         String existingNodeId = null;
@@ -135,9 +139,6 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                             !Boolean.TRUE.equals(databaseWriter.getContext().get(AbstractDatabaseWriter.TRANSACTION_ABORTED)))) {
                 // make sure we lock the row that is in conflict to prevent a race with other data loading
                 if (primaryKeyUpdateAllowed(databaseWriter, targetTable)) {
-                    DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(),
-                            targetTable.getName(), targetTable.getPrimaryKeyColumns(), targetTable.getPrimaryKeyColumns(),
-                            new boolean[targetTable.getPrimaryKeyColumnCount()], databaseWriter.getWriterSettings().getTextColumnExpression());
                     Object[] values = databaseWriter.getPlatform().getObjectValues(writer.getBatch().getBinaryEncoding(),
                             pkData, targetTable.getPrimaryKeyColumns());
                     databaseWriter.getTransaction().prepareAndExecute(st.getSql(), ArrayUtils.addAll(values, values), st.getTypes());
@@ -145,7 +146,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                     Column[] columns = targetTable.getNonPrimaryKeyColumns();
                     if (columns != null && columns.length > 0) {
                         Map<String, String> rowDataMap = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
-                        DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(),
+                        st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(),
                                 targetTable.getName(), targetTable.getPrimaryKeyColumns(), new Column[] { columns[0] },
                                 new boolean[targetTable.getPrimaryKeyColumnCount()], databaseWriter.getWriterSettings().getTextColumnExpression());
                         Object[] values = databaseWriter.getPlatform().getObjectValues(writer.getBatch().getBinaryEncoding(),
@@ -266,6 +267,19 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             }
         }
         return true;
+    }
+
+    protected Map<String, String> getLookupDataMap(CsvData data, Table table) {
+        Map<String, String> keyData = null;
+        if (data.getDataEventType() == DataEventType.INSERT) {
+            keyData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+        } else {
+            keyData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.OLD_DATA);
+        }
+        if (keyData == null || keyData.size() == 0) {
+            keyData = data.toKeyColumnValuePairs(table);
+        }
+        return keyData;
     }
 
     protected boolean isCaptureTimeNewerForUk(AbstractDatabaseWriter writer, CsvData data) {
