@@ -10,8 +10,8 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         api "org.springframework:spring-jms:$springVersion"
         api "org.springframework:spring-web:$springVersion"
         api "org.springframework:spring-webmvc:$springVersion"
-        api "jakarta.xml.bind:jakarta.xml.bind-api:4.0.0"
-        api "com.sun.xml.bind:jaxb-impl:3.0.2"
+        api "jakarta.xml.bind:jakarta.xml.bind-api:4.0.2"
+        api "com.sun.xml.bind:jaxb-impl:4.0.5"
         api "org.jdom:jdom2:$jdomVersion"
         api "org.apache.commons:commons-fileupload2-core:$commonsFileuploadVersion"
         api "org.apache.commons:commons-fileupload2-jakarta:$commonsFileuploadVersion"
@@ -24,7 +24,7 @@ apply from: symAssembleDir + '/asciidoc.gradle'
             exclude group: "com.google.protobuf"
         }
         provided "org.postgresql:postgresql:$postgresqlVersion"
-        provided 'com.oracle.database.jdbc:ojdbc11:23.2.0.0'
+        provided 'com.oracle.database.jdbc:ojdbc11:23.4.0.24.05'
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
         provided "com.microsoft.sqlserver:mssql-jdbc:$mssqlVersion"
 

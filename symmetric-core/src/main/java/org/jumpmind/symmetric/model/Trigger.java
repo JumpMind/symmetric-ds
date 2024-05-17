@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
@@ -126,9 +127,9 @@ public class Trigger implements IModelObject, Cloneable {
             sourceSchemaNameUnescaped = null;
             isSourceSchemaWildCarded = false;
         }
-        syncOnInsertCondition = StringUtils.defaultString(StringUtils.trimToNull(syncOnInsertCondition), DEFAULT_CONDITION);
-        syncOnUpdateCondition = StringUtils.defaultString(StringUtils.trimToNull(syncOnUpdateCondition), DEFAULT_CONDITION);
-        syncOnDeleteCondition = StringUtils.defaultString(StringUtils.trimToNull(syncOnDeleteCondition), DEFAULT_CONDITION);
+        syncOnInsertCondition = Objects.toString(StringUtils.trimToNull(syncOnInsertCondition), DEFAULT_CONDITION);
+        syncOnUpdateCondition = Objects.toString(StringUtils.trimToNull(syncOnUpdateCondition), DEFAULT_CONDITION);
+        syncOnDeleteCondition = Objects.toString(StringUtils.trimToNull(syncOnDeleteCondition), DEFAULT_CONDITION);
         externalSelect = StringUtils.trimToNull(externalSelect);
         excludedColumnNames = StringUtils.trimToNull(excludedColumnNames);
         includedColumnNames = StringUtils.trimToNull(includedColumnNames);

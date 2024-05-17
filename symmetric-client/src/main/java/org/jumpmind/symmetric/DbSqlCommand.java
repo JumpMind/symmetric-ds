@@ -72,7 +72,7 @@ public class DbSqlCommand extends AbstractCommandLauncher {
     protected boolean executeWithOptions(CommandLine line) throws Exception {
         BasicDataSource basicDataSource = getDatabasePlatform(false).getDataSource();
         String url = basicDataSource.getUrl();
-        String user = basicDataSource.getUsername();
+        String user = basicDataSource.getUserName();
         String password = basicDataSource.getPassword();
         String driver = basicDataSource.getDriverClassName();
         Shell shell = new Shell();

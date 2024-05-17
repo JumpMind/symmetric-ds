@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
@@ -130,13 +131,23 @@ public class DerbyDdlReader extends AbstractJdbcDdlReader {
      */
     private boolean isInternalIndex(IIndex index) {
         String name = index.getName();
-        // Internal names normally have the form "SQL051228005030780"
         if ((name != null) && name.startsWith("SQL")) {
-            try {
-                Long.parseLong(name.substring(3));
-                return true;
-            } catch (NumberFormatException ex) {
-                // we ignore it
+            if (StringUtils.countMatches(name, "-") == 5) {
+                // Internal names with the form "SQL0000000126-3a0f0439-018f-5de1-af4c-0000065796c0"
+                try {
+                    Long.parseLong(name.substring(3, 13));
+                    return true;
+                } catch (NumberFormatException ex) {
+                    // we ignore it
+                }
+            } else {
+                // Internal names with the form "SQL051228005030780"
+                try {
+                    Long.parseLong(name.substring(3));
+                    return true;
+                } catch (NumberFormatException ex) {
+                    // we ignore it
+                }
             }
         }
         return false;
