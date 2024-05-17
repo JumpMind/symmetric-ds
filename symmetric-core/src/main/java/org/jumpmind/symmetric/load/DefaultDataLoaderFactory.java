@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -229,6 +230,22 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                     pkCsvData = pkCsvData.replace("\n", "\\n").replace("\r", "\\r");
                 }
                 return pkCsvData;
+            }
+
+            @Override
+            protected boolean isCaptureTimeNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {
+                Table table = writer.getTargetTable();
+                if (table != null) {
+                    List<TriggerHistory> hists = engine.getTriggerRouterService().getActiveTriggerHistoriesFromCache();
+                    for (TriggerHistory hist : hists) {
+                        if (hist.getSourceTableName().equalsIgnoreCase(table.getName()) &&
+                                (StringUtils.isBlank(hist.getSourceCatalogName()) || hist.getSourceCatalogName().equalsIgnoreCase(table.getCatalog())) &&
+                                (StringUtils.isBlank(hist.getSourceSchemaName()) || hist.getSourceSchemaName().equalsIgnoreCase(table.getSchema()))) {
+                            return super.isCaptureTimeNewer(conflict, writer, data);
+                        }
+                    }
+                }
+                return true;
             }
         };
         DynamicDefaultDatabaseWriter writer = null;
