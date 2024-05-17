@@ -460,29 +460,38 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             } else if (!isFallback && data.getDataEventType() == DataEventType.INSERT && pkCount == 0) {
                 isUniqueKeyBlocking = true;
             }
+            long line = writer.getStatistics().get(writer.getBatch()).get(DataWriterStatisticConstants.LINENUMBER);
             if (isUniqueKeyBlocking) {
                 if (writer.getWriterSettings().isAutoResolveUniqueIndexViolation()) {
-                    log.info("Unique key violation on table {} during {} with batch {}.  Attempting to correct.",
-                            targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+                    if (targetTable.getIndices().length > 0) {
+                        log.info("Unique key violation on table {} during {} with batch {} line {}.  Attempting to correct.",
+                                targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId(), line);
+                    } else {
+                        log.info("No primary key row or unique index found after unique key violation on table {} during {} with batch {} line {}.",
+                                targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId(), line);
+                    }
                     for (IIndex index : targetTable.getIndices()) {
                         if (index.isUnique()) {
-                            log.info("Correcting for possible violation of unique index {} on table {} during {} with batch {}", index.getName(),
-                                    targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+                            log.info("Correcting for possible violation of unique index {} on table {} during {} with batch {} line {}", index.getName(),
+                                    targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId(), line);
                             count += deleteUniqueConstraintRow(platform, sqlTemplate, databaseWriter, targetTable, index, data);
                         }
                     }
+                    if (count == 0) {
+                        checkIfMismatchedPrimaryKey(writer);
+                    }
                 } else if (log.isDebugEnabled()) {
-                    log.debug("Did not issue correction for unique key violation on table {} during {} with batch {}.",
-                            targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+                    log.debug("Did not issue correction for unique key violation on table {} during {} with batch {} line {}.",
+                            targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId(), line);
                 }
             } else if (isPrimaryKeyBlocking) {
                 if (writer.getWriterSettings().isAutoResolvePrimaryKeyViolation()) {
-                    log.info("Correcting for update violation of primary key on table {} during {} with batch {}", targetTable.getName(),
-                            data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+                    log.info("Correcting for update violation of primary key on table {} during {} with batch {} line {}", targetTable.getName(),
+                            data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId(), line);
                     count += deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues, false);
                 } else if (log.isDebugEnabled()) {
-                    log.debug("Did not issue correction for update violation of primary key on table {} during {} with batch {}", targetTable.getName(),
-                            data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+                    log.debug("Did not issue correction for update violation of primary key on table {} during {} with batch {} line {}", targetTable.getName(),
+                            data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId(), line);
                 }
             }
         }
@@ -520,6 +529,41 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         return false;
     }
 
+    protected boolean checkIfMismatchedPrimaryKey(AbstractDatabaseWriter writer) {
+        boolean mismatched = false;
+        DefaultDatabaseWriter databaseWriter = (DefaultDatabaseWriter) writer;
+        Table targetTable = writer.getTargetTable();
+        Table databaseTable = databaseWriter.getPlatform(writer.getTargetTable()).getTableFromCache(targetTable.getCatalog(), targetTable.getSchema(),
+                targetTable.getName(), false);
+        if (databaseTable != null) {
+            String[] names = targetTable.getPrimaryKeyColumnNames();
+            String[] databaseNames = databaseTable.getPrimaryKeyColumnNames();
+            if (names.length != databaseNames.length) {
+                mismatched = true;
+            } else {
+                for (String name : names) {
+                    boolean found = false;
+                    for (String databaseName : databaseNames) {
+                        if (databaseName.equalsIgnoreCase(name)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        mismatched = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (mismatched) {
+            long line = databaseWriter.getStatistics().get(databaseWriter.getBatch()).get(DataWriterStatisticConstants.LINENUMBER);
+            log.warn("Mismatch primary key for table {} in batch {} line {}.  Using {} but target database has {}", targetTable.getName(),
+                    writer.getContext().getBatch().getNodeBatchId(), line, targetTable.getPrimaryKeyColumnNames(), databaseTable.getPrimaryKeyColumnNames());
+        }
+        return mismatched;
+    }
+
     protected String getConflictRowKey(Table table, Map<String, String> values) {
         StringBuilder rowKey = new StringBuilder();
         rowKey.append(table.getName()).append(":");
@@ -546,8 +590,10 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             hasNotNullValue = hasNotNullValue || (value != null);
         }
         if (!hasNotNullValue && databaseWriter.getWriterSettings().isAutoResolveUniqueIndexIgnoreNullValues()) {
-            log.debug("Did not issue correction for possible violation of unique index {} on table {} during {} with batch {} because null values are ignored",
-                    uniqueIndex.getName(), targetTable.getName(), data.getDataEventType().toString(), databaseWriter.getContext().getBatch().getNodeBatchId());
+            long line = databaseWriter.getStatistics().get(databaseWriter.getBatch()).get(DataWriterStatisticConstants.LINENUMBER);
+            log.info("Did not correct for possible violation of unique index {} on table {} during {} with batch {} line {} because null values are ignored",
+                    uniqueIndex.getName(), targetTable.getName(), data.getDataEventType().toString(), databaseWriter.getContext().getBatch().getNodeBatchId(),
+                    line);
             return 0;
         }
         return deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues, true);
@@ -570,18 +616,20 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         DmlStatement fromStmt = platform.createDmlStatement(DmlType.FROM, targetTable.getCatalog(), targetTable.getSchema(),
                 targetTable.getName(), whereColumns.toArray(new Column[0]), targetTable.getColumns(), nullKeyValues,
                 databaseWriter.getWriterSettings().getTextColumnExpression());
+        long line = databaseWriter.getStatistics().get(databaseWriter.getBatch()).get(DataWriterStatisticConstants.LINENUMBER);
         String sql = "DELETE " + fromStmt.getSql();
         int count = 0;
         try {
             count = prepareAndExecute(platform, databaseWriter, sql, objectValues);
             if (count == 0) {
-                log.info("Could not find and delete the blocking row by {}: {} {}",
-                        isUniqueKey ? "unique constraint" : "primary key", sql, ArrayUtils.toString(objectValues));
+                log.info("Could not find and delete the blocking row by {} for batch {} line {}: {} {}",
+                        isUniqueKey ? "unique constraint" : "primary key", databaseWriter.getBatch().getNodeBatchId(), line, sql,
+                        ArrayUtils.toString(objectValues));
             }
         } catch (SqlException ex) {
             if (sqlTemplate.isForeignKeyChildExistsViolation(ex)) {
-                log.info("Child exists foreign key violation while correcting {} violation.  Attempting further corrections.",
-                        isUniqueKey ? "unique constraint" : "primary key");
+                log.info("Child exists foreign key violation while correcting {} violation for batch {} line {}.  Attempting further corrections.",
+                        isUniqueKey ? "unique constraint" : "primary key", databaseWriter.getBatch().getNodeBatchId(), line);
                 // Failed to delete the row because another row is referencing it
                 DmlStatement selectStmt = platform.createDmlStatement(DmlType.SELECT, targetTable.getCatalog(), targetTable.getSchema(),
                         targetTable.getName(), whereColumns.toArray(new Column[0]), targetTable.getColumns(), nullKeyValues,
@@ -605,15 +653,16 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
         if (e != null && sqlTemplate.isForeignKeyChildExistsViolation(e)) {
             Table targetTable = writer.getTargetTable();
+            long line = databaseWriter.getStatistics().get(databaseWriter.getBatch()).get(DataWriterStatisticConstants.LINENUMBER);
             if (!writer.getWriterSettings().isAutoResolveForeignKeyViolationDelete()) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Did not issue correction for child exists foreign key violation on table {} during {} with batch {}.",
-                            targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+                    log.debug("Did not issue correction for child exists foreign key violation on table {} during {} with batch {} line {}.",
+                            targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId(), line);
                 }
                 throw new RuntimeException(e);
             }
-            log.info("Child exists foreign key violation on table {} during {} with batch {}.  Attempting to correct.",
-                    targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+            log.info("Child exists foreign key violation on table {} during {} with batch {} line {}.  Attempting to correct.",
+                    targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId(), line);
             if (deleteForeignKeyChildren(platform, sqlTemplate, databaseWriter, writer.getTargetTable(), data, null)) {
                 return true;
             } else {
