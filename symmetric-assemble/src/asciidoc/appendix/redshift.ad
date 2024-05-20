@@ -22,8 +22,7 @@ the object to Amazon S3, and uses the COPY statement to load it. The COPY comman
 rows in the table. If the target table has any IDENTITY columns, the EXPLICIT_IDS option is enabled to override 
 the auto-generated values and load the incoming values. The following parameters (see Appendix B) can be set for bulk loader:
 
-redshift.bulk.load.max.rows.before.flush:: When the max rows is reached, the flat file is sent to S3 and loaded into the database. The default is 100,000 rows.
-redshift.bulk.load.max.bytes.before.flush:: When the max bytes is reached, the flat file is sent to S3 and loaded into the database. The default is 1,000,000,000 bytes.
+bulk.load.max.bytes.before.flush:: When the max bytes is reached, the flat file is sent to S3 and loaded into the database. The default is 1,000,000,000 bytes.
 redshift.bulk.load.s3.bucket:: The S3 bucket name where files are uploaded. This bucket should be created from the AWS console ahead of time.
 redshift.bulk.load.s3.access.key:: The AWS access key ID to use as credentials for uploading to S3 and loading from S3.
 redshift.bulk.load.s3.secret.key:: The AWS secret key to use as credentials for uploading to S3 and loading from S3.

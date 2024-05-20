@@ -737,19 +737,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
             }
         }
+        Channel channel = configurationService.getChannel(channelId);
         List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(link, TransformPoint.LOAD);
         transforms = transformsList != null ? transformsList.toArray(new TransformTable[transformsList.size()]) : null;
         TransformWriter transformWriter = new TransformWriter(this.engine.getSymmetricDialect().getTargetPlatform(), TransformPoint.LOAD, null,
                 transformService.getColumnTransforms(), transforms);
-        IDataWriter targetWriter = getFactory(channelId).getDataWriter(sourceNodeId,
+        IDataWriter targetWriter = getFactory(channel).getDataWriter(sourceNodeId, channel,
                 this.engine.getSymmetricDialect(), transformWriter, dynamicFilters, dynamicErrorHandlers,
                 getConflictSettingsNodeGroupLinks(link, false), resolvedDatas);
         transformWriter.setNestedWriter(new ProcessInfoDataWriter(targetWriter, processInfo));
         return transformWriter;
     }
 
-    protected IDataLoaderFactory getFactory(String channelId) {
-        Channel channel = configurationService.getChannel(channelId);
+    protected IDataLoaderFactory getFactory(Channel channel) {
         String dataLoaderType = "default";
         IDataLoaderFactory factory = null;
         if (channel != null) {

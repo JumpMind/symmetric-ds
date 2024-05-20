@@ -31,11 +31,12 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
+import org.jumpmind.symmetric.model.Channel;
 
 public interface IDataLoaderFactory extends IExtensionPoint {
     public String getTypeName();
 
-    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
+    public IDataWriter getDataWriter(String sourceNodeId, Channel channel, ISymmetricDialect symmetricDialect,
             TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData);

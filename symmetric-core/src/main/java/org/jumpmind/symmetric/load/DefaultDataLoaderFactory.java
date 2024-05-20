@@ -60,6 +60,7 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.KafkaWriter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.slf4j.Logger;
@@ -83,7 +84,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
         return "default";
     }
 
-    public IDataWriter getDataWriter(final String sourceNodeId, final ISymmetricDialect symmetricDialect,
+    public IDataWriter getDataWriter(final String sourceNodeId, Channel channel, final ISymmetricDialect symmetricDialect,
             TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers, List<? extends Conflict> conflictSettings,
             List<ResolvedData> resolvedData) {

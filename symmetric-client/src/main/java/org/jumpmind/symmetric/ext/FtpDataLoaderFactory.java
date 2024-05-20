@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
+import org.jumpmind.symmetric.model.Channel;
 import org.springframework.beans.factory.BeanNameAware;
 
 public class FtpDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngineAware, IBuiltInExtensionPoint, BeanNameAware {
@@ -62,7 +63,7 @@ public class FtpDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngin
         return this.beanName;
     }
 
-    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
+    public IDataWriter getDataWriter(String sourceNodeId, Channel channel, ISymmetricDialect symmetricDialect,
             TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
