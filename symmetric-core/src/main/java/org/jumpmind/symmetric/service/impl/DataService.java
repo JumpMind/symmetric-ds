@@ -3419,10 +3419,16 @@ public class DataService extends AbstractService implements IDataService {
             TriggerHistory triggerHistory = null;
             int columnCount = 0, pkColumnCount = 0;
             if (data.getDataEventType() == DataEventType.INSERT || data.getDataEventType() == DataEventType.UPDATE) {
-                columnCount = data.getParsedData(CsvData.ROW_DATA).length;
+                String[] rowData = data.getParsedData(CsvData.ROW_DATA);
+                if (rowData != null) {
+                    columnCount = rowData.length;
+                }
             }
             if (data.getDataEventType() == DataEventType.DELETE || data.getDataEventType() == DataEventType.UPDATE) {
-                pkColumnCount = data.getParsedData(CsvData.PK_DATA).length;
+                String[] pkData = data.getParsedData(CsvData.PK_DATA);
+                if (pkData != null) {
+                    pkColumnCount = pkData.length;
+                }
             }
             for (TriggerHistory hist : allTriggerHistories) {
                 if (hist.getTriggerId().equals(trigger.getTriggerId()) && hist.getSourceTableName().equalsIgnoreCase(tableName)
