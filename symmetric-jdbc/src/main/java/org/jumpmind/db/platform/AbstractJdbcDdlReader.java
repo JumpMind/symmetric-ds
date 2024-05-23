@@ -1305,7 +1305,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             if (table.getSchema() != null && !table.getSchema().trim().equals("")) {
                 appendIdentifier(query, table.getSchema()).append(".");
             }
-            appendIdentifier(query, table.getName()).append(" t WHERE 1 = 0");
+            appendIdentifier(query, table.getName()).append(" t " + getWithNoLockHint() + " WHERE 1 = 0");
             Statement stmt = null;
             try {
                 stmt = conn.createStatement();
@@ -1347,6 +1347,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             }
             log.warn(msg.toString(), ex);
         }
+    }
+    
+    protected String getWithNoLockHint() {
+        return "";
     }
 
     protected StringBuilder appendIdentifier(StringBuilder query, String identifier) {
