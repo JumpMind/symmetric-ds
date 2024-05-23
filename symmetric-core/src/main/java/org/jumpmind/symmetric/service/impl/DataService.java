@@ -2969,22 +2969,22 @@ public class DataService extends AbstractService implements IDataService {
     public void insertDataGap(ISqlTransaction transaction, DataGap gap) {
         log.debug("Inserting data gap: {}", gap);
         transaction.prepareAndExecute(getSql("insertDataGapSql"),
-                new Object[] { engine.getClusterService().getServerId(), gap.getStartId(), gap.getEndId(),
+                new Object[] { engine.getClusterService().getServerId(), gap.getStartId(), gap.getEndId(), 0,
                         gap.getCreateTime() }, new int[] {
-                                Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP });
+                                Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP });
     }
 
     @Override
     public void insertDataGaps(ISqlTransaction transaction, Collection<DataGap> gaps) {
         if (gaps.size() > 0) {
-            int[] types = new int[] { Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP };
+            int[] types = new int[] { Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP };
             int maxRowsToFlush = engine.getParameterService().getInt(ParameterConstants.ROUTING_FLUSH_JDBC_BATCH_SIZE);
             long ts = System.currentTimeMillis();
             int flushCount = 0, totalCount = 0;
             transaction.setInBatchMode(true);
             transaction.prepare(getSql("insertDataGapSql"));
             for (DataGap gap : gaps) {
-                transaction.addRow(gap, new Object[] { engine.getClusterService().getServerId(), gap.getStartId(), gap.getEndId(),
+                transaction.addRow(gap, new Object[] { engine.getClusterService().getServerId(), gap.getStartId(), gap.getEndId(), 0,
                         gap.getCreateTime() }, types);
                 totalCount++;
                 if (++flushCount >= maxRowsToFlush) {
