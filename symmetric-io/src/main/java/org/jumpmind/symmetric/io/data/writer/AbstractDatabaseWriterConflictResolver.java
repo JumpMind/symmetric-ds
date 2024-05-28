@@ -57,7 +57,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                             } else if (conflict.getDetectType() == DetectConflict.USE_VERSION) {
                                 isWinner = isVersionNewer(conflict, writer, data);
                             } else {
-                                isWinner = isCaptureTimeNewer(conflict, writer, data);
+                                isWinner = isCaptureTimeNewer(conflict, writer, data, null);
                             }
                             if (isWinner) {
                                 performChainedFallbackForInsert(writer, data, conflict);
@@ -97,7 +97,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                             } else if (conflict.getDetectType() == DetectConflict.USE_VERSION) {
                                 isWinner = isVersionNewer(conflict, writer, data);
                             } else {
-                                isWinner = isCaptureTimeNewer(conflict, writer, data);
+                                isWinner = isCaptureTimeNewer(conflict, writer, data, null);
                             }
                             if (isWinner) {
                                 performChainedFallbackForUpdate(writer, data, conflict);
@@ -149,7 +149,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                         if (conflict.getDetectType() == DetectConflict.USE_TIMESTAMP || conflict.getDetectType() == DetectConflict.USE_VERSION) {
                             isWinner = true;
                         } else {
-                            isWinner = isCaptureTimeNewer(conflict, writer, data);
+                            isWinner = isCaptureTimeNewer(conflict, writer, data, null);
                         }
                         if (isWinner) {
                             if (writer.getContext().getLastError() == null) {
@@ -355,7 +355,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
 
     abstract protected boolean isTimestampNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data);
 
-    abstract protected boolean isCaptureTimeNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data);
+    abstract protected boolean isCaptureTimeNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data, String tableName);
 
     abstract protected boolean isVersionNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data);
 

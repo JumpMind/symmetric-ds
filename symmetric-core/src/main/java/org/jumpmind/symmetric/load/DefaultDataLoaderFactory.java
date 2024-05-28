@@ -200,7 +200,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                             long createTime = data.getCreateTime() != null ? data.getCreateTime().getTime() : 0;
                             String script = "if (context != void && context != null && org.jumpmind.symmetric.Version.isOlderVersion(\"3.12.4\")) { " +
                                     "engine.getDataService().sendNewerDataToNode(context.findTransaction(), SOURCE_NODE_ID, \"" +
-                                    tableName + "\", " + pkCsvData + ", new Date(" +
+                                    hist.getSourceTableName() + "\", " + pkCsvData + ", new Date(" +
                                     createTime + "L), \"" + sourceNodeId + "\"); }";
                             Data scriptData = new Data(nodeTableName, DataEventType.BSH,
                                     CsvUtils.escapeCsvData(script), null, nodeHists.get(0), Constants.CHANNEL_RELOAD, null, null);
@@ -233,7 +233,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
             }
 
             @Override
-            protected boolean isCaptureTimeNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {
+            protected boolean isCaptureTimeNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data, String tableName) {
                 Table table = writer.getTargetTable();
                 if (table != null) {
                     List<TriggerHistory> hists = engine.getTriggerRouterService().getActiveTriggerHistoriesFromCache();
@@ -241,7 +241,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                         if (hist.getSourceTableName().equalsIgnoreCase(table.getName()) &&
                                 (StringUtils.isBlank(hist.getSourceCatalogName()) || hist.getSourceCatalogName().equalsIgnoreCase(table.getCatalog())) &&
                                 (StringUtils.isBlank(hist.getSourceSchemaName()) || hist.getSourceSchemaName().equalsIgnoreCase(table.getSchema()))) {
-                            return super.isCaptureTimeNewer(conflict, writer, data);
+                            return super.isCaptureTimeNewer(conflict, writer, data, hist.getSourceTableName());
                         }
                     }
                 }

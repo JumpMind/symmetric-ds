@@ -117,7 +117,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
     }
 
     @Override
-    protected boolean isCaptureTimeNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {
+    protected boolean isCaptureTimeNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data, String tableName) {
         DynamicDefaultDatabaseWriter databaseWriter = (DynamicDefaultDatabaseWriter) writer;
         Table targetTable = writer.getTargetTable();
         Map<String, String> keyData = getLookupDataMap(data, writer.getSourceTable());
@@ -162,7 +162,8 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                     "_data where table_name = ? and ((event_type = 'I' and row_data like ?) or " +
                     "(event_type in ('U', 'D') and pk_data like ?)) and create_time >= ? " +
                     "and (source_node_id is null or source_node_id != ?) order by create_time desc";
-            Object[] args = new Object[] { targetTable.getName(), pkCsv + "%", pkCsv, loadingTs, writer.getBatch().getSourceNodeId() };
+            Object[] args = new Object[] { tableName != null ? tableName : targetTable.getName(), pkCsv + "%", pkCsv, loadingTs,
+                    writer.getBatch().getSourceNodeId() };
             log.debug("Querying capture time for CSV {}", pkCsv);
             Row row = null;
             if (databaseWriter.getPlatform(targetTable).supportsMultiThreadedTransactions()) {
