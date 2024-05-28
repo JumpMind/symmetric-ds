@@ -484,6 +484,9 @@ public class DataService extends AbstractService implements IDataService {
             sql = FormatUtils.replace("isBulkLoaded", isBulkLoaded ? "1" : "0", sql);
             count = transaction.prepareAndExecute(sql);
         }
+        if (count == 0) {
+            log.warn("No load status updated for source node {} load ID {} batch ID {}", sourceNodeId, loadId, batchId);
+        }
         List<TableReloadStatus> status = transaction.query(getSql("selectTableReloadStatusByLoadIdSourceNodeId"),
                 new TableReloadStatusMapper(), new Object[] { loadId, sourceNodeId }, new int[] { idType, Types.VARCHAR });
         if (status != null && status.size() > 0 && count > 0) {
