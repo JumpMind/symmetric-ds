@@ -160,7 +160,9 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                 }
                 if (conflict.getResolveType() == ResolveConflict.NEWER_WINS &&
                         conflict.getDetectType() != DetectConflict.USE_TIMESTAMP &&
-                        conflict.getDetectType() != DetectConflict.USE_VERSION) {
+                        conflict.getDetectType() != DetectConflict.USE_VERSION &&
+                        (!engine.getParameterService().is(ParameterConstants.NODE_LOAD_ONLY) ||
+                                engine.getParameterService().is(ParameterConstants.START_LOG_MINER_JOB))) {
                     Boolean isWinner = (Boolean) writer.getContext().get(DatabaseConstants.IS_CONFLICT_WINNER);
                     if (isWinner != null && isWinner == true) {
                         writer.getContext().remove(DatabaseConstants.IS_CONFLICT_WINNER);
@@ -178,6 +180,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
              * row.
              */
             protected void handleWinnerForNewerCaptureWins(ISqlTransaction transaction, CsvData csvData) {
+                boolean isLogMiner = engine.getParameterService().is(ParameterConstants.START_LOG_MINER_JOB);
                 String tableName = csvData.getAttribute(CsvData.ATTRIBUTE_TABLE_NAME);
                 Timestamp loadingTs = csvData.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME);
                 List<TriggerHistory> hists = engine.getTriggerRouterService().getActiveTriggerHistories(tableName);
@@ -189,7 +192,11 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                     data.setOldData(csvData.getCsvData(CsvData.OLD_DATA));
                     data.setPreRouted(true);
                     data.setCreateTime(csvData.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME));
-                    engine.getDataService().insertData(transaction, data);
+                    if (isLogMiner) {
+                        engine.getDataService().insertData(data);
+                    } else {
+                        engine.getDataService().insertData(transaction, data);
+                    }
                     String channelId = csvData.getAttribute(CsvData.ATTRIBUTE_CHANNEL_ID);
                     if (channelId != null && !channelId.equals(Constants.CHANNEL_RELOAD)) {
                         String pkCsvData = CsvUtils.escapeCsvData(getPkCsvData(csvData, hist));
@@ -205,7 +212,11 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                             Data scriptData = new Data(nodeTableName, DataEventType.BSH,
                                     CsvUtils.escapeCsvData(script), null, nodeHists.get(0), Constants.CHANNEL_RELOAD, null, null);
                             scriptData.setSourceNodeId(sourceNodeId);
-                            engine.getDataService().insertData(transaction, scriptData);
+                            if (isLogMiner) {
+                                engine.getDataService().insertData(scriptData);
+                            } else {
+                                engine.getDataService().insertData(transaction, scriptData);
+                            }
                         }
                     }
                 }
@@ -240,7 +251,9 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                     for (TriggerHistory hist : hists) {
                         if (hist.getSourceTableName().equalsIgnoreCase(table.getName()) &&
                                 (StringUtils.isBlank(hist.getSourceCatalogName()) || hist.getSourceCatalogName().equalsIgnoreCase(table.getCatalog())) &&
-                                (StringUtils.isBlank(hist.getSourceSchemaName()) || hist.getSourceSchemaName().equalsIgnoreCase(table.getSchema()))) {
+                                (StringUtils.isBlank(hist.getSourceSchemaName()) || hist.getSourceSchemaName().equalsIgnoreCase(table.getSchema())) &&
+                                (!engine.getParameterService().is(ParameterConstants.NODE_LOAD_ONLY) ||
+                                        engine.getParameterService().is(ParameterConstants.START_LOG_MINER_JOB))) {
                             return super.isCaptureTimeNewer(conflict, writer, data, hist.getSourceTableName());
                         }
                     }
@@ -300,7 +313,6 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
             List<IDatabaseWriterErrorHandler> errorHandlers, List<? extends Conflict> conflictSettings,
             List<ResolvedData> resolvedDatas) {
         DatabaseWriterSettings settings = buildParameterDatabaseWriterSettings(conflictSettings);
-        settings.setLoadOnlyNode(engine.getParameterService().is(ParameterConstants.NODE_LOAD_ONLY));
         settings.setDatabaseWriterFilters(filters);
         settings.setDatabaseWriterErrorHandlers(errorHandlers);
         settings.setResolvedData(resolvedDatas);
