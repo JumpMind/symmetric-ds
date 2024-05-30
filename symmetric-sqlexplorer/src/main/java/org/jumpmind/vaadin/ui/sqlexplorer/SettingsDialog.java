@@ -56,6 +56,7 @@ public class SettingsDialog extends ResizableDialog {
     private Checkbox ignoreErrorsWhenRunningScript;
     private Checkbox showRowNumbersBox;
     private Checkbox showResultsInNewTabsBox;
+    private Checkbox showTriggersBox;
     ISettingsProvider settingsProvider;
     SqlExplorer explorer;
 
@@ -138,6 +139,10 @@ public class SettingsDialog extends ResizableDialog {
             showResultsInNewTabsBox.setValue(false);
         }
         settingsLayout.add(showResultsInNewTabsBox);
+        showTriggersBox = new Checkbox("Show Triggers");
+        String showTriggersValue = properties.getProperty(SQL_EXPLORER_SHOW_TRIGGERS, "false");
+        showTriggersBox.setValue(showTriggersValue.equals("true"));
+        settingsLayout.add(showTriggersBox);
         layout.add(settingsLayout);
         return layout;
     }
@@ -165,6 +170,7 @@ public class SettingsDialog extends ResizableDialog {
                 properties.setProperty(SQL_EXPLORER_EXCLUDE_TABLES_REGEX, excludeTablesWithPrefixField.getValue());
                 properties.setProperty(SQL_EXPLORER_IGNORE_ERRORS_WHEN_RUNNING_SCRIPTS, String.valueOf(ignoreErrorsWhenRunningScript.getValue()));
                 properties.setProperty(SQL_EXPLORER_SHOW_RESULTS_IN_NEW_TABS, String.valueOf(showResultsInNewTabsBox.getValue()));
+                properties.setProperty(SQL_EXPLORER_SHOW_TRIGGERS, String.valueOf(showTriggersBox.getValue()));
                 settingsProvider.save(settings);
                 explorer.refreshQueryPanels();
                 return true;

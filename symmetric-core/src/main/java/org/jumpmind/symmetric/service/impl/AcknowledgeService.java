@@ -183,8 +183,13 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 try {
                     transaction = sqlTemplate.startSqlTransaction();
                     outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
-                    if (status == Status.OK && isFirstTimeAsOkStatus && outgoingBatch.getLoadId() > 0) {
-                        engine.getDataExtractorService().updateExtractRequestLoadTime(transaction, new Date(), outgoingBatch);
+                    if (status == Status.OK && outgoingBatch.getLoadId() > 0) {
+                        if (isFirstTimeAsOkStatus) {
+                            engine.getDataExtractorService().updateExtractRequestLoadTime(transaction, new Date(), outgoingBatch);
+                        } else {
+                            log.info("Ignoring duplicate load status update for load ID {} with batch {}", outgoingBatch.getLoadId(),
+                                    outgoingBatch.getNodeBatchId());
+                        }
                     } else if (status == Status.ER && isFirstTimeAsErStatus && outgoingBatch.getLoadId() > 0) {
                         engine.getDataService().updateTableReloadStatusFailed(transaction, outgoingBatch.getLoadId(),
                                 engine.getNodeId(), outgoingBatch.getBatchId());

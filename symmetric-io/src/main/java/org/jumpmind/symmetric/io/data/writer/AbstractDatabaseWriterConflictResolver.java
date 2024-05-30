@@ -57,7 +57,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                             } else if (conflict.getDetectType() == DetectConflict.USE_VERSION) {
                                 isWinner = isVersionNewer(conflict, writer, data);
                             } else {
-                                isWinner = isCaptureTimeNewer(conflict, writer, data);
+                                isWinner = isCaptureTimeNewer(conflict, writer, data, null);
                             }
                             if (isWinner) {
                                 performChainedFallbackForInsert(writer, data, conflict);
@@ -97,7 +97,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                             } else if (conflict.getDetectType() == DetectConflict.USE_VERSION) {
                                 isWinner = isVersionNewer(conflict, writer, data);
                             } else {
-                                isWinner = isCaptureTimeNewer(conflict, writer, data);
+                                isWinner = isCaptureTimeNewer(conflict, writer, data, null);
                             }
                             if (isWinner) {
                                 performChainedFallbackForUpdate(writer, data, conflict);
@@ -149,13 +149,13 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                         if (conflict.getDetectType() == DetectConflict.USE_TIMESTAMP || conflict.getDetectType() == DetectConflict.USE_VERSION) {
                             isWinner = true;
                         } else {
-                            isWinner = isCaptureTimeNewer(conflict, writer, data);
+                            isWinner = isCaptureTimeNewer(conflict, writer, data, null);
                         }
                         if (isWinner) {
                             if (writer.getContext().getLastError() == null) {
                                 status = writer.delete(data, false);
                             }
-                            if (status == LoadStatus.CONFLICT && writer.getContext().getLastError() != null) {
+                            if (status == LoadStatus.CONFLICT) {
                                 status = performChainedFallbackForDelete(writer, data, conflict);
                             }
                         } else {
@@ -260,6 +260,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
             if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError(), true)) {
                 performFallbackToInsert(writer, data, conflict, true);
             } else {
+                checkIfMismatchedPrimaryKey(writer);
                 throw e;
             }
         }
@@ -271,6 +272,8 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
             // foreign key child exists violation, we remove blocking rows, and try again
             checkIfTransactionAborted(writer, data, conflict);
             status = writer.delete(data, false);
+        } else {
+            checkIfMismatchedPrimaryKey(writer);
         }
         return status;
     }
@@ -352,7 +355,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
 
     abstract protected boolean isTimestampNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data);
 
-    abstract protected boolean isCaptureTimeNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data);
+    abstract protected boolean isCaptureTimeNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data, String tableName);
 
     abstract protected boolean isVersionNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data);
 
@@ -408,6 +411,8 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
     abstract protected boolean checkForForeignKeyChildExistsViolation(AbstractDatabaseWriter writer, CsvData data, Conflict conflict, Throwable ex);
 
     abstract protected boolean isConflictingLosingParentRow(AbstractDatabaseWriter writer, CsvData data);
+
+    abstract protected boolean checkIfMismatchedPrimaryKey(AbstractDatabaseWriter writer);
 
     @Override
     public boolean isIgnoreRow(AbstractDatabaseWriter writer, CsvData data) {

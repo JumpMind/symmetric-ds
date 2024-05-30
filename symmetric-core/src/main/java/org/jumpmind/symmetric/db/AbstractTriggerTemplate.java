@@ -167,7 +167,7 @@ abstract public class AbstractTriggerTemplate {
                         columnList.append(",");
                     }
                     String columnExpression = null;
-                    if (useTriggerTemplateForColumnTemplatesDuringInitialLoad(column)) {
+                    if (useTriggerTemplateForColumnTemplatesDuringInitialLoad(column) && !column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
                         ColumnString columnString = fillOutColumnTemplate(tableAlias,
                                 tableAlias, "", table, column, DataEventType.INSERT, false, channel,
                                 triggerRouter.getTrigger(), true);

@@ -28,8 +28,11 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DbCompareRow {
+    final static Logger log = LoggerFactory.getLogger(DbCompareRow.class);
     private DbValueComparator dbValueComparator;
     private ISymmetricEngine engine;
     private Table table;
@@ -70,7 +73,12 @@ public class DbCompareRow {
             int result = dbValueComparator.compareValues(sourceColumn, targetColumn,
                     rowValues.get(sourceColumn.getName()), targetRow.getRowValues().get(targetColumn.getName()));
             if (result != 0) {
-                deltas.put(targetColumn, rowValues.get(sourceColumn.getName()));
+                if (sourceColumn.getJdbcTypeName().equalsIgnoreCase("unitext") || sourceColumn.getJdbcTypeName().equalsIgnoreCase("unichar") || sourceColumn
+                        .getJdbcTypeName().equalsIgnoreCase("univarchar")) {
+                    deltas.put(sourceColumn, rowValues.get(sourceColumn.getName()));
+                } else {
+                    deltas.put(targetColumn, rowValues.get(sourceColumn.getName()));
+                }
             }
         }
         return deltas;

@@ -20,6 +20,9 @@
  */
 package org.jumpmind.db.platform.ase;
 
+import java.nio.charset.Charset;
+import java.sql.Types;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -41,10 +44,13 @@ package org.jumpmind.db.platform.ase;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
@@ -52,6 +58,7 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
 import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
@@ -168,5 +175,89 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
         } else {
             return super.getObjectValue(value, column, encoding, useVariableDates, fitToColumn);
         }
+    }
+    
+    @Override
+    public String getCsvStringValue(BinaryEncoding encoding, Column[] metaData, Row row, boolean[] isColumnPositionUsingTemplate) {
+        StringBuilder concatenatedRow = new StringBuilder();
+        Set<String> names = row.keySet();
+        int i = 0;
+        for (String name : names) {
+            Column column = metaData[i];
+            int type = column.getJdbcTypeCode();
+            if (i > 0) {
+                concatenatedRow.append(",");
+            }
+            if (row.get(name) != null) {
+                if(column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                    concatenatedRow.append("\"").append(row.getString(name).replace("\\", "\\\\").replace("\"", "\\\"")).append("\"");
+                } else if (isColumnPositionUsingTemplate[i]) {
+                    concatenatedRow.append(row.getString(name));
+                } else if (type == Types.BOOLEAN || type == Types.BIT) {
+                    concatenatedRow.append(row.getBoolean(name) ? "1" : "0");
+                } else if (column.isOfNumericType()) {
+                    concatenatedRow.append(row.getString(name));
+                } else if (column.isTimestampWithTimezone()) {
+                    appendString(concatenatedRow, getTimestampTzStringValue(name, type, row, false));
+                } else if (type == Types.DATE || type == Types.TIME) {
+                    appendString(concatenatedRow, getDateTimeStringValue(name, type, row, false));
+                } else if (type == Types.TIMESTAMP) {
+                    appendString(concatenatedRow, getTimestampStringValue(name, type, row, false));
+                } else if (column.isOfBinaryType()) {
+                    byte[] bytes = row.getBytes(name);
+                    if (bytes.length == 0) {
+                        concatenatedRow.append("\"\"");
+                    } else if (encoding == BinaryEncoding.NONE) {
+                        concatenatedRow.append(row.getString(name));
+                    } else if (encoding == BinaryEncoding.BASE64) {
+                        concatenatedRow.append(new String(Base64.encodeBase64(bytes), Charset.defaultCharset()));
+                    } else if (encoding == BinaryEncoding.HEX) {
+                        concatenatedRow.append(new String(Hex.encodeHex(bytes)));
+                    }
+                } else {
+                    concatenatedRow.append("\"").append(row.getString(name).replace("\\", "\\\\").replace("\"", "\\\"")).append("\"");
+                }
+            }
+            i++;
+        }
+        return concatenatedRow.toString();
+    }
+    
+    @Override
+    public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates, boolean indexByPosition) {
+        String[] values = new String[metaData.length];
+        Set<String> keys = row.keySet();
+        int i = 0;
+        for (String key : keys) {
+            Column column = metaData[i];
+            String name = indexByPosition ? key : column.getName();
+            int type = column.getJdbcTypeCode();
+            if (row.get(name) != null) {
+                if(column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                    values[i] = row.getString(name);
+                } else if (type == Types.BOOLEAN || type == Types.BIT) {
+                    values[i] = row.getBoolean(name) ? "1" : "0";
+                } else if (column.isOfNumericType()) {
+                    values[i] = row.getString(name);
+                } else if (!column.isTimestampWithTimezone() && (type == Types.DATE || type == Types.TIME)) {
+                    values[i] = getDateTimeStringValue(name, type, row, useVariableDates);
+                } else if (!column.isTimestampWithTimezone() && type == Types.TIMESTAMP) {
+                    values[i] = getTimestampStringValue(name, type, row, useVariableDates);
+                } else if (column.isOfBinaryType()) {
+                    byte[] bytes = row.getBytes(name);
+                    if (encoding == BinaryEncoding.NONE) {
+                        values[i] = row.getString(name);
+                    } else if (encoding == BinaryEncoding.BASE64) {
+                        values[i] = new String(Base64.encodeBase64(bytes), Charset.defaultCharset());
+                    } else if (encoding == BinaryEncoding.HEX) {
+                        values[i] = new String(Hex.encodeHex(bytes));
+                    }
+                } else {
+                    values[i] = row.getString(name);
+                }
+            }
+            i++;
+        }
+        return values;
     }
 }
