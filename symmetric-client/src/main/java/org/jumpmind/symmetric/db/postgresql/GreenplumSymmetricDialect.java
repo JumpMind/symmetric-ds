@@ -31,7 +31,7 @@ public class GreenplumSymmetricDialect extends PostgreSqlSymmetricDialect {
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
     }
 
     @Override

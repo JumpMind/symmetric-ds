@@ -49,7 +49,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String escape = this.parameterService.getTablePrefix() + "_" + "escape";
         if (!installed(SQL_FUNCTION_INSTALLED, escape)) {
             String sql = "CREATE FUNCTION $(functionName)(STR VARCHAR(10000)) RETURNS                                                                                                                                            "
@@ -57,7 +57,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
                     " VARCHAR(10000) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME                                                                                                 "
                     +
                     " 'org.jumpmind.symmetric.db.derby.DerbyFunctions.escape'                                                                                                                ";
-            install(sql, escape);
+            install(sql, escape, ddl);
         }
         String clobToString = this.parameterService.getTablePrefix() + "_" + "clob_to_string";
         if (!installed(SQL_FUNCTION_INSTALLED, clobToString)) {
@@ -68,7 +68,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
                     " varchar(32672) PARAMETER STYLE JAVA READS SQL DATA LANGUAGE JAVA EXTERNAL NAME                                                                                         "
                     +
                     " 'org.jumpmind.symmetric.db.derby.DerbyFunctions.clobToString'                                                                                                          ";
-            install(sql, clobToString);
+            install(sql, clobToString, ddl);
         }
         String blobToString = this.parameterService.getTablePrefix() + "_" + "blob_to_string";
         if (!installed(SQL_FUNCTION_INSTALLED, blobToString)) {
@@ -79,7 +79,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
                     " varchar(32672) PARAMETER STYLE JAVA READS SQL DATA LANGUAGE JAVA EXTERNAL NAME                                                                                         "
                     +
                     " 'org.jumpmind.symmetric.db.derby.DerbyFunctions.blobToString'                                                                                                          ";
-            install(sql, blobToString);
+            install(sql, blobToString, ddl);
         }
         String transactionId = this.parameterService.getTablePrefix() + "_" + "transaction_id";
         if (!installed(SQL_FUNCTION_INSTALLED, transactionId)) {
@@ -88,7 +88,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
                     " varchar(100) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME                                                                                                   "
                     +
                     " 'org.jumpmind.symmetric.db.derby.DerbyFunctions.getTransactionId'                                                                                                      ";
-            install(sql, transactionId);
+            install(sql, transactionId, ddl);
         }
         String syncTriggersDisabled = this.parameterService.getTablePrefix() + "_" + "sync_triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, syncTriggersDisabled)) {
@@ -97,7 +97,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
                     " integer PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME                                                                                                        "
                     +
                     " 'org.jumpmind.symmetric.db.derby.DerbyFunctions.isSyncDisabled'                                                                                                        ";
-            install(sql, syncTriggersDisabled);
+            install(sql, syncTriggersDisabled, ddl);
         }
         String syncTriggersSetDisabled = this.parameterService.getTablePrefix() + "_" + "sync_triggers_set_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, syncTriggersSetDisabled)) {
@@ -106,7 +106,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
                     "   integer PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME                                                                                                        "
                     +
                     "   'org.jumpmind.symmetric.db.derby.DerbyFunctions.setSyncDisabled'                                                                                                       ";
-            install(sql, syncTriggersSetDisabled);
+            install(sql, syncTriggersSetDisabled, ddl);
         }
         String syncNodeSetDisabled = this.parameterService.getTablePrefix() + "_" + "sync_node_set_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, syncNodeSetDisabled)) {
@@ -115,7 +115,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
                     "   varchar(50) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME                                                                                                    "
                     +
                     "   'org.jumpmind.symmetric.db.derby.DerbyFunctions.setSyncNodeDisabled'                                                                                                   ";
-            install(sql, syncNodeSetDisabled);
+            install(sql, syncNodeSetDisabled, ddl);
         }
         String saveData = this.parameterService.getTablePrefix() + "_" + "save_data";
         if (!installed(SQL_FUNCTION_INSTALLED, saveData)) {
@@ -128,7 +128,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
                     "  PARAMETER STYLE JAVA LANGUAGE JAVA MODIFIES SQL DATA EXTERNAL NAME                                                                                                     "
                     +
                     "  'org.jumpmind.symmetric.db.derby.DerbyFunctions.insertData'                                                                                                            ";
-            install(sql, saveData);
+            install(sql, saveData, ddl);
         }
     }
 

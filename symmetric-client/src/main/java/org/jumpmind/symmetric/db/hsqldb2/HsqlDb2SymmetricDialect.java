@@ -62,7 +62,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String encode = this.parameterService.getTablePrefix() + "_base_64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "CREATE FUNCTION $(functionName)(binaryData BINARY)                                                                                                                                                     "
@@ -76,7 +76,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
                     " EXTERNAL NAME                                                                                                                                               "
                     +
                     "  'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.encodeBase64'                                                                                  ";
-            install(sql, encode);
+            install(sql, encode, ddl);
         }
         String setSession = this.parameterService.getTablePrefix() + "_set_session";
         if (!installed(SQL_FUNCTION_INSTALLED, setSession)) {
@@ -89,7 +89,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
                     " EXTERNAL NAME                                                                                                                                               "
                     +
                     "  'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.setSession'                                                                                    ";
-            install(sql, setSession);
+            install(sql, setSession, ddl);
         }
         String getSession = this.parameterService.getTablePrefix() + "_get_session";
         if (!installed(SQL_FUNCTION_INSTALLED, getSession)) {
@@ -104,7 +104,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
                     " EXTERNAL NAME                                                                                                                                               "
                     +
                     "  'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.getSession'                                                                                    ";
-            install(sql, getSession);
+            install(sql, getSession, ddl);
         }
     }
 

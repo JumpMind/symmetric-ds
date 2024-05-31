@@ -41,20 +41,24 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
-        ISqlTransaction transaction = platform.getSqlTemplate().startSqlTransaction();
-        try {
-            transaction.prepareAndExecute("declare sync_node_disabled varchar(50);");
-            transaction.prepareAndExecute("declare sync_triggers_disabled smallint;");
-            transaction.commit();
-        } catch (SqlException e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            log.info("Raima dialect global variables already declared, no need to declare again.");
-        } finally {
-            if (transaction != null) {
-                transaction.close();
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
+        logSql("declare sync_node_disabled varchar(50);", ddl);
+        logSql("declare sync_triggers_disabled smallint;", ddl);
+        if (ddl == null) {
+            ISqlTransaction transaction = platform.getSqlTemplate().startSqlTransaction();
+            try {
+                transaction.prepareAndExecute("declare sync_node_disabled varchar(50);");
+                transaction.prepareAndExecute("declare sync_triggers_disabled smallint;");
+                transaction.commit();
+            } catch (SqlException e) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                log.info("Raima dialect global variables already declared, no need to declare again.");
+            } finally {
+                if (transaction != null) {
+                    transaction.close();
+                }
             }
         }
     }

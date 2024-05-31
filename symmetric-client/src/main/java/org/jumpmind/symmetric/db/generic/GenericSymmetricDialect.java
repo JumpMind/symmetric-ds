@@ -56,10 +56,6 @@ public class GenericSymmetricDialect extends AbstractSymmetricDialect {
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
-    }
-
-    @Override
     public BinaryEncoding getBinaryEncoding() {
         return null;
     }

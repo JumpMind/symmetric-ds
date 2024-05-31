@@ -85,6 +85,8 @@ public interface ISymmetricDialect {
 
     public void createRequiredDatabaseObjects();
 
+    public String getCreateRequiredDatabaseObjectsDDL();
+
     public IDatabasePlatform getPlatform();
 
     public IDatabasePlatform getTargetPlatform();

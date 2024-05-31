@@ -231,13 +231,13 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
-        createBase64EncodeFunction();
-        createTriggersDisabledFunction();
-        createNodeDisabledFunction();
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
+        createBase64EncodeFunction(ddl);
+        createTriggersDisabledFunction(ddl);
+        createNodeDisabledFunction(ddl);
     }
 
-    protected void createBase64EncodeFunction() {
+    protected void createBase64EncodeFunction(StringBuilder ddl) {
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "create function dbo.$(functionName)(@data varbinary(max)) returns varchar(max)                                                                                                                         "
@@ -249,11 +249,11 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                     "\n    return ( select [text()] = @data for xml path('') )                                                                                                                "
                     +
                     "\n  end                                                                                                                                                                  ";
-            install(sql, encode);
+            install(sql, encode, ddl);
         }
     }
 
-    protected void createTriggersDisabledFunction() {
+    protected void createTriggersDisabledFunction(StringBuilder ddl) {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
             String sql = "create function dbo.$(functionName)() returns smallint                                                                                                                                                 "
@@ -271,11 +271,11 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                     "\n    return 1;                                                                                                                                                            "
                     +
                     "\n  end                                                                                                                                                                    ";
-            install(sql, triggersDisabled);
+            install(sql, triggersDisabled, ddl);
         }
     }
 
-    protected void createNodeDisabledFunction() {
+    protected void createNodeDisabledFunction(StringBuilder ddl) {
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
             String sql = "create function dbo.$(functionName)() returns varchar(50)                                                                                                                                              "
@@ -289,7 +289,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                     "\n    return @node;                                                                                                                                                        "
                     +
                     "\n  end                                                                                                                                                                    ";
-            install(sql, nodeDisabled);
+            install(sql, nodeDisabled, ddl);
         }
     }
 

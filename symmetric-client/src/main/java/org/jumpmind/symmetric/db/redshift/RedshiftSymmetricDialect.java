@@ -67,10 +67,6 @@ public class RedshiftSymmetricDialect extends AbstractSymmetricDialect implement
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
-    }
-
-    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }

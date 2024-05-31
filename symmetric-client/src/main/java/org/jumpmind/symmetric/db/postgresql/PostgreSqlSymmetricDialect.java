@@ -67,7 +67,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         ISqlTransaction transaction = null;
         try {
             transaction = platform.getSqlTemplate().startSqlTransaction();
@@ -102,7 +102,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
                     "                                END;                                                                                                                                                                   "
                     +
                     "                                $$ LANGUAGE plpgsql;                                                                                                                                                   ";
-            install(sql, triggersDisabled);
+            install(sql, triggersDisabled, ddl);
         }
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
@@ -125,7 +125,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
                     "                                END;                                                                                                                                                                   "
                     +
                     "                                $$ LANGUAGE plpgsql;                                                                                                                                                   ";
-            install(sql, nodeDisabled);
+            install(sql, nodeDisabled, ddl);
         }
         String largeObjects = this.parameterService.getTablePrefix() + "_" + "largeobject";
         if (!installed(SQL_FUNCTION_INSTALLED, largeObjects)) {
@@ -158,7 +158,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
                     "                                END                                                                                                                                                                    "
                     +
                     "                                $$ LANGUAGE plpgsql;                                                                                                                                                   ";
-            install(sql, largeObjects);
+            install(sql, largeObjects, ddl);
         }
     }
 

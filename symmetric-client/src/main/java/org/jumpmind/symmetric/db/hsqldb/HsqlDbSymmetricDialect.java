@@ -64,21 +64,21 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String encode = this.parameterService.getTablePrefix() + "_" + "base_64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "CREATE ALIAS $(functionName) for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.encodeBase64\"; ";
-            install(sql, encode);
+            install(sql, encode, ddl);
         }
         String setSession = this.parameterService.getTablePrefix() + "_" + "set_session";
         if (!installed(SQL_FUNCTION_INSTALLED, setSession)) {
             String sql = "CREATE ALIAS $(functionName) for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.setSession\"; ";
-            install(sql, setSession);
+            install(sql, setSession, ddl);
         }
         String getSession = this.parameterService.getTablePrefix() + "_" + "get_session";
         if (!installed(SQL_FUNCTION_INSTALLED, getSession)) {
             String sql = "CREATE ALIAS $(functionName) for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.getSession\"; ";
-            install(sql, getSession);
+            install(sql, getSession, ddl);
         }
     }
 

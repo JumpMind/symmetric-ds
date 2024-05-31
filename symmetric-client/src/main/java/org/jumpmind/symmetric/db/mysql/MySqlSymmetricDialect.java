@@ -103,7 +103,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String function = null;
         String functionBody = null;
         String sql = null;
@@ -158,9 +158,9 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         }
         if (!functionEquals(SQL_FUNCTION_EQUALS, function, functionBody)) {
             if (installed(SQL_FUNCTION_INSTALLED, function)) {
-                uninstall(SQL_DROP_FUNCTION, function);
+                uninstall(SQL_DROP_FUNCTION, function, ddl);
             }
-            install(sql, function);
+            install(sql, function, ddl);
         }
     }
 

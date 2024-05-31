@@ -57,7 +57,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String function = parameterService.getTablePrefix() + "_get_session_variable";
         if (!installed(SQL_FUNCTION_INSTALLED, function)) {
             String sql = "create function $(functionName)(akey string) returns string as\n" +
@@ -70,7 +70,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
                     "end_try;\n" +
                     "return l_out;\n" +
                     "END_FUNCTION;";
-            install(sql, function);
+            install(sql, function, ddl);
         }
         function = parameterService.getTablePrefix() + "_set_session_variable";
         if (!installed(SQL_FUNCTION_INSTALLED, function)) {
@@ -87,7 +87,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
                     "end_try;\n" +
                     "return l_new;\n" +
                     "END_FUNCTION;";
-            install(sql, function);
+            install(sql, function, ddl);
         }
     }
 

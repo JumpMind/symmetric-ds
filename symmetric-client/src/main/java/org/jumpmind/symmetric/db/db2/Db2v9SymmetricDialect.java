@@ -40,25 +40,33 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         ISqlTransaction transaction = null;
         try {
             transaction = platform.getSqlTemplate().startSqlTransaction();
             enableSyncTriggers(transaction);
             transaction.commit();
         } catch (Exception e) {
-            try {
-                log.info("Creating environment variables {} and {}", syncTriggersDisabledUserVariable,
-                        syncTriggersDisabledNodeVariable);
-                ISqlTemplate template = getPlatform().getSqlTemplate();
-                template.update("CREATE VARIABLE " + syncTriggersDisabledNodeVariable + " VARCHAR(50)");
-                template.update("GRANT READ on VARIABLE " + syncTriggersDisabledNodeVariable + " TO PUBLIC");
-                template.update("GRANT WRITE on VARIABLE " + syncTriggersDisabledNodeVariable + " TO PUBLIC");
-                template.update("CREATE VARIABLE " + syncTriggersDisabledUserVariable + " INTEGER");
-                template.update("GRANT READ on VARIABLE " + syncTriggersDisabledUserVariable + " TO PUBLIC");
-                template.update("GRANT WRITE on VARIABLE " + syncTriggersDisabledUserVariable + " TO PUBLIC");
-            } catch (Exception ex) {
-                log.error("Error while initializing DB2 dialect", ex);
+            logSql("CREATE VARIABLE " + syncTriggersDisabledNodeVariable + " VARCHAR(50)", ddl);
+            logSql("GRANT READ on VARIABLE " + syncTriggersDisabledNodeVariable + " TO PUBLIC", ddl);
+            logSql("GRANT WRITE on VARIABLE " + syncTriggersDisabledNodeVariable + " TO PUBLIC", ddl);
+            logSql("CREATE VARIABLE " + syncTriggersDisabledUserVariable + " INTEGER", ddl);
+            logSql("GRANT READ on VARIABLE " + syncTriggersDisabledUserVariable + " TO PUBLIC", ddl);
+            logSql("GRANT WRITE on VARIABLE " + syncTriggersDisabledUserVariable + " TO PUBLIC", ddl);
+            if (ddl == null) {
+                try {
+                    log.info("Creating environment variables {} and {}", syncTriggersDisabledUserVariable,
+                            syncTriggersDisabledNodeVariable);
+                    ISqlTemplate template = getPlatform().getSqlTemplate();
+                    template.update("CREATE VARIABLE " + syncTriggersDisabledNodeVariable + " VARCHAR(50)");
+                    template.update("GRANT READ on VARIABLE " + syncTriggersDisabledNodeVariable + " TO PUBLIC");
+                    template.update("GRANT WRITE on VARIABLE " + syncTriggersDisabledNodeVariable + " TO PUBLIC");
+                    template.update("CREATE VARIABLE " + syncTriggersDisabledUserVariable + " INTEGER");
+                    template.update("GRANT READ on VARIABLE " + syncTriggersDisabledUserVariable + " TO PUBLIC");
+                    template.update("GRANT WRITE on VARIABLE " + syncTriggersDisabledUserVariable + " TO PUBLIC");
+                } catch (Exception ex) {
+                    log.error("Error while initializing DB2 dialect", ex);
+                }
             }
         } finally {
             close(transaction);

@@ -84,7 +84,7 @@ public class HanaSymmetricDialect extends AbstractSymmetricDialect {
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String transactionId = this.parameterService.getTablePrefix() + "_" + "transaction_id";
         if (!installed(SQL_FUNCTION_INSTALLED, transactionId)) {
             String sql = "CREATE OR REPLACE function $(functionName)                                                                                                                                                             "
@@ -92,7 +92,7 @@ public class HanaSymmetricDialect extends AbstractSymmetricDialect {
                     + "   begin                                                                                                                                                              "
                     + "      select transaction_id into output1 from M_TRANSACTIONS where connection_id = CURRENT_CONNECTION;                                                                                                         "
                     + "   end;    ";
-            install(sql, transactionId);
+            install(sql, transactionId, ddl);
         }
     }
 

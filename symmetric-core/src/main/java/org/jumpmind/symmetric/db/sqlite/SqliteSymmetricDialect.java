@@ -52,10 +52,6 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
-    }
-
-    @Override
     public void dropRequiredDatabaseObjects() {
     }
 

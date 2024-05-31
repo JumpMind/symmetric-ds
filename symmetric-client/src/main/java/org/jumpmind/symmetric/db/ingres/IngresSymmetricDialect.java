@@ -97,10 +97,6 @@ public class IngresSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
-    }
-
-    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }

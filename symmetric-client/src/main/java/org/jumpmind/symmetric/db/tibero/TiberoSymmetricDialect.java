@@ -116,7 +116,7 @@ public class TiberoSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String blobToClob = this.parameterService.getTablePrefix() + "_" + "blob2clob";
         if (!installed(SQL_OBJECT_INSTALLED, blobToClob)) {
             String sql = "CREATE OR REPLACE FUNCTION $(functionName) (blob_in IN BLOB)                                                                                                                                           "
@@ -141,7 +141,7 @@ public class TiberoSymmetricDialect extends AbstractSymmetricDialect implements 
                     + "       END IF;                                                                                                                                                            "
                     + "       RETURN v_clob;                                                                                                                                                     "
                     + "   END $(functionName);                                                                                                                                                   ";
-            install(sql, blobToClob);
+            install(sql, blobToClob, ddl);
         }
         String transactionId = this.parameterService.getTablePrefix() + "_" + "transaction_id";
         if (!installed(SQL_OBJECT_INSTALLED, transactionId)) {
@@ -150,7 +150,7 @@ public class TiberoSymmetricDialect extends AbstractSymmetricDialect implements 
                     + "   begin                                                                                                                                                              "
                     + "      return DBMS_TRANSACTION.local_transaction_id(false);                                                                                                            "
                     + "   end;                                                                                                                                                               ";
-            install(sql, transactionId);
+            install(sql, transactionId, ddl);
         }
         String triggerDisabled = this.parameterService.getTablePrefix() + "_" + "trigger_disabled";
         if (!installed(SQL_OBJECT_INSTALLED, triggerDisabled)) {
@@ -159,7 +159,7 @@ public class TiberoSymmetricDialect extends AbstractSymmetricDialect implements 
                     + "      return " + getSymmetricPackageName()
                     + ".disable_trigger;                                                                                                                                   "
                     + "   end;                                                                                                                                                                 ";
-            install(sql, triggerDisabled);
+            install(sql, triggerDisabled, ddl);
         }
         String pkgPackage = this.parameterService.getTablePrefix() + "_" + "pkg";
         if (!installed(SQL_OBJECT_INSTALLED, pkgPackage)) {
@@ -170,7 +170,7 @@ public class TiberoSymmetricDialect extends AbstractSymmetricDialect implements 
                     + "      procedure setNodeValue (node_id IN varchar);                                                                                                                       "
                     + "  end " + getSymmetricPackageName()
                     + ";                                                                                                                                                           ";
-            install(sql, pkgPackage);
+            install(sql, pkgPackage, ddl);
             sql = "CREATE OR REPLACE package body $(functionName) as                                                                                                                                                              "
                     + "     procedure setValue(a IN number) is                                                                                                                                 "
                     + "     begin                                                                                                                                                              "
@@ -182,7 +182,7 @@ public class TiberoSymmetricDialect extends AbstractSymmetricDialect implements 
                     + "     end;                                                                                                                                                               "
                     + " end " + getSymmetricPackageName()
                     + ";                                                                                                                                                           ";
-            install(sql, pkgPackage);
+            install(sql, pkgPackage, ddl);
         }
         String wkt2geom = this.parameterService.getTablePrefix() + "_" + "wkt2geom";
         if (!installed(SQL_OBJECT_INSTALLED, wkt2geom)) {
@@ -200,7 +200,7 @@ public class TiberoSymmetricDialect extends AbstractSymmetricDialect implements 
                     + "      END IF;                                            "
                     + "      RETURN v_out;                                      "
                     + "    END $(functionName);                                 ";
-            install(sql, wkt2geom);
+            install(sql, wkt2geom, ddl);
         }
     }
 

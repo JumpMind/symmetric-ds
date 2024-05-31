@@ -194,17 +194,27 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return platform.getSqlTemplate().queryForInt(replaceTokens(sql, objectName)) > 0;
     }
 
-    protected void install(String sql, String objectName) {
+    protected void install(String sql, String objectName, StringBuilder ddl) {
         sql = replaceTokens(sql, objectName);
-        log.info("Installing SymmetricDS database object:\n{}", sql);
-        platform.getSqlTemplate().update(sql);
-        log.info("Just installed {}", objectName);
+        logSql(sql, ddl);
+        if (ddl == null) {
+            log.info("Installing SymmetricDS database object:\n{}", sql);
+            platform.getSqlTemplate().update(sql);
+            log.info("Just installed {}", objectName);
+        }
     }
 
     protected void uninstall(String sql, String objectName) {
+        uninstall(sql, objectName, null);
+    }
+
+    protected void uninstall(String sql, String objectName, StringBuilder ddl) {
         sql = replaceTokens(sql, objectName);
-        platform.getSqlTemplate().update(sql);
-        log.info("Just uninstalled {}", objectName);
+        logSql(sql, ddl);
+        if (ddl == null) {
+            platform.getSqlTemplate().update(sql);
+            log.info("Just uninstalled {}", objectName);
+        }
     }
 
     public void dropTablesAndDatabaseObjects() {
@@ -232,7 +242,18 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public abstract void dropRequiredDatabaseObjects();
 
-    public abstract void createRequiredDatabaseObjects();
+    public void createRequiredDatabaseObjects() {
+        createRequiredDatabaseObjectsImpl(null);
+    };
+
+    public String getCreateRequiredDatabaseObjectsDDL() {
+        StringBuilder ddl = new StringBuilder();
+        createRequiredDatabaseObjectsImpl(ddl);
+        return ddl.toString();
+    }
+
+    protected void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
+    }
 
     abstract public BinaryEncoding getBinaryEncoding();
 

@@ -43,10 +43,6 @@ public class VoltDbSymmetricDialect extends AbstractSymmetricDialect {
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
-    }
-
-    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }

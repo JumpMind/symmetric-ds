@@ -73,9 +73,9 @@ public class Db2As400SymmetricDialect extends Db2SymmetricDialect implements ISy
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         if (supportsGlobalVariables) {
-            super.createRequiredDatabaseObjects();
+            super.createRequiredDatabaseObjectsImpl(ddl);
         }
     }
 
