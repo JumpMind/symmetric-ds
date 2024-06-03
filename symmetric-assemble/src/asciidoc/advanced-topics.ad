@@ -539,5 +539,38 @@ Time Zone:: Determines what time zone dates and times are displayed in. Options 
 
 endif::pro[]
 
+=== Preventing SymmetricDS from Running DDL Statements
+
+It is possible to prevent SymmetricDS from running DDL statements and instead use the `symadmin` command to export the DDL statements and run them separately. To create a new node that does not run its own DDL statements, set up its properties file and add the following parameters:
+
+[source, cli]
+----
+auto.config.database=false
+auto.sync.triggers=false
+----
+
+To export the DDL statements used to create the database objects that SymmetricDS requires (not including triggers), run the `symadmin export-sym-objects` subcommand and optionally specify an output file:
+
+[source, cli]
+----
+symadmin export-sym-objects <output file> --engine <engine name>
+----
+
+Run the exported DDL statements and then insert or import your configuration. If your configuration is saved to a `.csv` or `.sql` file, then you can import it using the `symadmin import-config` subcommand:
+
+[source, cli]
+----
+symadmin import-config <configuration file> --engine <engine name>
+----
+
+To export the trigger creation statements, run the `symadmin sync-triggers` subcommand with the `-o` option and specify an output file:
+
+[source, cli]
+----
+symadmin sync-triggers -o <output file> --engine <engine name>
+----
+
+Run the exported trigger creation statements and then start SymmetricDS. When making future configuration changes, it will be necessary to export any trigger changes using the above method and run them yourself.
+
 
 
