@@ -75,7 +75,7 @@ public class TiberoSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalog, String schema, String tableName,
             String triggerName) {
         if (isBlank(schema)) {
             schema = platform.getDefaultSchema();

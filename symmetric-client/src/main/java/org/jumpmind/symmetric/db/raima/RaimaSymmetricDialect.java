@@ -73,7 +73,7 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalog, String schema, String tableName,
             String triggerName) {
         schema = schema == null ? (platform.getDefaultSchema() == null ? null
                 : platform
@@ -93,7 +93,7 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
             String triggerName, String tableName, ISqlTransaction transaction) {
         final String sql = "drop trigger " + triggerName;
         logSql(sql, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             try {
                 log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
                 platform.getSqlTemplate().update(sql);

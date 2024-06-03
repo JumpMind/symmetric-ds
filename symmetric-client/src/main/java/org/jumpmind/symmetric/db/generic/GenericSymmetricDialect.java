@@ -61,7 +61,8 @@ public class GenericSymmetricDialect extends AbstractSymmetricDialect {
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalogName, String schema,
+            String tableName, String triggerName) {
         return false;
     }
 }

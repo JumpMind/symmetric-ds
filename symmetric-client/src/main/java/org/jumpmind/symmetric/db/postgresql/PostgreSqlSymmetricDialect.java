@@ -184,7 +184,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalogName, String schema, String tableName, String triggerName) {
         if (platform.isMetadataIgnoreCase()) {
             return platform.getSqlTemplate().queryForInt(
                     "select count(*) from information_schema.triggers where trigger_name = ? "
@@ -213,7 +213,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
             final String dropFunction = "drop function IF EXISTS " + schemaPrefix + "f" + triggerName
                     + "() cascade";
             logSql(dropFunction, sqlBuffer);
-            if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
                 log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
                 transaction.execute(dropSql);
                 transaction.execute(dropFunction);
@@ -233,9 +233,11 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     public void removeDdlTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName) {
         final String dropSql = "drop event trigger IF EXISTS " + triggerName;
         logSql(dropSql, sqlBuffer);
+        logSql(dropSql + "_drop", sqlBuffer);
         final String dropFunction = "drop function IF EXISTS f" + triggerName + "() cascade";
         logSql(dropFunction, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        logSql("drop function IF EXISTS f" + triggerName + "_drop() cascade", sqlBuffer);
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             log.info("Removing DDL trigger " + triggerName);
             try {
                 platform.getSqlTemplate().update(dropSql);

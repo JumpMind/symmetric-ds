@@ -342,7 +342,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 : (platform.getDatabaseInfo().getDelimiterToken() + schemaName + platform.getDatabaseInfo().getDelimiterToken() + ".");
         final String sql = "drop trigger " + schemaName + triggerName;
         logSql(sql, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             ((JdbcSqlTransaction) transaction)
                     .executeCallback(new IConnectionCallback<Boolean>() {
@@ -410,9 +410,13 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                             "inner join sys.tables t with (nolock) on t.object_id = tr.parent_id " +
                             "where t.name = ? and te.type_desc = ? and te.is_first = 1", String.class, table.getName(), dml.name());
             if (StringUtils.isNotBlank(triggerNameFirst)) {
-                log.warn("Existing first trigger '{}{}' is being set to order of 'None'", schemaName, triggerNameFirst);
-                transaction.execute("exec sys.sp_settriggerorder @triggername = '" + schemaName +
-                        triggerNameFirst + "', @order = 'None', @stmttype = '" + dml.name() + "'");
+                String sql = "exec sys.sp_settriggerorder @triggername = '" + schemaName + triggerNameFirst
+                        + "', @order = 'None', @stmttype = '" + dml.name() + "'";
+                logSql(sql, sqlBuffer);
+                if (sqlBuffer == null) {
+                    log.warn("Existing first trigger '{}{}' is being set to order of 'None'", schemaName, triggerNameFirst);
+                    transaction.execute(sql);
+                }
             }
             String triggerName = null;
             if (dml == DataEventType.INSERT) {
@@ -422,8 +426,12 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
             } else {
                 triggerName = hist.getNameForDeleteTrigger();
             }
-            transaction.execute("exec sys.sp_settriggerorder @triggername = '" + schemaName +
-                    triggerName + "', @order = 'First', @stmttype = '" + dml.name() + "'");
+            String sql = "exec sys.sp_settriggerorder @triggername = '" + schemaName +
+                    triggerName + "', @order = 'First', @stmttype = '" + dml.name() + "'";
+            logSql(sql, sqlBuffer);
+            if (sqlBuffer == null) {
+                transaction.execute(sql);
+            }
         }
     }
 
@@ -433,7 +441,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, final String catalogName, String schema,
             String tableName, final String triggerName) {
         return ((JdbcSqlTemplate) platform.getSqlTemplate())
                 .execute(new IConnectionCallback<Boolean>() {
@@ -465,7 +473,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     public void removeDdlTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName) {
         String sql = "drop trigger " + triggerName + " on database";
         logSql(sql, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             try {
                 log.info("Removing DDL trigger " + triggerName);
                 this.platform.getSqlTemplate().update(sql);

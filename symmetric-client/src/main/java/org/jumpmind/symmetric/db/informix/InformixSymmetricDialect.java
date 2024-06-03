@@ -77,7 +77,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalog, String schema, String tableName,
             String triggerName) {
         return platform.getSqlTemplate().queryForInt(
                 "select count(*) from systriggers where lower(trigname) = ?",

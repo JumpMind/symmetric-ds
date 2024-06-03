@@ -138,7 +138,7 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
             final String triggerName, String tableName, ISqlTransaction transaction) {
         final String sql = "drop trigger " + (StringUtils.isBlank(schemaName) ? platform.getDefaultSchema() : schemaName) + "." + tableName + "." + triggerName;
         logSql(sql, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             log.info("Dropping {} trigger for {}", triggerName, (StringUtils.isBlank(schemaName) ? platform.getDefaultSchema() : schemaName) + "." + tableName
                     + "." + triggerName);
             ((JdbcSqlTransaction) transaction)
@@ -193,7 +193,7 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema, String tableName,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, final String catalogName, String schema, String tableName,
             final String triggerName) {
         return ((JdbcSqlTemplate) platform.getSqlTemplate())
                 .execute(new IConnectionCallback<Boolean>() {
