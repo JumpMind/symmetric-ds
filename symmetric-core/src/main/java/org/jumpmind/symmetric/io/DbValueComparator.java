@@ -78,7 +78,7 @@ public class DbValueComparator {
             }
             return compareText(sourceColumn, targetColumn, sourceValue, targetValue);
         } else if (isUniType(sourceColumn.getJdbcTypeName())) {
-            if(!sourceColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+            if (!sourceColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
                 long ts = System.currentTimeMillis();
                 sourceValue = convertString(sourceValue, sourceColumn, false);
                 ts = System.currentTimeMillis() - ts;

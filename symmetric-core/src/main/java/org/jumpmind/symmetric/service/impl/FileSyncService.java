@@ -1028,7 +1028,8 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                                     try {
                                         log.info("Retrying file sync for batch {}", batchId);
                                         Thread.sleep(retryFileSyncDelayMs);
-                                    } catch (InterruptedException e) { }
+                                    } catch (InterruptedException e) {
+                                    }
                                 }
                                 try {
                                     @SuppressWarnings("unchecked")
@@ -1042,7 +1043,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                                                     .size() : 0);
                                     break;
                                 } catch (Throwable e) {
-                                    log.error(e.getMessage(),e);
+                                    log.error(e.getMessage(), e);
                                     Throwable target = e;
                                     if (e instanceof TargetError) {
                                         Throwable t = ((TargetError) e).getTarget();

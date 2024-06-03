@@ -176,7 +176,7 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
             return super.getObjectValue(value, column, encoding, useVariableDates, fitToColumn);
         }
     }
-    
+
     @Override
     public String getCsvStringValue(BinaryEncoding encoding, Column[] metaData, Row row, boolean[] isColumnPositionUsingTemplate) {
         StringBuilder concatenatedRow = new StringBuilder();
@@ -189,7 +189,7 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
                 concatenatedRow.append(",");
             }
             if (row.get(name) != null) {
-                if(column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                if (column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
                     concatenatedRow.append("\"").append(row.getString(name).replace("\\", "\\\\").replace("\"", "\\\"")).append("\"");
                 } else if (isColumnPositionUsingTemplate[i]) {
                     concatenatedRow.append(row.getString(name));
@@ -222,7 +222,7 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return concatenatedRow.toString();
     }
-    
+
     @Override
     public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates, boolean indexByPosition) {
         String[] values = new String[metaData.length];
@@ -233,7 +233,7 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
             String name = indexByPosition ? key : column.getName();
             int type = column.getJdbcTypeCode();
             if (row.get(name) != null) {
-                if(column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                if (column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
                     values[i] = row.getString(name);
                 } else if (type == Types.BOOLEAN || type == Types.BIT) {
                     values[i] = row.getBoolean(name) ? "1" : "0";
