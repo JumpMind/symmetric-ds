@@ -518,7 +518,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String getCreateSymmetricDDL() {
         Database database = readSymmetricSchemaFromXml();
-        prefixConfigDatabase(database);
         IDdlBuilder builder = platform.getDdlBuilder();
         return builder.createTables(database, true);
     }
