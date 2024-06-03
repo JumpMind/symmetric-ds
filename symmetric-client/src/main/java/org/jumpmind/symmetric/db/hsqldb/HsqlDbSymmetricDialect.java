@@ -52,7 +52,7 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalogName, String schemaName, String tableName,
             String triggerName) {
         boolean exists = (platform.getSqlTemplate().queryForInt(
                 "select count(*) from INFORMATION_SCHEMA.SYSTEM_TRIGGERS WHERE TRIGGER_NAME = ?",
@@ -117,7 +117,7 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
         logSql(dropSql, sqlBuffer);
         final String dropTable = String.format("DROP TABLE IF EXISTS %s_CONFIG", triggerName);
         logSql(dropTable, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             int count = transaction.execute(dropSql);
             if (count > 0) {
                 log.info("Just dropped trigger {}", triggerName);

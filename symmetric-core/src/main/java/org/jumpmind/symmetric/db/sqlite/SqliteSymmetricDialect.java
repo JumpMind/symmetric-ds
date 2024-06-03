@@ -91,7 +91,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
         }
     }
 
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalogName, String schema, String tableName, String triggerName) {
         return platform.getSqlTemplate().queryForInt(
                 "select count(*) from sqlite_master where type='trigger' and name=? and tbl_name=? COLLATE NOCASE", triggerName,
                 tableName) > 0;

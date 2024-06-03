@@ -183,7 +183,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalog, String schema, String tableName,
             String triggerName) {
         catalog = catalog == null ? (platform.getDefaultCatalog() == null ? null
                 : platform
@@ -208,7 +208,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
             sql = "drop trigger " + catalogPrefix + triggerName;
         }
         logSql(sql, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             transaction.execute(sql);
         }

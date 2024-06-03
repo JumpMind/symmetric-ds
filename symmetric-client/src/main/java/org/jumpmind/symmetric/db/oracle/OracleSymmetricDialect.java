@@ -101,7 +101,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalog, String schema, String tableName,
             String triggerName) {
         if (isBlank(schema)) {
             schema = platform.getDefaultSchema();
@@ -156,7 +156,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     public void removeDdlTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName) {
         String sql = "drop trigger " + triggerName;
         logSql(sql, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             try {
                 log.info("Removing DDL trigger " + triggerName);
                 platform.getSqlTemplate().update(sql);
