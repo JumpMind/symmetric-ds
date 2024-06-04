@@ -195,20 +195,21 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             if (fileTriggerRouter.isEnabled()) {
                 try {
                     FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
+                    DirectorySnapshot lastSnapshot = getDirectorySnapshot(fileTriggerRouter);
                     DirectorySnapshot dirSnapshot = null;
                     boolean needsHandled = true;
                     for (IFileSourceTracker tracker : fileTrackers) {
                         if (tracker.handlesDir(fileTrigger.getBaseDir())) {
                             needsHandled = false;
                             if (tracker.checkSourceDir(fileTrigger.getBaseDir())) {
-                                dirSnapshot = tracker.trackChanges(fileTriggerRouter, null, processInfo, useCrc);
+                                dirSnapshot = tracker.trackChanges(fileTriggerRouter, lastSnapshot, processInfo, useCrc);
                             }
                             break;
                         }
                     }
                     if (needsHandled) {
                         if (checkSourceDir(fileTriggerRouter)) {
-                            FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, getDirectorySnapshot(fileTriggerRouter),
+                            FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, lastSnapshot,
                                     processInfo, useCrc, engine);
                             dirSnapshot = tracker.trackChanges();
                         }

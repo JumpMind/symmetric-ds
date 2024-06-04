@@ -21,7 +21,8 @@
 package org.jumpmind.symmetric.file;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.model.FileSnapshot;
@@ -39,5 +40,5 @@ public interface IFileSourceTracker extends IExtensionPoint {
 
     public File createSourceFile(FileSnapshot snapshot);
 
-    public FileInputStream getFileInputStream(File file);
+    public InputStream getInputStream(File file) throws IOException;
 }

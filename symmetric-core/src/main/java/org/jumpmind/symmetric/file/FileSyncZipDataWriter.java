@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.file;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -241,15 +242,17 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                 if (file.exists()) {
                                     byteCount += file.length();
                                     ZipEntry entry = new ZipEntry(entryName.toString());
-                                    BasicFileAttributes attr = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+                                    if(fileTracker == null) {
+                                        BasicFileAttributes attr = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
                                     // note: as of 8/21 getting the creation time won't work on unix file systems EVEN IF THEY HAVE EXT4
                                     // you also cannot set the creation time on unix systems (birth date) using setCreationTime, so this only works for windows
-                                    entry.setCreationTime(attr.creationTime());
+                                        entry.setCreationTime(attr.creationTime());
+                                    }
                                     entry.setSize(file.length());
                                     entry.setTime(file.lastModified());
                                     zos.putNextEntry(entry);
                                     if (file.isFile()) {
-                                        try (FileInputStream fis = fileTracker != null ? fileTracker.getFileInputStream(file) : new FileInputStream(file)) {
+                                        try (InputStream fis = fileTracker != null ? fileTracker.getInputStream(file) : new FileInputStream(file)) {
                                             IOUtils.copy(fis, zos);
                                         }
                                     }
