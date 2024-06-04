@@ -33,7 +33,6 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.OutgoingBatches;
@@ -141,7 +140,6 @@ public class NonDmlEventsTest extends AbstractTest {
 
     protected void testRoutingOfReloadEvents(ISymmetricEngine rootServer, ISymmetricEngine clientServer)
             throws Exception {
-        rootServer.getParameterService().saveParameter(ParameterConstants.REST_API_ENABLED, true, "unit_test");
         rootServer.getRegistrationService().openRegistration(clientServer.getParameterService().getNodeGroupId(), "2");
         rootServer.getRegistrationService().openRegistration(clientServer.getParameterService().getNodeGroupId(), "3");
         /* register a few more nodes to make sure that when we insert reload events they are only routed to the node we want */
