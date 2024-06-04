@@ -187,6 +187,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                 script.buildScriptStart(batch);
                 Map<String, LastEventType> entriesByLastEventType = new HashMap<String, LastEventType>();
                 Map<String, String> entriesByLastRouterId = new HashMap<String, String>();
+                List<IFileSourceTracker> fileTrackers = extensionService.getExtensionPointList(IFileSourceTracker.class);
                 for (FileSnapshot snapshot : snapshotEvents) {
                     FileTriggerRouter triggerRouter = fileSyncService.getFileTriggerRouter(
                             snapshot.getTriggerId(), snapshot.getRouterId(), false);
@@ -205,7 +206,19 @@ public class FileSyncZipDataWriter implements IDataWriter {
                             entryName.append(snapshot.getRelativeDir()).append("/");
                         }
                         entryName.append(snapshot.getFileName());
-                        File file = fileTrigger.createSourceFile(snapshot);
+                        File file = null;
+                        IFileSourceTracker fileTracker = null;
+                        for (IFileSourceTracker tracker : fileTrackers) {
+                            if (tracker.handlesDir(fileTrigger.getBaseDir())) {
+                                fileTracker = tracker;
+                                break;
+                            }
+                        }
+                        if (fileTracker != null) {
+                            file = fileTracker.createSourceFile(snapshot);
+                        } else {
+                            file = fileTrigger.createSourceFile(snapshot);
+                        }
                         if (file.isDirectory()) {
                             entryName.append("/");
                         }
@@ -236,7 +249,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     entry.setTime(file.lastModified());
                                     zos.putNextEntry(entry);
                                     if (file.isFile()) {
-                                        try (FileInputStream fis = new FileInputStream(file)) {
+                                        try (FileInputStream fis = fileTracker != null ? fileTracker.getFileInputStream(file) : new FileInputStream(file)) {
                                             IOUtils.copy(fis, zos);
                                         }
                                     }

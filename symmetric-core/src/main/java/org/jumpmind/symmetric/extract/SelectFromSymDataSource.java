@@ -313,7 +313,7 @@ public class SelectFromSymDataSource extends SelectFromSource {
         if (parameterService.is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC)) {
             for (Column column : copyTargetTable.getColumns()) {
                 Map<String, PlatformColumn> platformColumns = column.getPlatformColumns();
-                if(platformColumns.containsKey(DatabaseNamesConstants.ASE)) {
+                if (platformColumns.containsKey(DatabaseNamesConstants.ASE)) {
                     String platformColumnType = platformColumns.get(DatabaseNamesConstants.ASE).getType();
                     if (platformColumnType.equalsIgnoreCase("UNITEXT")) {
                         column.setMappedType("CLOB");
@@ -324,7 +324,7 @@ public class SelectFromSymDataSource extends SelectFromSource {
                     } else if (platformColumnType.equalsIgnoreCase("UNIVARCHAR")) {
                         column.setMappedType("VARCHAR");
                         column.setMappedTypeCode(Types.VARCHAR);
-                    }  
+                    }
                 }
             }
         }

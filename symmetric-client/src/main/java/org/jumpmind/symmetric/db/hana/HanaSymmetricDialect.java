@@ -84,7 +84,7 @@ public class HanaSymmetricDialect extends AbstractSymmetricDialect {
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String transactionId = this.parameterService.getTablePrefix() + "_" + "transaction_id";
         if (!installed(SQL_FUNCTION_INSTALLED, transactionId)) {
             String sql = "CREATE OR REPLACE function $(functionName)                                                                                                                                                             "
@@ -92,7 +92,7 @@ public class HanaSymmetricDialect extends AbstractSymmetricDialect {
                     + "   begin                                                                                                                                                              "
                     + "      select transaction_id into output1 from M_TRANSACTIONS where connection_id = CURRENT_CONNECTION;                                                                                                         "
                     + "   end;    ";
-            install(sql, transactionId);
+            install(sql, transactionId, ddl);
         }
     }
 
@@ -102,7 +102,7 @@ public class HanaSymmetricDialect extends AbstractSymmetricDialect {
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalogName, String schema, String tableName, String triggerName) {
         return platform.getSqlTemplate().queryForInt("select count(*) from triggers where trigger_name like ? and subject_table_name like ?",
                 new Object[] { triggerName, tableName.toUpperCase() }) > 0;
     }
@@ -113,8 +113,8 @@ public class HanaSymmetricDialect extends AbstractSymmetricDialect {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         final String sql = "drop trigger " + schemaName + triggerName;
         logSql(sql, sqlBuffer);
-        log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
+            log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             transaction.execute(sql);
         }
     }

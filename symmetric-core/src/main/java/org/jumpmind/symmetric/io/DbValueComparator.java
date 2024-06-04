@@ -70,17 +70,25 @@ public class DbValueComparator {
             return 0;
         }
         if (sourceColumn.isOfTextType()) {
-            if (isUniType(targetColumn.getJdbcTypeName())) {
+            if (isUniType(targetColumn.getJdbcTypeName()) && !targetColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                long ts = System.currentTimeMillis();
                 targetValue = convertString(targetValue, targetColumn, false);
+                ts = System.currentTimeMillis() - ts;
+                log.debug("Took " + ts + "milliseconds to convert string for comparison.");
+            }
+            return compareText(sourceColumn, targetColumn, sourceValue, targetValue);
+        } else if (isUniType(sourceColumn.getJdbcTypeName())) {
+            if (!sourceColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                long ts = System.currentTimeMillis();
+                sourceValue = convertString(sourceValue, sourceColumn, false);
+                ts = System.currentTimeMillis() - ts;
+                log.debug("Took " + ts + "milliseconds to convert string for comparison.");
             }
             return compareText(sourceColumn, targetColumn, sourceValue, targetValue);
         } else if (sourceColumn.isOfNumericType()) {
             return compareNumeric(sourceColumn, targetColumn, sourceValue, targetValue);
         } else if (TypeMap.isDateTimeType(sourceColumn.getJdbcTypeCode())) {
             return compareDateTime(sourceColumn, targetColumn, sourceValue, targetValue);
-        } else if (isUniType(sourceColumn.getJdbcTypeName())) {
-            sourceValue = convertString(sourceValue, sourceColumn, false);
-            return compareText(sourceColumn, targetColumn, sourceValue, targetValue);
         } else {
             return compareDefault(sourceColumn, targetColumn, sourceValue, targetValue);
         }
@@ -124,7 +132,7 @@ public class DbValueComparator {
         }
         ISymmetricDialect symmetricDialect = sourceEngine.getSymmetricDialect();
         boolean isUsingUnitypes = symmetricDialect.getParameterService().is(ParameterConstants.DBDIALECT_SYBASE_ASE_CONVERT_UNITYPES_FOR_SYNC);
-        if (isUsingUnitypes) {
+        if (isUsingUnitypes && (isUniType(sourceColumn.getJdbcTypeName()) || isUniType(targetColumn.getJdbcTypeName()))) {
             String normalizedSource = Normalizer.normalize(source, Normalizer.Form.NFD);
             String normalizedTarget = Normalizer.normalize(target, Normalizer.Form.NFD);
             if (normalizedSource != null && normalizedTarget != null) {
@@ -242,7 +250,7 @@ public class DbValueComparator {
         }
         return date;
     }
-    
+
     public boolean isUniType(String type) {
         return type.equalsIgnoreCase("UNITEXT") || type.equalsIgnoreCase("UNICHAR") || type.equalsIgnoreCase("UNIVARCHAR");
     }

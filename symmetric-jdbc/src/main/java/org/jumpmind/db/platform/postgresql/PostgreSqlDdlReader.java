@@ -304,6 +304,13 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
+    public List<String> getCatalogNames() {
+        ArrayList<String> list = new ArrayList<String>();
+        list.add(platform.getSqlTemplateDirty().queryForObject("select current_database()", String.class));
+        return list;
+    }
+
+    @Override
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) {
         List<Trigger> triggers = new ArrayList<Trigger>();

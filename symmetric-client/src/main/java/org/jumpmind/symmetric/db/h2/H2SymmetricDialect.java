@@ -69,7 +69,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalogName, String schemaName, String tableName,
             String triggerName) {
         boolean exists = (platform.getSqlTemplate()
                 .queryForInt(
@@ -79,7 +79,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
                         "select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ? and (TABLE_CATALOG=? or ? is null) and (TABLE_SCHEMA=? or ? is null)",
                         new Object[] { String.format("%s_CONFIG", triggerName), catalogName, catalogName, schemaName, schemaName }) > 0);
         if (!exists && !StringUtils.isBlank(triggerName)) {
-            removeTrigger(new StringBuilder(), catalogName, schemaName, triggerName, tableName);
+            removeTrigger(sqlBuffer, catalogName, schemaName, triggerName, tableName);
         }
         return exists;
     }
@@ -94,7 +94,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
         logSql(dropSql, sqlBuffer);
         final String dropTable = String.format("DROP TABLE IF EXISTS %s%s_CONFIG", prefix, triggerName);
         logSql(dropTable, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             log.info("Dropping trigger {} for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             transaction.execute(dropSql);
             transaction.execute(dropTable);
@@ -102,11 +102,11 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String encode = this.parameterService.getTablePrefix().toUpperCase() + "_" + "BASE64_ENCODE";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "CREATE ALIAS IF NOT EXISTS $(functionName) for \"org.jumpmind.symmetric.db.EmbeddedDbFunctions.encodeBase64\"; ";
-            install(sql, encode);
+            install(sql, encode, ddl);
         }
     }
 

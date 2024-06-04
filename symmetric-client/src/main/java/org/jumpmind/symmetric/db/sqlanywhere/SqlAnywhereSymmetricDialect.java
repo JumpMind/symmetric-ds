@@ -56,7 +56,7 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
             String sql = "create function $(defaultSchema).$(functionName)(@unused smallint) returns smallint as                                                                                                                              "
@@ -73,7 +73,7 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
                     +
                     "                                end                                                                                                                                                                    ";
             System.out.println("install triggers_disabled: " + sql);
-            install(sql, triggersDisabled);
+            install(sql, triggersDisabled, ddl);
         }
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
@@ -89,7 +89,7 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
                     "                                    return @ret                                                                                                                                                 "
                     +
                     "                                end                                                                                                                                                                    ";
-            install(sql, nodeDisabled);
+            install(sql, nodeDisabled, ddl);
         }
         String txId = this.parameterService.getTablePrefix() + "_" + "txid";
         if (!installed(SQL_FUNCTION_INSTALLED, txId)) {
@@ -109,7 +109,7 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
                     "                                    return @txid                                                                                                                                                       "
                     +
                     "                                end                                                                                                                                                                    ";
-            install(sql, txId);
+            install(sql, txId, ddl);
         }
     }
 
@@ -138,7 +138,7 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
             final String triggerName, String tableName, ISqlTransaction transaction) {
         final String sql = "drop trigger " + (StringUtils.isBlank(schemaName) ? platform.getDefaultSchema() : schemaName) + "." + tableName + "." + triggerName;
         logSql(sql, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             log.info("Dropping {} trigger for {}", triggerName, (StringUtils.isBlank(schemaName) ? platform.getDefaultSchema() : schemaName) + "." + tableName
                     + "." + triggerName);
             ((JdbcSqlTransaction) transaction)
@@ -193,7 +193,7 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema, String tableName,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, final String catalogName, String schema, String tableName,
             final String triggerName) {
         return ((JdbcSqlTemplate) platform.getSqlTemplate())
                 .execute(new IConnectionCallback<Boolean>() {

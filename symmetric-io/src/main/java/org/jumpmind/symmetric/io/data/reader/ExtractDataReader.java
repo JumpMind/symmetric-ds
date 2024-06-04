@@ -190,7 +190,7 @@ public class ExtractDataReader implements IDataReader {
                 Object[] args = new Object[pkColumns.length];
                 for (int i = 0; i < pkColumns.length; i++) {
                     args[i] = columnDataMap.get(pkColumns[i].getName());
-                }                
+                }
                 String sql = buildSelect(table, lobColumns, pkColumns);
                 Row row = sqlTemplate.queryForRow(sql, args);
                 if (row == null) {
@@ -202,14 +202,18 @@ public class ExtractDataReader implements IDataReader {
                         if (platform.isBlob(lobColumn.getMappedTypeCode())) {
                             byte[] binaryData = row.getBytes(lobColumn.getName());
                             if (binaryData != null) {
-                                if(isUniType(lobColumn.getJdbcTypeName())) {
+                                if (isUniType(lobColumn.getJdbcTypeName())) {
                                     try {
-                                        String utf16String = null;
-                                        String baseString = row.getString(lobColumn.getName());
-                                        baseString = "fffe" + baseString;
-                                        utf16String = new String(Hex.decodeHex(baseString), "UTF-16");
-                                        String utf8String = new String(utf16String.getBytes(Charset.defaultCharset()), Charset.defaultCharset());
-                                        valueForCsv = utf8String;
+                                        if (lobColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                                            valueForCsv = row.getString(lobColumn.getName());
+                                        } else {
+                                            String utf16String = null;
+                                            String baseString = row.getString(lobColumn.getName());
+                                            baseString = "fffe" + baseString;
+                                            utf16String = new String(Hex.decodeHex(baseString), "UTF-16");
+                                            String utf8String = new String(utf16String.getBytes(Charset.defaultCharset()), Charset.defaultCharset());
+                                            valueForCsv = utf8String;
+                                        }
                                     } catch (UnsupportedEncodingException | DecoderException e) {
                                         e.printStackTrace();
                                     }
@@ -269,7 +273,7 @@ public class ExtractDataReader implements IDataReader {
                     for (Column uniColumn : uniColumns) {
                         try {
                             int index = ArrayUtils.indexOf(columnNames, uniColumn.getName());
-                            if (rowData[index] != null) {
+                            if (rowData[index] != null && !uniColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
                                 String utf16String = null;
                                 String baseString = rowData[index];
                                 baseString = "fffe" + baseString;
@@ -311,8 +315,8 @@ public class ExtractDataReader implements IDataReader {
             if ("XMLTYPE".equalsIgnoreCase(lobColumn.getJdbcTypeName()) && 2009 == lobColumn.getJdbcTypeCode()) {
                 sql.append("extract(").append(quote).append(lobColumn.getName()).append(quote);
                 sql.append(", '/').getClobVal()");
-            } else if(isUniType(lobColumn.getJdbcTypeName())) {
-                sql.append("bintostr(convert(varbinary(16384),"+lobColumn.getName()+")) as " + lobColumn.getName());
+            } else if (isUniType(lobColumn.getJdbcTypeName()) && !lobColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                sql.append("bintostr(convert(varbinary(16384)," + lobColumn.getName() + ")) as " + lobColumn.getName());
             } else {
                 sql.append(quote).append(lobColumn.getName()).append(quote);
             }

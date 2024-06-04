@@ -52,7 +52,7 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalogName, String schemaName, String tableName,
             String triggerName) {
         boolean exists = (platform.getSqlTemplate().queryForInt(
                 "select count(*) from INFORMATION_SCHEMA.SYSTEM_TRIGGERS WHERE TRIGGER_NAME = ?",
@@ -64,21 +64,21 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String encode = this.parameterService.getTablePrefix() + "_" + "base_64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "CREATE ALIAS $(functionName) for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.encodeBase64\"; ";
-            install(sql, encode);
+            install(sql, encode, ddl);
         }
         String setSession = this.parameterService.getTablePrefix() + "_" + "set_session";
         if (!installed(SQL_FUNCTION_INSTALLED, setSession)) {
             String sql = "CREATE ALIAS $(functionName) for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.setSession\"; ";
-            install(sql, setSession);
+            install(sql, setSession, ddl);
         }
         String getSession = this.parameterService.getTablePrefix() + "_" + "get_session";
         if (!installed(SQL_FUNCTION_INSTALLED, getSession)) {
             String sql = "CREATE ALIAS $(functionName) for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.getSession\"; ";
-            install(sql, getSession);
+            install(sql, getSession, ddl);
         }
     }
 
@@ -117,7 +117,7 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
         logSql(dropSql, sqlBuffer);
         final String dropTable = String.format("DROP TABLE IF EXISTS %s_CONFIG", triggerName);
         logSql(dropTable, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             int count = transaction.execute(dropSql);
             if (count > 0) {
                 log.info("Just dropped trigger {}", triggerName);

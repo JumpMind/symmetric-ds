@@ -52,7 +52,6 @@ public class DatabaseWriterSettings {
     protected boolean autoResolveUniqueIndexIgnoreNullValues = true;
     protected boolean logConflictResolution = false;
     protected boolean logSqlParamsOnError = true;
-    protected boolean loadOnlyNode = false;
     protected String textColumnExpression;
     protected Map<String, Conflict> conflictSettingsByChannel;
     protected Map<String, Conflict> conflictSettingsByTable;
@@ -333,14 +332,6 @@ public class DatabaseWriterSettings {
 
     public boolean isApplyChangesOnly() {
         return applyChangesOnly;
-    }
-
-    public boolean isLoadOnlyNode() {
-        return loadOnlyNode;
-    }
-
-    public void setLoadOnlyNode(boolean loadOnlyNode) {
-        this.loadOnlyNode = loadOnlyNode;
     }
 
     public Set<String> getConflictLosingParentRows() {

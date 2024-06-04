@@ -97,7 +97,10 @@ public class DbTree extends TreeGrid<DbTreeNode> {
                     treeData.removeItem(firstChild);
                     for (DbTreeNode child : node.getChildren()) {
                         treeData.addItem(node, child);
-                        if (!child.getType().equals(NODE_TYPE_TRIGGER)) {
+                        String childType = child.getType();
+                        if (!childType.equals(NODE_TYPE_TRIGGER)
+                                && (settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_SHOW_TRIGGERS, "")
+                                        .equals("true") || !childType.equals(NODE_TYPE_TABLE))) {
                             treeData.addItem(child, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, child));
                         }
                     }
@@ -309,9 +312,11 @@ public class DbTree extends TreeGrid<DbTreeNode> {
     }
 
     protected void addTriggerNodes(IDdlReader reader, DbTreeNode parent, String catalogName, String schemaName) {
-        List<DbTreeNode> nodes = getTriggerTreeNodes(reader, parent, catalogName, schemaName);
-        for (DbTreeNode treeNode : nodes) {
-            parent.getChildren().add(treeNode);
+        if (settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_SHOW_TRIGGERS, "").equals("true")) {
+            List<DbTreeNode> nodes = getTriggerTreeNodes(reader, parent, catalogName, schemaName);
+            for (DbTreeNode treeNode : nodes) {
+                parent.getChildren().add(treeNode);
+            }
         }
     }
 

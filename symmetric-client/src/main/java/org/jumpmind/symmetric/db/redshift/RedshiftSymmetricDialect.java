@@ -67,16 +67,13 @@ public class RedshiftSymmetricDialect extends AbstractSymmetricDialect implement
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
-    }
-
-    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalogName, String schema,
+            String tableName, String triggerName) {
         return false;
     }
 }

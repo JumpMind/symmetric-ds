@@ -158,10 +158,6 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
-    }
-
-    @Override
     public void dropRequiredDatabaseObjects() {
     }
 
@@ -171,7 +167,7 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
         schemaName = schemaName == null ? "" : (schemaName + ".");
         final String sql = "drop trigger " + schemaName + triggerName;
         logSql(sql, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             ((JdbcSqlTransaction) transaction)
                     .executeCallback(new IConnectionCallback<Boolean>() {
@@ -219,7 +215,7 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(final String catalogName, final String schema, final String tableName,
+    protected boolean doesTriggerExistOnPlatform(final StringBuilder sqlBuffer, final String catalogName, final String schema, final String tableName,
             final String triggerName) {
         return ((JdbcSqlTemplate) platform.getSqlTemplate())
                 .execute(new IConnectionCallback<Boolean>() {

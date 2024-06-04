@@ -57,7 +57,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String function = parameterService.getTablePrefix() + "_get_session_variable";
         if (!installed(SQL_FUNCTION_INSTALLED, function)) {
             String sql = "create function $(functionName)(akey string) returns string as\n" +
@@ -70,7 +70,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
                     "end_try;\n" +
                     "return l_out;\n" +
                     "END_FUNCTION;";
-            install(sql, function);
+            install(sql, function, ddl);
         }
         function = parameterService.getTablePrefix() + "_set_session_variable";
         if (!installed(SQL_FUNCTION_INSTALLED, function)) {
@@ -87,7 +87,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
                     "end_try;\n" +
                     "return l_new;\n" +
                     "END_FUNCTION;";
-            install(sql, function);
+            install(sql, function, ddl);
         }
     }
 
@@ -104,7 +104,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalog, String schema, String tableName,
             String triggerName) {
         schema = schema == null ? (platform.getDefaultSchema() == null ? null
                 : platform
@@ -124,7 +124,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
             String triggerName, String tableName, ISqlTransaction transaction) {
         final String sql = "drop trigger " + triggerName;
         logSql(sql, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             transaction.execute(sql);
         }

@@ -18,27 +18,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.db.postgresql;
+package org.jumpmind.symmetric.file;
 
-import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.service.IParameterService;
+import java.io.File;
+import java.io.FileInputStream;
 
-public class GreenplumSymmetricDialect extends PostgreSqlSymmetricDialect {
-    public GreenplumSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
-        super(parameterService, platform);
-        this.triggerTemplate = new GreenplumTriggerTemplate(this);
-    }
+import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.symmetric.model.FileSnapshot;
+import org.jumpmind.symmetric.model.FileTriggerRouter;
+import org.jumpmind.symmetric.model.ProcessInfo;
 
-    @Override
-    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
-    }
+public interface IFileSourceTracker extends IExtensionPoint {
+    public boolean handlesDir(String baseDir);
 
-    @Override
-    public void enableSyncTriggers(ISqlTransaction transaction) {
-    }
+    public boolean checkSourceDir(String baseDir);
 
-    @Override
-    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-    }
+    public DirectorySnapshot trackChanges(FileTriggerRouter fileTriggerRouter, DirectorySnapshot lastSnapshot, ProcessInfo processInfo, boolean useCrc);
+
+    public boolean handlesFile(File file);
+
+    public File createSourceFile(FileSnapshot snapshot);
+
+    public FileInputStream getFileInputStream(File file);
 }
