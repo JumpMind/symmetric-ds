@@ -32,6 +32,7 @@ import org.h2.tools.Shell;
 public class DbSqlCommand extends AbstractCommandLauncher {
     private static final String OPTION_SQL = "sql";
     private static final String OPTION_SQLFILE = "sqlfile";
+    private static final String OPTION_USE_SYM_DB = "use-sym-db";
     private Options localOptions;
 
     public DbSqlCommand() {
@@ -54,6 +55,7 @@ public class DbSqlCommand extends AbstractCommandLauncher {
         super.buildOptions(options);
         addOption(options, null, OPTION_SQL, true);
         addOption(options, null, OPTION_SQLFILE, true);
+        addOption(options, null, OPTION_USE_SYM_DB, false);
         // Need reference to it for later, if errors
         localOptions = options;
     }
@@ -70,7 +72,7 @@ public class DbSqlCommand extends AbstractCommandLauncher {
 
     @Override
     protected boolean executeWithOptions(CommandLine line) throws Exception {
-        BasicDataSource basicDataSource = getDatabasePlatform(false).getDataSource();
+        BasicDataSource basicDataSource = getDatabasePlatform(false, line.hasOption(OPTION_USE_SYM_DB)).getDataSource();
         String url = basicDataSource.getUrl();
         String user = basicDataSource.getUsername();
         String password = basicDataSource.getPassword();
