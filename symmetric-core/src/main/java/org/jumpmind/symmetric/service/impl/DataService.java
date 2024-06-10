@@ -2645,6 +2645,10 @@ public class DataService extends AbstractService implements IDataService {
         if (data == null) {
             log.warn("Unable to reload missing foreign data for data ID {} because data is not found", dataId);
             return;
+        } else if (data.getDataEventType() != DataEventType.INSERT && data.getDataEventType() != DataEventType.UPDATE &&
+                data.getDataEventType() != DataEventType.DELETE) {
+            log.warn("Unable to reload missing foreign data for data ID {} because event type {} is not DML", dataId, data.getDataEventType());
+            return;
         }
         log.debug("reloadMissingForeignKeyRows for batch {} table {}", batchName, data.getTableName());
         TriggerHistory hist = data.getTriggerHistory();
