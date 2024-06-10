@@ -427,8 +427,6 @@ final public class ParameterConstants {
     public final static String RABBITMQ_QUEUE_NAME = "rabbitmq.queue.name";
     public final static String RABBITMQ_MESSAGE_BY = "rabbitmq.message.by";
     public final static String RABBITMQ_QUEUE_BY = "rabbitmq.queue.by";
-    public final static String RABBITMQ_USERNAME = "rabbitmq.username";
-    public final static String RABBITMQ_PASSWORD = "rabbitmq.password";
     public final static String RABBITMQ_USE_SSL = "rabbitmq.use.ssl";
     public final static String SNOWFLAKE_STAGING_TYPE = "snowflake.staging.type";
     public final static String SNOWFLAKE_INTERNAL_STAGE_NAME = "snowflake.internal.stage.name";
