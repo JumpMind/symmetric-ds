@@ -2250,6 +2250,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                         }
                                     }
                                 }
+                            } else if (trigger.isSourceTableNameWildCarded()) {
+                            	Set<Table> tables = getTablesForTrigger(trigger, triggers, verifyInDatabase, context);
+                            	Set<String> fullyQualifiedTableNames = new HashSet<String>();
+                            	for (Table table : tables) {
+                            		fullyQualifiedTableNames.add(table.getFullyQualifiedTableName());
+                            	}
+                            	List<TriggerHistory> activeHistories = activeHistoryByTriggerId.get(trigger.getTriggerId());
+                            	if (activeHistories != null) {
+                                    for (TriggerHistory triggerHistory : activeHistories) {
+                                    	if (!fullyQualifiedTableNames.contains(triggerHistory.getFullyQualifiedSourceTableName())) {
+                                    		dropTriggers(triggerHistory, sqlBuffer, context);
+                                    	}
+                                    }
+                            	}
                             }
                             Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(
                                     Collections.singletonList(trigger), allHistories, true, context);
