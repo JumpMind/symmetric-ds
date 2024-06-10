@@ -57,7 +57,7 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalog, String schema, String tableName, String triggerName) {
         if (schema == null) {
             schema = platform.getDefaultSchema();
         }
@@ -88,20 +88,28 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String sql = "select " + getSourceNodeExpression() + " from sysibm.sysdummy1";
         try {
             platform.getSqlTemplate().query(sql);
         } catch (Exception e) {
             log.debug("Failed checking for variable (usually means it doesn't exist yet) '" + sql + "'", e);
-            platform.getSqlTemplate().update("create variable " + getSourceNodeExpression() + " varchar(50)");
+            sql = "create variable " + getSourceNodeExpression() + " varchar(50)";
+            logSql(sql, ddl);
+            if (ddl == null) {
+                platform.getSqlTemplate().update(sql);
+            }
         }
         sql = "select " + parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " from sysibm.sysdummy1";
         try {
             platform.getSqlTemplate().query(sql);
         } catch (Exception e) {
             log.debug("Failed checking for variable (usually means it doesn't exist yet) '" + sql + "'", e);
-            platform.getSqlTemplate().update("create variable " + parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " varchar(50)");
+            sql = "create variable " + parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " varchar(50)";
+            logSql(sql, ddl);
+            if (ddl == null) {
+                platform.getSqlTemplate().update(sql);
+            }
         }
         if (this.getParameterService().is(ParameterConstants.DB2_CAPTURE_TRANSACTION_ID, false)) {
             String transactionIdFunction = this.parameterService.getTablePrefix() + FUNCTION_TRANSACTION_ID;
@@ -114,7 +122,7 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
                     + "          from sysibmadm.mon_connection_summary c ,sysibmadm.mon_current_uow u "
                     + "          where u.application_handle = c.application_handle and c.application_id = application_id()    ";
             try {
-                install(sql, transactionIdFunction);
+                install(sql, transactionIdFunction, ddl);
             } catch (Exception e) {
                 log.warn("Unable to install function " + this.parameterService.getTablePrefix() + FUNCTION_TRANSACTION_ID);
             }

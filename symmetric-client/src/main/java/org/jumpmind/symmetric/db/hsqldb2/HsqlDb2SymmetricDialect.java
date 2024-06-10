@@ -40,7 +40,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalogName, String schemaName,
             String tableName, String triggerName) {
         boolean exists = (platform.getSqlTemplate().queryForInt(
                 "select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
@@ -53,7 +53,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
             String triggerName, String tableName, ISqlTransaction transaction) {
         final String dropSql = String.format("DROP TRIGGER %s", triggerName);
         logSql(dropSql, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             int count = transaction.execute(dropSql);
             if (count > 0) {
                 log.info("Just dropped trigger {}", triggerName);
@@ -62,7 +62,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String encode = this.parameterService.getTablePrefix() + "_base_64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "CREATE FUNCTION $(functionName)(binaryData BINARY)                                                                                                                                                     "
@@ -76,7 +76,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
                     " EXTERNAL NAME                                                                                                                                               "
                     +
                     "  'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.encodeBase64'                                                                                  ";
-            install(sql, encode);
+            install(sql, encode, ddl);
         }
         String setSession = this.parameterService.getTablePrefix() + "_set_session";
         if (!installed(SQL_FUNCTION_INSTALLED, setSession)) {
@@ -89,7 +89,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
                     " EXTERNAL NAME                                                                                                                                               "
                     +
                     "  'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.setSession'                                                                                    ";
-            install(sql, setSession);
+            install(sql, setSession, ddl);
         }
         String getSession = this.parameterService.getTablePrefix() + "_get_session";
         if (!installed(SQL_FUNCTION_INSTALLED, getSession)) {
@@ -104,7 +104,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
                     " EXTERNAL NAME                                                                                                                                               "
                     +
                     "  'CLASSPATH:org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.getSession'                                                                                    ";
-            install(sql, getSession);
+            install(sql, getSession, ddl);
         }
     }
 

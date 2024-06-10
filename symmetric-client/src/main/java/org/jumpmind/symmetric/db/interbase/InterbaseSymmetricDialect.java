@@ -56,14 +56,18 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
         try {
             platform.getSqlTemplate().queryForInt("select count(*) from " + contextTableName);
         } catch (Exception e) {
             try {
                 log.info("Creating global temporary table {}", contextTableName);
-                platform.getSqlTemplate().update(String.format(CONTEXT_TABLE_CREATE, contextTableName));
+                String sql = String.format(CONTEXT_TABLE_CREATE, contextTableName);
+                logSql(sql, ddl);
+                if (ddl == null) {
+                    platform.getSqlTemplate().update(sql);
+                }
             } catch (Exception ex) {
                 log.error("Error while initializing Interbase dialect", ex);
             }
@@ -73,21 +77,21 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
             String sql = "declare external function $(functionName) cstring(32660)                                                                                                                                               "
                     +
                     "  returns cstring(32660) free_it entry_point 'sym_escape' module_name 'sym_udf'                                                                                          ";
-            install(sql, escape);
+            install(sql, escape, ddl);
         }
         String hex = this.parameterService.getTablePrefix() + "_" + "hex";
         if (!installed(SQL_FUNCTION_INSTALLED, hex)) {
             String sql = "declare external function $(functionName) blob                                                                                                                                                         "
                     +
                     "  returns cstring(32660) free_it entry_point 'sym_hex' module_name 'sym_udf'                                                                                             ";
-            install(sql, hex);
+            install(sql, hex, ddl);
         }
         String rtrim = this.parameterService.getTablePrefix() + "_" + "rtrim";
         if (!installed(SQL_FUNCTION_INSTALLED, rtrim)) {
             String sql = "declare external function $(functionName) cstring(32767)                                                                                                                                               "
                     +
                     "                                returns cstring(32767) free_it entry_point 'IB_UDF_rtrim' module_name 'ib_udf'                                                                                         ";
-            install(sql, rtrim);
+            install(sql, rtrim, ddl);
         }
         try {
             platform.getSqlTemplate().queryForObject("select sym_escape('') from rdb$database", String.class);
@@ -116,7 +120,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalogName, String schema, String tableName, String triggerName) {
         return platform.getSqlTemplate().queryForInt("select count(*) from rdb$triggers where rdb$trigger_name = ?",
                 new Object[] { triggerName.toUpperCase() }) > 0;
     }

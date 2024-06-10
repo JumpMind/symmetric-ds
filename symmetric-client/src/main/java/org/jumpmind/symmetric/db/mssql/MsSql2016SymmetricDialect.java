@@ -52,36 +52,36 @@ public class MsSql2016SymmetricDialect extends MsSql2008SymmetricDialect {
     }
 
     @Override
-    protected void createTriggersDisabledFunction() {
+    protected void createTriggersDisabledFunction(StringBuilder ddl) {
         if (supportsSessionContext()) {
             String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
             if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
-                install(triggersDisabledFunctionSql, triggersDisabled);
+                install(triggersDisabledFunctionSql, triggersDisabled, ddl);
             } else if (!installed(SESSION_CONTEXT_FUNCTION_INSTALLED, triggersDisabled)) {
                 uninstall(SQL_DROP_FUNCTION, triggersDisabled);
-                install(triggersDisabledFunctionSql, triggersDisabled);
+                install(triggersDisabledFunctionSql, triggersDisabled, ddl);
             } else {
                 log.info("Function " + triggersDisabled + " using SESSION_CONTEXT is already installed");
             }
         } else {
-            super.createTriggersDisabledFunction();
+            super.createTriggersDisabledFunction(ddl);
         }
     }
 
     @Override
-    protected void createNodeDisabledFunction() {
+    protected void createNodeDisabledFunction(StringBuilder ddl) {
         if (supportsSessionContext()) {
             String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
             if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
-                install(nodeDisabledFunctionSql, nodeDisabled);
+                install(nodeDisabledFunctionSql, nodeDisabled, ddl);
             } else if (!installed(SESSION_CONTEXT_FUNCTION_INSTALLED, nodeDisabled)) {
                 uninstall(SQL_DROP_FUNCTION, nodeDisabled);
-                install(nodeDisabledFunctionSql, nodeDisabled);
+                install(nodeDisabledFunctionSql, nodeDisabled, ddl);
             } else {
                 log.info("Function " + nodeDisabled + " using SESSION_CONTEXT is already installed");
             }
         } else {
-            super.createNodeDisabledFunction();
+            super.createNodeDisabledFunction(ddl);
         }
     }
 

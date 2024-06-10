@@ -77,7 +77,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalog, String schema, String tableName,
             String triggerName) {
         return platform.getSqlTemplate().queryForInt(
                 "select count(*) from systriggers where lower(trigname) = ?",
@@ -100,7 +100,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
             String sql = "create function $(defaultSchema).$(functionName)() returning boolean;                                                                                                                                   "
@@ -110,7 +110,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
                     "                                   return symmetric_triggers_disabled;                                                                                                                                 "
                     +
                     "                                end function;                                                                                                                                                          ";
-            install(sql, triggersDisabled);
+            install(sql, triggersDisabled, ddl);
         }
         String triggersSetDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_set_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersSetDisabled)) {
@@ -123,7 +123,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
                     "                                   return symmetric_triggers_disabled;                                                                                                                                 "
                     +
                     "                                end function;                                                                                                                                                          ";
-            install(sql, triggersSetDisabled);
+            install(sql, triggersSetDisabled, ddl);
         }
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
@@ -134,7 +134,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
                     "                                   return symmetric_node_disabled;                                                                                                                                     "
                     +
                     "                                end function;                                                                                                                                                          ";
-            install(sql, nodeDisabled);
+            install(sql, nodeDisabled, ddl);
         }
         String nodeSetDisabled = this.parameterService.getTablePrefix() + "_" + "node_set_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeSetDisabled)) {
@@ -147,7 +147,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
                     "                                   return 1;                                                                                                                                                           "
                     +
                     "                                end function;                                                                                                                                                          ";
-            install(sql, nodeSetDisabled);
+            install(sql, nodeSetDisabled, ddl);
         }
     }
 

@@ -41,20 +41,24 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
-        ISqlTransaction transaction = platform.getSqlTemplate().startSqlTransaction();
-        try {
-            transaction.prepareAndExecute("declare sync_node_disabled varchar(50);");
-            transaction.prepareAndExecute("declare sync_triggers_disabled smallint;");
-            transaction.commit();
-        } catch (SqlException e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            log.info("Raima dialect global variables already declared, no need to declare again.");
-        } finally {
-            if (transaction != null) {
-                transaction.close();
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
+        logSql("declare sync_node_disabled varchar(50);", ddl);
+        logSql("declare sync_triggers_disabled smallint;", ddl);
+        if (ddl == null) {
+            ISqlTransaction transaction = platform.getSqlTemplate().startSqlTransaction();
+            try {
+                transaction.prepareAndExecute("declare sync_node_disabled varchar(50);");
+                transaction.prepareAndExecute("declare sync_triggers_disabled smallint;");
+                transaction.commit();
+            } catch (SqlException e) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                log.info("Raima dialect global variables already declared, no need to declare again.");
+            } finally {
+                if (transaction != null) {
+                    transaction.close();
+                }
             }
         }
     }
@@ -69,7 +73,7 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalog, String schema, String tableName,
             String triggerName) {
         schema = schema == null ? (platform.getDefaultSchema() == null ? null
                 : platform
@@ -89,7 +93,7 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
             String triggerName, String tableName, ISqlTransaction transaction) {
         final String sql = "drop trigger " + triggerName;
         logSql(sql, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             try {
                 log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
                 platform.getSqlTemplate().update(sql);

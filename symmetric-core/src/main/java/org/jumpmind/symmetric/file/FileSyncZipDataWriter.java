@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.file;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -187,6 +188,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                 script.buildScriptStart(batch);
                 Map<String, LastEventType> entriesByLastEventType = new HashMap<String, LastEventType>();
                 Map<String, String> entriesByLastRouterId = new HashMap<String, String>();
+                List<IFileSourceTracker> fileTrackers = extensionService.getExtensionPointList(IFileSourceTracker.class);
                 for (FileSnapshot snapshot : snapshotEvents) {
                     FileTriggerRouter triggerRouter = fileSyncService.getFileTriggerRouter(
                             snapshot.getTriggerId(), snapshot.getRouterId(), false);
@@ -205,7 +207,19 @@ public class FileSyncZipDataWriter implements IDataWriter {
                             entryName.append(snapshot.getRelativeDir()).append("/");
                         }
                         entryName.append(snapshot.getFileName());
-                        File file = fileTrigger.createSourceFile(snapshot);
+                        File file = null;
+                        IFileSourceTracker fileTracker = null;
+                        for (IFileSourceTracker tracker : fileTrackers) {
+                            if (tracker.handlesDir(fileTrigger.getBaseDir())) {
+                                fileTracker = tracker;
+                                break;
+                            }
+                        }
+                        if (fileTracker != null) {
+                            file = fileTracker.createSourceFile(snapshot);
+                        } else {
+                            file = fileTrigger.createSourceFile(snapshot);
+                        }
                         if (file.isDirectory()) {
                             entryName.append("/");
                         }
@@ -228,15 +242,17 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                 if (file.exists()) {
                                     byteCount += file.length();
                                     ZipEntry entry = new ZipEntry(entryName.toString());
-                                    BasicFileAttributes attr = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+                                    if(fileTracker == null) {
+                                        BasicFileAttributes attr = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
                                     // note: as of 8/21 getting the creation time won't work on unix file systems EVEN IF THEY HAVE EXT4
                                     // you also cannot set the creation time on unix systems (birth date) using setCreationTime, so this only works for windows
-                                    entry.setCreationTime(attr.creationTime());
+                                        entry.setCreationTime(attr.creationTime());
+                                    }
                                     entry.setSize(file.length());
                                     entry.setTime(file.lastModified());
                                     zos.putNextEntry(entry);
                                     if (file.isFile()) {
-                                        try (FileInputStream fis = new FileInputStream(file)) {
+                                        try (InputStream fis = fileTracker != null ? fileTracker.getInputStream(file) : new FileInputStream(file)) {
                                             IOUtils.copy(fis, zos);
                                         }
                                     }

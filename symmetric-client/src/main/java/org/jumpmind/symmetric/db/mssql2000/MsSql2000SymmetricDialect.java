@@ -38,7 +38,7 @@ public class MsSql2000SymmetricDialect extends MsSqlSymmetricDialect {
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "  create function dbo.$(functionName) (\n" +
@@ -74,7 +74,7 @@ public class MsSql2000SymmetricDialect extends MsSqlSymmetricDialect {
                     "   end\n" +
                     "    return @charvalue\n" +
                     "   end";
-            install(sql, encode);
+            install(sql, encode, ddl);
         }
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
@@ -96,7 +96,7 @@ public class MsSql2000SymmetricDialect extends MsSqlSymmetricDialect {
                     "     return 1;                                                                                                                                                             \n"
                     +
                     "   end  ";
-            install(sql, triggersDisabled);
+            install(sql, triggersDisabled, ddl);
         }
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
@@ -112,7 +112,7 @@ public class MsSql2000SymmetricDialect extends MsSqlSymmetricDialect {
                     "    return @node;                                                                                                                                                        "
                     +
                     "  end                                                                                                                                                                    ";
-            install(sql, nodeDisabled);
+            install(sql, nodeDisabled, ddl);
         }
     }
 

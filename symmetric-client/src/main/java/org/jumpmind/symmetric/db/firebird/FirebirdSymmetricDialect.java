@@ -50,20 +50,20 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String escape = this.parameterService.getTablePrefix() + "_" + "escape";
         if (!installed(SQL_FUNCTION_INSTALLED, escape)) {
             String sql = "declare external function $(functionName) cstring(32660)                                                                                                                                               "
                     +
                     "  returns cstring(32660) free_it entry_point 'sym_escape' module_name 'sym_udf'                                                                                          ";
-            install(sql, escape);
+            install(sql, escape, ddl);
         }
         String hex = this.parameterService.getTablePrefix() + "_" + "hex";
         if (!installed(SQL_FUNCTION_INSTALLED, hex)) {
             String sql = "declare external function $(functionName) blob                                                                                                                                                         "
                     +
                     "  returns cstring(32660) free_it entry_point 'sym_hex' module_name 'sym_udf'                                                                                             ";
-            install(sql, hex);
+            install(sql, hex, ddl);
         }
         try {
             platform.getSqlTemplate().queryForInt("select char_length(" + escape + "('')) from rdb$database");
@@ -88,7 +88,7 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalogName, String schema, String tableName, String triggerName) {
         return platform.getSqlTemplate().queryForInt("select count(*) from rdb$triggers where rdb$trigger_name = ?",
                 new Object[] { triggerName.toUpperCase() }) > 0;
     }

@@ -1695,6 +1695,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 history.getTriggerId());
     }
 
+    protected void dropTriggers(TriggerHistory history, StringBuilder sqlBuffer) {
+        TriggerRouterContext triggerRouterContext = new TriggerRouterContext();
+        dropTriggers(history, sqlBuffer, triggerRouterContext);
+        if (sqlBuffer == null) {
+            log.info("DropTriggers: it took {} ms to drop triggers for trigger ID {}", triggerRouterContext.getDropTriggerTime(),
+                    history.getTriggerId());
+        }
+    }
+
     protected void dropTriggers(TriggerHistory history, StringBuilder sqlBuffer, TriggerRouterContext context) {
         try {
             long ts = System.currentTimeMillis();
@@ -1714,12 +1723,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 }
             }
             ts = System.currentTimeMillis();
-            boolean triggerExists = symmetricDialect.doesTriggerExist(history.getSourceCatalogName(), history.getSourceSchemaName(),
-                    history.getSourceTableName(), history.getNameForInsertTrigger());
-            triggerExists |= symmetricDialect.doesTriggerExist(history.getSourceCatalogName(), history.getSourceSchemaName(),
-                    history.getSourceTableName(), history.getNameForUpdateTrigger());
-            triggerExists |= symmetricDialect.doesTriggerExist(history.getSourceCatalogName(), history.getSourceSchemaName(),
-                    history.getSourceTableName(), history.getNameForDeleteTrigger());
+            boolean triggerExists = symmetricDialect.doesTriggerExist(sqlBuffer, history.getSourceCatalogName(),
+                    history.getSourceSchemaName(), history.getSourceTableName(), history.getNameForInsertTrigger());
+            triggerExists |= symmetricDialect.doesTriggerExist(sqlBuffer, history.getSourceCatalogName(),
+                    history.getSourceSchemaName(), history.getSourceTableName(), history.getNameForUpdateTrigger());
+            triggerExists |= symmetricDialect.doesTriggerExist(sqlBuffer, history.getSourceCatalogName(),
+                    history.getSourceSchemaName(), history.getSourceTableName(), history.getNameForDeleteTrigger());
             context.incrementDoesTriggerExistTime(System.currentTimeMillis() - ts);
             if (triggerExists) {
                 log.warn(
@@ -2205,7 +2214,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             try {
                 long ts;
                 fixMultipleActiveTriggerHistories(context);
-                StringBuilder sqlBuffer = new StringBuilder();
                 clearCache();
                 List<Trigger> triggersForCurrentNode = null;
                 if (verifyInDatabase) {
@@ -2246,21 +2254,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                 if (activeHistories != null) {
                                     for (TriggerHistory triggerHistory : activeHistories) {
                                         if (!triggerHistory.getFullyQualifiedSourceTableName().equals(trigger.getFullyQualifiedSourceTableName())) {
-                                            dropTriggers(triggerHistory, sqlBuffer, context);
+                                            dropTriggers(triggerHistory, null, context);
                                         }
                                     }
                                 }
                             }
                             Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(
                                     Collections.singletonList(trigger), allHistories, true, context);
-                            updateOrCreateDatabaseTrigger(trigger, triggersForCurrentNode, sqlBuffer,
-                                    force, verifyInDatabase, allHistories, false, triggerToTableSupportingInfo,
-                                    context);
+                            updateOrCreateDatabaseTrigger(trigger, triggersForCurrentNode, null, force,
+                                    verifyInDatabase, allHistories, false, triggerToTableSupportingInfo, context);
                         } else {
                             List<TriggerHistory> activeHistories = activeHistoryByTriggerId.get(trigger.getTriggerId());
                             if (activeHistories != null) {
                                 for (TriggerHistory triggerHistory : activeHistories) {
-                                    dropTriggers(triggerHistory, sqlBuffer, context);
+                                    dropTriggers(triggerHistory, null, context);
                                 }
                             }
                         }
@@ -2359,7 +2366,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             boolean usingTargetDialect = (!getSymmetricDialect().equals(getTargetDialect()) && !trigger.getSourceTableName().startsWith(getSymmetricDialect()
                     .getTablePrefix()));
             if (newestHistory != null && !usingTargetDialect) {
-                dropTriggers(newestHistory);
+                dropTriggers(newestHistory, sqlBuffer);
             }
             context.incrementTriggersSyncedCount(1);
             context.addTriggersFailed(trigger.qualifiedSourceTableName(), ex);
@@ -2447,8 +2454,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
             oldSourceSchema = oldhist.getSourceSchemaName();
             oldCatalogName = oldhist.getSourceCatalogName();
-            triggerExists = symmetricDialect.doesTriggerExist(oldCatalogName, oldSourceSchema,
-                    oldhist.getSourceTableName(), oldTriggerName);
+            triggerExists = symmetricDialect.doesTriggerExist(sqlBuffer, oldCatalogName,
+                    oldSourceSchema, oldhist.getSourceTableName(), oldTriggerName);
         } else {
             // We had no trigger_hist row, lets validate that the trigger as
             // defined in the trigger row data does not exist as well.
@@ -2456,8 +2463,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             oldSourceSchema = table.getSchema();
             oldCatalogName = table.getCatalog();
             if (StringUtils.isNotBlank(oldTriggerName)) {
-                triggerExists = symmetricDialect.doesTriggerExist(oldCatalogName, oldSourceSchema,
-                        table.getName(), oldTriggerName);
+                triggerExists = symmetricDialect.doesTriggerExist(sqlBuffer, oldCatalogName,
+                        oldSourceSchema, table.getName(), oldTriggerName);
             }
         }
         ISqlTransaction transaction = null;

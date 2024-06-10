@@ -189,11 +189,11 @@ public class FileTrigger implements IModelObject {
     public IOFileFilter createIOFileFilter() {
         String[] includes = StringUtils.isNotBlank(includesFiles) ? includesFiles.split(",") : new String[] { "*" };
         String[] excludes = StringUtils.isNotBlank(excludesFiles) ? excludesFiles.split(",") : null;
-        IOFileFilter filter = new WildcardFileFilter(includes);
+        IOFileFilter filter = WildcardFileFilter.builder().setWildcards(includes).get();
         if (excludes != null && excludes.length > 0) {
             List<IOFileFilter> fileFilters = new ArrayList<IOFileFilter>();
             fileFilters.add(filter);
-            fileFilters.add(new NotFileFilter(new WildcardFileFilter(excludes)));
+            fileFilters.add(new NotFileFilter(WildcardFileFilter.builder().setWildcards(excludes).get()));
             filter = new AndFileFilter(fileFilters);
         }
         if (!recurse) {

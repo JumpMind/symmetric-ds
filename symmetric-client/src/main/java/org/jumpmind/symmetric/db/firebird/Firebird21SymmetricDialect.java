@@ -33,13 +33,13 @@ public class Firebird21SymmetricDialect extends Firebird20SymmetricDialect {
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         String hex = this.parameterService.getTablePrefix() + "_" + "hex";
         if (!installed(SQL_FUNCTION_INSTALLED, hex)) {
             String sql = "declare external function $(functionName) blob                                                                                                                                                         "
                     +
                     "  returns cstring(32660) free_it entry_point 'sym_hex' module_name 'sym_udf'                                                                                             ";
-            install(sql, hex);
+            install(sql, hex, ddl);
         }
     }
 
