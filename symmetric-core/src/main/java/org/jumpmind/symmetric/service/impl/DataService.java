@@ -3306,9 +3306,17 @@ public class DataService extends AbstractService implements IDataService {
         private List<TriggerRouter> triggerRouters;
         private List<TriggerHistory> activeTriggerHistories;
         private Collection<TriggerHistory> allTriggerHistories;
+        private Map<Integer, TriggerHistory> remappedTriggerHistIds = new HashMap<Integer, TriggerHistory>();
         private HashMap<String, TriggerHistory> mismatchedTableName;
         private HashSet<Integer> missingConfigTriggerHist;
-        private HashSet<Integer> mismatchedTriggerHist;
+        private boolean lookupTriggerHist = true;
+
+        public DataMapper() {
+        }
+
+        public DataMapper(boolean lookupTriggerHist) {
+            this.lookupTriggerHist = lookupTriggerHist;
+        }
 
         public Data mapRow(Row row) {
             Data data = new Data();
@@ -3330,26 +3338,28 @@ public class DataService extends AbstractService implements IDataService {
             data.putAttribute(CsvData.ATTRIBUTE_CREATE_TIME, row.getDateTime("CREATE_TIME"));
             int triggerHistId = row.getInt("TRIGGER_HIST_ID");
             data.putAttribute(CsvData.ATTRIBUTE_TABLE_ID, triggerHistId);
-            TriggerHistory triggerHistory = engine.getTriggerRouterService().getTriggerHistory(triggerHistId);
-            if (triggerHistory == null) {
-                triggerHistory = findOrCreateTriggerHistory(tableName, triggerHistId, data, false);
-            } else if (!triggerHistory.getSourceTableName().equalsIgnoreCase(tableName)) {
-                if (mismatchedTableName == null) {
-                    mismatchedTableName = new HashMap<String, TriggerHistory>();
+            if (lookupTriggerHist) {
+                TriggerHistory triggerHistory = engine.getTriggerRouterService().getTriggerHistory(triggerHistId);
+                if (triggerHistory == null) {
+                    triggerHistory = findOrCreateTriggerHistory(tableName, triggerHistId, data, false);
+                } else if (!triggerHistory.getSourceTableName().equals(tableName)) {
+                    if (mismatchedTableName == null) {
+                        mismatchedTableName = new HashMap<String, TriggerHistory>();
+                    }
+                    TriggerHistory cachedTriggerHistory = mismatchedTableName.get(data.getTableName());
+                    if (cachedTriggerHistory == null) {
+                        log.warn("There was a mismatch between the data table name {} and the trigger_hist "
+                                + "table name {} for data_id {}.  Attempting to look up a valid trigger_hist row by table name",
+                                new Object[] { data.getTableName(),
+                                        triggerHistory.getSourceTableName(), data.getDataId() });
+                        triggerHistory = findOrCreateTriggerHistory(tableName, triggerHistId, data, true);
+                        mismatchedTableName.put(data.getTableName(), triggerHistory);
+                    } else {
+                        triggerHistory = cachedTriggerHistory;
+                    }
                 }
-                TriggerHistory cachedTriggerHistory = mismatchedTableName.get(data.getTableName());
-                if (cachedTriggerHistory == null) {
-                    log.warn("There was a mismatch between the data table name {} and the trigger_hist "
-                            + "table name {} for data_id {}.  Attempting to look up a valid trigger_hist row by table name",
-                            new Object[] { data.getTableName(),
-                                    triggerHistory.getSourceTableName(), data.getDataId() });
-                    triggerHistory = findOrCreateTriggerHistory(tableName, triggerHistId, data, true);
-                    mismatchedTableName.put(data.getTableName(), triggerHistory);
-                } else {
-                    triggerHistory = cachedTriggerHistory;
-                }
+                data.setTriggerHistory(triggerHistory);
             }
-            data.setTriggerHistory(triggerHistory);
             data.setPreRouted(row.getBoolean("IS_PREROUTED"));
             return data;
         }
@@ -3359,6 +3369,10 @@ public class DataService extends AbstractService implements IDataService {
             Trigger trigger = null;
             Table table = null;
             long dataId = data.getDataId();
+            triggerHistory = remappedTriggerHistIds.get(triggerHistId);
+            if (triggerHistory != null) {
+                return triggerHistory;
+            }
             if (triggerRouters == null) {
                 triggerRouters = engine.getTriggerRouterService().getAllTriggerRoutersForCurrentNode(engine.getNodeService().findIdentity().getNodeGroupId());
             }
@@ -3392,13 +3406,9 @@ public class DataService extends AbstractService implements IDataService {
                     activeTriggerHistories.add(triggerHistory);
                     allTriggerHistories.add(triggerHistory);
                 } else {
-                    if (mismatchedTriggerHist == null) {
-                        mismatchedTriggerHist = new HashSet<Integer>();
-                    }
-                    if (mismatchedTriggerHist.add(triggerHistId)) {
-                        log.warn("Could not find trigger history {} for table {} for data_id {}.  Using trigger hist {} instead.",
-                                triggerHistId, tableName, dataId, triggerHistory.getTriggerHistoryId());
-                    }
+                    remappedTriggerHistIds.put(triggerHistId, triggerHistory);
+                    log.warn("Could not find trigger history {} for table {} for data_id {}.  Using trigger hist {} instead.",
+                            triggerHistId, tableName, dataId, triggerHistory.getTriggerHistoryId());
                 }
             } else {
                 if (missingConfigTriggerHist == null) {
@@ -3419,12 +3429,24 @@ public class DataService extends AbstractService implements IDataService {
             int columnCount = 0, pkColumnCount = 0;
             if (data.getDataEventType() == DataEventType.INSERT || data.getDataEventType() == DataEventType.UPDATE) {
                 String[] rowData = data.getParsedData(CsvData.ROW_DATA);
+                if (rowData == null) {
+                    data = findData(data.getDataId());
+                    if (data != null) {
+                        rowData = data.getParsedData(CsvData.ROW_DATA);
+                    }
+                }
                 if (rowData != null) {
                     columnCount = rowData.length;
                 }
             }
             if (data.getDataEventType() == DataEventType.DELETE || data.getDataEventType() == DataEventType.UPDATE) {
                 String[] pkData = data.getParsedData(CsvData.PK_DATA);
+                if (pkData == null) {
+                    data = findData(data.getDataId());
+                    if (data != null) {
+                        pkData = data.getParsedData(CsvData.PK_DATA);
+                    }
+                }
                 if (pkData != null) {
                     pkColumnCount = pkData.length;
                 }
@@ -3446,6 +3468,10 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
             return triggerHistory;
+        }
+
+        public Data findData(long dataId) {
+            return sqlTemplateDirty.queryForObject(getSql("selectData", "whereDataId"), new DataMapper(false), dataId);
         }
     }
 
