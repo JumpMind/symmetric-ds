@@ -509,7 +509,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
         }
         return null;
     }
-    
+
     protected String getWithNoLockHint() {
         return " WITH (NOLOCK) ";
     }

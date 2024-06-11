@@ -35,7 +35,8 @@ public class Db2As400SymmetricDialect extends Db2SymmetricDialect implements ISy
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalog, String schema,
+            String tableName, String triggerName) {
         if (schema == null) {
             schema = platform.getDefaultSchema();
         }
@@ -73,9 +74,9 @@ public class Db2As400SymmetricDialect extends Db2SymmetricDialect implements ISy
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
         if (supportsGlobalVariables) {
-            super.createRequiredDatabaseObjects();
+            super.createRequiredDatabaseObjectsImpl(ddl);
         }
     }
 

@@ -484,6 +484,9 @@ public class DataService extends AbstractService implements IDataService {
             sql = FormatUtils.replace("isBulkLoaded", isBulkLoaded ? "1" : "0", sql);
             count = transaction.prepareAndExecute(sql);
         }
+        if (count == 0) {
+            log.warn("No load status updated for source node {} load ID {} batch ID {}", sourceNodeId, loadId, batchId);
+        }
         List<TableReloadStatus> status = transaction.query(getSql("selectTableReloadStatusByLoadIdSourceNodeId"),
                 new TableReloadStatusMapper(), new Object[] { loadId, sourceNodeId }, new int[] { idType, Types.VARCHAR });
         if (status != null && status.size() > 0 && count > 0) {
@@ -907,8 +910,10 @@ public class DataService extends AbstractService implements IDataService {
                     if (loadId != 0) {
                         // Cancel the load
                         TableReloadStatus status = new TableReloadStatus();
+                        status.setSourceNodeId(engine.getNodeId());
                         status.setTargetNodeId(targetNode.getNodeId());
                         status.setLoadId((int) loadId);
+                        status.setFullLoad(reloadRequests.get(0).isFullLoadRequest());
                         engine.getInitialLoadService().cancelLoad(status);
                         // Get original table reload request
                         TableReloadRequest tableReloadRequest = reloadRequests.get(0);
@@ -2639,78 +2644,78 @@ public class DataService extends AbstractService implements IDataService {
 
     protected void reloadMissingForeignKeyRows(Data data, long batchId, String nodeId, long dataId, long rowNumber) {
         String batchName = nodeId + "-" + batchId + " " + (dataId == -1 ? "row " + rowNumber : "data " + dataId);
-        try {
-            if (data == null) {
-                log.warn("Unable to reload missing foreign data for data ID {} because data is not found", dataId);
-                return;
+        if (data == null) {
+            log.warn("Unable to reload missing foreign data for data ID {} because data is not found", dataId);
+            return;
+        } else if (data.getDataEventType() != DataEventType.INSERT && data.getDataEventType() != DataEventType.UPDATE &&
+                data.getDataEventType() != DataEventType.DELETE) {
+            log.warn("Unable to reload missing foreign data for data ID {} because event type {} is not DML", dataId, data.getDataEventType());
+            return;
+        }
+        log.debug("reloadMissingForeignKeyRows for batch {} table {}", batchName, data.getTableName());
+        TriggerHistory hist = data.getTriggerHistory();
+        IDatabasePlatform targetPlatform = getTargetPlatform(data.getTableName());
+        ISymmetricDialect targetDialect = symmetricDialect.getTargetDialect(data.getTableName());
+        Table table = targetPlatform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
+        if (table == null) {
+            log.info("Unable to lookup table " + hist.getFullyQualifiedSourceTableName());
+            return;
+        }
+        table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true, false);
+        Object[] values = targetPlatform.getObjectValues(targetDialect.getBinaryEncoding(), data.getParsedData(CsvData.ROW_DATA), table.getColumns());
+        List<TableRow> tableRows = new ArrayList<TableRow>();
+        Row row = new Row(values.length);
+        int i = 0;
+        for (String columnName : table.getColumnNames()) {
+            row.put(columnName, values.length > i ? values[i++] : null);
+        }
+        tableRows.add(new TableRow(table, row, null, null, null));
+        List<TableRow> foreignTableRows = targetPlatform.getDdlReader().getImportedForeignTableRows(tableRows, new HashSet<TableRow>(), targetDialect
+                .getBinaryEncoding());
+        if (foreignTableRows.isEmpty()) {
+            log.info("Could not determine foreign table rows to fix foreign key violation for "
+                    + "batch {} table {}", batchName, data.getTableName());
+        }
+        Collections.reverse(foreignTableRows);
+        Set<TableRow> visited = new HashSet<TableRow>();
+        boolean foundAllRows = true;
+        for (TableRow foreignTableRow : foreignTableRows) {
+            if (foreignTableRow.getRow().size() == 0) {
+                log.info("Resolving batch {} to ignore the row because {} refers to a missing foreign row in {}", batchName,
+                        table.getFullyQualifiedTableName(), foreignTableRow.getTable().getFullyQualifiedTableName());
+                foundAllRows = false;
+                break;
             }
-            log.debug("reloadMissingForeignKeyRows for batch {} table {}", batchName, data.getTableName());
-            TriggerHistory hist = data.getTriggerHistory();
-            IDatabasePlatform targetPlatform = getTargetPlatform(data.getTableName());
-            ISymmetricDialect targetDialect = symmetricDialect.getTargetDialect(data.getTableName());
-            Table table = targetPlatform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
-            if (table == null) {
-                log.info("Unable to lookup table " + hist.getFullyQualifiedSourceTableName());
-                return;
-            }
-            table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true, false);
-            Object[] values = targetPlatform.getObjectValues(targetDialect.getBinaryEncoding(), data.getParsedData(CsvData.ROW_DATA), table.getColumns());
-            List<TableRow> tableRows = new ArrayList<TableRow>();
-            Row row = new Row(values.length);
-            int i = 0;
-            for (String columnName : table.getColumnNames()) {
-                row.put(columnName, values.length > i ? values[i++] : null);
-            }
-            tableRows.add(new TableRow(table, row, null, null, null));
-            List<TableRow> foreignTableRows = targetPlatform.getDdlReader().getImportedForeignTableRows(tableRows, new HashSet<TableRow>(), targetDialect
-                    .getBinaryEncoding());
-            if (foreignTableRows.isEmpty()) {
-                log.info("Could not determine foreign table rows to fix foreign key violation for "
-                        + "batch {} table {}", batchName, data.getTableName());
-            }
-            Collections.reverse(foreignTableRows);
-            Set<TableRow> visited = new HashSet<TableRow>();
-            boolean foundAllRows = true;
+        }
+        if (foundAllRows) {
             for (TableRow foreignTableRow : foreignTableRows) {
-                if (foreignTableRow.getRow().size() == 0) {
-                    log.info("Resolving batch {} to ignore the row because {} refers to a missing foreign row in {}", batchName,
-                            table.getFullyQualifiedTableName(), foreignTableRow.getTable().getFullyQualifiedTableName());
-                    foundAllRows = false;
-                    break;
-                }
-            }
-            if (foundAllRows) {
-                for (TableRow foreignTableRow : foreignTableRows) {
-                    if (visited.add(foreignTableRow)) {
-                        Table foreignTable = foreignTableRow.getTable();
-                        String catalog = foreignTable.getCatalog();
-                        String schema = foreignTable.getSchema();
-                        if (StringUtils.equals(targetPlatform.getDefaultCatalog(), catalog)) {
-                            catalog = null;
-                            if (StringUtils.equals(targetPlatform.getDefaultSchema(), schema)) {
-                                schema = null;
-                            }
-                        }
-                        log.info("Issuing foreign key correction for batch {} table {}: foreign table '{}' column '{}' fk name '{}' where '{}'",
-                                batchName, data.getTableName(), Table.getFullyQualifiedTableName(catalog, schema, foreignTable.getName()),
-                                foreignTableRow.getReferenceColumnName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql());
-                        try {
-                            reloadTableImmediate(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(),
-                                    dataId == -1 ? Constants.CHANNEL_CONFIG : null);
-                        } catch (Exception ex) {
-                            log.info("Failed to issue foreign key correction, but will try again,", ex);
-                            reloadTableImmediate(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(),
-                                    dataId == -1 ? Constants.CHANNEL_CONFIG : null);
+                if (visited.add(foreignTableRow)) {
+                    Table foreignTable = foreignTableRow.getTable();
+                    String catalog = foreignTable.getCatalog();
+                    String schema = foreignTable.getSchema();
+                    if (StringUtils.equals(targetPlatform.getDefaultCatalog(), catalog)) {
+                        catalog = null;
+                        if (StringUtils.equals(targetPlatform.getDefaultSchema(), schema)) {
+                            schema = null;
                         }
                     }
+                    log.info("Issuing foreign key correction for batch {} table {}: foreign table '{}' column '{}' fk name '{}' where '{}'",
+                            batchName, data.getTableName(), Table.getFullyQualifiedTableName(catalog, schema, foreignTable.getName()),
+                            foreignTableRow.getReferenceColumnName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql());
+                    try {
+                        reloadTableImmediate(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(),
+                                dataId == -1 ? Constants.CHANNEL_CONFIG : null);
+                    } catch (Exception ex) {
+                        log.info("Failed to issue foreign key correction, but will try again,", ex);
+                        reloadTableImmediate(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(),
+                                dataId == -1 ? Constants.CHANNEL_CONFIG : null);
+                    }
                 }
-            } else {
-                sendSQL(nodeId, "update " + engine.getParameterService().getTablePrefix() +
-                        "_incoming_error set resolve_ignore = 1 where batch_id = " + batchId + " and node_id = '" + engine.getNodeId() +
-                        "' and failed_row_number = " + rowNumber);
             }
-        } catch (Exception e) {
-            log.error("Unknown exception while processing foreign key for batch " + batchName, e);
+        } else {
+            sendSQL(nodeId, "update " + engine.getParameterService().getTablePrefix() +
+                    "_incoming_error set resolve_ignore = 1 where batch_id = " + batchId + " and node_id = '" + engine.getNodeId() +
+                    "' and failed_row_number = " + rowNumber);
         }
     }
 
@@ -3307,9 +3312,17 @@ public class DataService extends AbstractService implements IDataService {
         private List<TriggerRouter> triggerRouters;
         private List<TriggerHistory> activeTriggerHistories;
         private Collection<TriggerHistory> allTriggerHistories;
+        private Map<Integer, TriggerHistory> remappedTriggerHistIds = new HashMap<Integer, TriggerHistory>();
         private HashMap<String, TriggerHistory> mismatchedTableName;
         private HashSet<Integer> missingConfigTriggerHist;
-        private HashSet<Integer> mismatchedTriggerHist;
+        private boolean lookupTriggerHist = true;
+
+        public DataMapper() {
+        }
+
+        public DataMapper(boolean lookupTriggerHist) {
+            this.lookupTriggerHist = lookupTriggerHist;
+        }
 
         public Data mapRow(Row row) {
             Data data = new Data();
@@ -3331,26 +3344,28 @@ public class DataService extends AbstractService implements IDataService {
             data.putAttribute(CsvData.ATTRIBUTE_CREATE_TIME, row.getDateTime("CREATE_TIME"));
             int triggerHistId = row.getInt("TRIGGER_HIST_ID");
             data.putAttribute(CsvData.ATTRIBUTE_TABLE_ID, triggerHistId);
-            TriggerHistory triggerHistory = engine.getTriggerRouterService().getTriggerHistory(triggerHistId);
-            if (triggerHistory == null) {
-                triggerHistory = findOrCreateTriggerHistory(tableName, triggerHistId, data, false);
-            } else if (!triggerHistory.getSourceTableName().equalsIgnoreCase(tableName)) {
-                if (mismatchedTableName == null) {
-                    mismatchedTableName = new HashMap<String, TriggerHistory>();
+            if (lookupTriggerHist) {
+                TriggerHistory triggerHistory = engine.getTriggerRouterService().getTriggerHistory(triggerHistId);
+                if (triggerHistory == null) {
+                    triggerHistory = findOrCreateTriggerHistory(tableName, triggerHistId, data, false);
+                } else if (!triggerHistory.getSourceTableName().equals(tableName)) {
+                    if (mismatchedTableName == null) {
+                        mismatchedTableName = new HashMap<String, TriggerHistory>();
+                    }
+                    TriggerHistory cachedTriggerHistory = mismatchedTableName.get(data.getTableName());
+                    if (cachedTriggerHistory == null) {
+                        log.warn("There was a mismatch between the data table name {} and the trigger_hist "
+                                + "table name {} for data_id {}.  Attempting to look up a valid trigger_hist row by table name",
+                                new Object[] { data.getTableName(),
+                                        triggerHistory.getSourceTableName(), data.getDataId() });
+                        triggerHistory = findOrCreateTriggerHistory(tableName, triggerHistId, data, true);
+                        mismatchedTableName.put(data.getTableName(), triggerHistory);
+                    } else {
+                        triggerHistory = cachedTriggerHistory;
+                    }
                 }
-                TriggerHistory cachedTriggerHistory = mismatchedTableName.get(data.getTableName());
-                if (cachedTriggerHistory == null) {
-                    log.warn("There was a mismatch between the data table name {} and the trigger_hist "
-                            + "table name {} for data_id {}.  Attempting to look up a valid trigger_hist row by table name",
-                            new Object[] { data.getTableName(),
-                                    triggerHistory.getSourceTableName(), data.getDataId() });
-                    triggerHistory = findOrCreateTriggerHistory(tableName, triggerHistId, data, true);
-                    mismatchedTableName.put(data.getTableName(), triggerHistory);
-                } else {
-                    triggerHistory = cachedTriggerHistory;
-                }
+                data.setTriggerHistory(triggerHistory);
             }
-            data.setTriggerHistory(triggerHistory);
             data.setPreRouted(row.getBoolean("IS_PREROUTED"));
             return data;
         }
@@ -3360,6 +3375,10 @@ public class DataService extends AbstractService implements IDataService {
             Trigger trigger = null;
             Table table = null;
             long dataId = data.getDataId();
+            triggerHistory = remappedTriggerHistIds.get(triggerHistId);
+            if (triggerHistory != null) {
+                return triggerHistory;
+            }
             if (triggerRouters == null) {
                 triggerRouters = engine.getTriggerRouterService().getAllTriggerRoutersForCurrentNode(engine.getNodeService().findIdentity().getNodeGroupId());
             }
@@ -3393,13 +3412,9 @@ public class DataService extends AbstractService implements IDataService {
                     activeTriggerHistories.add(triggerHistory);
                     allTriggerHistories.add(triggerHistory);
                 } else {
-                    if (mismatchedTriggerHist == null) {
-                        mismatchedTriggerHist = new HashSet<Integer>();
-                    }
-                    if (mismatchedTriggerHist.add(triggerHistId)) {
-                        log.warn("Could not find trigger history {} for table {} for data_id {}.  Using trigger hist {} instead.",
-                                triggerHistId, tableName, dataId, triggerHistory.getTriggerHistoryId());
-                    }
+                    remappedTriggerHistIds.put(triggerHistId, triggerHistory);
+                    log.warn("Could not find trigger history {} for table {} for data_id {}.  Using trigger hist {} instead.",
+                            triggerHistId, tableName, dataId, triggerHistory.getTriggerHistoryId());
                 }
             } else {
                 if (missingConfigTriggerHist == null) {
@@ -3420,12 +3435,24 @@ public class DataService extends AbstractService implements IDataService {
             int columnCount = 0, pkColumnCount = 0;
             if (data.getDataEventType() == DataEventType.INSERT || data.getDataEventType() == DataEventType.UPDATE) {
                 String[] rowData = data.getParsedData(CsvData.ROW_DATA);
+                if (rowData == null) {
+                    data = findData(data.getDataId());
+                    if (data != null) {
+                        rowData = data.getParsedData(CsvData.ROW_DATA);
+                    }
+                }
                 if (rowData != null) {
                     columnCount = rowData.length;
                 }
             }
             if (data.getDataEventType() == DataEventType.DELETE || data.getDataEventType() == DataEventType.UPDATE) {
                 String[] pkData = data.getParsedData(CsvData.PK_DATA);
+                if (pkData == null) {
+                    data = findData(data.getDataId());
+                    if (data != null) {
+                        pkData = data.getParsedData(CsvData.PK_DATA);
+                    }
+                }
                 if (pkData != null) {
                     pkColumnCount = pkData.length;
                 }
@@ -3447,6 +3474,10 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
             return triggerHistory;
+        }
+
+        public Data findData(long dataId) {
+            return sqlTemplateDirty.queryForObject(getSql("selectData", "whereDataId"), new DataMapper(false), dataId);
         }
     }
 

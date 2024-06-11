@@ -343,8 +343,6 @@ final public class ParameterConstants {
     public final static String STORES_UPPERCASE_NAMES_IN_CATALOG = "stores.uppercase.names.in.catalog";
     public final static String DB_MASTER_COLLATION = "db.master.collation";
     public final static String SEQUENCE_TIMEOUT_MS = "sequence.timeout.ms";
-    public final static String REST_API_ENABLED = "rest.api.enable";
-    public final static String REST_HEARTBEAT_ON_PULL = "rest.api.heartbeat.on.pull";
     public final static String SYNCHRONIZE_ALL_JOBS = "jobs.synchronized.enable";
     public final static String FILE_SYNC_ENABLE = "file.sync.enable";
     public final static String FILE_SYNC_FAST_SCAN = "file.sync.fast.scan";
@@ -427,6 +425,7 @@ final public class ParameterConstants {
     public final static String RABBITMQ_QUEUE_NAME = "rabbitmq.queue.name";
     public final static String RABBITMQ_MESSAGE_BY = "rabbitmq.message.by";
     public final static String RABBITMQ_QUEUE_BY = "rabbitmq.queue.by";
+    public final static String RABBITMQ_USE_SSL = "rabbitmq.use.ssl";
     public final static String SNOWFLAKE_STAGING_TYPE = "snowflake.staging.type";
     public final static String SNOWFLAKE_INTERNAL_STAGE_NAME = "snowflake.internal.stage.name";
     public final static String SNAPSHOT_FILE_INCLUDE_HOSTNAME = "snapshot.file.include.hostname";

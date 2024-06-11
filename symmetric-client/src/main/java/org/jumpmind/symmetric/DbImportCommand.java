@@ -49,6 +49,7 @@ public class DbImportCommand extends AbstractCommandLauncher {
     private static final String OPTION_FILTER_CLASSES = "filter-classes";
     private static final String OPTION_DROP_IF_EXISTS = "drop-if-exists";
     private static final String OPTION_ALTER_CASE = "alter-case";
+    private static final String OPTION_USE_SYM_DB = "use-sym-db";
 
     public DbImportCommand() {
         super("dbimport", "[file...]", "DbImport.Option.");
@@ -92,11 +93,12 @@ public class DbImportCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_FILTER_CLASSES, true);
         addOption(options, null, OPTION_DROP_IF_EXISTS, false);
         addOption(options, null, OPTION_ALTER_CASE, false);
+        addOption(options, null, OPTION_USE_SYM_DB, false);
     }
 
     @Override
     protected boolean executeWithOptions(CommandLine line) throws Exception {
-        DbImport dbImport = new DbImport(getDatabasePlatform(true));
+        DbImport dbImport = new DbImport(getDatabasePlatform(true, line.hasOption(OPTION_USE_SYM_DB)));
         if (line.hasOption(OPTION_FORMAT)) {
             dbImport.setFormat(Format.valueOf(line.getOptionValue(OPTION_FORMAT).toUpperCase()));
         }

@@ -97,16 +97,13 @@ public class IngresSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
-    }
-
-    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalogName, String schema,
+            String tableName, String triggerName) {
         return platform.getSqlTemplate().queryForInt(
                 "select count(*) from iirule where rule_name = ? ",
                 new Object[] { triggerName.toLowerCase() }) > 0;

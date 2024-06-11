@@ -60,6 +60,7 @@ import org.jumpmind.symmetric.file.FileSyncZipDataWriter;
 import org.jumpmind.symmetric.file.FileTriggerFileModifiedListener;
 import org.jumpmind.symmetric.file.FileTriggerFileModifiedListener.FileModifiedCallback;
 import org.jumpmind.symmetric.file.FileTriggerTracker;
+import org.jumpmind.symmetric.file.IFileSourceTracker;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -188,21 +189,36 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             ctxDate = null;
         }
         Date currentDate = new Date();
+        List<IFileSourceTracker> fileTrackers = engine.getExtensionService().getExtensionPointList(IFileSourceTracker.class);
         List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode(false);
         for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
             if (fileTriggerRouter.isEnabled()) {
                 try {
                     FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
-                    boolean sourceDirReachable = checkSourceDir(fileTriggerRouter);
-                    if (!sourceDirReachable) {
-                        continue;
+                    DirectorySnapshot lastSnapshot = getDirectorySnapshot(fileTriggerRouter);
+                    DirectorySnapshot dirSnapshot = null;
+                    boolean needsHandled = true;
+                    for (IFileSourceTracker tracker : fileTrackers) {
+                        if (tracker.handlesDir(fileTrigger.getBaseDir())) {
+                            needsHandled = false;
+                            if (tracker.checkSourceDir(fileTrigger.getBaseDir())) {
+                                dirSnapshot = tracker.trackChanges(fileTriggerRouter, lastSnapshot, processInfo, useCrc);
+                            }
+                            break;
+                        }
                     }
-                    boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
-                    FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, getDirectorySnapshot(fileTriggerRouter),
-                            processInfo, useCrc, engine);
-                    DirectorySnapshot dirSnapshot = tracker.trackChanges();
-                    saveDirectorySnapshot(fileTriggerRouter, dirSnapshot, ignoreFiles);
-                    engine.getContextService().save(ContextConstants.FILE_SYNC_FAST_SCAN_TRACK_TIME, String.valueOf(currentDate.getTime()));
+                    if (needsHandled) {
+                        if (checkSourceDir(fileTriggerRouter)) {
+                            FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, lastSnapshot,
+                                    processInfo, useCrc, engine);
+                            dirSnapshot = tracker.trackChanges();
+                        }
+                    }
+                    if (dirSnapshot != null) {
+                        boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
+                        saveDirectorySnapshot(fileTriggerRouter, dirSnapshot, ignoreFiles);
+                        engine.getContextService().save(ContextConstants.FILE_SYNC_FAST_SCAN_TRACK_TIME, String.valueOf(currentDate.getTime()));
+                    }
                 } catch (Exception ex) {
                     log.error("Failed to track changes for file trigger router: "
                             + fileTriggerRouter.getFileTrigger().getTriggerId()
@@ -1028,7 +1044,8 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                                     try {
                                         log.info("Retrying file sync for batch {}", batchId);
                                         Thread.sleep(retryFileSyncDelayMs);
-                                    } catch (InterruptedException e) { }
+                                    } catch (InterruptedException e) {
+                                    }
                                 }
                                 try {
                                     @SuppressWarnings("unchecked")
@@ -1042,7 +1059,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                                                     .size() : 0);
                                     break;
                                 } catch (Throwable e) {
-                                    log.error(e.getMessage(),e);
+                                    log.error(e.getMessage(), e);
                                     Throwable target = e;
                                     if (e instanceof TargetError) {
                                         Throwable t = ((TargetError) e).getTarget();

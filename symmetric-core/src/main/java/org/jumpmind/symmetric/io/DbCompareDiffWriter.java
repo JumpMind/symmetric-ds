@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -122,10 +123,25 @@ public class DbCompareDiffWriter {
                 if (targetColumn == null) {
                     continue;
                 }
-                if (isUniType(targetColumn.getJdbcTypeName())) {
-                    targetColumn.setMappedType("VARCHAR");
+                boolean targetUnitype = isUniType(targetColumn.getJdbcTypeName());
+                boolean sourceUnitype = isUniType(sourceColumn.getJdbcTypeName());
+                if (targetUnitype || sourceUnitype) {
+                    if (sourceUnitype) {
+                        sourceColumn.setMappedType("VARCHAR");
+                        if (sourceColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                            row.put(targetColumn.getName(), sourceCompareRow.getRowValues().get(sourceColumn.getName()));
+                        } else {
+                            String convertedString = DbValueComparator.convertString(sourceCompareRow.getRowValues().get(sourceColumn.getName()), sourceColumn,
+                                    false);
+                            row.put(targetColumn.getName(), convertedString);
+                        }
+                    } else if (targetUnitype) {
+                        targetColumn.setMappedType("VARCHAR");
+                        row.put(targetColumn.getName(), sourceCompareRow.getRowValues().get(sourceColumn.getName()));
+                    }
+                } else {
+                    row.put(targetColumn.getName(), sourceCompareRow.getRowValues().get(sourceColumn.getName()));
                 }
-                row.put(targetColumn.getName(), sourceCompareRow.getRowValues().get(sourceColumn.getName()));
             }
             String sql = statement.buildDynamicSql(BinaryEncoding.HEX, row, false, false);
             writeLine(sql);
@@ -157,18 +173,32 @@ public class DbCompareDiffWriter {
         }
         try {
             Table table = targetCompareRow.getTable();
-            Column[] changedColumns = deltas.keySet().toArray(new Column[deltas.keySet().size()]);
+            Map<Column, String> deltasCopy = new LinkedHashMap<Column, String>();
+            for (Column column : deltas.keySet()) {
+                deltasCopy.put((Column) column.clone(), deltas.get(column));
+            }
+            Column[] changedColumns = deltasCopy.keySet().toArray(new Column[deltasCopy.keySet().size()]);
             DmlStatement statement = targetEngine.getDatabasePlatform().createDmlStatement(DmlType.UPDATE,
                     table.getCatalog(), table.getSchema(), table.getName(),
                     table.getPrimaryKeyColumns(), changedColumns,
                     null, null);
             Row row = new Row(changedColumns.length + table.getPrimaryKeyColumnCount());
-            for (Column changedColumn : deltas.keySet()) {
-                String value = deltas.get(changedColumn);
-                if (isUniType(changedColumn.getJdbcTypeName())) {
+            for (Column changedColumn : deltasCopy.keySet()) {
+                String value = deltasCopy.get(changedColumn);
+                if (isUniType(targetCompareRow.getTable().getColumnWithName(changedColumn.getName()).getJdbcTypeName())) {
                     changedColumn.setMappedType(varchar);
+                    row.put(changedColumn.getName(), value);
+                } else if (isUniType(changedColumn.getJdbcTypeName())) {
+                    changedColumn.setMappedType(varchar);
+                    if (changedColumn.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                        row.put(changedColumn.getName(), value);
+                    } else {
+                        String convertedValue = DbValueComparator.convertString(value, changedColumn, false);
+                        row.put(changedColumn.getName(), convertedValue);
+                    }
+                } else {
+                    row.put(changedColumn.getName(), value);
                 }
-                row.put(changedColumn.getName(), value);
             }
             for (String pkColumnName : table.getPrimaryKeyColumnNames()) {
                 String value = targetCompareRow.getRow().getString(pkColumnName);
@@ -182,7 +212,7 @@ public class DbCompareDiffWriter {
             }
             String sql = statement.buildDynamicSql(BinaryEncoding.HEX, row, false, true);
             writeLine(sql);
-            for (Column changedColumn : deltas.keySet()) {
+            for (Column changedColumn : deltasCopy.keySet()) {
                 if (isUniType(changedColumn.getJdbcTypeName())) {
                     changedColumn.setMappedType(longVarbinary);
                 }
@@ -200,6 +230,8 @@ public class DbCompareDiffWriter {
             if (!isContinueAfterError()) {
                 throw e;
             }
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -222,7 +254,7 @@ public class DbCompareDiffWriter {
             throw new RuntimeException("failed to write to stream '" + line + "'", ex);
         }
     }
-    
+
     public boolean isUniType(String type) {
         return type.equalsIgnoreCase("UNITEXT") || type.equalsIgnoreCase("UNICHAR") || type.equalsIgnoreCase("UNIVARCHAR");
     }

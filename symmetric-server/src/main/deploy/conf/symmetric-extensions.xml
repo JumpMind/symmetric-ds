@@ -152,6 +152,44 @@
         <property name="defaultDestination" ref="destination" />
     </bean>      
       -->
+
+     <!-- Example of publishing to RabbitMQ
+
+    <bean id="rabbitMqPublisher" class="org.jumpmind.symmetric.integrate.XmlPublisherDatabaseWriterFilter">
+        <property name="publisher">
+            <bean class="org.jumpmind.symmetric.integrate.SimpleJmsPublisher">
+                <property name="jmsTemplateBeanName" value="rabbitMqJmsTemplate" />
+            </bean>
+        </property>
+        <property name="nodeGroups">
+            <list>
+                <value>server</value>
+            </list>
+        </property>
+        <property name="tableNamesToPublishAsGroup">
+            <list>
+                <value>MYTEST</value>
+            </list>
+        </property>
+        <property name="groupByColumnNames">
+            <list>
+                <value>ID</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="rabbitMqJmsFactory" class="com.rabbitmq.jms.admin.RMQConnectionFactory">
+        <property name="uri" value="amqps://hostname:5671" />
+        <property name="username" value="myuser" />
+        <property name="password" value="mypass" />
+    </bean>
+
+    <bean id="rabbitMqJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="rabbitMqJmsFactory" />
+        <property name="defaultDestinationName" value="testqueue" />
+    </bean>
+
+     -->
      
      <!-- This example shows how to create a node id generator 
     <lang:bsh id="nodeIdGeneratorScript" refresh-check-delay="10000"

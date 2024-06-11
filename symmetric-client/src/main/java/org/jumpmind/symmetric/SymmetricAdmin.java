@@ -83,6 +83,7 @@ import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DbExportUtils;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -121,6 +122,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String CMD_CREATE_WAR = "create-war";
     private static final String CMD_CREATE_SYM_TABLES = "create-sym-tables";
     private static final String CMD_EXPORT_SYM_TABLES = "export-sym-tables";
+    private static final String CMD_EXPORT_SYM_OBJECTS = "export-sym-objects";
     private static final String CMD_OPEN_REGISTRATION = "open-registration";
     private static final String CMD_REMOVE_NODE = "remove-node";
     private static final String CMD_SYNC_TRIGGERS = "sync-triggers";
@@ -154,6 +156,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String OPTION_EXCLUDE_LOG4J = "exclude-log4j";
     private static final String OPTION_EXTERNAL_SECURITY = "external-security";
     private static final String OPTION_ALTERS = "alters";
+    private static final String OPTION_EXCLUDE_TABLES = "exclude-tables";
     private static final String OPTION_FILE = "file";
     private static final String OPTION_ACCEPT_ALL = "accept-all";
     private static final int WIDTH = 120;
@@ -213,6 +216,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             printHelpLine(pw, CMD_CREATE_WAR);
             printHelpLine(pw, CMD_CREATE_SYM_TABLES);
             printHelpLine(pw, CMD_EXPORT_SYM_TABLES);
+            printHelpLine(pw, CMD_EXPORT_SYM_OBJECTS);
             printHelpLine(pw, CMD_SYNC_TRIGGERS);
             printHelpLine(pw, CMD_DROP_TRIGGERS);
             printHelpLine(pw, CMD_EXPORT_PROPERTIES);
@@ -292,6 +296,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             if (cmd.equals(CMD_EXPORT_SYM_TABLES)) {
                 addOption(options, null, OPTION_ALTERS, false);
             }
+            if (cmd.equals(CMD_EXPORT_SYM_OBJECTS)) {
+                addOption(options, "x", OPTION_EXCLUDE_TABLES, false);
+            }
             if (cmd.equals(CMD_SEND_SQL)) {
                 addOption(options, "f", OPTION_FILE, true);
             }
@@ -334,6 +341,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         addOption(options, null, OPTION_EXCLUDE_LOG4J, false);
         addOption(options, null, OPTION_EXTERNAL_SECURITY, false);
         addOption(options, null, OPTION_ALTERS, false);
+        addOption(options, "x", OPTION_EXCLUDE_TABLES, false);
         addOption(options, null, OPTION_FILE, true);
         addOption(options, null, OPTION_ACCEPT_ALL, false);
         buildCryptoOptions(options);
@@ -355,6 +363,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             return true;
         } else if (cmd.equals(CMD_EXPORT_SYM_TABLES)) {
             exportSymTables(line, args);
+            return true;
+        } else if (cmd.equals(CMD_EXPORT_SYM_OBJECTS)) {
+            exportSymObjects(line, args);
             return true;
         } else if (cmd.equals(CMD_RUN_JOB)) {
             runJob(line, args);
@@ -815,6 +826,17 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             os.write(getSymmetricEngine().getSymmetricDialect().getSymmetricDdlChanges());
         } else {
             os.write(getSymmetricEngine().getSymmetricDialect().getCreateSymmetricDDL());
+        }
+        os.close();
+    }
+
+    private void exportSymObjects(CommandLine line, List<String> args) throws IOException {
+        ISymmetricEngine engine = getSymmetricEngine();
+        ISymmetricDialect dialect = engine.getSymmetricDialect();
+        OutputStreamWriter os = getWriter(args);
+        os.write(dialect.getCreateRequiredDatabaseObjectsDDL());
+        if (!line.hasOption(OPTION_EXCLUDE_TABLES)) {
+            os.write(dialect.getCreateSymmetricDDL());
         }
         os.close();
     }

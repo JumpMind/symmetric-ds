@@ -171,6 +171,24 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
         } else if (e.hasNotContains && columnValue != null && compareValue != null &&
                 !ArrayUtils.contains(columnValue.split(","), compareValue)) {
             result = true;
+        } else if (e.hasHas && ((columnValue == null && compareValue == null) ||
+                    (columnValue != null && columnValue.contains(compareValue)))) {
+            result = true;
+        } else if (e.hasNotHas && !((columnValue == null && compareValue == null) ||
+                (columnValue != null && columnValue.contains(compareValue)))) {
+            result = true;
+        } else if (e.hasStartsWith && ((columnValue == null && compareValue == null) ||
+                (columnValue != null && columnValue.startsWith(compareValue)))) {
+            result = true;
+        } else if (e.hasNotStartsWith && !((columnValue == null && compareValue == null) ||
+                (columnValue != null && columnValue.startsWith(compareValue)))) {
+            result = true;
+        } else if (e.hasEndsWith && ((columnValue == null && compareValue == null) ||
+                (columnValue != null && columnValue.endsWith(compareValue)))) {
+            result = true;
+        } else if (e.hasNotEndsWith && !((columnValue == null && compareValue == null) ||
+                (columnValue != null && columnValue.endsWith(compareValue)))) {
+            result = true;
         }
         if (result) {
             if (node != null) {
@@ -200,7 +218,8 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     public List<Expression> parse(String routerExpression) throws SyntaxParsingException {
         List<Expression> expressions = new ArrayList<Expression>();
         if (!StringUtils.isBlank(routerExpression)) {
-            String[] operators = { Expression.NOT_EQUALS, Expression.EQUALS, Expression.NOT_CONTAINS, Expression.CONTAINS };
+            String[] operators = { Expression.NOT_EQUALS, Expression.EQUALS, Expression.NOT_CONTAINS, Expression.CONTAINS, Expression.HAS, Expression.NOT_HAS,
+                    Expression.STARTS_WITH, Expression.NOT_STARTS_WITH, Expression.ENDS_WITH, Expression.NOT_ENDS_WITH };
             String[] expTokens = routerExpression.split("\\s*(\\s+or|\\s+OR)?(\r\n|\r|\n)(or\\s+|OR\\s+)?\\s*" +
                     "|\\s+or\\s+" +
                     "|\\s+OR\\s+");
@@ -274,24 +293,49 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
         public static final String NOT_EQUALS = "!=";
         public static final String CONTAINS = "contains";
         public static final String NOT_CONTAINS = "not contains";
+        public static final String HAS = "has";
+        public static final String NOT_HAS = "not has";
+        public static final String STARTS_WITH = "starts with";
+        public static final String NOT_STARTS_WITH = "not starts with";
+        public static final String ENDS_WITH = "ends with";
+        public static final String NOT_ENDS_WITH = "not ends with";
         boolean hasEquals;
         boolean hasNotEquals;
         boolean hasContains;
         boolean hasNotContains;
+        boolean hasHas;
+        boolean hasNotHas;
+        boolean hasStartsWith;
+        boolean hasNotStartsWith;
+        boolean hasEndsWith;
+        boolean hasNotEndsWith;
         String[] tokens;
         String operator;
 
         public Expression(String operator, String[] tokens) {
             this.tokens = tokens;
             this.operator = operator;
-            if (operator.equals(EQUALS))
+            if (operator.equals(EQUALS)) {
                 hasEquals = true;
-            else if (operator.equals(NOT_EQUALS))
+            } else if (operator.equals(NOT_EQUALS)) {
                 hasNotEquals = true;
-            else if (operator.equals(CONTAINS))
+            } else if (operator.equals(CONTAINS)) {
                 hasContains = true;
-            else if (operator.equals(NOT_CONTAINS))
+            } else if (operator.equals(NOT_CONTAINS)) {
                 hasNotContains = true;
+            } else if (operator.equals(HAS)) {
+                hasHas = true;
+            } else if (operator.equals(NOT_HAS)) {
+                hasNotHas = true;
+            } else if (operator.equals(STARTS_WITH)) {
+                hasStartsWith = true;
+            } else if (operator.equals(NOT_STARTS_WITH)) {
+                hasNotStartsWith = true;
+            } else if (operator.equals(ENDS_WITH)) {
+                hasEndsWith = true;
+            } else if (operator.equals(NOT_ENDS_WITH)) {
+                hasNotEndsWith = true;
+            }
         }
 
         public String[] getTokens() {
@@ -316,6 +360,54 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
 
         public boolean hasNotContains() {
             return hasEquals;
+        }
+
+        public boolean isHasHas() {
+            return hasHas;
+        }
+
+        public void setHasHas(boolean hasHas) {
+            this.hasHas = hasHas;
+        }
+
+        public boolean isHasNotHas() {
+            return hasNotHas;
+        }
+
+        public void setHasNotHas(boolean hasNotHas) {
+            this.hasNotHas = hasNotHas;
+        }
+
+        public boolean isHasStartsWith() {
+            return hasStartsWith;
+        }
+
+        public void setHasStartsWith(boolean hasStartsWith) {
+            this.hasStartsWith = hasStartsWith;
+        }
+
+        public boolean isHasNotStartsWith() {
+            return hasNotStartsWith;
+        }
+
+        public void setHasNotStartsWith(boolean hasNotStartsWith) {
+            this.hasNotStartsWith = hasNotStartsWith;
+        }
+
+        public boolean isHasEndsWith() {
+            return hasEndsWith;
+        }
+
+        public void setHasEndsWith(boolean hasEndsWith) {
+            this.hasEndsWith = hasEndsWith;
+        }
+
+        public boolean isHasNotEndsWith() {
+            return hasNotEndsWith;
+        }
+
+        public void setHasNotEndsWith(boolean hasNotEndsWith) {
+            this.hasNotEndsWith = hasNotEndsWith;
         }
     }
 }

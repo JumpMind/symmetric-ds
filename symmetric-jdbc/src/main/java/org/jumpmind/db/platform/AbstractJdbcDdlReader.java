@@ -1377,7 +1377,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             log.warn(msg.toString(), ex);
         }
     }
-    
+
     protected String getWithNoLockHint() {
         return "";
     }

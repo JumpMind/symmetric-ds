@@ -117,7 +117,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
     }
 
     @Override
-    protected boolean isCaptureTimeNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {
+    protected boolean isCaptureTimeNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data, String tableName) {
         DynamicDefaultDatabaseWriter databaseWriter = (DynamicDefaultDatabaseWriter) writer;
         Table targetTable = writer.getTargetTable();
         Map<String, String> keyData = getLookupDataMap(data, writer.getSourceTable());
@@ -128,9 +128,8 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         Timestamp loadingTs = data.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME);
         Date existingTs = null;
         String existingNodeId = null;
-        boolean isLoadOnlyNode = databaseWriter.getWriterSettings().isLoadOnlyNode();
         boolean isWinnerByUk = true;
-        if (loadingTs != null && !isLoadOnlyNode) {
+        if (loadingTs != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Finding last capture time for table {} with pk of {}", targetTable.getName(), ArrayUtils.toString(pkData));
             }
@@ -162,12 +161,13 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                     "_data where table_name = ? and ((event_type = 'I' and row_data like ?) or " +
                     "(event_type in ('U', 'D') and pk_data like ?)) and create_time >= ? " +
                     "and (source_node_id is null or source_node_id != ?) order by create_time desc";
-            Object[] args = new Object[] { targetTable.getName(), pkCsv + "%", pkCsv, loadingTs, writer.getBatch().getSourceNodeId() };
+            Object[] args = new Object[] { tableName != null ? tableName : targetTable.getName(), pkCsv + "%", pkCsv, loadingTs,
+                    writer.getBatch().getSourceNodeId() };
             log.debug("Querying capture time for CSV {}", pkCsv);
             Row row = null;
-            if (databaseWriter.getPlatform(targetTable).supportsMultiThreadedTransactions()) {
+            if (databaseWriter.isLoadOnly() || databaseWriter.getPlatform(databaseWriter.getTablePrefix()).supportsMultiThreadedTransactions()) {
                 // we may have waited for another transaction to commit, so query with a new transaction
-                row = databaseWriter.getPlatform(targetTable).getSqlTemplateDirty().queryForRow(sql, args);
+                row = databaseWriter.getPlatform(databaseWriter.getTablePrefix()).getSqlTemplateDirty().queryForRow(sql, args);
             } else {
                 row = writer.getContext().findTransaction().queryForRow(sql, args);
             }
@@ -182,12 +182,9 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 isWinnerByUk = isCaptureTimeNewerForUk(writer, data);
             }
         }
-        boolean isWinner = isLoadOnlyNode || (existingTs == null && isWinnerByUk) || (isWinnerByUk && loadingTs != null && (loadingTs.getTime() > existingTs
-                .getTime()
+        boolean isWinner = (existingTs == null && isWinnerByUk) || (isWinnerByUk && loadingTs != null && (loadingTs.getTime() > existingTs.getTime()
                 || (loadingTs.getTime() == existingTs.getTime() && writer.getContext().getBatch().getSourceNodeId().hashCode() > existingNodeId.hashCode())));
-        if (!isLoadOnlyNode) {
-            writer.getContext().put(DatabaseConstants.IS_CONFLICT_WINNER, isWinner);
-        }
+        writer.getContext().put(DatabaseConstants.IS_CONFLICT_WINNER, isWinner);
         if (!isWinner && !isWinnerByUk) {
             Set<String> conflictLosingParentRows = writer.getWriterSettings().getConflictLosingParentRows();
             if (conflictLosingParentRows != null) {

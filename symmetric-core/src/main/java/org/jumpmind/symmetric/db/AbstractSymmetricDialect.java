@@ -194,17 +194,27 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return platform.getSqlTemplate().queryForInt(replaceTokens(sql, objectName)) > 0;
     }
 
-    protected void install(String sql, String objectName) {
+    protected void install(String sql, String objectName, StringBuilder ddl) {
         sql = replaceTokens(sql, objectName);
-        log.info("Installing SymmetricDS database object:\n{}", sql);
-        platform.getSqlTemplate().update(sql);
-        log.info("Just installed {}", objectName);
+        logSql(sql, ddl);
+        if (ddl == null) {
+            log.info("Installing SymmetricDS database object:\n{}", sql);
+            platform.getSqlTemplate().update(sql);
+            log.info("Just installed {}", objectName);
+        }
     }
 
     protected void uninstall(String sql, String objectName) {
+        uninstall(sql, objectName, null);
+    }
+
+    protected void uninstall(String sql, String objectName, StringBuilder ddl) {
         sql = replaceTokens(sql, objectName);
-        platform.getSqlTemplate().update(sql);
-        log.info("Just uninstalled {}", objectName);
+        logSql(sql, ddl);
+        if (ddl == null) {
+            platform.getSqlTemplate().update(sql);
+            log.info("Just uninstalled {}", objectName);
+        }
     }
 
     public void dropTablesAndDatabaseObjects() {
@@ -213,10 +223,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         dropRequiredDatabaseObjects();
     }
 
-    final public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName) {
+    final public boolean doesTriggerExist(StringBuilder sqlBuffer, String catalogName, String schema, String tableName, String triggerName) {
         if (StringUtils.isNotBlank(triggerName)) {
             try {
-                return doesTriggerExistOnPlatform(catalogName, schema, tableName, triggerName);
+                return doesTriggerExistOnPlatform(sqlBuffer, catalogName, schema, tableName, triggerName);
             } catch (Exception ex) {
                 log.warn("Could not figure out if the trigger exists.  Assuming that is does not", ex);
                 return false;
@@ -232,11 +242,22 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public abstract void dropRequiredDatabaseObjects();
 
-    public abstract void createRequiredDatabaseObjects();
+    public void createRequiredDatabaseObjects() {
+        createRequiredDatabaseObjectsImpl(null);
+    };
+
+    public String getCreateRequiredDatabaseObjectsDDL() {
+        StringBuilder ddl = new StringBuilder();
+        createRequiredDatabaseObjectsImpl(ddl);
+        return ddl.toString();
+    }
+
+    protected void createRequiredDatabaseObjectsImpl(StringBuilder ddl) {
+    }
 
     abstract public BinaryEncoding getBinaryEncoding();
 
-    abstract protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName);
+    abstract protected boolean doesTriggerExistOnPlatform(StringBuilder seqlBuffer, String catalogName, String schema, String tableName, String triggerName);
 
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         return "null";
@@ -343,7 +364,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             ISqlTransaction transaction) {
         String sql = getDropTriggerSql(sqlBuffer, catalogName, schemaName, triggerName, tableName);
         logSql(sql, sqlBuffer);
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
             log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             transaction.execute(sql);
         }
@@ -382,7 +403,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
      */
     public void createTrigger(final StringBuilder sqlBuffer, final DataEventType dml, final Trigger trigger, final TriggerHistory hist,
             final Channel channel, final String tablePrefix, final Table table, ISqlTransaction transaction) {
-        log.info("Creating {} trigger for {}", hist.getTriggerNameForDmlType(dml), table.getFullyQualifiedTableName());
         String previousCatalog = null;
         String sourceCatalogName = table.getCatalog();
         String defaultCatalog = platform.getDefaultCatalog();
@@ -392,9 +412,12 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             try {
                 previousCatalog = switchCatalogForTriggerInstall(sourceCatalogName, transaction);
                 try {
-                    log.debug("Running: {}", triggerSql);
                     logSql(triggerSql, sqlBuffer);
-                    transaction.execute(triggerSql);
+                    if (sqlBuffer == null) {
+                        log.info("Creating {} trigger for {}", hist.getTriggerNameForDmlType(dml), table.getFullyQualifiedTableName());
+                        log.debug("Running: {}", triggerSql);
+                        transaction.execute(triggerSql);
+                    }
                 } catch (SqlException ex) {
                     log.info("Failed to create trigger: {}", triggerSql);
                     throw ex;
@@ -413,9 +436,11 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         String postTriggerDml = createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix, table);
         if (StringUtils.isNotBlank(postTriggerDml)) {
             try {
-                log.debug("Running: {}", postTriggerDml);
                 logSql(postTriggerDml, sqlBuffer);
-                transaction.execute(postTriggerDml);
+                if (sqlBuffer == null) {
+                    log.debug("Running: {}", postTriggerDml);
+                    transaction.execute(postTriggerDml);
+                }
             } catch (SqlException ex) {
                 log.info("Failed to create post trigger: {}", postTriggerDml);
                 throw ex;
@@ -440,15 +465,17 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             String triggerSql = triggerTemplate.createDdlTrigger(tablePrefix, runtimeCatalog, runtimeSchema,
                     triggerName);
-            log.info("Creating DDL trigger " + triggerName);
             if (triggerSql != null) {
                 ISqlTransaction transaction = null;
                 try {
                     transaction = this.platform.getSqlTemplate().startSqlTransaction(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                     try {
-                        log.debug("Running: {}", triggerSql);
                         logSql(triggerSql, sqlBuffer);
-                        transaction.execute(triggerSql);
+                        if (sqlBuffer == null) {
+                            log.info("Creating DDL trigger " + triggerName);
+                            log.debug("Running: {}", triggerSql);
+                            transaction.execute(triggerSql);
+                        }
                     } catch (SqlException ex) {
                         log.info("Failed to create DDL trigger: {}", triggerSql);
                         throw ex;
@@ -473,9 +500,11 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         String postTriggerDdl = createPostDdlTriggerDDL(tablePrefix, triggerName);
         if (StringUtils.isNotBlank(postTriggerDdl)) {
             try {
-                log.debug("Running: {}", postTriggerDdl);
                 logSql(postTriggerDdl, sqlBuffer);
-                transaction.execute(postTriggerDdl);
+                if (sqlBuffer == null) {
+                    log.debug("Running: {}", postTriggerDdl);
+                    transaction.execute(postTriggerDdl);
+                }
             } catch (SqlException ex) {
                 log.info("Failed to create post DDL trigger: {}", postTriggerDdl);
                 throw ex;
@@ -489,7 +518,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public String getCreateSymmetricDDL() {
         Database database = readSymmetricSchemaFromXml();
-        prefixConfigDatabase(database);
         IDdlBuilder builder = platform.getDdlBuilder();
         return builder.createTables(database, true);
     }
