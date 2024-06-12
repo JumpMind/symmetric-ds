@@ -36,12 +36,16 @@ import org.apache.commons.lang3.SystemUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExtensionPoint {
+    protected final Logger log = LoggerFactory.getLogger(getClass());
     protected OperatingSystemMXBean osBean;
     protected RuntimeMXBean runtimeBean;
     protected List<StackTraceElement> ignoreElements;
     public static final String NAME = "cpu";
+    protected boolean useNative = true;
 
     public MonitorTypeCpu() {
         osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
@@ -71,32 +75,43 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
     }
 
     public int getCpuUsage() {
-        int pid = getProcessId();
-        if (pid >= 0 && (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_LINUX)) {
-            if (SystemUtils.IS_OS_WINDOWS) {
-                String line = runCommand(3, "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", "-Command",
-                        "Get-WmiObject -Query "
-                                + "\\\"Select * from Win32_PerfFormattedData_PerfProc_Process where IDProcess = " + pid
-                                + "\\\" | Select-Object -Property PercentProcessorTime");
-                if (line != null) {
-                    return Math.min(Integer.parseInt(line.replace(" ", "")), 100);
-                }
-            } else if (SystemUtils.IS_OS_MAC) {
-                String line = runCommand(25, "top", "-l2", "-pid", String.valueOf(pid));
-                if (line != null) {
-                    String[] fields = line.trim().split("\\s+");
-                    if (fields.length > 2) {
-                        return Math.min((int) Float.parseFloat(fields[2]), 100);
+        if (useNative) {
+            String line = null;
+            try {
+                int pid = getProcessId();
+                if (pid >= 0 && (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_LINUX)) {
+                    if (SystemUtils.IS_OS_WINDOWS) {
+                        line = runCommand(3, "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", "-Command",
+                                "Get-WmiObject -Query "
+                                        + "\\\"Select * from Win32_PerfFormattedData_PerfProc_Process where IDProcess = " + pid
+                                        + "\\\" | Select-Object -Property PercentProcessorTime");
+                        if (line != null) {
+                            return Math.min(Integer.parseInt(line.replace(" ", "")), 100);
+                        }
+                    } else if (SystemUtils.IS_OS_MAC) {
+                        line = runCommand(25, "top", "-l2", "-pid", String.valueOf(pid));
+                        if (line != null) {
+                            String[] fields = line.trim().split("\\s+");
+                            if (fields.length > 2) {
+                                return Math.min((int) Float.parseFloat(fields[2]), 100);
+                            }
+                        }
+                    } else {
+                        line = runCommand(7, "top", "-bn1", "-p", String.valueOf(pid));
+                        if (line != null) {
+                            String[] fields = line.trim().split("\\s+");
+                            if (fields.length > 9) {
+                                return Math.min((int) Float.parseFloat(fields[8]), 100);
+                            }
+                        }
                     }
                 }
-            } else {
-                String line = runCommand(7, "top", "-bn1", "-p", String.valueOf(pid));
-                if (line != null) {
-                    String[] fields = line.trim().split("\\s+");
-                    if (fields.length > 9) {
-                        return Math.min((int) Float.parseFloat(fields[8]), 100);
-                    }
-                }
+            } catch (RuntimeException e) {
+                log.info("Cannot parse native command line output because \"{}: {}\".  Output was: \"{}\"", e.getClass().getName(), e.getMessage(), line);
+                useNative = false;
+            }
+            if (!useNative) {
+                log.info("Switching to CPU time based on JMX");
             }
         }
         int availableProcessors = osBean.getAvailableProcessors();
