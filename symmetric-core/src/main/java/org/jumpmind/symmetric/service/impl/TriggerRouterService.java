@@ -2268,7 +2268,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             	if (activeHistories != null) {
                                     for (TriggerHistory triggerHistory : activeHistories) {
                                     	if (!fullyQualifiedTableNames.contains(triggerHistory.getFullyQualifiedSourceTableName())) {
-                                    		dropTriggers(triggerHistory, sqlBuffer, context);
+                                    		dropTriggers(triggerHistory, null, context);
                                     	}
                                     }
                             	}
