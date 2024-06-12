@@ -321,17 +321,18 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public Collection<Trigger> findMatchingTriggers(List<Trigger> triggers, String catalog, String schema,
             String table) {
         Set<Trigger> matches = new HashSet<Trigger>();
+        IDatabasePlatform targetPlatform = getTargetPlatform(table);
+        boolean isTargetCatalog = StringUtils.isNotBlank(catalog) && catalog.equals(targetPlatform.getDefaultCatalog());
+        boolean isTargetSchema = StringUtils.isNotBlank(schema) && schema.equals(targetPlatform.getDefaultSchema());
         for (Trigger trigger : triggers) {
             boolean catalogMatches = trigger.isSourceCatalogNameWildCarded()
                     || (catalog == null && trigger.getSourceCatalogName() == null)
-                    || (StringUtils.isBlank(trigger.getSourceCatalogName())
-                            && StringUtils.isNotBlank(catalog) && catalog.equals(platform.getDefaultCatalog()))
+                    || (StringUtils.isBlank(trigger.getSourceCatalogName()) && isTargetCatalog)
                     || (StringUtils.isNotBlank(catalog) && catalog.equals(trigger
                             .getSourceCatalogName()));
             boolean schemaMatches = trigger.isSourceSchemaNameWildCarded()
                     || (schema == null && trigger.getSourceSchemaName() == null)
-                    || (StringUtils.isBlank(trigger.getSourceSchemaName())
-                            && StringUtils.isNotBlank(schema) && schema.equals(platform.getDefaultSchema()))
+                    || (StringUtils.isBlank(trigger.getSourceSchemaName()) && isTargetSchema)
                     || (StringUtils.isNotBlank(schema) && schema.equals(trigger
                             .getSourceSchemaName()));
             boolean tableMatches = trigger.isSourceTableNameWildCarded()
