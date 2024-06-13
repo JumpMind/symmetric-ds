@@ -228,7 +228,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             try {
                 return doesTriggerExistOnPlatform(sqlBuffer, catalogName, schema, tableName, triggerName);
             } catch (Exception ex) {
-                log.warn("Could not figure out if the trigger exists.  Assuming that is does not", ex);
+                log.warn("Could not figure out if the trigger exists.  Assuming that it does not", ex);
                 return false;
             }
         } else {
