@@ -58,6 +58,7 @@ allprojects {
 		    property "sonar.projectKey", "JumpMind_SymmetricDS_Pro"
 	        property 'sonar.coverage.jacoco.xmlReportPaths', "${rootDir}/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml"
 	     	property "sonar.coverage.exclusions", "**/*.ad, **/*.js, **/*.c"
+	     	property "sonar.exclusions","**/ui/**"
 	    	property "sonar.scm.disabled", "true"    
 		}
 	}
