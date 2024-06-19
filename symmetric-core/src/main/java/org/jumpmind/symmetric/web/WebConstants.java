@@ -51,7 +51,7 @@ public class WebConstants {
     public static final int SC_NO_RESERVATION = 604;
     public static final int SC_ALREADY_CONNECTED = 605;
     public static final int SC_NO_ENGINE = 602;
-    public static final int SC_BAD_REQUEST = 601;
+    public static final int SC_BAD_REQUEST = 603;
     public static final int SC_INTERNAL_ERROR = 600;
     public static final int SC_NO_CONTENT = 204;
     public static final int SC_OK = 200;
