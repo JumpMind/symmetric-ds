@@ -129,6 +129,7 @@ public class Column implements Cloneable, Serializable {
     public Column(String name, boolean primaryKey) {
         this.name = name;
         this.primaryKey = primaryKey;
+        this.required = primaryKey;
     }
 
     public Column(String name, boolean primaryKey, int typeCode, int size, int scale) {
@@ -213,6 +214,9 @@ public class Column implements Cloneable, Serializable {
      */
     public void setPrimaryKey(boolean primaryKey) {
         this.primaryKey = primaryKey;
+        if (primaryKey) {
+            this.required = true;
+        }
     }
 
     /**
