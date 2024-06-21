@@ -145,25 +145,18 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
             // This file belongs to a directory that had a file add/delete, so we will process the directory later
             modifiedDir.add(fileSnapshot);
         } else {
-            long lastModified = fileSnapshot.getFileModifiedTime();
-            if ((fromDate != null && lastModified >= fromDate.getTime()) && lastModified <= toDate.getTime()) {
-                if (isDir) {
-                    // This is a directory that had a file add/delete, so we'll need to look for deletes later
-                    // Let's not save the beginning ./ in the front of the directory location, it doesn't match the value in the database.
-                    String relativeDir = StringUtils.removeStart(fileSnapshot.getRelativeDir() + "/" + fileSnapshot.getFileName(), "./");
-                    modifiedDirs.put(relativeDir,
-                            new DirectorySnapshot(fileTriggerRouter));
-                } else {
-                    snapshot.add(fileSnapshot);
-                    changeCount++;
-                    if (snapshot.size() >= fileModifiedCallback.getCommitSize()) {
-                        commit();
-                    }
-                }
+            if (isDir) {
+                // This is a directory that had a file add/delete, so we'll need to look for deletes later
+                // Let's not save the beginning ./ in the front of the directory location, it doesn't match the value in the database.
+                String relativeDir = StringUtils.removeStart(fileSnapshot.getRelativeDir() + "/" + fileSnapshot.getFileName(), "./");
+                modifiedDirs.put(relativeDir,
+                        new DirectorySnapshot(fileTriggerRouter));
             } else {
-                log.debug("Not processing " + file + " fromDate: " + fromDate + " lastModified: " + lastModified + " fromDateTime: " + (fromDate != null
-                        ? fromDate.getTime()
-                        : 0l) + " toDateTime: " + (toDate != null ? toDate.getTime() : 0l));
+                snapshot.add(fileSnapshot);
+                changeCount++;
+                if (snapshot.size() >= fileModifiedCallback.getCommitSize()) {
+                    commit();
+                }
             }
         }
         if (System.currentTimeMillis() - ts > 60000) {
