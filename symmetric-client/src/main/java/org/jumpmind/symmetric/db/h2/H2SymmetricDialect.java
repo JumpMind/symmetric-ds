@@ -24,7 +24,10 @@ import java.sql.Types;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.h2.H2DdlBuilder;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -33,6 +36,7 @@ import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractEmbeddedSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
@@ -50,7 +54,6 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
         this.triggerTemplate = new H2TriggerTemplate(this);
         if (!Version.isOlderThanVersion(getProductVersion(), "2.0.202")) {
             SQL_FUNCTION_INSTALLED = "select count(*) from INFORMATION_SCHEMA.ROUTINES where ROUTINE_NAME='$(functionName)'";
-            platform.getDatabaseInfo().addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR(1000000000)", Types.VARCHAR);
             platform.getDatabaseInfo().setDefaultSize(Types.CHAR, 1000000000);
             platform.getDatabaseInfo().setMaxSize("CHAR", 1000000000);
             platform.getDatabaseInfo().setDefaultSize(Types.VARCHAR, 1000000000);
@@ -69,15 +72,15 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalogName, String schemaName, String tableName,
-            String triggerName) {
-        boolean exists = (platform.getSqlTemplate()
-                .queryForInt(
-                        "select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ? and (TRIGGER_CATALOG=? or ? is null) and (TRIGGER_SCHEMA=? or ? is null)",
-                        new Object[] { triggerName, catalogName, catalogName, schemaName, schemaName }) > 0)
+    protected boolean doesTriggerExistOnPlatform(StringBuilder sqlBuffer, String catalogName, String schemaName,
+            String tableName, String triggerName) {
+        boolean exists = (platform.getSqlTemplate().queryForInt(
+                "select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ? and (TRIGGER_CATALOG=? or ? is null) and (TRIGGER_SCHEMA=? or ? is null)",
+                new Object[] { triggerName, catalogName, catalogName, schemaName, schemaName }) > 0)
                 && (platform.getSqlTemplate().queryForInt(
                         "select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ? and (TABLE_CATALOG=? or ? is null) and (TABLE_SCHEMA=? or ? is null)",
-                        new Object[] { String.format("%s_CONFIG", triggerName), catalogName, catalogName, schemaName, schemaName }) > 0);
+                        new Object[] { String.format("%s_CONFIG", triggerName), catalogName, catalogName, schemaName,
+                                schemaName }) > 0);
         if (!exists && !StringUtils.isBlank(triggerName)) {
             removeTrigger(sqlBuffer, catalogName, schemaName, triggerName, tableName);
         }
@@ -95,7 +98,8 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
         final String dropTable = String.format("DROP TABLE IF EXISTS %s%s_CONFIG", prefix, triggerName);
         logSql(dropTable, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) && sqlBuffer == null) {
-            log.info("Dropping trigger {} for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
+            log.info("Dropping trigger {} for {}", triggerName,
+                    Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             transaction.execute(dropSql);
             transaction.execute(dropTable);
         }
@@ -163,11 +167,25 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     @Override
     public void cleanupTriggers() {
         List<String> names = platform.getSqlTemplate().query(
-                "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = SCHEMA() AND TABLE_NAME LIKE '" + parameterService.getTablePrefix()
-                        .toUpperCase() + "_%_CONFIG'", new StringMapper());
+                "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = SCHEMA() AND TABLE_NAME LIKE '"
+                        + parameterService.getTablePrefix().toUpperCase() + "_%_CONFIG'",
+                new StringMapper());
         for (String name : names) {
             platform.getSqlTemplate().update("drop table " + name);
             log.info("Dropped table {}", name);
         }
+    }
+
+    @Override
+    public Database readSymmetricSchemaFromXml() {
+        Database db = super.readSymmetricSchemaFromXml();
+        Table table = db.findTable(TableConstants.getTableName(getTablePrefix(), TableConstants.SYM_NODE));
+        Column column = table.getColumnWithName("most_recent_active_table");
+        if ((column.getMappedType().equals(TypeMap.VARCHAR) || column.getMappedType().equals("CHARACTER VARYING"))
+                && column.getSize() == null) {
+            column.setMappedType(TypeMap.LONGVARCHAR);
+            column.setMappedTypeCode(Types.LONGVARCHAR);
+        }
+        return db;
     }
 }
