@@ -299,7 +299,7 @@ subprojects { subproject ->
         postgresqlVersion =  '42.7.3'
         hsqldbVersion = '2.5.1'
         sqliteVersion = '3.34.0'
-        mssqlVersion = '12.6.1.jre8'
+        mssqlVersion = '12.6.3.jre8'
         jakartaMailVersion = '2.0.2'
         jdomVersion = '2.0.6.1'
         jaxbVersion = '4.0.3'
