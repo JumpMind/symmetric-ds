@@ -235,7 +235,7 @@ public class SelectFromSymDataSource extends SelectFromSource {
         targetTable = reloadSource.getTargetTable();
         requiresLobSelectedFromSource = reloadSource.requiresLobsSelectedFromSource(data);
         if (data == null) {
-            data = (Data) next();
+            data = new Data();
         }
         return data;
     }
@@ -341,6 +341,9 @@ public class SelectFromSymDataSource extends SelectFromSource {
             cursor.close();
             cursor = null;
         }
+        batch = null;
+        sourceTable = null;
+        targetTable = null;
     }
 
     public void close() {
