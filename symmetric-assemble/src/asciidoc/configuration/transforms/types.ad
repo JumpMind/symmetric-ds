@@ -1,9 +1,40 @@
 
 ==== Transform Types
 
-There are several pre-defined transform types available in SymmetricDS. Additional ones can be 
-defined by creating and configuring an extension point which implements the IColumnTransform interface. 
-The pre-defined transform types include the following:
+There are several pre-defined transform types. Additional ones can be 
+defined by creating and configuring an extension point which implements the IColumnTransform interface.
+
+.Transform Types
+[cols="10%,90%", options="header"]
+|===
+|Type|Description
+
+|<<Additive Transform,additive>>|For numeric fields, apply the difference of new minus old to the target.
+Calculate the difference between the old and new source number and apply the difference to the target.
+|<<BeanShell Script Transform,bsh>>|Run a BeanShell script to return a value.
+|<<BLeft Transform,bleft>>|Copy the leftmost bytes of the value.
+|<<Clarion Date Time,clarionDateTime>>|Convert a source column with a Clarion integer into a timestamp.
+|<<Constant Transform,const>>|Use a provided constant value.
+|<<Copy Transform,copy>>|Copy source column value to the target column.
+|<<Copy If Changed,copyIfChanged>>|Copy the source column value only if its old and new value are different.
+|<<Columns To Rows,columnsToRowsKey>>|Convert columns to rows, specifying which columns are the key for all rows.
+|<<Columns To Rows,columnsToRowsValue>>|Convert column to rows, specifying which columns are the changing values.
+|<<Deleted Columns Transform,deletedColumns>>|Comma-separated list of column names that were changed to null.
+|<<Identity Transform,identity>>|Set INSERT_IDENTITY to ON for generating the next identity value.
+|<<isBlank Transform,isBlank>>|If value is empty after trimming spaces, then replace its value.
+|<<isEmpty Transform,isEmpty>>|If value is empty, then replace its value.
+|<<Java Transform,java>>|Run Java code to return a value.
+|<<Null Value Transform,isNull>>|If value is null, then replace its value.
+|<<Left Transform,left>>|Copy the leftmost characters of the value.
+|<<Lookup Transform,lookup>>|Run a SQL query to return a value.
+|<<Mathematical Transform,math>>|Perform a math expression.
+|<<Multiply Transform,multiply>>|Run a SQL query with the primary key to create multiple rows.
+|<<Remove Transform,remove>>|Remove the column from the row.
+|<<Substring Transform,substring>>|Copy a substring of the value.
+|<<Value Map Transform,valueMap>>|Map from one literal value to another.
+|<<Variable Transform,variable>>|Use a built-in variable value.
+
+|===
 
 ===== Copy Transform
 

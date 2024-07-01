@@ -65,7 +65,7 @@ endif::pro[]
 Update First:: This option overrides the default behavior for an Insert operation. Instead of attempting the Insert first, 
 SymmetricDS will always perform an Update first and then fall back to an Insert if that fails. Note that, by default, fall 
 back logic always applies for Insert and Updates. Here, all you a specifying is whether to always do an Update first, which 
-can have performance benefits under certain situations you may run into (see <<Operation Change>>).
+can have performance benefits under certain situations you may run into.
 
 Delete Action:: An action to take upon delete of a row. 
 
@@ -74,7 +74,7 @@ Delete Action:: An action to take upon delete of a row.
 
 |DEL_ROW|The delete results in a delete of the row as specified by the pk columns defined in the transformation configuration.
 
-|UPDATE_COL|The delete results in an update operation (see <<Operation Change>>) on the target which updates the specific rows and columns based 
+|UPDATE_COL|The delete results in an update operation on the target which updates the specific rows and columns based 
 on the defined transformation.
 
 |NONE|The delete results in no target changes.
@@ -98,24 +98,6 @@ target operation that takes place. You may control the order in which the target
 configuration parameter defined for each source-target table combination. This might be important, for example, 
 if the foreign key relationships on the target tables require you to execute the transformations in a particular order.
 
-
-.Some Transform Use Cases
-====
-
-* Copy a column from a source table to two (or more) target table columns,
-
-* Merge columns from two or more source tables into a single row in a target table,
-
-* Insert constants in columns in target tables based on source data synchronizations,
-
-* Insert multiple rows of data into a single target table based on one change in a source table,
-
-* Apply a Bean Shell script to achieve a custom transform when loading into the target database.
-
-====
-
-NOTE: You must define columns for the transformation that are sufficient to fill in any primary key or other required data in the target table.
-
 ifndef::pro[]
 .Transform Example
 ====
@@ -134,8 +116,8 @@ insert into SYM_TRANSFORM_TABLE (
 ====
 endif::pro[]
 
-include::{includedir}/configuration/transforms/operation-change.ad[]
 include::{includedir}/configuration/transforms/columns.ad[]
+include::{includedir}/configuration/transforms/data-format.ad[]
 include::{includedir}/configuration/transforms/types.ad[]
 include::{includedir}/configuration/transforms/virtual-columns.ad[]
 
