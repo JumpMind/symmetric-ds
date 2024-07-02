@@ -129,7 +129,10 @@ public class TableSelectionLayout extends VerticalLayout {
         listOfTablesGrid.addColumn(table -> table);
         this.addAndExpand(listOfTablesGrid);
         schemaSelect.addValueChangeListener(event -> refreshTableOfTables());
-        catalogSelect.addValueChangeListener(event -> refreshSchemas());
+        catalogSelect.addValueChangeListener(event -> {
+            refreshSchemas();
+            refreshTableOfTables();
+        });
         Button selectAllLink = new Button("Select All");
         selectAllLink.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY_INLINE);
         selectAllLink.addClickListener((event) -> selectAll());
