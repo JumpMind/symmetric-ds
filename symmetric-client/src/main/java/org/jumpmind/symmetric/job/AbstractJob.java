@@ -49,7 +49,7 @@ import org.springframework.scheduling.support.SimpleTriggerContext;
 
 @ManagedResource(description = "The management interface for a job")
 abstract public class AbstractJob implements Runnable, IJob {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected Logger log = LoggerFactory.getLogger(getClass());
     protected String jobName;
     private JobDefinition jobDefinition;
     private AtomicBoolean paused = new AtomicBoolean(false);
