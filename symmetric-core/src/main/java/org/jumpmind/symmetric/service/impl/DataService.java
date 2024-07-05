@@ -2632,6 +2632,7 @@ public class DataService extends AbstractService implements IDataService {
         }
         if (data != null) {
             data.putCsvData(CsvData.ROW_DATA, rowData);
+            data.setDataEventType(DataEventType.INSERT);
             reloadMissingForeignKeyRows(data, batchId, nodeId, -1, rowNumber);
         } else {
             log.warn("Unable to correct missing foreign key error in batch {}-{} row {} because no data found", nodeId, batchId, rowNumber);
