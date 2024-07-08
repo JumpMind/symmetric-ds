@@ -1607,6 +1607,31 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     }
 
     @Override
+    public Collection<ForeignKey> getForeignKeys(String catalog, String schema, String tableName) {
+        try {
+            JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
+            return sqlTemplate.execute(new IConnectionCallback<Collection<ForeignKey>>() {
+                public Collection<ForeignKey> execute(Connection connection) throws SQLException {
+                    DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
+                    metaData.setMetaData(connection.getMetaData());
+                    metaData.setCatalog(catalog);
+                    metaData.setSchemaPattern(schema);
+                    metaData.setTableTypes(null);
+                    return readForeignKeys(connection, metaData, tableName);
+                }
+            });
+        } catch (SqlException e) {
+            if (e.getMessage() != null && StringUtils.containsIgnoreCase(e.getMessage(), "does not exist")) {
+                return null;
+            } else {
+                log.error("Failed to get metadata for {}, because {} {}",
+                        Table.getFullyQualifiedTableName(catalog, schema, tableName), e.getClass().getName(), e.getMessage());
+                throw e;
+            }
+        }
+    }
+
+    @Override
     public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding) {
         List<TableRow> fkDepList = new ArrayList<TableRow>();
         for (TableRow tableRow : tableRows) {

@@ -96,6 +96,11 @@ public class KafkaDdlReader implements IDdlReader {
     }
 
     @Override
+    public Collection<ForeignKey> getForeignKeys(String catalog, String schema, String tableName) {
+        return null;
+    }
+
+    @Override
     public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding) {
         return null;
     }

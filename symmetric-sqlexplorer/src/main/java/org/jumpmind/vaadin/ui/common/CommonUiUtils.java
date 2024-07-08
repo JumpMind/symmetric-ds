@@ -51,6 +51,7 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -175,18 +176,25 @@ public final class CommonUiUtils {
                     layout.add(vLayout);
                 }
             }
-            Icon closeIcon = new Icon(VaadinIcon.CLOSE_CIRCLE_O);
-            closeIcon.setSize("36px");
-            closeIcon.getStyle().set("min-width", "36px");
-            closeIcon.addClickListener(event -> notification.close());
-            closeIcon.addClickShortcut(Key.ESCAPE);
-            layout.add(closeIcon);
-            layout.setVerticalComponentAlignment(Alignment.START, closeIcon);
+            Icon closeIcon = new Icon(VaadinIcon.CLOSE_SMALL);
+            closeIcon.setSize("16px");
+            closeIcon.getStyle().set("position", "absolute").set("top", "50%").set("left", "50%").set("transform",
+                    "translate(-50%, -50%)");
+            Div closeDiv = new Div(closeIcon);
+            closeDiv.setHeight("24px");
+            closeDiv.setWidth("24px");
+            closeDiv.getStyle().set("min-height", "24px").set("min-width", "24px").set("position", "relative")
+                    .set("-webkit-border-radius", "50%").set("-moz-border-radius", "50%").set("border-radius", "50%")
+                    .set("background-color", "var(--lumo-contrast-10pct)").set("cursor", "pointer");
+            closeDiv.addClickListener(event -> notification.close());
+            layout.add(closeDiv);
+            layout.setVerticalComponentAlignment(Alignment.START, closeDiv);
             if (shortcutToggler != null) {
                 notification.addOpenedChangeListener(event -> shortcutToggler.accept(event.isOpened()));
             }
             notification.setPosition(Position.MIDDLE);
             notification.setDuration(-1);
+            Shortcuts.addShortcutListener(notification, () -> notification.close(), Key.ESCAPE);
             notification.open();
         }
     }
