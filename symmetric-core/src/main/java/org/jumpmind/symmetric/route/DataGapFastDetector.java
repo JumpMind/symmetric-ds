@@ -36,6 +36,7 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -46,6 +47,8 @@ import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessType;
+import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -61,6 +64,7 @@ import org.slf4j.LoggerFactory;
 public class DataGapFastDetector extends DataGapDetector implements ISqlRowMapper<Long> {
     private static final Logger log = LoggerFactory.getLogger(DataGapFastDetector.class);
     protected IContextService contextService;
+    protected IClusterService clusterService;
     protected List<DataGap> gaps;
     protected DataGap lastGap;
     protected List<Long> dataIds;
@@ -80,7 +84,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     protected static Map<String, Boolean> firstTime = Collections.synchronizedMap(new HashMap<String, Boolean>());
 
     public DataGapFastDetector(IDataService dataService, IParameterService parameterService, IContextService contextService,
-            ISymmetricDialect symmetricDialect, IRouterService routerService, IStatisticManager statisticManager, INodeService nodeService) {
+            ISymmetricDialect symmetricDialect, IRouterService routerService, IStatisticManager statisticManager, INodeService nodeService,
+            IClusterService clusterService) {
         this.dataService = dataService;
         this.parameterService = parameterService;
         this.contextService = contextService;
@@ -88,6 +93,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         this.symmetricDialect = symmetricDialect;
         this.statisticManager = statisticManager;
         this.nodeService = nodeService;
+        this.clusterService = clusterService;
     }
 
     @Override
@@ -246,7 +252,11 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 if (lastDataId != -1 && !lastGap && lastDataId + dataIdIncrementBy <= dataGap.getEndId()) {
                     addDataGap(new DataGap(lastDataId + dataIdIncrementBy, dataGap.getEndId(), currentDate));
                 }
+                if (Thread.interrupted()) {
+                    throw new SymmetricException("Thread received interrupt");
+                }
                 if (System.currentTimeMillis() - printStats > 30000) {
+                    clusterService.refreshLock(ClusterConstants.ROUTE);
                     log.info("The data gap detection has been running for {}ms, detected {} rows over a gap range of {}, "
                             + "found {} new gaps, found old {} gaps, and checked data in {} gaps", new Object[] { System.currentTimeMillis() - ts,
                                     dataIdCount, rangeChecked, gapsAdded.size(), gapsDeleted.size(), expireChecked });

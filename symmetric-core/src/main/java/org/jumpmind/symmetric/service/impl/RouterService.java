@@ -157,7 +157,7 @@ public class RouterService extends AbstractService implements IRouterService, IN
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
         gapDetector = new DataGapFastDetector(engine.getDataService(), parameterService, engine.getContextService(),
-                symmetricDialect, this, engine.getStatisticManager(), engine.getNodeService());
+                symmetricDialect, this, engine.getStatisticManager(), engine.getNodeService(), engine.getClusterService());
     }
 
     /**

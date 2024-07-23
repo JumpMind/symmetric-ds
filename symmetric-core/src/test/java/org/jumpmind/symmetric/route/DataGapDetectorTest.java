@@ -49,12 +49,14 @@ import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRouterService;
+import org.jumpmind.symmetric.service.impl.ClusterService;
 import org.jumpmind.symmetric.service.impl.ContextService;
 import org.jumpmind.symmetric.service.impl.DataService;
 import org.jumpmind.symmetric.service.impl.ExtensionService;
@@ -86,6 +88,7 @@ public class DataGapDetectorTest {
     IRouterService routerService;
     IStatisticManager statisticManager;
     INodeService nodeService;
+    IClusterService clusterService;
     DataGapFastDetector detector;
     ThreadLocalRandom rand = ThreadLocalRandom.current();
 
@@ -127,13 +130,14 @@ public class DataGapDetectorTest {
         when(statisticManager.newProcessInfo((ProcessInfoKey) any())).thenReturn(new ProcessInfo());
         nodeService = mock(NodeService.class);
         when(nodeService.findIdentity()).thenReturn(new Node(NODE_ID, NODE_GROUP_ID));
+        clusterService = mock(ClusterService.class);
         detector = newGapDetector();
         detector.setFullGapAnalysis(false);
     }
 
     protected DataGapFastDetector newGapDetector() {
         return new DataGapFastDetector(dataService, parameterService, contextService, symmetricDialect, routerService,
-                statisticManager, nodeService);
+                statisticManager, nodeService, clusterService);
     }
 
     protected void runGapDetector(List<DataGap> dataGaps, List<Long> dataIds, boolean isAllDataRead) {
