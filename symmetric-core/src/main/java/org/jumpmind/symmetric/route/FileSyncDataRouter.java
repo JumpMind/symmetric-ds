@@ -52,69 +52,73 @@ public class FileSyncDataRouter extends AbstractDataRouter implements IBuiltInEx
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
             Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
         Set<String> nodeIds = new HashSet<String>();
-        IFileSyncService fileSyncService = engine.getFileSyncService();
-        IRouterService routerService = engine.getRouterService();
-        Map<String, String> newData = getNewDataAsString(null, dataMetaData,
-                engine.getSymmetricDialect());
-        String triggerId = newData.get("TRIGGER_ID");
-        String routerId = newData.get("ROUTER_ID");
-        String sourceNodeId = newData.get("LAST_UPDATE_BY");
-        String lastEventType = newData.get("LAST_EVENT_TYPE");
-        String relativeDir = newData.get("RELATIVE_DIR");
-        // Append calculated top relative dir to old data and new data
-        // Append top relative dir column name to list of columns in sym_file_snapshot trigger history
-        if (triggerId == null) {
-            Map<String, String> oldData = getOldDataAsString(null, dataMetaData,
-                    engine.getSymmetricDialect());
-            triggerId = oldData.get("TRIGGER_ID");
-            routerId = oldData.get("ROUTER_ID");
-            sourceNodeId = oldData.get("LAST_UPDATE_BY");
-            lastEventType = oldData.get("LAST_EVENT_TYPE");
-            relativeDir = oldData.get("RELATIVE_DIR");
-        }
-        String topRelativeDir = getTopRelativeDir(relativeDir);
-        addTopRelativeDirToData(topRelativeDir, dataMetaData);
-        LastEventType eventType = LastEventType.fromCode(lastEventType);
-        FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter(
-                triggerId, routerId, false);
-        if (fileTriggerRouter != null && fileTriggerRouter.isEnabled()) {
-            if (fileTriggerRouter.getRouter().getNodeGroupLink()
-                    .equals(triggerRouter.getRouter().getNodeGroupLink())) {
-                if (eventType == null || eventType == LastEventType.DELETE
-                        && fileTriggerRouter.getFileTrigger().isSyncOnDelete()
-                        || eventType == LastEventType.MODIFY
-                                && fileTriggerRouter.getFileTrigger().isSyncOnModified()
-                        || eventType == LastEventType.CREATE
-                                && fileTriggerRouter.getFileTrigger().isSyncOnCreate()) {
-                    Router router = fileTriggerRouter.getRouter();
-                    Map<String, IDataRouter> routers = routerService.getRouters();
-                    IDataRouter dataRouter = null;
-                    if (StringUtils.isNotBlank(router.getRouterType())) {
-                        dataRouter = routers.get(router.getRouterType());
-                    }
-                    if (dataRouter == null) {
-                        dataRouter = routers.get("default");
-                    }
-                    if (context instanceof ChannelRouterContext) {
-                        ((ChannelRouterContext) context).addUsedDataRouter(dataRouter);
-                    }
-                    dataMetaData.setRouter(router);
-                    Set<String> dataRouterNodeIds = dataRouter.routeToNodes(context, dataMetaData, nodes, false,
-                            false, triggerRouter);
-                    if (dataRouterNodeIds != null) {
-                        nodeIds.addAll(dataRouterNodeIds);
-                    }
-                    nodeIds.remove(sourceNodeId);
-                }
-            }
+        if (initialLoad && initialLoadSelectUsed) {
+            nodeIds = toNodeIds(nodes, null);
         } else {
-            if (context != null && context.getChannel() != null && !context.getChannel().isFileSyncFlag()) {
-                log.error("One or more file triggers use the '{}' channel, which is not configured for file sync.",
-                        context.getChannel().getChannelId());
+            IFileSyncService fileSyncService = engine.getFileSyncService();
+            IRouterService routerService = engine.getRouterService();
+            Map<String, String> newData = getNewDataAsString(null, dataMetaData,
+                    engine.getSymmetricDialect());
+            String triggerId = newData.get("TRIGGER_ID");
+            String routerId = newData.get("ROUTER_ID");
+            String sourceNodeId = newData.get("LAST_UPDATE_BY");
+            String lastEventType = newData.get("LAST_EVENT_TYPE");
+            String relativeDir = newData.get("RELATIVE_DIR");
+            // Append calculated top relative dir to old data and new data
+            // Append top relative dir column name to list of columns in sym_file_snapshot trigger history
+            if (triggerId == null) {
+                Map<String, String> oldData = getOldDataAsString(null, dataMetaData,
+                        engine.getSymmetricDialect());
+                triggerId = oldData.get("TRIGGER_ID");
+                routerId = oldData.get("ROUTER_ID");
+                sourceNodeId = oldData.get("LAST_UPDATE_BY");
+                lastEventType = oldData.get("LAST_EVENT_TYPE");
+                relativeDir = oldData.get("RELATIVE_DIR");
+            }
+            String topRelativeDir = getTopRelativeDir(relativeDir);
+            addTopRelativeDirToData(topRelativeDir, dataMetaData);
+            LastEventType eventType = LastEventType.fromCode(lastEventType);
+            FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter(
+                    triggerId, routerId, false);
+            if (fileTriggerRouter != null && fileTriggerRouter.isEnabled()) {
+                if (fileTriggerRouter.getRouter().getNodeGroupLink()
+                        .equals(triggerRouter.getRouter().getNodeGroupLink())) {
+                    if (eventType == null || eventType == LastEventType.DELETE
+                            && fileTriggerRouter.getFileTrigger().isSyncOnDelete()
+                            || eventType == LastEventType.MODIFY
+                                    && fileTriggerRouter.getFileTrigger().isSyncOnModified()
+                            || eventType == LastEventType.CREATE
+                                    && fileTriggerRouter.getFileTrigger().isSyncOnCreate()) {
+                        Router router = fileTriggerRouter.getRouter();
+                        Map<String, IDataRouter> routers = routerService.getRouters();
+                        IDataRouter dataRouter = null;
+                        if (StringUtils.isNotBlank(router.getRouterType())) {
+                            dataRouter = routers.get(router.getRouterType());
+                        }
+                        if (dataRouter == null) {
+                            dataRouter = routers.get("default");
+                        }
+                        if (context instanceof ChannelRouterContext) {
+                            ((ChannelRouterContext) context).addUsedDataRouter(dataRouter);
+                        }
+                        dataMetaData.setRouter(router);
+                        Set<String> dataRouterNodeIds = dataRouter.routeToNodes(context, dataMetaData, nodes, false,
+                                false, triggerRouter);
+                        if (dataRouterNodeIds != null) {
+                            nodeIds.addAll(dataRouterNodeIds);
+                        }
+                        nodeIds.remove(sourceNodeId);
+                    }
+                }
             } else {
-                log.error(
-                        "Could not find a trigger router with a trigger_id of {} and a router_id of {}.  The file snapshot will not be routed",
-                        triggerId, routerId);
+                if (context != null && context.getChannel() != null && !context.getChannel().isFileSyncFlag()) {
+                    log.error("One or more file triggers use the '{}' channel, which is not configured for file sync.",
+                            context.getChannel().getChannelId());
+                } else {
+                    log.error(
+                            "Could not find a trigger router with a trigger_id of {} and a router_id of {}.  The file snapshot will not be routed",
+                            triggerId, routerId);
+                }
             }
         }
         return nodeIds;
