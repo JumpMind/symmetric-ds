@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.cache.ICacheManager;
 import org.jumpmind.symmetric.common.Constants;
@@ -48,6 +49,7 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
 
 /**
  * @see IConfigurationService
@@ -136,6 +138,21 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             }
         }
         return masterCount >= 1 && otherCount == 0;
+    }
+
+    @Override
+    public boolean isUseSourceStagingEnabled(String nodeId) {
+        if (isUseSourceStagingEnabled(parameterService)) {
+            ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByNodeId(nodeId);
+            return targetEngine != null && isUseSourceStagingEnabled(targetEngine.getParameterService());
+        }
+        return false;
+    }
+
+    private boolean isUseSourceStagingEnabled(IParameterService parameterService) {
+        return parameterService.is(ParameterConstants.INCOMING_BATCHES_USE_SOURCE_STAGING) && !parameterService.is(ParameterConstants.NODE_OFFLINE)
+                && parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED) && (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)
+                        || parameterService.is(ParameterConstants.CLUSTER_STAGING_ENABLED));
     }
 
     public boolean refreshFromDatabase() {

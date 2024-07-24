@@ -137,4 +137,6 @@ public interface IConfigurationService {
     public boolean containsMasterToMaster();
 
     public boolean isMasterToMasterOnly();
+
+    public boolean isUseSourceStagingEnabled(String nodeId);
 }

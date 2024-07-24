@@ -29,6 +29,8 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.AbstractSymmetricEngine;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -48,6 +50,7 @@ public class SimpleStagingDataWriter {
     protected final static int MAX_WRITE_LENGTH = 32768;
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected CsvReader reader;
+    protected ISymmetricEngine engine;
     protected IStagingManager stagingManager;
     protected IProtocolDataWriterListener[] listeners;
     protected long memoryThresholdInBytes;
@@ -61,12 +64,13 @@ public class SimpleStagingDataWriter {
     protected long invalidLineCount;
     protected Exception exception;
 
-    public SimpleStagingDataWriter(ProcessInfo processInfo, BufferedReader reader, IStagingManager stagingManager, String category, long memoryThresholdInBytes,
+    public SimpleStagingDataWriter(ProcessInfo processInfo, BufferedReader reader, ISymmetricEngine engine, String category, long memoryThresholdInBytes,
             BatchType batchType, String targetNodeId, DataContext context, IProtocolDataWriterListener... listeners) {
         this.reader = new CsvReader(reader);
         this.reader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
         this.reader.setSafetySwitch(false);
-        this.stagingManager = stagingManager;
+        this.engine = engine;
+        this.stagingManager = engine.getStagingManager();
         this.memoryThresholdInBytes = memoryThresholdInBytes;
         this.category = category;
         this.batchType = batchType;
@@ -173,12 +177,11 @@ public class SimpleStagingDataWriter {
                     processInfo.incrementBatchCount();
                     processInfo.setCurrentDataCount(0);
                     processInfo.setTotalDataCount(0);
-                    String location = batch.getStagedLocation();
                     if (resource != null) {
                         resource.close();
                         resource.setState(State.DONE);
                     }
-                    resource = stagingManager.find(category, location, batch.getBatchId());
+                    resource = getStagedResource();
                     if (resource == null || resource.getState() == State.CREATE) {
                         if (resource != null) {
                             resource.delete();
@@ -337,6 +340,21 @@ public class SimpleStagingDataWriter {
         if (line != null) {
             log.debug("Received: {}", line);
         }
+    }
+
+    protected IStagedResource getStagedResource() {
+        IStagedResource resource = null;
+        boolean isSourceStagingEnabled = engine.getConfigurationService().isUseSourceStagingEnabled(batch.getSourceNodeId());
+        ISymmetricEngine sourceEngine = isSourceStagingEnabled ? AbstractSymmetricEngine.findEngineByNodeId(batch.getSourceNodeId()) : null;
+        if (sourceEngine != null) {
+            Batch outgoingBatch = new Batch(BatchType.EXTRACT, batch.getBatchId(), batch.getChannelId(), batch.getBinaryEncoding(),
+                    batch.getSourceNodeId(), batch.getTargetNodeId(), batch.isCommon());
+            resource = sourceEngine.getStagingManager().find(Constants.STAGING_CATEGORY_OUTGOING, outgoingBatch.getStagedLocation(), batch.getBatchId());
+        }
+        if (resource == null) {
+            resource = stagingManager.find(category, batch.getStagedLocation(), batch.getBatchId());
+        }
+        return resource;
     }
 
     static class TableLine {

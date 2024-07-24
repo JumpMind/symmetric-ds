@@ -217,6 +217,10 @@ public class MultiBatchStagingWriter implements IDataWriter {
                 outgoingBatch.getNodeId());
         if (!batchFromDatabase.getStatus().equals(Status.OK) && !batchFromDatabase.getStatus().equals(Status.IG)) {
             outgoingBatch.setStatus(Status.NE);
+            if (outgoingBatch.getDataRowCount() == 0) {
+                outgoingBatch.setDataRowCount(batchFromDatabase.getDataRowCount());
+                outgoingBatch.setDataInsertRowCount(batchFromDatabase.getDataInsertRowCount());
+            }
             outgoingBatch.setExtractRowCount(outgoingBatch.getDataRowCount());
             outgoingBatch.setExtractInsertRowCount(outgoingBatch.getDataInsertRowCount());
             checkSendChildRequests(batchFromDatabase, resource, stats);

@@ -96,7 +96,6 @@ import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
-import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.SimpleStagingDataWriter;
 import org.jumpmind.symmetric.io.stage.StagingLowFreeSpace;
 import org.jumpmind.symmetric.load.ConfigurationChangedDatabaseWriterFilter;
@@ -158,7 +157,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private INodeService nodeService;
     private ITransformService transformService;
     private ILoadFilterService loadFilterService;
-    private IStagingManager stagingManager;
     private IExtensionService extensionService;
     private INodeCommunicationService nodeCommunicationService;
     private ISymmetricEngine engine = null;
@@ -175,7 +173,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.nodeService = engine.getNodeService();
         this.transformService = engine.getTransformService();
         this.loadFilterService = engine.getLoadFilterService();
-        this.stagingManager = engine.getStagingManager();
         this.setSqlMap(new DataLoaderServiceSqlMap(platform, createSqlReplacementTokens()));
         extensionService = engine.getExtensionService();
         extensionService.addExtensionPoint(new DefaultDataLoaderFactory(engine));
@@ -569,7 +566,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         sourceNode.getNodeId(), listener, executor);
                 SimpleStagingDataWriter stageWriter = null;
                 try {
-                    stageWriter = new SimpleStagingDataWriter(transferInfo, transport.openReader(), stagingManager, Constants.STAGING_CATEGORY_INCOMING,
+                    stageWriter = new SimpleStagingDataWriter(transferInfo, transport.openReader(), engine, Constants.STAGING_CATEGORY_INCOMING,
                             memoryThresholdInBytes, BatchType.LOAD, targetNodeId, ctx, loadListener);
                     stageWriter.process();
                 } finally {

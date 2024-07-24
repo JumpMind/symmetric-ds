@@ -214,6 +214,7 @@ final public class ParameterConstants {
     @Deprecated
     public final static String INCOMING_BATCH_DELETE_ON_LOAD = "incoming.batch.delete.on.load";
     public final static String INCOMING_BATCH_RECORD_OK_ENABLED = "incoming.batches.record.ok.enabled";
+    public final static String INCOMING_BATCHES_USE_SOURCE_STAGING = "incoming.batches.use.source.staging";
     public final static String DATA_LOADER_ENABLED = "dataloader.enable";
     public final static String DATA_LOADER_APPLY_CHANGES_ONLY = "dataloader.apply.changes.only";
     public final static String DATA_LOADER_IGNORE_MISSING_TABLES = "dataloader.ignore.missing.tables";

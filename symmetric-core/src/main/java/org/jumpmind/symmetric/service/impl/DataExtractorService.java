@@ -1239,6 +1239,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 }
                             }
                         }
+                    } else if (!isRetry && engine.getConfigurationService().isUseSourceStagingEnabled(targetNode.getNodeId())) {
+                        ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByNodeId(targetNode.getNodeId());
+                        if (targetEngine != null) {
+                            isRetry = true;
+                            if (currentBatch.getSentCount() == 1) {
+                                statisticManager.incrementDataSent(currentBatch.getChannelId(), currentBatch.getDataRowCount());
+                                statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), extractedBatch.getFile().length());
+                            }
+                        }
                     }
                     Channel channel = configurationService.getChannel(currentBatch.getChannelId());
                     DataContext ctx = new DataContext();
