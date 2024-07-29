@@ -50,8 +50,10 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -88,6 +90,8 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
     /* The regular expression pattern for the ISO times. */
     private Pattern isoTimePattern = Pattern.compile("'(\\d{2}:\\d{2}:\\d{2})'");
 
+    private Set<String> userDefinedDataTypes;
+    
     public MsSqlDdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
@@ -258,6 +262,17 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
             throws SQLException {
         Column column = super.readColumn(metaData, values);
         String defaultValue = column.getDefaultValue();
+        
+        if (userDefinedDataTypes == null) {
+        	userDefinedDataTypes = new HashSet<String>();
+        	JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
+            String sql = "select name from sys.types where is_user_defined = 1";
+            List<Row> rows = sqlTemplate.query(sql);
+            for (Row r : rows) {
+            	userDefinedDataTypes.add(r.getString("name"));
+            }
+        }
+        
         if (column.isGenerated() && defaultValue == null) {
             JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
             String sql = "SELECT definition\n"
@@ -336,6 +351,12 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
             } else if (column.getJdbcTypeName().equalsIgnoreCase("date") || column.getJdbcTypeName().equalsIgnoreCase("smalldatetime")) {
                 removeColumnSize(column);
             }
+        }
+        
+        if (userDefinedDataTypes.size() > 0) {
+        	if(userDefinedDataTypes.contains(column.getJdbcTypeName())) {
+        		removeColumnSize(column);
+        	}
         }
         return column;
     }
