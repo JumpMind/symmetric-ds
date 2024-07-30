@@ -62,6 +62,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
     protected IDataWriter currentDataWriter;
     protected List<OutgoingBatch> batches;
     protected List<OutgoingBatch> finishedBatches;
+    protected Map<Batch, Statistics> finishedStats;
     protected IStagingManager stagingManager;
     protected String sourceNodeId;
     protected DataContext context;
@@ -75,6 +76,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
     protected Map<Long, OutgoingBatch> childBatches;
     protected long memoryThresholdInBytes;
     protected boolean isRestarted;
+    protected boolean synchronizeJobs;
 
     public MultiBatchStagingWriter(ISymmetricEngine engine, ExtractRequest request, List<ExtractRequest> childRequests, String sourceNodeId,
             List<OutgoingBatch> batches, long maxBatchSize, ProcessInfo processInfo, boolean isRestarted) {
@@ -85,12 +87,14 @@ public class MultiBatchStagingWriter implements IDataWriter {
         this.maxBatchSize = maxBatchSize;
         this.batches = new ArrayList<OutgoingBatch>(batches);
         this.finishedBatches = new ArrayList<OutgoingBatch>(batches.size());
+        this.finishedStats = new HashMap<Batch, Statistics>();
         this.processInfo = processInfo;
         this.startTime = this.ts = System.currentTimeMillis();
         this.childRequests = childRequests;
         this.memoryThresholdInBytes = engine.getParameterService().getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
         this.childBatches = new HashMap<Long, OutgoingBatch>();
         this.isRestarted = isRestarted;
+        this.synchronizeJobs = engine.getParameterService().is(ParameterConstants.SYNCHRONIZE_ALL_JOBS);
     }
 
     @Override
@@ -116,15 +120,27 @@ public class MultiBatchStagingWriter implements IDataWriter {
             end(batch, false);
             log.debug("Batch {} is empty", new Object[] { batch.getNodeBatchId() });
             Statistics stats = closeCurrentDataWriter();
-            checkSend(stats);
+            if (!synchronizeJobs) {
+                checkSend(stats);
+            }
         }
         closeCurrentDataWriter();
+        if (synchronizeJobs) {
+            for (OutgoingBatch outgoingBatch : finishedBatches) {
+                this.outgoingBatch = outgoingBatch;
+                batch = new Batch(BatchType.EXTRACT, outgoingBatch.getBatchId(), outgoingBatch.getChannelId(),
+                        engine.getSymmetricDialect().getBinaryEncoding(), sourceNodeId, outgoingBatch.getNodeId(), false);
+                checkSend(finishedStats.get(batch));
+            }
+        }
     }
 
     private Statistics closeCurrentDataWriter() {
         Statistics stats = null;
         if (currentDataWriter != null) {
             stats = currentDataWriter.getStatistics().get(batch);
+            finishedBatches.add(outgoingBatch);
+            finishedStats.put(batch, stats);
             outgoingBatch.setByteCount(stats.get(DataWriterStatisticConstants.BYTECOUNT));
             outgoingBatch.setExtractMillis(System.currentTimeMillis() - batch.getStartTime().getTime());
             currentDataWriter.close();
@@ -134,7 +150,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
                 if (resource != null) {
                     resource.delete();
                 }
-            } else {
+            } else if (!synchronizeJobs) {
                 checkSend(stats);
             }
         }
@@ -295,7 +311,6 @@ public class MultiBatchStagingWriter implements IDataWriter {
 
     protected void nextBatch() {
         if (outgoingBatch != null) {
-            finishedBatches.add(outgoingBatch);
             rowCount += outgoingBatch.getDataRowCount();
             byteCount += outgoingBatch.getByteCount();
             engine.getStatisticManager().incrementDataBytesExtracted(outgoingBatch.getChannelId(), outgoingBatch.getByteCount());

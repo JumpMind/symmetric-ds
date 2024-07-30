@@ -63,7 +63,7 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
                 "select source_node_group_id, target_node_group_id, data_event_action, sync_config_enabled, last_update_time, last_update_by, create_time from   "
                         + "  $(node_group_link) where source_node_group_id = ?                   ");
 
-        putSql("countGroupLinksForSql","select count(*) from $(node_group_link) where source_node_group_id = ? and target_node_group_id = ?");
+        putSql("countGroupLinksForSql","select count(*) from $(node_group_link) where source_node_group_id = ? and target_node_group_id = ? and data_event_action != ?");
         
         putSql("isChannelInUseSql", "select count(*) from $(trigger) where channel_id = ?   ");
 

@@ -330,7 +330,7 @@
 
 	<table name="test_transform">
 		<column name="id" type="INTEGER" required="true"
-			autoIncrement="true" primaryKey="true" />
+			primaryKey="true" />
 		<column name="data" type="VARCHAR" size="50" />
 		<column name="insert_only" type="INTEGER" />
 	</table>

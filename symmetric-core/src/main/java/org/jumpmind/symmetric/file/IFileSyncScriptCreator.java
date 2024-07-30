@@ -18,14 +18,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.service;
+package org.jumpmind.symmetric.file;
 
-import org.jumpmind.symmetric.model.TableReloadStatus;
+import org.jumpmind.extension.IExtensionPoint;
 
-public interface IInitialLoadService {
-    public void queueLoads(boolean force);
-
-    public void cancelLoad(TableReloadStatus status);
-
-    public void cancelAllLoadsForTarget(String targetNodeId);
+public interface IFileSyncScriptCreator extends IExtensionPoint {
+    public FileSyncZipScript create(String targetNode);
 }

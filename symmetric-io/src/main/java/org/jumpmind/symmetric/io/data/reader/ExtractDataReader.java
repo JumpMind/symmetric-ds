@@ -136,6 +136,9 @@ public class ExtractDataReader implements IDataReader {
             }
             if (data == null) {
                 closeCurrentSource();
+            } else if (data.getDataEventType() == null) {
+                // empty batch from reload
+                data = null;
             } else {
                 Table targetTable = this.currentSource.getTargetTable();
                 if (targetTable != null && targetTable.equals(this.table)) {

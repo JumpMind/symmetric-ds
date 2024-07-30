@@ -562,16 +562,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
 
     public void save(ISqlTransaction sqlTransaction, FileSnapshot snapshot) {
         snapshot.setLastUpdateTime(new Date());
-        if (0 >= sqlTransaction.prepareAndExecute(
-                getSql("updateFileSnapshotSql"),
-                new Object[] { snapshot.getLastEventType().getCode(), snapshot.getCrc32Checksum(),
-                        snapshot.getFileSize(), snapshot.getFileModifiedTime(),
-                        snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(), snapshot.getChannelId(),
-                        snapshot.getReloadChannelId(),
-                        snapshot.getTriggerId(), snapshot.getRouterId(), snapshot.getRelativeDir(),
-                        snapshot.getFileName() }, new int[] { Types.VARCHAR, Types.NUMERIC,
-                                Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR })) {
+        if (0 >= executeUpdate(sqlTransaction, snapshot)) {
             snapshot.setCreateTime(snapshot.getLastUpdateTime());
             sqlTransaction.prepareAndExecute(
                     getSql("insertFileSnapshotSql"),
@@ -593,6 +584,22 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                     snapshot.getFileName() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR });
         }
+    }
+    
+    private int executeUpdate(ISqlTransaction sqlTransaction, FileSnapshot snapshot) {
+    	if (snapshot.getLastEventType().equals(LastEventType.CREATE)) {
+    		return 0;
+    	}
+    	return sqlTransaction.prepareAndExecute(
+                getSql("updateFileSnapshotSql"),
+                new Object[] { snapshot.getLastEventType().getCode(), snapshot.getCrc32Checksum(),
+                        snapshot.getFileSize(), snapshot.getFileModifiedTime(),
+                        snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(), snapshot.getChannelId(),
+                        snapshot.getReloadChannelId(),
+                        snapshot.getTriggerId(), snapshot.getRouterId(), snapshot.getRelativeDir(),
+                        snapshot.getFileName() }, new int[] { Types.VARCHAR, Types.NUMERIC,
+                                Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
     }
 
     synchronized public RemoteNodeStatuses pullFilesFromNodes(boolean force) {

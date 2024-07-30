@@ -137,8 +137,6 @@ public interface IDataService {
             Map<Integer, ExtractRequest> extractRequests,
             IReloadGenerator reloadGenerator);
 
-    public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
-
     public long insertReloadEvent(ISqlTransaction transaction, Node targetNode,
             TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect, boolean isLoad, long loadId, String createBy,
             Status status, long estimatedBatchRowCount);

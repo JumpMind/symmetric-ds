@@ -440,7 +440,7 @@ abstract public class AbstractTriggerTemplate {
         // We are replacing this template variable with other template variables
         // Only replace this special variable with a template variable for the following combined case
         // Otherwise, just replace with $(channelExpression) and let normal template variable replacement do its thing.
-        if (trigger.getChannelId() == Constants.CHANNEL_DYNAMIC && dml.getDmlType() == DmlType.UPDATE
+        if (trigger.getChannelId().equals(Constants.CHANNEL_DYNAMIC) && dml.getDmlType() == DmlType.UPDATE
                 && TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT).equals(table.getName())) {
             ddl = FormatUtils.replace("specialSqlServerSybaseChannelExpression", "$(oldTriggerValue).$(oldColumnPrefix)" + symmetricDialect.getPlatform()
                     .alterCaseToMatchDatabaseDefaultCase("channel_id"), ddl);

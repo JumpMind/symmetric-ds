@@ -67,7 +67,7 @@ public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
         }
         int typeCode = column.getMappedTypeCode();
         if (defaultValue != null && (typeCode == Types.TIMESTAMP || typeCode == ColumnTypes.TIMESTAMPTZ
-                || typeCode == ColumnTypes.TIMESTAMPLTZ) && !column.allPlatformColumnNamesContain("mssql")) {
+                || typeCode == ColumnTypes.TIMESTAMPLTZ || typeCode == Types.DATE) && !column.allPlatformColumnNamesContain("mssql")) {
             String uppercaseValue = defaultValueStr.trim().toUpperCase();
             String nativeType = getNativeType(column);
             boolean isDateTimeOffset = nativeType != null && nativeType.toUpperCase().contains("OFFSET");

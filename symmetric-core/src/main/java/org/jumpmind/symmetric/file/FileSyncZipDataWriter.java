@@ -321,11 +321,19 @@ public class FileSyncZipDataWriter implements IDataWriter {
     }
 
     protected FileSyncZipScript createFileSyncZipScript(String targetNodeId) {
+        FileSyncZipScript script = null;
         if (isCClient(targetNodeId)) {
-            return new BashFileSyncZipScript();
+            script = new BashFileSyncZipScript();
         } else {
-            return new BeanShellFileSyncZipScript(extensionService);
+            for (IFileSyncScriptCreator creator : extensionService.getExtensionPointList(IFileSyncScriptCreator.class)) {
+                script = creator.create(targetNodeId);
+                break;
+            }
+            if (script == null) {
+                script = new BeanShellFileSyncZipScript(extensionService);
+            }
         }
+        return script;
     }
 
     protected boolean isCClient(String nodeId) {

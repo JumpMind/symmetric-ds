@@ -1979,7 +1979,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         PlatformColumn platformTargetColumn = targetColumn.findPlatformColumn(databaseName);
         if (platformTargetColumn != null) {
             targetSize = String.valueOf(platformTargetColumn.getSize());
-            targetScale = platformTargetColumn.getDecimalDigits();
+            targetScale = platformTargetColumn.getDecimalDigits() == -1 ? 0 : platformTargetColumn.getDecimalDigits();
             if (scaleMatters) {
                 targetSize += "," + targetScale;
             }
@@ -1998,7 +1998,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         PlatformColumn platformSourceColumn = sourceColumn.findPlatformColumn(databaseName);
         if (platformSourceColumn != null) {
             sourceSize = String.valueOf(platformSourceColumn.getSize());
-            sourceScale = platformSourceColumn.getDecimalDigits();
+            sourceScale = platformSourceColumn.getDecimalDigits() == -1 ? 0 : platformSourceColumn.getDecimalDigits();
             if (scaleMatters) {
                 sourceSize += "," + sourceScale;
             }

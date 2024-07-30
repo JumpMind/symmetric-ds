@@ -727,9 +727,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                             commit(true, newTransaction);
                         }
                         newTransaction.prepare(sql);
-                        if (log.isDebugEnabled()) {
-                            log.debug("About to run: {}", sql);
-                        }
+                        log.info("Running SQL event: {}", sql);
                         count += newTransaction.prepareAndExecute(sql);
                         if (log.isDebugEnabled()) {
                             log.debug("{} rows updated when running: {}", count, sql);
@@ -739,9 +737,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                             commit(true);
                         }
                         prepare(sql, data);
-                        if (log.isDebugEnabled()) {
-                            log.debug("About to run: {}", sql);
-                        }
+                        log.info("Running SQL event: {}", sql);
                         count += prepareAndExecute(sql, data);
                         if (log.isDebugEnabled()) {
                             log.debug("{} rows updated when running: {}", count, sql);
