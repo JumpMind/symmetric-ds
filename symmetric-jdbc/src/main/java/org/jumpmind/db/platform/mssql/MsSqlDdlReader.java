@@ -62,6 +62,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.CompressionTypes;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.PlatformIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
@@ -266,11 +267,13 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
         if (userDefinedDataTypes == null) {
         	userDefinedDataTypes = new HashSet<String>();
         	JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
-            String sql = "select name from sys.types where is_user_defined = 1";
-            List<Row> rows = sqlTemplate.query(sql);
-            for (Row r : rows) {
-            	userDefinedDataTypes.add(r.getString("name"));
-            }
+        	if (sqlTemplate.getDatabaseMajorVersion() >= 9) {
+            	String sql = "select name from sys.types where is_user_defined = 1";
+	            List<Row> rows = sqlTemplate.query(sql);
+	            for (Row r : rows) {
+	            	userDefinedDataTypes.add(r.getString("name"));
+	            }
+        	}
         }
         
         if (column.isGenerated() && defaultValue == null) {
@@ -355,7 +358,10 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
         
         if (userDefinedDataTypes.size() > 0) {
         	if(userDefinedDataTypes.contains(column.getJdbcTypeName())) {
-        		removeColumnSize(column);
+        		removePlatformColumnSize(column);
+        		for (PlatformColumn pc : column.getPlatformColumns().values()) {
+        			pc.setUserDefinedType(true);
+        		}
         	}
         }
         return column;
