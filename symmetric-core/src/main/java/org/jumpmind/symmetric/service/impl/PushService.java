@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchAck;
@@ -180,6 +181,9 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     cumulativeDataProcessed = status.getDataProcessed();
                     cumulativeBatchesProcessed = status.getBatchesProcessed();
                     status.resetTableSummary();
+                    if (Thread.interrupted()) {
+                        throw new SymmetricException("Thread was interrupted");
+                    }
                 } while (((immediatePushIfDataFound && lastBatchesProcessed > 0) || lastReloadBatchesProcessed > 0) && !status.failed());
             } finally {
                 startTimesOfNodesBeingPushedTo.remove(node.getNodeId());

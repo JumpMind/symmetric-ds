@@ -23,14 +23,15 @@ package org.jumpmind.symmetric.service.impl;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
-import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -162,6 +163,9 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                 cumulativeDataProcessed = status.getDataProcessed();
                 cumulativeBatchesProcessed = status.getBatchesProcessed();
                 status.resetTableSummary();
+                if (Thread.interrupted()) {
+                    throw new SymmetricException("Thread was interrupted");
+                }
             } while ((immediatePullIfDataFound || nodeService.isDataLoadStarted()) && !status.failed()
                     && lastBatchesProcessed > 0);
         } else {
