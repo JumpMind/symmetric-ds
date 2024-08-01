@@ -350,6 +350,10 @@ public class SimpleStagingDataWriter {
             Batch outgoingBatch = new Batch(BatchType.EXTRACT, batch.getBatchId(), batch.getChannelId(), batch.getBinaryEncoding(),
                     batch.getSourceNodeId(), batch.getTargetNodeId(), batch.isCommon());
             resource = sourceEngine.getStagingManager().find(Constants.STAGING_CATEGORY_OUTGOING, outgoingBatch.getStagedLocation(), batch.getBatchId());
+            if (resource == null) {
+                outgoingBatch.setCommon(true);
+                resource = sourceEngine.getStagingManager().find(Constants.STAGING_CATEGORY_OUTGOING, outgoingBatch.getStagedLocation(), batch.getBatchId());
+            }
         }
         if (resource == null) {
             resource = stagingManager.find(category, batch.getStagedLocation(), batch.getBatchId());
