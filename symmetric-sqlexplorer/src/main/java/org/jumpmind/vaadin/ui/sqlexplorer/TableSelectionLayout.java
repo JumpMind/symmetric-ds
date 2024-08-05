@@ -96,7 +96,6 @@ public class TableSelectionLayout extends VerticalLayout {
         }
         schemaSelect = new ComboBox<String>("Schema");
         schemaChooserLayout.add(schemaSelect);
-        refreshSchemas();
         schemaChooserLayout.addAndExpand(new Span());
         filterField = new TextField();
         filterField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
@@ -128,8 +127,13 @@ public class TableSelectionLayout extends VerticalLayout {
         });
         listOfTablesGrid.addColumn(table -> table);
         this.addAndExpand(listOfTablesGrid);
+        refreshSchemas();
+        
         schemaSelect.addValueChangeListener(event -> refreshTableOfTables());
-        catalogSelect.addValueChangeListener(event -> refreshSchemas());
+        catalogSelect.addValueChangeListener(event -> {
+            refreshSchemas();
+            refreshTableOfTables();
+        });
         Button selectAllLink = new Button("Select All");
         selectAllLink.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY_INLINE);
         selectAllLink.addClickListener((event) -> selectAll());
@@ -162,6 +166,10 @@ public class TableSelectionLayout extends VerticalLayout {
 
     protected void refreshSchemas() {
         List<String> schemas = getSchemas();
+        if (schemas != null && schemas.size() == 0) {
+        	refreshTableOfTables();
+        	return;
+        }
         schemaSelect.setItems(schemas);
         if (selectedTablesSet.iterator().hasNext()) {
             schemaSelect.setValue(selectedTablesSet.iterator().next().getSchema());
@@ -172,7 +180,7 @@ public class TableSelectionLayout extends VerticalLayout {
 
     protected void refreshTableOfTables() {
         List<String> tables = getTables();
-        String filter = filterField.getValue();
+        String filter = filterField == null ? "" : filterField.getValue();
         List<String> filteredTables = new ArrayList<String>();
         for (String table : tables) {
             if ((excludedTables == null || !excludedTables.contains(table.toLowerCase())) && display(getSelectedCatalog(), getSelectedSchema(), table)) {

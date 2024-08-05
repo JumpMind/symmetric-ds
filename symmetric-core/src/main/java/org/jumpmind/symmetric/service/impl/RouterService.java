@@ -63,6 +63,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
@@ -200,12 +201,16 @@ public class RouterService extends AbstractService implements IRouterService, IN
                 long startTime = System.currentTimeMillis();
                 try {
                     if (firstTimeCheck) {
+                        ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(new ProcessInfoKey(
+                                identity.getNodeId(), null, ProcessType.GAP_DETECT));
+                        processInfo.setStatus(ProcessStatus.QUERYING);
                         engine.getOutgoingBatchService().updateAbandonedRoutingBatches();
                         if (engine.getDataService().fixLastDataGap()) {
                             engine.getContextService().save(ContextConstants.ROUTING_FULL_GAP_ANALYSIS, Boolean.TRUE.toString());
                         }
                         firstTimeCheck = false;
                         engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
+                        processInfo.setStatus(ProcessStatus.OK);
                     }
                     do {
                         long ts = System.currentTimeMillis();

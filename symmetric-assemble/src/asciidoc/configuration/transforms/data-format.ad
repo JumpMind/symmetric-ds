@@ -1,0 +1,22 @@
+
+==== Data Format
+
+Transforms have access to the change data in character form using a standard set of data formats.
+Modification to change data should also be character data following the format for the target field.
+
+.Data Formats
+[cols="10%,90%", options="header"]
+|===
+|Type|Format
+
+|binary|Hex or Base64 encoding, depending on the source database dialect.  Use context.getBatch().encodeBinary() and context.getBatch().decodeBinary().
+|boolean|Either 1 or 0. (Some databases require a small integer to represent boolean.)
+|date|Formatted as *yyyy-MM-dd*.
+|float|Decimal digits with a decimal point expressed as one period or comma.  A negative (-) sign and an exponent (e or E) are also allowed.
+|geometry|Well known text (WKT) format
+|integer|Decimal digits.  A negative (-) sign is also allowed.
+|numeric|Decimal digits with a decimal point expressed as one period or comma.  A negative (-) sign is also allowed.
+|time|Formatted as time *HH:mm:ss.S* or a timestamp *yyyy-MM-dd HH:mm:ss.S*.
+|timestamp|Formatted as *yyyy-MM-dd HH:mm:ss.S*.
+
+|===

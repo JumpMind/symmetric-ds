@@ -167,7 +167,7 @@ abstract public class AbstractTriggerTemplate {
                         columnList.append(",");
                     }
                     String columnExpression = null;
-                    if (useTriggerTemplateForColumnTemplatesDuringInitialLoad(column) && !column.getJdbcTypeName().equalsIgnoreCase("unitext")) {
+                    if (useTriggerTemplateForColumnTemplatesDuringInitialLoad(column) && (!isUniTextColumn(column))) {
                         ColumnString columnString = fillOutColumnTemplate(tableAlias,
                                 tableAlias, "", table, column, DataEventType.INSERT, false, channel,
                                 triggerRouter.getTrigger(), true);
@@ -221,6 +221,10 @@ abstract public class AbstractTriggerTemplate {
         return sql;
     }
 
+    public boolean isUniTextColumn(Column column) {
+    	return column.getJdbcTypeName() == null ? false : column.getJdbcTypeName().equalsIgnoreCase("unitext");
+    }
+    
     public boolean[] getColumnPositionUsingTemplate(Table originalTable, TriggerHistory triggerHistory) {
         IParameterService parameterService = symmetricDialect.getParameterService();
         boolean concatInCsv = parameterService.is(ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED);
@@ -436,7 +440,7 @@ abstract public class AbstractTriggerTemplate {
         // We are replacing this template variable with other template variables
         // Only replace this special variable with a template variable for the following combined case
         // Otherwise, just replace with $(channelExpression) and let normal template variable replacement do its thing.
-        if (trigger.getChannelId() == Constants.CHANNEL_DYNAMIC && dml.getDmlType() == DmlType.UPDATE
+        if (trigger.getChannelId().equals(Constants.CHANNEL_DYNAMIC) && dml.getDmlType() == DmlType.UPDATE
                 && TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT).equals(table.getName())) {
             ddl = FormatUtils.replace("specialSqlServerSybaseChannelExpression", "$(oldTriggerValue).$(oldColumnPrefix)" + symmetricDialect.getPlatform()
                     .alterCaseToMatchDatabaseDefaultCase("channel_id"), ddl);

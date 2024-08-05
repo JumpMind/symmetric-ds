@@ -494,6 +494,7 @@ public class TriggerRouterServiceTest {
         when(platform.getDefaultSchema()).thenReturn("schem");
         when(symmetricDialect.getPlatform().getSqlTemplate()).thenReturn(sqlTemplate);
         when(symmetricDialect.getPlatform().getSqlTemplateDirty()).thenReturn(sqlTemplate);
+        when(symmetricDialect.getTargetDialect()).thenReturn(symmetricDialect);
         when(parameterService.getInt("data.flush.jdbc.batch.size")).thenReturn(10);
         when(sqlTemplate.startSqlTransaction()).thenReturn(sqlTransaction);
         when(sqlTemplate.update(ArgumentMatchers.anyString(), (Object[]) ArgumentMatchers.any(), (int[]) ArgumentMatchers.any()))

@@ -1327,8 +1327,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 char[] buffer = new char[bufferSize];
                 boolean batchStatsWritten = false;
                 String prevBuffer = "";
+                long batchStatusUpdateMillis = parameterService.getLong(ParameterConstants.OUTGOING_BATCH_UPDATE_STATUS_MILLIS);
+                boolean is39orNewer = nodeService.findNode(batch.getNodeId(), true).isVersionGreaterThanOrEqualTo(3, 9, 0);
                 while ((numCharsRead = reader.read(buffer)) != -1) {
-                    if (!batchStatsWritten && nodeService.findNode(batch.getNodeId(), true).isVersionGreaterThanOrEqualTo(3, 9, 0)) {
+                    if (!batchStatsWritten && is39orNewer) {
                         batchStatsWritten = writeBatchStats(writer, buffer, numCharsRead, prevBuffer, batch);
                         prevBuffer = new String(buffer);
                     } else {
@@ -1338,7 +1340,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (Thread.currentThread().isInterrupted()) {
                         throw new IoException("This thread was interrupted");
                     }
-                    long batchStatusUpdateMillis = parameterService.getLong(ParameterConstants.OUTGOING_BATCH_UPDATE_STATUS_MILLIS);
                     if (System.currentTimeMillis() - ts > batchStatusUpdateMillis && batch.getStatus() != Status.SE && batch.getStatus() != Status.RS) {
                         changeBatchStatus(Status.SE, batch, mode);
                     }

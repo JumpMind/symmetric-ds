@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.ext;
 import java.util.List;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.kafka.KafkaPlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -62,6 +63,9 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
 
     @Override
     public boolean isPlatformSupported(IDatabasePlatform platform) {
+        if (platform instanceof KafkaPlatform) {
+            return false;
+        }
         return true;
     }
 

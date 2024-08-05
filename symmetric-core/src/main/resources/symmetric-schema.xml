@@ -407,7 +407,7 @@
         <column name="data_rows_to_send_count" type="INTEGER" default="0" description="The number of of rows to replicated in batches.  This field is updated as part of the heartbeat job if the heartbeat.update.node.with.batch.status property is set to true." />
         <column name="data_rows_loaded_count" type="INTEGER" default="0" description="The number of rows that has been successfully replicated since last purge.  This field is updated as part of the heartbeat job if the heartbeat.update.node.with.batch.status property is set to true." />
         <column name="oldest_load_time" type="TIMESTAMP" description="The oldest recorded sync time since the last purge." />
-        <column name="most_recent_active_table" type="VARCHAR" description="The most active table to sync recently (time based on last 5 minutes and doubles until a match is found or until 80 min.))" />
+        <column name="most_recent_active_table" type="VARCHAR" size="255" description="The most active table to sync recently (time based on last 5 minutes and doubles until a match is found or until 80 min.))" />
         <column name="purge_outgoing_last_run_ms" type="BIGINT" default="0" description="The number of milliseconds that the purge job took on the last run.  This field is updated as part of the heartbeat job if the heartbeat.update.node.with.batch.status property is set to true." />
         <column name="purge_outgoing_last_finish" type="TIMESTAMP" description="The time the purge outgoing last finished succesfully.  This field is updated as part of the heartbeat job if the heartbeat.update.node.with.batch.status property is set to true." />
         <column name="purge_outgoing_average_ms" type="BIGINT" description="The average time the purge outgoing has been run.  This field is updated as part of the heartbeat job if the heartbeat.update.node.with.batch.status property is set to true." />
@@ -560,14 +560,14 @@
             description="" />
         <column name="restarted" type="BIGINT" default="0" required="true"
             description="Indicate that a restart occurred during this period." />
-        <column name="nodes_pulled" type="BIGINT" default="0" description="" />
-        <column name="total_nodes_pull_time" type="BIGINT" default="0" description="" />
-        <column name="nodes_pushed" type="BIGINT" default="0" description="" />
-        <column name="total_nodes_push_time" type="BIGINT" default="0" description="" />
-        <column name="nodes_rejected" type="BIGINT" default="0" description="" />
-        <column name="nodes_registered" type="BIGINT" default="0" description="" />
-        <column name="nodes_loaded" type="BIGINT" default="0" description="" />
-        <column name="nodes_disabled" type="BIGINT" default="0" description="" />
+        <column name="nodes_pulled" type="BIGINT" default="0" description="Number of nodes that pulled from this host after passing checks for authentication and concurrency." />
+        <column name="total_nodes_pull_time" type="BIGINT" default="0" description="Total time spent handling pull requests on this host in milliseconds." />
+        <column name="nodes_pushed" type="BIGINT" default="0" description="Number of nodes that pushed to this host after passing checks for authentication and concurrency." />
+        <column name="total_nodes_push_time" type="BIGINT" default="0" description="Total time spent handling push requests on this host in milliseconds." />
+        <column name="nodes_rejected" type="BIGINT" default="0" description="Number of attempts by nodes to push or pull with this host that were rejected because no concurrent workers were available or the push reservation was not found." />
+        <column name="nodes_registered" type="BIGINT" default="0" description="Number of nodes that registered with this host, either a first-time registration or a subsequent re-registration." />
+        <column name="nodes_loaded" type="BIGINT" default="0" description="Number of full or partial load requests that were created on this host to send loads to target nodes." />
+        <column name="nodes_disabled" type="BIGINT" default="0" description="Number of offline nodes that had their sync enabled flag set to false on this host by the watch dog job." />
         <column name="purged_data_rows" type="BIGINT" default="0" description="" />
         <column name="purged_data_event_rows" type="BIGINT" default="0" description="" />
         <column name="purged_stranded_data_rows" type="BIGINT" default="0" description="" />

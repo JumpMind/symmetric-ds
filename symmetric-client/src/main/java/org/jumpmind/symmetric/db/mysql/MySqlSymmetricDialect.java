@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -38,6 +40,7 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
@@ -303,5 +306,29 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER,
                 PermissionType.CREATE_ROUTINE };
         return permissions;
+    }
+    
+    @Override
+    public Database readSymmetricSchemaFromXml() {
+        Database database = super.readSymmetricSchemaFromXml();
+        if (Version.isOlderThanVersion(getProductVersion(), "5.5")) {
+            String prefix = parameterService.getTablePrefix() + "_";
+            reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_SNAPSHOT, "relative_dir", "55");
+            reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_SNAPSHOT, "file_name", "55");
+            reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_INCOMING, "relative_dir", "55");
+            reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_INCOMING, "file_name", "55");
+            
+        }
+        return database;
+    }
+    
+    protected void reconfigureTableColumn(Database database, String prefix, String tableName, String columnName, String size) {
+        Table table = database.findTable(prefix + tableName);
+        if (table != null) {
+            Column column = table.findColumn(columnName);
+            if (column != null) {
+                column.setSize(size);
+            }
+        }
     }
 }

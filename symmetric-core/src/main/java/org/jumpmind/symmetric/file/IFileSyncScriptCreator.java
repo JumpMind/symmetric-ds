@@ -20,25 +20,8 @@
  */
 package org.jumpmind.symmetric.file;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.jumpmind.extension.IExtensionPoint;
-import org.jumpmind.symmetric.model.FileSnapshot;
-import org.jumpmind.symmetric.model.FileTriggerRouter;
-import org.jumpmind.symmetric.model.ProcessInfo;
 
-public interface IFileSourceTracker extends IExtensionPoint {
-    public boolean handlesDir(String baseDir);
-
-    public boolean checkSourceDir(String baseDir);
-
-    public DirectorySnapshot trackChanges(FileTriggerRouter fileTriggerRouter, DirectorySnapshot lastSnapshot, ProcessInfo processInfo, boolean useCrc);
-
-    public boolean handlesFile(File file);
-
-    public File createSourceFile(FileSnapshot snapshot);
-
-    public InputStream getInputStream(File file) throws IOException;
+public interface IFileSyncScriptCreator extends IExtensionPoint {
+    public FileSyncZipScript create(String targetNode);
 }

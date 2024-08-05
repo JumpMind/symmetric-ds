@@ -190,13 +190,12 @@ public class ColumnsAccordingToTriggerHistory {
             if (table == null) {
                 table = lookupTable(platform, catalogName, schemaName, tableName, triggerHistory, addMissingColumns);
                 sourceTableMap.put(baseTableName, table);
+            } else {
+                table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
+                        triggerHistory.getParsedPkColumnNames(), true, addMissingColumns);
             }
             if (table != null) {
-                try {
-                    table = (Table) table.clone();
-                    table.setName(tableName);
-                } catch (CloneNotSupportedException e) {
-                }
+                table.setName(tableName);
             }
         }
         return table;

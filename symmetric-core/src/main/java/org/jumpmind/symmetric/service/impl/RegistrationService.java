@@ -200,6 +200,13 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         RegistrationStatus.RR, remoteHost, remoteAddress));
                 throw new RegistrationRedirectException(redirectUrl);
             }
+            if (StringUtils.isBlank(nodePriorToRegistration.getNodeGroupId())) {
+                RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration, RegistrationStatus.ER, remoteHost, remoteAddress);
+                req.setErrorMessage("Missing node group ID in request from remote address " + remoteAddress);
+                saveRegistrationRequest(req);
+                log.warn(req.getErrorMessage());
+                return processedNode;
+            }
             /*
              * Check to see if there is a link that exists to service the node that is requesting registration
              */
@@ -276,9 +283,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
              */
             if ((security != null && security.getInitialLoadTime() == null) || isRequestedRegistration) {
                 if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
+                    engine.getInitialLoadService().cancelAllLoadsForTarget(nodeId);
+                    log.info("Auto reload for target node {}", nodeId);
                     nodeService.setInitialLoadEnabled(nodeId, true, false, -1, "registration");
                 }
                 if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
+                    log.info("Auto reverse reload from source node {}", nodeId);
                     nodeService.setReverseInitialLoadEnabled(nodeId, true, false, -1, "registration");
                 }
             }
@@ -363,10 +373,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
         /**
          * Lookup existing registration requests to update the attempt count. We previously did this in SQL on the update, but as400 v5 didn't like that
          */
+        String externalId = request.getExternalId() == null ? "" : request.getExternalId();
+        String nodeGroupId = request.getNodeGroupId() == null ? "" : request.getNodeGroupId();
         boolean foundOne = false;
         List<RegistrationRequest> requests = getRegistrationRequests(true, true);
         for (RegistrationRequest registrationRequest : requests) {
-            if (registrationRequest.getNodeGroupId().equals(request.getNodeGroupId()) && registrationRequest.getExternalId().equals(request.getExternalId())) {
+            if (registrationRequest.getNodeGroupId().equals(nodeGroupId) && registrationRequest.getExternalId().equals(externalId)) {
                 request.setAttemptCount(registrationRequest.getAttemptCount() + 1);
                 if (registrationRequest.getStatus().equals(RegistrationStatus.RJ) && request.getStatus().equals(RegistrationStatus.RQ)) {
                     request.setStatus(RegistrationStatus.RJ);
@@ -375,8 +387,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 break;
             }
         }
-        String externalId = request.getExternalId() == null ? "" : request.getExternalId();
-        String nodeGroupId = request.getNodeGroupId() == null ? "" : request.getNodeGroupId();
         int count = 0;
         if (foundOne) {
             count = sqlTemplate.update(
@@ -694,6 +704,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     protected synchronized void reOpenRegistration(String nodeId, String remoteHost, String remoteAddress, Date notBefore, Date notAfter,
             boolean forceNewPassword) {
+        Node me = nodeService.findIdentity();
+        if (me != null && parameterService.isRegistrationServer() && me.getNodeId().equals(nodeId)) {
+            throw new IllegalStateException("Cannot open registration for a registration server");
+        }
         Node node = nodeService.findNode(nodeId);
         NodeSecurity security = nodeService.findNodeSecurity(nodeId);
         String password = null;
@@ -766,6 +780,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
         Node me = nodeService.findIdentity();
         if (me != null) {
             String nodeId = extensionService.getExtensionPoint(INodeIdCreator.class).generateNodeId(node, remoteHost, remoteAddress);
+            if (parameterService.isRegistrationServer() && me.getNodeId().equals(nodeId)) {
+                throw new IllegalStateException("Cannot open registration for a registration server");
+            }
+            if (StringUtils.isBlank(node.getNodeGroupId())) {
+                throw new IllegalStateException("Missing node group ID in request from remote address " + remoteAddress);
+            }
             Node existingNode = nodeService.findNode(nodeId);
             if (existingNode == null) {
                 node.setNodeId(nodeId);

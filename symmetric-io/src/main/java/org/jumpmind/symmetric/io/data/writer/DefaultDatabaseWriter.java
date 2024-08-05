@@ -727,9 +727,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                             commit(true, newTransaction);
                         }
                         newTransaction.prepare(sql);
-                        if (log.isDebugEnabled()) {
-                            log.debug("About to run: {}", sql);
-                        }
+                        log.info("Running SQL event: {}", sql);
                         count += newTransaction.prepareAndExecute(sql);
                         if (log.isDebugEnabled()) {
                             log.debug("{} rows updated when running: {}", count, sql);
@@ -739,9 +737,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                             commit(true);
                         }
                         prepare(sql, data);
-                        if (log.isDebugEnabled()) {
-                            log.debug("About to run: {}", sql);
-                        }
+                        log.info("Running SQL event: {}", sql);
                         count += prepareAndExecute(sql, data);
                         if (log.isDebugEnabled()) {
                             log.debug("{} rows updated when running: {}", count, sql);
@@ -1227,6 +1223,9 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                             }
                         }
                     }
+                    if (table.hasGeneratedColumns()) {
+                    	removeGeneratedColumns(table);
+                    }
                     putTableInCache(tableNameKey, table);
                 }
             } catch (SqlException sqle) {
@@ -1238,7 +1237,19 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         }
         return table;
     }
-
+    
+    protected void removeGeneratedColumns(Table table) {
+    	List<Column> adjustedColumns = new ArrayList<Column>();
+    	for (int i = 0; i < table.getColumnCount(); i++) {
+    		Column col = table.getColumn(i);
+    		if (!col.isGenerated()) {
+    			adjustedColumns.add(col);
+    		}
+    	}
+    	table.removeAllColumns();
+    	table.addColumns(adjustedColumns);
+    }
+    
     protected String getTableKey(Table table) {
         return table.getTableKey();
     }

@@ -58,6 +58,7 @@ allprojects {
 		    property "sonar.projectKey", "JumpMind_SymmetricDS_Pro"
 	        property 'sonar.coverage.jacoco.xmlReportPaths', "${rootDir}/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml"
 	     	property "sonar.coverage.exclusions", "**/*.ad, **/*.js, **/*.c"
+	     	property "sonar.exclusions","**/ui/**"
 	    	property "sonar.scm.disabled", "true"    
 		}
 	}
@@ -298,7 +299,7 @@ subprojects { subproject ->
         postgresqlVersion =  '42.7.3'
         hsqldbVersion = '2.7.0'
         sqliteVersion = '3.45.3.0'
-        mssqlVersion = '12.6.1.jre8'
+        mssqlVersion = '12.6.3.jre8'
         jakartaMailVersion = '2.0.3'
         jdomVersion = '2.0.6.1'
         jaxbVersion = '4.0.5'

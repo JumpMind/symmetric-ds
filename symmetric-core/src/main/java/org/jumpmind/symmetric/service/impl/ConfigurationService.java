@@ -108,7 +108,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         boolean masterToMaster = false;
         Node me = nodeService.findIdentity();
         if (me != null) {
-            masterToMaster = getNodeGroupLinkFor(me.getNodeGroupId(), me.getNodeGroupId(), false) != null;
+            NodeGroupLink nodeGroupLink = getNodeGroupLinkFor(me.getNodeGroupId(), me.getNodeGroupId(), false);
+            masterToMaster = nodeGroupLink != null && nodeGroupLink.getDataEventAction() != NodeGroupLinkAction.R;
         }
         return masterToMaster;
     }
@@ -118,7 +119,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         boolean masterToMasterOnly = false;
         Node me = nodeService.findIdentity();
         if (me != null) {
-            masterToMasterOnly = sqlTemplate.queryForInt(getSql("countGroupLinksForSql"), me.getNodeGroupId(), me.getNodeGroupId()) == 1;
+            masterToMasterOnly = sqlTemplate.queryForInt(getSql("countGroupLinksForSql"), me.getNodeGroupId(), me.getNodeGroupId(),
+                    NodeGroupLinkAction.R.name()) == 1;
         }
         return masterToMasterOnly;
     }
@@ -130,7 +132,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         int otherCount = 0;
         if (me != null) {
             for (NodeGroupLink nodeGroupLink : getNodeGroupLinksFor(me.getNodeGroupId(), false)) {
-                if (nodeGroupLink.getTargetNodeGroupId().equals(me.getNodeGroupId())) {
+                if (nodeGroupLink.getTargetNodeGroupId().equals(me.getNodeGroupId()) &&
+                        nodeGroupLink.getDataEventAction() != NodeGroupLinkAction.R) {
                     masterCount++;
                 } else {
                     otherCount++;

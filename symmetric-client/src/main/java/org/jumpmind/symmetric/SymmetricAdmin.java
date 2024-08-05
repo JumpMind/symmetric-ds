@@ -713,7 +713,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         ITriggerRouterService triggerService = getSymmetricEngine().getTriggerRouterService();
         StringBuilder sqlBuffer = new StringBuilder();
         if (args.size() == 0) {
-            triggerService.syncTriggers(sqlBuffer, genAlways);
+            triggerService.syncTriggers(file != null ? sqlBuffer : null, genAlways);
         } else {
             for (String tablename : args) {
                 Table table = platform.getTableFromCache(catalogName, schemaName, tablename, true);

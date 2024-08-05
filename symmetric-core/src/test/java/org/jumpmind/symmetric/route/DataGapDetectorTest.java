@@ -116,12 +116,14 @@ public class DataGapDetectorTest {
         when(parameterService.getInt(ParameterConstants.ROUTING_MAX_GAP_CHANGES)).thenReturn(1000);
         IExtensionService extensionService = mock(ExtensionService.class);
         ISymmetricEngine engine = mock(AbstractSymmetricEngine.class);
+        clusterService = mock(ClusterService.class);
         when(engine.getParameterService()).thenReturn(parameterService);
         when(engine.getStatisticManager()).thenReturn(statisticManager);
         when(engine.getNodeService()).thenReturn(nodeService);
         when(engine.getDataService()).thenReturn(dataService);
         when(engine.getSymmetricDialect()).thenReturn(symmetricDialect);
         when(engine.getExtensionService()).thenReturn(extensionService);
+        when(engine.getClusterService()).thenReturn(clusterService);
         routerService = new RouterService(engine);
         when(engine.getRouterService()).thenReturn(routerService);
         contextService = mock(ContextService.class);
