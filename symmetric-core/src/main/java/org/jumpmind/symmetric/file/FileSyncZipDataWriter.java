@@ -242,10 +242,11 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                 if (file.exists()) {
                                     byteCount += file.length();
                                     ZipEntry entry = new ZipEntry(entryName.toString());
-                                    if(fileTracker == null) {
+                                    if (fileTracker == null) {
                                         BasicFileAttributes attr = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
-                                    // note: as of 8/21 getting the creation time won't work on unix file systems EVEN IF THEY HAVE EXT4
-                                    // you also cannot set the creation time on unix systems (birth date) using setCreationTime, so this only works for windows
+                                        // note: as of 8/21 getting the creation time won't work on unix file systems EVEN IF THEY HAVE EXT4
+                                        // you also cannot set the creation time on unix systems (birth date) using setCreationTime, so this only works for
+                                        // windows
                                         entry.setCreationTime(attr.creationTime());
                                     }
                                     entry.setSize(file.length());

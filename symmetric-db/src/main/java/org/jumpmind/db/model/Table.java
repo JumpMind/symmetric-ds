@@ -665,7 +665,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         }
         return false;
     }
-    
+
     public boolean hasGeneratedColumns() {
         for (Iterator<Column> it = columns.iterator(); it.hasNext();) {
             Column column = (Column) it.next();
