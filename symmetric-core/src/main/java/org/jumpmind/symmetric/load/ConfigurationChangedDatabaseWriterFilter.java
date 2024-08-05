@@ -118,10 +118,6 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
 
     @Override
     public void afterWrite(DataContext context, Table table, CsvData data) {
-        if (!matchesTablePrefix) {
-            return;
-        }
-        helper.handleChange(context, table, data);
         if (data.getDataEventType() == DataEventType.CREATE) {
             @SuppressWarnings("unchecked")
             Set<Table> tables = (Set<Table>) context.get(CTX_KEY_RESYNC_TABLE_NEEDED);
@@ -131,6 +127,10 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             }
             tables.add(table);
         }
+        if (!matchesTablePrefix) {
+            return;
+        }
+        helper.handleChange(context, table, data);
         if (matchesTable(table, TableConstants.SYM_NODE_SECURITY) && data.getDataEventType() == DataEventType.UPDATE) {
             Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
             String initialLoadEnabled = newData.get("INITIAL_LOAD_ENABLED");
