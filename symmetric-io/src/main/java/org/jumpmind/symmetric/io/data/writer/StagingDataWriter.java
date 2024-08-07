@@ -93,6 +93,7 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
 
     @Override
     protected void endBatch(Batch batch) {
+        super.endBatch(batch);
         IStagedResource resource = getStagedResource(batch);
         resource.close();
         flushNodeId = true;

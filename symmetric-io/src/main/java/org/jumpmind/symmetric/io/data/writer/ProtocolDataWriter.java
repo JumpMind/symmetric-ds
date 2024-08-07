@@ -48,6 +48,7 @@ public class ProtocolDataWriter extends AbstractProtocolDataWriter {
 
     @Override
     protected void endBatch(Batch batch) {
+        super.endBatch(batch);
         try {
             writer.flush();
         } catch (IOException e) {

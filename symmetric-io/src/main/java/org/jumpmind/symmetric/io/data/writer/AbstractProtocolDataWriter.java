@@ -48,6 +48,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     protected Map<String, String> processedTables = new HashMap<String, String>();
     protected String delimiter = ",";
     protected boolean flushNodeId = true;
+    protected boolean flushBatchId = true;
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
     protected List<IProtocolDataWriterListener> listeners;
     protected String sourceNodeId;
@@ -91,18 +92,12 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
             if (StringUtils.isNotBlank(sourceNodeId)) {
                 println(CsvConstants.NODEID, sourceNodeId);
             }
-            if (!backwardsCompatible) {
-                printBinary();
-            }
             flushNodeId = false;
         }
         if (!backwardsCompatible && StringUtils.isNotBlank(batch.getChannelId())) {
             println(CsvConstants.CHANNEL, batch.getChannelId());
         }
-        println(CsvConstants.BATCH, Long.toString(batch.getBatchId()));
-        if (backwardsCompatible) {
-            printBinary();
-        }
+        flushBatchId = true;
     }
 
     private void printBinary() {
@@ -112,7 +107,21 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
         }
     }
 
+    private void printBatchIfNeeded() {
+        if (flushBatchId) {
+            if (!backwardsCompatible) {
+                printBinary();
+            }
+            println(CsvConstants.BATCH, Long.toString(batch.getBatchId()));
+            if (backwardsCompatible) {
+                printBinary();
+            }
+            flushBatchId = false;
+        }
+    }
+
     public boolean start(Table table) {
+        printBatchIfNeeded();
         if (!batch.isIgnored()) {
             this.table = table;
             if (!backwardsCompatible) {
@@ -212,6 +221,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     }
 
     final public void end(Batch batch, boolean inError) {
+        printBatchIfNeeded();
         if (batch.isIgnored() && !backwardsCompatible) {
             println(CsvConstants.IGNORE);
         }
@@ -226,7 +236,9 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
         }
     }
 
-    abstract protected void endBatch(Batch batch);
+    protected void endBatch(Batch batch) {
+        printBatchIfNeeded();
+    }
 
     abstract protected void notifyEndBatch(Batch batch, IProtocolDataWriterListener listener);
 
