@@ -24,6 +24,7 @@ import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_INCOMING;
 import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_OUTGOING;
 import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_LOG_MINER;
 import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_BULK_LOAD;
+import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_BULK_EXTRACT;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -122,8 +123,8 @@ public class BatchStagingManager extends StagingManager {
             return shouldCleanIncomingPath(resource, ttlInMs, context, path, resourceIsOld, resourceClearsMinTimeHurdle);
         } else if (path[0].equals(STAGING_CATEGORY_LOG_MINER)) {
             return false;
-        } else if (path[0].equals(STAGING_CATEGORY_BULK_LOAD)) {
-            return false;
+        } else if (path[0].equals(STAGING_CATEGORY_BULK_LOAD) || path[0].equals(STAGING_CATEGORY_BULK_EXTRACT)) {
+            return shouldCleanBulkPath(resource, ttlInMs, context, path, resourceIsOld, resourceClearsMinTimeHurdle);
         } else {
             IBatchStagingExtension ext = (IBatchStagingExtension) context.getContextValue("extension");
             if (ext != null && ext.isValidPath(path[0])) {
@@ -141,6 +142,23 @@ public class BatchStagingManager extends StagingManager {
         Set<Long> outgoingBatches = (Set<Long>) context.getContextValue("outgoingBatches");
         try {
             Long batchId = Long.valueOf(path[path.length - 1].replace("_filesync", ""));
+            if ((resourceClearsMinTimeHurdle && !outgoingBatches.contains(batchId)) || ttlInMs == 0) {
+                return true;
+            }
+        } catch (NumberFormatException e) {
+            if (resourceIsOld || ttlInMs == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected boolean shouldCleanBulkPath(IStagedResource resource, long ttlInMs, StagingPurgeContext context, String[] path,
+            boolean resourceIsOld, boolean resourceClearsMinTimeHurdle) {
+        @SuppressWarnings("unchecked")
+        Set<Long> outgoingBatches = (Set<Long>) context.getContextValue("outgoingBatches");
+        try {
+            Long batchId = Long.valueOf(path[path.length - 1].replaceAll("[^0-9]", ""));
             if ((resourceClearsMinTimeHurdle && !outgoingBatches.contains(batchId)) || ttlInMs == 0) {
                 return true;
             }

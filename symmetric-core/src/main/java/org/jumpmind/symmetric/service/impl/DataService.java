@@ -47,6 +47,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
@@ -61,6 +62,7 @@ import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.db.util.TableRow;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
@@ -79,12 +81,12 @@ import org.jumpmind.symmetric.load.IReloadGenerator;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.load.IReloadVariableFilter;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
-import org.jumpmind.symmetric.model.ExtractRequest.ExtractStatus;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.ExtractRequest;
+import org.jumpmind.symmetric.model.ExtractRequest.ExtractStatus;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
@@ -125,6 +127,96 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
+
+    public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient) {
+        boolean successful = false;
+        if (request != null) {
+            ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+            INodeService nodeService = engine.getNodeService();
+            Node targetNode = nodeService.findNode(request.getTargetNodeId());
+            if (targetNode != null) {
+                TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForCurrentNode(
+                        request.getTriggerId(), request.getRouterId(), false);
+                if (triggerRouter != null) {
+                    Trigger trigger = triggerRouter.getTrigger();
+                    Router router = triggerRouter.getRouter();
+                    NodeGroupLink link = router.getNodeGroupLink();
+                    Node me = nodeService.findIdentity();
+                    if (link.getSourceNodeGroupId().equals(me.getNodeGroupId())) {
+                        if (link.getTargetNodeGroupId().equals(targetNode.getNodeGroupId())) {
+                            TriggerHistory triggerHistory = lookupTriggerHistory(trigger);
+                            ISqlTransaction transaction = null;
+                            try {
+                                transaction = sqlTemplate.startSqlTransaction();
+                                if (parameterService
+                                        .is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
+                                    String overrideDeleteStatement = StringUtils.isNotBlank(request
+                                            .getBeforeCustomSql()) ? request.getBeforeCustomSql()
+                                                    : null;
+                                    insertPurgeEvent(transaction, targetNode, triggerRouter,
+                                            triggerHistory, false, overrideDeleteStatement, -1,
+                                            null);
+                                }
+                                insertReloadEvent(transaction, targetNode, triggerRouter,
+                                        triggerHistory, request.getReloadSelect(), false, -1, null,
+                                        Status.NE, -1);
+                                if (!targetNode.requires13Compatiblity() && deleteAtClient) {
+                                    insertSqlEvent(
+                                            transaction,
+                                            triggerHistory,
+                                            trigger.getChannelId(),
+                                            targetNode,
+                                            String.format(
+                                                    "delete from %s where target_node_id='%s' and source_node_id='%s' and trigger_id='%s' and router_id='%s'",
+                                                    TableConstants
+                                                            .getTableName(
+                                                                    tablePrefix,
+                                                                    TableConstants.SYM_TABLE_RELOAD_REQUEST),
+                                                    request.getTargetNodeId(), request
+                                                            .getSourceNodeId(), request
+                                                                    .getTriggerId(), request.getRouterId()),
+                                            false, -1, null);
+                                }
+                                deleteTableReloadRequest(transaction, request);
+                                transaction.commit();
+                            } catch (Error ex) {
+                                if (transaction != null) {
+                                    transaction.rollback();
+                                }
+                                throw ex;
+                            } catch (RuntimeException ex) {
+                                if (transaction != null) {
+                                    transaction.rollback();
+                                }
+                                throw ex;
+                            } finally {
+                                close(transaction);
+                            }
+                        } else {
+                            log.error(
+                                    "Could not reload table {} for node {} because the router {} target node group id {} did not match",
+                                    new Object[] { trigger.getSourceTableName(), request.getTargetNodeId(),
+                                            request.getRouterId(), link.getTargetNodeGroupId() });
+                        }
+                    } else {
+                        log.error(
+                                "Could not reload table {}  for node {} because the router {} source node group id {} did not match",
+                                new Object[] { trigger.getSourceTableName(), request.getTargetNodeId(), request.getRouterId(),
+                                        link.getSourceNodeGroupId() });
+                    }
+                } else {
+                    log.error(
+                            "Could not reload table for node {} because the trigger router ({}, {}) could not be found",
+                            new Object[] { request.getTargetNodeId(), request.getTriggerId(),
+                                    request.getRouterId() });
+                }
+            } else {
+                log.error("Could not reload table for node {} because the target node could not be found",
+                        request.getTargetNodeId());
+            }
+        }
+        return successful;
+    }
 
     public int cancelTableReloadRequest(TableReloadRequest request) {
         return sqlTemplate.update(
@@ -854,7 +946,7 @@ public class DataService extends AbstractService implements IDataService {
                         log.info("Queueing up " + (isFullLoad ? "an initial" : "a") + " load to node " + targetNode.getNodeId()
                                 + (isChannelLoad ? " for channel " + channelId : ""));
                     } else {
-                        log.info("Queueing up a reverse " + (isFullLoad ? "initial" : "") + " load to node " + targetNode.getNodeId());
+                        log.info("Queueing up a reverse " + (isFullLoad ? "initial " : "partial ") + "load to node " + targetNode.getNodeId());
                     }
                     /*
                      * Outgoing data events are pointless because we are reloading all data
@@ -1442,6 +1534,16 @@ public class DataService extends AbstractService implements IDataService {
         if (extractRequests != null) {
             requests.putAll(extractRequests);
         }
+        boolean canEngineBulkOperation = (engine.getParameterService().is(ParameterConstants.MSSQL_BULK_EXTRACT_USE_BCP) &&
+                engine.getSymmetricDialect().getTargetPlatform().getName().startsWith(DatabaseNamesConstants.MSSQL)) ||
+                (engine.getParameterService().is(ParameterConstants.ASE_BULK_EXTRACT_USE_BCP) &&
+                        engine.getSymmetricDialect().getTargetPlatform().getName().startsWith(DatabaseNamesConstants.ASE));
+        boolean canBulkOperation = canEngineBulkOperation && isLocalNodeUsingBulkLoad(targetNode.getNodeId());
+        boolean canParentBulkOperation = true;
+        if (extractRequests != null && extractRequests.size() > 0) {
+            canParentBulkOperation = canEngineBulkOperation && isLocalNodeUsingBulkLoad(extractRequests.values().iterator().next().getNodeId());
+        }
+        boolean shouldAbandonParent = canParentBulkOperation && !canBulkOperation;
         String sourceNodeId = engine.getNodeService().findIdentity().getNodeId();
         long firstBatchId = 0;
         for (TriggerHistory triggerHistory : triggerHistories) {
@@ -1480,7 +1582,7 @@ public class DataService extends AbstractService implements IDataService {
                         long rowCount = -1;
                         long parentRequestId = 0;
                         ExtractRequest parentRequest = requests.get(triggerHistory.getTriggerHistoryId());
-                        if (parentRequest != null) {
+                        if (parentRequest != null && !shouldAbandonParent) {
                             Router router = engine.getTriggerRouterService().getRouterById(triggerRouter.getRouterId(), false);
                             if (router != null && router.getRouterType().equals("default")) {
                                 parentRequestId = parentRequest.getRequestId();
@@ -1497,8 +1599,13 @@ public class DataService extends AbstractService implements IDataService {
                             if (rowCount > 0) {
                                 numberOfBatches = (long) Math.ceil((rowCount * transformMultiplier) / (channel.getMaxBatchSize() * 1f));
                             }
+                            long maxBatchSize = channel.getMaxBatchSize();
+                            if (canBulkOperation && canParentBulkOperation && channel.getDataLoaderType().equals("bulk")) {
+                                numberOfBatches = 1;
+                                maxBatchSize = rowCount;
+                            }
                             startBatchId = insertRequestedOutgoingBatches(transaction, targetNode, triggerRouter, triggerHistory, selectSql,
-                                    loadId, createBy, reloadChannel, rowCount, channel.getMaxBatchSize(), numberOfBatches);
+                                    loadId, createBy, reloadChannel, rowCount, maxBatchSize, numberOfBatches);
                         } else {
                             startBatchId = insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
                                     selectSql, true, loadId, createBy, Status.LS, null, -1);
@@ -1513,7 +1620,7 @@ public class DataService extends AbstractService implements IDataService {
                                 loadId, sourceNodeId, firstBatchId, endBatchId, numberOfBatches, rowCount);
                         ExtractRequest request = engine.getDataExtractorService().requestExtractRequest(transaction, targetNode.getNodeId(), channel.getQueue(),
                                 triggerRouter, startBatchId, endBatchId, loadId, table.getName(), rowCount, parentRequestId);
-                        if (parentRequestId == 0) {
+                        if (parentRequest == null) {
                             requests.put(triggerHistory.getTriggerHistoryId(), request);
                         }
                     } else {
@@ -1527,7 +1634,7 @@ public class DataService extends AbstractService implements IDataService {
             }
         }
         // Needs to have a "data batch" to give point of reference for setup/finalize batches if no actual data batches
-        if (requests.size() == 0) {
+        if (firstBatchId == 0) {
             long startBatchId = 0;
             if (platform.supportsMultiThreadedTransactions()) {
                 startBatchId = engine.getSequenceService().nextRange(Constants.SEQUENCE_OUTGOING_BATCH, 1);
@@ -1585,6 +1692,15 @@ public class DataService extends AbstractService implements IDataService {
         }
         transformMultiplier = Math.max(1, transformMultiplier);
         return transformMultiplier;
+    }
+
+    protected boolean isLocalNodeUsingBulkLoad(String nodeId) {
+        ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByNodeId(nodeId);
+        boolean isTargetUsingBulkLoad = targetEngine != null &&
+                ((targetEngine.getParameterService().is("mssql.bulk.load.use.bcp") &&
+                        targetEngine.getSymmetricDialect().getTargetPlatform().getName().startsWith(DatabaseNamesConstants.MSSQL)) ||
+                        (targetEngine.getSymmetricDialect().getTargetPlatform().getName().startsWith(DatabaseNamesConstants.ASE)));
+        return isTargetUsingBulkLoad;
     }
 
     private int insertFileSyncBatchForReload(Node targetNode, long loadId, String createBy,

@@ -2022,8 +2022,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected MultiBatchStagingWriter buildMultiBatchStagingWriter(ExtractRequest request, List<ExtractRequest> childRequests, Node sourceNode,
             Node targetNode, List<OutgoingBatch> batches, ProcessInfo processInfo, Channel channel, boolean isRestarted) {
+        boolean isSingleLocalTarget = false;
+        if (childRequests == null || childRequests.size() == 0) {
+            ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByNodeId(request.getNodeId());
+            isSingleLocalTarget = targetEngine != null;
+        }
         MultiBatchStagingWriter multiBatchStatingWriter = new MultiBatchStagingWriter(engine, request, childRequests, sourceNode.getNodeId(),
-                batches, channel.getMaxBatchSize(), processInfo, isRestarted);
+                batches, channel.getMaxBatchSize(), processInfo, isRestarted, isSingleLocalTarget);
         return multiBatchStatingWriter;
     }
 

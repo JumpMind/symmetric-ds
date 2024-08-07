@@ -55,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MultiBatchStagingWriter implements IDataWriter {
+    public static final String CONTEXT_IS_SINGLE_LOCAL_TARGET = "isSingleLocalTarget";
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected ISymmetricEngine engine;
     protected ExtractRequest request;
@@ -76,10 +77,11 @@ public class MultiBatchStagingWriter implements IDataWriter {
     protected Map<Long, OutgoingBatch> childBatches;
     protected long memoryThresholdInBytes;
     protected boolean isRestarted;
+    protected boolean isSingleLocalTarget;
     protected boolean synchronizeJobs;
 
     public MultiBatchStagingWriter(ISymmetricEngine engine, ExtractRequest request, List<ExtractRequest> childRequests, String sourceNodeId,
-            List<OutgoingBatch> batches, long maxBatchSize, ProcessInfo processInfo, boolean isRestarted) {
+            List<OutgoingBatch> batches, long maxBatchSize, ProcessInfo processInfo, boolean isRestarted, boolean isSingleLocalTarget) {
         this.engine = engine;
         this.stagingManager = engine.getStagingManager();
         this.request = request;
@@ -94,12 +96,14 @@ public class MultiBatchStagingWriter implements IDataWriter {
         this.memoryThresholdInBytes = engine.getParameterService().getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
         this.childBatches = new HashMap<Long, OutgoingBatch>();
         this.isRestarted = isRestarted;
+        this.isSingleLocalTarget = isSingleLocalTarget;
         this.synchronizeJobs = engine.getParameterService().is(ParameterConstants.SYNCHRONIZE_ALL_JOBS);
     }
 
     @Override
     public void open(DataContext context) {
         this.context = context;
+        context.put(CONTEXT_IS_SINGLE_LOCAL_TARGET, isSingleLocalTarget);
         nextBatch();
         currentDataWriter = buildWriter();
         currentDataWriter.open(context);

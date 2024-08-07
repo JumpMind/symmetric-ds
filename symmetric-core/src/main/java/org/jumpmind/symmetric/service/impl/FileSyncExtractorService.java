@@ -106,7 +106,7 @@ public class FileSyncExtractorService extends DataExtractorService {
             final Node targetNode,
             List<OutgoingBatch> batches, ProcessInfo processInfo, Channel channel, boolean isRestarted) {
         MultiBatchStagingWriter multiBatchStagingWriter = new MultiBatchStagingWriter(engine, request, childRequests, sourceNode.getNodeId(),
-                batches, channel.getMaxBatchSize(), processInfo, isRestarted) {
+                batches, channel.getMaxBatchSize(), processInfo, isRestarted, false) {
             @Override
             protected IDataWriter buildWriter() {
                 IStagedResource stagedResource = stagingManager.create(
