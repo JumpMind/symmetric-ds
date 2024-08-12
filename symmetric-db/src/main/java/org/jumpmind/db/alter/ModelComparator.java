@@ -164,10 +164,7 @@ public class ModelComparator {
                 ForeignKey sourceFk = sourceTable.getForeignKey(fkIdx);
                 ForeignKey targetFk = findCorrespondingForeignKey(targetTable, sourceFk);
                 if (targetFk == null) {
-                    if (log.isDebugEnabled()) {
-                        log.info(sourceFk + " needs to be removed from table "
-                                + sourceTable.getName());
-                    }
+                    log.info("{} needs to be removed from table {}", sourceFk, sourceTable.getName());
                     changes.add(new RemoveForeignKeyChange(sourceTable, sourceFk));
                 }
             }
@@ -175,10 +172,7 @@ public class ModelComparator {
                 ForeignKey targetFk = targetTable.getForeignKey(fkIdx);
                 ForeignKey sourceFk = findCorrespondingForeignKey(sourceTable, targetFk);
                 if (sourceFk == null) {
-                    if (log.isDebugEnabled()) {
-                        log.info(targetFk + " needs to be created for table "
-                                + sourceTable.getName());
-                    }
+                    log.info("{} needs to be created for table {}", targetFk, sourceTable.getName());
                     /*
                      * we have to use the target table here because the foreign key might reference a new column
                      */
@@ -191,10 +185,7 @@ public class ModelComparator {
                 IIndex sourceIndex = sourceTable.getIndex(indexIdx);
                 IIndex targetIndex = findCorrespondingIndex(targetTable, sourceIndex);
                 if (targetIndex == null) {
-                    if (log.isDebugEnabled()) {
-                        log.info("Index " + sourceIndex.getName() + " needs to be removed from table "
-                                + sourceTable.getName());
-                    }
+                    log.info("Index {} needs to be removed from table {}", sourceIndex.getName(), sourceTable.getName());
                     changes.add(new RemoveIndexChange(sourceTable, sourceIndex));
                 }
             }
@@ -202,10 +193,7 @@ public class ModelComparator {
                 IIndex targetIndex = targetTable.getIndex(indexIdx);
                 IIndex sourceIndex = findCorrespondingIndex(sourceTable, targetIndex);
                 if (sourceIndex == null) {
-                    if (log.isDebugEnabled()) {
-                        log.info("Index " + targetIndex.getName() + " needs to be created for table "
-                                + sourceTable.getName());
-                    }
+                    log.info("Index {} needs to be created for table {}", targetIndex.getName(), sourceTable.getName());
                     // we have to use the target table here because the index might
                     // reference a new column
                     changes.add(new AddIndexChange(targetTable, targetIndex));
@@ -217,8 +205,7 @@ public class ModelComparator {
             Column targetColumn = targetTable.getColumn(columnIdx);
             Column sourceColumn = sourceTable.findColumn(targetColumn.getName(), caseSensitive);
             if (sourceColumn == null) {
-                log.info("Column {} needs to be created for table {}",
-                        new Object[] { targetColumn.getName(), sourceTable.getName() });
+                log.info("Column {} needs to be created for table {}", targetColumn.getName(), sourceTable.getName());
                 AddColumnChange change = new AddColumnChange(sourceTable, targetColumn,
                         columnIdx > 0 ? targetTable.getColumn(columnIdx - 1) : null,
                         columnIdx < targetTable.getColumnCount() - 1 ? targetTable
@@ -245,18 +232,13 @@ public class ModelComparator {
         Column[] sourcePK = sourceTable.getPrimaryKeyColumnsInIndexOrder();
         Column[] targetPK = targetTable.getPrimaryKeyColumnsInIndexOrder();
         if ((sourcePK.length == 0) && (targetPK.length > 0)) {
-            if (log.isDebugEnabled()) {
-                log.info("A primary key needs to be added to the table " + sourceTable.getName());
-            }
+            log.info("A primary key needs to be added to the table {}", sourceTable.getName());
             // we have to use the target table here because the primary key
             // might
             // reference a new column
             changes.add(new AddPrimaryKeyChange(targetTable, targetPK));
         } else if ((targetPK.length == 0) && (sourcePK.length > 0)) {
-            if (log.isDebugEnabled()) {
-                log.info("The primary key needs to be removed from the table "
-                        + sourceTable.getName());
-            }
+            log.info("The primary key needs to be removed from the table {}", sourceTable.getName());
             changes.add(new RemovePrimaryKeyChange(sourceTable, sourcePK));
         } else if ((sourcePK.length > 0) && (targetPK.length > 0)) {
             boolean changePK = false;
@@ -273,10 +255,7 @@ public class ModelComparator {
                 }
             }
             if (changePK) {
-                if (log.isDebugEnabled()) {
-                    log.info("The primary key of table " + sourceTable.getName()
-                            + " needs to be changed");
-                }
+                log.info("The primary key of table {} needs to be changed", sourceTable.getName());
                 changes.add(new PrimaryKeyChange(sourceTable, sourcePK, targetPK));
             }
         }
@@ -284,10 +263,7 @@ public class ModelComparator {
             Column sourceColumn = sourceTable.getColumn(columnIdx);
             Column targetColumn = targetTable.findColumn(sourceColumn.getName(), caseSensitive);
             if (targetColumn == null) {
-                if (log.isDebugEnabled()) {
-                    log.info("Column " + sourceColumn.getName()
-                            + " needs to be removed from table " + sourceTable.getName());
-                }
+                log.info("Column {} needs to be removed from table {}", sourceColumn.getName(), sourceTable.getName());
                 changes.add(new RemoveColumnChange(sourceTable, sourceColumn));
             }
         }
@@ -330,10 +306,8 @@ public class ModelComparator {
         }
         if (!compatible && !ddlBuilder.areMappedTypesTheSame(sourceColumn, targetColumn)
                 && platformInfo.getTargetJdbcType(targetColumn.getMappedTypeCode()) != platformInfo.getTargetJdbcType(sourceColumn.getMappedTypeCode())) {
-            log.info(
-                    "The {} column on the {} table changed type codes from {} to {} ",
-                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
-                            sourceColumn.getMappedTypeCode(), targetColumn.getMappedTypeCode() });
+            log.info("The {} column on the {} table changed type codes from {} to {} ", sourceColumn.getName(), sourceTable.getName(),
+                    sourceColumn.getMappedTypeCode(), targetColumn.getMappedTypeCode());
             changes.add(new ColumnDataTypeChange(sourceTable, sourceColumn, targetColumn
                     .getMappedTypeCode()));
         }
@@ -348,51 +322,40 @@ public class ModelComparator {
                         targetSize = 0;
                     }
                 }
-                log.info("The {} column on the {} table changed size from ({}) to ({})", new Object[] { sourceColumn.getName(),
-                        sourceTable.getName(), sourceColumn.getSizeAsInt(), targetSize });
+                log.info("The {} column on the {} table changed size from ({}) to ({})", sourceColumn.getName(),
+                        sourceTable.getName(), sourceColumn.getSizeAsInt(), targetSize);
                 changes.add(new ColumnSizeChange(sourceTable, sourceColumn, targetSize, targetColumn.getScale()));
             } else if (scaleMatters) {
-                log.info("The {} column on the {} table changed scale from ({},{}) to ({},{})",
-                        new Object[] { sourceColumn.getName(), sourceTable.getName(), sourceColumn.getSizeAsInt(), sourceColumn.getScale(),
-                                targetColumn.getSizeAsInt(), targetColumn.getScale() });
+                log.info("The {} column on the {} table changed scale from ({},{}) to ({},{})", sourceColumn.getName(), sourceTable.getName(),
+                        sourceColumn.getSizeAsInt(), sourceColumn.getScale(), targetColumn.getSizeAsInt(), targetColumn.getScale());
                 changes.add(new ColumnSizeChange(sourceTable, sourceColumn, targetColumn.getSizeAsInt(), targetColumn.getScale()));
             }
         }
         if (supportsDefaultValues() && !defaultValuesAreEqual(sourceColumn, targetColumn)) {
-            log.info("The {} column on the {} table changed default value from {} to {} ",
-                    new Object[] { sourceColumn.getName(), sourceTable.getName(), sourceColumn.getDefaultValue(),
-                            targetColumn.getDefaultValue() });
+            log.info("The {} column on the {} table changed default value from {} to {} ", sourceColumn.getName(), sourceTable.getName(),
+                    sourceColumn.getDefaultValue(), targetColumn.getDefaultValue());
             changes.add(new ColumnDefaultValueChange(sourceTable, sourceColumn, targetColumn.getDefaultValue()));
         }
         if (!targetColumn.isGenerated() && sourceColumn.isRequired() != targetColumn.isRequired()) {
-            log.info(
-                    "The {} column on the {} table changed required status from {} to {}",
-                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
-                            sourceColumn.isRequired(), targetColumn.isRequired() });
+            log.info("The {} column on the {} table changed required status from {} to {}", sourceColumn.getName(), sourceTable.getName(),
+                    sourceColumn.isRequired(), targetColumn.isRequired());
             changes.add(new ColumnRequiredChange(sourceTable, sourceColumn));
         }
         if (sourceColumn.isAutoIncrement() != targetColumn.isAutoIncrement()) {
-            log.info(
-                    "The {} column on the {} table changed auto increment status from {} to {} ",
-                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
-                            sourceColumn.isAutoIncrement(), targetColumn.isAutoIncrement() });
+            log.info("The {} column on the {} table changed auto increment status from {} to {} ", sourceColumn.getName(), sourceTable.getName(),
+                    sourceColumn.isAutoIncrement(), targetColumn.isAutoIncrement());
             changes.add(new ColumnAutoIncrementChange(sourceTable, sourceColumn));
         }
         if (sourceColumn.isGenerated() != targetColumn.isGenerated()) {
-            log.info(
-                    "The {} column on the {} table changed generated status from {} to {} ",
-                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
-                            sourceColumn.isGenerated(), targetColumn.isGenerated() });
+            log.info("The {} column on the {} table changed generated status from {} to {} ", sourceColumn.getName(), sourceTable.getName(),
+                    sourceColumn.isGenerated(), targetColumn.isGenerated());
             changes.add(new ColumnGeneratedChange(sourceTable, sourceColumn, targetColumn.getDefaultValue()));
         } else if (Boolean.valueOf(System.getProperty("compare.generated.column.definitions", "true"))
                 && sourceColumn.isGenerated() && sourceColumn.getDefaultValue() != null
                 && !sourceColumn.getDefaultValue().equals(targetColumn.getDefaultValue())) {
-            log.info(
-                    "The {} generated column on the {} table changed definition from {} to {} ",
-                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
-                            sourceColumn.getDefaultValue(), targetColumn.getDefaultValue() });
-            changes.add(new GeneratedColumnDefinitionChange(sourceTable, sourceColumn, targetColumn
-                    .getDefaultValue()));
+            log.info("The {} generated column on the {} table changed definition from {} to {} ", sourceColumn.getName(), sourceTable.getName(),
+                    sourceColumn.getDefaultValue(), targetColumn.getDefaultValue());
+            changes.add(new GeneratedColumnDefinitionChange(sourceTable, sourceColumn, targetColumn.getDefaultValue()));
         }
         return changes;
     }
