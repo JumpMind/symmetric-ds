@@ -69,6 +69,7 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
     public MonitorEvent check(Monitor monitor) {
         MonitorEvent event = new MonitorEvent();
         int cpuUsage = getCpuUsage();
+        log.debug("CPU usage is {}", cpuUsage);
         event.setValue(cpuUsage);
         event.setDetails(getNotificationMessage(cpuUsage, 0l, 0l));
         return event;
@@ -76,10 +77,12 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
 
     public int getCpuUsage() {
         int availableProcessors = osBean.getAvailableProcessors();
+        log.debug("Found {} available processors", availableProcessors);
         if (useNative) {
             String line = null;
             try {
                 int pid = getProcessId();
+                log.debug("Checking usage of PID {}", pid);
                 if (pid >= 0 && (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_LINUX)) {
                     if (SystemUtils.IS_OS_WINDOWS) {
                         line = runCommand(3, "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", "-Command",
@@ -137,6 +140,7 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
             pid_method.setAccessible(true);
             return (Integer) pid_method.invoke(jvm.get(runtime));
         } catch (Exception e) {
+            log.debug("Caught exception", e);
             return -1;
         }
     }
@@ -148,6 +152,7 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
             method.setAccessible(true);
             cpuTime = (Long) method.invoke(osBean);
         } catch (Exception ignore) {
+            log.debug("Caught exception", ignore);
         }
         return cpuTime;
     }
@@ -158,6 +163,7 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
         for (String arg : args) {
             cmd.add(arg);
         }
+        log.debug("Running command: {}", cmd);
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.redirectErrorStream(true);
         Process process = null;
@@ -165,8 +171,7 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
             process = pb.start();
             process.waitFor();
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            e.printStackTrace();
+            log.warn("Cannot run command " + cmd + " because", e);
         }
         if (process != null) {
             ArrayList<String> cmdOutput = new ArrayList<String>();
@@ -176,8 +181,7 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
                     cmdOutput.add(line);
                 }
             } catch (Exception e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace();
+                log.warn("Cannot read command " + cmd + " because", e);
             }
             if (cmdOutput != null && cmdOutput.size() > lineNumber) {
                 ret = cmdOutput.get(lineNumber);
