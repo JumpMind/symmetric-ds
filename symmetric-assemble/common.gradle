@@ -303,7 +303,7 @@ subprojects { subproject ->
         powerMockVersion = '2.0.9'
         mysqlVersion = '8.3.0'
         servletVersion = '4.0.1'
-        springVersion = '5.3.33'
+        springVersion = '5.3.37'
         jtdsVersion = '1.3.1'
         bouncyCastleVersion = '1.75'
         animalSnifferVersion = '1.21'
