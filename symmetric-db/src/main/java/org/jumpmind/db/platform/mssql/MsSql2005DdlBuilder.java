@@ -219,7 +219,7 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
     protected void writeColumnType(Table table, Column column, StringBuilder ddl) {
         super.writeColumnType(table, column, ddl);
         PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
-        if (platformColumn.isUserDefinedType() &&
+        if (!column.isRequired() && platformColumn != null && platformColumn.isUserDefinedType() &&
                 !(databaseInfo.isNullAsDefaultValueRequired() && databaseInfo.hasNullDefault(column.getMappedTypeCode()))) {
             ddl.append(" ");
             writeColumnNullableStmt(ddl);            
