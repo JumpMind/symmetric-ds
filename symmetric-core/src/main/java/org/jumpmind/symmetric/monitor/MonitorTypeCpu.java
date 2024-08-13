@@ -75,6 +75,7 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
     }
 
     public int getCpuUsage() {
+        int availableProcessors = osBean.getAvailableProcessors();
         if (useNative) {
             String line = null;
             try {
@@ -93,7 +94,7 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
                         if (line != null) {
                             String[] fields = line.trim().split("\\s+");
                             if (fields.length > 2) {
-                                return Math.min((int) Float.parseFloat(fields[2]), 100);
+                                return Math.min(Math.round(Float.parseFloat(fields[2]) / availableProcessors), 100);
                             }
                         }
                     } else {
@@ -101,7 +102,7 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
                         if (line != null) {
                             String[] fields = line.trim().split("\\s+");
                             if (fields.length > 9) {
-                                return Math.min((int) Float.parseFloat(fields[8]), 100);
+                                return Math.min(Math.round(Float.parseFloat(fields[8]) / availableProcessors), 100);
                             }
                         }
                     }
@@ -114,7 +115,6 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
                 log.info("Switching to CPU time based on JMX");
             }
         }
-        int availableProcessors = osBean.getAvailableProcessors();
         long prevUpTime = runtimeBean.getUptime();
         long prevProcessCpuTime = getProcessCpuTime();
         try {
