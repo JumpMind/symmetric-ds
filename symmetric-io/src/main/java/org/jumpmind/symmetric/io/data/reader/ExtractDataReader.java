@@ -54,6 +54,7 @@ public class ExtractDataReader implements IDataReader {
     protected IDatabasePlatform platform;
     protected List<IExtractDataReaderSource> sourcesToUse;
     protected IExtractDataReaderSource currentSource;
+    protected List<IExtractDataFilter> filters;
     protected Batch batch;
     protected Table table;
     protected CsvData data;
@@ -68,10 +69,11 @@ public class ExtractDataReader implements IDataReader {
         this.isSybaseASE = platform.getName().equals(DatabaseNamesConstants.ASE);
     }
 
-    public ExtractDataReader(IDatabasePlatform platform, IExtractDataReaderSource source, Boolean isUsingUnitypes) {
+    public ExtractDataReader(IDatabasePlatform platform, IExtractDataReaderSource source, List<IExtractDataFilter> filters, boolean isUsingUnitypes) {
         this.sourcesToUse = new ArrayList<IExtractDataReaderSource>();
         this.sourcesToUse.add(source);
         this.platform = platform;
+        this.filters = filters;
         this.isUsingUnitypes = isUsingUnitypes;
         this.isSybaseASE = platform.getName().equals(DatabaseNamesConstants.ASE);
     }
@@ -130,6 +132,25 @@ public class ExtractDataReader implements IDataReader {
     }
 
     public CsvData nextData() {
+        CsvData nextData = nextDataFromSource();
+        if (nextData != null && filters != null && filters.size() != 0) {
+            boolean shouldExtract = true;
+            while (shouldExtract) {
+                for (IExtractDataFilter filter : filters) {
+                    shouldExtract &= filter.filterData(dataContext, batch, table, nextData);
+                }
+                if (shouldExtract) {
+                    break;
+                } else {
+                    nextData = nextDataFromSource();
+                    shouldExtract = nextData != null;
+                }
+            }
+        }
+        return nextData;
+    }
+
+    protected CsvData nextDataFromSource() {
         if (this.table != null) {
             if (this.data == null) {
                 this.data = this.currentSource.next();
