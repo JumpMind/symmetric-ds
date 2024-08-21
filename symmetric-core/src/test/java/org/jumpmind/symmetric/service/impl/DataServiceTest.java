@@ -42,7 +42,6 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
-import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -52,6 +51,8 @@ import org.jumpmind.symmetric.load.IReloadGenerator;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.ExtractRequest;
+import org.jumpmind.symmetric.model.FileTrigger;
+import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -68,13 +69,16 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtensionService;
+import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IInitialLoadService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.ITransformService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -108,7 +112,7 @@ public class DataServiceTest {
         engine = mock(AbstractSymmetricEngine.class);
         when(engine.getParameterService()).thenReturn(parameterService);
         when(engine.getSymmetricDialect()).thenReturn(symmetricDialect);
-        when(parameterService.getTablePrefix()).thenReturn("sym_");
+        when(parameterService.getTablePrefix()).thenReturn("sym");
         when(platform.getSqlTemplateDirty()).thenReturn(sqlTemplate);
         dataService = new DataService(engine, extensionService);
         // request = mock(TableReloadRequest.class);
@@ -139,8 +143,8 @@ public class DataServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "" + true + "", "" + false + "" })
-    void testInsertReloadEvents(boolean reloadEvent) throws Exception {
+    @CsvSource({ "" + 0 + "", "" + 1 + "", "" + 2 + "" })
+    void testInsertReloadEvents(int scenario) throws Exception {
         // actual variables
         Node targetNode = new Node();
         targetNode.setNodeGroupId("client");
@@ -151,7 +155,13 @@ public class DataServiceTest {
         sourceNode.setNodeGroupId("server");
         sourceNode.setNodeId("server");
         NodeGroupLink link = new NodeGroupLink("server", "client");
-        Trigger trigger = new Trigger("testTable", "default");
+        List<Channel> channels = new ArrayList<Channel>();
+        Trigger trigger = null;
+        if (scenario == 2) {
+            trigger = new Trigger("sym_file_snapshot", "default");
+        } else {
+            trigger = new Trigger("testTable", "default");
+        }
         Router router = new Router("testRouter", link);
         TriggerRouter triggerRouter = new TriggerRouter(trigger, router);
         request = new TableReloadRequest();
@@ -159,6 +169,10 @@ public class DataServiceTest {
         reloadRequest.setLoadId((long) 1);
         reloadRequest.setTriggerId("testTable");
         reloadRequest.setRouterId("testRouter");
+        TableReloadRequest reloadRequestForAll = new TableReloadRequest();
+        reloadRequestForAll.setLoadId((long) 1);
+        reloadRequestForAll.setTriggerId("ALL");
+        reloadRequestForAll.setRouterId("ALL");
         Table table = new Table("testTable");
         List<String> columns = new ArrayList<String>();
         columns.add("Id");
@@ -175,7 +189,21 @@ public class DataServiceTest {
         }
         TableReloadStatus tableReloadStatus = new TableReloadStatus();
         List<TableReloadRequest> reloadRequests = new ArrayList<TableReloadRequest>();
-        reloadRequests.add(reloadRequest);
+        if (scenario == 2) {
+            TableReloadRequest fileSyncReloadRequest = new TableReloadRequest();
+            fileSyncReloadRequest.setLoadId((long) 1);
+            fileSyncReloadRequest.setTriggerId("sym_file_snapshot");
+            fileSyncReloadRequest.setRouterId("testRouter");
+            reloadRequests.add(fileSyncReloadRequest);
+           
+            Channel channel = new Channel("filesync", 0, 1000, 1000, true,
+                    (long) 9999999, false, true, true);
+            channels.add(channel);
+        } else {
+            reloadRequests.add(reloadRequest);
+        }
+        List<TableReloadRequest> reloadRequestsForAll = new ArrayList<TableReloadRequest>();
+        reloadRequestsForAll.add(reloadRequestForAll);
         ProcessInfo processInfo = new ProcessInfo();
         List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>();
         triggerRouters.add(triggerRouter);
@@ -209,24 +237,18 @@ public class DataServiceTest {
         triggerRouterByHist.put(0, triggerRouters);
         List<TriggerHistory> triggerHistories = new ArrayList<TriggerHistory>();
         TriggerHistory triggerHistory = new TriggerHistory("testTable", "Id", "Id,age,weight");
+        triggerHistory.setTriggerId("testTable");
         triggerHistories.add(triggerHistory);
         Map<String, Channel> channelMap = new HashMap<String, Channel>();
         Channel channel = new Channel("default", 0);
         channelMap.put("default", channel);
         Set<TriggerRouter> triggerRouterSet = new HashSet<TriggerRouter>();
-        Trigger triggerForSet = new Trigger("sym__node_security", "default");
+        Trigger triggerForSet = new Trigger("sym_node_security", "default");
         Router routerForSet = new Router("routerForSet", link);
         TriggerRouter triggerRouterForSet = new TriggerRouter(triggerForSet, routerForSet);
-        TriggerHistory triggerHist = new TriggerHistory("sym__node_security", "NODE_ID",
+        TriggerHistory triggerHist = new TriggerHistory("sym_node_security", "NODE_ID",
                 "NODE_ID,NODE_PASSWORD,REGISTRATION_ENABLED,REGISTRATION_TIME,REGISTRATION_NOT_BEFORE,REGISTRATION_NOT_AFTER,INITIAL_LOAD_ENABLED,INITIAL_LOAD_TIME,INITIAL_LOAD_END_TIME,INITIAL_LOAD_ID,INITIAL_LOAD_CREATE_BY,REV_INITIAL_LOAD_ENABLED,REV_INITIAL_LOAD_TIME,REV_INITIAL_LOAD_ID,REV_INITIAL_LOAD_CREATE_BY,FAILED_LOGINS,CREATED_AT_NODE_ID");
         triggerRouterSet.add(triggerRouterForSet);
-        String[] names = { "NODE_ID", "NODE_PASSWORD", "REGISTRATION_ENABLED", "REGISTRATION_TIME", "REGISTRATION_NOT_BEFORE", "REGISTRATION_NOT_AFTER",
-                "INITIAL_LOAD_ENABLED", "INITIAL_LOAD_TIME", "INITIAL_LOAD_END_TIME", "INITIAL_LOAD_ID", "INITIAL_LOAD_CREATE_BY", "REV_INITIAL_LOAD_ENABLED",
-                "REV_INITIAL_LOAD_TIME", "REV_INITIAL_LOAD_ID", "REV_INITIAL_LOAD_CREATE_BY", "FAILED_LOGINS", "CREATED_AT_NODE_ID" };
-        Object[] values = { 1, "server", "enc:9QFDvcKG6Nfix1smzrTjbJXflaEPgiudof5zuSg7Oog=", 0, "2024-07-31 12:10:28.708", null, null, 0,
-                "2024-07-31 12:10:28.708", "2024-07-31 12:10:28.708", 0, null, 0, null, 0, null, 0, };
-        Row row = new Row(names, values);
-        // mocked variables
         IReloadGenerator reloadGenerator = mock(IReloadGenerator.class);
         IClusterService clusterService = mock(IClusterService.class);
         INodeService nodeService = mock(INodeService.class);
@@ -240,6 +262,8 @@ public class DataServiceTest {
         ITransformService transformService = mock(ITransformService.class);
         IOutgoingBatchService outgoingBatchService = mock(IOutgoingBatchService.class);
         IStatisticManager statisticManager = mock(IStatisticManager.class);
+        IPurgeService purgeService = mock(IPurgeService.class);
+        IFileSyncService fileSyncService = mock(IFileSyncService.class);
         // mocked interactions
         when(engine.getClusterService()).thenReturn(clusterService);
         when(clusterService.lock(ClusterConstants.SYNC_TRIGGERS)).thenReturn(true);
@@ -289,79 +313,119 @@ public class DataServiceTest {
                 ArgumentMatchers.anyString())).thenReturn(tableReloadStatus);
         when(dataExtractorService.requestExtractRequest(sqlTransaction, targetNode.getNodeId(), channel.getQueue(), triggerRouter, -1, -1, 1, table.getName(),
                 0, 0)).thenReturn(extractRequest);
-        doNothing().when(outgoingBatchService).markAllAsSentForNode(targetNode.getNodeId(), false);
-        doReturn(triggerRouterSet).when(triggerRouterService).getTriggerRouterForTableForCurrentNode(ArgumentMatchers.any(), ArgumentMatchers.any(),
-                ArgumentMatchers.anyString(), ArgumentMatchers.anyBoolean());
-        doReturn(triggerHist).when(triggerRouterService).getNewestTriggerHistoryForTrigger(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers
-                .any(), ArgumentMatchers.any());
-        when(sqlTransaction.queryForRow(ArgumentMatchers.any()))
-                .thenReturn(row);
-        // when(triggerRouterService.getTriggerRouterForTableForCurrentNode(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
-        // ArgumentMatchers.anyString(), ArgumentMatchers.anyBoolean())).thenReturn(triggerRouterSet);
-        // interactions
+        // Scenario 1 callers for Full Load testing
+        if (scenario == 1) {
+            doNothing().when(outgoingBatchService).markAllAsSentForNode(targetNode.getNodeId(), false);
+            doReturn(triggerRouterSet).when(triggerRouterService).getTriggerRouterForTableForCurrentNode(ArgumentMatchers.any(), ArgumentMatchers.any(),
+                    ArgumentMatchers.anyString(), ArgumentMatchers.anyBoolean());
+            doReturn(triggerHist).when(triggerRouterService).getNewestTriggerHistoryForTrigger(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers
+                    .any(), ArgumentMatchers.any());
+            when(engine.getTriggerRouterService()
+                    .findTriggerHistoryForGenericSync()).thenReturn(triggerHistory);
+            when(engine.getTriggerRouterService().getTriggerById("testTable", false)).thenReturn(trigger);
+            when(engine.getPurgeService()).thenReturn(purgeService);
+            doNothing().when(purgeService).purgeAllIncomingEventsForNode(ArgumentMatchers.anyString());
+        }
+        // Scenario 2 callers for Filesync testing
+        if (scenario == 2) {
+            List<FileTriggerRouter> fileTriggerRouters = new ArrayList<FileTriggerRouter>();
+            FileTrigger fileTrigger = new FileTrigger("basedir/test", true, "*", null);
+            FileTriggerRouter fileTriggerRouter = new FileTriggerRouter(fileTrigger, router);
+            Trigger fileSyncTrigger = new Trigger("sym_file_snapshot", "default");
+            TriggerHistory fileSyncTriggerHist = new TriggerHistory("sym_file_snapshot", "trigger_id,router_id,relative_dir,file_name",
+                    "trigger_id,router_id,relative_dir,file_name,channel_id,reload_channel_id,last_event_type,crc32_checksum,file_size,file_modified_time,last_update_time,last_update_by,create_time");
+            fileSyncTriggerHist.setTriggerId("sym_file_snapshot");
+            String routerName = String.format("%s_%s_2_%s", fileSyncTriggerHist.getTriggerId(), "server", targetNode.getNodeGroupId());
+            TriggerRouter fileSyncTriggerRouter = new TriggerRouter(fileSyncTrigger, router);
+            fileTriggerRouters.add(fileTriggerRouter);
+            when(parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)).thenReturn(true);
+            when(engine.getFileSyncService()).thenReturn(fileSyncService);
+            when(fileSyncService.getFileTriggerRoutersForCurrentNode(false)).thenReturn(fileTriggerRouters);
+            when(triggerRouterService.findTriggerHistory(null, null, "sym_file_snapshot")).thenReturn(fileSyncTriggerHist);
+            when(parameterService.getNodeGroupId()).thenReturn("server");
+            when(triggerRouterService.buildSymmetricTableRouterId(
+                    fileSyncTriggerHist.getTriggerId(), "server",
+                    targetNode.getNodeGroupId())).thenReturn(routerName);
+            when(triggerRouterService.getTriggerRouterForCurrentNode(fileSyncTriggerHist.getTriggerId(),
+                    routerName, true)).thenReturn(fileSyncTriggerRouter);
+            when(engine.getConfigurationService()).thenReturn(configurationService);
+            when(configurationService.getFileSyncChannels()).thenReturn(channels);
+        }
+        // Actual Tests and Results
         Map<Integer, ExtractRequest> actualResults = new HashMap<Integer, ExtractRequest>();
         Map<Integer, ExtractRequest> expectedResults = new HashMap<Integer, ExtractRequest>();
-        if (reloadEvent) {
-            actualResults = dataService.insertReloadEvents(targetNode, false, reloadRequests, processInfo, triggerRouters, extractRequests, reloadGenerator);
+        if (scenario == 1) {
+            actualResults = dataService.insertReloadEvents(targetNode, false, reloadRequestsForAll, processInfo, triggerRouters, extractRequests,
+                    reloadGenerator);
         } else {
-//            actualResults = dataService.insertReloadEvents(targetNode, false, null, processInfo, triggerRouters, extractRequests, reloadGenerator);
+            actualResults = dataService.insertReloadEvents(targetNode, false, reloadRequests, processInfo, triggerRouters, extractRequests, reloadGenerator);
         }
         expectedResults.put(0, extractRequest);
         assertEquals(actualResults, expectedResults);
     }
-    // @Test
-    // void testInsertReloadEvent() throws Exception {
-    // // mocked variables
-    // request = mock(TableReloadRequest.class);
-    // TriggerRouterService triggerRouterService = mock(TriggerRouterService.class);
-    // INodeService nodeService = mock(INodeService.class);
-    // TriggerRouter triggerRouter = mock(TriggerRouter.class);
-    // ITransformService transformService = mock(ITransformService.class);
-    // IConfigurationService configurationService = mock(IConfigurationService.class);
-    // // actual variables
-    // Trigger trigger = new Trigger("testTable", "default");
-    // NodeGroupLink link = new NodeGroupLink("server", "client");
-    // TriggerHistory triggerHistory = new TriggerHistory("testTable", "Id", "Id,age,weight");
-    // Router router = new Router("testRouter", link);
-    // Channel channel = new Channel("default", 0);
-    // Node targetNode = new Node();
-    // Node sourceNode = new Node();
-    // sourceNode.setExternalId("source");
-    // sourceNode.setNodeGroupId("server");
-    // targetNode.setNodeGroupId("client");
-    // targetNode.setExternalId("target");
-    // Map<String,Channel> channels = new HashMap<String,Channel>();
-    // channels.put("default", channel);
-    // // mocked interactions
-    // when(engine.getTriggerRouterService()).thenReturn(triggerRouterService);
-    // when(engine.getNodeService()).thenReturn(nodeService);
-    // when(request.getTargetNodeId()).thenReturn("test");
-    // doReturn(targetNode).when(nodeService).findNode(ArgumentMatchers.anyString());
-    // when(request.getTriggerId()).thenReturn("testTrigger");
-    // when(request.getRouterId()).thenReturn("testRouter");
-    // when(triggerRouterService.getTriggerRouterForCurrentNode(
-    // ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyBoolean())).thenReturn(triggerRouter);
-    // when(triggerRouter.getTrigger()).thenReturn(trigger);
-    // when(triggerRouter.getRouter()).thenReturn(router);
-    // when(nodeService.findIdentity()).thenReturn(sourceNode);
-    // when(triggerRouterService.getNewestTriggerHistoryForTrigger(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-    // ArgumentMatchers.any())).thenReturn(triggerHistory);
-    // when(sqlTemplate.startSqlTransaction()).thenReturn(sqlTransaction);
-    // when(parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)).thenReturn(true);
-    // when(engine.getTransformService()).thenReturn(transformService);
-    // when(transformService.findTransformsFor(
-    // ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(null);
-    // when(symmetricDialect.createPurgeSqlFor(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(
-    // "delete from %s");
-    // when(engine.getConfigurationService()).thenReturn(configurationService);
-    // when(configurationService.getChannels(ArgumentMatchers.anyBoolean())).thenReturn(channels);
-    // when(parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL)).thenReturn(true);
-    // when(symmetricDialect.getSequenceKeyName(SequenceIdentifier.DATA)).thenReturn(null);
-    // when(symmetricDialect.getSequenceName(SequenceIdentifier.DATA)).thenReturn(null);
-    // when(sqlTransaction.insertWithGeneratedKey(ArgumentMatchers.any(), ArgumentMatchers.any(),
-    // ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn((long)1);
-    // doNothing().when(sqlTransaction).commit();;
-    // // actual interactions
-    // assertEquals(true,dataService.insertReloadEvent(request, false));
-    // }
+
+    @ParameterizedTest
+    @CsvSource({ "" + 0 + "", "" + 1 + "", "" + 2 + "" })
+    void testSendSQL(int scenario) throws Exception {
+        // actual variables
+        Node targetNode = new Node();
+        targetNode.setNodeGroupId("client");
+        targetNode.setExternalId("client");
+        targetNode.setNodeId("client");
+        Node sourceNode = new Node();
+        sourceNode.setExternalId("server");
+        sourceNode.setNodeGroupId("server");
+        sourceNode.setNodeId("server");
+        TriggerHistory triggerHistory = new TriggerHistory("testTable", "Id", "Id,age,weight");
+        triggerHistory.setTriggerId("testTable");
+        NodeGroupLink link = new NodeGroupLink("server", "client");
+        Trigger trigger = new Trigger("testTable", "default");
+        Router router = new Router("testRouter", link);
+        TriggerHistory triggerHist = new TriggerHistory("sym_node_host", "node_id,host_name",
+                "node_id,host_name,instance_id,ip_address,os_user,os_name,os_arch,os_version,available_processors,free_memory_bytes,total_memory_bytes,max_memory_bytes,java_version,java_vendor,jdbc_version,symmetric_version,timezone_offset,heartbeat_time,last_restart_time,create_time");
+        triggerHist.setTriggerId("sym_node_host");
+        Trigger triggerForNodeHost = new Trigger("sym_node_host", "default");
+        // mocked variables
+        INodeService nodeService = mock(INodeService.class);
+        ITriggerRouterService triggerRouterService = mock(ITriggerRouterService.class);
+        IOutgoingBatchService outgoingBatchService = mock(IOutgoingBatchService.class);
+        // mocked interactions
+        when(parameterService.getTablePrefix()).thenReturn("sym");
+        when(engine.getNodeService()).thenReturn(nodeService);
+        when(nodeService.findIdentity()).thenReturn(sourceNode);
+        when(nodeService.findNode(ArgumentMatchers.anyString(), ArgumentMatchers.anyBoolean())).thenReturn(targetNode);
+        when(engine.getTriggerRouterService()).thenReturn(triggerRouterService);
+        if (scenario == 2) {
+            when(triggerRouterService.findTriggerHistory(null, null, "sym_node_host")).thenReturn(null);
+        } else {
+            when(triggerRouterService.findTriggerHistory(null, null, "sym_node_host")).thenReturn(triggerHist);
+        }
+        when(triggerRouterService.getTriggerById(triggerHist.getTriggerId())).thenReturn(triggerForNodeHost);
+        when(sqlTemplate.startSqlTransaction()).thenReturn(sqlTransaction);
+        when(engine.getOutgoingBatchService()).thenReturn(outgoingBatchService);
+        doNothing().when(outgoingBatchService).insertOutgoingBatch(ArgumentMatchers.any(), ArgumentMatchers.any());
+        // Actual Tests and Results
+        if (scenario == 0) {
+            dataService.sendSQL("client", null);
+        } else if (scenario == 1) {
+            dataService.sendSQL("failure", null);
+        } else if (scenario == 2) {
+            dataService.sendSQL("client", null);
+        }
+    }
+
+    @Test
+    void testGetTableReloadRequest() throws Exception {
+        // actual variables
+        TableReloadRequest reloadRequest = new TableReloadRequest();
+        reloadRequest.setLoadId((long) 1);
+        reloadRequest.setTriggerId("testTable");
+        reloadRequest.setRouterId("testRouter");
+        List<TableReloadRequest> reloadRequests = new ArrayList<TableReloadRequest>();
+        reloadRequests.add(reloadRequest);
+        // mocked interactions
+        when(sqlTemplate.query(ArgumentMatchers.any(), (ISqlRowMapper<TableReloadRequest>) ArgumentMatchers.any(), ArgumentMatchers.anyLong())).thenReturn(
+                reloadRequests);
+        dataService.getTableReloadRequest((long) 0);
+    }
 }
