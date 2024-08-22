@@ -79,12 +79,12 @@ import org.jumpmind.symmetric.load.IReloadGenerator;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.load.IReloadVariableFilter;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
-import org.jumpmind.symmetric.model.ExtractRequest.ExtractStatus;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.ExtractRequest;
+import org.jumpmind.symmetric.model.ExtractRequest.ExtractStatus;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
@@ -3535,6 +3535,9 @@ public class DataService extends AbstractService implements IDataService {
                         keys = data.toParsedPkData();
                     }
                     Object[] values = platform.getObjectValues(engine.getSymmetricDialect().getBinaryEncoding(), keys, table.getPrimaryKeyColumns());
+                    if (keys == null || values == null) {
+                        continue;
+                    }
                     Row row = new Row(keys.length);
                     String[] keyNames = table.getPrimaryKeyColumnNames();
                     for (int i = 0; i < keyNames.length && i < values.length; i++) {
@@ -3563,9 +3566,10 @@ public class DataService extends AbstractService implements IDataService {
                         data.setDataEventType(DataEventType.UPDATE);
                         data.setRowData(rowData);
                         data.setPkData(pkData);
-                        insertList.add(data);
                     } else if (rowData == null && data.getDataEventType() == DataEventType.DELETE) {
                         data.setPkData(pkData);
+                    }
+                    if (hasColumnDataIntegrity(data, hist)) {
                         insertList.add(data);
                     }
                     data.setTransactionId("recapture-" + ts);
@@ -3594,11 +3598,10 @@ public class DataService extends AbstractService implements IDataService {
         } finally {
             close(transaction);
         }
-        IDataService dataService = engine.getDataService();
         try {
             transaction = sqlTemplate.startSqlTransaction();
             for (Data data : insertList) {
-                dataService.insertData(transaction, data);
+                insertData(transaction, data);
             }
             transaction.commit();
         } catch (Exception ex) {
@@ -3610,6 +3613,26 @@ public class DataService extends AbstractService implements IDataService {
             close(transaction);
         }
         return insertList.size();
+    }
+
+    protected boolean hasColumnDataIntegrity(Data data, TriggerHistory hist) {
+        String[] colNames = hist.getParsedColumnNames();
+        String[] pkNames = hist.getParsedPkColumnNames();
+        String[] rowData = data.toParsedRowData();
+        String[] oldData = data.toParsedOldData();
+        String[] pkData = data.toParsedPkData();
+        DataEventType type = data.getDataEventType();
+        boolean okay = false;
+        if (type == DataEventType.INSERT) {
+            okay = rowData != null && rowData.length == colNames.length;
+        } else if (type == DataEventType.UPDATE) {
+            okay = rowData != null && rowData.length == colNames.length && (oldData == null || oldData.length == colNames.length) &&
+                    (pkData == null || pkData.length == pkNames.length) && (pkData != null || oldData != null);
+        } else if (type == DataEventType.DELETE) {
+            okay = (pkData == null || pkData.length == pkNames.length) && (oldData == null || oldData.length == colNames.length) &&
+                    (pkData != null || oldData != null);
+        }
+        return okay;
     }
 
     public static class LastCaptureByChannelMapper implements ISqlRowMapper<String> {

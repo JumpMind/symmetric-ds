@@ -38,17 +38,22 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.data.CsvUtils;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.load.IReloadGenerator;
 import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.FileTrigger;
@@ -195,7 +200,6 @@ public class DataServiceTest {
             fileSyncReloadRequest.setTriggerId("sym_file_snapshot");
             fileSyncReloadRequest.setRouterId("testRouter");
             reloadRequests.add(fileSyncReloadRequest);
-           
             Channel channel = new Channel("filesync", 0, 1000, 1000, true,
                     (long) 9999999, false, true, true);
             channels.add(channel);
@@ -427,5 +431,94 @@ public class DataServiceTest {
         when(sqlTemplate.query(ArgumentMatchers.any(), (ISqlRowMapper<TableReloadRequest>) ArgumentMatchers.any(), ArgumentMatchers.anyLong())).thenReturn(
                 reloadRequests);
         dataService.getTableReloadRequest((long) 0);
+    }
+
+    @Test
+    public void testRecaptureData() throws Exception {
+        String tableName = "sym_node_host", channelId = "heartbeat";
+        String colNames = "node_id,host_name,instance_id", pkNames = "node_id,host_name";
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.INSERT, "I1, bobo, abc", null, null, null);
+        assertEquals(1, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.INSERT, "I2, bobo, abc, EXTRA", null, null, null);
+        assertEquals(0, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.INSERT, "I3, MISSING", null, null, null);
+        assertEquals(0, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.INSERT, "", null, null, null);
+        assertEquals(0, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.UPDATE, "U1, bobo, abc", "U1, bobo", null, null);
+        assertEquals(1, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.UPDATE, "U2, bobo, abc", "U2, bobo, EXTRA", null, null);
+        assertEquals(0, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.UPDATE, "U3, bobo, abc", "MISSING", null, null);
+        assertEquals(0, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.UPDATE, "U4, bobo, abc", "", null, null);
+        assertEquals(0, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.UPDATE, "", "U5, bobo", null, "U5, bobo, abc");
+        assertEquals(0, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.UPDATE, "", "", null, "U6, bobo, abc");
+        assertEquals(0, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.DELETE, null, "D1, bobo", null, "D1, bobo, abc");
+        assertEquals(1, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.DELETE, null, "D2, bobo", "D2, bobo, abc", null);
+        assertEquals(1, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.DELETE, null, "MISSING", "D3, bobo, abc", null);
+        assertEquals(0, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.DELETE, null, "D4, bobo", "D4, MISSING", null);
+        assertEquals(0, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.DELETE, null, "MISSING", null, "D5, bobo, abc");
+        assertEquals(0, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.DELETE, null, null, "MISSING", null);
+        assertEquals(0, dataService.reCaptureData(1, 1));
+        setupRecapture(tableName, channelId, colNames, pkNames, DataEventType.DELETE, null, null, null, null);
+        assertEquals(0, dataService.reCaptureData(1, 1));
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void setupRecapture(String tableName, String channelName, String columnNames, String pkNames, DataEventType dataEventType,
+            String rowData, String pkData, String oldData, String existingRow) throws Exception {
+        List<Data> datas = new ArrayList<Data>();
+        String[] columnNamesArr = CsvUtils.tokenizeCsvData(columnNames);
+        String[] pkNamesArr = CsvUtils.tokenizeCsvData(pkNames);
+        TriggerHistory hist = new TriggerHistory(tableName, pkNames, columnNames);
+        Data data = new Data(tableName, dataEventType, rowData, pkData, hist, channelName, null, null);
+        data.setOldData(oldData);
+        String[] parsedRowData = data.getParsedData(Data.ROW_DATA);
+        String[] parsedPkData = data.getParsedData(Data.PK_DATA);
+        String[] parsedOldData = data.getParsedData(Data.OLD_DATA);
+        datas.add(data);
+        when(sqlTemplate.query(ArgumentMatchers.any(), (ISqlRowMapper<Data>) ArgumentMatchers.any(), ArgumentMatchers.anyLong(), ArgumentMatchers.anyLong()))
+                .thenReturn(datas);
+        Set<TriggerRouter> triggerRouters = new HashSet<TriggerRouter>();
+        triggerRouters.add(new TriggerRouter(new Trigger(tableName, channelName), new Router()));
+        ITriggerRouterService triggerRouterService = mock(ITriggerRouterService.class);
+        when(engine.getTriggerRouterService()).thenReturn(triggerRouterService);
+        when(triggerRouterService.getTriggerRouterForTableForCurrentNode(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+                ArgumentMatchers.anyBoolean())).thenReturn(triggerRouters);
+        Table table = new Table(null, null, tableName, columnNamesArr, pkNamesArr);
+        when(platform.getTableFromCache(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.anyBoolean())).thenReturn(
+                table);
+        when(platform.getObjectValues(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(existingRow != null ? CsvUtils
+                .tokenizeCsvData(existingRow) : parsedRowData != null ? parsedRowData : parsedOldData);
+        DmlStatement st = mock(DmlStatement.class);
+        when(platform.createDmlStatement(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+                ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(st);
+        when(st.buildDynamicSql(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())).thenReturn(
+                "where pk = ?;");
+        when(symmetricDialect.createCsvPrimaryKeySql(ArgumentMatchers.any(), ArgumentMatchers.any(),
+                ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn("queryPk");
+        when(symmetricDialect.createCsvDataSql(ArgumentMatchers.any(), ArgumentMatchers.any(),
+                ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn("queryData");
+        IConfigurationService configurationService = mock(IConfigurationService.class);
+        when(engine.getConfigurationService()).thenReturn(configurationService);
+        Row row = new Row(0);
+        if (parsedPkData != null) {
+            row = new Row(pkNamesArr, parsedPkData);
+        }
+        when(sqlTransaction.queryForRow(ArgumentMatchers.eq("queryPk"))).thenReturn(row);
+        row = new Row(0);
+        if (parsedRowData != null) {
+            row = new Row(columnNamesArr, parsedRowData);
+        }
+        when(sqlTransaction.queryForRow(ArgumentMatchers.eq("queryData"))).thenReturn(row);
     }
 }
