@@ -104,7 +104,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                         nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
                     }
                 }
-            } else if (tableMatches(dataMetaData, TableConstants.SYM_EXTRACT_REQUEST)) {
+            } else if (tableMatches(dataMetaData, TableConstants.SYM_EXTRACT_REQUEST)
+                    || tableMatches(dataMetaData, TableConstants.SYM_OUTGOING_ERROR)
+                    || tableMatches(dataMetaData, TableConstants.SYM_INCOMING_ERROR)) {
                 String targetNodeId = columnValues.get("NODE_ID");
                 for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
                     if (notRestClient(nodeThatMayBeRoutedTo) && nodeThatMayBeRoutedTo.getNodeId().equals(targetNodeId)) {
