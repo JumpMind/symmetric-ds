@@ -147,6 +147,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String OPTION_WHERE = "where";
     private static final String OPTION_FORCE = "force";
     private static final String OPTION_OUT = "out";
+    private static final String OPTION_SYM = "sym";
     private static final String OPTION_NODE_GROUP = "node-group";
     private static final String OPTION_REVERSE = "reverse";
     private static final String OPTION_IN = "in";
@@ -272,6 +273,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                 addOption(options, "o", OPTION_OUT, true);
                 addOption(options, "f", OPTION_FORCE, false);
             }
+            if (cmd.equals(CMD_DROP_TRIGGERS)) {
+                addOption(options, null, OPTION_SYM, false);
+            }
             if (cmd.equals(CMD_RELOAD_NODE)) {
                 addOption(options, "r", OPTION_REVERSE, false);
             }
@@ -333,6 +337,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         addOption(options, "w", OPTION_WHERE, true);
         addOption(options, "f", OPTION_FORCE, false);
         addOption(options, "o", OPTION_OUT, true);
+        addOption(options, null, OPTION_SYM, false);
         addOption(options, "r", OPTION_REVERSE, false);
         addOption(options, "i", OPTION_IN, true);
         addOption(options, null, OPTION_EXCLUDE_INDICES, false);
@@ -732,8 +737,14 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private void dropTrigger(CommandLine line, List<String> args) throws IOException {
         ITriggerRouterService triggerService = getSymmetricEngine().getTriggerRouterService();
         if (args.size() == 0) {
-            System.out.println("Dropping all triggers...");
-            triggerService.dropTriggers();
+            boolean includeSymTriggers = line.hasOption(OPTION_SYM);
+            if (includeSymTriggers) {
+                String prefix = getSymmetricEngine().getParameterService().getTablePrefix();
+                System.out.println("Dropping all triggers, including " + prefix + " triggers...");
+            } else {
+                System.out.println("Dropping all user-configured triggers...");
+            }
+            triggerService.dropTriggers(includeSymTriggers);
         } else {
             for (String tablename : args) {
                 System.out.println("Dropping trigger for table " + tablename);
