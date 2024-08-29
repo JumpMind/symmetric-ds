@@ -32,7 +32,7 @@ import org.slf4j.*;
 
 public class TransformTable implements Cloneable {
     final String INTERPRETER_KEY = String.format("%s.BshInterpreter", getClass().getName());
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    transient protected final Logger log = LoggerFactory.getLogger(getClass());
     /*
      * Static context object used to maintain objects in memory for reference between BSH transforms.
      */

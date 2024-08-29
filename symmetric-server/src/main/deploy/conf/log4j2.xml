@@ -23,6 +23,7 @@
         <Logger name="com.vaadin.event.ConnectorActionManager" level="ERROR" />
         <Logger name="com.vaadin.server.communication" level="FATAL" />
         <Logger name="com.vaadin.flow.server.communication.rpc.AbstractRpcInvocationHandler" level="ERROR" />
+        <Logger name="com.vaadin.flow.server.communication.ReturnChannelHandler" level="ERROR" />
         <Logger name="org.atmosphere" level="FATAL" />
         <Logger name="io.confluent.kafka.serializers.KafkaAvroSerializerConfig" level="WARN" />
         <Logger name="org.apache.logging.log4j.jul" level="WARN" />
