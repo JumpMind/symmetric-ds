@@ -1662,7 +1662,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                     if (trigger == null) {
                         log.info("About to remove triggers for inactivated table: {}", history.getFullyQualifiedSourceTableName());
-                        dropTriggersIfNeeded(history, sqlBuffer, triggerRouterContext, foundTable);
+                        dropTriggersIfNeeded(history, sqlBuffer, triggerRouterContext, true);
                     } else if (!foundTable && history.getErrorMessage() == null) {
                         log.info("About to inactivate trigger history {} because table is missing: {}", history.getTriggerHistoryId(),
                                 trigger.qualifiedSourceTableName());
