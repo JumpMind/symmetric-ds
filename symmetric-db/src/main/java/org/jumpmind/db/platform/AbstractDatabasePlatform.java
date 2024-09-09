@@ -644,7 +644,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 long diff = ts.getTime() - System.currentTimeMillis();
                 return "${ts" + diff + "}";
             } else {
-                return String.format("%tF %tT.%09d", ts, ts, ts.getNanos());
+            	String formattedDate = StringUtils.stripEnd(String.format("%tF %tT.%09d", ts, ts, ts.getNanos()), "0");
+            	if (formattedDate.endsWith(".")) {
+            		formattedDate = formattedDate + "0";
+            	}
+            	return formattedDate;
             }
         }
     }
