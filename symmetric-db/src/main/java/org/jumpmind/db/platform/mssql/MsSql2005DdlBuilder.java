@@ -214,7 +214,7 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
         }
         return sqlType;
     }
-    
+
     @Override
     protected void writeColumnType(Table table, Column column, StringBuilder ddl) {
         super.writeColumnType(table, column, ddl);
@@ -222,7 +222,7 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
         if (!column.isRequired() && platformColumn != null && platformColumn.isUserDefinedType() &&
                 !(databaseInfo.isNullAsDefaultValueRequired() && databaseInfo.hasNullDefault(column.getMappedTypeCode()))) {
             ddl.append(" ");
-            writeColumnNullableStmt(ddl);            
+            writeColumnNullableStmt(ddl);
         }
     }
 }

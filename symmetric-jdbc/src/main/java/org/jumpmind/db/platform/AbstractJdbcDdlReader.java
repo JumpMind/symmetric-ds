@@ -1519,7 +1519,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 schemas.add(schema);
             }
         }
-        
         return schemas;
     }
 

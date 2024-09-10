@@ -172,7 +172,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
                 !ArrayUtils.contains(columnValue.split(","), compareValue)) {
             result = true;
         } else if (e.hasHas && ((columnValue == null && compareValue == null) ||
-                    (columnValue != null && columnValue.contains(compareValue)))) {
+                (columnValue != null && columnValue.contains(compareValue)))) {
             result = true;
         } else if (e.hasNotHas && !((columnValue == null && compareValue == null) ||
                 (columnValue != null && columnValue.contains(compareValue)))) {

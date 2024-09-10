@@ -585,12 +585,12 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                             Types.VARCHAR, Types.VARCHAR });
         }
     }
-    
+
     private int executeUpdate(ISqlTransaction sqlTransaction, FileSnapshot snapshot) {
-    	if (snapshot.getLastEventType().equals(LastEventType.CREATE)) {
-    		return 0;
-    	}
-    	return sqlTransaction.prepareAndExecute(
+        if (snapshot.getLastEventType().equals(LastEventType.CREATE)) {
+            return 0;
+        }
+        return sqlTransaction.prepareAndExecute(
                 getSql("updateFileSnapshotSql"),
                 new Object[] { snapshot.getLastEventType().getCode(), snapshot.getCrc32Checksum(),
                         snapshot.getFileSize(), snapshot.getFileModifiedTime(),

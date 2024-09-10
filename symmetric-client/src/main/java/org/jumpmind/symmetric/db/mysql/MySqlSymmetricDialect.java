@@ -307,7 +307,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 PermissionType.CREATE_ROUTINE };
         return permissions;
     }
-    
+
     @Override
     public Database readSymmetricSchemaFromXml() {
         Database database = super.readSymmetricSchemaFromXml();
@@ -317,11 +317,10 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
             reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_SNAPSHOT, "file_name", "55");
             reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_INCOMING, "relative_dir", "55");
             reconfigureTableColumn(database, prefix, TableConstants.SYM_FILE_INCOMING, "file_name", "55");
-            
         }
         return database;
     }
-    
+
     protected void reconfigureTableColumn(Database database, String prefix, String tableName, String columnName, String size) {
         Table table = database.findTable(prefix + tableName);
         if (table != null) {

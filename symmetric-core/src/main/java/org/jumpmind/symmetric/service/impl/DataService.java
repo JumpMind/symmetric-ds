@@ -125,7 +125,6 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
-    
 
     public int cancelTableReloadRequest(TableReloadRequest request) {
         return sqlTemplate.update(

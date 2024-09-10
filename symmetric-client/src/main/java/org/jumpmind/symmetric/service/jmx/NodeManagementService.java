@@ -349,7 +349,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
             @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
     public void ignoreNodeChannelForExternalId(boolean ignore, String channelId,
             String nodeGroupId, String externalId) {
-        if(ignore) {
+        if (ignore) {
             log.info("JMX is disabling the {} channel for the externalId of {} from the following engine: {} ", channelId, externalId, engine.getEngineName());
         } else {
             log.info("JMX is enabling the {} channel for the externalId of {} from the following engine: {} ", channelId, externalId, engine.getEngineName());

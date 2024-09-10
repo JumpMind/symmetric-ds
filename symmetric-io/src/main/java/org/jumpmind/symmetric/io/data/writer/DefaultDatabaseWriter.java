@@ -1224,7 +1224,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         }
                     }
                     if (table.hasGeneratedColumns()) {
-                    	removeGeneratedColumns(table);
+                        removeGeneratedColumns(table);
                     }
                     putTableInCache(tableNameKey, table);
                 }
@@ -1237,19 +1237,19 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         }
         return table;
     }
-    
+
     protected void removeGeneratedColumns(Table table) {
-    	List<Column> adjustedColumns = new ArrayList<Column>();
-    	for (int i = 0; i < table.getColumnCount(); i++) {
-    		Column col = table.getColumn(i);
-    		if (!col.isGenerated()) {
-    			adjustedColumns.add(col);
-    		}
-    	}
-    	table.removeAllColumns();
-    	table.addColumns(adjustedColumns);
+        List<Column> adjustedColumns = new ArrayList<Column>();
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            Column col = table.getColumn(i);
+            if (!col.isGenerated()) {
+                adjustedColumns.add(col);
+            }
+        }
+        table.removeAllColumns();
+        table.addColumns(adjustedColumns);
     }
-    
+
     protected String getTableKey(Table table) {
         return table.getTableKey();
     }

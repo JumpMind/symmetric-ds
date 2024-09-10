@@ -222,9 +222,9 @@ abstract public class AbstractTriggerTemplate {
     }
 
     public boolean isUniTextColumn(Column column) {
-    	return column.getJdbcTypeName() == null ? false : column.getJdbcTypeName().equalsIgnoreCase("unitext");
+        return column.getJdbcTypeName() == null ? false : column.getJdbcTypeName().equalsIgnoreCase("unitext");
     }
-    
+
     public boolean[] getColumnPositionUsingTemplate(Table originalTable, TriggerHistory triggerHistory) {
         IParameterService parameterService = symmetricDialect.getParameterService();
         boolean concatInCsv = parameterService.is(ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED);

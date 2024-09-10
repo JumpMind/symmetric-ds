@@ -128,7 +128,6 @@ public class TableSelectionLayout extends VerticalLayout {
         listOfTablesGrid.addColumn(table -> table);
         this.addAndExpand(listOfTablesGrid);
         refreshSchemas();
-        
         schemaSelect.addValueChangeListener(event -> refreshTableOfTables());
         catalogSelect.addValueChangeListener(event -> {
             refreshSchemas();
@@ -167,8 +166,8 @@ public class TableSelectionLayout extends VerticalLayout {
     protected void refreshSchemas() {
         List<String> schemas = getSchemas();
         if (schemas != null && schemas.size() == 0) {
-        	refreshTableOfTables();
-        	return;
+            refreshTableOfTables();
+            return;
         }
         schemaSelect.setItems(schemas);
         if (selectedTablesSet.iterator().hasNext()) {
