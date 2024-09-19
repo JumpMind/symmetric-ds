@@ -1444,10 +1444,19 @@ public class DataService extends AbstractService implements IDataService {
         }
         String sourceNodeId = engine.getNodeService().findIdentity().getNodeId();
         long firstBatchId = 0;
+        long totalDataCount = 0;
+        for (TriggerHistory triggerHist : triggerHistories) {
+            if (!triggerHist.getTriggerId().startsWith("sym")) {
+                totalDataCount = totalDataCount + 1;
+            }
+        }
+        processInfo.setTotalDataCount(totalDataCount);
         for (TriggerHistory triggerHistory : triggerHistories) {
+            if (!triggerHistory.getSourceTableName().toLowerCase().startsWith("sym")) {
+                processInfo.incrementCurrentDataCount();
+            }
             List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                     .getTriggerHistoryId());
-            processInfo.incrementCurrentDataCount();
             checkInterrupted();
             for (TriggerRouter triggerRouter : triggerRouters) {
                 if (triggerRouter.getInitialLoadOrder() >= 0
@@ -1495,7 +1504,9 @@ public class DataService extends AbstractService implements IDataService {
                         long numberOfBatches = 1;
                         if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
                             if (rowCount > 0) {
+                                processInfo.setCurrentRowCount(processInfo.getCurrentRowCount() + rowCount);
                                 numberOfBatches = (long) Math.ceil((rowCount * transformMultiplier) / (channel.getMaxBatchSize() * 1f));
+                                processInfo.setCurrentBatchCount(processInfo.getCurrentBatchCount() + numberOfBatches);
                             }
                             startBatchId = insertRequestedOutgoingBatches(transaction, targetNode, triggerRouter, triggerHistory, selectSql,
                                     loadId, createBy, reloadChannel, rowCount, channel.getMaxBatchSize(), numberOfBatches);
