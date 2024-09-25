@@ -240,6 +240,17 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         }
     }
 
+    public static ISymmetricEngine findEngineByNodeId(String nodeId) {
+        if (nodeId != null) {
+            for (ISymmetricEngine engine : registeredEnginesByName.values()) {
+                if (nodeId.equals(engine.getNodeId())) {
+                    return engine;
+                }
+            }
+        }
+        return null;
+    }
+
     public void setDeploymentType(String deploymentType) {
         this.deploymentType = deploymentType;
     }
