@@ -48,6 +48,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.ColumnAutoIncrementChange;
+import org.jumpmind.db.alter.ColumnAutoUpdateChange;
 import org.jumpmind.db.alter.ColumnChange;
 import org.jumpmind.db.alter.CopyColumnValueChange;
 import org.jumpmind.db.alter.PrimaryKeyChange;
@@ -261,6 +262,13 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
+    protected void writeColumnAutoUpdateStmt(Table table, Column column, StringBuilder ddl) {
+        if (column.getMappedTypeCode() == Types.TIMESTAMP && column.isAutoUpdate()) {
+            ddl.append("on update current_timestamp()");
+        }
+    }
+
+    @Override
     protected boolean shouldUseQuotes(String defaultValue, Column column) {
         String defaultValueStr = mapDefaultValue(defaultValue, column);
         while (defaultValueStr != null && defaultValueStr.startsWith("(") && defaultValueStr.endsWith(")")) {
@@ -373,6 +381,16 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
                     changedColumns.add(column);
                 }
                 changeIt.remove();
+            } else if (change instanceof ColumnAutoUpdateChange) {
+                try {
+                    Column sourceColumn = ((ColumnAutoUpdateChange) change).getColumn();
+                    Column targetColumn = (Column) sourceColumn.clone();
+                    targetColumn.setAutoUpdate(!sourceColumn.isAutoUpdate());
+                    processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
+                    changeIt.remove();
+                } catch (CloneNotSupportedException e) {
+                    log.error("Failed to clone column", e);
+                }
             }
         }
         for (Iterator<Column> columnIt = changedColumns.iterator(); columnIt.hasNext();) {

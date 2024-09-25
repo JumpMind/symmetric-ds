@@ -50,6 +50,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
@@ -63,7 +64,6 @@ import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlRowMapper;
-import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
 
@@ -100,10 +100,53 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
         // for more info.
         Table table = super.readTable(connection, metaData, values);
         if (table != null) {
-            determineAutoIncrementFromResultSetMetaData(connection, table,
-                    table.getPrimaryKeyColumns());
+            determineExtraColumnInfo(table);
         }
         return table;
+    }
+
+    protected void determineExtraColumnInfo(Table table) {
+        String sql = "SELECT column_name, extra, column_type, generation_expression FROM information_schema.columns "
+                + "WHERE table_schema = ? AND table_name = ?";
+        List<Row> rows = platform.getSqlTemplateDirty().query(sql, new Object[] { table.getCatalog(), table.getName() });
+        for (Row row : rows) {
+            String extra = row.getString("extra");
+            String columnName = row.getString("column_name");
+            String columnType = row.getString("column_type");
+            if (StringUtils.isNotBlank(extra)) {
+                Column column = table.findColumn(columnName);
+                if (column != null) {
+                    if (column.isGenerated()) {
+                        if (extra.equalsIgnoreCase("DEFAULT_GENERATED")) {
+                            column.setGenerated(false);
+                            column.setExpressionAsDefaultValue(true);
+                        } else if (column.getDefaultValue() == null || column.getDefaultValue().equalsIgnoreCase("NULL")) {
+                            column.setDefaultValue(row.getString("generation_expression"));
+                        }
+                    } else if (column.getMappedTypeCode() == Types.TIMESTAMP) {
+                        column.setAutoUpdate(extra.toLowerCase().startsWith("on update"));
+                    } else if (extra.equalsIgnoreCase("auto_increment")) {
+                        column.setAutoIncrement(true);
+                    }
+                }
+            }
+            if (columnType != null && columnType.toLowerCase().startsWith("enum(")) {
+                String[] parsedEnums = columnType.substring(5, columnType.length() - 1).split(",");
+                for (int i = 0; i < parsedEnums.length; i++) {
+                    parsedEnums[i] = StringUtils.unwrap(parsedEnums[i], "'");
+                }
+                Column column = table.findColumn(columnName);
+                if (column != null) {
+                    PlatformColumn platformColumn = column.getPlatformColumns().get(platform.getName());
+                    if (platformColumn != null) {
+                        platformColumn.setEnumValues(parsedEnums);
+                    }
+                }
+            }
+        }
+        if (rows.isEmpty()) {
+            log.warn("Could not find extra column info for table {}", table.getFullyQualifiedTableName());
+        }
     }
 
     @Override
@@ -145,25 +188,6 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
-        if (column.isGenerated()) {
-            JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
-            String sql = "SELECT extra, generation_expression\n"
-                    + "FROM information_schema.columns\n"
-                    + "WHERE table_schema = ?\n"
-                    + "AND table_name = ?\n"
-                    + "AND column_name = ?";
-            List<String> l = new ArrayList<String>();
-            l.add((String) values.get("TABLE_CAT"));
-            l.add((String) values.get("TABLE_NAME"));
-            l.add(column.getName());
-            Row result = sqlTemplate.queryForRow(sql, l.toArray());
-            if ("DEFAULT_GENERATED".equals(result.getString("extra"))) {
-                column.setGenerated(false);
-                column.setExpressionAsDefaultValue(true);
-            } else if (column.getDefaultValue() == null || column.getDefaultValue().equals("NULL")) {
-                column.setDefaultValue(result.getString("generation_expression"));
-            }
-        }
         if (column.getMappedTypeCode() == Types.TIMESTAMP) {
             adjustColumnSize(column, -20);
         } else if (column.getMappedTypeCode() == Types.TIME) {
@@ -190,58 +214,6 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
                 column.getJdbcTypeName().equalsIgnoreCase(TypeMap.LINESTRING) ||
                 column.getJdbcTypeName().equalsIgnoreCase(TypeMap.POLYGON)) {
             column.setJdbcTypeName(TypeMap.GEOMETRY);
-        }
-        if (column.getJdbcTypeName().equalsIgnoreCase("enum")) {
-            ISqlTemplate template = platform.getSqlTemplate();
-            // Version 8 populates TABLE_CAT, all others populate TABLE_SCHEMA
-            // But historically, the metaData.getCatalog() was used to provide the value for the query
-            // Query for version 5.5, 5.6, and 5.7
-            String unParsedEnums = template.queryForString("SELECT SUBSTRING(COLUMN_TYPE,5) FROM information_schema.COLUMNS"
-                    + " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?",
-                    // metaData.getCatalog(),
-                    // (String) values.get("TABLE_CAT"),
-                    (String) values.get("TABLE_SCHEMA"),
-                    (String) values.get("TABLE_NAME"), column.getName());
-            if (unParsedEnums == null) {
-                // Query for version 8.0
-                unParsedEnums = template.queryForString("SELECT SUBSTRING(COLUMN_TYPE,5) FROM information_schema.COLUMNS"
-                        + " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?",
-                        // metaData.getCatalog(),
-                        (String) values.get("TABLE_CAT"),
-                        // (String) values.get("TABLE_SCHEMA"),
-                        (String) values.get("TABLE_NAME"), column.getName());
-                if (unParsedEnums == null) {
-                    // Query originally used
-                    unParsedEnums = template.queryForString("SELECT SUBSTRING(COLUMN_TYPE,5) FROM information_schema.COLUMNS"
-                            + " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?",
-                            metaData.getCatalog(),
-                            // (String) values.get("TABLE_CAT"),
-                            // (String) values.get("TABLE_SCHEMA"),
-                            (String) values.get("TABLE_NAME"), column.getName());
-                }
-            }
-            if (unParsedEnums != null) {
-                unParsedEnums = unParsedEnums.trim();
-                if (unParsedEnums.startsWith("(")) {
-                    unParsedEnums = unParsedEnums.substring(1);
-                    if (unParsedEnums.endsWith(")")) {
-                        unParsedEnums = unParsedEnums.substring(0, unParsedEnums.length() - 1);
-                    }
-                }
-                String[] parsedEnums = unParsedEnums.split(",");
-                for (int i = 0; i < parsedEnums.length; i++) {
-                    String parsedEnum = parsedEnums[i];
-                    if (parsedEnum.startsWith("'")) {
-                        parsedEnum = parsedEnum.substring(1);
-                        if (parsedEnum.endsWith("'")) {
-                            parsedEnum = parsedEnum.substring(0, parsedEnum.length() - 1);
-                        }
-                    }
-                    parsedEnums[i] = parsedEnum;
-                }
-                // column.setEnumValues(parsedEnums);
-                column.getPlatformColumns().get(platform.getName()).setEnumValues(parsedEnums);
-            }
         }
         return column;
     }

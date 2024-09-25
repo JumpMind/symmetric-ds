@@ -118,6 +118,8 @@ public class Column implements Cloneable, Serializable {
     private Map<String, PlatformColumn> platformColumns;
     private int primaryKeySequence;
     // private String[] enumValues;
+    /** Flag for timestamp column that is updated to current timestamp automatically when a row is updated */
+    private boolean autoUpdate;
 
     public Column() {
     }
@@ -877,5 +879,13 @@ public class Column implements Cloneable, Serializable {
 
     public void setPrimaryKeySequence(int primaryKeySequence) {
         this.primaryKeySequence = primaryKeySequence;
+    }
+
+    public boolean isAutoUpdate() {
+        return autoUpdate;
+    }
+
+    public void setAutoUpdate(boolean autoUpdate) {
+        this.autoUpdate = autoUpdate;
     }
 }

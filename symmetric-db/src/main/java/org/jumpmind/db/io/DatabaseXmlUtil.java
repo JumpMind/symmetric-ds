@@ -254,6 +254,8 @@ public class DatabaseXmlUtil {
                                     column.setDefaultValue(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("autoIncrement")) {
                                     column.setAutoIncrement(FormatUtils.toBoolean(attributeValue));
+                                } else if (attributeName.equalsIgnoreCase("autoUpdate")) {
+                                    column.setAutoUpdate(FormatUtils.toBoolean(attributeValue));
                                 } else if (attributeName.equalsIgnoreCase("javaName")) {
                                     column.setJavaName(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("description")) {
@@ -555,6 +557,9 @@ public class DatabaseXmlUtil {
                 }
                 if (column.isAutoIncrement()) {
                     output.write(" autoIncrement=\"" + column.isAutoIncrement() + "\"");
+                }
+                if (column.isAutoUpdate()) {
+                    output.write(" autoUpdate=\"" + column.isAutoUpdate() + "\"");
                 }
                 if (column.getJavaName() != null) {
                     output.write(" javaName=\"" + column.getJavaName() + "\"");
