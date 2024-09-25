@@ -346,6 +346,11 @@ public class ModelComparator {
                     sourceColumn.isAutoIncrement(), targetColumn.isAutoIncrement());
             changes.add(new ColumnAutoIncrementChange(sourceTable, sourceColumn));
         }
+        if (sourceColumn.isAutoUpdate() != targetColumn.isAutoUpdate()) {
+            log.info("The {} column on the {} table changed auto update status from {} to {} ", sourceColumn.getName(), sourceTable.getName(),
+                    sourceColumn.isAutoUpdate(), targetColumn.isAutoUpdate());
+            changes.add(new ColumnAutoUpdateChange(sourceTable, sourceColumn));
+        }
         if (sourceColumn.isGenerated() != targetColumn.isGenerated()) {
             log.info("The {} column on the {} table changed generated status from {} to {} ", sourceColumn.getName(), sourceTable.getName(),
                     sourceColumn.isGenerated(), targetColumn.isGenerated());

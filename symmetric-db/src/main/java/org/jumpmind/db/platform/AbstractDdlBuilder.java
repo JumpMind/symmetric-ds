@@ -60,6 +60,7 @@ import org.jumpmind.db.alter.AddIndexChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.AddTableChange;
 import org.jumpmind.db.alter.ColumnAutoIncrementChange;
+import org.jumpmind.db.alter.ColumnAutoUpdateChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.ColumnDefaultValueChange;
 import org.jumpmind.db.alter.ColumnGeneratedChange;
@@ -392,7 +393,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 AddPrimaryKeyChange.class, PrimaryKeyChange.class, RemoveColumnChange.class, AddColumnChange.class,
                 ColumnAutoIncrementChange.class, ColumnDefaultValueChange.class, ColumnRequiredChange.class,
                 ColumnDataTypeChange.class, ColumnSizeChange.class, ColumnGeneratedChange.class, CopyColumnValueChange.class,
-                GeneratedColumnDefinitionChange.class });
+                GeneratedColumnDefinitionChange.class, ColumnAutoUpdateChange.class });
         processTableStructureChanges(currentModel, desiredModel, CollectionUtils.select(changes, predicate), ddl);
         // 4th pass: adding tables
         processChanges(currentModel, desiredModel, changes, ddl, new Class<?>[] { AddTableChange.class });
@@ -429,6 +430,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                         processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                     } else if (change.getClass().equals(ColumnAutoIncrementChange.class)) {
                         processChange(currentModel, desiredModel, (ColumnAutoIncrementChange) change, ddl);
+                    } else if (change.getClass().equals(ColumnAutoUpdateChange.class)) {
+                        processChange(currentModel, desiredModel, (ColumnAutoUpdateChange) change, ddl);
                     } else if (change.getClass().equals(ColumnDefaultValueChange.class)) {
                         processChange(currentModel, desiredModel, (ColumnDefaultValueChange) change, ddl);
                     } else if (change.getClass().equals(ColumnRequiredChange.class)) {
@@ -1662,6 +1665,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         ddl.append(getSqlType(column));
         if (!column.isGenerated()) {
             writeColumnDefaultValueStmt(table, column, ddl);
+            if (column.isAutoUpdate()) {
+                ddl.append(" ");
+                writeColumnAutoUpdateStmt(table, column, ddl);
+            }
             if (column.isRequired() && databaseInfo.isNotNullColumnsSupported()) {
                 ddl.append(" ");
                 writeColumnNotNullableStmt(ddl);
@@ -1953,6 +1960,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         ddl.append("IDENTITY");
     }
 
+    protected void writeColumnAutoUpdateStmt(Table table, Column column, StringBuilder ddl) {
+    }
+
     /**
      * Prints that a column is nullable.
      */
@@ -1978,7 +1988,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         int targetScale = targetColumn.getScale();
         PlatformColumn platformTargetColumn = targetColumn.findPlatformColumn(databaseName);
         if (platformTargetColumn != null) {
-            targetSize = String.valueOf(platformTargetColumn.getSize());
+            targetSize = String.valueOf(platformTargetColumn.getSize() == -1 ? 0 : platformTargetColumn.getSize());
             targetScale = platformTargetColumn.getDecimalDigits() == -1 ? 0 : platformTargetColumn.getDecimalDigits();
             if (scaleMatters) {
                 targetSize += "," + targetScale;
