@@ -253,7 +253,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 TriggerRouter triggerRouter = triggerRouters.get(i);
                 TriggerHistory triggerHistory = triggerHistories.get(i);
                 StringBuilder sql = new StringBuilder(symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter, triggerHistory));
-                addPurgeCriteriaToConfigurationTables(triggerRouter.getTrigger().getSourceTableName(), sql);
+                addPurgeCriteriaToConfigurationTables(targetNode, triggerRouter.getTrigger().getSourceTableName(), sql);
                 Data data = new Data(1, null, sql.toString(), DataEventType.SQL, triggerHistory.getSourceTableName(), null, triggerHistory, triggerRouter
                         .getTrigger().getChannelId(), null, null);
                 initialLoadEvents.add(new SelectFromTableEvent(data, triggerRouter));
@@ -300,16 +300,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
 
-    private void addPurgeCriteriaToConfigurationTables(String sourceTableName, StringBuilder sql) {
+    private void addPurgeCriteriaToConfigurationTables(Node targetNode, String sourceTableName, StringBuilder sql) {
         if ((TableConstants
                 .getTableName(parameterService.getTablePrefix(), TableConstants.SYM_NODE)
                 .equalsIgnoreCase(sourceTableName))
                 || TableConstants.getTableName(parameterService.getTablePrefix(),
                         TableConstants.SYM_NODE_SECURITY).equalsIgnoreCase(sourceTableName)) {
-            Node me = nodeService.findIdentity();
-            if (me != null) {
-                sql.append(String.format(" where created_at_node_id='%s'", me.getNodeId()));
-            }
+            sql.append(String.format(" where created_at_node_id != '%s' or created_at_node_id is null", targetNode.getNodeId()));
         }
     }
 
