@@ -216,7 +216,7 @@ public class Column implements Cloneable, Serializable {
      */
     public void setPrimaryKey(boolean primaryKey) {
         this.primaryKey = primaryKey;
-        if (primaryKey) {
+        if (primaryKey) {    	
             this.required = true;
         }
     }

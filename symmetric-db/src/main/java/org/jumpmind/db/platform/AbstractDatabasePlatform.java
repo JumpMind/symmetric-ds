@@ -425,7 +425,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected Object getObjectValue(String value, Column column, BinaryEncoding encoding, boolean useVariableDates, boolean fitToColumn)
             throws DecoderException {
         Object objectValue = value;
-        int type = column.getMappedTypeCode();
+        if(column.getName().equals("country_key") ){
+       	 	String s = "1";
+        }
+    	int type = column.getMappedTypeCode();
+        
         if ((value == null || (getDdlBuilder().getDatabaseInfo().isEmptyStringNulled() && value.equals(""))) && column.isRequired()
                 && column.isOfTextType()) {
             objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
@@ -758,7 +762,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             for (IndexColumn indexColumn : indices[0].getColumns()) {
                 Column column = result.getColumnWithName(indexColumn.getName());
                 if (column != null) {
+                	boolean required = column.isRequired(); 
                     column.setPrimaryKey(true);
+                    column.setRequired(required);
                 }
             }
         } else {
