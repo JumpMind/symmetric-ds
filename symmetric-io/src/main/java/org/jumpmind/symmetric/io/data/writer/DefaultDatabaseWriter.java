@@ -78,7 +78,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     private final String TRUNCATE_PATTERN = "^(truncate)( table)?.*";
     private final String DELETE_PATTERN = "^(delete from).*";
     private final String ALTER_DEF_CONSTRAINT_PATTERN = " *alter +table +[\\[\\\"]{0,1}(.*?)[\\]\\\"]{0,1} +drop +constraint +[\\[\\\"]{0,1}(df__.*?)[\\]\\\"]{0,1} *";
-    private final String ALTER_TABLE_PATTERN = " *alter +table +.*";
+    private final String ALTER_TABLE_PATTERN = " *(alter|create) +.*";
     protected IDatabasePlatform platform;
     protected ISqlTransaction transaction;
     protected DmlStatement currentDmlStatement;
