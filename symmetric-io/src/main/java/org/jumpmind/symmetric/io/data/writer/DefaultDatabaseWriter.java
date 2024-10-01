@@ -1223,6 +1223,18 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                             }
                         }
                     }
+                    if (writerSettings.isTreatBitFieldsAsInteger() && (batch.getChannelId() != null
+                            && !batch.getChannelId().equals(IoConstants.CHANNEL_CONFIG)
+                            && !batch.getChannelId().equals(IoConstants.CHANNEL_MONITOR))) {
+                        Column[] columns = table.getColumns();
+                        for (Column column : columns) {
+                            if (column != null) {
+                                if (column.getJdbcTypeName().equals("BIT") && column.getSizeAsInt() > 1) {
+                                    column.setMappedTypeCode(Types.INTEGER);
+                                }
+                            }
+                        }
+                    }
                     if (table.hasGeneratedColumns()) {
                         removeGeneratedColumns(table);
                     }

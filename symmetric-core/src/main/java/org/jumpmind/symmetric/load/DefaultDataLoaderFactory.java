@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.cassandra.CassandraPlatform;
@@ -323,6 +324,12 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                 .toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]);
         settings.setAlterDatabaseInterceptors(interceptors);
         return settings;
+    }
+
+    @Override
+    protected boolean getDefaultTreatBitAsInteger() {
+        String name = engine.getSymmetricDialect().getTargetPlatform().getName();
+        return name.equals(DatabaseNamesConstants.MYSQL) || name.equals(DatabaseNamesConstants.MARIADB);
     }
 
     @Override
