@@ -758,7 +758,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             for (IndexColumn indexColumn : indices[0].getColumns()) {
                 Column column = result.getColumnWithName(indexColumn.getName());
                 if (column != null) {
+                    boolean required = column.isRequired(); 
                     column.setPrimaryKey(true);
+                    column.setRequired(required);
                 }
             }
         } else {

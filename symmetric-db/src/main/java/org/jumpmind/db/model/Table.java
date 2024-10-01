@@ -1365,7 +1365,9 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
                     if (column != null) {
                         for (String pkColumnName : pkColumnNames) {
                             if (column.getName().equalsIgnoreCase(pkColumnName)) {
+                            	boolean required = column.isRequired();
                                 column.setPrimaryKey(true);
+                                column.setRequired(required);
                             }
                         }
                     }
