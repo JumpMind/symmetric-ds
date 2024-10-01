@@ -51,6 +51,7 @@ public abstract class AbstractDataLoaderFactory {
         settings.setIgnoreMissingTables(parameterService.is(ParameterConstants.DATA_LOADER_IGNORE_MISSING_TABLES));
         settings.setTreatDateTimeFieldsAsVarchar(
                 parameterService.is(ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR));
+        settings.setTreatBitFieldsAsInteger(parameterService.is(ParameterConstants.DATA_LOADER_TREAT_BIT_AS_INTEGER, getDefaultTreatBitAsInteger()));
         settings.setSaveCurrentValueOnError(
                 parameterService.is(ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
         settings.setFitToColumn(parameterService.is(ParameterConstants.DATA_LOADER_FIT_TO_COLUMN, false));
@@ -103,5 +104,9 @@ public abstract class AbstractDataLoaderFactory {
         settings.setConflictSettingsByChannel(byChannel);
         settings.setConflictSettingsByTable(byTable);
         return settings;
+    }
+
+    protected boolean getDefaultTreatBitAsInteger() {
+        return false;
     }
 }

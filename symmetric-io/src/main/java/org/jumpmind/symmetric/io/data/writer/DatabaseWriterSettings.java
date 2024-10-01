@@ -35,6 +35,7 @@ public class DatabaseWriterSettings {
     // Milliseconds to sleep between commits.
     protected long commitSleepInterval = 5;
     protected boolean treatDateTimeFieldsAsVarchar = false;
+    protected boolean treatBitFieldsAsInteger = false;
     protected boolean usePrimaryKeysFromSource = true;
     protected Conflict defaultConflictSetting;
     protected boolean createTableFailOnError = true;
@@ -111,6 +112,14 @@ public class DatabaseWriterSettings {
         this.treatDateTimeFieldsAsVarchar = treatDateTimeFieldsAsVarchar;
     }
 
+    public boolean isTreatBitFieldsAsInteger() {
+        return treatBitFieldsAsInteger;
+    }
+
+    public void setTreatBitFieldsAsInteger(boolean treatBitFieldsAsInteger) {
+        this.treatBitFieldsAsInteger = treatBitFieldsAsInteger;
+    }
+    
     public boolean isUsePrimaryKeysFromSource() {
         return usePrimaryKeysFromSource;
     }
