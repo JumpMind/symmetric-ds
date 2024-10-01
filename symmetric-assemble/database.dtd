@@ -176,6 +176,8 @@ Defines a column in a table.
                        don't need to quote it for e.g. string values.
 @attr autoIncrement    Whether this column is an identity column, i.e. it's value is
                        automatically defined by the database.
+@attr autoUpdate       Whether this column is a timestamp column that is automatically
+                       updated to current timestamp by the database.
 @attr inheritance      Sorry, no documentation available.
                        <br><b>Note: This attribute is ignored by DdlUtils.</b>
 @attr inputValidator   Sorry, no documentation available.
@@ -202,6 +204,7 @@ Defines a column in a table.
   size             CDATA #IMPLIED
   default          CDATA #IMPLIED
   autoIncrement    (true | false) "false"
+  autoUpdate       (true | false) "false"
   inheritance      (single | false) "false"
   inputValidator   CDATA #IMPLIED
   javaNamingMethod (nochange | underscore | javaname) #IMPLIED
