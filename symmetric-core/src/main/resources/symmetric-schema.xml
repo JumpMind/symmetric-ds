@@ -21,7 +21,7 @@
     under the License.
 
 -->
-<!DOCTYPE database SYSTEM "../../../../symmetric-assemble/database.dtd">
+<!DOCTYPE database SYSTEM "https://symmetricds.sourceforge.net/dtd/database.dtd">
 
 <database name="symmetric">
 
