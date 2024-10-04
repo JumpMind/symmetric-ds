@@ -1,4 +1,4 @@
-apply plugin: 'org.asciidoctor.gradle.asciidoctor'
+apply plugin: 'org.asciidoctor.jvm.convert'
 
 configurations{ generateAppendixesDependencies }
 
@@ -169,7 +169,7 @@ task publishDoc {
 }
 
 asciidoctor { (1)
-    backends = docFormat.split ","
+    baseDirFollowsSourceDir()
     sourceDir = file(symAssembleDir + '/src/asciidoc')
     outputDir = file("$buildDir/src/asciidoc")
     options = [

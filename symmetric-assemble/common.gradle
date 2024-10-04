@@ -57,7 +57,6 @@ def ignoreDerivedResources(projectDescription, directories = ["build", "test-out
 
 subprojects { subproject ->
 
-    apply plugin:'license-report'
     apply plugin: 'java'
     apply plugin: 'propdeps'
     apply plugin: 'propdeps-maven'
