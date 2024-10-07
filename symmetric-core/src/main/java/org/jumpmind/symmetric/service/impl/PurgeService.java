@@ -134,7 +134,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 for (IPurgeListener purgeListener : purgeListeners) {
                     try {
                         rowsPurged += purgeListener.beforePurgeOutgoing(force);
-                    } catch(Throwable e) {
+                    } catch (Throwable e) {
                         log.error(e.getMessage(), e);
                     }
                 }
@@ -156,7 +156,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 for (IPurgeListener purgeListener : purgeListeners) {
                     try {
                         rowsPurged += purgeListener.purgeOutgoing(force);
-                    } catch(Throwable e) {
+                    } catch (Throwable e) {
                         log.error(e.getMessage(), e);
                     }
                 }
@@ -759,7 +759,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     for (IPurgeListener purgeListener : purgeListeners) {
                         try {
                             purgedRowCount += purgeListener.beforePurgeIncoming(force);
-                        } catch(Throwable e) {
+                        } catch (Throwable e) {
                             log.error(e.getMessage(), e);
                         }
                     }
@@ -770,7 +770,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     for (IPurgeListener purgeListener : purgeListeners) {
                         try {
                             purgedRowCount += purgeListener.purgeIncoming(force);
-                        } catch(Throwable e) {
+                        } catch (Throwable e) {
                             log.error(e.getMessage(), e);
                         }
                     }

@@ -24,9 +24,9 @@ import org.jumpmind.extension.IExtensionPoint;
 
 public interface IPurgeListener extends IExtensionPoint {
     public long beforePurgeOutgoing(boolean force);
-    
+
     public long purgeOutgoing(boolean force);
-    
+
     public long beforePurgeIncoming(boolean force);
 
     public long purgeIncoming(boolean force);

@@ -737,6 +737,10 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         return true;
     }
 
+    @Override
+    protected void captureMissingDelete(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {
+    }
+
     protected String updateCteExpression(String sql, String nodeId) {
         return sql != null ? sql.replaceAll(MsSql2008DdlBuilder.CHANGE_TRACKING_SYM_PREFIX + ":",
                 MsSql2008DdlBuilder.CHANGE_TRACKING_SYM_PREFIX + ":" + nodeId) : "";
