@@ -1,11 +1,17 @@
 package org.jumpmind.symmetric.file;
 
-import java.io.File;  
-import org.jumpmind.symmetric.model.*;
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+
+import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
-import static org.junit.Assert.*; 
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.params.*;
+import org.jumpmind.symmetric.model.FileTrigger;
+import org.jumpmind.symmetric.model.FileTriggerRouter;
+import org.jumpmind.symmetric.model.Router;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class DirectorySnapshotTest {
@@ -15,10 +21,7 @@ public class DirectorySnapshotTest {
     static File targetDirectory = new File(testDirectory, "target");
     static File fileInSource1 = new File(sourceDirectory, "temp1.test");
     // static File fileInSource2 = new File(sourceDirectory, "temp2.test");
-    // static File fileInSource3 = new File(sourceDirectory, "temp3.test");
     static File fileInTarget1 = new File(targetDirectory, "temp1.test");
-    // static File fileInTarget2 = new File(targetDirectory, "temp2.test");
-    // static File fileInTarget3 = new File(targetDirectory, "temp3.test");
     static FileTriggerRouter fileTriggerRouter1 = new FileTriggerRouter();
 
     @BeforeAll
@@ -143,13 +146,6 @@ public class DirectorySnapshotTest {
 
     /**
      * Source and target have lots of files with same names and only 10% differences in ModifiedTime. Time the diff() method! 
-     * Runtimes: 
-     *      10 vs.     10 files =>      1ms |  1ms
-     *     100 vs.    100 files =>      3ms |  1ms
-     *    1000 vs.   1000 files =>     27ms |  2ms
-     *   10000 vs.  10000 files =>   1258ms |  7ms
-     *  100000 vs. 100000 files => 313595ms | 70ms
-     * 1000000 vs.1000000 files =>      ??? | 563ms
      */
     @Test
     public void testDiff_LotsOfFilesAndFewChanges() {
@@ -179,10 +175,6 @@ public class DirectorySnapshotTest {
         long startTime = System.currentTimeMillis();
         DirectorySnapshot differences = targetDir.diff(sourceDir);
         // Assert
-        for (FileSnapshot fileSnapshot : differences) {
-            System.out.println(String.format("testDiff_LotsOfFilesAndFewChanges Difference> Event=%s; FileName=%s", fileSnapshot.getLastEventType().toString(), fileSnapshot
-                    .getFileName()));
-        }
         assertEquals(expectedDifferences, differences.size());
         System.out.println("testDiff_LotsOfFilesAndFewChanges done; Runtime ms=" + (System.currentTimeMillis() - startTime));
     }
