@@ -32,5 +32,5 @@ Section <<Add Node>> talks about creating additional nodes.
 
 endif::pro[]
 
-include::setup/load-only-setup.ad[]
+include::setup/write-only-setup.ad[]
 

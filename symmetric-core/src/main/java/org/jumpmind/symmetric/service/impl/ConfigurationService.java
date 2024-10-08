@@ -73,13 +73,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         Map<String, Channel> updatedDefaultChannels = new LinkedHashMap<String, Channel>();
         updatedDefaultChannels.put(Constants.CHANNEL_CONFIG,
                 new Channel(Constants.CHANNEL_CONFIG, 0, 2000, 10, true, 0, true));
+        Channel reloadChannel;
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
-            updatedDefaultChannels.put(Constants.CHANNEL_RELOAD,
-                    new Channel(Constants.CHANNEL_RELOAD, 1, 10000, 10, true, 0, false, true, false));
+            reloadChannel = new Channel(Constants.CHANNEL_RELOAD, 1, 500000, 10, true, 0, false, true, false);
         } else {
-            updatedDefaultChannels.put(Constants.CHANNEL_RELOAD,
-                    new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0, false, true, false));
+            reloadChannel = new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0, false, true, false);
         }
+        reloadChannel.setDataLoaderType("bulk");
+        updatedDefaultChannels.put(Constants.CHANNEL_RELOAD, reloadChannel);
         updatedDefaultChannels.put(Constants.CHANNEL_MONITOR,
                 new Channel(Constants.CHANNEL_MONITOR, 2, 100, 10, true, 0, true));
         updatedDefaultChannels.put(Constants.CHANNEL_HEARTBEAT,
