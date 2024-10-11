@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.file;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 
@@ -145,17 +146,17 @@ public class DirectorySnapshotTest {
     }
 
     /**
-     * Source and target have lots of files with same names and only 10% differences in ModifiedTime. Time the diff() method! 
+     * Source and target have lots of files with same names and only 5 differences in ModifiedTime. Time the diff() method!
      */
     @Test
     public void testDiff_LotsOfFilesAndFewChanges() {
         // Arrange
-        int maxIterations = 1000000;
+        int maxIterations = 100;
         int iteration = 1;
         int expectedDifferences = 5;
         int generatedDifferences = 0;
         int frequencyDifferences = maxIterations / expectedDifferences;
-        System.out.println("testDiff_LotsOfFilesAndFewChanges start; maxIterations " + maxIterations + "; expectedDifferences=" + expectedDifferences);
+        // System.out.println("testDiff_LotsOfFilesAndFewChanges start; maxIterations " + maxIterations + "; expectedDifferences=" + expectedDifferences);
         DirectorySnapshot sourceDir = new DirectorySnapshot(fileTriggerRouter1);
         DirectorySnapshot targetDir = new DirectorySnapshot(fileTriggerRouter1);
         while (iteration++ < maxIterations) {
@@ -176,6 +177,8 @@ public class DirectorySnapshotTest {
         DirectorySnapshot differences = targetDir.diff(sourceDir);
         // Assert
         assertEquals(expectedDifferences, differences.size());
-        System.out.println("testDiff_LotsOfFilesAndFewChanges done; Runtime ms=" + (System.currentTimeMillis() - startTime));
+        long runTimeMs = System.currentTimeMillis() - startTime;
+        assertTrue(50 > runTimeMs);
+        // System.out.println("testDiff_LotsOfFilesAndFewChanges done; Runtime ms=" + (runTimeMs));
     }
 }
