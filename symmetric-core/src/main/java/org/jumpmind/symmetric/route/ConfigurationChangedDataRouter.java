@@ -58,6 +58,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         helper = new ConfigurationChangedHelper(engine);
     }
 
+    @Override
     public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData,
             Set<Node> possibleTargetNodes, boolean initialLoad, boolean initialLoadSelectUsed,
             TriggerRouter triggerRouter) {
@@ -74,13 +75,20 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         Node me = findIdentity();
         if (me != null) {
             NetworkedNode rootNetworkedNode = getRootNetworkNodeFromContext(routingContext);
-            if (tableMatches(dataMetaData, TableConstants.SYM_NODE)
-                    && dataMetaData.getData().getDataEventType() == DataEventType.SQL
-                    && dataMetaData.getData().getParsedData(CsvData.ROW_DATA).length > 1
-                    && dataMetaData.getData().getParsedData(CsvData.ROW_DATA)[0].toUpperCase().contains("TABLE")) {
-                helper.setSyncTriggersNeeded(routingContext);
-                routeNodeTables(nodeIds, columnValues, rootNetworkedNode, me, routingContext,
-                        dataMetaData, possibleTargetNodes, initialLoad);
+            if (tableMatches(dataMetaData, TableConstants.SYM_NODE) && dataMetaData.getData().getDataEventType() == DataEventType.SQL) {
+                if (dataMetaData.getData().getParsedData(CsvData.ROW_DATA).length > 1 && dataMetaData.getData().getParsedData(CsvData.ROW_DATA)[0]
+                        .toUpperCase().contains("TABLE")) {
+                    helper.setSyncTriggersNeeded(routingContext);
+                }
+                IConfigurationService configurationService = engine.getConfigurationService();
+                for (Node routeToNode : possibleTargetNodes) {
+                    if (notRestClient(routeToNode)) {
+                        NodeGroupLink link = configurationService.getNodeGroupLinkFor(me.getNodeGroupId(), routeToNode.getNodeGroupId(), false);
+                        if (initialLoad || (link != null && link.isSyncSqlEnabled())) {
+                            nodeIds.add(routeToNode.getNodeId());
+                        }
+                    }
+                }
             } else if (tableMatches(dataMetaData, TableConstants.SYM_NODE)
                     || tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)
                     || tableMatches(dataMetaData, TableConstants.SYM_NODE_HOST)
