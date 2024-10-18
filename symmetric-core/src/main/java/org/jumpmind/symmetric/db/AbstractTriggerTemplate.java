@@ -717,31 +717,57 @@ abstract public class AbstractTriggerTemplate {
         return ddl;
     }
 
+    /***
+     * Builds join with all primary key columns pairs prefixed by the new and old aliases.
+     */
     protected String aliasedPrimaryKeyJoin(String aliasOne, String aliasTwo, Column[] columns) {
         StringBuilder b = new StringBuilder();
-        boolean isFirst = true;
-        for (Column column : columns) {
-            if (isFirst) {
-                isFirst = false;
-            } else {
+        for (int columnNo = 0; columnNo < columns.length; columnNo++) {
+            Column column = columns[columnNo];
+            String quotedColumnName = SymmetricUtils.quote(symmetricDialect, column.getName());
+            if (columnNo > 0) {
                 b.append(" and ");
             }
-            b.append(aliasOne).append(".").append(SymmetricUtils.quote(symmetricDialect, column.getName()));
-            b.append("=").append(aliasTwo).append(".").append(SymmetricUtils.quote(symmetricDialect, column.getName()));
+            if (!column.isRequired()) {
+                b.append("(");
+            }
+            b.append(aliasOne).append(".").append(quotedColumnName);
+            b.append("=").append(aliasTwo).append(".").append(quotedColumnName);
+            if (!column.isRequired()) {
+                b.append(" or (");
+                b.append(aliasOne).append(".").append(quotedColumnName).append(" is null");
+                b.append(" and ");
+                b.append(aliasTwo).append(".").append(quotedColumnName).append(" is null))");
+            }
         }
         return b.toString();
     }
 
+    /***
+     * Builds join with all primary key columns paired with prefixed parameter values.
+     */
     protected String aliasedPrimaryKeyJoinVar(String alias, String prefix, Column[] columns) {
-        String text = "";
-        for (int i = 0; i < columns.length; i++) {
-            text += alias + "." + SymmetricUtils.quote(symmetricDialect, columns[i].getName());
-            text += "=@" + prefix + "pk" + i;
-            if (i + 1 < columns.length) {
-                text += " and ";
+        StringBuilder b = new StringBuilder();
+        for (int columnNo = 0; columnNo < columns.length; columnNo++) {
+            Column column = columns[columnNo];
+            String quotedColumnName = SymmetricUtils.quote(symmetricDialect, column.getName());
+            String paramName = String.format("@%spk%d", prefix, columnNo);
+            if (columnNo > 0) {
+                b.append(" and ");
+            }
+            if (!column.isRequired()) {
+                b.append("(");
+            }
+            b.append(alias).append(".").append(quotedColumnName);
+            b.append("=").append(paramName);
+            if (!column.isRequired()) {
+                b.append(" or (");
+                b.append(alias).append(".").append(quotedColumnName).append(" is null");
+                b.append(" and ");
+                b.append(paramName).append(" is null))");
             }
         }
-        return text;
+        return b.toString();
     }
 
     /**
