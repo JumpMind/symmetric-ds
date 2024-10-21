@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
@@ -39,45 +40,54 @@ public class MsSql2016DdlReader extends MsSqlDdlReader {
         super(platform);
     }
 
+    /**
+     * Maps new native SQL Server column types VARCHARMAX and NVARCHARMAX to a platfom-independent=Types.LONGNVARCHAR
+     */
     @Override
     protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
-        String typeName = (String) values.get("TYPE_NAME");
+        String typeName = ((String) values.get("TYPE_NAME")).toUpperCase();
         if (typeName != null) {
             int size = -1;
             String columnSize = (String) values.get("COLUMN_SIZE");
             if (isNotBlank(columnSize)) {
                 size = Integer.parseInt(columnSize);
             }
-            if (typeName.toUpperCase().contains("NVARCHAR") && size > 4000) {
+            if (typeName.contains("NVARCHAR") && size > 4000) {
                 return Types.LONGNVARCHAR;
-            } else if (typeName.toUpperCase().contains("VARCHAR") && size > 8000) {
+            } else if (typeName.contains("VARCHAR") && size > 8000) {
                 return Types.LONGVARCHAR;
             }
         }
         return super.mapUnknownJdbcTypeForColumn(values);
     }
 
+    final static String VARCHARMAX_SIZE = "2147483647"; // Limit is Integer.MAX_VALUE = 2147483647
+
     /**
-     * Manufacture new native type:
+     * New native SQL Server column types VARCHARMAX and NVARCHARMAX
      */
     @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         String nativeTypeName = ((String) values.get(getName("TYPE_NAME"))).toUpperCase();
-        String columnSize = ((String) values.get(getName("COLUMN_SIZE"))).toUpperCase();
-        String columnName = (String) values.get(getName("COLUMN_NAME"));
-        // Integer.MAX_VALUE = 2147483647
-        if (columnSize.equals("2147483647")) {
-            Column column = super.readColumn(metaData, values);
-            if (nativeTypeName.equals("VARCHAR")) {
-                column.setJdbcTypeName("VARCHARMAX");
-                column.setJdbcTypeCode(ColumnTypes.MSSQL_VARCHARMAX);
-            } else if (nativeTypeName.equals("NVARCHAR")) {
+        String columnSize = (String) values.get(getName("COLUMN_SIZE"));
+        Column column = super.readColumn(metaData, values);
+        if (nativeTypeName.contains("VARCHAR") && columnSize.equals("2147483647")) {
+            Map<String, PlatformColumn> platformColumnsMap = column.getPlatformColumns();
+            if (nativeTypeName.equals("NVARCHAR")) {
                 column.setJdbcTypeName("NVARCHARMAX");
                 column.setJdbcTypeCode(ColumnTypes.MSSQL_NVARCHARMAX);
+            } else {
+                column.setJdbcTypeName("VARCHARMAX");
+                column.setJdbcTypeCode(ColumnTypes.MSSQL_VARCHARMAX);
+
+            }
+            PlatformColumn platformColumn = platformColumnsMap.get(column.getName());
+            if (platformColumn != null) {
+                platformColumn.setType(column.getJdbcTypeName());
             }
             return column;
         }
-        return super.readColumn(metaData, values);
+        return column;
     }
 }
