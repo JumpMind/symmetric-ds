@@ -41,8 +41,8 @@ import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.FormatUtils;
 
 public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
-    boolean castToNVARCHAR;
-    String delimiter;
+    protected boolean castToNVARCHAR;
+    protected String delimiter;
 
     public MsSqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
@@ -550,6 +550,7 @@ getCreateTriggerString() + " $(triggerName) on database\n" +
         return builder.toString();
     }
     
+    @Override
     protected String getSourceTablePrefix(TriggerHistory triggerHistory) {
         String prefix = (isNotBlank(triggerHistory.getSourceSchemaName()) ? SymmetricUtils.quote(
                 symmetricDialect, triggerHistory.getSourceSchemaName()) + symmetricDialect.getPlatform().getDatabaseInfo().getSchemaSeparator() : "");

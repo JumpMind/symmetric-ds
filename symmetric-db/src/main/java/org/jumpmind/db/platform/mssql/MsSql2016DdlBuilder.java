@@ -20,11 +20,32 @@
  */
 package org.jumpmind.db.platform.mssql;
 
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class MsSql2016DdlBuilder extends MsSql2008DdlBuilder {
     public MsSql2016DdlBuilder() {
         super();
         this.databaseName = DatabaseNamesConstants.MSSQL2016;
+        databaseInfo.setMaxSize("VARCHAR", 8000);
+        databaseInfo.setMaxSize("NVARCHAR", 4000);
+        addVirtualNativeTypeVarcharMax();
+        addVirtualTypeNvarcharMax();
+    }
+
+    protected void addVirtualNativeTypeVarcharMax() {
+        databaseInfo.addNativeTypeMapping(ColumnTypes.MSSQL_VARCHARMAX, "VARCHARMAX");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.MSSQL_VARCHARMAX, "VARCHARMAX", ColumnTypes.MSSQL_VARCHARMAX);
+        databaseInfo.setHasSize(ColumnTypes.MSSQL_VARCHARMAX, true);
+        databaseInfo.setMaxSize("VARCHARMAX", Integer.MAX_VALUE);
+        databaseInfo.setDefaultSize(ColumnTypes.MSSQL_VARCHARMAX, Integer.MAX_VALUE);
+    }
+
+    protected void addVirtualTypeNvarcharMax() {
+        databaseInfo.addNativeTypeMapping(ColumnTypes.MSSQL_NVARCHARMAX, "NVARCHARMAX");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.MSSQL_NVARCHARMAX, "NVARCHARMAX", ColumnTypes.MSSQL_NVARCHARMAX);
+        databaseInfo.setHasSize(ColumnTypes.MSSQL_NVARCHARMAX, true);
+        databaseInfo.setDefaultSize(ColumnTypes.MSSQL_NVARCHARMAX, Integer.MAX_VALUE);
+        databaseInfo.setMaxSize("NVARCHARMAX", Integer.MAX_VALUE);
     }
 }

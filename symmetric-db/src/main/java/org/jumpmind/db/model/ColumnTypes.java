@@ -38,4 +38,6 @@ final public class ColumnTypes {
     public static final int TIMESTAMPTZ = -101;
     public static final int TIMESTAMPLTZ = -102;
     public static final int TIMETZ = -103;
+    public static final int MSSQL_VARCHARMAX = -104;
+    public static final int MSSQL_NVARCHARMAX = -105;
 }

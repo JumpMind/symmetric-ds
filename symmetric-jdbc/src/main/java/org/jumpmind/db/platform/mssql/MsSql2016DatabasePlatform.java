@@ -20,8 +20,11 @@
  */
 package org.jumpmind.db.platform.mssql;
 
+import java.sql.Types;
+
 import javax.sql.DataSource;
 
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.SqlTemplateSettings;
@@ -50,6 +53,11 @@ public class MsSql2016DatabasePlatform extends MsSql2008DatabasePlatform {
     }
 
     @Override
+    protected MsSqlDdlReader createDdlReader() {
+        return new MsSql2016DdlReader(this);
+    }
+
+    @Override
     protected IDdlBuilder createDdlBuilder() {
         return new MsSql2016DdlBuilder();
     }
@@ -57,5 +65,16 @@ public class MsSql2016DatabasePlatform extends MsSql2008DatabasePlatform {
     @Override
     public String getName() {
         return DatabaseNamesConstants.MSSQL2016;
+    }
+
+    /**
+     * Signal support for VARCHAR(MAX) and NVARCHAR(MAX) in triggers and without handling them like CLOB types (no special read/write functions needed)
+     */
+    @Override
+    public boolean isClob(int type) {
+        if (type == ColumnTypes.MSSQL_VARCHARMAX || type == ColumnTypes.MSSQL_NVARCHARMAX) {
+            return false;
+        }
+        return super.isClob(type);
     }
 }
