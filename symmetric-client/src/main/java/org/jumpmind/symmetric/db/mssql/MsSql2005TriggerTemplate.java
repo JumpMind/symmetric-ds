@@ -22,9 +22,9 @@ package org.jumpmind.symmetric.db.mssql;
 
 import java.sql.Types;
 
-import org.jumpmind.db.model.Column;
-import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
+import org.jumpmind.db.model.Column; 
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.db.platform.mssql.MsSql2005DdlBuilder;
 
 public class MsSql2005TriggerTemplate extends MsSqlTriggerTemplate {
     public MsSql2005TriggerTemplate(ISymmetricDialect symmetricDialect) {
@@ -40,8 +40,8 @@ public class MsSql2005TriggerTemplate extends MsSqlTriggerTemplate {
         int size = column.getSizeAsInt();
         String jdbcTypeName = column.getJdbcTypeName();
         if (mappedTypeCode == Types.LONGVARCHAR
-                && (jdbcTypeName.equalsIgnoreCase("NVARCHAR") && size > MsSql2005DatabasePlatform.NVARCHARMAX_LIMIT
-                        || jdbcTypeName.equalsIgnoreCase("VARCHAR") && size > MsSql2005DatabasePlatform.VARCHARMAX_LIMIT)) {
+                && (jdbcTypeName.equalsIgnoreCase("NVARCHAR") && size > MsSql2005DdlBuilder.NVARCHARMAX_LIMIT
+                        || jdbcTypeName.equalsIgnoreCase("VARCHAR") && size > MsSql2005DdlBuilder.VARCHARMAX_LIMIT)) {
             return false;
         }
         return super.isLob(column);
