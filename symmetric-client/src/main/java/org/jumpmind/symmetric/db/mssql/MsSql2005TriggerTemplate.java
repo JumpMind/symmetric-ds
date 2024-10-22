@@ -22,9 +22,9 @@ package org.jumpmind.symmetric.db.mssql;
 
 import java.sql.Types;
 
-import org.jumpmind.db.model.Column; 
-import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.mssql.MsSql2005DdlBuilder;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 
 public class MsSql2005TriggerTemplate extends MsSqlTriggerTemplate {
     public MsSql2005TriggerTemplate(ISymmetricDialect symmetricDialect) {
@@ -35,7 +35,7 @@ public class MsSql2005TriggerTemplate extends MsSqlTriggerTemplate {
      * Treats NVARCHAR(MAX), VARCHAR(MAX) columns as regular string type, not as "large objects".
      */
     @Override
-    public boolean isLob(Column column) {
+    protected boolean isLob(Column column) {
         int mappedTypeCode = column.getMappedTypeCode();
         int size = column.getSizeAsInt();
         String jdbcTypeName = column.getJdbcTypeName();

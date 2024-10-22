@@ -789,7 +789,7 @@ abstract public class AbstractTriggerTemplate {
     /***
      * Helps detect Large Object columns. Some LOBs are inaccessible to triggers or require specialized code.
      */
-    public boolean isLob(Column column) {
+    protected boolean isLob(Column column) {
         return symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
     }
 
