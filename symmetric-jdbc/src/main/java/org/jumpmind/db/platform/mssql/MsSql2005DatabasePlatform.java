@@ -37,8 +37,6 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * Adds NVARCHAR(MAX), VARCHAR(MAX) columns, which are treated as a regular string type, not as "large objects".
  */
 public class MsSql2005DatabasePlatform extends MsSql2000DatabasePlatform {
-    public static final int NVARCHARMAX_LIMIT = 4000;
-    public static final int VARCHARMAX_LIMIT = 8000;
 
     /*
      * Creates a new platform instance.
