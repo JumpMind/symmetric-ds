@@ -23,7 +23,6 @@ package org.jumpmind.symmetric;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
-import org.jumpmind.symmetric.service.IStartupParameterService;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.symmetric.web.ServletUtils;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
@@ -91,7 +90,7 @@ public class SymmetricWebServer {
             Class.forName(AbstractCommandLauncher.class.getName());
         } catch (ClassNotFoundException e) {
         }
-        TypedProperties serverProperties = IStartupParameterService.getInstance().getGlobalTypedProperties();
+        TypedProperties serverProperties = ServiceRegistry.getInstance().getStartupParameterService().getGlobalTypedProperties();
         httpEnabled = serverProperties.is(ServerConstants.HTTP_ENABLE, true);
         httpsEnabled = serverProperties.is(ServerConstants.HTTPS_ENABLE, false);
         https2Enabled = serverProperties.is(ServerConstants.HTTPS2_ENABLE, false);
@@ -128,7 +127,7 @@ public class SymmetricWebServer {
 
     protected void setSystemProperty(String property, String value) {
         System.setProperty(property, value);
-        IStartupParameterService.getInstance().refreshSystemProperty(property);
+        ServiceRegistry.getInstance().getStartupParameterService().refreshSystemProperty(property);
     }
 
     protected void setSystemPropertyIfNotNull(String property, String value) {

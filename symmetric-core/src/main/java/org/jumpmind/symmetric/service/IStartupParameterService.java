@@ -27,7 +27,6 @@ import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.ITypedPropertiesFactory;
 import org.jumpmind.symmetric.model.StartupParameter;
 import org.jumpmind.symmetric.model.StartupParameter.Source;
-import org.jumpmind.symmetric.service.impl.StartupParameterService;
 
 /**
  * A single JVM-wide service that resolves and provides read-only, typed access to parameters needed before a database connection exists (JVM system properties,
@@ -41,14 +40,6 @@ import org.jumpmind.symmetric.service.impl.StartupParameterService;
  */
 public interface IStartupParameterService {
     String GLOBAL_ENGINE_NAME = "*";
-
-    /**
-     * Returns the single JVM-wide instance. This is the one place callers should reference the concrete {@link StartupParameterService} implementation; every
-     * other caller should depend only on this interface.
-     */
-    static IStartupParameterService getInstance() {
-        return StartupParameterService.getInstance();
-    }
 
     /**
      * Resolves an engine's startup parameters from its own properties file (via {@code propertiesFactory}) merged with JVM system properties and environment

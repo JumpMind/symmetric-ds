@@ -111,15 +111,16 @@ public abstract class AbstractCommandLauncher {
 
     protected static void initFromServerProperties() {
         if (!serverPropertiesInitialized) {
+            IStartupParameterService startupParameterService = ServiceRegistry.getInstance().getStartupParameterService();
             File serverPropertiesFile = new File(DEFAULT_SERVER_PROPERTIES);
             if (!serverPropertiesFile.exists()) {
                 log.debug("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". File does not exist.");
-                IStartupParameterService.getInstance().registerGlobal(new TypedProperties(), new HashMap<String, Source>());
+                startupParameterService.registerGlobal(new TypedProperties(), new HashMap<String, Source>());
                 return;
             }
             if (!serverPropertiesFile.isFile()) {
                 log.debug("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". Object is not a file.");
-                IStartupParameterService.getInstance().registerGlobal(new TypedProperties(), new HashMap<String, Source>());
+                startupParameterService.registerGlobal(new TypedProperties(), new HashMap<String, Source>());
                 return;
             }
             TypedProperties serverProperties = new TypedProperties(serverPropertiesFile);
@@ -129,7 +130,7 @@ public abstract class AbstractCommandLauncher {
             for (String key : keysFromServerPropertiesFile) {
                 knownFileSources.put(key, Source.SYMMETRIC_SERVER_PROPERTIES);
             }
-            IStartupParameterService.getInstance().registerGlobal(serverProperties, knownFileSources);
+            startupParameterService.registerGlobal(serverProperties, knownFileSources);
             serverPropertiesInitialized = true;
         }
     }
@@ -251,15 +252,16 @@ public abstract class AbstractCommandLauncher {
     }
 
     protected void configureCrypto(CommandLine line) throws Exception {
+        IStartupParameterService startupParameterService = ServiceRegistry.getInstance().getStartupParameterService();
         if (line.hasOption(OPTION_KEYSTORE_PASSWORD)) {
             System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD,
                     line.getOptionValue(OPTION_KEYSTORE_PASSWORD));
-            IStartupParameterService.getInstance().refreshSystemProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
+            startupParameterService.refreshSystemProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
         }
         if (line.hasOption(OPTION_KEYSTORE_TYPE)) {
             System.setProperty(SystemConstants.SYSPROP_KEYSTORE_TYPE,
                     line.getOptionValue(OPTION_KEYSTORE_TYPE));
-            IStartupParameterService.getInstance().refreshSystemProperty(SystemConstants.SYSPROP_KEYSTORE_TYPE);
+            startupParameterService.refreshSystemProperty(SystemConstants.SYSPROP_KEYSTORE_TYPE);
         }
         if (line.hasOption(OPTION_JCE_PROVIDER)) {
             Provider provider = (Provider) Class.forName(line.getOptionValue(OPTION_JCE_PROVIDER))

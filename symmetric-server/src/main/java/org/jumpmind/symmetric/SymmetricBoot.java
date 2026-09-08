@@ -30,7 +30,6 @@ import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.ServerConstants;
-import org.jumpmind.symmetric.service.IStartupParameterService;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.symmetric.web.HealthServlet;
@@ -67,7 +66,8 @@ public class SymmetricBoot extends SpringBootServletInitializer {
             @Override
             public void onStartup(ServletContext servletContext) throws ServletException {
                 servletContext.setInitParameter(WebConstants.INIT_PARAM_AUTO_START, Boolean.toString(true));
-                String singlePropertiesFile = IStartupParameterService.getInstance().getGlobalString(ServerConstants.SERVER_SINGLE_PROPERTIES_FILE);
+                String singlePropertiesFile = ServiceRegistry.getInstance().getStartupParameterService().getGlobalString(
+                        ServerConstants.SERVER_SINGLE_PROPERTIES_FILE);
                 if (StringUtils.isBlank(singlePropertiesFile)) {
                     singlePropertiesFile = env.getProperty("server.servlet.context-parameters." + WebConstants.INIT_SINGLE_SERVER_PROPERTIES_FILE);
                 }
@@ -116,7 +116,7 @@ public class SymmetricBoot extends SpringBootServletInitializer {
 
     public static ConfigurableApplicationContext run(String[] args) {
         SymmetricUtils.logNotices();
-        TypedProperties sysProps = IStartupParameterService.getInstance().getGlobalTypedProperties();
+        TypedProperties sysProps = ServiceRegistry.getInstance().getStartupParameterService().getGlobalTypedProperties();
         boolean httpsEnabled = sysProps.is(ServerConstants.HTTPS_ENABLE);
         boolean https2Enabled = sysProps.is(ServerConstants.HTTPS2_ENABLE);
         boolean allowSelfSignedCerts = sysProps.is(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, true);
@@ -137,7 +137,7 @@ public class SymmetricBoot extends SpringBootServletInitializer {
 
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
-        TypedProperties sysProps = IStartupParameterService.getInstance().getGlobalTypedProperties();
+        TypedProperties sysProps = ServiceRegistry.getInstance().getStartupParameterService().getGlobalTypedProperties();
         if (sysProps.is(ServerConstants.SERVER_HTTP_COOKIES_ENABLED)) {
             if (CookieHandler.getDefault() == null) {
                 CookieHandler.setDefault(new CookieManager());
