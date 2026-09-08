@@ -36,6 +36,12 @@ import org.junit.jupiter.params.provider.CsvSource;
  * <p>
  * The reach of the fix rests entirely on these message fragments for platforms whose DDL builders are not in this repository (SQL Server, Oracle), so the exact
  * vendor wording is pinned here. Error codes are per-platform and cannot be shared defaults, since the same number means different things on different vendors.
+ * <p>
+ * MySQL's "Duplicate key name" and "Duplicate column name" are deliberately NOT recognised, and {@link #mysqlDuplicateMessagesAreNoLongerTolerated()} pins
+ * that. The only case that reaches "Duplicate key name" in practice is {@code MySqlDdlReader.isInternalForeignKeyIndex} stripping an FK-backing index from the
+ * read-back model, which then diffs as missing and gets re-emitted -- a real defect, but the honest fix is on the emission side, not swallowing the failure
+ * here. "Duplicate column name" was never tested and is a materially better candidate for genuine schema drift than a duplicate index name is; tolerating it
+ * risks exactly what review flagged, hiding a real problem one batch later.
  */
 class JdbcSqlTemplateObjectExistsTest {
     private JdbcSqlTemplate template() {
@@ -53,7 +59,6 @@ class JdbcSqlTemplateObjectExistsTest {
                     "SQL Server 1913 index    | The operation failed because an index or statistics with name 'f0101_12' already exists on table 'DB.dbo.f0101'. | S0001 | 1913",
                     "SQL Server 2714 table    | There is already an object named 'f42119' in the database.                                                       | S0001 | 2714",
                     "Oracle ORA-00955         | ORA-00955: name is already used by an existing object                                                            | 42000 |  955",
-                    "MySQL duplicate key name | Duplicate key name 'f42119_18'                                                                                   | 42000 | 1061",
                     "case insensitive         | INDEX ALREADY EXISTS                                                                                             | S0001 | 1913",
             })
     void vendorAlreadyExistsMessagesAreRecognised(String label, String message, String sqlState, int errorCode) {
@@ -70,6 +75,20 @@ class JdbcSqlTemplateObjectExistsTest {
             })
     void unrelatedFailuresAreNotClassifiedAsAlreadyExisting(String label, String message, String sqlState, int errorCode) {
         // The tolerance must not swallow a genuine problem.
+        assertFalse(template().doesObjectAlreadyExist(sqlException(message, sqlState, errorCode)), label);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @CsvSource(
+            delimiter = '|',
+            value = {
+                    "MySQL duplicate key name    | Duplicate key name 'f42119_18'    | 42000 | 1061",
+                    "MySQL duplicate column name | Duplicate column name 'item_name' | 42000 | 1060",
+            })
+    void mysqlDuplicateMessagesAreNoLongerTolerated(String label, String message, String sqlState, int errorCode) {
+        // Narrowed during review: "duplicate key name" only ever covers MySqlDdlReader stripping an FK-backing
+        // index from the read-back model, which deserves an emission-side fix rather than living in this
+        // tolerance list, and "duplicate column name" is a materially better candidate for genuine drift.
         assertFalse(template().doesObjectAlreadyExist(sqlException(message, sqlState, errorCode)), label);
     }
 

@@ -94,11 +94,17 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
      * Cross-vendor message fragments identifying an "object already exists" failure, matched case-insensitively. Error codes cannot be shared defaults, since
      * the same number means different things on different vendors, and only PostgreSQL populates the SQLSTATE list today. These cover platforms whose DDL
      * builders live outside this repository -- SQL Server 1913 ("an index or statistics with name 'x' already exists"), Oracle ORA-00955 ("name is already used
-     * by an existing object"), MySQL ("Duplicate key name") -- so they get the tolerance with no per-platform change. Server-localized messages defeat message
-     * matching, so a platform that depends on this should still populate {@link #objectAlreadyExistsCodes}.
+     * by an existing object") -- so they get the tolerance with no per-platform change. Server-localized messages defeat message matching, so a platform that
+     * depends on this should still populate {@link #objectAlreadyExistsCodes}.
+     * <p>
+     * Deliberately does NOT include MySQL's "Duplicate key name". That message is unambiguous on its own, but the only case that reaches it in practice is
+     * {@code MySqlDdlReader.isInternalForeignKeyIndex} stripping an FK-backing index out of the read-back model, which then diffs as missing and gets
+     * re-emitted. That is a real defect, but the honest fix is on the emission side (stop generating the DDL, the way {@code MySqlDdlBuilder} already skips
+     * dropping that same index via {@code ForeignKey.isAutoIndexPresent()}), not swallowing the resulting failure here. Also does NOT include "Duplicate column
+     * name": conceded during review as a materially better candidate for genuine schema drift than a duplicate index name is, and it was never tested.
      */
     protected String[] objectAlreadyExistsMessageParts = { "already exists", "already an object named",
-            "is already used by an existing object", "duplicate key name", "duplicate column name" };
+            "is already used by an existing object" };
     protected int[] objectDoesNotExistCodes;
     protected String[] objectDoesNotExistStates;
     protected int isolationLevel;
