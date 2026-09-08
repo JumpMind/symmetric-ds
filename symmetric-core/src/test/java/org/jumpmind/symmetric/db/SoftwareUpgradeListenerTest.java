@@ -59,6 +59,7 @@ class SoftwareUpgradeListenerTest {
         when(engine.getParameterService()).thenReturn(parameterService);
         when(engine.getNodeService()).thenReturn(nodeService);
         when(engine.getSqlTemplate()).thenReturn(sqlTemplate);
+        when(engine.getClusteredCacheManager()).thenReturn(ClusteredCacheManager.getInstance());
         when(parameterService.getTablePrefix()).thenReturn("sym");
         listener.setSymmetricEngine(engine);
         originalClusterLockingEnabled = ClusteredCacheManager.getInstance().isClusterLockingEnabled();

@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.service.IStartupParameterService;
+import org.jumpmind.symmetric.service.impl.StartupParameterService;
 import org.jumpmind.util.AppUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,12 +79,12 @@ public class ClusterPartitionGeneratorTest {
         Field f = ClusterPartitionGenerator.class.getDeclaredField("clusterPartitionId");
         f.setAccessible(true);
         f.set(null, null);
-        IStartupParameterService.getInstance().unregisterEngine(IStartupParameterService.GLOBAL_ENGINE_NAME);
+        StartupParameterService.getInstance().unregisterEngine(IStartupParameterService.GLOBAL_ENGINE_NAME);
     }
 
     private IStartupParameterService registerGlobalStartupParameters(TypedProperties merged) {
-        IStartupParameterService.getInstance().registerGlobal(merged, Map.of());
-        return IStartupParameterService.getInstance();
+        StartupParameterService.getInstance().registerGlobal(merged, Map.of());
+        return StartupParameterService.getInstance();
     }
 
     @Test

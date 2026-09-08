@@ -34,7 +34,6 @@ import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
-import org.jumpmind.symmetric.service.IStartupParameterService;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
 import org.springframework.context.ApplicationListener;
@@ -43,7 +42,7 @@ import org.springframework.core.env.PropertiesPropertySource;
 
 public class SymmetricBootPropertySetupListener implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
     public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
-        TypedProperties sysProps = IStartupParameterService.getInstance().getGlobalTypedProperties();
+        TypedProperties sysProps = ClientConfig.getInstance().getStartupParameterService().getGlobalTypedProperties();
         boolean httpEnabled = sysProps.is(ServerConstants.HTTP_ENABLE, true);
         boolean httpsEnabled = sysProps.is(ServerConstants.HTTPS_ENABLE);
         int httpPort = sysProps.getInt(ServerConstants.HTTP_PORT, Integer.parseInt(SymmetricWebServer.DEFAULT_HTTP_PORT));

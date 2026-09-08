@@ -111,7 +111,8 @@ class ClusterServiceTest {
         when(parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)).thenReturn(false);
         when(nodeService.findIdentityNodeId()).thenReturn("test-node");
         when(nodeService.findNodeHosts(anyString())).thenReturn(new ArrayList<>());
-        clusterService = new ClusterService(parameterService, dialect, nodeService, extensionService, startupParameterService);
+        clusterService = new ClusterService(parameterService, dialect, nodeService, extensionService, startupParameterService,
+                ClusteredCacheManager.getInstance());
         ClusterService.instanceId = "my-instance-id";
         Field coordinatorField = ClusteredCacheManager.class.getDeclaredField("peerNetworkCoordinator");
         coordinatorField.setAccessible(true);

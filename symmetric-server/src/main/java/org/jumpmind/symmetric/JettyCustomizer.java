@@ -35,7 +35,6 @@ import org.eclipse.jetty.ee11.webapp.WebAppContext;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
-import org.jumpmind.symmetric.service.IStartupParameterService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.jetty.JettyServerCustomizer;
 import org.springframework.boot.jetty.servlet.JettyServletWebServerFactory;
@@ -56,7 +55,7 @@ public class JettyCustomizer implements WebServerFactoryCustomizer<JettyServletW
 
     @Override
     public void customize(Server server) {
-        TypedProperties sysProps = IStartupParameterService.getInstance().getGlobalTypedProperties();
+        TypedProperties sysProps = ClientConfig.getInstance().getStartupParameterService().getGlobalTypedProperties();
         boolean httpEnabled = sysProps.is(ServerConstants.HTTP_ENABLE, true);
         boolean httpsEnabled = sysProps.is(ServerConstants.HTTPS_ENABLE, false);
         String ignoredProtocols = System.getProperty(SecurityConstants.SYSPROP_SSL_IGNORE_PROTOCOLS, "SSLv3");

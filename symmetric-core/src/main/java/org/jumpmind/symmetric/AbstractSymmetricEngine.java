@@ -59,7 +59,6 @@ import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.cache.CacheManager;
-import org.jumpmind.symmetric.cache.ClusteredCacheManager;
 import org.jumpmind.symmetric.cache.ClusteredEngineState;
 import org.jumpmind.symmetric.cache.ClusterServerStatusMessage;
 import org.jumpmind.symmetric.cache.ICacheManager;
@@ -229,6 +228,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IEngineMetricsService metricsService;
     protected ICacheManager cacheManager;
     protected IClusteredCacheManager clusteredCacheManager;
+    protected IStartupParameterService startupParameterService;
     protected Date lastRestartTime = null;
 
     abstract protected ITypedPropertiesFactory createTypedPropertiesFactory();
@@ -299,7 +299,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     private void initEngineParametersFromDatabase(String engineName, TypedProperties engineProperties) {
-        this.parameterService = new ParameterService(IStartupParameterService.getInstance(), engineName, this.platform, propertiesFactory,
+        this.parameterService = new ParameterService(this.startupParameterService, engineName, this.platform, propertiesFactory,
                 engineProperties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));
         Relation paramTable = this.platform.readRelationFromDatabase(null, null,
                 TableConstants.getTableName(engineProperties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX), TableConstants.SYM_PARAMETER));
@@ -365,14 +365,17 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected void init() {
         ensurePropertiesFactoryIsCreated();
         ensureSecurityServiceIsCreated();
-        TypedProperties properties = IStartupParameterService.getInstance().registerEngine(this.propertiesFactory,
+        ClientConfig clientConfig = ClientConfig.getInstance();
+        this.startupParameterService = clientConfig.getStartupParameterService();
+        this.clusteredCacheManager = clientConfig.getClusteredCacheManager();
+        TypedProperties properties = this.startupParameterService.registerEngine(this.propertiesFactory,
                 findKnownEnginePropertiesFileSources(), getSupplementalStartupParameterMetaData());
         registerSymDSDriver(properties);
         String engineName = initEngineNameAndLoggingContext(properties);
         this.platform = createDatabasePlatform(properties);
         initEngineParametersFromDatabase(engineName, properties);
         if (log.isDebugEnabled()) {
-            log.debug(IStartupParameterService.getInstance().dumpAsText(engineName));
+            log.debug(this.startupParameterService.dumpAsText(engineName));
         }
         LogUtils.setTreadLogContext(LoggingConstants.CONTEXT_ENGINE, parameterService.getEngineName());
         updatePlatformWithParametersFromDatabase();
@@ -390,7 +393,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.dataService = createDataService();
         this.clusterService = createClusterService();
         this.securityService.validateKeystoreIntegrity();
-        this.clusteredCacheManager = ClusteredCacheManager.getInstance();
         this.clusteredCacheManager.registerEngine(this, ClusteredEngineState.STARTING);
         this.statisticService = new StatisticService(parameterService, symmetricDialect);
         this.statisticManager = createStatisticManager();
@@ -476,9 +478,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected IClusterService createClusterService() {
         return AppUtils.newInstance(IClusterService.class, ClusterService.class, new Object[] { parameterService, symmetricDialect, nodeService,
-                extensionService, IStartupParameterService.getInstance() },
+                extensionService, this.startupParameterService, this.clusteredCacheManager },
                 new Class<?>[] { IParameterService.class, ISymmetricDialect.class, INodeService.class, IExtensionService.class,
-                        IStartupParameterService.class });
+                        IStartupParameterService.class, IClusteredCacheManager.class });
     }
 
     protected IDataService createDataService() {
@@ -1224,7 +1226,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             String engineName = getEngineName();
             if (engineName != null) {
                 registeredEnginesByName.remove(engineName);
-                IStartupParameterService.getInstance().unregisterEngine(engineName);
+                this.startupParameterService.unregisterEngine(engineName);
             }
             if (getSyncUrl() != null) {
                 registeredEnginesByUrl.remove(getSyncUrl());
@@ -1458,7 +1460,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     @Override
     public IStartupParameterService getStartupParameterService() {
-        return IStartupParameterService.getInstance();
+        return this.startupParameterService;
     }
 
     @Override
