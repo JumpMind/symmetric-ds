@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -68,7 +67,7 @@ import org.mockito.ArgumentCaptor;
  * {@link DataExtractorService#isExtractRequestComplete}, the two range predicates, the live-owner guard added to answer the "clustered servers overtaking each
  * other" review concern, and {@link DataExtractorService#recoverStuckExtractRequests}.
  */
-public class DataExtractorServiceRecoveryTest {
+class DataExtractorServiceRecoveryTest {
     protected ISymmetricEngine engine;
     protected IParameterService parameterService;
     protected ISymmetricDialect symmetricDialect;

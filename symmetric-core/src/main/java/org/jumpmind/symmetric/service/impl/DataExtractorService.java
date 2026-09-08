@@ -2182,19 +2182,23 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         int restarted = 0;
         for (ExtractRequest request : stuck) {
             if (!force && isExtractQueueLocked(request)) {
-                log.info("{} Its queue is still locked by another server, so it is still being extracted rather than stuck.",
-                        describeStuckRequest(request));
-                continue;
+                if (log.isInfoEnabled()) {
+                    log.info("{} Its queue is still locked by another server, so it is still being extracted rather than stuck.",
+                            describeStuckRequest(request));
+                }
+            } else if (hasDeliveredBatchesInRange(request) && !force) {
+                if (log.isErrorEnabled()) {
+                    log.error("{} Some of those batches were already delivered, so restarting it would re-send rows that are already committed at the target. "
+                            + "This load will not progress on its own: either truncate the target table and force recovery, or cancel the load.",
+                            describeStuckRequest(request));
+                }
+            } else {
+                if (log.isWarnEnabled()) {
+                    log.warn("{} That cannot happen on a completed extract, so it is being re-queued for extraction.", describeStuckRequest(request));
+                }
+                restartExtractRequest(request);
+                restarted++;
             }
-            if (hasDeliveredBatchesInRange(request) && !force) {
-                log.error("{} Some of those batches were already delivered, so restarting it would re-send rows that are already committed at the target. "
-                        + "This load will not progress on its own: either truncate the target table and force recovery, or cancel the load.",
-                        describeStuckRequest(request));
-                continue;
-            }
-            log.warn("{} That cannot happen on a completed extract, so it is being re-queued for extraction.", describeStuckRequest(request));
-            restartExtractRequest(request);
-            restarted++;
         }
         if (restarted > 0) {
             log.warn("Recovered {} stuck extract request(s)", restarted);
