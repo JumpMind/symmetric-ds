@@ -93,8 +93,8 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.IStartupParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.service.impl.StartupParameterService;
 import org.jumpmind.symmetric.util.ConfigImportHelper;
 import org.jumpmind.symmetric.util.ModuleException;
 import org.jumpmind.symmetric.util.ModuleManager;
@@ -836,7 +836,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             prop.remove(ServerConstants.HTTPS2_ENABLE);
             prop.remove(ServerConstants.HTTP_PORT);
             prop.remove(ServerConstants.HTTPS_PORT);
-            String keystorePassword = StartupParameterService.getInstance().getGlobalString(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
+            String keystorePassword = IStartupParameterService.getInstance().getGlobalString(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
             if (StringUtils.isNotBlank(keystorePassword)) {
                 ISecurityService service = createSecurityService();
                 String password = SecurityConstants.PREFIX_OBF + service.obfuscate(keystorePassword);

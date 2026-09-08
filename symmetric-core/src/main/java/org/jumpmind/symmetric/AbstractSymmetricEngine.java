@@ -99,7 +99,6 @@ import org.jumpmind.symmetric.service.IStartupParameterMetaDataProvider;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IStartupParameterService;
-import org.jumpmind.symmetric.service.impl.StartupParameterService;
 import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
@@ -300,7 +299,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     private void initEngineParametersFromDatabase(String engineName, TypedProperties engineProperties) {
-        this.parameterService = new ParameterService(StartupParameterService.getInstance(), engineName, this.platform, propertiesFactory,
+        this.parameterService = new ParameterService(IStartupParameterService.getInstance(), engineName, this.platform, propertiesFactory,
                 engineProperties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));
         Relation paramTable = this.platform.readRelationFromDatabase(null, null,
                 TableConstants.getTableName(engineProperties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX), TableConstants.SYM_PARAMETER));
@@ -366,14 +365,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected void init() {
         ensurePropertiesFactoryIsCreated();
         ensureSecurityServiceIsCreated();
-        TypedProperties properties = StartupParameterService.getInstance().registerEngine(this.propertiesFactory,
+        TypedProperties properties = IStartupParameterService.getInstance().registerEngine(this.propertiesFactory,
                 findKnownEnginePropertiesFileSources(), getSupplementalStartupParameterMetaData());
         registerSymDSDriver(properties);
         String engineName = initEngineNameAndLoggingContext(properties);
         this.platform = createDatabasePlatform(properties);
         initEngineParametersFromDatabase(engineName, properties);
         if (log.isDebugEnabled()) {
-            log.debug(StartupParameterService.getInstance().dumpAsText(engineName));
+            log.debug(IStartupParameterService.getInstance().dumpAsText(engineName));
         }
         LogUtils.setTreadLogContext(LoggingConstants.CONTEXT_ENGINE, parameterService.getEngineName());
         updatePlatformWithParametersFromDatabase();
@@ -477,7 +476,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected IClusterService createClusterService() {
         return AppUtils.newInstance(IClusterService.class, ClusterService.class, new Object[] { parameterService, symmetricDialect, nodeService,
-                extensionService, StartupParameterService.getInstance() },
+                extensionService, IStartupParameterService.getInstance() },
                 new Class<?>[] { IParameterService.class, ISymmetricDialect.class, INodeService.class, IExtensionService.class,
                         IStartupParameterService.class });
     }
@@ -1225,7 +1224,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             String engineName = getEngineName();
             if (engineName != null) {
                 registeredEnginesByName.remove(engineName);
-                StartupParameterService.getInstance().unregisterEngine(engineName);
+                IStartupParameterService.getInstance().unregisterEngine(engineName);
             }
             if (getSyncUrl() != null) {
                 registeredEnginesByUrl.remove(getSyncUrl());
@@ -1459,7 +1458,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     @Override
     public IStartupParameterService getStartupParameterService() {
-        return StartupParameterService.getInstance();
+        return IStartupParameterService.getInstance();
     }
 
     @Override
