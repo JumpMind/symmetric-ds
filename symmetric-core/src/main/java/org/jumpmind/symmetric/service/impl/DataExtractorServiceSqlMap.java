@@ -107,9 +107,10 @@ public class DataExtractorServiceSqlMap extends AbstractSqlMap {
                 "select batch_id from $(outgoing_batch) where node_id = ? and batch_id between ? and ? and status in ('OK','IG')");
 
         /*
-         * A request marked OK whose range still contains RQ batches cannot have completed: MultiBatchStagingWriter.close() advances every remaining batch, so a
-         * finished extract leaves none at RQ. loaded_time is null excludes requests that legitimately finished and were loaded, and the last_update_time bound
-         * avoids racing a status write that is still in flight.
+         * No path that legitimately completes an extract leaves an RQ batch behind; the paths that do (an interrupted extract, a swallowed cancellation, a
+         * stale-lock takeover) are defects, which recoverStuckExtractRequests reconciles rather than trying to enumerate every one of them here.
+         * loaded_time is null excludes requests that legitimately finished and were loaded, and the last_update_time bound avoids racing a status write that
+         * is still in flight.
          */
         putSql("selectStuckExtractRequestsSql", "select * from $(extract_request) r where r.source_node_id = ? and r.status = ? "
                 + "and r.loaded_time is null and r.parent_request_id = 0 and r.last_update_time < ? "
