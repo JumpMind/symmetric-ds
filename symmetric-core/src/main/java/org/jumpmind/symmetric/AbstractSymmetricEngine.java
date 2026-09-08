@@ -365,9 +365,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected void init() {
         ensurePropertiesFactoryIsCreated();
         ensureSecurityServiceIsCreated();
-        ClientConfig clientConfig = ClientConfig.getInstance();
-        this.startupParameterService = clientConfig.getStartupParameterService();
-        this.clusteredCacheManager = clientConfig.getClusteredCacheManager();
+        ServiceRegistry serviceRegistry = ServiceRegistry.getInstance();
+        this.startupParameterService = serviceRegistry.getStartupParameterService();
+        this.clusteredCacheManager = serviceRegistry.getClusteredCacheManager();
         TypedProperties properties = this.startupParameterService.registerEngine(this.propertiesFactory,
                 findKnownEnginePropertiesFileSources(), getSupplementalStartupParameterMetaData());
         registerSymDSDriver(properties);

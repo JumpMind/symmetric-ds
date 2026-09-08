@@ -111,7 +111,7 @@ public abstract class AbstractCommandLauncher {
 
     protected static void initFromServerProperties() {
         if (!serverPropertiesInitialized) {
-            IStartupParameterService startupParameterService = ClientConfig.getInstance().getStartupParameterService();
+            IStartupParameterService startupParameterService = ServiceRegistry.getInstance().getStartupParameterService();
             File serverPropertiesFile = new File(DEFAULT_SERVER_PROPERTIES);
             if (!serverPropertiesFile.exists()) {
                 log.debug("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". File does not exist.");
@@ -252,7 +252,7 @@ public abstract class AbstractCommandLauncher {
     }
 
     protected void configureCrypto(CommandLine line) throws Exception {
-        IStartupParameterService startupParameterService = ClientConfig.getInstance().getStartupParameterService();
+        IStartupParameterService startupParameterService = ServiceRegistry.getInstance().getStartupParameterService();
         if (line.hasOption(OPTION_KEYSTORE_PASSWORD)) {
             System.setProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD,
                     line.getOptionValue(OPTION_KEYSTORE_PASSWORD));

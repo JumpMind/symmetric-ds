@@ -38,7 +38,7 @@ import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.jumpmind.properties.TypedProperties;
-import org.jumpmind.symmetric.ClientConfig;
+import org.jumpmind.symmetric.ServiceRegistry;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
@@ -79,11 +79,11 @@ public class ClusterPartitionGeneratorTest {
         Field f = ClusterPartitionGenerator.class.getDeclaredField("clusterPartitionId");
         f.setAccessible(true);
         f.set(null, null);
-        ClientConfig.getInstance().getStartupParameterService().unregisterEngine(IStartupParameterService.GLOBAL_ENGINE_NAME);
+        ServiceRegistry.getInstance().getStartupParameterService().unregisterEngine(IStartupParameterService.GLOBAL_ENGINE_NAME);
     }
 
     private IStartupParameterService registerGlobalStartupParameters(TypedProperties merged) {
-        IStartupParameterService startupParameterService = ClientConfig.getInstance().getStartupParameterService();
+        IStartupParameterService startupParameterService = ServiceRegistry.getInstance().getStartupParameterService();
         startupParameterService.registerGlobal(merged, Map.of());
         return startupParameterService;
     }

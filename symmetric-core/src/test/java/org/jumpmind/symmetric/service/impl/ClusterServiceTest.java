@@ -49,7 +49,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.symmetric.ClientConfig;
+import org.jumpmind.symmetric.ServiceRegistry;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.cache.ClusterServerStatusMessage;
 import org.jumpmind.symmetric.cache.ClusteredCacheManager;
@@ -113,7 +113,7 @@ class ClusterServiceTest {
         when(nodeService.findIdentityNodeId()).thenReturn("test-node");
         when(nodeService.findNodeHosts(anyString())).thenReturn(new ArrayList<>());
         clusterService = new ClusterService(parameterService, dialect, nodeService, extensionService, startupParameterService,
-                ClientConfig.getInstance().getClusteredCacheManager());
+                ServiceRegistry.getInstance().getClusteredCacheManager());
         ClusterService.instanceId = "my-instance-id";
         Field coordinatorField = ClusteredCacheManager.class.getDeclaredField("peerNetworkCoordinator");
         coordinatorField.setAccessible(true);

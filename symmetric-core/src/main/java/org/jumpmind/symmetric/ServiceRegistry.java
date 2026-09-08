@@ -29,17 +29,17 @@ import org.jumpmind.symmetric.service.impl.StartupParameterService;
  * References the concrete implementation of a process-wide singleton service. Every other class should depend only on the interfaces returned here, obtained
  * via {@link #getInstance()} at a composition-root call site and passed down from there rather than re-resolved with a scattered {@code getInstance()} call.
  */
-public final class ClientConfig {
-    private static final ClientConfig INSTANCE = new ClientConfig();
+public final class ServiceRegistry {
+    private static final ServiceRegistry INSTANCE = new ServiceRegistry();
     private final IStartupParameterService startupParameterService;
     private final IClusteredCacheManager clusteredCacheManager;
 
-    private ClientConfig() {
+    private ServiceRegistry() {
         this.startupParameterService = StartupParameterService.getInstance();
         this.clusteredCacheManager = ClusteredCacheManager.getInstance();
     }
 
-    public static ClientConfig getInstance() {
+    public static ServiceRegistry getInstance() {
         return INSTANCE;
     }
 

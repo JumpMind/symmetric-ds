@@ -30,8 +30,8 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Field;
 
 import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.symmetric.ClientConfig;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.ServiceRegistry;
 import org.jumpmind.symmetric.cache.ClusteredCacheManager;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.INodeService;
@@ -60,7 +60,7 @@ class SoftwareUpgradeListenerTest {
         when(engine.getParameterService()).thenReturn(parameterService);
         when(engine.getNodeService()).thenReturn(nodeService);
         when(engine.getSqlTemplate()).thenReturn(sqlTemplate);
-        when(engine.getClusteredCacheManager()).thenReturn(ClientConfig.getInstance().getClusteredCacheManager());
+        when(engine.getClusteredCacheManager()).thenReturn(ServiceRegistry.getInstance().getClusteredCacheManager());
         when(parameterService.getTablePrefix()).thenReturn("sym");
         listener.setSymmetricEngine(engine);
         originalClusterLockingEnabled = ClusteredCacheManager.getInstance().isClusterLockingEnabled();

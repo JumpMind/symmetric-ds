@@ -55,10 +55,10 @@ import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.ApplicationHealthTracker;
-import org.jumpmind.symmetric.ClientConfig;
 import org.jumpmind.symmetric.IApplicationHealthTracker;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ITypedPropertiesFactory;
+import org.jumpmind.symmetric.ServiceRegistry;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.cache.ClusterPartitionGenerator;
 import org.jumpmind.symmetric.cache.ClusterPeerServerState;
@@ -168,12 +168,12 @@ public class SymmetricEngineHolder implements ISymmetricEngineHolder {
      * Initialize JCS cluster peer heartbeat and discovery with no database dependency and no engine files. Additional peer servers can be linked later on.
      */
     private IClusteredCacheManager initClusteredCacheManager() {
-        ClientConfig clientConfig = ClientConfig.getInstance();
-        IStartupParameterService startupParameterService = clientConfig.getStartupParameterService();
+        ServiceRegistry serviceRegistry = ServiceRegistry.getInstance();
+        IStartupParameterService startupParameterService = serviceRegistry.getStartupParameterService();
         IClusteredCacheManager ccManager = null;
         boolean isClusterLockingEnabled = false;
         try {
-            ccManager = clientConfig.getClusteredCacheManager();
+            ccManager = serviceRegistry.getClusteredCacheManager();
             String clusterPartitionId = ClusterPartitionGenerator.resolve(startupParameterService);
             String serverId = ClusterPartitionGenerator.resolveServerId(coreServerProperties);
             isClusterLockingEnabled = ClusterPartitionGenerator.isClusterLockingEnabled(coreServerProperties);

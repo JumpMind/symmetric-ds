@@ -90,7 +90,7 @@ public class SymmetricWebServer {
             Class.forName(AbstractCommandLauncher.class.getName());
         } catch (ClassNotFoundException e) {
         }
-        TypedProperties serverProperties = ClientConfig.getInstance().getStartupParameterService().getGlobalTypedProperties();
+        TypedProperties serverProperties = ServiceRegistry.getInstance().getStartupParameterService().getGlobalTypedProperties();
         httpEnabled = serverProperties.is(ServerConstants.HTTP_ENABLE, true);
         httpsEnabled = serverProperties.is(ServerConstants.HTTPS_ENABLE, false);
         https2Enabled = serverProperties.is(ServerConstants.HTTPS2_ENABLE, false);
@@ -127,7 +127,7 @@ public class SymmetricWebServer {
 
     protected void setSystemProperty(String property, String value) {
         System.setProperty(property, value);
-        ClientConfig.getInstance().getStartupParameterService().refreshSystemProperty(property);
+        ServiceRegistry.getInstance().getStartupParameterService().refreshSystemProperty(property);
     }
 
     protected void setSystemPropertyIfNotNull(String property, String value) {

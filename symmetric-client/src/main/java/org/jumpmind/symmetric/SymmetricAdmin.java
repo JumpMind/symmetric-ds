@@ -835,7 +835,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             prop.remove(ServerConstants.HTTPS2_ENABLE);
             prop.remove(ServerConstants.HTTP_PORT);
             prop.remove(ServerConstants.HTTPS_PORT);
-            String keystorePassword = ClientConfig.getInstance().getStartupParameterService()
+            String keystorePassword = ServiceRegistry.getInstance().getStartupParameterService()
                     .getGlobalString(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
             if (StringUtils.isNotBlank(keystorePassword)) {
                 ISecurityService service = createSecurityService();
