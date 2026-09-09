@@ -105,7 +105,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         if (isUpgradeFromPre3_15(tablePrefix, currentModel)) {
             isUpgradeFromPre315 = true;
             success &= beforeUpgradeFromPre3_15(tablePrefix, currentModel, sqlTemplate, sqlScript);
-        }        
+        }
         if (isUpgradeFromPre3_16(tablePrefix, currentModel)) {
             isUpgradeFromPre316 = true;
             success &= beforeUpgradeFromPre3_16(tablePrefix, currentModel, sqlTemplate, sqlScript);
