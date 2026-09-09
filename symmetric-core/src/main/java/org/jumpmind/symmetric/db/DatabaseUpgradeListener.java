@@ -84,36 +84,34 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         StringBuilder sqlScript = new StringBuilder();
         ISqlTemplate sqlTemplate = engine.getSqlTemplate();
         boolean success = true;
-        isUpgradeFromPre38 = isUpgradeFromPre38(tablePrefix, currentModel, desiredModel);
-        if (isUpgradeFromPre38) {
+        if (isUpgradeFromPre3_8(tablePrefix, currentModel, desiredModel)) {
+            isUpgradeFromPre38 = true;
             success &= beforeUpgradeFromPre3_8(tablePrefix, currentModel, sqlTemplate, sqlScript);
         }
-        if (isUpgradeFromPre310(tablePrefix, currentModel, desiredModel)) {
+        if (isUpgradeFromPre3_10(tablePrefix, currentModel, desiredModel)) {
             success &= beforeUpgradeFromPre3_10(tablePrefix, currentModel, sqlTemplate, sqlScript);
         }
-        if (isUpgradeFromPre311(tablePrefix, currentModel, desiredModel)) {
+        if (isUpgradeFromPre3_11(tablePrefix, currentModel, desiredModel)) {
             success &= beforeUpgradeFromPre3_11(tablePrefix);
         }
-        if (isUpgradeFromPre312(tablePrefix, currentModel, desiredModel)) {
+        if (isUpgradeFromPre3_12(tablePrefix, currentModel, desiredModel)) {
             success &= beforeUpgradeFromPre3_12(tablePrefix, currentModel, sqlTemplate, sqlScript);
         }
-        if (isUpgradeFromPre3125(tablePrefix, currentModel, desiredModel)) {
+        if (isUpgradeFromPre3_125(tablePrefix, currentModel, desiredModel)) {
             isUpgradeFromPre3125 = true;
         }
-        isUpgradeFromPre314 = isUpgradeFromPre314(tablePrefix, currentModel, desiredModel);
+        isUpgradeFromPre314 = isUpgradeFromPre3_14(tablePrefix, currentModel, desiredModel);
         fixInformixTriggerLongVarcharColumns(tablePrefix, desiredModel);
-        if (isUpgradeFromPre315(tablePrefix, currentModel)) {
+        if (isUpgradeFromPre3_15(tablePrefix, currentModel)) {
             isUpgradeFromPre315 = true;
-        }
-        if (isUpgradeFromPre315) {
             success &= beforeUpgradeFromPre3_15(tablePrefix, currentModel, sqlTemplate, sqlScript);
-        }
-        isUpgradeFromPre316 = isUpgradeFromPre316(tablePrefix, currentModel);
-        if (isUpgradeFromPre316) {
+        }        
+        if (isUpgradeFromPre3_16(tablePrefix, currentModel)) {
+            isUpgradeFromPre316 = true;
             success &= beforeUpgradeFromPre3_16(tablePrefix, currentModel, sqlTemplate, sqlScript);
         }
-        isUpgradeFromPre317 = isUpgradeFromPre317(tablePrefix, currentModel);
-        if (isUpgradeFromPre317) {
+        if (isUpgradeFromPre3_17(tablePrefix, currentModel)) {
+            isUpgradeFromPre317 = true;
             success &= beforeUpgradeFromPre3_17(tablePrefix, currentModel, sqlTemplate, sqlScript);
         }
         // Leave this last in the sequence of steps to make sure to capture any DML changes done before this
@@ -521,7 +519,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         }
     }
 
-    protected boolean isUpgradeFromPre315(String tablePrefix, Database currentModel) {
+    protected boolean isUpgradeFromPre3_15(String tablePrefix, Database currentModel) {
         Table table = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_TABLE_RELOAD_REQUEST);
         if (table != null) {
             Column createTime = table.findColumn("create_time");
@@ -539,7 +537,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         return table != null && table.findColumn("extract_thread_id") == null;
     }
 
-    protected boolean isUpgradeFromPre317(String tablePrefix, Database currentModel) {
+    protected boolean isUpgradeFromPre3_17(String tablePrefix, Database currentModel) {
         Table nodeHostChannelStatsTable = currentModel.findTable(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST_CHANNEL_STATS));
         return nodeHostChannelStatsTable != null && nodeHostChannelStatsTable.findColumn("data_received") == null;
     }
