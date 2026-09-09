@@ -229,7 +229,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             return false;
         }
         if (constraintName == null) {
-            log.warn("Cannot drop unspecified constraint from table: {}", table.getName());        
+            log.warn("Cannot drop unspecified constraint from table: {}", table.getName());
             return false;
         }
         log.info("Per upgrade process, dropping constraint {} from table: {}", constraintName, table.getName());
