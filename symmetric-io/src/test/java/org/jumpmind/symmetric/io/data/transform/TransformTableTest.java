@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.io.data.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -193,22 +194,22 @@ class TransformTableTest {
         assertEquals(first.hashCode(), second.hashCode());
         TransformTable third = new TransformTable();
         third.setTransformId("transform2");
-        assertFalse(first.equals(third));
+        assertNotEquals(first, third);
     }
 
     @Test
     void testEquals_withNoTransformId_fallsBackToIdentity() {
         TransformTable first = new TransformTable();
         TransformTable second = new TransformTable();
-        assertFalse(first.equals(second));
-        assertTrue(first.equals(first));
+        assertNotEquals(first, second);
+        assertEquals(first, first);
     }
 
     @Test
     void testEquals_withTransformIdAgainstNonTransformTable_isNotEqual() {
         TransformTable table = new TransformTable();
         table.setTransformId("transform1");
-        assertFalse(table.equals("not a transform table"));
+        assertNotEquals(table, "not a transform table");
     }
 
     @Test
@@ -222,7 +223,7 @@ class TransformTableTest {
     void testToString_withNoTransformId_fallsBackToObjectToString() {
         TransformTable table = new TransformTable();
         assertEquals(table.toString(), table.toString());
-        assertFalse(table.toString().equals("transform1"));
+        assertNotEquals(table.toString(), "transform1");
     }
 
     @Test

@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.io.data.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -126,7 +127,7 @@ class TransformColumnTest {
         first.setTargetColumnName("TGT1");
         TransformColumn second = new TransformColumn("transform1");
         second.setTargetColumnName("TGT2");
-        assertFalse(first.equals(second));
+        assertNotEquals(first, second);
     }
 
     @Test
@@ -135,13 +136,13 @@ class TransformColumnTest {
         first.setIncludeOn(IncludeOnType.INSERT);
         TransformColumn second = new TransformColumn("transform1");
         second.setIncludeOn(IncludeOnType.UPDATE);
-        assertFalse(first.equals(second));
+        assertNotEquals(first, second);
     }
 
     @Test
     void testEquals_differentType_isNotEqual() {
         TransformColumn column = new TransformColumn("transform1");
-        assertFalse(column.equals("not a transform column"));
+        assertNotEquals(column, "not a transform column");
     }
 
     @Test

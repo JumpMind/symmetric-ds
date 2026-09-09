@@ -26,10 +26,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class LeftColumnTransformTest {
     private LeftColumnTransform leftColumnTransform;
@@ -67,28 +71,20 @@ class LeftColumnTransformTest {
         assertNull(result.getOldValue());
     }
 
-    @Test
-    void testTransform_withValueShorterThanIndex_returnsValueUnchanged() throws IgnoreColumnException, IgnoreRowException {
-        transformColumn.setTransformExpression("5");
+    @ParameterizedTest(name = "expression={0}, value=\"{1}\"")
+    @MethodSource("provideUnchangedValueTransformCases")
+    void testTransform_returnsValueUnchanged(String expression, String value, String expectedValue) throws IgnoreColumnException, IgnoreRowException {
+        transformColumn.setTransformExpression(expression);
         TransformedData data = new TransformedData(null, DataEventType.INSERT, null, null, null);
-        NewAndOldValue result = leftColumnTransform.transform(null, null, transformColumn, data, sourceValues, "ab", null);
-        assertEquals("ab", result.getNewValue());
+        NewAndOldValue result = leftColumnTransform.transform(null, null, transformColumn, data, sourceValues, value, null);
+        assertEquals(expectedValue, result.getNewValue());
     }
 
-    @Test
-    void testTransform_withBlankExpression_returnsValueUnchanged() throws IgnoreColumnException, IgnoreRowException {
-        transformColumn.setTransformExpression(null);
-        TransformedData data = new TransformedData(null, DataEventType.INSERT, null, null, null);
-        NewAndOldValue result = leftColumnTransform.transform(null, null, transformColumn, data, sourceValues, "abcdef", null);
-        assertEquals("abcdef", result.getNewValue());
-    }
-
-    @Test
-    void testTransform_withBlankNewValue_returnsBlankValue() throws IgnoreColumnException, IgnoreRowException {
-        transformColumn.setTransformExpression("2");
-        TransformedData data = new TransformedData(null, DataEventType.INSERT, null, null, null);
-        NewAndOldValue result = leftColumnTransform.transform(null, null, transformColumn, data, sourceValues, "", null);
-        assertEquals("", result.getNewValue());
+    private static Stream<Arguments> provideUnchangedValueTransformCases() {
+        return Stream.of(
+                Arguments.of("5", "ab", "ab"),
+                Arguments.of(null, "abcdef", "abcdef"),
+                Arguments.of("2", "", ""));
     }
 
     @Test

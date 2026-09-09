@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -106,7 +107,7 @@ class MathColumnTransformTest {
     void testTransform_reusesEvaluatorStoredInContext() throws IgnoreColumnException, IgnoreRowException {
         transformColumn.setTransformExpression("1+1");
         mathColumnTransform.transform(null, dataContext, transformColumn, transformedData, sourceValues, null, null);
-        assertTrue(dataContext.get(MathColumnTransform.EVALUATOR) != null);
+        assertNotNull(dataContext.get(MathColumnTransform.EVALUATOR));
         NewAndOldValue result = mathColumnTransform.transform(null, dataContext, transformColumn, transformedData, sourceValues, null, null);
         assertEquals("2", result.getNewValue());
     }
