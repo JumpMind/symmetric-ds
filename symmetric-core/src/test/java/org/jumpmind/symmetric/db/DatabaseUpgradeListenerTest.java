@@ -33,6 +33,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.sql.Types;
+import java.util.Arrays;
+import java.util.Collections;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -40,6 +42,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -69,6 +72,19 @@ class DatabaseUpgradeListenerTest {
         currentModel.addTable(new Table("sym_test_table"));
         currentModel.addTable(new Table("sym_second_table"));
         sqlScript = new StringBuilder();
+    }
+
+    private IDatabasePlatform stubDatabasePlatform(String databaseName) {
+        IDatabasePlatform databasePlatform = mock(IDatabasePlatform.class);
+        when(databasePlatform.getName()).thenReturn(databaseName);
+        when(engine.getDatabasePlatform()).thenReturn(databasePlatform);
+        return databasePlatform;
+    }
+
+    private IParameterService stubParameterService() {
+        IParameterService parameterService = mock(IParameterService.class);
+        when(engine.getParameterService()).thenReturn(parameterService);
+        return parameterService;
     }
 
     @Test
@@ -470,9 +486,7 @@ class DatabaseUpgradeListenerTest {
 
     @Test
     void testFixInformixTriggerLongVarcharColumns_NotInformix_LeavesColumnUnchanged() {
-        IDatabasePlatform databasePlatform = mock(IDatabasePlatform.class);
-        when(databasePlatform.getName()).thenReturn(DatabaseNamesConstants.H2);
-        when(engine.getDatabasePlatform()).thenReturn(databasePlatform);
+        stubDatabasePlatform(DatabaseNamesConstants.H2);
         Database desiredModel = new Database();
         Table triggerTable = new Table("sym_trigger");
         Column longVarcharColumn = new Column("source_table_name", false, Types.LONGVARCHAR, 100, 0);
@@ -484,9 +498,7 @@ class DatabaseUpgradeListenerTest {
 
     @Test
     void testFixInformixTriggerLongVarcharColumns_Informix_DowngradesLongVarcharColumnToVarchar255() {
-        IDatabasePlatform databasePlatform = mock(IDatabasePlatform.class);
-        when(databasePlatform.getName()).thenReturn(DatabaseNamesConstants.INFORMIX);
-        when(engine.getDatabasePlatform()).thenReturn(databasePlatform);
+        stubDatabasePlatform(DatabaseNamesConstants.INFORMIX);
         Database desiredModel = new Database();
         Table triggerTable = new Table("sym_trigger");
         Column longVarcharColumn = new Column("source_table_name", false, Types.LONGVARCHAR, 100, 0);
@@ -499,8 +511,7 @@ class DatabaseUpgradeListenerTest {
 
     @Test
     void testMigrateOracleTransactionViewParameters_LegacyTransactionViewFlagEnabled_SavesNewParameter() {
-        IParameterService parameterService = mock(IParameterService.class);
-        when(engine.getParameterService()).thenReturn(parameterService);
+        IParameterService parameterService = stubParameterService();
         when(parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW_LEGACY)).thenReturn(true);
         when(parameterService.getLong(ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS_LEGACY, 60000)).thenReturn(60000L);
         listener.migrateOracleTransactionViewParameters();
@@ -510,8 +521,7 @@ class DatabaseUpgradeListenerTest {
 
     @Test
     void testMigrateOracleTransactionViewParameters_LegacyThresholdChanged_SavesNewParameter() {
-        IParameterService parameterService = mock(IParameterService.class);
-        when(engine.getParameterService()).thenReturn(parameterService);
+        IParameterService parameterService = stubParameterService();
         when(parameterService.getLong(ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS_LEGACY, 60000)).thenReturn(30000L);
         listener.migrateOracleTransactionViewParameters();
         verify(parameterService, times(1)).saveParameter(ParameterConstants.ROUTING_GAPS_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS, 30000L, "upgrade");
@@ -520,10 +530,240 @@ class DatabaseUpgradeListenerTest {
 
     @Test
     void testMigrateOracleTransactionViewParameters_NothingChanged_NeverSavesParameters() {
-        IParameterService parameterService = mock(IParameterService.class);
-        when(engine.getParameterService()).thenReturn(parameterService);
+        IParameterService parameterService = stubParameterService();
         when(parameterService.getLong(ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS_LEGACY, 60000)).thenReturn(60000L);
         listener.migrateOracleTransactionViewParameters();
         verify(parameterService, never()).saveParameter(anyString(), any(), anyString());
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_8_TransformTableHasUpdateActionColumn_RunsFixupAndDeletesRows() {
+        Table transformTable = new Table("sym_transform_table");
+        transformTable.addColumn(new Column("update_action"));
+        currentModel.addTable(transformTable);
+        currentModel.addTable(new Table("sym_data_gap"));
+        currentModel.addTable(new Table("sym_node_communication"));
+        boolean result = listener.beforeUpgradeFromPre3_8("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "All pre-3.8 fix-up steps should succeed");
+        verify(sqlTemplate, times(1)).update("update sym_transform_table set update_action = 'UPD_ROW' where update_action is null");
+        verify(sqlTemplate, times(1)).update("delete from sym_data_gap");
+        verify(sqlTemplate, times(1)).update("delete from sym_node_communication");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_8_TransformTableMissing_SkipsFixupButStillDeletesRows() {
+        currentModel.addTable(new Table("sym_data_gap"));
+        currentModel.addTable(new Table("sym_node_communication"));
+        boolean result = listener.beforeUpgradeFromPre3_8("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "A missing transform_table should not block the delete steps");
+        verify(sqlTemplate, never()).update("update sym_transform_table set update_action = 'UPD_ROW' where update_action is null");
+        verify(sqlTemplate, times(1)).update("delete from sym_data_gap");
+        verify(sqlTemplate, times(1)).update("delete from sym_node_communication");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_8_DeleteFails_ReturnsFalse() {
+        currentModel.addTable(new Table("sym_data_gap"));
+        when(sqlTemplate.update("delete from sym_data_gap")).thenThrow(new RuntimeException("table locked"));
+        boolean result = listener.beforeUpgradeFromPre3_8("sym", currentModel, sqlTemplate, sqlScript);
+        assertFalse(result, "A failed delete should cause the whole step to report failure");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_10_AsePlatform_DropsBothForeignKeyConstraints() {
+        stubDatabasePlatform(DatabaseNamesConstants.ASE);
+        currentModel.addTable(new Table("sym_node_identity"));
+        currentModel.addTable(new Table("sym_node_security"));
+        boolean result = listener.beforeUpgradeFromPre3_10("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "Dropping the ASE-specific foreign keys should succeed");
+        verify(sqlTemplate, times(1)).update("alter table sym_node_identity drop constraint sym_fk_ident_2_node");
+        verify(sqlTemplate, times(1)).update("alter table sym_node_security drop constraint sym_fk_sec_2_node");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_10_NonAsePlatform_SkipsForeignKeyDrops() {
+        stubDatabasePlatform(DatabaseNamesConstants.H2);
+        boolean result = listener.beforeUpgradeFromPre3_10("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "A non-ASE platform should skip the foreign key drops entirely");
+        verify(sqlTemplate, never()).update(anyString());
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_10_AsePlatformConstraintDropFails_ReturnsFalse() {
+        stubDatabasePlatform(DatabaseNamesConstants.ASE);
+        currentModel.addTable(new Table("sym_node_identity"));
+        currentModel.addTable(new Table("sym_node_security"));
+        when(sqlTemplate.update("alter table sym_node_identity drop constraint sym_fk_ident_2_node")).thenThrow(new RuntimeException("no such constraint"));
+        boolean result = listener.beforeUpgradeFromPre3_10("sym", currentModel, sqlTemplate, sqlScript);
+        assertFalse(result, "A failed foreign key drop should cause the step to report failure");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_11_ForceFixFlagEnabled_RunsFixDataEventAndReturnsTrue() {
+        IParameterService parameterService = stubParameterService();
+        when(parameterService.is("upgrade.force.fix.data.event")).thenReturn(true);
+        IDatabasePlatform databasePlatform = stubDatabasePlatform(DatabaseNamesConstants.H2);
+        when(databasePlatform.getSqlTemplateDirty()).thenReturn(sqlTemplate);
+        when(sqlTemplate.query(anyString())).thenReturn(Collections.emptyList());
+        boolean result = listener.beforeUpgradeFromPre3_11("sym");
+        assertTrue(result, "Forcing the fix should run fixDataEvent3_11 and succeed when there are no duplicate rows");
+        verify(parameterService, never()).is("upgrade.skip.fix.data.event");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_11_SkipFixFlagEnabled_NeverRunsFixDataEvent() {
+        IParameterService parameterService = stubParameterService();
+        when(parameterService.is("upgrade.force.fix.data.event")).thenReturn(false);
+        when(parameterService.is("upgrade.skip.fix.data.event")).thenReturn(true);
+        boolean result = listener.beforeUpgradeFromPre3_11("sym");
+        assertTrue(result, "Skipping the fix should still report success without scanning for duplicates");
+        verify(engine, never()).getDatabasePlatform();
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_11_NoDuplicateTriggerRouterPairs_NeverRunsFixDataEvent() {
+        IParameterService parameterService = stubParameterService();
+        when(parameterService.is("upgrade.force.fix.data.event")).thenReturn(false);
+        when(parameterService.is("upgrade.skip.fix.data.event")).thenReturn(false);
+        when(parameterService.getNodeGroupId()).thenReturn("group1");
+        when(engine.getSqlTemplate()).thenReturn(sqlTemplate);
+        when(sqlTemplate.query(anyString(), any(Object[].class))).thenReturn(Collections.emptyList());
+        boolean result = listener.beforeUpgradeFromPre3_11("sym");
+        assertTrue(result, "No duplicate trigger/router pairs means there is nothing to fix");
+        verify(engine, never()).getDatabasePlatform();
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_11_DuplicateTriggerRouterPairFound_RunsFixDataEventAndReturnsTrue() {
+        IParameterService parameterService = stubParameterService();
+        when(parameterService.is("upgrade.force.fix.data.event")).thenReturn(false);
+        when(parameterService.is("upgrade.skip.fix.data.event")).thenReturn(false);
+        when(parameterService.getNodeGroupId()).thenReturn("group1");
+        when(engine.getSqlTemplate()).thenReturn(sqlTemplate);
+        Row duplicateRow = new Row(new String[] { "trigger_id", "target_node_group_id" }, new Object[] { "trig1", "group1" });
+        when(sqlTemplate.query(anyString(), any(Object[].class))).thenReturn(Arrays.asList(duplicateRow, duplicateRow));
+        IDatabasePlatform databasePlatform = stubDatabasePlatform(DatabaseNamesConstants.H2);
+        when(databasePlatform.getSqlTemplateDirty()).thenReturn(sqlTemplate);
+        when(sqlTemplate.query(anyString())).thenReturn(Collections.emptyList());
+        boolean result = listener.beforeUpgradeFromPre3_11("sym");
+        assertTrue(result, "A duplicate trigger/router pair should trigger the data_event fix, which succeeds when there are no duplicate rows");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_12_RegistrationServerWithNonOracleAsePlatform_FixesRouterTypeAndReturnsTrue() {
+        IParameterService parameterService = stubParameterService();
+        when(parameterService.isRegistrationServer()).thenReturn(true);
+        stubDatabasePlatform(DatabaseNamesConstants.H2);
+        boolean result = listener.beforeUpgradeFromPre3_12("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "Fixing router_type on a non-Oracle/ASE platform should succeed");
+        verify(sqlTemplate, times(1)).update("update sym_router set router_type = 'default' where router_type is null");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_12_RegistrationServerRouterTypeUpdateFails_ReturnsFalse() {
+        IParameterService parameterService = stubParameterService();
+        when(parameterService.isRegistrationServer()).thenReturn(true);
+        stubDatabasePlatform(DatabaseNamesConstants.H2);
+        when(sqlTemplate.update("update sym_router set router_type = 'default' where router_type is null")).thenThrow(new RuntimeException("locked"));
+        boolean result = listener.beforeUpgradeFromPre3_12("sym", currentModel, sqlTemplate, sqlScript);
+        assertFalse(result, "A failed router_type fix-up should cause the step to report failure");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_12_NotRegistrationServer_SkipsRouterTypeFixup() {
+        stubParameterService();
+        stubDatabasePlatform(DatabaseNamesConstants.H2);
+        boolean result = listener.beforeUpgradeFromPre3_12("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "A non-registration server should skip the router_type fix-up and still succeed");
+        verify(sqlTemplate, never()).update("update sym_router set router_type = 'default' where router_type is null");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_12_OraclePlatform_DropsDataPrimaryKeyConstraint() {
+        stubParameterService();
+        stubDatabasePlatform(DatabaseNamesConstants.ORACLE);
+        currentModel.addTable(new Table("sym_data"));
+        boolean result = listener.beforeUpgradeFromPre3_12("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "Dropping the sym_data primary key on Oracle should succeed");
+        verify(sqlTemplate, times(1)).update("alter table sym_data drop constraint sym_data_pk");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_12_AsePlatform_DropsIndexAndForeignKeyConstraints() {
+        stubParameterService();
+        stubDatabasePlatform(DatabaseNamesConstants.ASE);
+        currentModel.addTable(new Table("sym_data"));
+        currentModel.addTable(new Table("sym_trigger_router"));
+        currentModel.addTable(new Table("sym_file_trigger_router"));
+        boolean result = listener.beforeUpgradeFromPre3_12("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "Dropping the ASE-specific index and foreign keys should succeed");
+        verify(sqlTemplate, times(1)).update("drop index sym_data.sym_idx_d_channel_id");
+        verify(sqlTemplate, times(1)).update("alter table sym_trigger_router drop constraint sym_fk_tr_2_rtr");
+        verify(sqlTemplate, times(1)).update("alter table sym_file_trigger_router drop constraint sym_fk_ftr_2_rtr");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_15_MssqlPlatform_DropsPrimaryKeysFromPre315Tables() {
+        stubDatabasePlatform(DatabaseNamesConstants.MSSQL2016);
+        when(sqlTemplate.queryForString(anyString())).thenReturn("sym_pk_x");
+        currentModel.addTable(new Table("sym_table_reload_request"));
+        currentModel.addTable(new Table("sym_registration_request"));
+        boolean result = listener.beforeUpgradeFromPre3_15("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "Dropping primary keys on MSSQL should succeed");
+        verify(sqlTemplate, times(1)).update("alter table sym_table_reload_request drop constraint sym_pk_x");
+        verify(sqlTemplate, times(1)).update("alter table sym_registration_request drop constraint sym_pk_x");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_15_OraclePlatform_TruncatesPre315Tables() {
+        stubDatabasePlatform(DatabaseNamesConstants.ORACLE122);
+        currentModel.addTable(new Table("sym_table_reload_request"));
+        currentModel.addTable(new Table("sym_registration_request"));
+        boolean result = listener.beforeUpgradeFromPre3_15("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "Truncating pre-3.15 tables on Oracle should succeed");
+        verify(sqlTemplate, times(1)).update("truncate table sym_table_reload_request");
+        verify(sqlTemplate, times(1)).update("truncate table sym_registration_request");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_15_NonMssqlNonOraclePlatform_SkipsBothBranches() {
+        stubDatabasePlatform(DatabaseNamesConstants.H2);
+        boolean result = listener.beforeUpgradeFromPre3_15("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "A platform that is neither MSSQL nor Oracle should skip both fix-up branches");
+        verify(sqlTemplate, never()).update(anyString());
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_16_BothTablesPresent_DropsBothAndReturnsTrue() {
+        currentModel.addTable(new Table("sym_design_diagram"));
+        currentModel.addTable(new Table("sym_diagram_group"));
+        boolean result = listener.beforeUpgradeFromPre3_16("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "Dropping both design-diagram tables should succeed");
+        verify(sqlTemplate, times(1)).update("drop table sym_design_diagram");
+        verify(sqlTemplate, times(1)).update("drop table sym_diagram_group");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_16_DiagramGroupTableMissing_DropsOnlyDesignDiagram() {
+        currentModel.addTable(new Table("sym_design_diagram"));
+        boolean result = listener.beforeUpgradeFromPre3_16("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "A missing diagram_group table should be skipped without affecting the result");
+        verify(sqlTemplate, times(1)).update("drop table sym_design_diagram");
+        verify(sqlTemplate, never()).update("drop table sym_diagram_group");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_17_NodeChannelCtlTablePresent_DropsTableAndReturnsTrue() {
+        currentModel.addTable(new Table("sym_node_channel_ctl"));
+        boolean result = listener.beforeUpgradeFromPre3_17("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "Dropping the node_channel_ctl table should succeed");
+        verify(sqlTemplate, times(1)).update("drop table sym_node_channel_ctl");
+    }
+
+    @Test
+    void testBeforeUpgradeFromPre3_17_NodeChannelCtlTableMissing_SkipsDropAndReturnsTrue() {
+        boolean result = listener.beforeUpgradeFromPre3_17("sym", currentModel, sqlTemplate, sqlScript);
+        assertTrue(result, "A missing node_channel_ctl table means there is nothing to drop");
+        verify(sqlTemplate, never()).update("drop table sym_node_channel_ctl");
     }
 }
