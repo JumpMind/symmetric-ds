@@ -209,7 +209,7 @@ class TransformTableTest {
     void testEquals_withTransformIdAgainstNonTransformTable_isNotEqual() {
         TransformTable table = new TransformTable();
         table.setTransformId("transform1");
-        assertNotEquals(table, "not a transform table");
+        assertNotEquals("not a transform table", table);
     }
 
     @Test
@@ -223,7 +223,7 @@ class TransformTableTest {
     void testToString_withNoTransformId_fallsBackToObjectToString() {
         TransformTable table = new TransformTable();
         assertEquals(table.toString(), table.toString());
-        assertNotEquals(table.toString(), "transform1");
+        assertNotEquals("transform1", table.toString());
     }
 
     @Test

@@ -142,7 +142,7 @@ class TransformColumnTest {
     @Test
     void testEquals_differentType_isNotEqual() {
         TransformColumn column = new TransformColumn("transform1");
-        assertNotEquals(column, "not a transform column");
+        assertNotEquals("not a transform column", column);
     }
 
     @Test
