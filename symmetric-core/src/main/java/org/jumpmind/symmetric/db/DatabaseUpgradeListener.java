@@ -441,7 +441,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         return shouldFix;
     }
 
-    protected void fixDataEvent3_11(String tablePrefix) {
+    protected boolean fixDataEvent3_11(String tablePrefix) {
         log.info("Checking data_event for upgrade");
         List<Row> rows = engine.getDatabasePlatform().getSqlTemplateDirty().query("select batch_id, data_id, max(router_id) router_id " +
                 "from " + tablePrefix + "_data_event group by batch_id, data_id having count(*) > 1");
@@ -488,6 +488,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             }
         }
         log.info("Done preparing data_event for upgrade");
+        return true;
     }
 
     protected boolean isUpgradeFromPre312(String tablePrefix, Database currentModel, Database desiredModel) {
@@ -604,7 +605,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
 
     protected boolean beforeUpgradeFromPre3_11(String tablePrefix) {
         if (shouldFixDataEvent3_11(tablePrefix)) {
-            fixDataEvent311(tablePrefix);
+            return fixDataEvent3_11(tablePrefix);
         }
         return true;
     }
