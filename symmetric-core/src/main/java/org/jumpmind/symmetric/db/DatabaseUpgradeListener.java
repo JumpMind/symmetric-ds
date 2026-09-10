@@ -88,19 +88,19 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             isUpgradeFromPre38 = true;
             success &= beforeUpgradeFromPre3_8(tablePrefix, currentModel, sqlTemplate, sqlScript);
         }
-        if (isUpgradeFromPre3_10(tablePrefix, currentModel, desiredModel)) {
+        if (isUpgradeFromPre3_10(tablePrefix, currentModel)) {
             success &= beforeUpgradeFromPre3_10(tablePrefix, currentModel, sqlTemplate, sqlScript);
         }
-        if (isUpgradeFromPre3_11(tablePrefix, currentModel, desiredModel)) {
+        if (isUpgradeFromPre3_11(tablePrefix, currentModel)) {
             success &= beforeUpgradeFromPre3_11(tablePrefix);
         }
-        if (isUpgradeFromPre3_12(tablePrefix, currentModel, desiredModel)) {
+        if (isUpgradeFromPre3_12(tablePrefix, currentModel)) {
             success &= beforeUpgradeFromPre3_12(tablePrefix, currentModel, sqlTemplate, sqlScript);
         }
-        if (isUpgradeFromPre3_12_5(tablePrefix, currentModel, desiredModel)) {
+        if (isUpgradeFromPre3_12_5(tablePrefix, currentModel)) {
             isUpgradeFromPre3125 = true;
         }
-        isUpgradeFromPre314 = isUpgradeFromPre3_14(tablePrefix, currentModel, desiredModel);
+        isUpgradeFromPre314 = isUpgradeFromPre3_14(tablePrefix, currentModel);
         fixInformixTriggerLongVarcharColumns(tablePrefix, desiredModel);
         if (isUpgradeFromPre3_15(tablePrefix, currentModel)) {
             isUpgradeFromPre315 = true;
@@ -401,7 +401,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         }
     }
 
-    protected boolean isUpgradeFromPre3_10(String tablePrefix, Database currentModel, Database desiredModel) {
+    protected boolean isUpgradeFromPre3_10(String tablePrefix, Database currentModel) {
         String nodeTableName = tablePrefix + "_" + TableConstants.SYM_NODE;
         Table nodeTable = currentModel.findTable(nodeTableName);
         if (nodeTable != null) {
@@ -413,7 +413,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         return false;
     }
 
-    protected boolean isUpgradeFromPre3_11(String tablePrefix, Database currentModel, Database desiredModel) {
+    protected boolean isUpgradeFromPre3_11(String tablePrefix, Database currentModel) {
         Table eventTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_DATA_EVENT);
         if (eventTable != null && eventTable.findColumn("router_id") != null) {
             log.info("Detected upgrade from pre-3.11 version.");
@@ -493,7 +493,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         return true;
     }
 
-    protected boolean isUpgradeFromPre3_12(String tablePrefix, Database currentModel, Database desiredModel) {
+    protected boolean isUpgradeFromPre3_12(String tablePrefix, Database currentModel) {
         Table eventTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_NODE_SECURITY);
         if (eventTable != null && eventTable.findColumn("failed_logins") == null) {
             log.info("Detected upgrade from pre-3.12 version.");
@@ -503,7 +503,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         }
     }
 
-    protected boolean isUpgradeFromPre3_12_5(String tablePrefix, Database currentModel, Database desiredModel) {
+    protected boolean isUpgradeFromPre3_12_5(String tablePrefix, Database currentModel) {
         Table eventTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_NODE_SECURITY);
         if (eventTable != null && eventTable.findColumn("initial_load_end_time") == null) {
             log.info("Detected upgrade from pre-3.12.5 version.");
@@ -513,7 +513,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         }
     }
 
-    protected boolean isUpgradeFromPre3_14(String tablePrefix, Database currentModel, Database desiredModel) {
+    protected boolean isUpgradeFromPre3_14(String tablePrefix, Database currentModel) {
         Table table = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_EXTRACT_REQUEST);
         if (table != null && table.findColumn("source_node_id") == null) {
             log.info("Detected upgrade from pre-3.14 version.");

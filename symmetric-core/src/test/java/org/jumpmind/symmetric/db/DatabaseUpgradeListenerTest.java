@@ -290,7 +290,7 @@ class DatabaseUpgradeListenerTest {
         Table nodeTable = new Table("sym_node");
         nodeTable.addColumn(new Column("heartbeat_time"));
         currentModelForTest.addTable(nodeTable);
-        boolean result = listener.isUpgradeFromPre3_10("sym", currentModelForTest, new Database());
+        boolean result = listener.isUpgradeFromPre3_10("sym", currentModelForTest);
         assertTrue(result, "A node table with a heartbeat_time column indicates a pre-3.10 upgrade");
     }
 
@@ -298,7 +298,7 @@ class DatabaseUpgradeListenerTest {
     void testIsUpgradeFromPre3_10_NodeTableMissingHeartbeatTimeColumn_ReturnsFalse() {
         Database currentModelForTest = new Database();
         currentModelForTest.addTable(new Table("sym_node"));
-        boolean result = listener.isUpgradeFromPre3_10("sym", currentModelForTest, new Database());
+        boolean result = listener.isUpgradeFromPre3_10("sym", currentModelForTest);
         assertFalse(result, "A node table without a heartbeat_time column means this is not a pre-3.10 upgrade");
     }
 
@@ -308,13 +308,13 @@ class DatabaseUpgradeListenerTest {
         Table dataEventTable = new Table("sym_data_event");
         dataEventTable.addColumn(new Column("router_id"));
         currentModelForTest.addTable(dataEventTable);
-        boolean result = listener.isUpgradeFromPre3_11("sym", currentModelForTest, new Database());
+        boolean result = listener.isUpgradeFromPre3_11("sym", currentModelForTest);
         assertTrue(result, "A data_event table with a router_id column indicates a pre-3.11 upgrade");
     }
 
     @Test
     void testIsUpgradeFromPre3_11_DataEventTableMissing_ReturnsFalse() {
-        boolean result = listener.isUpgradeFromPre3_11("sym", new Database(), new Database());
+        boolean result = listener.isUpgradeFromPre3_11("sym", new Database());
         assertFalse(result, "A missing data_event table means this is not a pre-3.11 upgrade");
     }
 
@@ -322,7 +322,7 @@ class DatabaseUpgradeListenerTest {
     void testIsUpgradeFromPre3_12_NodeSecurityTableMissingFailedLoginsColumn_ReturnsTrue() {
         Database currentModelForTest = new Database();
         currentModelForTest.addTable(new Table("sym_node_security"));
-        boolean result = listener.isUpgradeFromPre3_12("sym", currentModelForTest, new Database());
+        boolean result = listener.isUpgradeFromPre3_12("sym", currentModelForTest);
         assertTrue(result, "A node_security table without a failed_logins column indicates a pre-3.12 upgrade");
     }
 
@@ -332,7 +332,7 @@ class DatabaseUpgradeListenerTest {
         Table nodeSecurityTable = new Table("sym_node_security");
         nodeSecurityTable.addColumn(new Column("failed_logins"));
         currentModelForTest.addTable(nodeSecurityTable);
-        boolean result = listener.isUpgradeFromPre3_12("sym", currentModelForTest, new Database());
+        boolean result = listener.isUpgradeFromPre3_12("sym", currentModelForTest);
         assertFalse(result, "A node_security table with a failed_logins column means this is not a pre-3.12 upgrade");
     }
 
@@ -340,7 +340,7 @@ class DatabaseUpgradeListenerTest {
     void testIsUpgradeFromPre3_12_5_NodeSecurityTableMissingInitialLoadEndTimeColumn_ReturnsTrue() {
         Database currentModelForTest = new Database();
         currentModelForTest.addTable(new Table("sym_node_security"));
-        boolean result = listener.isUpgradeFromPre3_12_5("sym", currentModelForTest, new Database());
+        boolean result = listener.isUpgradeFromPre3_12_5("sym", currentModelForTest);
         assertTrue(result, "A node_security table without an initial_load_end_time column indicates a pre-3.12.5 upgrade");
     }
 
@@ -350,7 +350,7 @@ class DatabaseUpgradeListenerTest {
         Table nodeSecurityTable = new Table("sym_node_security");
         nodeSecurityTable.addColumn(new Column("initial_load_end_time"));
         currentModelForTest.addTable(nodeSecurityTable);
-        boolean result = listener.isUpgradeFromPre3_12_5("sym", currentModelForTest, new Database());
+        boolean result = listener.isUpgradeFromPre3_12_5("sym", currentModelForTest);
         assertFalse(result, "A node_security table with an initial_load_end_time column means this is not a pre-3.12.5 upgrade");
     }
 
@@ -358,7 +358,7 @@ class DatabaseUpgradeListenerTest {
     void testIsUpgradeFromPre3_14_ExtractRequestTableMissingSourceNodeIdColumn_ReturnsTrue() {
         Database currentModelForTest = new Database();
         currentModelForTest.addTable(new Table("sym_extract_request"));
-        boolean result = listener.isUpgradeFromPre3_14("sym", currentModelForTest, new Database());
+        boolean result = listener.isUpgradeFromPre3_14("sym", currentModelForTest);
         assertTrue(result, "An extract_request table without a source_node_id column indicates a pre-3.14 upgrade");
     }
 
@@ -368,7 +368,7 @@ class DatabaseUpgradeListenerTest {
         Table extractRequestTable = new Table("sym_extract_request");
         extractRequestTable.addColumn(new Column("source_node_id"));
         currentModelForTest.addTable(extractRequestTable);
-        boolean result = listener.isUpgradeFromPre3_14("sym", currentModelForTest, new Database());
+        boolean result = listener.isUpgradeFromPre3_14("sym", currentModelForTest);
         assertFalse(result, "An extract_request table with a source_node_id column means this is not a pre-3.14 upgrade");
     }
 
