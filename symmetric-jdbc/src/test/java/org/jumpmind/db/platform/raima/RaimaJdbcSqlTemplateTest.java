@@ -60,7 +60,7 @@ class RaimaJdbcSqlTemplateTest {
     }
 
     @Test
-    void testConstructor_setsPrimaryKeyViolationSqlState() throws SQLException {
+    void testConstructor_setsPrimaryKeyViolationSqlState() {
         SQLException matchingState = new SQLException("duplicate key", "40002");
         assertTrue(template.isUniqueKeyViolation(matchingState));
     }
