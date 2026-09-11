@@ -9,7 +9,7 @@ Concurrency parameters scale together and should be sized against available CPU 
 
 === Sizing the Database Connection Pool
 
-Each endpoint's database connection pool must be large enough to cover every concurrent consumer of that pool, but not so large that it exceeds what the database server itself can accept — a limit that is easy to cross when several endpoints share one database server.
+Each endpoint's database connection pool must be large enough to cover every concurrent consumer of that pool, but not so large that it exceeds what the database server itself can accept — a limit that is easy to cross when several endpoints and multiple applications share one database server.
 
 ifdef::pro[]
 
