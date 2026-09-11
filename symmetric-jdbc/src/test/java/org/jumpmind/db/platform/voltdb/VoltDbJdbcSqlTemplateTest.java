@@ -90,7 +90,8 @@ class VoltDbJdbcSqlTemplateTest {
 
     @Test
     void testStartSqlTransaction() throws SQLException {
-        when(dataSource.getConnection()).thenReturn(mock(Connection.class));
+        Connection connectionMock = mock(Connection.class);
+        when(dataSource.getConnection()).thenReturn(connectionMock);
         ISqlTransaction transaction = template.startSqlTransaction();
         assertTrue(transaction instanceof org.jumpmind.db.sql.JdbcSqlTransaction);
     }
