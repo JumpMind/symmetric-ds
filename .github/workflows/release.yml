@@ -27,8 +27,8 @@ jobs:
               shell: bash
               run: |
                 echo "Validating release version: ${{ github.event.inputs.version }}"
-                if [[ ! "${{ github.event.inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                    echo "ERROR: Invalid version input. Must be of the format major.minor.patch, e.g. 3.16.6."
+                if [[ ! "${{ github.event.inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+                    echo "ERROR: Invalid version input. Must be of the format major.minor.patch[.build], e.g. 3.16.6 or 3.16.14.1."
                     exit 1
                 fi
 

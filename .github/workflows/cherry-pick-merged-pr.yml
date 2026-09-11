@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 'release/*'
+      - '!release/3.16.14.1'
   workflow_dispatch:
     inputs:
       commit_hash:

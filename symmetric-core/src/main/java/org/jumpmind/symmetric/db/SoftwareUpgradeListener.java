@@ -53,13 +53,17 @@ public class SoftwareUpgradeListener implements ISoftwareUpgradeListener, ISymme
                 engine.getParameterService().is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
             engine.getNodeService().deleteNodeHost(engine.getNodeService().findIdentityNodeId());
         }
-        if (Version.isOlderThanVersion(databaseVersion, "3.16.8")) {
+        if (Version.isOlderThanVersion(databaseVersion, "3.16.14")) {
             engine.getParameterService().saveParameter(ParameterConstants.PURGE_STRANDED_DATA_RECAPTURE_ENABLED, false, "upgrade");
         }
         try {
-            ModuleManager.getInstance().upgradeAll();
+            upgradeModules();
         } catch (ModuleException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected void upgradeModules() throws ModuleException {
+        ModuleManager.getInstance().upgradeAll();
     }
 }
