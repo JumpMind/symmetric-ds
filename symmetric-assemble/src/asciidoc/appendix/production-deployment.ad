@@ -13,7 +13,7 @@ Each endpoint's database connection pool must be large enough to cover every con
 
 ifdef::pro[]
 
-The Deploy Wizard's connection pool availability check (see <<Endpoint Overview>>) validates this before deployment by opening the configured number of connections against each endpoint's database. The pool size it tests, and later deploys with, is driven by the below parameters:
+The Deploy Wizard's connection pool availability check (see <<Endpoint Overview>>) validates the connection pool size before deployment by opening the configured number of connections against each endpoint's database. The pool size it tests, and later deploys with, is driven by the below parameters:
 
 endif::pro[]
 
