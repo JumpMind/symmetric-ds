@@ -20,9 +20,9 @@
  */
 package org.jumpmind.symmetric.route;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -69,15 +69,12 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-@RunWith(MockitoJUnitRunner.class)
 public class DataGapRouteCursorTest {
     protected IParameterService parameterService;
     protected ISqlTemplate sqlTemplate;
@@ -97,11 +94,11 @@ public class DataGapRouteCursorTest {
         nodeChannel.setBatchAlgorithm(DefaultBatchAlgorithm.NAME);
     }
 
-    protected IDataGapRouteCursor buildCursor(List<DataGap> dataGaps, boolean useMultipleQueries) throws Exception {
+    protected IDataGapRouteCursor buildCursor(List<DataGap> dataGaps, boolean useMultipleQueries) {
         return buildCursor(dataGaps, useMultipleQueries, null);
     }
 
-    protected IDataGapRouteCursor buildCursor(List<DataGap> dataGaps, boolean useMultipleQueries, ProcessInfo readerProcessInfo) throws Exception {
+    protected IDataGapRouteCursor buildCursor(List<DataGap> dataGaps, boolean useMultipleQueries, ProcessInfo readerProcessInfo) {
         when(parameterService.getEngineName()).thenReturn("myEngine");
         IStatisticManager statisticManager = mock(StatisticManager.class);
         when(statisticManager.newProcessInfo((ProcessInfoKey) any())).thenReturn(new ProcessInfo());
@@ -135,18 +132,18 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-    void testOrderBy() throws Exception {
+    void testOrderBy() {
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
         IDataGapRouteCursor cursor = buildCursor(dataGaps, false);
-        assertTrue("Should query each gap", cursor.isEachGapQueried());
+        assertTrue(cursor.isEachGapQueried(), "Should query each gap");
         Object[] args = new Object[] { Constants.CHANNEL_DEFAULT, 0l, Long.MAX_VALUE };
         int[] types = new int[] { Types.VARCHAR, Types.BIGINT, Types.BIGINT };
         verify(sqlTemplate).queryForCursor(contains("order by d.data_id"), any(), eq(args), eq(types));
     }
 
     @Test
-    void testOrderByNatural() throws Exception {
+    void testOrderByNatural() {
         when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)).thenReturn(false);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
@@ -158,7 +155,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-    void testMemoryOrderById() throws Exception {
+    void testMemoryOrderById() {
         when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_INTO_MEMORY_ENABLED, false)).thenReturn(true);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
@@ -181,7 +178,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-    void testChannelFlags() throws Exception {
+    void testChannelFlags() {
         nodeChannel.setUsePkDataToRoute(false);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
@@ -199,7 +196,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-    void testExceptionAndRetry() throws Exception {
+    void testExceptionAndRetry() {
         ISqlRowMapper<Data> mapper = any();
         when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any())).then(new Answer<ISqlReadCursor<Data>>() {
             int count = 0;
@@ -221,7 +218,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-    void testQueryGreaterThan() throws Exception {
+    void testQueryGreaterThan() {
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(1, 3));
         dataGaps.add(new DataGap(5, 5));
@@ -235,7 +232,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-    void testQueryMergeFinalGaps() throws Exception {
+    void testQueryMergeFinalGaps() {
         when(parameterService.getInt(eq(ParameterConstants.ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY), anyInt())).thenReturn(0);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(1, 3));
@@ -250,7 +247,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-    void testQueryMultipleOneGapOver() throws Exception {
+    void testQueryMultipleOneGapOver() {
         when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_USE_MULTIPLE_QUERIES)).thenReturn(true);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(1, 3));
@@ -259,8 +256,7 @@ public class DataGapRouteCursorTest {
         dataGaps.add(new DataGap(12, Long.MAX_VALUE));
         IDataGapRouteCursor cursor = buildCursor(dataGaps, true);
         assertTrue(cursor.isEachGapQueried());
-        while (cursor.next() != null) {
-        }
+        countRows(cursor);
         InOrder inOrder = Mockito.inOrder(sqlTemplate);
         Object[] args = new Object[] { Constants.CHANNEL_DEFAULT, 1l, 3l, 5l, 5l, 7l, 10l };
         inOrder.verify(sqlTemplate).queryForCursor(argThat(new SqlArgMatcher(args.length)), any(), eq(args), eq(getTypes(args.length)));
@@ -270,7 +266,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-    void testQueryMultipleThreeGapsOver() throws Exception {
+    void testQueryMultipleThreeGapsOver() {
         when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_USE_MULTIPLE_QUERIES)).thenReturn(true);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(1, 3));
@@ -281,8 +277,7 @@ public class DataGapRouteCursorTest {
         dataGaps.add(new DataGap(40, Long.MAX_VALUE));
         IDataGapRouteCursor cursor = buildCursor(dataGaps, true);
         assertTrue(cursor.isEachGapQueried());
-        while (cursor.next() != null) {
-        }
+        countRows(cursor);
         InOrder inOrder = Mockito.inOrder(sqlTemplate);
         Object[] args = new Object[] { Constants.CHANNEL_DEFAULT, 1l, 3l, 5l, 5l, 7l, 10l };
         inOrder.verify(sqlTemplate).queryForCursor(argThat(new SqlArgMatcher(args.length)), any(), eq(args), eq(getTypes(args.length)));
@@ -292,7 +287,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-    void testQueryMultipleThreeQueries() throws Exception {
+    void testQueryMultipleThreeQueries() {
         when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_USE_MULTIPLE_QUERIES)).thenReturn(true);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(1, 3));
@@ -304,8 +299,7 @@ public class DataGapRouteCursorTest {
         dataGaps.add(new DataGap(40, Long.MAX_VALUE));
         IDataGapRouteCursor cursor = buildCursor(dataGaps, true);
         assertTrue(cursor.isEachGapQueried());
-        while (cursor.next() != null) {
-        }
+        countRows(cursor);
         InOrder inOrder = Mockito.inOrder(sqlTemplate);
         Object[] args = new Object[] { Constants.CHANNEL_DEFAULT, 1l, 3l, 5l, 5l, 7l, 10l };
         inOrder.verify(sqlTemplate).queryForCursor(argThat(new SqlArgMatcher(args.length)), any(), eq(args), eq(getTypes(args.length)));
@@ -317,7 +311,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-    void testQueryMultipleCountsEachQueryInProcessInfo() throws Exception {
+    void testQueryMultipleCountsEachQueryInProcessInfo() {
         when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_USE_MULTIPLE_QUERIES)).thenReturn(true);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(1, 3));
@@ -329,26 +323,24 @@ public class DataGapRouteCursorTest {
         dataGaps.add(new DataGap(40, Long.MAX_VALUE));
         ProcessInfo processInfo = new ProcessInfo();
         IDataGapRouteCursor cursor = buildCursor(dataGaps, true, processInfo);
-        while (cursor.next() != null) {
-        }
+        countRows(cursor);
         assertEquals(3L, processInfo.getTotalQueryCount());
         assertEquals(0L, processInfo.getCurrentDataCount());
     }
 
     @Test
-    void testQuerySingleCountsOneQueryInProcessInfo() throws Exception {
+    void testQuerySingleCountsOneQueryInProcessInfo() {
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(1, 3));
         dataGaps.add(new DataGap(5, Long.MAX_VALUE));
         ProcessInfo processInfo = new ProcessInfo();
         IDataGapRouteCursor cursor = buildCursor(dataGaps, false, processInfo);
-        while (cursor.next() != null) {
-        }
+        countRows(cursor);
         assertEquals(1L, processInfo.getTotalQueryCount());
     }
 
     @Test
-    void testQueryRestoresStatusAfterEachQuery() throws Exception {
+    void testQueryRestoresStatusAfterEachQuery() {
         when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_USE_MULTIPLE_QUERIES)).thenReturn(true);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(1, 3));
@@ -356,9 +348,16 @@ public class DataGapRouteCursorTest {
         ProcessInfo processInfo = new ProcessInfo();
         processInfo.setStatus(ProcessInfo.ProcessStatus.EXTRACTING);
         IDataGapRouteCursor cursor = buildCursor(dataGaps, true, processInfo);
-        while (cursor.next() != null) {
-        }
+        countRows(cursor);
         assertEquals(ProcessInfo.ProcessStatus.EXTRACTING, processInfo.getStatus());
+    }
+
+    protected int countRows(IDataGapRouteCursor cursor) {
+        int rowCount = 0;
+        while (cursor.next() != null) {
+            rowCount++;
+        }
+        return rowCount;
     }
 
     protected int[] getTypes(int size) {

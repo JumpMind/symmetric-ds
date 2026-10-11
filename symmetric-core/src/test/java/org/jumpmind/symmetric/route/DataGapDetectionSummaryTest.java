@@ -22,6 +22,11 @@ package org.jumpmind.symmetric.route;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,8 +46,10 @@ class DataGapDetectionSummaryTest {
         summary.recordGapChanges(2, 1);
         summary.recordLastDataId(500);
         summary.recordFullAnalysis(2000);
+        String fullAnalysisTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                .format(LocalDateTime.ofInstant(Instant.ofEpochMilli(2000), ZoneId.systemDefault()));
         assertEquals("Gap detection summary for the last 30001 ms: 1 cycles, average detection time 120 ms, maximum detection time 120 ms, "
-                + "4 open gaps, 2 gaps added, 1 gaps deleted, last data ID 500",
+                + "4 open gaps, 2 gaps added, 1 gaps deleted, last data ID 500, last full gap analysis " + fullAnalysisTime,
                 summary.getInfoMessage(LOG_TIME));
     }
 
@@ -51,7 +58,7 @@ class DataGapDetectionSummaryTest {
         summary.recordDetection(100, 3);
         summary.recordDetection(300, 5);
         assertEquals("Gap detection summary for the last 30001 ms: 2 cycles, average detection time 200 ms, maximum detection time 300 ms, "
-                + "5 open gaps, 0 gaps added, 0 gaps deleted, last data ID none",
+                + "5 open gaps, 0 gaps added, 0 gaps deleted, last data ID none, last full gap analysis none",
                 summary.getInfoMessage(LOG_TIME));
     }
 
@@ -75,12 +82,12 @@ class DataGapDetectionSummaryTest {
     }
 
     @Test
-    void testResetCountersRestartsElapsedTime() {
+    void testSetLastSummaryLogTimeRestartsElapsedTimeAndKeepsCounters() {
         summary.recordDetection(120, 4);
-        summary.resetCounters();
+        summary.setLastSummaryLogTime(LOG_TIME);
         summary.recordDetection(80, 4);
-        assertEquals("Gap detection summary for the last 5000 ms: 1 cycles, average detection time 80 ms, maximum detection time 80 ms, "
-                + "4 open gaps, 0 gaps added, 0 gaps deleted, last data ID none",
+        assertEquals("Gap detection summary for the last 5000 ms: 2 cycles, average detection time 100 ms, maximum detection time 120 ms, "
+                + "4 open gaps, 0 gaps added, 0 gaps deleted, last data ID none, last full gap analysis none",
                 summary.getInfoMessage(LOG_TIME + 5000));
     }
 

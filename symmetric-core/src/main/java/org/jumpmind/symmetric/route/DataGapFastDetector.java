@@ -244,16 +244,11 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 if (Thread.interrupted()) {
                     throw new SymmetricException("Thread received interrupt");
                 }
-                if (progressLog.isDebugDue(System.currentTimeMillis())) {
-                    if (progressLog.isInfoDue(System.currentTimeMillis())) {
-                        checkInterrupted();
-                        clusterService.refreshLock(ClusterConstants.ROUTE);
-                    }
-                    progressLog.infoOrDebug(System.currentTimeMillis(),
-                            "The data gap detection has been running for {}ms, detected {} rows over a gap range of {}, "
-                                    + "found {} new gaps, found old {} gaps, checked data in {} gaps, and executed {} queries",
-                            new Object[] { System.currentTimeMillis() - ts, passStats.getIdsFound(), passStats.getRangeChecked(), gapsAdded.size(),
-                                    gapsDeleted.size(), passStats.getGapsExpireChecked(), passStats.getGapQueriesCount() });
+                long currentTime = System.currentTimeMillis();
+                if (progressLog.isDebugDue(currentTime)) {
+                    logFullGapDetectionProgress(currentTime, ts, passStats);
+                    checkInterrupted();
+                    clusterService.refreshLock(ClusterConstants.ROUTE);
                 }
             }
             if (lastDataId != -1) {
@@ -415,6 +410,15 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             dataService.insertDataGap(transaction, gapToInsert);
         }
         return transaction;
+    }
+
+    protected void logFullGapDetectionProgress(long currentTime, long startTime, DataGapPassStats passStats) {
+        long duration = currentTime - startTime;
+        progressLog.infoOrDebug(currentTime,
+                "Full gap detection running for {} ms: {} routed rows found in gap range {}, {} gaps added, {} gaps deleted, "
+                        + "data checked in {} gaps, {} queries",
+                duration, passStats.getIdsFound(), passStats.getRangeChecked(), gapsAdded.size(), gapsDeleted.size(),
+                passStats.getGapsExpireChecked(), passStats.getGapQueriesCount());
     }
 
     protected synchronized void queryDataIdMap(ProcessInfo processInfo, DataGapPassStats passStats) {

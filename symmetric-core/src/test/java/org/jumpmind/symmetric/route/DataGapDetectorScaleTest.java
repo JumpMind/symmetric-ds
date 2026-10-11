@@ -32,7 +32,9 @@ import static org.mockito.Mockito.withSettings;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.LockSupport;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -85,6 +87,15 @@ class DataGapDetectorScaleTest {
     long queryLatencyInMs;
     int gapCount;
 
+    private static void pause(long millis) {
+        long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(millis);
+        long remainingNanos = deadline - System.nanoTime();
+        while (remainingNanos > 0) {
+            LockSupport.parkNanos(remainingNanos);
+            remainingNanos = deadline - System.nanoTime();
+        }
+    }
+
     @BeforeEach
     void setUp() {
         gapCount = Integer.parseInt(System.getenv().getOrDefault(GAP_COUNT_VARIABLE, String.valueOf(DEFAULT_GAP_COUNT)));
@@ -94,7 +105,7 @@ class DataGapDetectorScaleTest {
         when(sqlTemplate.query(anyString(), any(ISqlRowMapper.class), any(Object[].class))).thenAnswer(invocation -> {
             queryCount.incrementAndGet();
             if (queryLatencyInMs > 0) {
-                Thread.sleep(queryLatencyInMs);
+                pause(queryLatencyInMs);
             }
             return new ArrayList<Long>();
         });

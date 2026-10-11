@@ -268,7 +268,7 @@ class DataGapDetectorTest {
         dataIds.add(100L);
         runGapDetector(dataGaps, dataIds, true);
         DataGapDetectionSummary summary = detector.getDetectionSummary();
-        assertEquals(0, summary.getCycleCount());
+        assertEquals(1, summary.getCycleCount());
         assertEquals(2, summary.getOpenGapCount());
         assertEquals(2L, summary.getGapsAdded());
         assertEquals(1L, summary.getGapsDeleted());
@@ -277,13 +277,13 @@ class DataGapDetectorTest {
     }
 
     @Test
-    void testSummaryCountersResetAfterBeforeRouting() {
+    void testSummaryCountersAccumulateAfterBeforeRouting() {
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(4, 50000004));
         when(dataService.findDataGaps()).thenReturn(dataGaps);
         detector.beforeRouting();
         DataGapDetectionSummary summary = detector.getDetectionSummary();
-        assertEquals(0, summary.getCycleCount());
+        assertEquals(1, summary.getCycleCount());
         assertEquals(1, summary.getOpenGapCount());
     }
 
