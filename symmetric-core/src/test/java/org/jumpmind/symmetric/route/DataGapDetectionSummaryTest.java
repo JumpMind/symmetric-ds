@@ -68,7 +68,7 @@ class DataGapDetectionSummaryTest {
     void testResetCountersClearsCycleFigures() {
         summary.recordDetection(120, 4);
         summary.recordGapChanges(2, 1);
-        summary.resetCounters(LOG_TIME);
+        summary.resetCounters();
         assertEquals(0, summary.getCycleCount());
         assertEquals(0L, summary.getGapsAdded());
         assertEquals(0L, summary.getGapsDeleted());
@@ -77,7 +77,7 @@ class DataGapDetectionSummaryTest {
     @Test
     void testResetCountersRestartsElapsedTime() {
         summary.recordDetection(120, 4);
-        summary.resetCounters(LOG_TIME);
+        summary.resetCounters();
         summary.recordDetection(80, 4);
         assertEquals("Gap detection summary for the last 5000 ms: 1 cycles, average detection time 80 ms, maximum detection time 80 ms, "
                 + "4 open gaps, 0 gaps added, 0 gaps deleted, last data ID none",
@@ -89,7 +89,7 @@ class DataGapDetectionSummaryTest {
         summary.recordDetection(120, 4);
         summary.recordLastDataId(500);
         summary.recordFullAnalysis(2000);
-        summary.resetCounters(LOG_TIME);
+        summary.resetCounters();
         assertEquals(500L, summary.getLastDataId());
         assertEquals(2000L, summary.getLastFullAnalysisTime());
         assertEquals(4, summary.getOpenGapCount());
