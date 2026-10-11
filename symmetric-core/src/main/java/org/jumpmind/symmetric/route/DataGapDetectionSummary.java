@@ -20,12 +20,18 @@
  */
 package org.jumpmind.symmetric.route;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
 /**
  * Accumulates gap detection figures across routing cycles and describes them for the periodic summary log message.
  */
 public class DataGapDetectionSummary {
     private static final long NO_DATA_ID = -1;
     private static final long NO_FULL_ANALYSIS = 0;
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private long lastSummaryLogTime;
     private int cycleCount;
     private long totalDetectionTimeInMs;
@@ -66,9 +72,9 @@ public class DataGapDetectionSummary {
         long elapsedTimeInMs = currentTime - lastSummaryLogTime;
         long averageDetectionTimeInMs = cycleCount == 0 ? 0 : totalDetectionTimeInMs / cycleCount;
         return String.format("Gap detection summary for the last %d ms: %d cycles, average detection time %d ms, maximum detection time %d ms, "
-                + "%d open gaps, %d gaps added, %d gaps deleted, last data ID %s",
+                + "%d open gaps, %d gaps added, %d gaps deleted, last data ID %s, last full gap analysis %s",
                 elapsedTimeInMs, cycleCount, averageDetectionTimeInMs, maxDetectionTimeInMs, openGapCount, gapsAdded, gapsDeleted,
-                describeLastDataId());
+                describeLastDataId(), describeLastFullAnalysis());
     }
 
     public synchronized String getDebugMessage() {
@@ -76,8 +82,15 @@ public class DataGapDetectionSummary {
                 gapsAdded, gapsDeleted);
     }
 
-    public synchronized void resetCounters(long currentTime) {
-        lastSummaryLogTime = currentTime;
+    public synchronized long getLastSummaryLogTime() {
+        return lastSummaryLogTime;
+    }
+
+    public synchronized void setLastSummaryLogTime(long lastLogTime) {
+        lastSummaryLogTime = lastLogTime;
+    }
+
+    public synchronized void resetCounters() {
         cycleCount = 0;
         totalDetectionTimeInMs = 0;
         maxDetectionTimeInMs = 0;
@@ -111,5 +124,13 @@ public class DataGapDetectionSummary {
 
     private String describeLastDataId() {
         return lastDataId == NO_DATA_ID ? "none" : String.valueOf(lastDataId);
+    }
+
+    private String describeLastFullAnalysis() {
+        if (lastFullAnalysisTime == NO_FULL_ANALYSIS) {
+            return "none";
+        }
+        Instant lastFullAnalysis = Instant.ofEpochMilli(lastFullAnalysisTime);
+        return TIME_FORMAT.format(LocalDateTime.ofInstant(lastFullAnalysis, ZoneId.systemDefault()));
     }
 }

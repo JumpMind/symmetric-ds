@@ -132,7 +132,6 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             }
             detectionSummary.recordDetection(System.currentTimeMillis() - detectionStartTime, gaps.size());
             logGapDetectionSummary(System.currentTimeMillis());
-            detectionSummary.resetCounters(System.currentTimeMillis());
         } catch (RuntimeException e) {
             if (processInfo.getStatus() != ProcessStatus.OK) {
                 processInfo.setStatus(ProcessStatus.ERROR);
@@ -428,7 +427,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             incrementGapQueryStats(passStats, processInfo);
             dataIds.addAll(ids);
             if (progressLog.isDebugDue(System.currentTimeMillis())) {
-                progressLog.infoOrDebug(System.currentTimeMillis(), "The data gap query for full analysis has executed {} of {} queries",
+                progressLog.infoOrDebug(System.currentTimeMillis(), "The data gap query for full analysis has executed {} queries for {} gaps",
                         passStats.getGapQueriesCount(), gaps.size());
             }
             if (System.currentTimeMillis() - queryForIdsTs > Constants.LONG_OPERATION_THRESHOLD) {

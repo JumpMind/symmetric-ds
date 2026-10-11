@@ -200,13 +200,7 @@ public class DataGapDetector {
                         }
                     }
                     transaction.commit();
-                    if (progressLog.isDebugDue(System.currentTimeMillis())) {
-                        progressLog.infoOrDebug(System.currentTimeMillis(),
-                                "The data gap detection process has been running for {}ms, detected {} rows that have been previously routed over a total gap range of {}, "
-                                        + "inserted {} new gaps, deleted {} gaps, and executed {} queries", new Object[] { System.currentTimeMillis() - ts,
-                                                passStats.getIdsFound(), passStats.getRangeChecked(), passStats.getGapsAdded(),
-                                                passStats.getGapsDeleted(), passStats.getGapQueriesCount() });
-                    }
+                    logGapDetectionProgress(System.currentTimeMillis(), ts, passStats);
                 } catch (Error ex) {
                     if (transaction != null) {
                         transaction.rollback();
@@ -239,7 +233,6 @@ public class DataGapDetector {
                 detectionSummary.recordLastDataId(lastDataId);
             }
             logGapDetectionSummary(System.currentTimeMillis());
-            detectionSummary.resetCounters(System.currentTimeMillis());
             processInfo.setStatus(ProcessStatus.OK);
         } catch (RuntimeException ex) {
             processInfo.setStatus(ProcessStatus.ERROR);
@@ -258,9 +251,21 @@ public class DataGapDetector {
         }
     }
 
+    protected void logGapDetectionProgress(long currentTime, long startTime, DataGapPassStats passStats) {
+        if (!progressLog.isDebugDue(currentTime) || passStats == null) {
+            return;
+        }
+        long duration = currentTime - startTime;
+        progressLog.infoOrDebug(currentTime,
+                "Gap detection running for {} ms: {} routed rows found in gap range {}, {} gaps added, {} gaps deleted, {} queries",
+                duration, passStats.getIdsFound(), passStats.getRangeChecked(), passStats.getGapsAdded(), passStats.getGapsDeleted(),
+                passStats.getGapQueriesCount());
+    }
+
     protected void logGapDetectionSummary(long currentTime) {
         if (progressLog.isInfoDue(currentTime)) {
             progressLog.info(currentTime, "{}", detectionSummary.getInfoMessage(currentTime));
+            detectionSummary.setLastSummaryLogTime(currentTime);
         } else {
             progressLog.infoOrDebug(currentTime, "{}", detectionSummary.getDebugMessage());
         }
