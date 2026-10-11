@@ -72,6 +72,18 @@ class DataGapDetectionSummaryTest {
     }
 
     @Test
+    void testDebugMessageKeepsMillisecondsAtThreshold() {
+        summary.recordDetection(5000, 3);
+        assertEquals("Gap detection took 5000 ms, 0 gaps added and 0 gaps deleted since the last summary", summary.getDebugMessage());
+    }
+
+    @Test
+    void testDebugMessageReportsSecondsWithOneDigitAboveThreshold() {
+        summary.recordDetection(12345, 3);
+        assertEquals("Gap detection took 12.3 seconds, 0 gaps added and 0 gaps deleted since the last summary", summary.getDebugMessage());
+    }
+
+    @Test
     void testResetCountersClearsCycleFigures() {
         summary.recordDetection(120, 4);
         summary.recordGapChanges(2, 1);

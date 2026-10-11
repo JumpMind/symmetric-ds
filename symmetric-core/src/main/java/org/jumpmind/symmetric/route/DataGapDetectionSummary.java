@@ -24,6 +24,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
+import org.jumpmind.symmetric.common.Constants;
 
 /**
  * Accumulates gap detection figures across routing cycles and describes them for the periodic summary log message.
@@ -78,8 +81,8 @@ public class DataGapDetectionSummary {
     }
 
     public synchronized String getDebugMessage() {
-        return String.format("Gap detection took %d ms, %d gaps added and %d gaps deleted since the last summary", lastDetectionTimeInMs,
-                gapsAdded, gapsDeleted);
+        return String.format("Gap detection took %s, %d gaps added and %d gaps deleted since the last summary",
+                describeDetectionTime(lastDetectionTimeInMs), gapsAdded, gapsDeleted);
     }
 
     public synchronized long getLastSummaryLogTime() {
@@ -120,6 +123,13 @@ public class DataGapDetectionSummary {
 
     synchronized long getLastFullAnalysisTime() {
         return lastFullAnalysisTime;
+    }
+
+    private String describeDetectionTime(long detectionTimeInMs) {
+        if (detectionTimeInMs > Constants.LONG_OPERATION_DEBUG_THRESHOLD) {
+            return String.format(Locale.ROOT, "%.1f seconds", detectionTimeInMs / 1000.0);
+        }
+        return detectionTimeInMs + " ms";
     }
 
     private String describeLastDataId() {
