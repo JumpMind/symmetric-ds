@@ -74,4 +74,24 @@ class DataGapPassStatsTest {
         stats.incrementGapQueriesCount();
         assertEquals(3L, stats.getGapQueriesCount());
     }
+
+    @Test
+    void testDefaultPassStartTimeIsCreationTime() {
+        long before = System.currentTimeMillis();
+        DataGapPassStats stats = new DataGapPassStats();
+        long after = System.currentTimeMillis();
+        assertEquals(true, stats.getPassStartTime() >= before);
+        assertEquals(true, stats.getPassStartTime() <= after);
+    }
+
+    @Test
+    void testExplicitPassStartTimeIsKept() {
+        assertEquals(1500L, new DataGapPassStats(1500).getPassStartTime());
+    }
+
+    @Test
+    void testPassDurationIsGivenTimeMinusStartTime() {
+        DataGapPassStats stats = new DataGapPassStats(1500);
+        assertEquals(2500L, stats.getPassDurationMs(4000));
+    }
 }

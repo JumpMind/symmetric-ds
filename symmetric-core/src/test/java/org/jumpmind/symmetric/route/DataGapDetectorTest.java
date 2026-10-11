@@ -72,6 +72,12 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
@@ -251,6 +257,34 @@ class DataGapDetectorTest {
         DataGapPassStats passStats = new DataGapPassStats();
         detector.queryDataIdMap(new ProcessInfo(), passStats);
         assertEquals(2L, passStats.getGapQueriesCount());
+    }
+
+    @Test
+    void testQueryDataIdMapLogsQueriesAndGapsSeparately() {
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(3, 3));
+        dataGaps.add(new DataGap(4, 50000004));
+        when(dataService.findDataGaps()).thenReturn(dataGaps);
+        detector.beforeRouting();
+        DataGapPassStats passStats = new DataGapPassStats();
+        passStats.incrementGapQueriesCount();
+        Logger detectorLogger = (Logger) LoggerFactory.getLogger(DataGapFastDetector.class.getName());
+        Level originalLevel = detectorLogger.getLevel();
+        ListAppender<ILoggingEvent> appender = new ListAppender<ILoggingEvent>();
+        appender.start();
+        detectorLogger.addAppender(appender);
+        detectorLogger.setLevel(Level.TRACE);
+        try {
+            detector.queryDataIdMap(new ProcessInfo(), passStats);
+        } finally {
+            detectorLogger.detachAppender(appender);
+            detectorLogger.setLevel(originalLevel);
+        }
+        List<String> messages = new ArrayList<String>();
+        for (ILoggingEvent event : appender.list) {
+            messages.add(event.getFormattedMessage());
+        }
+        assertEquals(true, messages.contains("The data gap query for full analysis has executed 3 queries for 2 gaps"));
     }
 
     @Test

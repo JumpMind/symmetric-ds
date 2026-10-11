@@ -82,7 +82,6 @@ public class DataGapDetector {
         ProcessInfo processInfo = this.statisticManager.newProcessInfo(new ProcessInfoKey(
                 nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
         try {
-            long ts = System.currentTimeMillis();
             processInfo.setStatus(ProcessStatus.QUERYING);
             final List<DataGap> gaps = dataService.findDataGaps();
             incrementGapQueryStats(passStats, processInfo);
@@ -200,7 +199,7 @@ public class DataGapDetector {
                         }
                     }
                     transaction.commit();
-                    logGapDetectionProgress(System.currentTimeMillis(), ts, passStats);
+                    logGapDetectionProgress(System.currentTimeMillis(), passStats);
                 } catch (Error ex) {
                     if (transaction != null) {
                         transaction.rollback();
@@ -225,14 +224,13 @@ public class DataGapDetector {
                     gapCheck.add(newGap);
                 }
             }
-            long updateTimeInMs = System.currentTimeMillis() - ts;
-            logDetectionTime(System.currentTimeMillis(), updateTimeInMs);
-            detectionSummary.recordDetection(updateTimeInMs, gapCheck.size() - passStats.getGapsDeleted());
-            detectionSummary.recordGapChanges(passStats.getGapsAdded(), passStats.getGapsDeleted());
             if (lastDataId != -1) {
                 detectionSummary.recordLastDataId(lastDataId);
             }
-            logGapDetectionSummary(System.currentTimeMillis());
+            long currentTime = System.currentTimeMillis();
+            detectionSummary.recordDetection(passStats.getPassDurationMs(currentTime), gapCheck.size() - passStats.getGapsDeleted());
+            detectionSummary.recordGapChanges(passStats.getGapsAdded(), passStats.getGapsDeleted());
+            logGapDetectionSummary(currentTime, passStats);
             processInfo.setStatus(ProcessStatus.OK);
         } catch (RuntimeException ex) {
             processInfo.setStatus(ProcessStatus.ERROR);
@@ -245,25 +243,23 @@ public class DataGapDetector {
         return getClass().getName();
     }
 
-    protected void logDetectionTime(long currentTime, long detectionTimeInMs) {
-        if (detectionTimeInMs > Constants.LONG_OPERATION_DEBUG_THRESHOLD) {
-            progressLog.infoOrDebug(currentTime, "Detecting gaps took {} ms", detectionTimeInMs);
-        }
-    }
-
-    protected void logGapDetectionProgress(long currentTime, long startTime, DataGapPassStats passStats) {
+    protected void logGapDetectionProgress(long currentTime, DataGapPassStats passStats) {
         if (!progressLog.isDebugDue(currentTime) || passStats == null) {
             return;
         }
-        long duration = currentTime - startTime;
+        long passDuration = passStats.getPassDurationMs(currentTime);
         progressLog.infoOrDebug(currentTime,
                 "Gap detection running for {} ms: {} routed rows found in gap range {}, {} gaps added, {} gaps deleted, {} queries",
-                duration, passStats.getIdsFound(), passStats.getRangeChecked(), passStats.getGapsAdded(), passStats.getGapsDeleted(),
+                passDuration, passStats.getIdsFound(), passStats.getRangeChecked(), passStats.getGapsAdded(), passStats.getGapsDeleted(),
                 passStats.getGapQueriesCount());
     }
 
-    protected void logGapDetectionSummary(long currentTime) {
-        if (progressLog.isInfoDue(currentTime)) {
+    protected void logGapDetectionSummary(long currentTime, DataGapPassStats passStats) {
+        if (passStats == null) {
+            return;
+        }
+        long passDuration = passStats.getPassDurationMs(currentTime);
+        if (passDuration > Constants.LONG_OPERATION_DEBUG_THRESHOLD) {
             progressLog.info(currentTime, "{}", detectionSummary.getInfoMessage(currentTime));
             detectionSummary.setLastSummaryLogTime(currentTime);
         } else {

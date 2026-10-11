@@ -101,4 +101,32 @@ class DataGapDetectionSummaryTest {
         assertEquals(2000L, summary.getLastFullAnalysisTime());
         assertEquals(4, summary.getOpenGapCount());
     }
+
+    @Test
+    void testLastSummaryLogTimeStartsAtCreationTime() {
+        assertEquals(CREATION_TIME, summary.getLastSummaryLogTime());
+    }
+
+    @Test
+    void testSetLastSummaryLogTimeUpdatesLastSummaryLogTime() {
+        summary.setLastSummaryLogTime(LOG_TIME);
+        assertEquals(LOG_TIME, summary.getLastSummaryLogTime());
+    }
+
+    @Test
+    void testSetLastSummaryLogTimeKeepsCounters() {
+        summary.recordDetection(120, 4);
+        summary.recordGapChanges(2, 1);
+        summary.setLastSummaryLogTime(LOG_TIME);
+        assertEquals(1, summary.getCycleCount());
+        assertEquals(2L, summary.getGapsAdded());
+        assertEquals(1L, summary.getGapsDeleted());
+    }
+
+    @Test
+    void testResetCountersKeepsLastSummaryLogTime() {
+        summary.setLastSummaryLogTime(LOG_TIME);
+        summary.resetCounters();
+        assertEquals(LOG_TIME, summary.getLastSummaryLogTime());
+    }
 }

@@ -30,6 +30,23 @@ public class DataGapPassStats {
     private int gapsDeleted;
     private int gapsExpireChecked;
     private long gapQueriesCount;
+    private final long passStartTime;
+
+    public DataGapPassStats() {
+        this(System.currentTimeMillis());
+    }
+
+    public DataGapPassStats(long passStartTime) {
+        this.passStartTime = passStartTime;
+    }
+
+    public long getPassStartTime() {
+        return passStartTime;
+    }
+
+    public long getPassDurationMs(long currentSystemTime) {
+        return currentSystemTime - passStartTime;
+    }
 
     public void addIdsFound(int count) {
         idsFound += count;
