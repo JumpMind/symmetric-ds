@@ -194,6 +194,25 @@ class NodeConcurrencyInterceptorTest {
         verifyNoInteractions(reservationConnectionCloseTracker);
     }
 
+    @Test
+    void testBefore_withLegacyConstructor_headPushAcceptsWithoutTracking() throws Exception {
+        NodeConcurrencyInterceptor legacyInterceptor = new NodeConcurrencyInterceptor(concurrentConnectionManager, configurationService, nodeService,
+                statisticManager);
+        stubAcceptedHeadPush();
+        assertFalse(legacyInterceptor.before(request, response));
+        verify(response, never()).sendError(eq(WebConstants.SC_SERVICE_ERROR), any());
+        verifyNoInteractions(reservationConnectionCloseTracker);
+    }
+
+    @Test
+    void testBefore_withLegacyConstructor_putPushProceeds() throws Exception {
+        NodeConcurrencyInterceptor legacyInterceptor = new NodeConcurrencyInterceptor(concurrentConnectionManager, configurationService, nodeService,
+                statisticManager);
+        stubReservationStatus(ReservationStatus.ACCEPTED);
+        stubEmptySuspendIgnoreLists();
+        assertTrue(legacyInterceptor.before(request, response));
+    }
+
     private void stubAcceptedHeadPush() {
         when(request.getMethod()).thenReturn("HEAD");
         when(request.getHeader(WebConstants.CHANNEL_QUEUE)).thenReturn(CHANNEL_ID);

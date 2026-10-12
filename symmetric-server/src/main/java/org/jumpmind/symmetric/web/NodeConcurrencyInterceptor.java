@@ -55,6 +55,14 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
     private IParameterService parameterService;
     private IReservationConnectionCloseTracker reservationConnectionCloseTracker;
 
+    /**
+     * Creates an interceptor that never releases reservations on connection close, because it has no parameter service to read the setting from.
+     */
+    public NodeConcurrencyInterceptor(IConcurrentConnectionManager concurrentConnectionManager,
+            IConfigurationService configurationService, INodeService nodeService, IStatisticManager statisticManager) {
+        this(concurrentConnectionManager, configurationService, nodeService, statisticManager, null, null);
+    }
+
     public NodeConcurrencyInterceptor(IConcurrentConnectionManager concurrentConnectionManager,
             IConfigurationService configurationService, INodeService nodeService, IStatisticManager statisticManager,
             IParameterService parameterService, IReservationConnectionCloseTracker reservationConnectionCloseTracker) {
@@ -152,7 +160,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
 
     protected void trackReservationForConnectionClose(HttpServletRequest req, String nodeId, String channelId, String poolId,
             Reservation reservation) {
-        if (!parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)) {
+        if (parameterService == null || !parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)) {
             return;
         }
         if (ServletUtils.hasForwardingHeader(req)) {
