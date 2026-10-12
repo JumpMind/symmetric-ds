@@ -94,13 +94,13 @@ public class OutgoingBatchesTest {
         batches.filterBatchesForChannel("testChannel3");
         assertEquals(20, batches.getBatches().size());
         for (OutgoingBatch b : batches.getBatches()) {
-            assertNotEquals(b.getChannelId(), "testChannel3");
+            assertNotEquals("testChannel3", b.getChannelId());
         }
         batches.filterBatchesForChannel(new Channel("testChannel4", 1));
         assertEquals(15, batches.getBatches().size());
         for (OutgoingBatch b : batches.getBatches()) {
-            assertNotEquals(b.getChannelId(), "testChannel3");
-            assertNotEquals(b.getChannelId(), "testChannel4");
+            assertNotEquals("testChannel3", b.getChannelId());
+            assertNotEquals("testChannel4", b.getChannelId());
         }
         Set<String> channels = new HashSet<String>();
         channels.add("testChannel2");

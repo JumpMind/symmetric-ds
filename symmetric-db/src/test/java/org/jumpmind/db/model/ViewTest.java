@@ -178,7 +178,7 @@ class ViewTest {
     @Test
     void testEquals_null() {
         View v = new View("sales_view");
-        assertNotEquals(v, null);
+        assertNotEquals(null, v);
     }
 
     @Test
