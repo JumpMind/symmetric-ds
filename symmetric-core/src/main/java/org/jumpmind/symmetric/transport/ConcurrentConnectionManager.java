@@ -151,6 +151,21 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
     }
 
     @Override
+    public synchronized Reservation getReservation(String nodeId, String channelId, String poolId) {
+        return getReservationMap(poolId).get(getReservationIdentifier(nodeId, channelId));
+    }
+
+    @Override
+    public synchronized boolean releaseSoftReservation(String nodeId, String channelId, String poolId, Reservation reservation) {
+        String reservationId = getReservationIdentifier(nodeId, channelId);
+        if (reservation != null && reservation.getType() == ReservationType.SOFT && getReservationMap(poolId).get(reservationId) == reservation) {
+            log.debug("Releasing soft reservation for {} {}", poolId, reservationId);
+            return releaseConnection(nodeId, channelId, poolId);
+        }
+        return false;
+    }
+
+    @Override
     public synchronized void addToWhitelist(String nodeId) {
         whiteList.add(nodeId);
     }

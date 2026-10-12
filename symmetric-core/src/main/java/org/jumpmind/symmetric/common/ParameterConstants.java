@@ -192,6 +192,7 @@ final public class ParameterConstants {
     public static final String CONCURRENT_WORKERS = "http.concurrent.workers.max";
     public static final String OTEL_METRICS_ENABLED = "metrics.opentelemetry.enabled";
     public static final String CONCURRENT_RESERVATION_TIMEOUT = "http.concurrent.reservation.timeout.ms";
+    public static final String CONCURRENT_RESERVATION_RELEASE_ON_CLOSE = "http.concurrent.reservation.release.on.close.enabled";
     public static final String OUTGOING_BATCH_PEEK_AHEAD_BATCH_COMMIT_SIZE = "outgoing.batches.peek.ahead.batch.commit.size";
     public static final String OUTGOING_BATCH_COPY_TO_INCOMING_STAGING = "outgoing.batches.copy.to.incoming.staging";
     public static final String ROUTING_FLUSH_JDBC_BATCH_SIZE = "routing.flush.jdbc.batch.size";

@@ -208,4 +208,76 @@ class ConcurrentConnectionManagerTest {
         assertTrue(byPool.containsKey("push"));
         assertTrue(byPool.get("push").containsKey("node1"));
     }
+
+    @Test
+    void testGetReservation() {
+        ConcurrentConnectionManager mgr = newMgr(5);
+        mgr.reserveConnection("node1", "default", "push", ReservationType.SOFT, false);
+        Reservation reservation = mgr.getReservation("node1", "default", "push");
+        assertNotNull(reservation);
+        assertEquals(ReservationType.SOFT, reservation.getType());
+    }
+
+    @Test
+    void testGetReservation_whenMissing_returnsNull() {
+        ConcurrentConnectionManager mgr = newMgr(5);
+        mgr.reserveConnection("node1", "default", "push", ReservationType.SOFT, false);
+        assertNull(mgr.getReservation("node1", "other", "push"));
+    }
+
+    @Test
+    void testReleaseSoftReservation() {
+        ConcurrentConnectionManager mgr = newMgr(5);
+        mgr.reserveConnection("node1", "default", "push", ReservationType.SOFT, false);
+        Reservation reservation = mgr.getReservation("node1", "default", "push");
+        assertTrue(mgr.releaseSoftReservation("node1", "default", "push", reservation));
+        assertEquals(0, mgr.getReservationCount("push"));
+        assertEquals(1L, mgr.getNodeConnectionStatisticsByPoolByNodeId().get("push").get("node1-default").getTotalConnectionCount());
+    }
+
+    @Test
+    void testReleaseSoftReservation_afterUpgradeToHard_keepsReservation() {
+        ConcurrentConnectionManager mgr = newMgr(5);
+        mgr.reserveConnection("node1", "default", "push", ReservationType.SOFT, false);
+        Reservation softReservation = mgr.getReservation("node1", "default", "push");
+        mgr.reserveConnection("node1", "default", "push", ReservationType.HARD, true);
+        assertFalse(mgr.releaseSoftReservation("node1", "default", "push", softReservation));
+        assertEquals(ReservationType.HARD, mgr.getReservation("node1", "default", "push").getType());
+    }
+
+    @Test
+    void testReleaseSoftReservation_afterRenewal_keepsReservation() {
+        ConcurrentConnectionManager mgr = newMgr(5);
+        mgr.reserveConnection("node1", "default", "push", ReservationType.SOFT, false);
+        Reservation originalReservation = mgr.getReservation("node1", "default", "push");
+        mgr.reserveConnection("node1", "default", "push", ReservationType.SOFT, false);
+        assertFalse(mgr.releaseSoftReservation("node1", "default", "push", originalReservation));
+        assertEquals(1, mgr.getReservationCount("push"));
+    }
+
+    @Test
+    void testReleaseSoftReservation_withHardReservation_keepsReservation() {
+        ConcurrentConnectionManager mgr = newMgr(5);
+        mgr.reserveConnection("node1", "default", "push", ReservationType.HARD, false);
+        Reservation reservation = mgr.getReservation("node1", "default", "push");
+        assertFalse(mgr.releaseSoftReservation("node1", "default", "push", reservation));
+        assertEquals(1, mgr.getReservationCount("push"));
+    }
+
+    @Test
+    void testReleaseSoftReservation_whenAlreadyReleased_returnsFalse() {
+        ConcurrentConnectionManager mgr = newMgr(5);
+        mgr.reserveConnection("node1", "default", "push", ReservationType.SOFT, false);
+        Reservation reservation = mgr.getReservation("node1", "default", "push");
+        mgr.releaseConnection("node1", "default", "push");
+        assertFalse(mgr.releaseSoftReservation("node1", "default", "push", reservation));
+    }
+
+    @Test
+    void testReleaseSoftReservation_withNullReservation_returnsFalse() {
+        ConcurrentConnectionManager mgr = newMgr(5);
+        mgr.reserveConnection("node1", "default", "push", ReservationType.SOFT, false);
+        assertFalse(mgr.releaseSoftReservation("node1", "default", "push", null));
+        assertEquals(1, mgr.getReservationCount("push"));
+    }
 }

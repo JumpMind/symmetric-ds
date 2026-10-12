@@ -77,6 +77,13 @@ public interface IConcurrentConnectionManager {
 
     public int getReservationCount(String poolId);
 
+    public Reservation getReservation(String nodeId, String channelId, String poolId);
+
+    /**
+     * Releases the reservation only if it is still the same soft reservation, so a stale caller never releases one that was renewed or claimed by a push.
+     */
+    public boolean releaseSoftReservation(String nodeId, String channelId, String poolId, Reservation reservation);
+
     public Map<String, Map<String, NodeConnectionStatistics>> getNodeConnectionStatisticsByPoolByNodeId();
 
     public Map<String, Map<String, Reservation>> getActiveReservationsByNodeByPool();

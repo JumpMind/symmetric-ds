@@ -23,11 +23,14 @@ package org.jumpmind.symmetric.web;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.NodeChannels;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.Reservation;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationStatus;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
@@ -44,17 +47,22 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 public class NodeConcurrencyInterceptor implements IInterceptor {
     private static Logger log = LoggerFactory.getLogger(NodeConcurrencyInterceptor.class);
+    private static final String[] FORWARDING_HEADERS = { "Forwarded", "X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Proto", "X-Real-IP" };
     private IConcurrentConnectionManager concurrentConnectionManager;
     private IConfigurationService configurationService;
     private INodeService nodeService;
     private IStatisticManager statisticManager;
+    private IParameterService parameterService;
+    private volatile boolean isConnectionCloseTrackingAvailable = true;
 
     public NodeConcurrencyInterceptor(IConcurrentConnectionManager concurrentConnectionManager,
-            IConfigurationService configurationService, INodeService nodeService, IStatisticManager statisticManager) {
+            IConfigurationService configurationService, INodeService nodeService, IStatisticManager statisticManager,
+            IParameterService parameterService) {
         this.concurrentConnectionManager = concurrentConnectionManager;
         this.configurationService = configurationService;
         this.nodeService = nodeService;
         this.statisticManager = statisticManager;
+        this.parameterService = parameterService;
     }
 
     @Override
@@ -74,6 +82,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             if (status == ReservationStatus.ACCEPTED) {
                 try {
                     buildSuspendIgnoreResponseHeaders(nodeId, identityNodeId, resp);
+                    trackReservationForConnectionClose(req, nodeId, threadChannel, poolId);
                 } catch (Exception ex) {
                     log.error("Error building response headers", ex);
                     log.debug("Releasing reservation for node={}, pool={}, channel={}", nodeId, poolId, threadChannel);
@@ -137,6 +146,37 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                 return false;
             }
         }
+    }
+
+    protected void trackReservationForConnectionClose(HttpServletRequest req, String nodeId, String channelId, String poolId) {
+        if (!isConnectionCloseTrackingAvailable || !parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)) {
+            return;
+        }
+        if (hasForwardingHeader(req)) {
+            log.debug("Not releasing reservation on connection close for node={} because the request was forwarded by a proxy", nodeId);
+            return;
+        }
+        try {
+            Reservation reservation = concurrentConnectionManager.getReservation(nodeId, channelId, poolId);
+            if (!ReservationConnectionCloseListener.track(req, concurrentConnectionManager, nodeId, channelId, poolId, reservation)) {
+                log.debug("Not releasing reservation on connection close for node={} because the connection cannot be tracked", nodeId);
+            }
+        } catch (LinkageError ex) {
+            isConnectionCloseTrackingAvailable = false;
+            log.warn("Ignoring {} because this web server does not support tracking connection close",
+                    ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE);
+        } catch (RuntimeException ex) {
+            log.warn("Failed to track reservation for release on connection close for node={}, pool={}, channel={}", nodeId, poolId, channelId, ex);
+        }
+    }
+
+    protected boolean hasForwardingHeader(HttpServletRequest req) {
+        for (String header : FORWARDING_HEADERS) {
+            if (req.getHeader(header) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected void sendError(HttpServletResponse resp, ReservationStatus status, String nodeId) throws IOException {
