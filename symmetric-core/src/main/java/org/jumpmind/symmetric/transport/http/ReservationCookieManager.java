@@ -58,15 +58,15 @@ class ReservationCookieManager {
     }
 
     void handleServiceBusy(HttpConnection conn) {
-        boolean clearBusyAffinityCookieEnabled = engine.getParameterService()
+        boolean hasClearBusyAffinityCookieEnabled = engine.getParameterService()
                 .is(ParameterConstants.TRANSPORT_HTTP_SESSION_STICKY_RESET_ENABLED, false);
         String uri = getUri(conn);
-        if (clearBusyAffinityCookieEnabled) {
+        if (hasClearBusyAffinityCookieEnabled) {
             clearReservationCookieForUri(conn);
             log.debug("Clearing load balancer affinity cookies for {}", uri);
         } else {
             log.debug("Not clearing load balancer affinity cookies for {} because {} = {}", uri,
-                    ParameterConstants.TRANSPORT_HTTP_SESSION_STICKY_RESET_ENABLED, clearBusyAffinityCookieEnabled);
+                    ParameterConstants.TRANSPORT_HTTP_SESSION_STICKY_RESET_ENABLED, hasClearBusyAffinityCookieEnabled);
         }
     }
 
