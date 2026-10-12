@@ -131,7 +131,7 @@ subprojects { subproject ->
 
 	java {
 		toolchain {
-    		languageVersion = JavaLanguageVersion.of(21)
+    		languageVersion = JavaLanguageVersion.of(project.findProperty('javaVersion') ?: 21)
     	}
     	sourceCompatibility=JavaVersion.VERSION_21
     	targetCompatibility=JavaVersion.VERSION_21
