@@ -152,7 +152,7 @@ class NodeConcurrencyInterceptorTest {
         stubReservationResult(ReservationStatus.ACCEPTED, reservation);
         when(parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)).thenReturn(true);
         assertFalse(interceptor.before(request, response));
-        verify(reservationConnectionCloseTracker).track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reservation);
+        verify(reservationConnectionCloseTracker).registerForRelease(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reservation);
         verify(response, never()).sendError(eq(WebConstants.SC_SERVICE_ERROR), any());
     }
 
@@ -160,7 +160,7 @@ class NodeConcurrencyInterceptorTest {
     void testBefore_headPushWithUntrackableConnection_keepsReservation() throws Exception {
         stubAcceptedHeadPush();
         when(parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)).thenReturn(true);
-        when(reservationConnectionCloseTracker.track(any(), any(), any(), any(), any(), any())).thenReturn(false);
+        when(reservationConnectionCloseTracker.registerForRelease(any(), any(), any(), any(), any(), any())).thenReturn(false);
         assertFalse(interceptor.before(request, response));
         verify(concurrentConnectionManager, never()).releaseConnection(any(), any(), any());
         verify(response, never()).sendError(eq(WebConstants.SC_SERVICE_ERROR), any());
@@ -179,7 +179,7 @@ class NodeConcurrencyInterceptorTest {
     void testBefore_headPushWhenTrackingFails_keepsReservation() throws Exception {
         stubAcceptedHeadPush();
         when(parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)).thenReturn(true);
-        when(reservationConnectionCloseTracker.track(any(), any(), any(), any(), any(), any())).thenThrow(new IllegalStateException("test"));
+        when(reservationConnectionCloseTracker.registerForRelease(any(), any(), any(), any(), any(), any())).thenThrow(new IllegalStateException("test"));
         assertFalse(interceptor.before(request, response));
         verify(concurrentConnectionManager, never()).releaseConnection(any(), any(), any());
         verify(response, never()).sendError(eq(WebConstants.SC_SERVICE_ERROR), any());

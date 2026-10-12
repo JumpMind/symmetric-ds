@@ -67,7 +67,7 @@ public class ReservationConnectionCloseTrackerFactory {
         private final AtomicBoolean isWarned = new AtomicBoolean();
 
         @Override
-        public boolean track(HttpServletRequest req, IConcurrentConnectionManager concurrentConnectionManager, String nodeId, String channelId,
+        public boolean registerForRelease(HttpServletRequest req, IConcurrentConnectionManager concurrentConnectionManager, String nodeId, String channelId,
                 String poolId, Reservation reservation) {
             if (isWarned.compareAndSet(false, true)) {
                 log.warn("Ignoring {} because this web server does not support tracking connection close",

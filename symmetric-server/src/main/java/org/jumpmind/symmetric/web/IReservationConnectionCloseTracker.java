@@ -34,6 +34,6 @@ public interface IReservationConnectionCloseTracker {
      * @return true if the reservation will be released when the request's connection closes, false if the connection cannot be tracked and the reservation will
      *         simply expire
      */
-    boolean track(HttpServletRequest req, IConcurrentConnectionManager concurrentConnectionManager, String nodeId, String channelId, String poolId,
+    boolean registerForRelease(HttpServletRequest req, IConcurrentConnectionManager concurrentConnectionManager, String nodeId, String channelId, String poolId,
             Reservation reservation);
 }

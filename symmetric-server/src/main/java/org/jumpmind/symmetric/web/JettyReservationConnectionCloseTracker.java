@@ -43,7 +43,8 @@ public class JettyReservationConnectionCloseTracker implements IReservationConne
     static final String ATTRIBUTE_NAME = CloseListener.class.getName();
 
     @Override
-    public boolean track(HttpServletRequest req, IConcurrentConnectionManager concurrentConnectionManager, String nodeId, String channelId, String poolId,
+    public boolean registerForRelease(HttpServletRequest req, IConcurrentConnectionManager concurrentConnectionManager, String nodeId, String channelId,
+            String poolId,
             Reservation reservation) {
         if (reservation == null) {
             return false;
@@ -58,7 +59,7 @@ public class JettyReservationConnectionCloseTracker implements IReservationConne
             return false;
         }
         ConnectionMetaData metaData = contextRequest.getConnectionMetaData();
-        if (!isPersistentHttp1(metaData)) {
+        if (metaData == null || !isPersistentHttp1(metaData)) {
             return false;
         }
         CloseListener listener = (CloseListener) metaData.getAttribute(ATTRIBUTE_NAME);
