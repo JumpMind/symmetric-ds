@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.Reservation;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
+import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationResult;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationStatus;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
 import org.slf4j.Logger;
@@ -79,11 +80,12 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         boolean isFileSync = normalizedRequestUri.contains("filesync");
         if (method.equals(WebConstants.METHOD_HEAD) && isPush) {
             resp.setContentLength(0);
-            ReservationStatus status = concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.SOFT, false);
+            ReservationResult result = concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.SOFT, false);
+            ReservationStatus status = result.status();
             if (status == ReservationStatus.ACCEPTED) {
                 try {
                     buildSuspendIgnoreResponseHeaders(nodeId, identityNodeId, resp);
-                    trackReservationForConnectionClose(req, nodeId, threadChannel, poolId);
+                    trackReservationForConnectionClose(req, nodeId, threadChannel, poolId, result.reservation());
                 } catch (Exception ex) {
                     log.error("Error building response headers", ex);
                     log.debug("Releasing reservation for node={}, pool={}, channel={}", nodeId, poolId, threadChannel);
@@ -123,7 +125,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             return false;
         } else {
             ReservationStatus status = concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.HARD, isPush
-                    && (!isFileSync));
+                    && (!isFileSync)).status();
             if (status == ReservationStatus.ACCEPTED) {
                 try {
                     buildSuspendIgnoreResponseHeaders(isPush ? nodeId : identityNodeId, isPush ? identityNodeId : nodeId, resp);
@@ -149,7 +151,8 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         }
     }
 
-    protected void trackReservationForConnectionClose(HttpServletRequest req, String nodeId, String channelId, String poolId) {
+    protected void trackReservationForConnectionClose(HttpServletRequest req, String nodeId, String channelId, String poolId,
+            Reservation reservation) {
         if (!parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)) {
             return;
         }
@@ -158,7 +161,6 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             return;
         }
         try {
-            Reservation reservation = concurrentConnectionManager.getReservation(nodeId, channelId, poolId);
             if (!reservationConnectionCloseTracker.track(req, concurrentConnectionManager, nodeId, channelId, poolId, reservation)) {
                 log.debug("Not releasing reservation on connection close for node={} because the connection cannot be tracked", nodeId);
             }

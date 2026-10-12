@@ -62,13 +62,23 @@ public interface IConcurrentConnectionManager {
     };
 
     /**
+     * @param status
+     *            the outcome of the request
+     * @param reservation
+     *            the reservation that was granted by this request, or null if the request was not accepted
+     */
+    record ReservationResult(ReservationStatus status, Reservation reservation) {
+    }
+
+    /**
      * @param nodeId
      * @param reservationRequest
      *            if true then hold onto reservation for the time it typically takes for a node to reconnect after the initial request. Otherwise, we know that
      *            the node has actually connected for activity.
-     * @return true if the connection has been reserved and the node is meant to proceed with its current operation.
+     * @return the status of the request, and the reservation it granted when the connection has been reserved and the node is meant to proceed with its current
+     *         operation.
      */
-    public ReservationStatus reserveConnection(String nodeId, String channelId, String poolId, ReservationType reservationRequest,
+    public ReservationResult reserveConnection(String nodeId, String channelId, String poolId, ReservationType reservationRequest,
             boolean requiresExistingReservation);
 
     public boolean releaseConnection(String nodeId, String poolId);
@@ -76,8 +86,6 @@ public interface IConcurrentConnectionManager {
     public boolean releaseConnection(String nodeId, String channelId, String poolId);
 
     public int getReservationCount(String poolId);
-
-    public Reservation getReservation(String nodeId, String channelId, String poolId);
 
     /**
      * Releases the reservation only if it is still the same soft reservation, so a stale caller never releases one that was renewed or claimed by a push.

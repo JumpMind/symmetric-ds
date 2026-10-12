@@ -151,7 +151,7 @@ class JettyReservationConnectionCloseTrackerTest {
         tracker.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reserveSoft(CHANNEL_ID));
         concurrentConnectionManager.reserveConnection(NODE_ID, CHANNEL_ID, PUSH_URI, ReservationType.HARD, true);
         getListener().onClosed(connection);
-        assertEquals(ReservationType.HARD, concurrentConnectionManager.getReservation(NODE_ID, CHANNEL_ID, PUSH_URI).getType());
+        assertEquals(ReservationType.HARD, getPoolReservation(CHANNEL_ID).getType());
     }
 
     @Test
@@ -159,13 +159,17 @@ class JettyReservationConnectionCloseTrackerTest {
         tracker.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reserveSoft(CHANNEL_ID));
         Reservation renewedReservation = reserveSoft(CHANNEL_ID);
         getListener().onClosed(connection);
-        assertSame(renewedReservation, concurrentConnectionManager.getReservation(NODE_ID, CHANNEL_ID, PUSH_URI));
+        assertSame(renewedReservation, getPoolReservation(CHANNEL_ID));
         assertEquals(1, concurrentConnectionManager.getReservationCount(PUSH_URI));
     }
 
     private Reservation reserveSoft(String channelId) {
-        concurrentConnectionManager.reserveConnection(NODE_ID, channelId, PUSH_URI, ReservationType.SOFT, false);
-        return concurrentConnectionManager.getReservation(NODE_ID, channelId, PUSH_URI);
+        return concurrentConnectionManager.reserveConnection(NODE_ID, channelId, PUSH_URI, ReservationType.SOFT, false).reservation();
+    }
+
+    private Reservation getPoolReservation(String channelId) {
+        return concurrentConnectionManager.getActiveReservationsByNodeByPool().get(PUSH_URI)
+                .get(ConcurrentConnectionManager.getReservationIdentifier(NODE_ID, channelId));
     }
 
     private JettyReservationConnectionCloseTracker.CloseListener getListener() {

@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.Reservation;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
+import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationResult;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationStatus;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,7 +86,12 @@ class NodeConcurrencyInterceptorTest {
     }
 
     private void stubReservationStatus(ReservationStatus status) {
-        when(concurrentConnectionManager.reserveConnection(any(), any(), any(), any(), anyBoolean())).thenReturn(status);
+        stubReservationResult(status, null);
+    }
+
+    private void stubReservationResult(ReservationStatus status, Reservation reservation) {
+        when(concurrentConnectionManager.reserveConnection(any(), any(), any(), any(), anyBoolean()))
+                .thenReturn(new ReservationResult(status, reservation));
     }
 
     @Test
@@ -143,7 +149,7 @@ class NodeConcurrencyInterceptorTest {
     void testBefore_headPushWithReleaseOnCloseEnabled_tracksReservation() throws Exception {
         stubAcceptedHeadPush();
         Reservation reservation = new Reservation(NODE_ID, System.currentTimeMillis() + 10_000, ReservationType.SOFT);
-        when(concurrentConnectionManager.getReservation(NODE_ID, CHANNEL_ID, PUSH_URI)).thenReturn(reservation);
+        stubReservationResult(ReservationStatus.ACCEPTED, reservation);
         when(parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)).thenReturn(true);
         assertFalse(interceptor.before(request, response));
         verify(reservationConnectionCloseTracker).track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reservation);

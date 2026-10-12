@@ -151,11 +151,6 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
     }
 
     @Override
-    public synchronized Reservation getReservation(String nodeId, String channelId, String poolId) {
-        return getReservationMap(poolId).get(getReservationIdentifier(nodeId, channelId));
-    }
-
-    @Override
     public synchronized boolean releaseSoftReservation(String nodeId, String channelId, String poolId, Reservation reservation) {
         String reservationId = getReservationIdentifier(nodeId, channelId);
         if (reservation != null && reservation.getType() == ReservationType.SOFT && getReservationMap(poolId).get(reservationId) == reservation) {
@@ -186,18 +181,18 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
     }
 
     @Override
-    public ReservationStatus reserveConnection(String nodeId, String channelId, String poolId,
+    public ReservationResult reserveConnection(String nodeId, String channelId, String poolId,
             ReservationType reservationRequest, boolean requiresExistingReservation) {
         // checked outside the synchronized reservation logic so a connection test never blocks other callers
         if (databaseHealthTracker != null && !databaseHealthTracker.isRuntimeDbHealthy()) {
             log.warn("Node '{}' Channel '{}' requested a {} connection, but was rejected because the runtime database is not healthy",
                     nodeId, channelId, poolId);
-            return ReservationStatus.NOT_READY;
+            return new ReservationResult(ReservationStatus.NOT_READY, null);
         }
         return internalReserveConnection(nodeId, channelId, poolId, reservationRequest, requiresExistingReservation);
     }
 
-    private synchronized ReservationStatus internalReserveConnection(String nodeId, String channelId, String poolId,
+    private synchronized ReservationResult internalReserveConnection(String nodeId, String channelId, String poolId,
             ReservationType reservationRequest, boolean requiresExistingReservation) {
         String reservationId = getReservationIdentifier(nodeId, channelId);
         log.debug("Reserving connection for {} {}", poolId, reservationId);
@@ -206,17 +201,17 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         Reservation existingReservation = reservations.get(reservationId);
         if (requiresExistingReservation && existingReservation == null) {
             logRejection("it was missing a reservation", nodeId, channelId, poolId);
-            return ReservationStatus.NOT_FOUND;
+            return new ReservationResult(ReservationStatus.NOT_FOUND, null);
         }
         if (existingReservation == null && !hasCapacity(reservations, nodeId)) {
-            return ReservationStatus.BUSY;
+            return new ReservationResult(ReservationStatus.BUSY, null);
         }
         if (existingReservation != null && existingReservation.getType() != ReservationType.SOFT) {
             logRejection("it already has one", nodeId, channelId, poolId);
-            return ReservationStatus.DUPLICATE;
+            return new ReservationResult(ReservationStatus.DUPLICATE, null);
         }
-        grantReservation(reservations, reservationId, nodeId, reservationRequest);
-        return ReservationStatus.ACCEPTED;
+        Reservation grantedReservation = grantReservation(reservations, reservationId, nodeId, reservationRequest);
+        return new ReservationResult(ReservationStatus.ACCEPTED, grantedReservation);
     }
 
     private boolean hasCapacity(Map<String, Reservation> reservations, String nodeId) {
@@ -224,12 +219,14 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         return reservations.size() < maxPoolSize || whiteList.contains(nodeId);
     }
 
-    private void grantReservation(Map<String, Reservation> reservations, String reservationId, String nodeId,
+    private Reservation grantReservation(Map<String, Reservation> reservations, String reservationId, String nodeId,
             ReservationType reservationRequest) {
-        reservations.put(reservationId, new Reservation(reservationId, computeExpirationTime(reservationRequest), reservationRequest));
+        Reservation reservation = new Reservation(reservationId, computeExpirationTime(reservationRequest), reservationRequest);
+        reservations.put(reservationId, reservation);
         transportErrorTimeByNode.remove(nodeId);
         updateReadiness(reservations);
         addConnectionAndUpdateUtilizationGauge(1);
+        return reservation;
     }
 
     private long computeExpirationTime(ReservationType reservationRequest) {
