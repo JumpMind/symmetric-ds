@@ -24,10 +24,8 @@ jobs:
       matrix:
         include:
           - java: 21
-            experimental: false
-          # SYM-7567: set experimental to false to make the Java 25 leg blocking
+            test-args: --continue
           - java: 25
-            experimental: true
             test-args: --continue
     steps:
       - uses: actions/checkout@v6.0.2
