@@ -51,10 +51,11 @@ import org.junit.jupiter.api.Test;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-class ReservationConnectionCloseListenerTest {
+class JettyReservationConnectionCloseTrackerTest {
     private static final String NODE_ID = "node1";
     private static final String CHANNEL_ID = "default";
     private static final String PUSH_URI = "/sync/corp-000/push";
+    private final JettyReservationConnectionCloseTracker tracker = new JettyReservationConnectionCloseTracker();
     private ConcurrentConnectionManager concurrentConnectionManager;
     private HttpServletRequest request;
     private ConnectionMetaData metaData;
@@ -86,7 +87,7 @@ class ReservationConnectionCloseListenerTest {
 
     @Test
     void testTrack() {
-        assertTrue(ReservationConnectionCloseListener.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI,
+        assertTrue(tracker.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI,
                 reserveSoft(CHANNEL_ID)));
         verify(connection).addEventListener(getListener());
         assertEquals(1, getListener().getTrackedReservationCount());
@@ -94,8 +95,8 @@ class ReservationConnectionCloseListenerTest {
 
     @Test
     void testTrack_withRenewedReservation_reusesListener() {
-        ReservationConnectionCloseListener.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reserveSoft(CHANNEL_ID));
-        ReservationConnectionCloseListener.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reserveSoft(CHANNEL_ID));
+        tracker.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reserveSoft(CHANNEL_ID));
+        tracker.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reserveSoft(CHANNEL_ID));
         verify(connection, times(1)).addEventListener(any());
         assertEquals(1, getListener().getTrackedReservationCount());
     }
@@ -103,14 +104,14 @@ class ReservationConnectionCloseListenerTest {
     @Test
     void testTrack_withNonJettyRequest_returnsFalse() {
         HttpServletRequest otherRequest = mock(HttpServletRequest.class);
-        assertFalse(ReservationConnectionCloseListener.track(otherRequest, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI,
+        assertFalse(tracker.track(otherRequest, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI,
                 reserveSoft(CHANNEL_ID)));
     }
 
     @Test
     void testTrack_withNonPersistentConnection_returnsFalse() {
         when(metaData.isPersistent()).thenReturn(false);
-        assertFalse(ReservationConnectionCloseListener.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI,
+        assertFalse(tracker.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI,
                 reserveSoft(CHANNEL_ID)));
         verify(connection, never()).addEventListener(any());
     }
@@ -118,20 +119,20 @@ class ReservationConnectionCloseListenerTest {
     @Test
     void testTrack_withHttp2_returnsFalse() {
         when(metaData.getHttpVersion()).thenReturn(HttpVersion.HTTP_2);
-        assertFalse(ReservationConnectionCloseListener.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI,
+        assertFalse(tracker.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI,
                 reserveSoft(CHANNEL_ID)));
         verify(connection, never()).addEventListener(any());
     }
 
     @Test
     void testTrack_withNullReservation_returnsFalse() {
-        assertFalse(ReservationConnectionCloseListener.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, null));
+        assertFalse(tracker.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, null));
         verify(connection, never()).addEventListener(any());
     }
 
     @Test
     void testOnClosed_releasesSoftReservation() {
-        ReservationConnectionCloseListener.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reserveSoft(CHANNEL_ID));
+        tracker.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reserveSoft(CHANNEL_ID));
         getListener().onClosed(connection);
         assertEquals(0, concurrentConnectionManager.getReservationCount(PUSH_URI));
         assertEquals(0, getListener().getTrackedReservationCount());
@@ -139,15 +140,15 @@ class ReservationConnectionCloseListenerTest {
 
     @Test
     void testOnClosed_releasesEachTrackedChannel() {
-        ReservationConnectionCloseListener.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reserveSoft(CHANNEL_ID));
-        ReservationConnectionCloseListener.track(request, concurrentConnectionManager, NODE_ID, "reload", PUSH_URI, reserveSoft("reload"));
+        tracker.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reserveSoft(CHANNEL_ID));
+        tracker.track(request, concurrentConnectionManager, NODE_ID, "reload", PUSH_URI, reserveSoft("reload"));
         getListener().onClosed(connection);
         assertEquals(0, concurrentConnectionManager.getReservationCount(PUSH_URI));
     }
 
     @Test
     void testOnClosed_afterPushClaimedReservation_keepsReservation() {
-        ReservationConnectionCloseListener.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reserveSoft(CHANNEL_ID));
+        tracker.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reserveSoft(CHANNEL_ID));
         concurrentConnectionManager.reserveConnection(NODE_ID, CHANNEL_ID, PUSH_URI, ReservationType.HARD, true);
         getListener().onClosed(connection);
         assertEquals(ReservationType.HARD, concurrentConnectionManager.getReservation(NODE_ID, CHANNEL_ID, PUSH_URI).getType());
@@ -155,7 +156,7 @@ class ReservationConnectionCloseListenerTest {
 
     @Test
     void testOnClosed_afterRenewalOnAnotherConnection_keepsReservation() {
-        ReservationConnectionCloseListener.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reserveSoft(CHANNEL_ID));
+        tracker.track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reserveSoft(CHANNEL_ID));
         Reservation renewedReservation = reserveSoft(CHANNEL_ID);
         getListener().onClosed(connection);
         assertSame(renewedReservation, concurrentConnectionManager.getReservation(NODE_ID, CHANNEL_ID, PUSH_URI));
@@ -167,7 +168,7 @@ class ReservationConnectionCloseListenerTest {
         return concurrentConnectionManager.getReservation(NODE_ID, channelId, PUSH_URI);
     }
 
-    private ReservationConnectionCloseListener getListener() {
-        return (ReservationConnectionCloseListener) connectionAttributes.get(ReservationConnectionCloseListener.ATTRIBUTE_NAME);
+    private JettyReservationConnectionCloseTracker.CloseListener getListener() {
+        return (JettyReservationConnectionCloseTracker.CloseListener) connectionAttributes.get(JettyReservationConnectionCloseTracker.ATTRIBUTE_NAME);
     }
 }

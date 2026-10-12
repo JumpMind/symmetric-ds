@@ -36,16 +36,15 @@ import org.slf4j.LoggerFactory;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
- * Releases soft push reservations when the Jetty connection that carried the HEAD closes. One listener is attached per connection and kept as a connection
- * attribute, so keep-alive connections reused for many push cycles do not accumulate listeners.
+ * Jetty implementation of {@link IReservationConnectionCloseTracker}. One {@link CloseListener} is attached per connection and kept as a connection attribute,
+ * so keep-alive connections reused for many push cycles do not accumulate listeners. This is the only class that depends on Jetty types.
  */
-public class ReservationConnectionCloseListener implements Connection.Listener {
-    private static final Logger log = LoggerFactory.getLogger(ReservationConnectionCloseListener.class);
-    static final String ATTRIBUTE_NAME = ReservationConnectionCloseListener.class.getName();
-    private final Map<String, TrackedReservation> reservationsById = new ConcurrentHashMap<>();
+public class JettyReservationConnectionCloseTracker implements IReservationConnectionCloseTracker {
+    static final String ATTRIBUTE_NAME = CloseListener.class.getName();
 
-    public static boolean track(HttpServletRequest req, IConcurrentConnectionManager concurrentConnectionManager, String nodeId, String channelId,
-            String poolId, Reservation reservation) {
+    @Override
+    public boolean track(HttpServletRequest req, IConcurrentConnectionManager concurrentConnectionManager, String nodeId, String channelId, String poolId,
+            Reservation reservation) {
         if (reservation == null) {
             return false;
         }
@@ -62,9 +61,9 @@ public class ReservationConnectionCloseListener implements Connection.Listener {
         if (!isPersistentHttp1(metaData)) {
             return false;
         }
-        ReservationConnectionCloseListener listener = (ReservationConnectionCloseListener) metaData.getAttribute(ATTRIBUTE_NAME);
+        CloseListener listener = (CloseListener) metaData.getAttribute(ATTRIBUTE_NAME);
         if (listener == null) {
-            listener = new ReservationConnectionCloseListener();
+            listener = new CloseListener();
             metaData.setAttribute(ATTRIBUTE_NAME, listener);
             metaData.getConnection().addEventListener(listener);
         }
@@ -78,20 +77,25 @@ public class ReservationConnectionCloseListener implements Connection.Listener {
         return metaData.isPersistent() && (version == HttpVersion.HTTP_1_1 || version == HttpVersion.HTTP_1_0);
     }
 
-    @Override
-    public void onClosed(Connection connection) {
-        for (TrackedReservation tracked : reservationsById.values()) {
-            if (tracked.concurrentConnectionManager().releaseSoftReservation(tracked.nodeId(), tracked.channelId(), tracked.poolId(),
-                    tracked.reservation())) {
-                log.info("Released reservation for node={}, pool={}, channel={} because its connection closed before a push was received",
-                        tracked.nodeId(), tracked.poolId(), tracked.channelId());
-            }
-        }
-        reservationsById.clear();
-    }
+    static class CloseListener implements Connection.Listener {
+        private static final Logger log = LoggerFactory.getLogger(CloseListener.class);
+        private final Map<String, TrackedReservation> reservationsById = new ConcurrentHashMap<>();
 
-    int getTrackedReservationCount() {
-        return reservationsById.size();
+        @Override
+        public void onClosed(Connection connection) {
+            for (TrackedReservation tracked : reservationsById.values()) {
+                if (tracked.concurrentConnectionManager().releaseSoftReservation(tracked.nodeId(), tracked.channelId(), tracked.poolId(),
+                        tracked.reservation())) {
+                    log.info("Released reservation for node={}, pool={}, channel={} because its connection closed before a push was received",
+                            tracked.nodeId(), tracked.poolId(), tracked.channelId());
+                }
+            }
+            reservationsById.clear();
+        }
+
+        int getTrackedReservationCount() {
+            return reservationsById.size();
+        }
     }
 
     private record TrackedReservation(IConcurrentConnectionManager concurrentConnectionManager, String nodeId, String channelId, String poolId,

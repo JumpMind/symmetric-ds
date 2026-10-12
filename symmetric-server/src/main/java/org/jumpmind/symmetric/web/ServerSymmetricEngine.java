@@ -84,7 +84,8 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
         AuthenticationInterceptor authInterceptor = new AuthenticationInterceptor(nodeService, securityService, useSessionAuth, sessionExpireSeconds,
                 maxSessions);
         NodeConcurrencyInterceptor concurrencyInterceptor = new NodeConcurrencyInterceptor(
-                concurrentConnectionManager, configurationService, nodeService, statisticManager, parameterService);
+                concurrentConnectionManager, configurationService, nodeService, statisticManager, parameterService,
+                ReservationConnectionCloseTrackerFactory.create());
         IInterceptor[] customInterceptors = buildCustomInterceptors();
         this.uriHandlers = new ArrayList<IUriHandler>();
         this.uriHandlers.add(new AckUriHandler(parameterService, acknowledgeService,

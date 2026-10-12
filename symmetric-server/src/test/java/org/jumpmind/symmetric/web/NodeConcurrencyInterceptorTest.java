@@ -29,6 +29,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -37,8 +38,10 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.Reservation;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationStatus;
+import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -55,6 +58,7 @@ class NodeConcurrencyInterceptorTest {
     private INodeService nodeService;
     private IStatisticManager statisticManager;
     private IParameterService parameterService;
+    private IReservationConnectionCloseTracker reservationConnectionCloseTracker;
     private HttpServletRequest request;
     private HttpServletResponse response;
     private NodeConcurrencyInterceptor interceptor;
@@ -66,10 +70,11 @@ class NodeConcurrencyInterceptorTest {
         nodeService = mock(INodeService.class);
         statisticManager = mock(IStatisticManager.class);
         parameterService = mock(IParameterService.class);
+        reservationConnectionCloseTracker = mock(IReservationConnectionCloseTracker.class);
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
         interceptor = new NodeConcurrencyInterceptor(concurrentConnectionManager, configurationService, nodeService, statisticManager,
-                parameterService);
+                parameterService, reservationConnectionCloseTracker);
         when(request.getRequestURI()).thenReturn(PUSH_URI);
         when(request.getContextPath()).thenReturn("");
         when(request.getServletPath()).thenReturn("");
@@ -131,15 +136,27 @@ class NodeConcurrencyInterceptorTest {
     void testBefore_headPushWithReleaseOnCloseDisabled_doesNotTrackReservation() throws Exception {
         stubAcceptedHeadPush();
         assertFalse(interceptor.before(request, response));
-        verify(concurrentConnectionManager, never()).getReservation(any(), any(), any());
+        verifyNoInteractions(reservationConnectionCloseTracker);
     }
 
     @Test
     void testBefore_headPushWithReleaseOnCloseEnabled_tracksReservation() throws Exception {
         stubAcceptedHeadPush();
+        Reservation reservation = new Reservation(NODE_ID, System.currentTimeMillis() + 10_000, ReservationType.SOFT);
+        when(concurrentConnectionManager.getReservation(NODE_ID, CHANNEL_ID, PUSH_URI)).thenReturn(reservation);
         when(parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)).thenReturn(true);
         assertFalse(interceptor.before(request, response));
-        verify(concurrentConnectionManager).getReservation(NODE_ID, CHANNEL_ID, PUSH_URI);
+        verify(reservationConnectionCloseTracker).track(request, concurrentConnectionManager, NODE_ID, CHANNEL_ID, PUSH_URI, reservation);
+        verify(response, never()).sendError(eq(WebConstants.SC_SERVICE_ERROR), any());
+    }
+
+    @Test
+    void testBefore_headPushWithUntrackableConnection_keepsReservation() throws Exception {
+        stubAcceptedHeadPush();
+        when(parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)).thenReturn(true);
+        when(reservationConnectionCloseTracker.track(any(), any(), any(), any(), any(), any())).thenReturn(false);
+        assertFalse(interceptor.before(request, response));
+        verify(concurrentConnectionManager, never()).releaseConnection(any(), any(), any());
         verify(response, never()).sendError(eq(WebConstants.SC_SERVICE_ERROR), any());
     }
 
@@ -149,14 +166,14 @@ class NodeConcurrencyInterceptorTest {
         when(parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)).thenReturn(true);
         when(request.getHeader("X-Forwarded-For")).thenReturn("10.0.0.1");
         assertFalse(interceptor.before(request, response));
-        verify(concurrentConnectionManager, never()).getReservation(any(), any(), any());
+        verifyNoInteractions(reservationConnectionCloseTracker);
     }
 
     @Test
     void testBefore_headPushWhenTrackingFails_keepsReservation() throws Exception {
         stubAcceptedHeadPush();
         when(parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)).thenReturn(true);
-        when(concurrentConnectionManager.getReservation(any(), any(), any())).thenThrow(new IllegalStateException("test"));
+        when(reservationConnectionCloseTracker.track(any(), any(), any(), any(), any(), any())).thenThrow(new IllegalStateException("test"));
         assertFalse(interceptor.before(request, response));
         verify(concurrentConnectionManager, never()).releaseConnection(any(), any(), any());
         verify(response, never()).sendError(eq(WebConstants.SC_SERVICE_ERROR), any());
@@ -168,7 +185,7 @@ class NodeConcurrencyInterceptorTest {
         stubEmptySuspendIgnoreLists();
         when(parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)).thenReturn(true);
         assertTrue(interceptor.before(request, response));
-        verify(concurrentConnectionManager, never()).getReservation(any(), any(), any());
+        verifyNoInteractions(reservationConnectionCloseTracker);
     }
 
     @Test

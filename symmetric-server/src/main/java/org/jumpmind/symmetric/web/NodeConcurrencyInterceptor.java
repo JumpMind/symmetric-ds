@@ -53,16 +53,17 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
     private INodeService nodeService;
     private IStatisticManager statisticManager;
     private IParameterService parameterService;
-    private volatile boolean isConnectionCloseTrackingAvailable = true;
+    private IReservationConnectionCloseTracker reservationConnectionCloseTracker;
 
     public NodeConcurrencyInterceptor(IConcurrentConnectionManager concurrentConnectionManager,
             IConfigurationService configurationService, INodeService nodeService, IStatisticManager statisticManager,
-            IParameterService parameterService) {
+            IParameterService parameterService, IReservationConnectionCloseTracker reservationConnectionCloseTracker) {
         this.concurrentConnectionManager = concurrentConnectionManager;
         this.configurationService = configurationService;
         this.nodeService = nodeService;
         this.statisticManager = statisticManager;
         this.parameterService = parameterService;
+        this.reservationConnectionCloseTracker = reservationConnectionCloseTracker;
     }
 
     @Override
@@ -149,7 +150,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
     }
 
     protected void trackReservationForConnectionClose(HttpServletRequest req, String nodeId, String channelId, String poolId) {
-        if (!isConnectionCloseTrackingAvailable || !parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)) {
+        if (!parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)) {
             return;
         }
         if (hasForwardingHeader(req)) {
@@ -158,15 +159,11 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         }
         try {
             Reservation reservation = concurrentConnectionManager.getReservation(nodeId, channelId, poolId);
-            if (!ReservationConnectionCloseListener.track(req, concurrentConnectionManager, nodeId, channelId, poolId, reservation)) {
+            if (!reservationConnectionCloseTracker.track(req, concurrentConnectionManager, nodeId, channelId, poolId, reservation)) {
                 log.debug("Not releasing reservation on connection close for node={} because the connection cannot be tracked", nodeId);
             }
-        } catch (LinkageError ex) {
-            isConnectionCloseTrackingAvailable = false;
-            log.warn("Ignoring {} because this web server does not support tracking connection close",
-                    ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE);
         } catch (RuntimeException ex) {
-        	log.warn("Failed to track reservation for release on connection close for node=" + nodeId + ", pool=" + poolId + ", channel=" + channelId, ex);
+            log.warn("Failed to track reservation for release on connection close for node=" + nodeId + ", pool=" + poolId + ", channel=" + channelId, ex);
         }
     }
 
