@@ -128,7 +128,7 @@ import org.jumpmind.util.FormatUtils;
  */
 public class RouterService extends AbstractService implements IRouterService, INodeCommunicationExecutor {
     public static final int GAP_COUNT_WARN_EXCESSIVE = 10000;
-    protected static final long EXCESSIVE_GAP_WARN_INTERVAL_MS = 600000;
+    protected static final long EXCESSIVE_GAP_WARN_INTERVAL_MS = 10L * Constants.LOG_PROCESS_SUMMARY_THRESHOLD;
     final int MAX_LOGGING_LENGTH = 512;
     protected static final Set<String> PRO_ONLY_ROUTER_TYPES = Collections.unmodifiableSet(
             new HashSet<String>(Arrays.asList("column", "lookuptable", "subselect", "segment")));
