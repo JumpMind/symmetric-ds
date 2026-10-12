@@ -166,7 +166,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             log.warn("Ignoring {} because this web server does not support tracking connection close",
                     ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE);
         } catch (RuntimeException ex) {
-            log.warn("Failed to track reservation for release on connection close for node={}, pool={}, channel={}", nodeId, poolId, channelId, ex);
+        	log.warn("Failed to track reservation for release on connection close for node=" + nodeId + ", pool=" + poolId + ", channel=" + channelId, ex);
         }
     }
 
