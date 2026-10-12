@@ -38,8 +38,8 @@ import org.jumpmind.symmetric.model.StartupParameter.Source;
  * engine-scoped method has a {@code getGlobal*}/{@code isGlobal}/{@code refreshGlobal}/{@code dumpGlobalAsText} counterpart that operates on that same global
  * bucket.
  * <p>
- * An engine can also be registered with an {@link IStartupParameterSource}, which supplies values from outside those layers (such as a file written by another
- * process) and is re-read at runtime through {@link #refreshSources(String)}.
+ * An engine can also be registered with an {@link IExternalParameterSource}, which supplies values from outside those layers (such as a file written by another
+ * process) and is re-read at runtime through {@link #refreshExternalSource(String)}.
  */
 public interface IStartupParameterService {
     String GLOBAL_ENGINE_NAME = "*";
@@ -57,10 +57,10 @@ public interface IStartupParameterService {
 
     /**
      * Same as the overload without a source, and additionally layers the values supplied by {@code source}, which may be null, on top of the files, environment
-     * variables and JVM system properties. The source's values are recorded under its own {@link Source}.
+     * variables and JVM system properties. The source's values are recorded as {@link Source#EXTERNAL}.
      */
     TypedProperties registerEngine(ITypedPropertiesFactory propertiesFactory, Map<String, Source> knownFileSources,
-            Map<String, ParameterMetaData> supplementalParameterMetaData, IStartupParameterSource source);
+            Map<String, ParameterMetaData> supplementalParameterMetaData, IExternalParameterSource source);
 
     /**
      * Resolves and stores process-wide startup parameters (e.g. from {@code symmetric-server.properties}) that exist before any specific engine does, under
@@ -99,10 +99,10 @@ public interface IStartupParameterService {
     boolean refresh(String engineName);
 
     /**
-     * Re-reads the {@link IStartupParameterSource} registered for an engine, if any, and applies its changed, added or removed values, without re-reading the
+     * Re-reads the {@link IExternalParameterSource} registered for an engine, if any, and applies its changed, added or removed values, without re-reading the
      * files, environment or JVM system properties. Returns true if any resolved value changed.
      */
-    boolean refreshSources(String engineName);
+    boolean refreshExternalSource(String engineName);
 
     /**
      * Re-resolves a single key against the live JVM system properties, across every registered engine (and the global bucket), for callers that just changed

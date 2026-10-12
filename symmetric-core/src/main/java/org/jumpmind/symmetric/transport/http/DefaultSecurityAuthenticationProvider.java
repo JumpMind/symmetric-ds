@@ -20,8 +20,8 @@
  */
 package org.jumpmind.symmetric.transport.http;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.web.WebConstants;
  * Authenticates with the node's security token, sent in a request header, and with the session the remote node hands back after the first successful request.
  */
 public class DefaultSecurityAuthenticationProvider implements ISecurityAuthenticationProvider {
-    protected final Map<String, String> sessionIdByUri = new HashMap<String, String>();
+    protected final Map<String, String> sessionIdByUri = new ConcurrentHashMap<>();
     protected final boolean useHeaderSecurityToken;
     protected final boolean useSessionAuth;
 

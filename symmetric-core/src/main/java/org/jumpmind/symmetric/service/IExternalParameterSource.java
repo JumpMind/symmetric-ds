@@ -23,19 +23,14 @@ package org.jumpmind.symmetric.service;
 import java.util.Map;
 
 import org.jumpmind.properties.TypedProperties;
-import org.jumpmind.symmetric.model.StartupParameter.Source;
 
 /**
- * Supplies startup parameter values from a store outside the properties files, environment and JVM, such as a file written by another process, and reports when
- * that store changes so {@link IStartupParameterService} can pick up the new values without a restart. Callers invoke {@link #refresh(TypedProperties)} before
+ * Supplies parameter values from an external store outside the properties files, environment and JVM, such as a file written by another process, and reports
+ * when that store changes so {@link IStartupParameterService} can pick up the new values without a restart. The service records every value this source
+ * supplies under {@link org.jumpmind.symmetric.model.StartupParameter.Source#EXTERNAL}. Callers invoke {@link #refresh(TypedProperties)} before
  * {@link #getParameters()}.
  */
-public interface IStartupParameterSource {
-    /**
-     * The origin recorded against every parameter this source supplies.
-     */
-    Source getSource();
-
+public interface IExternalParameterSource {
     /**
      * Re-reads the backing store, locating it from {@code startupProperties}, the engine's properties as resolved from its files, environment variables and JVM
      * system properties. Returns true if the values this source supplies changed since the previous call. Must not throw.

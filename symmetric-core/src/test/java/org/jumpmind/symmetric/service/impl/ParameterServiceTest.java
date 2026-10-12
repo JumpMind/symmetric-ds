@@ -72,7 +72,7 @@ class ParameterServiceTest {
         IStartupParameterService startupParameterService = mock(IStartupParameterService.class);
         when(startupParameterService.asTypedProperties(ENGINE_NAME)).thenReturn(startupProperties("first-value"))
                 .thenReturn(startupProperties("second-value"));
-        when(startupParameterService.refreshSources(ENGINE_NAME)).thenReturn(true);
+        when(startupParameterService.refreshExternalSource(ENGINE_NAME)).thenReturn(true);
         ParameterService parameterService = newParameterService(startupParameterService, null);
         assertEquals("first-value", parameterService.getString(SOURCE_KEY));
         assertTrue(parameterService.refreshFromDatabase());
@@ -83,7 +83,7 @@ class ParameterServiceTest {
     void testRefreshFromDatabase_withNothingChanged_returnsFalseWithoutRereading() {
         IStartupParameterService startupParameterService = mock(IStartupParameterService.class);
         when(startupParameterService.asTypedProperties(ENGINE_NAME)).thenReturn(startupProperties("first-value"));
-        when(startupParameterService.refreshSources(ENGINE_NAME)).thenReturn(false);
+        when(startupParameterService.refreshExternalSource(ENGINE_NAME)).thenReturn(false);
         ParameterService parameterService = newParameterService(startupParameterService, null);
         parameterService.getString(SOURCE_KEY);
         assertFalse(parameterService.refreshFromDatabase());
@@ -95,7 +95,7 @@ class ParameterServiceTest {
         IStartupParameterService startupParameterService = mock(IStartupParameterService.class);
         when(startupParameterService.asTypedProperties(ENGINE_NAME)).thenReturn(startupProperties("first-value"))
                 .thenReturn(startupProperties("second-value"));
-        when(startupParameterService.refreshSources(ENGINE_NAME)).thenReturn(true);
+        when(startupParameterService.refreshExternalSource(ENGINE_NAME)).thenReturn(true);
         ParameterService parameterService = newParameterService(startupParameterService, new Date());
         parameterService.getString(SOURCE_KEY);
         assertTrue(parameterService.refreshFromDatabase());
@@ -109,11 +109,62 @@ class ParameterServiceTest {
         assertFalse(parameterService.refreshFromDatabase());
     }
 
-    private ParameterService newParameterService(IStartupParameterService startupParameterService, Date maxLastUpdateTime) {
-        IDatabasePlatform platform = mock(IDatabasePlatform.class);
+    @Test
+    void testRefreshExternalSource_withExternalSourceChanged_returnsTrue() {
+        IStartupParameterService startupParameterService = mock(IStartupParameterService.class);
+        when(startupParameterService.refreshExternalSource(ENGINE_NAME)).thenReturn(true);
+        assertTrue(newParameterService(startupParameterService, null).refreshExternalSource());
+    }
+
+    @Test
+    void testRefreshExternalSource_withExternalSourceUnchanged_returnsFalse() {
+        IStartupParameterService startupParameterService = mock(IStartupParameterService.class);
+        when(startupParameterService.refreshExternalSource(ENGINE_NAME)).thenReturn(false);
+        assertFalse(newParameterService(startupParameterService, null).refreshExternalSource());
+    }
+
+    @Test
+    void testRefreshExternalSource_withoutStartupParameterService_returnsFalse() {
+        assertFalse(newParameterService(null, null).refreshExternalSource());
+    }
+
+    @Test
+    void testRefreshDatabaseTimestamp_withoutParameterRows_returnsFalse() {
+        assertFalse(newParameterService(null, null).refreshDatabaseTimestamp());
+    }
+
+    @Test
+    void testRefreshDatabaseTimestamp_onFirstRead_returnsTrue() {
+        assertTrue(newParameterService(null, new Date()).refreshDatabaseTimestamp());
+    }
+
+    @Test
+    void testRefreshDatabaseTimestamp_withUnchangedTimestamp_returnsFalse() {
+        ParameterService parameterService = newParameterService(null, new Date());
+        parameterService.refreshDatabaseTimestamp();
+        assertFalse(parameterService.refreshDatabaseTimestamp());
+    }
+
+    @Test
+    void testRefreshDatabaseTimestamp_withNewerTimestamp_returnsTrue() {
+        Date firstUpdate = new Date();
+        Date secondUpdate = new Date(firstUpdate.getTime() + 1000);
         ISqlTemplate sqlTemplate = mock(ISqlTemplate.class);
-        when(platform.getSqlTemplate()).thenReturn(sqlTemplate);
+        when(sqlTemplate.queryForObject(anyString(), eq(Date.class))).thenReturn(firstUpdate).thenReturn(secondUpdate);
+        ParameterService parameterService = newParameterServiceWithSqlTemplate(null, sqlTemplate);
+        parameterService.refreshDatabaseTimestamp();
+        assertTrue(parameterService.refreshDatabaseTimestamp());
+    }
+
+    private ParameterService newParameterService(IStartupParameterService startupParameterService, Date maxLastUpdateTime) {
+        ISqlTemplate sqlTemplate = mock(ISqlTemplate.class);
         when(sqlTemplate.queryForObject(anyString(), eq(Date.class))).thenReturn(maxLastUpdateTime);
+        return newParameterServiceWithSqlTemplate(startupParameterService, sqlTemplate);
+    }
+
+    private ParameterService newParameterServiceWithSqlTemplate(IStartupParameterService startupParameterService, ISqlTemplate sqlTemplate) {
+        IDatabasePlatform platform = mock(IDatabasePlatform.class);
+        when(platform.getSqlTemplate()).thenReturn(sqlTemplate);
         ITypedPropertiesFactory factory = mock(ITypedPropertiesFactory.class);
         when(factory.reload()).thenReturn(new TypedProperties());
         return startupParameterService != null ? new ParameterService(startupParameterService, ENGINE_NAME, platform, factory, "sym_")

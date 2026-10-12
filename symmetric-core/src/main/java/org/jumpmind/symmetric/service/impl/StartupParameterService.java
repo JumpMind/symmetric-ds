@@ -43,7 +43,7 @@ import org.jumpmind.symmetric.model.StartupParameter;
 import org.jumpmind.symmetric.model.StartupParameter.Source;
 import org.jumpmind.symmetric.model.StartupParameter.Type;
 import org.jumpmind.symmetric.service.IStartupParameterService;
-import org.jumpmind.symmetric.service.IStartupParameterSource;
+import org.jumpmind.symmetric.service.IExternalParameterSource;
 import org.jumpmind.symmetric.service.StartupParameterUtils;
 import org.jumpmind.symmetric.util.TypedPropertiesFactory;
 import org.slf4j.Logger;
@@ -58,8 +58,8 @@ import org.slf4j.LoggerFactory;
  * for parameters resolved before any specific engine exists. This avoids the divergence that comes from multiple independent instances each taking their own
  * snapshot of JVM system properties/environment variables at different points in time.
  * <p>
- * An engine may also be registered with an {@link IStartupParameterSource}. Its values win over every other layer and are re-read at runtime by
- * {@link #refreshSources(String)} rather than only at startup.
+ * An engine may also be registered with an {@link IExternalParameterSource}. Its values win over every other layer and are re-read at runtime by
+ * {@link #refreshExternalSource(String)} rather than only at startup.
  */
 public class StartupParameterService implements IStartupParameterService {
     protected static final Logger log = LoggerFactory.getLogger(StartupParameterService.class);
@@ -106,22 +106,31 @@ public class StartupParameterService implements IStartupParameterService {
 
     @Override
     public TypedProperties registerEngine(ITypedPropertiesFactory propertiesFactory, Map<String, Source> knownFileSources,
-            Map<String, ParameterMetaData> supplementalParameterMetaData, IStartupParameterSource source) {
+            Map<String, ParameterMetaData> supplementalParameterMetaData, IExternalParameterSource source) {
         TypedProperties mergedProperties = propertiesFactory.reload();
         TypedPropertiesFactory.replaceSystemAndEnvironmentVariables(mergedProperties);
         String engineName = mergedProperties.get(ParameterConstants.ENGINE_NAME);
         EngineParameters engineParameters = new EngineParameters(engineName, mergedProperties, knownFileSources,
                 mergeParameterMetaData(supplementalParameterMetaData), propertiesFactory, source);
         if (source != null) {
-            source.refresh(engineParameters.mergedProperties);
-            overlaySource(engineParameters.mergedProperties, engineParameters.sourceKeys, source);
+            layerSourceOnto(engineParameters.mergedProperties, engineParameters.sourceKeys, source);
         }
         resolveAll(engineParameters);
         parametersByEngine.put(engineName, engineParameters);
         return asTypedProperties(engineParameters);
     }
 
-    private void overlaySource(TypedProperties target, Set<String> sourceKeys, IStartupParameterSource source) {
+    /**
+     * Pulls the source's current values into {@code target} and records which keys came from the source. The source must be refreshed first so that
+     * {@code getParameters()} reflects the store as it is now, and the overlay must always run afterward: callers pass properties rebuilt from the files, so
+     * skipping it would drop the source's values even when the source reports no change.
+     */
+    private void layerSourceOnto(TypedProperties target, Set<String> sourceKeys, IExternalParameterSource source) {
+        source.refresh(target);
+        overlaySource(target, sourceKeys, source);
+    }
+
+    private void overlaySource(TypedProperties target, Set<String> sourceKeys, IExternalParameterSource source) {
         for (Entry<String, String> entry : source.getParameters().entrySet()) {
             String value = entry.getValue();
             if (value != null) {
@@ -189,7 +198,7 @@ public class StartupParameterService implements IStartupParameterService {
             return Source.DEFAULT;
         }
         if (engineParameters.sourceKeys.contains(key)) {
-            return engineParameters.source.getSource();
+            return Source.EXTERNAL;
         }
         if (rawValue.equals(jvmProperties.getProperty(key))) {
             return Source.JVM_SYSTEM_PROPERTY;
@@ -355,8 +364,7 @@ public class StartupParameterService implements IStartupParameterService {
         TypedPropertiesFactory.replaceSystemAndEnvironmentVariables(reloadedProperties);
         Set<String> reloadedSourceKeys = ConcurrentHashMap.newKeySet();
         if (engineParameters.source != null) {
-            engineParameters.source.refresh(reloadedProperties);
-            overlaySource(reloadedProperties, reloadedSourceKeys, engineParameters.source);
+            layerSourceOnto(reloadedProperties, reloadedSourceKeys, engineParameters.source);
         }
         boolean isChanged = !reloadedProperties.equals(engineParameters.mergedProperties);
         engineParameters.mergedProperties = reloadedProperties;
@@ -368,7 +376,7 @@ public class StartupParameterService implements IStartupParameterService {
     }
 
     @Override
-    public synchronized boolean refreshSources(String engineName) {
+    public synchronized boolean refreshExternalSource(String engineName) {
         EngineParameters engineParameters = parametersByEngine.get(engineName);
         if (engineParameters == null || engineParameters.source == null
                 || !engineParameters.source.refresh(engineParameters.mergedProperties)) {
@@ -507,12 +515,12 @@ public class StartupParameterService implements IStartupParameterService {
         private final Map<String, Source> knownFileSources;
         private final Map<String, ParameterMetaData> parameterMetaData;
         private final ITypedPropertiesFactory propertiesFactory;
-        private final IStartupParameterSource source;
+        private final IExternalParameterSource source;
         private final Set<String> sourceKeys = ConcurrentHashMap.newKeySet();
         private TypedProperties mergedProperties;
 
         private EngineParameters(String engineName, TypedProperties mergedProperties, Map<String, Source> knownFileSources,
-                Map<String, ParameterMetaData> parameterMetaData, ITypedPropertiesFactory propertiesFactory, IStartupParameterSource source) {
+                Map<String, ParameterMetaData> parameterMetaData, ITypedPropertiesFactory propertiesFactory, IExternalParameterSource source) {
             this.engineName = engineName;
             this.mergedProperties = mergedProperties;
             this.knownFileSources = knownFileSources;

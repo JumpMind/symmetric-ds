@@ -98,7 +98,7 @@ import org.jumpmind.symmetric.service.IStartupParameterMetaDataProvider;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IStartupParameterService;
-import org.jumpmind.symmetric.service.IStartupParameterSource;
+import org.jumpmind.symmetric.service.IExternalParameterSource;
 import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
@@ -370,7 +370,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.startupParameterService = serviceRegistry.getStartupParameterService();
         this.clusteredCacheManager = serviceRegistry.getClusteredCacheManager();
         TypedProperties properties = this.startupParameterService.registerEngine(this.propertiesFactory,
-                findKnownEnginePropertiesFileSources(), getSupplementalStartupParameterMetaData(), getStartupParameterSource());
+                findKnownEnginePropertiesFileSources(), getSupplementalStartupParameterMetaData(), getExternalParameterSource());
         registerSymDSDriver(properties);
         String engineName = initEngineNameAndLoggingContext(properties);
         this.platform = createDatabasePlatform(properties);
@@ -456,8 +456,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return provider != null ? provider.getParameterMetaData() : Map.of();
     }
 
-    protected IStartupParameterSource getStartupParameterSource() {
-        return AppUtils.newInstance(IStartupParameterSource.class, null);
+    protected IExternalParameterSource getExternalParameterSource() {
+        return AppUtils.newInstance(IExternalParameterSource.class, null);
     }
 
     protected void registerSymDSDriver(TypedProperties engineProperties) {
