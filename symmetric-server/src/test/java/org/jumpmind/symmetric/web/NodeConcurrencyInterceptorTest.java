@@ -194,29 +194,6 @@ class NodeConcurrencyInterceptorTest {
         verifyNoInteractions(reservationConnectionCloseTracker);
     }
 
-    @Test
-    void testHasForwardingHeader_withXForwardedFor() {
-        when(request.getHeader("X-Forwarded-For")).thenReturn("10.0.0.1");
-        assertTrue(interceptor.hasForwardingHeader(request));
-    }
-
-    @Test
-    void testHasForwardingHeader_withForwarded() {
-        when(request.getHeader("Forwarded")).thenReturn("for=10.0.0.1");
-        assertTrue(interceptor.hasForwardingHeader(request));
-    }
-
-    @Test
-    void testHasForwardingHeader_withXRealIp() {
-        when(request.getHeader("X-Real-IP")).thenReturn("10.0.0.1");
-        assertTrue(interceptor.hasForwardingHeader(request));
-    }
-
-    @Test
-    void testHasForwardingHeader_withoutHeaders() {
-        assertFalse(interceptor.hasForwardingHeader(request));
-    }
-
     private void stubAcceptedHeadPush() {
         when(request.getMethod()).thenReturn("HEAD");
         when(request.getHeader(WebConstants.CHANNEL_QUEUE)).thenReturn(CHANNEL_ID);

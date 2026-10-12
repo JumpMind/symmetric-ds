@@ -48,7 +48,6 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 public class NodeConcurrencyInterceptor implements IInterceptor {
     private static Logger log = LoggerFactory.getLogger(NodeConcurrencyInterceptor.class);
-    private static final String[] FORWARDING_HEADERS = { "Forwarded", "X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Proto", "X-Real-IP" };
     private IConcurrentConnectionManager concurrentConnectionManager;
     private IConfigurationService configurationService;
     private INodeService nodeService;
@@ -156,7 +155,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         if (!parameterService.is(ParameterConstants.CONCURRENT_RESERVATION_RELEASE_ON_CLOSE, false)) {
             return;
         }
-        if (hasForwardingHeader(req)) {
+        if (ServletUtils.hasForwardingHeader(req)) {
             log.debug("Not releasing reservation on connection close for node={} because the request was forwarded by a proxy", nodeId);
             return;
         }
@@ -167,15 +166,6 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         } catch (RuntimeException ex) {
             log.warn("Failed to track reservation for release on connection close for node=" + nodeId + ", pool=" + poolId + ", channel=" + channelId, ex);
         }
-    }
-
-    protected boolean hasForwardingHeader(HttpServletRequest req) {
-        for (String header : FORWARDING_HEADERS) {
-            if (req.getHeader(header) != null) {
-                return true;
-            }
-        }
-        return false;
     }
 
     protected void sendError(HttpServletResponse resp, ReservationStatus status, String nodeId) throws IOException {
