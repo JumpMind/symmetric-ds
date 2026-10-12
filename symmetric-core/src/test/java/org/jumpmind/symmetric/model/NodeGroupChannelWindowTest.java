@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.model;
 import java.sql.Time;
 import java.util.Calendar;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 public class NodeGroupChannelWindowTest {

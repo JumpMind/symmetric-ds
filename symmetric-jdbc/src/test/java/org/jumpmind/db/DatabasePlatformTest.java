@@ -20,11 +20,11 @@
  */
 package org.jumpmind.db;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStreamReader;
 import java.sql.Types;
@@ -247,7 +247,7 @@ public class DatabasePlatformTest {
             table.getColumnWithName("ID").setTypeCode(Types.BIGINT);
             IDdlBuilder builder = platform.getDdlBuilder();
             String alterSql = builder.alterTable(tableFromDatabase, table);
-            assertFalse(alterSql, alterSql.toLowerCase().contains("create table"));
+            assertFalse(alterSql.toLowerCase().contains("create table"), alterSql);
             new SqlScript(alterSql, platform.getSqlTemplate(), true, platform.getSqlScriptReplacementTokens()).execute(true);
             tableFromDatabase = (Table) platform.getRelationFromCache(table.getName(), true);
             assertEquals(Types.BIGINT, table.getColumnWithName("ID").getMappedTypeCode());
@@ -277,17 +277,17 @@ public class DatabasePlatformTest {
     @Test
     public void testCreateAndReadTestSimpleTable() throws Exception {
         Table table = (Table) platform.getRelationFromCache(SIMPLE_TABLE, true);
-        assertNotNull("Could not find " + SIMPLE_TABLE, table);
-        assertEquals("The id column was not read in as an autoincrement column", true, table
-                .getColumnWithName("id").isAutoIncrement());
+        assertNotNull(table, "Could not find " + SIMPLE_TABLE);
+        assertEquals(true, table
+                .getColumnWithName("id").isAutoIncrement(), "The id column was not read in as an autoincrement column");
     }
 
     @Test
     public void testReadTestUppercase() throws Exception {
         Table table = (Table) platform.getRelationFromCache(UPPERCASE_TABLE, true);
-        assertNotNull("Could not find " + UPPERCASE_TABLE, table);
-        assertEquals("The id column was not read in as an autoincrement column", true, table
-                .getColumnWithName("id").isAutoIncrement());
+        assertNotNull(table, "Could not find " + UPPERCASE_TABLE);
+        assertEquals(true, table
+                .getColumnWithName("id").isAutoIncrement(), "The id column was not read in as an autoincrement column");
     }
 
     @Test
@@ -302,7 +302,7 @@ public class DatabasePlatformTest {
     public void getPermissionsTest() {
         List<PermissionResult> results = platform.checkSymTablePermissions(PermissionType.values());
         for (PermissionResult result : results) {
-            assertTrue(result.toString(), result.getStatus() != Status.FAIL);
+            assertTrue(result.getStatus() != Status.FAIL, result.toString());
         }
     }
 
@@ -335,12 +335,12 @@ public class DatabasePlatformTest {
                     for (Column c : t.getColumns()) {
                         assertTrue(c.getJdbcTypeName().equalsIgnoreCase("enum"));
                         PlatformColumn readFc = c.getPlatformColumns().get(platform.getName());
-                        assertNotNull("Platform column not created for enum column type in platform " + platform.getName(), readFc);
-                        assertTrue("Platform column not created as an enum in platform " + platform.getName(), readFc.getType().equalsIgnoreCase("enum"));
+                        assertNotNull(readFc, "Platform column not created for enum column type in platform " + platform.getName());
+                        assertTrue(readFc.getType().equalsIgnoreCase("enum"), "Platform column not created as an enum in platform " + platform.getName());
                     }
                     // Pick a database platform that does not implement enum, and check definition of column (should be varchar)
                     String ddl = new H2DdlBuilder().createTable(table);
-                    assertTrue("Non-implementing enum platform not defined as type varchar", ddl.contains("varchar") || ddl.contains("VARCHAR"));
+                    assertTrue(ddl.contains("varchar") || ddl.contains("VARCHAR"), "Non-implementing enum platform not defined as type varchar");
                 }
             }
         }
@@ -382,20 +382,20 @@ public class DatabasePlatformTest {
                     + delimiter + " asc";
             String testSql = platform.massageForLimitOffset(selectSql, 5, 0);
             List<Row> testResult = template.query(testSql);
-            assertNotNull("The result set was null when testing the limit", testResult);
-            assertEquals("The result set wasn't correctly limited when testing the limit", 5, testResult.size());
-            assertEquals("The result set was unnecessarily offset", "a", testResult.get(0).getString("text"));
+            assertNotNull(testResult, "The result set was null when testing the limit");
+            assertEquals(5, testResult.size(), "The result set wasn't correctly limited when testing the limit");
+            assertEquals("a", testResult.get(0).getString("text"), "The result set was unnecessarily offset");
             testSql = platform.massageForLimitOffset(selectSql, 30, 5);
             testResult = template.query(testSql);
-            assertNotNull("The result set was null when testing the offset", testResult);
-            assertEquals("The result set was unnecessarily limited", 21, testResult.size());
-            assertEquals("The result set wasn't correctly offset when testing the offset", "f", testResult.get(0).getString("text"));
+            assertNotNull(testResult, "The result set was null when testing the offset");
+            assertEquals(21, testResult.size(), "The result set was unnecessarily limited");
+            assertEquals("f", testResult.get(0).getString("text"), "The result set wasn't correctly offset when testing the offset");
             testSql = platform.massageForLimitOffset(selectSql, 5, 5);
             testResult = template.query(testSql);
-            assertNotNull("The result set wasn't correctly limited when ", testResult);
-            assertEquals("The result set wasn't correctly limited when testing the limit and offset", 5, testResult.size());
-            assertEquals("The result set wasn't correctly offset when testing the limit and offset", "f",
-                    testResult.get(0).getString("text"));
+            assertNotNull(testResult, "The result set wasn't correctly limited when ");
+            assertEquals(5, testResult.size(), "The result set wasn't correctly limited when testing the limit and offset");
+            assertEquals("f", testResult.get(0).getString("text"),
+                    "The result set wasn't correctly offset when testing the limit and offset");
         }
     }
 }

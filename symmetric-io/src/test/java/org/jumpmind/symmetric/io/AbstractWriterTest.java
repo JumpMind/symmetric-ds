@@ -51,7 +51,7 @@ import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IgnoreBatchException;
 import org.jumpmind.util.Statistics;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 abstract public class AbstractWriterTest {
     protected static IDatabasePlatform platform;
@@ -278,9 +278,9 @@ abstract public class AbstractWriterTest {
 
     protected void assertEquals(String[] name, String[] expected, Map<String, Object> results) {
         if (expected == null) {
-            Assert.assertNull("Expected empty results. " + printDatabase(), results);
+            Assertions.assertNull(results, "Expected empty results. " + printDatabase());
         } else {
-            Assert.assertNotNull(String.format("Did not find the expected row: %s.", Arrays.toString(expected)), results);
+            Assertions.assertNotNull(results, String.format("Did not find the expected row: %s.", Arrays.toString(expected)));
             for (int i = 0; i < expected.length; i++) {
                 Object resultObj = results.get(name[i]);
                 String resultValue = null;
@@ -312,7 +312,7 @@ abstract public class AbstractWriterTest {
                     resultValue = resultObj.toString().trim();
                     expected[i] = expected[i].trim();
                 }
-                Assert.assertEquals(name[i] + ". " + printDatabase(), expected[i], resultValue);
+                Assertions.assertEquals(expected[i], resultValue, name[i] + ". " + printDatabase());
             }
         }
     }

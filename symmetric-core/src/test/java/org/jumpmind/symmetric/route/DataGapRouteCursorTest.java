@@ -20,8 +20,8 @@
  */
 package org.jumpmind.symmetric.route;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -68,15 +68,12 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-@RunWith(MockitoJUnitRunner.class)
 public class DataGapRouteCursorTest {
     protected IParameterService parameterService;
     protected ISqlTemplate sqlTemplate;
@@ -133,7 +130,7 @@ public class DataGapRouteCursorTest {
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
         IDataGapRouteCursor cursor = buildCursor(dataGaps, false);
-        assertTrue("Should query each gap", cursor.isEachGapQueried());
+        assertTrue(cursor.isEachGapQueried(), "Should query each gap");
         Object[] args = new Object[] { Constants.CHANNEL_DEFAULT, 0l, Long.MAX_VALUE };
         int[] types = new int[] { Types.VARCHAR, Types.BIGINT, Types.BIGINT };
         verify(sqlTemplate).queryForCursor(contains("order by d.data_id"), any(), eq(args), eq(types));
