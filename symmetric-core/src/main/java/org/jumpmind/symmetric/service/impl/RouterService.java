@@ -394,9 +394,15 @@ public class RouterService extends AbstractService implements IRouterService, IN
     protected boolean warnIfGapCountExcessive(int gapCount, long currentTimeMs) {
         boolean isWarned = false;
         if (gapCount >= GAP_COUNT_WARN_EXCESSIVE && currentTimeMs - lastExcessiveGapWarnTime >= EXCESSIVE_GAP_WARN_INTERVAL_MS) {
-            log.warn("Routing starts with {} data gaps, which reaches the warning level of {}. Each channel queries all gaps, so "
-                    + "channels that route in parallel (see {}) multiply the number of queries and slow routing down",
-                    gapCount, GAP_COUNT_WARN_EXCESSIVE, ParameterConstants.ROUTING_USE_CHANNEL_THREADS);
+            if (parameterService.is(ParameterConstants.ROUTING_USE_CHANNEL_THREADS)) {
+                log.warn("Routing starts with {} data gaps, which exceeds the warning level of {}. " +
+                        "Each channel queries all gaps in parallel, multiplying the number of queries! Consider temporarily turning off {} to reduce the number of queries.",
+                        gapCount, GAP_COUNT_WARN_EXCESSIVE, ParameterConstants.ROUTING_USE_CHANNEL_THREADS);
+            } else {
+                log.warn("Routing starts with {} data gaps, which exceeds the warning level of {}!"
+                        + " Identify the cause of gaps and resolve it to ensure Routing runs fast.",
+                        gapCount, GAP_COUNT_WARN_EXCESSIVE);
+            }
             lastExcessiveGapWarnTime = currentTimeMs;
             isWarned = true;
         }
