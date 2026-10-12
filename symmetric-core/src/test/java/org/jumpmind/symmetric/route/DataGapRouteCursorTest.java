@@ -38,6 +38,8 @@ import static org.mockito.Mockito.when;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.LongSupplier;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlReadCursor;
@@ -67,6 +69,7 @@ import org.jumpmind.symmetric.service.impl.ParameterService;
 import org.jumpmind.symmetric.service.impl.RouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
@@ -74,11 +77,20 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 
 public class DataGapRouteCursorTest {
     protected IParameterService parameterService;
     protected ISqlTemplate sqlTemplate;
     protected NodeChannel nodeChannel;
+    protected Logger multiCursorLogger;
+    protected Level originalLevel;
+    protected ListAppender<ILoggingEvent> appender;
 
     @BeforeEach
     void setUp() {
@@ -92,6 +104,18 @@ public class DataGapRouteCursorTest {
         nodeChannel = new NodeChannel(Constants.CHANNEL_DEFAULT);
         nodeChannel.setMaxDataToRoute(1000);
         nodeChannel.setBatchAlgorithm(DefaultBatchAlgorithm.NAME);
+        multiCursorLogger = (Logger) LoggerFactory.getLogger(DataGapRouteMultiCursor.class.getName());
+        originalLevel = multiCursorLogger.getLevel();
+        multiCursorLogger.setLevel(Level.DEBUG);
+        appender = new ListAppender<ILoggingEvent>();
+        appender.start();
+        multiCursorLogger.addAppender(appender);
+    }
+
+    @AfterEach
+    void tearDown() {
+        multiCursorLogger.detachAppender(appender);
+        multiCursorLogger.setLevel(originalLevel);
     }
 
     protected IDataGapRouteCursor buildCursor(List<DataGap> dataGaps, boolean useMultipleQueries) {
@@ -99,6 +123,11 @@ public class DataGapRouteCursorTest {
     }
 
     protected IDataGapRouteCursor buildCursor(List<DataGap> dataGaps, boolean useMultipleQueries, ProcessInfo readerProcessInfo) {
+        return buildCursor(dataGaps, useMultipleQueries, readerProcessInfo, System::currentTimeMillis);
+    }
+
+    protected IDataGapRouteCursor buildCursor(List<DataGap> dataGaps, boolean useMultipleQueries, ProcessInfo readerProcessInfo,
+            LongSupplier currentSystemTime) {
         when(parameterService.getEngineName()).thenReturn("myEngine");
         IStatisticManager statisticManager = mock(StatisticManager.class);
         when(statisticManager.newProcessInfo((ProcessInfoKey) any())).thenReturn(new ProcessInfo());
@@ -126,7 +155,7 @@ public class DataGapRouteCursorTest {
         context.setDataGaps(dataGaps);
         context.setReaderProcessInfo(readerProcessInfo);
         if (useMultipleQueries) {
-            return new DataGapRouteMultiCursor(context, engine);
+            return new DataGapRouteMultiCursor(context, engine, currentSystemTime);
         }
         return new DataGapRouteCursor(context, engine);
     }
@@ -350,6 +379,82 @@ public class DataGapRouteCursorTest {
         IDataGapRouteCursor cursor = buildCursor(dataGaps, true, processInfo);
         countRows(cursor);
         assertEquals(ProcessInfo.ProcessStatus.EXTRACTING, processInfo.getStatus());
+    }
+
+    @Test
+    void testQueryMultipleSkipsProgressLogForFastQueries() {
+        AtomicLong currentTime = new AtomicLong(1_000_000L);
+        ISqlRowMapper<Data> mapper = any();
+        when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any())).thenAnswer(i -> {
+            currentTime.addAndGet(10L);
+            return new ListReadCursor();
+        });
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(1, 3));
+        dataGaps.add(new DataGap(5, 5));
+        dataGaps.add(new DataGap(7, 10));
+        dataGaps.add(new DataGap(12, 12));
+        dataGaps.add(new DataGap(14, 30));
+        dataGaps.add(new DataGap(35, 37));
+        dataGaps.add(new DataGap(40, Long.MAX_VALUE));
+        IDataGapRouteCursor cursor = buildCursor(dataGaps, true, new ProcessInfo(), currentTime::get);
+        countRows(cursor);
+        assertEquals(0, appender.list.size());
+    }
+
+    @Test
+    void testQueryMultipleLogsProgressAtDebugBetweenInfoIntervals() {
+        AtomicLong currentTime = new AtomicLong(1_000_000L);
+        ISqlRowMapper<Data> mapper = any();
+        when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any())).thenAnswer(i -> {
+            currentTime.addAndGet(Constants.LONG_OPERATION_DEBUG_THRESHOLD + 1);
+            return new ListReadCursor();
+        });
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(1, 3));
+        dataGaps.add(new DataGap(5, 5));
+        dataGaps.add(new DataGap(7, 10));
+        dataGaps.add(new DataGap(12, 12));
+        dataGaps.add(new DataGap(14, 30));
+        dataGaps.add(new DataGap(35, 37));
+        dataGaps.add(new DataGap(40, Long.MAX_VALUE));
+        IDataGapRouteCursor cursor = buildCursor(dataGaps, true, new ProcessInfo(), currentTime::get);
+        countRows(cursor);
+        List<ILoggingEvent> events = appender.list;
+        assertEquals(3, events.size());
+        assertEquals(Level.DEBUG, events.get(0).getLevel());
+        assertEquals("Routing channel default queried 3 of 7 gaps using 1 queries with 5001 ms spent waiting on query executions",
+                events.get(0).getFormattedMessage());
+        assertEquals(Level.DEBUG, events.get(2).getLevel());
+        assertEquals("Routing channel default queried 7 of 7 gaps using 3 queries with 15003 ms spent waiting on query executions",
+                events.get(2).getFormattedMessage());
+    }
+
+    @Test
+    void testQueryMultipleLogsProgressAtInfoAfterLongOperationThreshold() {
+        AtomicLong currentTime = new AtomicLong(1_000_000L);
+        ISqlRowMapper<Data> mapper = any();
+        when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any())).thenAnswer(i -> {
+            currentTime.addAndGet(Constants.LONG_OPERATION_THRESHOLD / 2 + 1);
+            return new ListReadCursor();
+        });
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(1, 3));
+        dataGaps.add(new DataGap(5, 5));
+        dataGaps.add(new DataGap(7, 10));
+        dataGaps.add(new DataGap(12, 12));
+        dataGaps.add(new DataGap(14, 30));
+        dataGaps.add(new DataGap(35, 37));
+        dataGaps.add(new DataGap(40, Long.MAX_VALUE));
+        IDataGapRouteCursor cursor = buildCursor(dataGaps, true, new ProcessInfo(), currentTime::get);
+        countRows(cursor);
+        List<ILoggingEvent> events = appender.list;
+        assertEquals(3, events.size());
+        assertEquals(Level.DEBUG, events.get(0).getLevel());
+        assertEquals(Level.INFO, events.get(1).getLevel());
+        assertEquals("Routing channel default queried 6 of 7 gaps using 2 queries with 30002 ms spent waiting on query executions",
+                events.get(1).getFormattedMessage());
+        assertEquals(Level.DEBUG, events.get(2).getLevel());
     }
 
     protected int countRows(IDataGapRouteCursor cursor) {
