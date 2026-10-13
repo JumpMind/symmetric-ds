@@ -77,18 +77,35 @@ public class ParameterService extends AbstractParameterService implements IParam
 
     @Override
     public boolean refreshFromDatabase() {
-        Date date = sqlTemplate.queryForObject(sql.getSql("selectMaxLastUpdateTime"), Date.class);
-        if (date != null) {
-            if (lastUpdateTime == null || lastUpdateTime.before(date)) {
-                if (lastUpdateTime != null) {
-                    log.info("Newer database parameters were detected");
-                }
-                lastUpdateTime = date;
-                rereadParameters();
-                return true;
-            }
+        boolean isExternalSourceChanged = refreshExternalSource();
+        boolean isDatabaseChanged = refreshDatabaseTimestamp();
+        if (isDatabaseChanged || isExternalSourceChanged) {
+            rereadParameters();
         }
-        return false;
+        return isDatabaseChanged || isExternalSourceChanged;
+    }
+
+    /**
+     * Re-reads values supplied by the engine's external parameter source, if one is registered. Only the startup layer is updated here; the runtime parameter
+     * cache is rebuilt separately by {@link #rereadParameters()}.
+     */
+    protected boolean refreshExternalSource() {
+        return startupParameterService != null && startupParameterService.refreshExternalSource(engineName);
+    }
+
+    /**
+     * Checks whether sym_parameter has rows newer than the last time they were read, and records the newest timestamp seen.
+     */
+    protected boolean refreshDatabaseTimestamp() {
+        Date newestUpdate = sqlTemplate.queryForObject(sql.getSql("selectMaxLastUpdateTime"), Date.class);
+        if (newestUpdate == null || (lastUpdateTime != null && !lastUpdateTime.before(newestUpdate))) {
+            return false;
+        }
+        if (lastUpdateTime != null) {
+            log.info("Newer database parameters were detected");
+        }
+        lastUpdateTime = newestUpdate;
+        return true;
     }
 
     /**
