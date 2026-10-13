@@ -128,12 +128,9 @@ import org.jumpmind.util.FormatUtils;
  * @see IRouterService
  */
 public class RouterService extends AbstractService implements IRouterService, INodeCommunicationExecutor {
-<<<<<<< HEAD
     public static final String COLUMN_SEGMENT_ROUTER_TYPE = "segment";
-=======
     public static final int GAP_COUNT_WARN_EXCESSIVE = 10000;
     protected static final long EXCESSIVE_GAP_WARN_INTERVAL_MS = 10L * Constants.LOG_PROCESS_SUMMARY_THRESHOLD;
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
     final int MAX_LOGGING_LENGTH = 512;
     protected Map<Integer, CounterStat> missingTriggerRouter = new ConcurrentHashMap<Integer, CounterStat>();
     protected Map<String, CounterStat> invalidRouterType = new ConcurrentHashMap<String, CounterStat>();
