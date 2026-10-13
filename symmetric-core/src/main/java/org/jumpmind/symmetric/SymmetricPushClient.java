@@ -60,6 +60,7 @@ public class SymmetricPushClient {
                 BinaryEncoding.BASE64, nodeId, null, false);
     }
 
+    @SuppressWarnings("removal")
     public void open() {
         try {
             transport = new HttpOutgoingTransport(new HttpTransportManager(), URI.create(buildUrl()).toURL(), 30000, 30000, true, 0, -1, null,
@@ -71,6 +72,7 @@ public class SymmetricPushClient {
         }
     }
 
+    @SuppressWarnings("removal")
     public BatchAck close() {
         try {
             writer.end(batch, false);

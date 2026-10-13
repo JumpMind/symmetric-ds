@@ -68,6 +68,11 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     protected ISecurityAuthenticationProvider securityAuthenticationProvider;
     protected int backOffPostCount;
 
+    /**
+     * @deprecated A manager created without an engine has no extension service or security authentication provider, so it cannot open connections. Use
+     *             {@link #HttpTransportManager(ISymmetricEngine)}. This constructor will be removed in 3.19.
+     */
+    @Deprecated(since = "3.18", forRemoval = true)
     public HttpTransportManager() {
     }
 
