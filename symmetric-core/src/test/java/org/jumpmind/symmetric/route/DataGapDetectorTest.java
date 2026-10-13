@@ -106,11 +106,7 @@ public class DataGapDetectorTest {
     ThreadLocalRandom rand = ThreadLocalRandom.current();
 
     @BeforeEach
-<<<<<<< HEAD
-    public void setUp() throws Exception {
-=======
     void setUp() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         sqlTemplate = mock(ISqlTemplate.class);
         sqlTransaction = mock(ISqlTransaction.class);
         when(sqlTemplate.startSqlTransaction()).thenReturn(sqlTransaction);
@@ -183,11 +179,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testNewGap() throws Exception {
-=======
     void testNewGap() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(3, 3));
         dataGaps.add(new DataGap(4, 50000004));
@@ -207,11 +199,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testNewGapFull() throws Exception {
-=======
     void testNewGapFull() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         detector.setFullGapAnalysis(true);
         when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);
         List<Long> dataIds = new ArrayList<Long>();
@@ -238,9 +226,6 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testTwoNewGaps() throws Exception {
-=======
     void testGapWritesAreCountedInProcessInfo() {
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(3, 3));
@@ -384,7 +369,6 @@ public class DataGapDetectorTest {
 
     @Test
     void testTwoNewGaps() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(3, 3));
         dataGaps.add(new DataGap(4, 50000004));
@@ -406,11 +390,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testTwoNewGapsFull() throws Exception {
-=======
     void testTwoNewGapsFull() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         detector.setFullGapAnalysis(true);
         when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);
         List<Long> dataIds = new ArrayList<Long>();
@@ -439,11 +419,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapInGap() throws Exception {
-=======
     void testGapInGap() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(3, 3));
         dataGaps.add(new DataGap(5, 10));
@@ -474,11 +450,7 @@ public class DataGapDetectorTest {
 
     @Test
     @SuppressWarnings("unchecked")
-<<<<<<< HEAD
-    public void testGapInGapFull() throws Exception {
-=======
     void testGapInGapFull() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         detector.setFullGapAnalysis(true);
         when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);
         when(sqlTemplate.query(ArgumentMatchers.any(), ArgumentMatchers.isA(ISqlRowMapper.class), ArgumentMatchers.any(Object[].class))).thenAnswer(
@@ -522,11 +494,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapExpire() throws Exception {
-=======
     void testGapExpire() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(3, 3));
         dataGaps.add(new DataGap(5, 6));
@@ -548,11 +516,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapExpireBusyChannel() throws Exception {
-=======
     void testGapExpireBusyChannel() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(3, 3));
         dataGaps.add(new DataGap(5, 6));
@@ -575,11 +539,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapBusyExpireRun() throws Exception {
-=======
     void testGapBusyExpireRun() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(3, 3));
         dataGaps.add(new DataGap(5, 6));
@@ -603,11 +563,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapBusyExpireRunMultiple() throws Exception {
-=======
     void testGapBusyExpireRunMultiple() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         when(symmetricDialect.supportsTransactionViews()).thenReturn(true);
         when(symmetricDialect.getDatabaseTime()).thenReturn(System.currentTimeMillis() + 60001L);
@@ -643,11 +599,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapBusyExpireNoRun() throws Exception {
-=======
     void testGapBusyExpireNoRun() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(3, 3));
         dataGaps.add(new DataGap(5, 6));
@@ -661,11 +613,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapExpireOracle() throws Exception {
-=======
     void testGapExpireOracle() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(3, 3));
         dataGaps.add(new DataGap(5, 6));
@@ -686,11 +634,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapExpireOracleBusyChannel() throws Exception {
-=======
     void testGapExpireOracleBusyChannel() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(3, 3));
         dataGaps.add(new DataGap(5, 6));
@@ -714,11 +658,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapsBeforeAndAfterFull() throws Exception {
-=======
     void testGapsBeforeAndAfterFull() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         detector.setFullGapAnalysis(true);
         when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);
         List<Long> dataIds = new ArrayList<Long>();
@@ -756,11 +696,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapsOverlap() throws Exception {
-=======
     void testGapsOverlap() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<Long> dataIds = new ArrayList<Long>();
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(30953883, 80953883));
@@ -774,11 +710,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapsOverlapMultiple() throws Exception {
-=======
     void testGapsOverlapMultiple() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<Long> dataIds = new ArrayList<Long>();
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(1, 10));
@@ -803,11 +735,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapsOverlapThenData() throws Exception {
-=======
     void testGapsOverlapThenData() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<Long> dataIds = new ArrayList<Long>();
         dataIds.add(30953883L);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
@@ -829,11 +757,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapsOverlapThenDataFull() throws Exception {
-=======
     void testGapsOverlapThenDataFull() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         detector.setFullGapAnalysis(true);
         when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);
         List<Long> dataIds = new ArrayList<Long>();
@@ -866,11 +790,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapsOverlapAfterLastGap() throws Exception {
-=======
     void testGapsOverlapAfterLastGap() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<Long> dataIds = new ArrayList<Long>();
         dataIds.add(30953883L);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
@@ -894,11 +814,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapsDuplicateDetection() throws Exception {
-=======
     void testGapsDuplicateDetection() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<Long> dataIds = new ArrayList<Long>();
         dataIds.add(31832439L);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
@@ -921,11 +837,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapsOverlapDetection() throws Exception {
-=======
     void testGapsOverlapDetection() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<Long> dataIds = new ArrayList<Long>();
         dataIds.add(31837983L);
         dataIds.add(31837989L);
@@ -949,11 +861,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testGapsFailedToDelete() throws Exception {
-=======
     void testGapsFailedToDelete() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         when(parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE)).thenReturn(10L);
         when(parameterService.getInt(ParameterConstants.ROUTING_MAX_GAP_CHANGES)).thenReturn(2);
         List<Long> dataIds = new ArrayList<Long>();
@@ -984,11 +892,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testDataBeforeGap() throws Exception {
-=======
     void testDataBeforeGap() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(3, 3));
         dataGaps.add(new DataGap(4, 50000004));

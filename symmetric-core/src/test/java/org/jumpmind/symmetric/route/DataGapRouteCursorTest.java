@@ -161,11 +161,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testOrderBy() throws Exception {
-=======
     void testOrderBy() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
         IDataGapRouteCursor cursor = buildCursor(dataGaps, false);
@@ -176,11 +172,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testOrderByNatural() throws Exception {
-=======
     void testOrderByNatural() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)).thenReturn(false);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
@@ -192,11 +184,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testMemoryOrderById() throws Exception {
-=======
     void testMemoryOrderById() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_INTO_MEMORY_ENABLED, false)).thenReturn(true);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
@@ -219,11 +207,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testChannelFlags() throws Exception {
-=======
     void testChannelFlags() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         nodeChannel.setUsePkDataToRoute(false);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
@@ -241,11 +225,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testExceptionAndRetry() throws Exception {
-=======
     void testExceptionAndRetry() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         ISqlRowMapper<Data> mapper = any();
         when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any())).then(new Answer<ISqlReadCursor<Data>>() {
             int count = 0;
@@ -267,11 +247,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testQueryGreaterThan() throws Exception {
-=======
     void testQueryGreaterThan() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(1, 3));
         dataGaps.add(new DataGap(5, 5));
@@ -285,11 +261,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testQueryMergeFinalGaps() throws Exception {
-=======
     void testQueryMergeFinalGaps() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         when(parameterService.getInt(eq(ParameterConstants.ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY), anyInt())).thenReturn(0);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(1, 3));
@@ -304,11 +276,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testQueryMultipleOneGapOver() throws Exception {
-=======
     void testQueryMultipleOneGapOver() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_USE_MULTIPLE_QUERIES)).thenReturn(true);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(1, 3));
@@ -327,11 +295,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testQueryMultipleThreeGapsOver() throws Exception {
-=======
     void testQueryMultipleThreeGapsOver() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_USE_MULTIPLE_QUERIES)).thenReturn(true);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(1, 3));
@@ -352,11 +316,7 @@ public class DataGapRouteCursorTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testQueryMultipleThreeQueries() throws Exception {
-=======
     void testQueryMultipleThreeQueries() {
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
         when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_USE_MULTIPLE_QUERIES)).thenReturn(true);
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(1, 3));

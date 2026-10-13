@@ -20,34 +20,38 @@
  */
 package org.jumpmind.db.sql;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
 
 import org.jumpmind.util.FormatUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 public class LogSqlBuilderTest {
-<<<<<<< HEAD
-=======
     private Logger logger;
-    private ListAppender<ILoggingEvent> appender;
 
     @BeforeEach
     void setUp() {
-        logger = (Logger) LoggerFactory.getLogger("LogSqlBuilderTestLogger");
-        logger.setLevel(Level.DEBUG);
-        appender = new ListAppender<>();
-        appender.start();
-        logger.addAppender(appender);
+        logger = mock(Logger.class);
+        when(logger.isDebugEnabled()).thenReturn(true);
     }
 
     @AfterEach
     void tearDown() {
-        logger.detachAppender(appender);
         MDC.remove("engineName");
     }
 
@@ -55,31 +59,30 @@ public class LogSqlBuilderTest {
     void testLogSql_fiveArgOverload_delegatesWithNullMessage() {
         LogSqlBuilder builder = new LogSqlBuilder();
         builder.logSql(logger, "select 1", null, null, 5L);
-        assertEquals(1, appender.list.size());
-        assertEquals(Level.DEBUG, appender.list.get(0).getLevel());
-        assertEquals("(5ms.) select 1", appender.list.get(0).getFormattedMessage());
+        verify(logger).debug("(5ms.) select 1");
+        verify(logger, never()).info(anyString());
     }
 
     @Test
     void testLogSql_sixArgOverload_withMessage_prependsMessageToLogEntry() {
         LogSqlBuilder builder = new LogSqlBuilder();
         builder.logSql(logger, "context", "select 1", null, null, 5L);
-        assertEquals("(5ms.) context select 1", appender.list.get(0).getFormattedMessage());
+        verify(logger).debug("(5ms.) context select 1");
     }
 
     @Test
     void testLogSql_whenExecutionTimeExceedsDefaultThreshold_logsAtInfoWithLongRunningPrefix() {
         LogSqlBuilder builder = new LogSqlBuilder();
         builder.logSql(logger, null, "select 1", null, null, 20000L);
-        assertEquals(Level.INFO, appender.list.get(0).getLevel());
-        assertEquals("Long Running: (20.0 seconds) select 1", appender.list.get(0).getFormattedMessage());
+        verify(logger).info("Long Running: (20.0 seconds) select 1");
+        verify(logger, never()).debug(anyString());
     }
 
     @Test
     void testLogSql_whenLongRunning_formatsSecondsWithOneDigitAfterPeriod() {
         LogSqlBuilder builder = new LogSqlBuilder();
         builder.logSql(logger, null, "select 1", null, null, 23456L);
-        assertEquals("Long Running: (23.5 seconds) select 1", appender.list.get(0).getFormattedMessage());
+        verify(logger).info("Long Running: (23.5 seconds) select 1");
     }
 
     @Test
@@ -87,8 +90,7 @@ public class LogSqlBuilderTest {
         MDC.put("engineName", "gui");
         LogSqlBuilder builder = new LogSqlBuilder();
         builder.logSql(logger, null, "select 1", null, null, 5000L);
-        assertEquals(Level.INFO, appender.list.get(0).getLevel());
-        assertTrue(appender.list.get(0).getFormattedMessage().startsWith("Long Running:"));
+        verify(logger).info("Long Running: (5.0 seconds) select 1");
     }
 
     @Test
@@ -96,25 +98,25 @@ public class LogSqlBuilderTest {
         LogSqlBuilder builder = new LogSqlBuilder();
         builder.setLogSqlParametersInline(false);
         builder.logSql(logger, null, "select * from t where id = ?", new Object[] { 1 }, null, 5L);
-        assertEquals(2, appender.list.size());
-        assertEquals("(5ms.) select * from t where id = ?", appender.list.get(0).getFormattedMessage());
-        assertEquals("sql args: [1]", appender.list.get(1).getFormattedMessage());
+        verify(logger).debug("(5ms.) select * from t where id = ?");
+        verify(logger).debug("sql args: {}", "[1]");
     }
 
     @Test
     void testLogSql_whenLoggerNotDebugEnabledAndNotLongRunning_logsNothing() {
-        logger.setLevel(Level.INFO);
+        when(logger.isDebugEnabled()).thenReturn(false);
         LogSqlBuilder builder = new LogSqlBuilder();
         builder.logSql(logger, null, "select 1", null, null, 5L);
-        assertTrue(appender.list.isEmpty());
+        verify(logger, never()).debug(anyString());
+        verify(logger, never()).info(anyString());
     }
 
     @Test
     void testLogSql_whenLoggerTraceEnabled_appendsTrailingCarriageReturn() {
-        logger.setLevel(Level.TRACE);
+        when(logger.isTraceEnabled()).thenReturn(true);
         LogSqlBuilder builder = new LogSqlBuilder();
         builder.logSql(logger, null, "select 1", null, null, 5L);
-        assertEquals("(5ms.) select 1\r\n", appender.list.get(0).getFormattedMessage());
+        verify(logger).debug("(5ms.) select 1\r\n");
     }
 
     @Test
@@ -123,7 +125,7 @@ public class LogSqlBuilderTest {
         SQLException ex = new SQLException("boom");
         SQLException result = builder.logSqlAfterException(logger, "select * from t where id = ?", new Object[] { 1 }, ex);
         assertSame(ex, result);
-        assertEquals("SQL caused exception: [select * from t where id = ?] sql args: [1] " + ex, appender.list.get(0).getFormattedMessage());
+        verify(logger).debug("SQL caused exception: [select * from t where id = ?] sql args: [1] " + ex);
     }
 
     @Test
@@ -131,10 +133,9 @@ public class LogSqlBuilderTest {
         LogSqlBuilder builder = new LogSqlBuilder();
         SQLException ex = new SQLException("boom");
         builder.logSqlAfterException(logger, "select 1", null, ex);
-        assertEquals("SQL caused exception: [select 1] " + ex, appender.list.get(0).getFormattedMessage());
+        verify(logger).debug("SQL caused exception: [select 1] " + ex);
     }
 
->>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
     @Test
     public void testNoPlachodlers() {
         final String SQL = "select * from sym_data where data_id = 234234;";
