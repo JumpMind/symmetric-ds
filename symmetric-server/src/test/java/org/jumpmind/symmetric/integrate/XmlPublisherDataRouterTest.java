@@ -20,10 +20,22 @@
  */
 package org.jumpmind.symmetric.integrate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -33,17 +45,6 @@ import org.jumpmind.symmetric.route.SimpleRouterContext;
 import org.jumpmind.util.Context;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class XmlPublisherDataRouterTest {
     private static final String TABLE_NAME = "TEST_XML_PUBLISHER";
@@ -61,7 +62,8 @@ class XmlPublisherDataRouterTest {
     @BeforeEach
     void setUp() {
         ISymmetricEngine engine = mock(ISymmetricEngine.class);
-        when(engine.getSymmetricDialect()).thenReturn(mock(AbstractSymmetricDialect.class));
+        ISymmetricDialect symmetricDialect = mock(AbstractSymmetricDialect.class);
+        when(engine.getSymmetricDialect()).thenReturn(symmetricDialect);
         when(engine.getSymmetricDialect().getBinaryEncoding()).thenReturn(BinaryEncoding.BASE64);
         table = Table.buildTable(TABLE_NAME, new String[] { "ID" }, new String[] { "ID", "DATA" });
         context = new SimpleRouterContext();
