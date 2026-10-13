@@ -30,7 +30,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.AbstractWriterTest;
 import org.jumpmind.symmetric.io.data.*;
 import org.jumpmind.symmetric.io.data.transform.*;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -51,9 +51,9 @@ public class TransformWriterTest extends AbstractWriterTest {
         writeData(getTransformWriter(), new TableCsvData(table, new CsvData(DataEventType.INSERT,
                 new String[] { "1" }), new CsvData(DataEventType.INSERT, new String[] { "2" })));
         List<CsvData> datas = mockWriter.writtenDatas.get(table.getFullyQualifiedName());
-        Assert.assertEquals(2, datas.size());
-        Assert.assertEquals("1", datas.get(0).getParsedData(CsvData.ROW_DATA)[0]);
-        Assert.assertEquals("2", datas.get(1).getParsedData(CsvData.ROW_DATA)[0]);
+        Assertions.assertEquals(2, datas.size());
+        Assertions.assertEquals("1", datas.get(0).getParsedData(CsvData.ROW_DATA)[0]);
+        Assertions.assertEquals("2", datas.get(1).getParsedData(CsvData.ROW_DATA)[0]);
     }
 
     @Test
@@ -63,11 +63,11 @@ public class TransformWriterTest extends AbstractWriterTest {
         writeData(getTransformWriter(), new TableCsvData(table, new CsvData(DataEventType.INSERT, new String[] { "66" }),
                 new CsvData(DataEventType.INSERT, new String[] { "77" })));
         List<CsvData> datas = mockWriter.writtenDatas.get(table.getFullyQualifiedName());
-        Assert.assertNull(datas);
+        Assertions.assertNull(datas);
         datas = mockWriter.writtenDatas.get("t1");
-        Assert.assertEquals(2, datas.size());
-        Assert.assertEquals("66", datas.get(0).getParsedData(CsvData.ROW_DATA)[0]);
-        Assert.assertEquals("77", datas.get(1).getParsedData(CsvData.ROW_DATA)[0]);
+        Assertions.assertEquals(2, datas.size());
+        Assertions.assertEquals("66", datas.get(0).getParsedData(CsvData.ROW_DATA)[0]);
+        Assertions.assertEquals("77", datas.get(1).getParsedData(CsvData.ROW_DATA)[0]);
     }
 
     @Test
@@ -77,13 +77,13 @@ public class TransformWriterTest extends AbstractWriterTest {
         writeData(getTransformWriter(), new TableCsvData(table, new CsvData(DataEventType.INSERT, new String[] { "2" }),
                 new CsvData(DataEventType.INSERT, new String[] { "1" })));
         List<CsvData> datas = mockWriter.writtenDatas.get(table.getFullyQualifiedName());
-        Assert.assertNull(datas);
+        Assertions.assertNull(datas);
         datas = mockWriter.writtenDatas.get("t2");
-        Assert.assertEquals(2, datas.size());
-        Assert.assertEquals("2", datas.get(0).getParsedData(CsvData.ROW_DATA)[0]);
-        Assert.assertEquals("1", datas.get(1).getParsedData(CsvData.ROW_DATA)[0]);
-        Assert.assertEquals("added", datas.get(0).getParsedData(CsvData.ROW_DATA)[1]);
-        Assert.assertEquals("added", datas.get(1).getParsedData(CsvData.ROW_DATA)[1]);
+        Assertions.assertEquals(2, datas.size());
+        Assertions.assertEquals("2", datas.get(0).getParsedData(CsvData.ROW_DATA)[0]);
+        Assertions.assertEquals("1", datas.get(1).getParsedData(CsvData.ROW_DATA)[0]);
+        Assertions.assertEquals("added", datas.get(0).getParsedData(CsvData.ROW_DATA)[1]);
+        Assertions.assertEquals("added", datas.get(1).getParsedData(CsvData.ROW_DATA)[1]);
     }
 
     @Test
@@ -97,11 +97,11 @@ public class TransformWriterTest extends AbstractWriterTest {
                 new CsvData(DataEventType.UPDATE, new String[] { "4" }),
                 new CsvData(DataEventType.UPDATE, new String[] { "5" })));
         List<CsvData> datas = mockWriter.writtenDatas.get("t3");
-        Assert.assertEquals(4, datas.size());
-        Assert.assertEquals(DataEventType.INSERT, datas.get(0).getDataEventType());
-        Assert.assertEquals(DataEventType.DELETE, datas.get(1).getDataEventType());
-        Assert.assertEquals(DataEventType.UPDATE, datas.get(2).getDataEventType());
-        Assert.assertEquals(DataEventType.UPDATE, datas.get(3).getDataEventType());
+        Assertions.assertEquals(4, datas.size());
+        Assertions.assertEquals(DataEventType.INSERT, datas.get(0).getDataEventType());
+        Assertions.assertEquals(DataEventType.DELETE, datas.get(1).getDataEventType());
+        Assertions.assertEquals(DataEventType.UPDATE, datas.get(2).getDataEventType());
+        Assertions.assertEquals(DataEventType.UPDATE, datas.get(3).getDataEventType());
     }
 
     @Test
@@ -111,11 +111,11 @@ public class TransformWriterTest extends AbstractWriterTest {
         writeData(getTransformWriter(), new TableCsvData(table,
                 new CsvData(DataEventType.DELETE, new String[] { "1" }, null)));
         List<CsvData> datas = mockWriter.writtenDatas.get("t4");
-        Assert.assertEquals(1, datas.size());
-        Assert.assertEquals(DataEventType.DELETE, datas.get(0).getDataEventType());
+        Assertions.assertEquals(1, datas.size());
+        Assertions.assertEquals(DataEventType.DELETE, datas.get(0).getDataEventType());
         String[] pkData = datas.get(0).getParsedData(CsvData.PK_DATA);
-        Assert.assertEquals(1, pkData.length);
-        Assert.assertEquals("1", pkData[0]);
+        Assertions.assertEquals(1, pkData.length);
+        Assertions.assertEquals("1", pkData[0]);
     }
 
     @Test
