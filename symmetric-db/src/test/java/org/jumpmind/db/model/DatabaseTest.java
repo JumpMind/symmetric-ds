@@ -20,9 +20,9 @@
  */
 package org.jumpmind.db.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -47,10 +47,10 @@ public class DatabaseTest {
         list.add(t4);
         list.add(t3);
         list = Database.sortByForeignKeys(list, null, null, null);
-        assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t1));
-        assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
-        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
-        assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t3));
+        assertTrue(list.indexOf(t4) < list.indexOf(t1), list.toString());
+        assertTrue(list.indexOf(t2) < list.indexOf(t1), list.toString());
+        assertTrue(list.indexOf(t3) < list.indexOf(t2), list.toString());
+        assertTrue(list.indexOf(t4) < list.indexOf(t3), list.toString());
     }
 
     @Test
@@ -80,10 +80,10 @@ public class DatabaseTest {
         list.add(t2);
         list.add(t8);
         list = Database.sortByForeignKeys(list, null, null, null);
-        assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t5));
-        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t4));
-        assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t3));
-        assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t5));
+        assertTrue(list.indexOf(t4) < list.indexOf(t5), list.toString());
+        assertTrue(list.indexOf(t3) < list.indexOf(t4), list.toString());
+        assertTrue(list.indexOf(t2) < list.indexOf(t3), list.toString());
+        assertTrue(list.indexOf(t2) < list.indexOf(t5), list.toString());
     }
 
     @Test
@@ -118,9 +118,9 @@ public class DatabaseTest {
         list.add(t4);
         list.add(t3);
         list = Database.sortByForeignKeys(list, null, null, null);
-        assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
-        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
-        assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t2));
+        assertTrue(list.indexOf(t2) < list.indexOf(t1), list.toString());
+        assertTrue(list.indexOf(t3) < list.indexOf(t2), list.toString());
+        assertTrue(list.indexOf(t4) < list.indexOf(t2), list.toString());
     }
 
     @Test
@@ -138,9 +138,9 @@ public class DatabaseTest {
         list.add(t4);
         list.add(t3);
         list = Database.sortByForeignKeys(list, null, null, null);
-        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t4));
-        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
-        assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
+        assertTrue(list.indexOf(t3) < list.indexOf(t4), list.toString());
+        assertTrue(list.indexOf(t3) < list.indexOf(t2), list.toString());
+        assertTrue(list.indexOf(t2) < list.indexOf(t1), list.toString());
     }
 
     @Test
@@ -158,10 +158,10 @@ public class DatabaseTest {
         list.add(t3);
         list.add(t4);
         list = Database.sortByForeignKeys(list, null, null, null);
-        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t4));
-        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
-        assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
-        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t1));
+        assertTrue(list.indexOf(t3) < list.indexOf(t4), list.toString());
+        assertTrue(list.indexOf(t3) < list.indexOf(t2), list.toString());
+        assertTrue(list.indexOf(t2) < list.indexOf(t1), list.toString());
+        assertTrue(list.indexOf(t3) < list.indexOf(t1), list.toString());
     }
 
     @Test
@@ -180,9 +180,9 @@ public class DatabaseTest {
         list.add(t3);
         list.add(t4);
         list = Database.sortByForeignKeys(list, null, null, null);
-        assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t3));
-        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
-        assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
+        assertTrue(list.indexOf(t4) < list.indexOf(t3), list.toString());
+        assertTrue(list.indexOf(t3) < list.indexOf(t2), list.toString());
+        assertTrue(list.indexOf(t2) < list.indexOf(t1), list.toString());
     }
 
     @Test
@@ -196,7 +196,7 @@ public class DatabaseTest {
         list.add(t4);
         Map<Relation, Set<String>> missingDependencyMap = new HashMap<Relation, Set<String>>();
         list = Database.sortByForeignKeys(list, null, null, missingDependencyMap);
-        assertTrue(list.toString(), list.indexOf(t1) < list.indexOf(t4));
+        assertTrue(list.indexOf(t1) < list.indexOf(t4), list.toString());
         assertEquals(missingDependencyMap.size(), 1);
         assertTrue(missingDependencyMap.containsKey(t1));
         Iterator<String> i = missingDependencyMap.get(t1).iterator();

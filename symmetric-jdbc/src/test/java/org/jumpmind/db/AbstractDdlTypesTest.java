@@ -20,9 +20,9 @@
  */
 package org.jumpmind.db;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.StringReader;
 
@@ -75,20 +75,20 @@ abstract public class AbstractDdlTypesTest {
         StringReader reader = new StringReader(xml);
         Table fromXml = DatabaseXmlUtil.read(reader, false).getTable(0);
         for (Column column : fromXml.getColumns()) {
-            assertNotNull("Expected " + getName() + " platform specific column information for "
-                    + column.getName(), column.findPlatformColumn(getName()));
+            assertNotNull(column.findPlatformColumn(getName()), "Expected " + getName() + " platform specific column information for "
+                    + column.getName());
         }
         assertNotNull(fromXml);
         platform.alterTables(false, fromXml);
         Table fromDb2 = (Table) platform.readRelationFromDatabase(null, null, tableName());
-        assertNotNull("Could not find " + tableName() + " in the database", fromDb2);
+        assertNotNull(fromDb2, "Could not find " + tableName() + " in the database");
         for (Column column1 : columns1) {
             PlatformColumn pColumn1 = column1.findPlatformColumn(getName());
             Column column2 = fromDb2.findColumn(column1.getName());
             assertNotNull(column2);
             PlatformColumn pColumn2 = column2.findPlatformColumn(getName());
             assertNotNull(pColumn2);
-            assertEquals("Column types not equals for column " + column1.getName(), pColumn1.getType(), pColumn2.getType());
+            assertEquals(pColumn1.getType(), pColumn2.getType(), "Column types not equals for column " + column1.getName());
             assertEquals(pColumn1.getSize(), pColumn2.getSize());
             assertEquals(pColumn1.getDecimalDigits(), pColumn2.getDecimalDigits());
         }

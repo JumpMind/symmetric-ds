@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.file;
 import java.io.File;
 import java.nio.charset.Charset;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.commons.io.FileUtils;
 import org.jumpmind.symmetric.model.FileSnapshot;

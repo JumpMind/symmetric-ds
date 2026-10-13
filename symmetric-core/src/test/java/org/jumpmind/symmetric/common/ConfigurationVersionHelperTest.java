@@ -20,8 +20,8 @@
  */
 package org.jumpmind.symmetric.common;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -89,11 +89,11 @@ public class ConfigurationVersionHelperTest {
                     columnValues.put("TYPE", "cpu");
                 }
                 Set<Node> filteredNodes = helper.filterNodes(nodes, table, columnValues);
-                assertTrue("Should send table " + table + " to node " + version, filteredNodes.contains(new Node(version, version)));
+                assertTrue(filteredNodes.contains(new Node(version, version)), "Should send table " + table + " to node " + version);
             }
             for (String table : shouldNotSendTables) {
                 Set<Node> filteredNodes = helper.filterNodes(nodes, table, columnValues);
-                assertFalse("Should NOT send table " + table + " to node " + version, filteredNodes.contains(new Node(version, version)));
+                assertFalse(filteredNodes.contains(new Node(version, version)), "Should NOT send table " + table + " to node " + version);
             }
         }
     }
@@ -125,9 +125,9 @@ public class ConfigurationVersionHelperTest {
             node.setSymmetricVersion(version);
             Set<Node> filteredNodes = helper.filterNodes(nodes, table, columnValues);
             if (shouldSend) {
-                assertTrue("Should send monitor " + monitorType + " to node " + version, filteredNodes.contains(node));
+                assertTrue(filteredNodes.contains(node), "Should send monitor " + monitorType + " to node " + version);
             } else {
-                assertFalse("Should NOT send monitor " + monitorType + " to node " + version, filteredNodes.contains(node));
+                assertFalse(filteredNodes.contains(node), "Should NOT send monitor " + monitorType + " to node " + version);
             }
         }
     }
@@ -213,9 +213,9 @@ public class ConfigurationVersionHelperTest {
         for (String table : tables) {
             String message = "Version " + version + " node " + (shouldSend ? "SHOULD" : "should NOT") + " be sent " + table + " table";
             if (shouldSend) {
-                assertTrue(message, helper.shouldSendTable(table));
+                assertTrue(helper.shouldSendTable(table), message);
             } else {
-                assertFalse(message, helper.shouldSendTable(table));
+                assertFalse(helper.shouldSendTable(table), message);
             }
         }
     }

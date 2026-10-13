@@ -20,9 +20,9 @@
  */
 package org.jumpmind.symmetric.model;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Types;
@@ -36,7 +36,7 @@ class TriggerTest {
     @Test
     void testFilterExcludedColumnsForNull() throws Exception {
         Trigger trigger = new Trigger();
-        assertArrayEquals("Expected empty column array", new Column[0], trigger.filterExcludedColumns(null));
+        assertArrayEquals(new Column[0], trigger.filterExcludedColumns(null), "Expected empty column array");
     }
 
     @Test
@@ -45,13 +45,13 @@ class TriggerTest {
         trigger.setExcludedColumnNames("col1, col3, col5");
         Column[] param = buildColumnArray();
         Column[] expected = new Column[] { param[1], param[3], param[5] };
-        assertArrayEquals("Excluded wrong set of columns", expected, trigger.filterExcludedColumns(param));
+        assertArrayEquals(expected, trigger.filterExcludedColumns(param), "Excluded wrong set of columns");
     }
 
     @Test
     void testFilterIncludedColumnsForNull() throws Exception {
         Trigger trigger = new Trigger();
-        assertArrayEquals("Expected empty column array", new Column[0], trigger.filterIncludedColumns(null));
+        assertArrayEquals(new Column[0], trigger.filterIncludedColumns(null), "Expected empty column array");
     }
 
     @Test
@@ -60,7 +60,7 @@ class TriggerTest {
         trigger.setIncludedColumnNames("col1, col3, col5");
         Column[] param = buildColumnArray();
         Column[] expected = new Column[] { param[0], param[2], param[4] };
-        assertArrayEquals("Included wrong set of columns", expected, trigger.filterIncludedColumns(param));
+        assertArrayEquals(expected, trigger.filterIncludedColumns(param), "Included wrong set of columns");
     }
 
     @Test
@@ -70,7 +70,7 @@ class TriggerTest {
         trigger.setExcludedColumnNames("col3, col4");
         Column[] param = buildColumnArray();
         Column[] expected = new Column[] { param[0], param[1] };
-        assertArrayEquals("Filtered wrong set of columns", expected, trigger.filterExcludedAndIncludedColumns(param));
+        assertArrayEquals(expected, trigger.filterExcludedAndIncludedColumns(param), "Filtered wrong set of columns");
     }
 
     @Test
@@ -80,7 +80,7 @@ class TriggerTest {
         trigger.setExcludedColumnNames("col2, col3");
         Column[] param = buildColumnArray();
         Column[] expected = new Column[] { param[0] };
-        assertArrayEquals("Filtered wrong set of columns", expected, trigger.filterExcludedAndIncludedColumns(param));
+        assertArrayEquals(expected, trigger.filterExcludedAndIncludedColumns(param), "Filtered wrong set of columns");
     }
 
     @Test
@@ -90,7 +90,7 @@ class TriggerTest {
         trigger.setIncludedColumnNames("");
         Column[] param = buildColumnArray();
         Column[] expected = new Column[] { param[0], param[1], param[4], param[5] };
-        assertArrayEquals("Filtered wrong set of columns", expected, trigger.filterExcludedAndIncludedColumns(param));
+        assertArrayEquals(expected, trigger.filterExcludedAndIncludedColumns(param), "Filtered wrong set of columns");
     }
 
     @Test
@@ -100,7 +100,7 @@ class TriggerTest {
         trigger.setIncludedColumnNames("col1, col2");
         Column[] param = buildColumnArray();
         Column[] expected = new Column[] { param[0], param[1] };
-        assertArrayEquals("Filtered wrong set of columns", expected, trigger.filterExcludedAndIncludedColumns(param));
+        assertArrayEquals(expected, trigger.filterExcludedAndIncludedColumns(param), "Filtered wrong set of columns");
     }
 
     @Test

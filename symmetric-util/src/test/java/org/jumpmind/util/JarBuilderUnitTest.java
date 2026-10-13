@@ -24,7 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.jar.JarFile;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
