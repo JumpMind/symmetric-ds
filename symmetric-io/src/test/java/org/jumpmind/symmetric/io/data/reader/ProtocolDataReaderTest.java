@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data.reader;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.jumpmind.db.model.Relation;
 import org.jumpmind.db.util.BinaryEncoding;
