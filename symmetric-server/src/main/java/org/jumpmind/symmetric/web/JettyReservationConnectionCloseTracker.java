@@ -39,11 +39,11 @@ import jakarta.servlet.http.HttpServletRequest;
  * Jetty implementation of {@link IReservationConnectionCloseTracker}. One {@link CloseListener} is attached per connection and kept as a connection attribute,
  * so keep-alive connections reused for many push cycles do not accumulate listeners. This is the only class that depends on Jetty types.
  */
-public class JettyReservationConnectionCloseTracker implements IReservationConnectionCloseTracker {
+class JettyReservationConnectionCloseTracker implements IReservationConnectionCloseTracker {
     static final String ATTRIBUTE_NAME = CloseListener.class.getName();
 
     @Override
-    public boolean registerForRelease(HttpServletRequest req, IConcurrentConnectionManager concurrentConnectionManager, String nodeId, String channelId,
+    public boolean isMarkedForRelease(HttpServletRequest req, IConcurrentConnectionManager concurrentConnectionManager, String nodeId, String channelId,
             String poolId,
             Reservation reservation) {
         if (reservation == null) {

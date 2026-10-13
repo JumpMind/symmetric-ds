@@ -43,7 +43,7 @@ class ReservationConnectionCloseTrackerFactoryTest {
         IReservationConnectionCloseTracker tracker = ReservationConnectionCloseTrackerFactory.create(new JettyHidingClassLoader());
         assertNotEquals(JettyReservationConnectionCloseTracker.class, tracker.getClass());
         Reservation reservation = new Reservation("node1", System.currentTimeMillis() + 10_000, ReservationType.SOFT);
-        assertFalse(tracker.registerForRelease(mock(HttpServletRequest.class), mock(IConcurrentConnectionManager.class), "node1", "default",
+        assertFalse(tracker.isMarkedForRelease(mock(HttpServletRequest.class), mock(IConcurrentConnectionManager.class), "node1", "default",
                 "/sync/corp-000/push",
                 reservation));
     }
@@ -54,8 +54,8 @@ class ReservationConnectionCloseTrackerFactoryTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         IConcurrentConnectionManager manager = mock(IConcurrentConnectionManager.class);
         Reservation reservation = new Reservation("node1", System.currentTimeMillis() + 10_000, ReservationType.SOFT);
-        assertFalse(tracker.registerForRelease(request, manager, "node1", "default", "/sync/corp-000/push", reservation));
-        assertFalse(tracker.registerForRelease(request, manager, "node1", "default", "/sync/corp-000/push", reservation));
+        assertFalse(tracker.isMarkedForRelease(request, manager, "node1", "default", "/sync/corp-000/push", reservation));
+        assertFalse(tracker.isMarkedForRelease(request, manager, "node1", "default", "/sync/corp-000/push", reservation));
     }
 
     private static class JettyHidingClassLoader extends ClassLoader {

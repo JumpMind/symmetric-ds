@@ -168,7 +168,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             return;
         }
         try {
-            if (!reservationConnectionCloseTracker.registerForRelease(req, concurrentConnectionManager, nodeId, channelId, poolId, reservation)) {
+            if (!reservationConnectionCloseTracker.isMarkedForRelease(req, concurrentConnectionManager, nodeId, channelId, poolId, reservation)) {
                 log.debug("Not releasing reservation on connection close for node={} because the connection cannot be tracked", nodeId);
             }
         } catch (RuntimeException ex) {
