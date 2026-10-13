@@ -11,7 +11,7 @@ configurations {
 configurations.all {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
         if (details.requested.group == 'org.ow2.asm' && !details.requested.name.contains('debug-all')) {
-            details.useVersion '9.5'
+            details.useVersion '9.10.1'
         }
         if (details.requested.group == 'io.swagger.core.v3') {
             details.useVersion '2.2.30'
@@ -85,7 +85,7 @@ subprojects { subproject ->
     apply plugin: 'signing'    
 
     jacoco {
-		toolVersion = "0.8.12"
+		toolVersion = "0.8.15"
 	}
     
 	jacocoTestReport {
@@ -106,6 +106,7 @@ subprojects { subproject ->
 	}
 
     configurations { deployerJars }
+    configurations { mockitoAgent }
     configurations {
     	testArtifacts.extendsFrom testImplementation
     }
@@ -131,17 +132,19 @@ subprojects { subproject ->
 
 	java {
 		toolchain {
-    		languageVersion = JavaLanguageVersion.of(project.findProperty('javaVersion') ?: 21)
+    		languageVersion = JavaLanguageVersion.of(project.findProperty('javaVersion') ?: 25)
     	}
     	sourceCompatibility=JavaVersion.VERSION_21
     	targetCompatibility=JavaVersion.VERSION_21
     }
     
     compileJava {
+    	options.release = 21
     	options.compilerArgs << '-Xlint:deprecation' << '-parameters'
     }
     
     compileTestJava {
+    	options.release = 21
     	options.compilerArgs += '-Xlint:deprecation'
     }
 	
@@ -278,6 +281,11 @@ subprojects { subproject ->
     }
     
     test {
+        // Attach Mockito as an agent to avoid the dynamic agent loading warning on newer JDKs
+        // resolved lazily, since the mockitoAgent dependency is declared after this task is configured
+        doFirst {
+            jvmArgs "-javaagent:${configurations.mockitoAgent.asPath}"
+        }
         minHeapSize = "128m"
         maxHeapSize = "512m"
         systemProperty 'sym.keystore.file', "${buildDir}/unittest.keystore"
@@ -341,8 +349,7 @@ subprojects { subproject ->
         spotBugsVersion = '4.8.5'
         logbackVersion = '1.5.38'
         slf4jVersion = '2.0.17'
-        mockitoVersion = '5.11.0'
-        powerMockVersion = '2.0.9'
+        mockitoVersion = '5.24.0'
         mysqlVersion = '8.4.0'
         servletVersion = '4.0.1'
         springVersion = '7.0.9'
@@ -373,8 +380,7 @@ subprojects { subproject ->
         
         testImplementation "org.hamcrest:hamcrest-all:$hamcrestVersion"
         testImplementation "org.mockito:mockito-core:$mockitoVersion"
-        testImplementation "org.powermock:powermock-api-mockito2:$powerMockVersion"
-        testImplementation "org.powermock:powermock-module-junit4:$powerMockVersion"
+        mockitoAgent("org.mockito:mockito-core:$mockitoVersion") { transitive = false }
         
         deployerJars "org.apache.maven.wagon:wagon-ssh:3.5.3"
     }    

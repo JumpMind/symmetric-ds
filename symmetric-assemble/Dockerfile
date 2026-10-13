@@ -17,8 +17,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# Alpine Linux with Java 21 JDK
-FROM eclipse-temurin:21-jdk-alpine
+# Alpine Linux with Java 25 JDK
+FROM eclipse-temurin:25-jdk-alpine
 
 # Input the server zip file used to install SymmetricDS
 # This file must be in the Docker context (i.e. working directory)

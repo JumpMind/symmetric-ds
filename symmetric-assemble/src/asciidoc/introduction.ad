@@ -14,9 +14,11 @@ Standard Edition (SE).
 Most major operating systems and databases are supported.  See the list of supported databases in the <<databases-compatibility>> section.
 The minimum operating system requirements are:
 
-* Java SE Runtime Environment 21 or newer
+* Java SE Runtime Environment 21 or 25
 * Memory - 64 (MB) available
 * Disk - 256 (MB) available
+
+NOTE: Java 21 is the minimum required version. SymmetricDS also runs on Java 25, a long-term support release, so either version can be used.
 
 The memory, disk, and CPU requirements increase with the number of connected clients and the amount of data being synchronized.
 The best way to size a server is to simulate synchronization in a lower environment and benchmark data loading.
