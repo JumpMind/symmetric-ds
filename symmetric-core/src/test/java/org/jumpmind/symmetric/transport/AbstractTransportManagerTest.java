@@ -9,7 +9,7 @@ import java.util.List;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class AbstractTransportManagerTest {
@@ -61,7 +61,7 @@ public class AbstractTransportManagerTest {
         MockTransportManager transportManager = new MockTransportManager();
         List<String> dataList = transportManager.getAcknowledgementData(false, "node_id", incomingBatchList,
                 AbstractTransportManager.FORM_KEYS_PER_BATCH * 2, -1);
-        Assert.assertEquals(5, dataList.size());
+        Assertions.assertEquals(5, dataList.size());
         for (int i = 0; i < 5; i++) {
             String data = dataList.get(i);
             long batchId = i * 2;
@@ -74,7 +74,7 @@ public class AbstractTransportManagerTest {
     public void testGetAcknowledgementDataLimitedByteSize() throws IOException {
         MockTransportManager transportManager = new MockTransportManager();
         List<String> dataList = transportManager.getAcknowledgementData(false, "node_id", incomingBatchList, -1, 1000);
-        Assert.assertEquals(5, dataList.size());
+        Assertions.assertEquals(5, dataList.size());
         for (int i = 0; i < 5; i++) {
             String data = dataList.get(i);
             long batchId = i * 2;
@@ -87,7 +87,7 @@ public class AbstractTransportManagerTest {
     public void testGetAcknowledgementDataUnlimited() throws IOException {
         MockTransportManager transportManager = new MockTransportManager();
         List<String> dataList = transportManager.getAcknowledgementData(false, "node_id", incomingBatchList, -1, -1);
-        Assert.assertEquals(1, dataList.size());
+        Assertions.assertEquals(1, dataList.size());
         String data = dataList.get(0);
         for (long batchId = 0; batchId < 10; batchId++) {
             verifyData(data, batchId);
@@ -139,10 +139,10 @@ public class AbstractTransportManagerTest {
     private void assertContains(String data, String name, Object value) throws IOException {
         StringBuilder builder = new StringBuilder();
         builder.append(name).append("=").append(URLEncoder.encode(value.toString(), StandardCharsets.UTF_8.name()));
-        Assert.assertTrue(data.contains(builder.toString()));
+        Assertions.assertTrue(data.contains(builder.toString()));
     }
 
     private void assertNotContains(String data, String name) {
-        Assert.assertTrue(!data.contains(name + "="));
+        Assertions.assertTrue(!data.contains(name + "="));
     }
 }

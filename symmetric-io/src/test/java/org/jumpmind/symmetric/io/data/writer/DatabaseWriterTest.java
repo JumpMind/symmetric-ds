@@ -46,7 +46,7 @@ import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
 import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.Statistics;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -190,7 +190,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
                         "string not null2", "char2", "char not null2", "2007-01-02 03:20:10.0",
                         "2012-03-12 07:00:00.0", "0", "2", "67.89", "-0.0747663" }));
         writeData(update, newInsert);
-        Assert.assertEquals(before, countRows(TEST_TABLE));
+        Assertions.assertEquals(before, countRows(TEST_TABLE));
     }
 
     @Test
@@ -227,7 +227,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         update.putParsedData(CsvData.OLD_DATA, oldData);
         try {
             writeData(update);
-            Assert.fail("Should have received a conflict exception");
+            Assertions.fail("Should have received a conflict exception");
         } catch (ConflictException ex) {
             Statistics stats = lastDataWriterUsed.getStatistics().values().iterator().next();
             long statementNumber = stats.get(DataWriterStatisticConstants.ROWCOUNT);
@@ -236,8 +236,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
             writerSettings.setResolvedData(resolvedData);
             writeData(update);
             Map<String, Object> row = queryForRow(origId);
-            Assert.assertNotNull(row);
-            Assert.assertEquals(newData[2], row.get("string_required_value"));
+            Assertions.assertNotNull(row);
+            Assertions.assertEquals(newData[2], row.get("string_required_value"));
         }
     }
 
@@ -267,7 +267,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         update.putParsedData(CsvData.OLD_DATA, oldData);
         try {
             writeData(update);
-            Assert.fail("Should have received a conflict exception");
+            Assertions.fail("Should have received a conflict exception");
         } catch (ConflictException ex) {
             Statistics stats = lastDataWriterUsed.getStatistics().values().iterator().next();
             long statementNumber = stats.get(DataWriterStatisticConstants.ROWCOUNT);
@@ -276,8 +276,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
             writerSettings.setResolvedData(resolvedData);
             writeData(update);
             Map<String, Object> row = queryForRow(origId);
-            Assert.assertNotNull(row);
-            Assert.assertEquals(newData[2], row.get("string_required_value"));
+            Assertions.assertNotNull(row);
+            Assertions.assertEquals(newData[2], row.get("string_required_value"));
         }
     }
 
@@ -518,7 +518,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
             // abandoned on subsequent runs
             platform.getSqlTemplate().query(
                     "select lo_unlink(binary_data) from test_postgres_binary_types");
-            Assert.assertEquals("test 1 2 3", result);
+            Assertions.assertEquals("test 1 2 3", result);
         }
     }
 
@@ -545,10 +545,10 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         if (platform instanceof InformixDatabasePlatform) {
             targetTime = 20.0;
         }
-        Assert.assertEquals(3200, statementCount);
+        Assertions.assertEquals(3200, statementCount);
         // TODO: this used to run in 1 second; can we do some optimization?
-        Assert.assertTrue("DataLoader running in " + totalSeconds + " is too slow",
-                totalSeconds <= targetTime);
+        Assertions.assertTrue(totalSeconds <= targetTime,
+                "DataLoader running in " + totalSeconds + " is too slow");
     }
 
     private String[] massageExpectectedResultsForDialect(String[] values) {
