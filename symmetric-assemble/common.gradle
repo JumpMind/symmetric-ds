@@ -287,6 +287,13 @@ subprojects { subproject ->
         finalizedBy jacocoTestReport
     }
 
+    tasks.withType(Test).configureEach {
+        if (javaLauncher.get().metadata.languageVersion.asInt() >= 25) {
+            // Byte Buddy 1.14 bundled with Mockito officially supports Java up to 22
+            systemProperty 'net.bytebuddy.experimental', 'true'
+        }
+    }
+
         
     jar {
         manifest {
