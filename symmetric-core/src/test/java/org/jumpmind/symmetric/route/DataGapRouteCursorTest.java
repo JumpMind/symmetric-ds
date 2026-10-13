@@ -77,12 +77,10 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.Logger;
 
 public class DataGapRouteCursorTest {
     protected IParameterService parameterService;
@@ -90,7 +88,7 @@ public class DataGapRouteCursorTest {
     protected NodeChannel nodeChannel;
     protected Logger multiCursorLogger;
     protected Level originalLevel;
-    protected ListAppender<ILoggingEvent> appender;
+    protected ListLogAppender appender;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -104,17 +102,17 @@ public class DataGapRouteCursorTest {
         nodeChannel = new NodeChannel(Constants.CHANNEL_DEFAULT);
         nodeChannel.setMaxDataToRoute(1000);
         nodeChannel.setBatchAlgorithm(DefaultBatchAlgorithm.NAME);
-        multiCursorLogger = (Logger) LoggerFactory.getLogger(DataGapRouteMultiCursor.class.getName());
+        multiCursorLogger = (Logger) LogManager.getLogger(DataGapRouteMultiCursor.class);
         originalLevel = multiCursorLogger.getLevel();
         multiCursorLogger.setLevel(Level.DEBUG);
-        appender = new ListAppender<ILoggingEvent>();
+        appender = new ListLogAppender();
         appender.start();
         multiCursorLogger.addAppender(appender);
     }
 
     @AfterEach
     void tearDown() {
-        multiCursorLogger.detachAppender(appender);
+        multiCursorLogger.removeAppender(appender);
         multiCursorLogger.setLevel(originalLevel);
     }
 
@@ -399,7 +397,7 @@ public class DataGapRouteCursorTest {
         dataGaps.add(new DataGap(40, Long.MAX_VALUE));
         IDataGapRouteCursor cursor = buildCursor(dataGaps, true, new ProcessInfo(), currentTime::get);
         countRows(cursor);
-        assertEquals(0, appender.list.size());
+        assertEquals(0, appender.getEvents().size());
     }
 
     @Test
@@ -420,14 +418,14 @@ public class DataGapRouteCursorTest {
         dataGaps.add(new DataGap(40, Long.MAX_VALUE));
         IDataGapRouteCursor cursor = buildCursor(dataGaps, true, new ProcessInfo(), currentTime::get);
         countRows(cursor);
-        List<ILoggingEvent> events = appender.list;
+        List<LogEvent> events = appender.getEvents();
         assertEquals(3, events.size());
         assertEquals(Level.DEBUG, events.get(0).getLevel());
         assertEquals("Routing channel default queried 3 of 7 gaps using 1 queries with 5001 ms spent waiting on query executions",
-                events.get(0).getFormattedMessage());
+                events.get(0).getMessage().getFormattedMessage());
         assertEquals(Level.DEBUG, events.get(2).getLevel());
         assertEquals("Routing channel default queried 7 of 7 gaps using 3 queries with 15003 ms spent waiting on query executions",
-                events.get(2).getFormattedMessage());
+                events.get(2).getMessage().getFormattedMessage());
     }
 
     @Test
@@ -448,12 +446,12 @@ public class DataGapRouteCursorTest {
         dataGaps.add(new DataGap(40, Long.MAX_VALUE));
         IDataGapRouteCursor cursor = buildCursor(dataGaps, true, new ProcessInfo(), currentTime::get);
         countRows(cursor);
-        List<ILoggingEvent> events = appender.list;
+        List<LogEvent> events = appender.getEvents();
         assertEquals(3, events.size());
         assertEquals(Level.DEBUG, events.get(0).getLevel());
         assertEquals(Level.INFO, events.get(1).getLevel());
         assertEquals("Routing channel default queried 6 of 7 gaps using 2 queries with 30002 ms spent waiting on query executions",
-                events.get(1).getFormattedMessage());
+                events.get(1).getMessage().getFormattedMessage());
         assertEquals(Level.DEBUG, events.get(2).getLevel());
     }
 

@@ -72,12 +72,11 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.Logger;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
@@ -268,21 +267,21 @@ public class DataGapDetectorTest {
         detector.beforeRouting();
         DataGapPassStats passStats = new DataGapPassStats();
         passStats.incrementGapQueriesCount();
-        Logger detectorLogger = (Logger) LoggerFactory.getLogger(DataGapFastDetector.class.getName());
+        Logger detectorLogger = (Logger) LogManager.getLogger(DataGapFastDetector.class);
         Level originalLevel = detectorLogger.getLevel();
-        ListAppender<ILoggingEvent> appender = new ListAppender<ILoggingEvent>();
+        ListLogAppender appender = new ListLogAppender();
         appender.start();
         detectorLogger.addAppender(appender);
         detectorLogger.setLevel(Level.TRACE);
         try {
             detector.queryDataIdMap(new ProcessInfo(), passStats);
         } finally {
-            detectorLogger.detachAppender(appender);
+            detectorLogger.removeAppender(appender);
             detectorLogger.setLevel(originalLevel);
         }
         List<String> messages = new ArrayList<String>();
-        for (ILoggingEvent event : appender.list) {
-            messages.add(event.getFormattedMessage());
+        for (LogEvent event : appender.getEvents()) {
+            messages.add(event.getMessage().getFormattedMessage());
         }
         assertEquals(true, messages.contains("The data gap query for full analysis has executed 3 queries for 2 gaps"));
     }

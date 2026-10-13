@@ -40,17 +40,15 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.Logger;
 
 class DataGapDetectorSummaryLoggingTest {
     Logger detectorLogger;
     Level originalLevel;
-    ListAppender<ILoggingEvent> appender;
+    ListLogAppender appender;
     long startTime;
     long debugDueTime;
     long infoDueTime;
@@ -59,10 +57,10 @@ class DataGapDetectorSummaryLoggingTest {
 
     @BeforeEach
     void setUp() {
-        detectorLogger = (Logger) LoggerFactory.getLogger(DataGapFastDetector.class.getName());
+        detectorLogger = (Logger) LogManager.getLogger(DataGapFastDetector.class);
         originalLevel = detectorLogger.getLevel();
         detectorLogger.setLevel(Level.DEBUG);
-        appender = new ListAppender<ILoggingEvent>();
+        appender = new ListLogAppender();
         appender.start();
         detectorLogger.addAppender(appender);
         startTime = System.currentTimeMillis();
@@ -77,38 +75,38 @@ class DataGapDetectorSummaryLoggingTest {
 
     @AfterEach
     void tearDown() {
-        detectorLogger.detachAppender(appender);
+        detectorLogger.removeAppender(appender);
         detectorLogger.setLevel(originalLevel);
     }
 
     @Test
     void testSummaryNothingLoggedBeforeDebugThreshold() {
         detector.logGapDetectionSummary(startTime, passStats);
-        assertEquals(0, appender.list.size());
+        assertEquals(0, appender.getEvents().size());
     }
 
     @Test
     void testSummaryDebugLoggedForShortPassAfterDebugThreshold() {
         detector.logGapDetectionSummary(debugDueTime, new DataGapPassStats(debugDueTime - 100));
-        List<ILoggingEvent> events = appender.list;
+        List<LogEvent> events = appender.getEvents();
         assertEquals(1, events.size());
         assertEquals(Level.DEBUG, events.get(0).getLevel());
-        assertEquals("Gap detection took 100 ms, 0 gaps added and 0 gaps deleted since the last summary", events.get(0).getFormattedMessage());
+        assertEquals("Gap detection took 100 ms, 0 gaps added and 0 gaps deleted since the last summary", events.get(0).getMessage().getFormattedMessage());
     }
 
     @Test
     void testSummaryInfoLoggedForLongPassAfterInfoThreshold() {
         detector.logGapDetectionSummary(infoDueTime, passStats);
-        List<ILoggingEvent> events = appender.list;
+        List<LogEvent> events = appender.getEvents();
         assertEquals(1, events.size());
         assertEquals(Level.INFO, events.get(0).getLevel());
-        assertEquals(true, events.get(0).getFormattedMessage().startsWith("Gap detection summary for the last "));
+        assertEquals(true, events.get(0).getMessage().getFormattedMessage().startsWith("Gap detection summary for the last "));
     }
 
     @Test
     void testSummaryLongPassBeforeInfoThresholdLogsNothing() {
         detector.logGapDetectionSummary(debugDueTime, passStats);
-        assertEquals(0, appender.list.size());
+        assertEquals(0, appender.getEvents().size());
     }
 
     @Test
@@ -140,98 +138,98 @@ class DataGapDetectorSummaryLoggingTest {
     void testSummaryNothingLoggedRightAfterInfo() {
         detector.logGapDetectionSummary(infoDueTime, passStats);
         detector.logGapDetectionSummary(infoDueTime + 1, passStats);
-        assertEquals(1, appender.list.size());
+        assertEquals(1, appender.getEvents().size());
     }
 
     @Test
     void testSummaryWithoutPassStatsLogsNothing() {
         detector.logGapDetectionSummary(infoDueTime, null);
-        assertEquals(0, appender.list.size());
+        assertEquals(0, appender.getEvents().size());
     }
 
     @Test
     void testProgressNothingLoggedBeforeDebugThreshold() {
         detector.logGapDetectionProgress(startTime, populatedPassStats());
-        assertEquals(0, appender.list.size());
+        assertEquals(0, appender.getEvents().size());
     }
 
     @Test
     void testProgressDebugLoggedAfterDebugThreshold() {
         detector.logGapDetectionProgress(debugDueTime, populatedPassStats());
-        List<ILoggingEvent> events = appender.list;
+        List<LogEvent> events = appender.getEvents();
         assertEquals(1, events.size());
         assertEquals(Level.DEBUG, events.get(0).getLevel());
         assertEquals("Gap detection running for 6000 ms: 7 routed rows found in gap range 100, 2 gaps added, 1 gaps deleted, 3 queries",
-                events.get(0).getFormattedMessage());
+                events.get(0).getMessage().getFormattedMessage());
     }
 
     @Test
     void testProgressInfoLoggedAfterInfoThreshold() {
         detector.logGapDetectionProgress(infoDueTime, populatedPassStats());
-        List<ILoggingEvent> events = appender.list;
+        List<LogEvent> events = appender.getEvents();
         assertEquals(1, events.size());
         assertEquals(Level.INFO, events.get(0).getLevel());
         assertEquals("Gap detection running for 31000 ms: 7 routed rows found in gap range 100, 2 gaps added, 1 gaps deleted, 3 queries",
-                events.get(0).getFormattedMessage());
+                events.get(0).getMessage().getFormattedMessage());
     }
 
     @Test
     void testProgressWithoutPassStatsLogsNothing() {
         detector.logGapDetectionProgress(infoDueTime, null);
-        assertEquals(0, appender.list.size());
+        assertEquals(0, appender.getEvents().size());
     }
 
     @Test
     void testFullProgressNothingLoggedBeforeDebugThreshold() {
         useGapChanges();
         detector.logFullGapDetectionProgress(startTime, populatedPassStats());
-        assertEquals(0, appender.list.size());
+        assertEquals(0, appender.getEvents().size());
     }
 
     @Test
     void testFullProgressDebugLoggedAfterDebugThreshold() {
         useGapChanges();
         detector.logFullGapDetectionProgress(debugDueTime, populatedPassStats());
-        List<ILoggingEvent> events = appender.list;
+        List<LogEvent> events = appender.getEvents();
         assertEquals(1, events.size());
         assertEquals(Level.DEBUG, events.get(0).getLevel());
         assertEquals("Full gap detection running for 6000 ms: 7 routed rows found in gap range 100, 3 gaps added, 2 gaps deleted, "
-                + "data checked in 4 gaps, 3 queries", events.get(0).getFormattedMessage());
+                + "data checked in 4 gaps, 3 queries", events.get(0).getMessage().getFormattedMessage());
     }
 
     @Test
     void testFullProgressInfoLoggedAfterInfoThreshold() {
         useGapChanges();
         detector.logFullGapDetectionProgress(infoDueTime, populatedPassStats());
-        List<ILoggingEvent> events = appender.list;
+        List<LogEvent> events = appender.getEvents();
         assertEquals(1, events.size());
         assertEquals(Level.INFO, events.get(0).getLevel());
         assertEquals("Full gap detection running for 31000 ms: 7 routed rows found in gap range 100, 3 gaps added, 2 gaps deleted, "
-                + "data checked in 4 gaps, 3 queries", events.get(0).getFormattedMessage());
+                + "data checked in 4 gaps, 3 queries", events.get(0).getMessage().getFormattedMessage());
     }
 
     @Test
     void testGapMappingTimeNothingLoggedBeforeDebugThreshold() {
         useGapsAndDataIds();
         detector.logGapMappingTime(startTime, passStats);
-        assertEquals(0, appender.list.size());
+        assertEquals(0, appender.getEvents().size());
     }
 
     @Test
     void testGapMappingTimeDebugLoggedAfterDebugThreshold() {
         useGapsAndDataIds();
         detector.logGapMappingTime(debugDueTime, passStats);
-        List<ILoggingEvent> events = appender.list;
+        List<LogEvent> events = appender.getEvents();
         assertEquals(1, events.size());
         assertEquals(Level.DEBUG, events.get(0).getLevel());
-        assertEquals("It took 6000ms to map 3 data IDs into 2 gaps", events.get(0).getFormattedMessage());
+        assertEquals("It took 6000ms to map 3 data IDs into 2 gaps", events.get(0).getMessage().getFormattedMessage());
     }
 
     @Test
     void testGapMappingTimeWithoutPassStatsLogsNothing() {
         useGapsAndDataIds();
         detector.logGapMappingTime(infoDueTime, null);
-        assertEquals(0, appender.list.size());
+        assertEquals(0, appender.getEvents().size());
     }
 
     private DataGapPassStats populatedPassStats() {
