@@ -1,7 +1,7 @@
 
 === Security
 
-The Security panel manages the SSL/TLS certificates and keys. It also manages break glass users.
+The Security panel manages the SSL/TLS certificates and keys. It also manages break glass users. Authentication of nodes and REST clients with bearer tokens is configured with parameters (See <<Bearer Token Authentication>>).
 
 ==== Server Certificate
 
@@ -35,6 +35,165 @@ The client will be required to send a valid certificate before HTTPS requests ca
 ==== Console Client Authentication
 
 Authentication of console users using client certificates can be enabled with parameter `console.auth.client.cert`.  The console username is parsed from the distinguished name of the certificate's subject using the first matching group of a regular expression specified by parameter `console.auth.client.cert.subject.regex`.  By default, it will match on the common name of the subject.
+
+==== Bearer Token Authentication
+
+SymmetricDS can add a layer of authentication based on JSON Web Tokens (JWT) to the HTTP calls between nodes and to REST API calls. A JWT is a signed token issued by an identity provider, for example a device identity service that vouches for the hardware a node runs on. Software outside of SymmetricDS obtains the token. SymmetricDS only sends it and checks it.
+
+There are two independent halves, and a node can use either one or both:
+
+Sending:: A node adds its token to every outbound sync call as an `Authorization: Bearer` HTTP header. See <<Sending a Token>>.
+Validating:: A node that receives sync calls or REST API calls checks the token before doing anything else. See <<Validating Tokens>>.
+
+Token authentication is an addition to the existing authentication, not a replacement. Sync calls still carry the node's own security token (See <<NODE_SECURITY>>), and REST API keys still work (See <<Rest Keys>>).
+
+NOTE: Sending and validating tokens both require an enterprise license. Without one, tokens are not sent. Validation that is switched on is skipped, so requests are accepted without a token check, and a warning is logged once.
+
+===== Sending a Token
+
+Software on the node, such as a device management agent, writes the current token to a file. SymmetricDS reads the file and sends the token on every outbound sync call: push, pull, acknowledgment, registration, ping, and calls to a node that the registration server redirects to. The token is sent along with the node's own security token. The sending node does not check the token itself.
+
+[cols="3,2,5"]
+|===
+|Parameter |Default |Description
+
+|`http.jwt.client.send.enabled`
+|`false`
+|Turns on sending. It is read on every request, so it can be changed in the database without a restart. For example, it can be turned on for a node group from the Configure -> Details -> Parameters screen.
+
+|`http.jwt.client.token.location`
+|`security/sync_token.jwt`
+|The file that holds the token. A relative path is resolved against the SymmetricDS home directory. It is read at startup and when properties are reloaded, so it cannot be changed in the database.
+
+|`http.jwt.client.token`
+|
+|The token that was read from the file. SymmetricDS sets this value itself, so it cannot be edited. It is kept in memory only, is never saved to the <<PARAMETER>> table or synchronized to other nodes, and is redacted from support snapshots.
+|===
+
+The file must contain a single raw token and nothing else: three Base64URL parts separated by dots. Whitespace around the token is ignored. Anything else, such as a `Bearer` prefix, JSON, or more than one token, is rejected. SymmetricDS handles the file as follows:
+
+* The file is only read again when its last modified time or size changes.
+* If the file cannot be read or does not hold a valid token, SymmetricDS tries up to five times, half a second apart, in case the other software is still writing it. If all five attempts fail and an earlier token was loaded from the file, SymmetricDS keeps sending the earlier token. If no earlier token was loaded, no token is sent.
+* If the file is deleted, SymmetricDS stops sending a token.
+* If the location parameter points to a different file, the new file is used.
+* A token that has expired is still sent. The software that writes the file is responsible for replacing the token before it expires.
+
+The file is checked by the <<Refresh Cache Job>>, which runs every 30 seconds by default (`job.refresh.cache.cron`).
+
+NOTE: The <<Refresh Cache Job>> is not started by default (`start.refresh.cache.job=false`). Enable it on every node that sends tokens, or a replaced token file is only picked up when the node restarts.
+
+The token is a credential: anyone who can read it can use it until it expires. Have the software that writes the file restrict access to the file's owner, and configure HTTPS for the registration URL and the sync URLs. When sending is enabled and the node's registration URL uses plain HTTP, a warning is logged.
+
+===== Validating Tokens
+
+When validation is on, a node checks the `Authorization: Bearer` token of each inbound request before it checks the sending node's security token. The check applies to every request that requires a node's security token, such as push, pull, acknowledgment, file sync, and configuration requests, and to registration. A request that fails the check is answered with HTTP status 659 (forbidden) and a warning is written to the log of the node that received it. The `ping` and `info` requests and the health endpoints do not require a security token and stay open. Where the node is exposed to the internet, protect them with a firewall or API gateway.
+
+A token is checked entirely on the receiving node, using the public keys published by the issuer, so a request can be authenticated while the identity provider is unreachable. The checks are, in order:
+
+. The token is a signed JWT. Its signing algorithm is one of the algorithms in `http.jwt.server.algorithms` (default `ES256`), and it names a key that the issuer publishes and that suits the algorithm. Tokens that are unsigned (`alg` of `none`) or that use a shared secret (HMAC) are never accepted. The signature must verify with the published key.
+. The `iss` claim equals `http.jwt.server.issuer` exactly.
+. If `http.jwt.server.audiences` is set, the `aud` claim contains at least one of the audiences in the list. If it is blank, any audience is accepted.
+. The `nbf` claim, if there is one, is not in the future, and the `exp` claim is not in the past. Clock differences up to `http.jwt.server.clock.skew.seconds` (default 30) are tolerated. See <<Network Outages and Token Expiration>> for how an expired token can still be accepted.
+. The claims that are specific to an identity provider are checked by the class named by `http.jwt.server.validation.class`. The default class, `com.jumpmind.symmetric.security.jwt.JmcJwtValidator`, is the only validator that is included. It checks tokens from the Jumpmind Commerce identity provider: the `scope` claim includes every scope in `http.jwt.server.required.scopes` (default `device`), the `client_app_id` claim is one of the values in `http.jwt.server.allowed.client.apps` (default `symmetricds`), and the `sub` claim is not blank. Clear the two parameters to skip those two checks. A different class must extend `com.jumpmind.symmetric.security.jwt.AbstractJwtValidator`. The node will not start if the class cannot be loaded.
+. The claim named by `http.jwt.server.node.id.claim` (default `sub`) equals the node ID that the request is for. This keeps one node from using the token of another node. A dotted path can be used to read a nested claim, such as `tags.business_unit_id`. Registration requests are validated, but are not checked against a node ID because the node does not have one yet. If the parameter is blank, the check is skipped, any node can use another node's token, and a warning is logged at startup.
+
+See <<Parameter List>> for the full description of each parameter.
+
+To turn on validation:
+
+. Set `http.jwt.server.issuer` to the issuer of the tokens, such as `https://idp.example.com`. It is required. The node will not start if validation is enabled and the issuer is blank.
+. If the issuer does not publish its keys at `<issuer>/.well-known/jwks.json`, set `http.jwt.server.jwks.url`. The URL must use HTTPS.
+. Review the parameters named in the checks above. Their defaults match tokens from the Jumpmind Commerce identity provider.
+. Set `http.jwt.server.validation.enabled` to `true`.
+. Restart the node. All of the parameters except `http.jwt.server.validation.enabled` are startup parameters.
+
+Only `http.jwt.server.validation.enabled` is read from the database while the node is running, so it can be changed without a restart, for example to turn validation off during an outage of the identity provider. Anyone who can change parameters can change it. Every other parameter is read once at startup, so changing rows in the <<PARAMETER>> table cannot point a node at a different issuer or key set. If validation is switched on in the database for a node that has no issuer configured, every token is rejected. Set the switch back to `false` to recover.
+
+===== Rolling Out Validation
+
+Switching on validation for a network where some nodes do not send tokens yet would lock those nodes out. To roll it out safely, set `http.jwt.server.enforce.enabled` to `false` first. Requests continue even when the check fails. A message such as the following is logged for each node that would be rejected, at most once every 10 minutes per node:
+
+[source, cli]
+----
+WARN  Node '001' would fail JWT authentication once it is enforced: request has no bearer token
+----
+
+When the log shows no more failures, set `http.jwt.server.enforce.enabled` back to `true` and restart. This parameter only controls sync and registration requests. REST API calls are always checked (See <<Authenticating REST Calls with a Bearer Token>>).
+
+===== Network Outages and Token Expiration
+
+A token has a lifetime that is set by the identity provider. When a site loses its WAN connection, its devices cannot get a fresh token until the connection returns, so a node could be locked out of syncing by a token that expired during the outage. Two features keep nodes syncing through an outage:
+
+Key cache:: The issuer's public keys are kept in memory and saved on disk in `security/jwks-<engine name>.json`. The keys are fetched again after `http.jwt.server.jwks.cache.time.ms`, or sooner, at most every 30 seconds, when a token names a key that is not in the cache, as happens when the issuer rotates its keys. If the issuer cannot be reached, the keys that are already cached continue to be used, including the saved keys after a restart. A node that has never been able to reach the issuer has no keys, so it rejects every token.
+Offline leniency:: An expired token is accepted for up to `http.jwt.server.offline.leniency.minutes` after its expiration, but only while the issuer is unreachable. Once the issuer answers again, expired tokens are rejected.
+
+The node decides whether the issuer is reachable by requesting the key set URL, at most once every 30 seconds. A connection failure, a timeout, or an HTTP 5xx status means the issuer is unreachable. An HTTP 4xx status or an unusable response means it is reachable, because the issuer did answer. The log shows a warning when expired tokens start being accepted and a message when they stop.
+
+Use the parameters to line up SymmetricDS with the issuer:
+
+* Set the leniency to the longest outage a site should survive. It is counted from the token's expiration, not from the start of the outage. The default is 4320 minutes (3 days).
+* Keep the clocks of the node and the issuer synchronized and use `http.jwt.server.clock.skew.seconds` for any difference that remains.
+* Make sure that the software that writes the token file on a sending node renews the token before it expires, as long as the node can reach the issuer. A sending node never refreshes a token itself.
+
+===== Troubleshooting
+
+When a request fails the check, the node that received it logs the reason in a message of the form `Node '<node id>' failed JWT authentication: <reason>`. The sending node sees HTTP status 659.
+
+[cols="3,5"]
+|===
+|Reason |Likely cause
+
+|`request has no bearer token`
+|The sending node is not sending a token. Check `http.jwt.client.send.enabled`, the enterprise license, that the token file exists and holds a valid token, and that the <<Refresh Cache Job>> is running.
+
+|`token is not a signed JWT`
+|The token is not a valid signed JWT, for example an opaque token that the identity provider did not sign as a JWT.
+
+|`algorithm <alg> is not allowed`
+|The token is signed with an algorithm that is not in `http.jwt.server.algorithms`.
+
+|`token header has no key id`
+|The token does not name the key that signed it, so it cannot be verified.
+
+|`key id '<kid>' is not published by the issuer`
+|The token was signed by a different issuer than the one configured, or the keys have not been fetched. Check `http.jwt.server.issuer` and `http.jwt.server.jwks.url`, and that the node can reach the issuer.
+
+|`key id '<kid>' is not a <alg> signing key published by the issuer`
+|The published key is not an asymmetric signing key, or the issuer restricts it to a different algorithm than the one the token uses.
+
+|`signature is invalid`
+|The token was altered, or was signed with a different key than the one published for its key id.
+
+|`issuer '<iss>' is not the trusted issuer`
+|The `iss` claim does not equal `http.jwt.server.issuer`. The comparison is exact, except that a trailing `/` on the configured value is removed.
+
+|`audience [...] is not an allowed audience`
+|The token's `aud` claim has none of the values in `http.jwt.server.audiences`.
+
+|`token is not valid yet`
+|The `nbf` claim is in the future. Check that the clocks are synchronized.
+
+|`token expired at <time>`
+|The token has expired and the issuer is reachable. The software that writes the token file must renew it.
+
+|`token expired at <time>, beyond the offline leniency`
+|The token expired longer ago than `http.jwt.server.offline.leniency.minutes`.
+
+|`scope does not include '<scope>'`
+|The token does not carry a scope in `http.jwt.server.required.scopes`.
+
+|`client_app_id '<id>' is not allowed`
+|The token was issued to an application that is not in `http.jwt.server.allowed.client.apps`.
+
+|`subject is missing`
+|The token has no `sub` claim.
+
+|`claim <claim> is '<value>' but the node id is '<node id>'`
+|The token was issued to a different node than the one making the request.
+
+|`request has no node id to match the token against`
+|The request does not name a node, but `http.jwt.server.node.id.claim` requires one.
+|===
 
 ==== Break Glass
 
