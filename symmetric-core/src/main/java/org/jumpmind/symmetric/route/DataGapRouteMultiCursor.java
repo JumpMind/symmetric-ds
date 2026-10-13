@@ -23,9 +23,13 @@ package org.jumpmind.symmetric.route;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.LongSupplier;
 
 import org.jumpmind.db.sql.ISqlReadCursor;
+import org.jumpmind.log.LogThrottle;
+import org.jumpmind.log.ThrottledLogger;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
@@ -36,9 +40,18 @@ public class DataGapRouteMultiCursor extends AbstractDataGapRouteCursor {
     protected int dataCount;
     protected int queryCount;
     protected int queryMillis;
+    protected final LongSupplier currentSystemTime;
+    protected final ThrottledLogger progressLog;
 
     public DataGapRouteMultiCursor(ChannelRouterContext context, ISymmetricEngine engine) {
+        this(context, engine, System::currentTimeMillis);
+    }
+
+    DataGapRouteMultiCursor(ChannelRouterContext context, ISymmetricEngine engine, LongSupplier currentSystemTime) {
         super(context, engine);
+        this.currentSystemTime = currentSystemTime;
+        progressLog = new ThrottledLogger(log,
+                new LogThrottle(currentSystemTime.getAsLong(), Constants.LONG_OPERATION_THRESHOLD, Constants.LONG_OPERATION_DEBUG_THRESHOLD, true));
         isEachGapQueried = true;
         maxGapsToQualify = parameterService.getInt(ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL, 100);
         cursor = prepareCursor();
@@ -78,12 +91,21 @@ public class DataGapRouteMultiCursor extends AbstractDataGapRouteCursor {
             gapsToQualify.add(gap);
         }
         String sql = qualifyForOrder(qualifyUsingDataGaps(gapsToQualify, numberOfGaps, getSql("selectDataUsingGapsSql")));
-        long ts = System.currentTimeMillis();
+        long ts = currentSystemTime.getAsLong();
         ISqlReadCursor<Data> cursor = executeCursor(sql, args, types);
-        queryMillis += (System.currentTimeMillis() - ts);
+        long currentTime = currentSystemTime.getAsLong();
+        queryMillis += (currentTime - ts);
         queryCount++;
         context.incrementStat(1, ChannelRouterContext.STAT_MULTI_QUERY_COUNT);
+        logProgress(currentTime);
         return cursor;
+    }
+
+    protected void logProgress(long currentTime) {
+        if (progressLog.isDebugDue(currentTime)) {
+            progressLog.infoOrDebug(currentTime, "Routing channel {} queried {} of {} gaps using {} queries with {} ms spent waiting on query executions",
+                    context.getChannel().getChannelId(), gapIndex, dataGaps.size(), queryCount, queryMillis);
+        }
     }
 
     @Override

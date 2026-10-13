@@ -129,6 +129,8 @@ import org.jumpmind.util.FormatUtils;
  */
 public class RouterService extends AbstractService implements IRouterService, INodeCommunicationExecutor {
     public static final String COLUMN_SEGMENT_ROUTER_TYPE = "segment";
+    public static final int GAP_COUNT_WARN_EXCESSIVE = 10000;
+    protected static final long EXCESSIVE_GAP_WARN_INTERVAL_MS = 10L * Constants.LOG_PROCESS_SUMMARY_THRESHOLD;
     final int MAX_LOGGING_LENGTH = 512;
     protected Map<Integer, CounterStat> missingTriggerRouter = new ConcurrentHashMap<Integer, CounterStat>();
     protected Map<String, CounterStat> invalidRouterType = new ConcurrentHashMap<String, CounterStat>();
@@ -147,6 +149,7 @@ public class RouterService extends AbstractService implements IRouterService, IN
     protected IExtensionService extensionService;
     protected DataGapDetector gapDetector;
     protected boolean firstTimeCheck = true;
+    protected long lastExcessiveGapWarnTime;
     protected boolean isUsingTargetExternalId;
     protected boolean useChannelThreading;
 
@@ -238,6 +241,7 @@ public class RouterService extends AbstractService implements IRouterService, IN
                         isUsingTargetExternalId = engine.getCacheManager().isUsingTargetExternalId(false);
                         useChannelThreading = parameterService.is(ParameterConstants.ROUTING_USE_CHANNEL_THREADS);
                         gapDetector.beforeRouting();
+                        warnIfGapCountExcessive(gapDetector.getDataGaps().size(), System.currentTimeMillis());
                         dataCount = routeDataForEachChannel();
                         ts = System.currentTimeMillis() - ts;
                         if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
@@ -390,6 +394,24 @@ public class RouterService extends AbstractService implements IRouterService, IN
             throw ex;
         }
         return dataCount;
+    }
+
+    protected boolean warnIfGapCountExcessive(int gapCount, long currentTimeMs) {
+        boolean isWarned = false;
+        if (gapCount >= GAP_COUNT_WARN_EXCESSIVE && currentTimeMs - lastExcessiveGapWarnTime >= EXCESSIVE_GAP_WARN_INTERVAL_MS) {
+            if (parameterService.is(ParameterConstants.ROUTING_USE_CHANNEL_THREADS)) {
+                log.warn("Routing starts with {} data gaps, which exceeds the warning level of {}. " +
+                        "Each channel queries all gaps in parallel, multiplying the number of queries! Consider temporarily turning off {} to reduce the number of queries.",
+                        gapCount, GAP_COUNT_WARN_EXCESSIVE, ParameterConstants.ROUTING_USE_CHANNEL_THREADS);
+            } else {
+                log.warn("Routing starts with {} data gaps, which exceeds the warning level of {}!"
+                        + " Identify the cause of gaps and resolve it to ensure Routing runs fast.",
+                        gapCount, GAP_COUNT_WARN_EXCESSIVE);
+            }
+            lastExcessiveGapWarnTime = currentTimeMs;
+            isWarned = true;
+        }
+        return isWarned;
     }
 
     protected Set<String> getReadyChannels() {
