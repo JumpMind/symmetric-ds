@@ -631,8 +631,11 @@ class AbstractJobTest {
 
         @Override
         protected void doJob(boolean force) throws Exception {
-            if (doJobSleepMs > 0) {
-                LockSupport.parkNanos(doJobSleepMs * 1_000_000L);
+            long deadlineNanos = System.nanoTime() + doJobSleepMs * 1_000_000L;
+            long remainingNanos;
+            // parkNanos may return early on a spurious wakeup, so park until the deadline passes
+            while ((remainingNanos = deadlineNanos - System.nanoTime()) > 0) {
+                LockSupport.parkNanos(remainingNanos);
             }
             if (throwException) {
                 throw new RuntimeException("Test exception");

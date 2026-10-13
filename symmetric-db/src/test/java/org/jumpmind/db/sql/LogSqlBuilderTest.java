@@ -90,7 +90,14 @@ public class LogSqlBuilderTest {
         LogSqlBuilder builder = new LogSqlBuilder();
         builder.logSql(logger, null, "select 1", null, null, 20000L);
         assertEquals(Level.INFO, appender.list.get(0).getLevel());
-        assertEquals("Long Running: (20000ms.) select 1", appender.list.get(0).getFormattedMessage());
+        assertEquals("Long Running: (20.0 seconds) select 1", appender.list.get(0).getFormattedMessage());
+    }
+
+    @Test
+    void testLogSql_whenLongRunning_formatsSecondsWithOneDigitAfterPeriod() {
+        LogSqlBuilder builder = new LogSqlBuilder();
+        builder.logSql(logger, null, "select 1", null, null, 23456L);
+        assertEquals("Long Running: (23.5 seconds) select 1", appender.list.get(0).getFormattedMessage());
     }
 
     @Test
