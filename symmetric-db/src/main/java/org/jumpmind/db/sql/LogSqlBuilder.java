@@ -29,6 +29,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Locale;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -65,9 +66,10 @@ public class LogSqlBuilder {
         if (loggerArg.isDebugEnabled() || longRunning) {
             StringBuilder logEntry = new StringBuilder();
             if (longRunning) {
-                logEntry.append("Long Running: ");
+                logEntry.append(String.format(Locale.ROOT, "Long Running: (%.1f seconds) ", executionTimeMillis / 1000.0));
+            } else {
+                logEntry.append("(" + executionTimeMillis + "ms.) ");
             }
-            logEntry.append("(" + executionTimeMillis + "ms.) ");
             if (message != null) {
                 logEntry.append(message).append(" ");
             }
