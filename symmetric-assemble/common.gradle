@@ -345,7 +345,6 @@ subprojects { subproject ->
         jacksonVersion = '3.2.3'
         guavaVersion = '33.2.0-android'
         junitVersion = '5.13.3'
-        junit4Version = '4.13.2'
         junitPlatformVersion = '1.12.2'
         spotBugsVersion = '4.8.5'
         logbackVersion = '1.5.38'
@@ -381,8 +380,6 @@ subprojects { subproject ->
         
         testImplementation "org.hamcrest:hamcrest-all:$hamcrestVersion"
         testImplementation "org.mockito:mockito-core:$mockitoVersion"
-        // JUnit 4 assertions (org.junit.Assert) are still used by tests; this was previously pulled in transitively by PowerMock
-        testImplementation "junit:junit:$junit4Version"
         mockitoAgent("org.mockito:mockito-core:$mockitoVersion") { transitive = false }
         
         deployerJars "org.apache.maven.wagon:wagon-ssh:3.5.3"
