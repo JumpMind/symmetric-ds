@@ -31,6 +31,110 @@ import org.jumpmind.util.FormatUtils;
 import org.junit.jupiter.api.Test;
 
 public class LogSqlBuilderTest {
+<<<<<<< HEAD
+=======
+    private Logger logger;
+    private ListAppender<ILoggingEvent> appender;
+
+    @BeforeEach
+    void setUp() {
+        logger = (Logger) LoggerFactory.getLogger("LogSqlBuilderTestLogger");
+        logger.setLevel(Level.DEBUG);
+        appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+    }
+
+    @AfterEach
+    void tearDown() {
+        logger.detachAppender(appender);
+        MDC.remove("engineName");
+    }
+
+    @Test
+    void testLogSql_fiveArgOverload_delegatesWithNullMessage() {
+        LogSqlBuilder builder = new LogSqlBuilder();
+        builder.logSql(logger, "select 1", null, null, 5L);
+        assertEquals(1, appender.list.size());
+        assertEquals(Level.DEBUG, appender.list.get(0).getLevel());
+        assertEquals("(5ms.) select 1", appender.list.get(0).getFormattedMessage());
+    }
+
+    @Test
+    void testLogSql_sixArgOverload_withMessage_prependsMessageToLogEntry() {
+        LogSqlBuilder builder = new LogSqlBuilder();
+        builder.logSql(logger, "context", "select 1", null, null, 5L);
+        assertEquals("(5ms.) context select 1", appender.list.get(0).getFormattedMessage());
+    }
+
+    @Test
+    void testLogSql_whenExecutionTimeExceedsDefaultThreshold_logsAtInfoWithLongRunningPrefix() {
+        LogSqlBuilder builder = new LogSqlBuilder();
+        builder.logSql(logger, null, "select 1", null, null, 20000L);
+        assertEquals(Level.INFO, appender.list.get(0).getLevel());
+        assertEquals("Long Running: (20.0 seconds) select 1", appender.list.get(0).getFormattedMessage());
+    }
+
+    @Test
+    void testLogSql_whenLongRunning_formatsSecondsWithOneDigitAfterPeriod() {
+        LogSqlBuilder builder = new LogSqlBuilder();
+        builder.logSql(logger, null, "select 1", null, null, 23456L);
+        assertEquals("Long Running: (23.5 seconds) select 1", appender.list.get(0).getFormattedMessage());
+    }
+
+    @Test
+    void testLogSql_withGuiEngine_usesLowerConsoleThresholdForLongRunning() {
+        MDC.put("engineName", "gui");
+        LogSqlBuilder builder = new LogSqlBuilder();
+        builder.logSql(logger, null, "select 1", null, null, 5000L);
+        assertEquals(Level.INFO, appender.list.get(0).getLevel());
+        assertTrue(appender.list.get(0).getFormattedMessage().startsWith("Long Running:"));
+    }
+
+    @Test
+    void testLogSql_withParametersInlineFalse_logsRawSqlThenSeparateArgsLine() {
+        LogSqlBuilder builder = new LogSqlBuilder();
+        builder.setLogSqlParametersInline(false);
+        builder.logSql(logger, null, "select * from t where id = ?", new Object[] { 1 }, null, 5L);
+        assertEquals(2, appender.list.size());
+        assertEquals("(5ms.) select * from t where id = ?", appender.list.get(0).getFormattedMessage());
+        assertEquals("sql args: [1]", appender.list.get(1).getFormattedMessage());
+    }
+
+    @Test
+    void testLogSql_whenLoggerNotDebugEnabledAndNotLongRunning_logsNothing() {
+        logger.setLevel(Level.INFO);
+        LogSqlBuilder builder = new LogSqlBuilder();
+        builder.logSql(logger, null, "select 1", null, null, 5L);
+        assertTrue(appender.list.isEmpty());
+    }
+
+    @Test
+    void testLogSql_whenLoggerTraceEnabled_appendsTrailingCarriageReturn() {
+        logger.setLevel(Level.TRACE);
+        LogSqlBuilder builder = new LogSqlBuilder();
+        builder.logSql(logger, null, "select 1", null, null, 5L);
+        assertEquals("(5ms.) select 1\r\n", appender.list.get(0).getFormattedMessage());
+    }
+
+    @Test
+    void testLogSqlAfterException_returnsSameExceptionAndLogsMessageWithArgs() {
+        LogSqlBuilder builder = new LogSqlBuilder();
+        SQLException ex = new SQLException("boom");
+        SQLException result = builder.logSqlAfterException(logger, "select * from t where id = ?", new Object[] { 1 }, ex);
+        assertSame(ex, result);
+        assertEquals("SQL caused exception: [select * from t where id = ?] sql args: [1] " + ex, appender.list.get(0).getFormattedMessage());
+    }
+
+    @Test
+    void testLogSqlAfterException_withNoArgs_omitsArgsSegment() {
+        LogSqlBuilder builder = new LogSqlBuilder();
+        SQLException ex = new SQLException("boom");
+        builder.logSqlAfterException(logger, "select 1", null, ex);
+        assertEquals("SQL caused exception: [select 1] " + ex, appender.list.get(0).getFormattedMessage());
+    }
+
+>>>>>>> 0215170bce (SYM-8144: Log gap detection summary at regular intervals (#1176))
     @Test
     public void testNoPlachodlers() {
         final String SQL = "select * from sym_data where data_id = 234234;";

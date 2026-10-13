@@ -403,4 +403,24 @@ public class RouterServiceTest {
         assertTrue(routerService.invalidRouterType.isEmpty());
         assertTrue(routerService.unsupportedColumnSegmentRouterType.isEmpty());
     }
+
+    @Test
+    public void testWarnIfGapCountExcessiveWarnsAtThreshold() {
+        assertTrue(routerService.warnIfGapCountExcessive(RouterService.GAP_COUNT_WARN_EXCESSIVE, RouterService.EXCESSIVE_GAP_WARN_INTERVAL_MS));
+    }
+
+    @Test
+    public void testWarnIfGapCountExcessiveStaysQuietBelowThreshold() {
+        assertFalse(routerService.warnIfGapCountExcessive(RouterService.GAP_COUNT_WARN_EXCESSIVE - 1, RouterService.EXCESSIVE_GAP_WARN_INTERVAL_MS));
+    }
+
+    @Test
+    public void testWarnIfGapCountExcessiveRepeatsOnlyAfterInterval() {
+        long startTime = RouterService.EXCESSIVE_GAP_WARN_INTERVAL_MS;
+        assertTrue(routerService.warnIfGapCountExcessive(RouterService.GAP_COUNT_WARN_EXCESSIVE, startTime));
+        assertFalse(routerService.warnIfGapCountExcessive(RouterService.GAP_COUNT_WARN_EXCESSIVE,
+                startTime + RouterService.EXCESSIVE_GAP_WARN_INTERVAL_MS - 1));
+        assertTrue(routerService.warnIfGapCountExcessive(RouterService.GAP_COUNT_WARN_EXCESSIVE,
+                startTime + RouterService.EXCESSIVE_GAP_WARN_INTERVAL_MS));
+    }
 }
