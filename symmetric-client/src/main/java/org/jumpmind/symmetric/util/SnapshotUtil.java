@@ -383,6 +383,8 @@ public class SnapshotUtil {
         extract(export, new File(exportDir, "console_role.csv"), TableConstants.getTableName(tablePrefix, TableConstants.SYM_CONSOLE_ROLE));
         extract(export, new File(exportDir, "console_role_privilege.csv"), TableConstants.getTableName(tablePrefix, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE));
         extract(export, new File(exportDir, "analytics_report.csv"), TableConstants.getTableName(tablePrefix, TableConstants.SYM_ANALYTICS_REPORT));
+        extract(export, 10000, "order by event_time desc", new File(exportDir, "sync_event.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_SYNC_EVENT));
         log.info("Writing runtime data - parameters");
         checkpoint(engine, listener, stepNumber++, totalSteps);
         writeRuntimeParameters(engine, tmpDir);
@@ -928,7 +930,7 @@ public class SnapshotUtil {
                 csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_DOUBLED);
                 String[] heading = { "Thread Name", "Source Node", "Target Node", "Type", "Queue", "Current Channel ID", "Status", "Current Data Count",
                         "Total Data Count", "Total Batch Count", "Current Batch ID", "Current Batch Count", "Current Table Name", "Batch Start Time", "Load ID",
-                        "Start Time", "End Time" };
+                        "Start Time", "End Time", "DB Query Count" };
                 csvWriter.writeRecord(heading);
                 csvActiveWriter.writeRecord(heading);
                 for (ProcessInfo i : infos) {
@@ -939,7 +941,7 @@ public class SnapshotUtil {
                             String.valueOf(i.getCurrentBatchCount()), i.getCurrentTableName(),
                             i.getCurrentBatchStartTime() == null ? null : df.format(i.getCurrentBatchStartTime()),
                             String.valueOf(i.getCurrentLoadId()), i.getStartTime() == null ? null : df.format(i.getStartTime()),
-                            i.getEndTime() == null ? null : df.format(i.getEndTime()) };
+                            i.getEndTime() == null ? null : df.format(i.getEndTime()), String.valueOf(i.getTotalQueryCount()) };
                     csvWriter.writeRecord(row);
                     if (i.getEndTime() == null) {
                         csvActiveWriter.writeRecord(row);

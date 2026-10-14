@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.route;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -59,10 +59,7 @@ import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.jumpmind.util.AppUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
 class DataGapRouteReaderTest {
     final static String ENGINE_NAME = "testengine";
     final static String CHANNEL_ID = "testchannel";
