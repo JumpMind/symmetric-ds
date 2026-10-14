@@ -87,9 +87,9 @@ public class HttpIncomingTransport implements IIncomingTransport {
 
     @Override
     public void close() {
-    	if (connection == null) {
-    		return;
-    	}
+        if (connection == null) {
+            return;
+        }
         if (isReservationHeld) {
             httpTransportManager.getReservationCookieManager().endReservation(connection.getURL());
             isReservationHeld = false;

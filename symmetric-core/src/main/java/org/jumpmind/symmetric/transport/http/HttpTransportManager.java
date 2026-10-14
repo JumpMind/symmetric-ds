@@ -75,14 +75,15 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
      */
     @Deprecated(since = "3.18", forRemoval = true)
     public HttpTransportManager() {
-        reservationCookieManager = new ReservationCookieManager(engine);
     }
 
     public HttpTransportManager(ISymmetricEngine engine) {
-        super(engine.getExtensionService());
+        super(engine == null ? null : engine.getExtensionService());
         this.engine = engine;
-		this.securityAuthenticationProvider = createSecurityAuthenticationProvider(engine);
-        reservationCookieManager = new ReservationCookieManager(engine);
+        if (engine != null) {
+            this.securityAuthenticationProvider = createSecurityAuthenticationProvider(engine);
+            reservationCookieManager = new ReservationCookieManager(engine);
+        }
     }
 
     public ReservationCookieManager getReservationCookieManager() {

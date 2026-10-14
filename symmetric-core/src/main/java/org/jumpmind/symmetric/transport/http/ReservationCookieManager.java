@@ -50,16 +50,16 @@ class ReservationCookieManager {
     }
 
     void beginReservation(URL url) {
-    	URI uri = getAffinityURI(url);
+        URI uri = getAffinityURI(url);
         if (uri == null) {
             log.debug("Not tracking reservation for {} because uri could not be built", url);
             return;
         }
-    	outstandingReservationsByUri.compute(getAffinityURI(url), (key, count) -> count == null ? 1 : count + 1);
+        outstandingReservationsByUri.compute(getAffinityURI(url), (key, count) -> count == null ? 1 : count + 1);
     }
 
     void endReservation(URL url) {
-    	URI uri = getAffinityURI(url);
+        URI uri = getAffinityURI(url);
         if (uri == null) {
             log.debug("Not releasing reservation for {} because uri could not be built", url);
             return;
