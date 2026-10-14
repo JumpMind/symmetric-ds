@@ -151,4 +151,9 @@ class AppUtilsTest {
         nearZero = plusFour.getTime() - minusFour.getTime() - DateUtils.MILLIS_PER_HOUR * 8;
         assertTrue(Math.abs(nearZero) < 1000, nearZero + " was the left over ms");
     }
+
+    @Test
+    void testGetTimezoneOffset_hasHoursAndMinutes() {
+        assertTrue(AppUtils.getTimezoneOffset().matches("[+-]\\d{2}:\\d{2}"));
+    }
 }
