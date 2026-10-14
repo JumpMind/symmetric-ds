@@ -191,10 +191,10 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         }
         return internalReserveConnection(nodeId, channelId, poolId, reservationRequest, requiresExistingReservation).status();
     }
-    
+
     public ReservationResult reserveConnectionWithResult(String nodeId, String channelId, String poolId,
             ReservationType reservationRequest, boolean requiresExistingReservation) {
-    	if (databaseHealthTracker != null && !databaseHealthTracker.isRuntimeDbHealthy()) {
+        if (databaseHealthTracker != null && !databaseHealthTracker.isRuntimeDbHealthy()) {
             log.warn("Node '{}' Channel '{}' requested a {} connection, but was rejected because the runtime database is not healthy",
                     nodeId, channelId, poolId);
             return new ReservationResult(ReservationStatus.NOT_READY, null);

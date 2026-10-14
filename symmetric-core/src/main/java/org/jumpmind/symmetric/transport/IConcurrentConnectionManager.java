@@ -79,7 +79,7 @@ public interface IConcurrentConnectionManager {
      */
     public ReservationStatus reserveConnection(String nodeId, String channelId, String poolId, ReservationType reservationRequest,
             boolean requiresExistingReservation);
-    
+
     /**
      * @param nodeId
      * @param reservationRequest
