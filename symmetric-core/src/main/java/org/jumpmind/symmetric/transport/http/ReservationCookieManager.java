@@ -50,10 +50,20 @@ class ReservationCookieManager {
     }
 
     void beginReservation(URL url) {
-        outstandingReservationsByUri.compute(getAffinityURI(url), (key, count) -> count == null ? 1 : count + 1);
+    	URI uri = getAffinityURI(url);
+        if (uri == null) {
+            log.debug("Not tracking reservation for {} because uri could not be built", url);
+            return;
+        }
+    	outstandingReservationsByUri.compute(getAffinityURI(url), (key, count) -> count == null ? 1 : count + 1);
     }
 
     void endReservation(URL url) {
+    	URI uri = getAffinityURI(url);
+        if (uri == null) {
+            log.debug("Not releasing reservation for {} because uri could not be built", url);
+            return;
+        }
         outstandingReservationsByUri.computeIfPresent(getAffinityURI(url), (key, count) -> count <= 1 ? null : count - 1);
     }
 
@@ -61,9 +71,9 @@ class ReservationCookieManager {
         boolean hasClearBusyAffinityCookieEnabled = engine.getParameterService()
                 .is(ParameterConstants.TRANSPORT_HTTP_SESSION_STICKY_RESET_ENABLED, false);
         String uri = getUri(conn);
+        log.debug("Clearing load balancer affinity cookies for {}", uri);
         if (hasClearBusyAffinityCookieEnabled) {
             clearReservationCookieForUri(conn);
-            log.debug("Clearing load balancer affinity cookies for {}", uri);
         } else {
             log.debug("Not clearing load balancer affinity cookies for {} because {} = {}", uri,
                     ParameterConstants.TRANSPORT_HTTP_SESSION_STICKY_RESET_ENABLED, hasClearBusyAffinityCookieEnabled);
