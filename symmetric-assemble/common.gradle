@@ -323,7 +323,7 @@ subprojects { subproject ->
         commonsDbcpVersion = '2.13.0'
         commonsFileuploadVersion = '2.0.0-M4'
         commonsIoVersion = '2.19.0'
-        commonsLangVersion = '3.18.0'
+        commonsLangVersion = '3.21.0'
         commonsTextVersion = '1.12.0'
         commonsCodecVersion = '1.16.1'
         commonsJcsVersion = '3.2.1'
