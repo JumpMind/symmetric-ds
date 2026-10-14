@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 class ReservationCookieManager {
     private static final Logger log = LoggerFactory.getLogger(ReservationCookieManager.class);
     private final ISymmetricEngine engine;
-    Map<URI, Integer> outstandingReservationsByUri = new ConcurrentHashMap<URI, Integer>();
+    final Map<URI, Integer> outstandingReservationsByUri = new ConcurrentHashMap<URI, Integer>();
 
     ReservationCookieManager(ISymmetricEngine engine) {
         this.engine = engine;

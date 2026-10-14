@@ -39,6 +39,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -196,21 +197,19 @@ class ReservationCookieManagerTest {
     }
 
     @Test
-    void testClearReservationCookieForUri_withSameNamedCookieOnDifferentHost_alsoRemovesIt() throws Exception {
-        // Defect pinned, not endorsed: java.net.HttpCookie#equals() only compares name/domain/path, and cookies
-        // added without an explicit Domain attribute never have a domain set on the HttpCookie object itself, so
-        // two same-named cookies from different hosts are equal() to each other. CookieStore.remove(uri, cookie)
-        // removes by that equality, not by the uri argument, so this host-scoped clear can still delete an
-        // identically-named cookie (e.g. the default "JSESSIONID") belonging to an unrelated host sharing this JVM.
+    void testClearReservationCookieForUri_withSameNamedCookieOnDifferentHost_keepsIt() throws Exception {
         CookieManager cookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
         CookieHandler.setDefault(cookieManager);
         URI targetUri = URI.create("http://node.example.com/");
         URI otherUri = URI.create("http://other.example.com/");
-        cookieManager.getCookieStore().add(targetUri, new HttpCookie("JSESSIONID", "abc"));
-        cookieManager.getCookieStore().add(otherUri, new HttpCookie("JSESSIONID", "other"));
+        cookieManager.put(targetUri, Map.of("Set-Cookie", List.of("JSESSIONID=abc")));
+        cookieManager.put(otherUri, Map.of("Set-Cookie", List.of("JSESSIONID=other")));
         HttpConnection conn = mock(HttpConnection.class);
         when(conn.getURL()).thenReturn(URI.create("http://node.example.com/sync/push").toURL());
         reservationCookieManager.clearReservationCookieForUri(conn);
-        assertTrue(cookieManager.getCookieStore().get(otherUri).isEmpty());
+        assertTrue(cookieManager.getCookieStore().get(targetUri).isEmpty());
+        List<HttpCookie> remaining = cookieManager.getCookieStore().get(otherUri);
+        assertEquals(1, remaining.size());
+        assertEquals("other", remaining.get(0).getValue());
     }
 }
