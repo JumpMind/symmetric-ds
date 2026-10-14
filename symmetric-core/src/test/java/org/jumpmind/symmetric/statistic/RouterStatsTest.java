@@ -1,6 +1,6 @@
 package org.jumpmind.symmetric.statistic;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import org.jumpmind.symmetric.model.DataGap;
