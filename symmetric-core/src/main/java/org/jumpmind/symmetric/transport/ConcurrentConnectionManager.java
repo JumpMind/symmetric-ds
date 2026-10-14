@@ -181,10 +181,20 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
     }
 
     @Override
-    public ReservationResult reserveConnection(String nodeId, String channelId, String poolId,
+    public ReservationStatus reserveConnection(String nodeId, String channelId, String poolId,
             ReservationType reservationRequest, boolean requiresExistingReservation) {
         // checked outside the synchronized reservation logic so a connection test never blocks other callers
         if (databaseHealthTracker != null && !databaseHealthTracker.isRuntimeDbHealthy()) {
+            log.warn("Node '{}' Channel '{}' requested a {} connection, but was rejected because the runtime database is not healthy",
+                    nodeId, channelId, poolId);
+            return ReservationStatus.NOT_READY;
+        }
+        return internalReserveConnection(nodeId, channelId, poolId, reservationRequest, requiresExistingReservation).status();
+    }
+    
+    public ReservationResult reserveConnectionWithResult(String nodeId, String channelId, String poolId,
+            ReservationType reservationRequest, boolean requiresExistingReservation) {
+    	if (databaseHealthTracker != null && !databaseHealthTracker.isRuntimeDbHealthy()) {
             log.warn("Node '{}' Channel '{}' requested a {} connection, but was rejected because the runtime database is not healthy",
                     nodeId, channelId, poolId);
             return new ReservationResult(ReservationStatus.NOT_READY, null);

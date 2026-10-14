@@ -75,10 +75,19 @@ public interface IConcurrentConnectionManager {
      * @param reservationRequest
      *            if true then hold onto reservation for the time it typically takes for a node to reconnect after the initial request. Otherwise, we know that
      *            the node has actually connected for activity.
-     * @return the status of the request, and the reservation it granted when the connection has been reserved and the node is meant to proceed with its current
-     *         operation.
+     * @return true if the connection has been reserved and the node is meant to proceed with its current operation.
      */
-    public ReservationResult reserveConnection(String nodeId, String channelId, String poolId, ReservationType reservationRequest,
+    public ReservationStatus reserveConnection(String nodeId, String channelId, String poolId, ReservationType reservationRequest,
+            boolean requiresExistingReservation);
+    
+    /**
+     * @param nodeId
+     * @param reservationRequest
+     *            if true then hold onto reservation for the time it typically takes for a node to reconnect after the initial request. Otherwise, we know that
+     *            the node has actually connected for activity.
+     * @return the status of the request, and the reservation it granted when the connection has been reserved and the node is meant to proceed with its current
+     */
+    public ReservationResult reserveConnectionWithResult(String nodeId, String channelId, String poolId, ReservationType reservationRequest,
             boolean requiresExistingReservation);
 
     public boolean releaseConnection(String nodeId, String poolId);

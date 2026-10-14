@@ -90,8 +90,10 @@ class NodeConcurrencyInterceptorTest {
     }
 
     private void stubReservationResult(ReservationStatus status, Reservation reservation) {
-        when(concurrentConnectionManager.reserveConnection(any(), any(), any(), any(), anyBoolean()))
+        when(concurrentConnectionManager.reserveConnectionWithResult(any(), any(), any(), any(), anyBoolean()))
                 .thenReturn(new ReservationResult(status, reservation));
+        when(concurrentConnectionManager.reserveConnection(any(), any(), any(), any(), anyBoolean()))
+                .thenReturn(status);
     }
 
     @Test

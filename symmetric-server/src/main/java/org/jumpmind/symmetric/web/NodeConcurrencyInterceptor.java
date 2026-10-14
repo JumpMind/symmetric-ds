@@ -87,7 +87,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         boolean isFileSync = normalizedRequestUri.contains("filesync");
         if (method.equals(WebConstants.METHOD_HEAD) && isPush) {
             resp.setContentLength(0);
-            ReservationResult result = concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.SOFT, false);
+            ReservationResult result = concurrentConnectionManager.reserveConnectionWithResult(nodeId, threadChannel, poolId, ReservationType.SOFT, false);
             ReservationStatus status = result.status();
             if (status == ReservationStatus.ACCEPTED) {
                 try {
@@ -132,7 +132,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             return false;
         } else {
             ReservationStatus status = concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.HARD, isPush
-                    && (!isFileSync)).status();
+                    && (!isFileSync));
             if (status == ReservationStatus.ACCEPTED) {
                 try {
                     buildSuspendIgnoreResponseHeaders(isPush ? nodeId : identityNodeId, isPush ? identityNodeId : nodeId, resp);

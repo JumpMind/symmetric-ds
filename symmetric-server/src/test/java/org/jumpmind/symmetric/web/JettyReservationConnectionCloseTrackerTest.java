@@ -172,7 +172,7 @@ class JettyReservationConnectionCloseTrackerTest {
     }
 
     private Reservation reserveSoft(String channelId) {
-        return concurrentConnectionManager.reserveConnection(NODE_ID, channelId, PUSH_URI, ReservationType.SOFT, false).reservation();
+        return concurrentConnectionManager.reserveConnectionWithResult(NODE_ID, channelId, PUSH_URI, ReservationType.SOFT, false).reservation();
     }
 
     private Reservation getPoolReservation(String channelId) {

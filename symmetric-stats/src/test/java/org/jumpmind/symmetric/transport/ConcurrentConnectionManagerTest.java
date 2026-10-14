@@ -76,7 +76,7 @@ class ConcurrentConnectionManagerTest {
     @Test
     void testReserveConnection_underLimit_returnsAccepted() {
         ConcurrentConnectionManager mgr = newMgr(2);
-        ReservationStatus status = mgr.reserveConnection("node1", "0", "push", ReservationType.HARD, false).status();
+        ReservationStatus status = mgr.reserveConnection("node1", "0", "push", ReservationType.HARD, false);
         assertEquals(ReservationStatus.ACCEPTED, status);
     }
 
@@ -84,7 +84,7 @@ class ConcurrentConnectionManagerTest {
     void testReserveConnection_atLimit_returnsBusy() {
         ConcurrentConnectionManager mgr = newMgr(1);
         mgr.reserveConnection("node1", "0", "push", ReservationType.HARD, false);
-        ReservationStatus status = mgr.reserveConnection("node2", "0", "push", ReservationType.HARD, false).status();
+        ReservationStatus status = mgr.reserveConnection("node2", "0", "push", ReservationType.HARD, false);
         assertEquals(ReservationStatus.BUSY, status);
     }
 
@@ -93,7 +93,7 @@ class ConcurrentConnectionManagerTest {
         ConcurrentConnectionManager mgr = newMgr(1);
         mgr.reserveConnection("node1", "0", "push", ReservationType.HARD, false); // fills pool
         mgr.addToWhitelist("node2");
-        ReservationStatus status = mgr.reserveConnection("node2", "0", "push", ReservationType.HARD, false).status();
+        ReservationStatus status = mgr.reserveConnection("node2", "0", "push", ReservationType.HARD, false);
         assertEquals(ReservationStatus.ACCEPTED, status);
     }
 
@@ -101,7 +101,7 @@ class ConcurrentConnectionManagerTest {
     void testReserveConnection_existingHardReservation_returnsDuplicate() {
         ConcurrentConnectionManager mgr = newMgr(5);
         mgr.reserveConnection("node1", "0", "push", ReservationType.HARD, false);
-        ReservationStatus status = mgr.reserveConnection("node1", "0", "push", ReservationType.HARD, false).status();
+        ReservationStatus status = mgr.reserveConnection("node1", "0", "push", ReservationType.HARD, false);
         assertEquals(ReservationStatus.DUPLICATE, status);
     }
 
@@ -109,14 +109,14 @@ class ConcurrentConnectionManagerTest {
     void testReserveConnection_existingSoftReplacedByHard_returnsAccepted() {
         ConcurrentConnectionManager mgr = newMgr(5);
         mgr.reserveConnection("node1", "0", "push", ReservationType.SOFT, false);
-        ReservationStatus status = mgr.reserveConnection("node1", "0", "push", ReservationType.HARD, false).status();
+        ReservationStatus status = mgr.reserveConnection("node1", "0", "push", ReservationType.HARD, false);
         assertEquals(ReservationStatus.ACCEPTED, status);
     }
 
     @Test
     void testReserveConnection_requiresExisting_noReservation_returnsNotFound() {
         ConcurrentConnectionManager mgr = newMgr(5);
-        ReservationStatus status = mgr.reserveConnection("node1", "0", "push", ReservationType.HARD, true).status();
+        ReservationStatus status = mgr.reserveConnection("node1", "0", "push", ReservationType.HARD, true);
         assertEquals(ReservationStatus.NOT_FOUND, status);
     }
 
@@ -124,7 +124,7 @@ class ConcurrentConnectionManagerTest {
     void testReserveConnection_requiresExisting_reservationPresent_returnsAccepted() {
         ConcurrentConnectionManager mgr = newMgr(5);
         mgr.reserveConnection("node1", "0", "push", ReservationType.SOFT, false);
-        ReservationStatus status = mgr.reserveConnection("node1", "0", "push", ReservationType.HARD, true).status();
+        ReservationStatus status = mgr.reserveConnection("node1", "0", "push", ReservationType.HARD, true);
         assertEquals(ReservationStatus.ACCEPTED, status);
     }
 
@@ -147,7 +147,7 @@ class ConcurrentConnectionManagerTest {
         mgr.reserveConnection("node1", "0", "push", ReservationType.HARD, false);
         mgr.releaseConnection("node1", "0", "push");
         // After release the slot is free, so another node can be accepted
-        ReservationStatus status = mgr.reserveConnection("node2", "0", "push", ReservationType.HARD, false).status();
+        ReservationStatus status = mgr.reserveConnection("node2", "0", "push", ReservationType.HARD, false);
         assertEquals(ReservationStatus.ACCEPTED, status);
     }
 
