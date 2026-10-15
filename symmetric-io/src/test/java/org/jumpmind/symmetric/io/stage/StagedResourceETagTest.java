@@ -38,6 +38,46 @@ class StagedResourceETagTest {
     }
 
     @Test
+    void testToHeaderValue_isQuotedOpaqueString() {
+        String headerValue = new StagedResourceETag(123L, 456L).toHeaderValue();
+        String quotedContent = headerValue.substring(1, headerValue.length() - 1);
+        assertEquals('"', headerValue.charAt(0));
+        assertEquals('"', headerValue.charAt(headerValue.length() - 1));
+        assertEquals(-1, quotedContent.indexOf('"'));
+    }
+
+    @Test
+    void testToHeaderValueAndFromHeaderValue_roundTrips() {
+        StagedResourceETag etag = new StagedResourceETag(123L, 456L);
+        assertEquals(etag, StagedResourceETag.fromHeaderValue(etag.toHeaderValue()));
+    }
+
+    @Test
+    void testFromHeaderValue_withNull_returnsNull() {
+        assertNull(StagedResourceETag.fromHeaderValue(null));
+    }
+
+    @Test
+    void testFromHeaderValue_withUnquotedValue_returnsNull() {
+        assertNull(StagedResourceETag.fromHeaderValue(new StagedResourceETag(123L, 456L).toJson()));
+    }
+
+    @Test
+    void testFromHeaderValue_withWeakValidator_returnsNull() {
+        assertNull(StagedResourceETag.fromHeaderValue("W/" + new StagedResourceETag(123L, 456L).toHeaderValue()));
+    }
+
+    @Test
+    void testFromHeaderValue_withInvalidBase64_returnsNull() {
+        assertNull(StagedResourceETag.fromHeaderValue("\"not base64!\""));
+    }
+
+    @Test
+    void testFromHeaderValue_withHttpDate_returnsNull() {
+        assertNull(StagedResourceETag.fromHeaderValue("Wed, 21 Oct 2026 07:28:00 GMT"));
+    }
+
+    @Test
     void testFromJson_withNull_returnsNull() {
         assertNull(StagedResourceETag.fromJson(null));
     }

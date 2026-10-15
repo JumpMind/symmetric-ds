@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -54,6 +55,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.cache.ICacheManager;
 import org.jumpmind.symmetric.common.Constants;
@@ -212,7 +214,7 @@ class FileSyncServiceTest {
         IOutgoingTransport transport = mock(IOutgoingTransport.class);
         when(transport.openStream()).thenReturn(out);
         ProcessInfo processInfo = new ProcessInfo();
-        FileSyncPullResult result = fileSyncService.prepareFilesForPull(processInfo, targetNode, "42", matchingEtag.toJson(), "bytes=4-");
+        FileSyncPullResult result = fileSyncService.prepareFilesForPull(processInfo, targetNode, "42", matchingEtag.toHeaderValue(), "bytes=4-");
         fileSyncService.writeFilesForPull(new ProcessInfo(), result, transport);
         assertTrue(result.isPartialContent());
         assertEquals(4L, result.getSkipCount());
@@ -242,11 +244,67 @@ class FileSyncServiceTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOutgoingTransport transport = mock(IOutgoingTransport.class);
         when(transport.openStream()).thenReturn(out);
-        FileSyncPullResult result = fileSyncService.prepareFilesForPull(new ProcessInfo(), targetNode, "42", staleEtag.toJson(), "bytes=4-");
+        FileSyncPullResult result = fileSyncService.prepareFilesForPull(new ProcessInfo(), targetNode, "42", staleEtag.toHeaderValue(), "bytes=4-");
         fileSyncService.writeFilesForPull(new ProcessInfo(), result, transport);
         assertFalse(result.isPartialContent());
         assertEquals(0L, result.getSkipCount());
         assertArrayEquals(content, out.toByteArray());
+    }
+
+    @Test
+    void sendFilesForPull_resumedBatch_marksBatchTransferringThenLoaded() {
+        when(parameterService.is(ParameterConstants.TRANSPORT_HTTP_RESUME_ENABLED)).thenReturn(true);
+        Node targetNode = targetNode("3.19.0");
+        OutgoingBatch batch = new OutgoingBatch();
+        batch.setBatchId(42);
+        batch.setNodeId("node1");
+        batch.setStatus(Status.ER);
+        when(outgoingBatchService.findOutgoingBatch(42L, "node1")).thenReturn(batch);
+        byte[] content = "0123456789".getBytes(StandardCharsets.UTF_8);
+        IStagedResource stagedResource = mock(IStagedResource.class);
+        when(stagedResource.getState()).thenReturn(State.DONE);
+        when(stagedResource.isFileResource()).thenReturn(true);
+        when(stagedResource.getSize()).thenReturn((long) content.length);
+        when(stagedResource.getGenerationTime()).thenReturn(555L);
+        when(stagedResource.getInputStream()).thenReturn(new ByteArrayInputStream(content));
+        doReturn(stagedResource).when(fileSyncService).getStagedResource(batch);
+        IOutgoingTransport transport = mock(IOutgoingTransport.class);
+        when(transport.openStream()).thenReturn(new ByteArrayOutputStream());
+        ProcessInfo processInfo = new ProcessInfo();
+        FileSyncPullResult result = fileSyncService.prepareFilesForPull(processInfo, targetNode, "42",
+                new StagedResourceETag(555L, content.length).toHeaderValue(), "bytes=4-");
+        assertEquals(Status.SE, batch.getStatus());
+        fileSyncService.writeFilesForPull(processInfo, result, transport);
+        assertEquals(Status.LD, batch.getStatus());
+    }
+
+    @Test
+    void sendFilesForPull_resumedBatchWriteFails_marksBatchInError() throws IOException {
+        when(parameterService.is(ParameterConstants.TRANSPORT_HTTP_RESUME_ENABLED)).thenReturn(true);
+        Node targetNode = targetNode("3.19.0");
+        OutgoingBatch batch = new OutgoingBatch();
+        batch.setBatchId(42);
+        batch.setNodeId("node1");
+        batch.setChannelId(Constants.CHANNEL_FILESYNC);
+        when(outgoingBatchService.findOutgoingBatch(42L, "node1")).thenReturn(batch);
+        byte[] content = "0123456789".getBytes(StandardCharsets.UTF_8);
+        IStagedResource stagedResource = mock(IStagedResource.class);
+        when(stagedResource.getState()).thenReturn(State.DONE);
+        when(stagedResource.isFileResource()).thenReturn(true);
+        when(stagedResource.getSize()).thenReturn((long) content.length);
+        when(stagedResource.getGenerationTime()).thenReturn(555L);
+        when(stagedResource.getInputStream()).thenReturn(new ByteArrayInputStream(content));
+        doReturn(stagedResource).when(fileSyncService).getStagedResource(batch);
+        OutputStream brokenConnection = mock(OutputStream.class);
+        doThrow(new IOException("Broken pipe")).when(brokenConnection).write(any(byte[].class), anyInt(), anyInt());
+        IOutgoingTransport transport = mock(IOutgoingTransport.class);
+        when(transport.openStream()).thenReturn(brokenConnection);
+        ProcessInfo processInfo = new ProcessInfo();
+        FileSyncPullResult result = fileSyncService.prepareFilesForPull(processInfo, targetNode, "42",
+                new StagedResourceETag(555L, content.length).toHeaderValue(), "bytes=4-");
+        assertThrows(IoException.class, () -> fileSyncService.writeFilesForPull(processInfo, result, transport));
+        assertEquals(Status.ER, batch.getStatus());
+        assertTrue(batch.isErrorFlag());
     }
 
     @Test
@@ -577,7 +635,7 @@ class FileSyncServiceTest {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Map<String, String>> propsCaptor = ArgumentCaptor.forClass(Map.class);
         verify(transportManager).getFilePullTransport(eq(remoteNode), eq(identity), any(), propsCaptor.capture(), any(), eq(12L));
-        assertEquals(etag.toJson(), propsCaptor.getValue().get(WebConstants.HEADER_IF_ETAG));
+        assertEquals(etag.toHeaderValue(), propsCaptor.getValue().get(WebConstants.HEADER_IF_RANGE));
         assertEquals("bytes=200-", propsCaptor.getValue().get(WebConstants.HEADER_RANGE));
     }
 

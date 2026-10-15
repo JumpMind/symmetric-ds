@@ -109,7 +109,7 @@ public class WebConstants {
     public static final String HEADER_SESSION_ID = "Session-ID";
     public static final String HEADER_SET_SESSION_ID = "Set-Session-ID";
     public static final String HEADER_ETAG = "ETag";
-    public static final String HEADER_IF_ETAG = "If-ETag";
+    public static final String HEADER_IF_RANGE = "If-Range";
     public static final String HEADER_ACCEPT_RANGES = "Accept-Ranges";
     public static final String HEADER_RANGE = "Range";
     public static final String HEADER_CONTENT_RANGE = "Content-Range";

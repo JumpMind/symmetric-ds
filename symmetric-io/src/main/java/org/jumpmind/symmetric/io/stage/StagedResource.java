@@ -35,6 +35,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -121,7 +122,12 @@ public class StagedResource implements IStagedResource {
     }
 
     protected final File buildFile(State state) {
-        return new File(directory, String.format("%s.%s", path, state.getExtensionName()));
+        Path stagingDirectory = directory.toPath().normalize();
+        Path resolvedPath = stagingDirectory.resolve(String.format("%s.%s", path, state.getExtensionName())).normalize();
+        if (!resolvedPath.startsWith(stagingDirectory)) {
+            throw new IoException("The staging path '{}' resolves outside of the staging directory", path);
+        }
+        return resolvedPath.toFile();
     }
 
     public State getState() {

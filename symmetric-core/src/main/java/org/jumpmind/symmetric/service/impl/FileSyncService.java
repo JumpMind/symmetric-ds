@@ -821,10 +821,10 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
      */
     @Override
     public FileSyncPullResult prepareFilesForPull(ProcessInfo processInfo, Node targetNode, String batchIdParam,
-            String ifETagHeader, String rangeHeader) {
+            String ifRangeHeader, String rangeHeader) {
         boolean isResumeEnabled = parameterService.is(ParameterConstants.TRANSPORT_HTTP_RESUME_ENABLED);
         if (StringUtils.isNotBlank(batchIdParam) && isResumeEnabled) {
-            FileSyncPullResult resumeResult = prepareResumedBatch(processInfo, targetNode, batchIdParam, ifETagHeader, rangeHeader);
+            FileSyncPullResult resumeResult = prepareResumedBatch(processInfo, targetNode, batchIdParam, ifRangeHeader, rangeHeader);
             if (resumeResult != null) {
                 return resumeResult;
             }
@@ -898,31 +898,31 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     @Override
     public void writeFilesForPull(ProcessInfo processInfo, FileSyncPullResult result, IOutgoingTransport outgoingTransport) {
         if (result.getResumeEtag() != null) {
-            writeResumedBatch(result, outgoingTransport);
+            writeResumedBatch(processInfo, result, outgoingTransport);
         } else {
             writeNormalBatches(processInfo, result, outgoingTransport);
         }
     }
 
-    private void writeResumedBatch(FileSyncPullResult result, IOutgoingTransport outgoingTransport) {
+    private void writeResumedBatch(ProcessInfo processInfo, FileSyncPullResult result, IOutgoingTransport outgoingTransport) {
         List<IStagedResource> stagedResources = result.getStagedResources();
         if (stagedResources == null || stagedResources.isEmpty()) {
             return;
         }
         IStagedResource stagedResource = stagedResources.get(0);
         long skipCount = result.getSkipCount();
-        try {
-            OutputStream os = outgoingTransport.openStream();
-            try (InputStream is = stagedResource.getInputStream()) {
-                if (skipCount > 0) {
-                    IOUtils.skipFully(is, skipCount);
-                }
-                IOUtils.copy(is, os);
+        try (OutputStream os = outgoingTransport.openStream(); InputStream is = stagedResource.getInputStream()) {
+            if (skipCount > 0) {
+                IOUtils.skipFully(is, skipCount);
             }
+            IOUtils.copy(is, os);
             os.flush();
         } catch (IOException e) {
-            throw new IoException(e);
+            IoException failure = new IoException(e);
+            handleExtractionError(processInfo, failure, result.getBatches().get(0));
+            throw failure;
         }
+        markBatchesLoaded(result.getBatches());
         log.debug("Served {} file sync pull for batch {} to node {} ({} of {} skipped)", result.isPartialContent() ? "resumed" : "full",
                 result.getBatches().get(0).getBatchId(), result.getBatches().get(0).getNodeId(), skipCount, result.getTotalSize());
     }
@@ -943,8 +943,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
 
     private void writeBatchesToStream(FileSyncPullResult result, IOutgoingTransport outgoingTransport,
             List<OutgoingBatch> processedBatches, List<IStagedResource> processedResources) {
-        try {
-            OutputStream os = outgoingTransport.openStream();
+        try (OutputStream os = outgoingTransport.openStream()) {
             if (result.isEnvelopeFormatUsed()) {
                 for (int i = 0; i < processedBatches.size(); i++) {
                     IStagedResource resource = processedResources.get(i);
@@ -960,10 +959,10 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                 }
             }
             os.flush();
-            markBatchesLoaded(result.getAllRequestedBatches());
         } catch (IOException e) {
             throw new IoException(e);
         }
+        markBatchesLoaded(result.getAllRequestedBatches());
     }
 
     private void closeStagedResources(List<IStagedResource> resources) {
@@ -982,7 +981,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
      * unchanged.
      */
     private FileSyncPullResult prepareResumedBatch(ProcessInfo processInfo, Node targetNode, String batchIdParam,
-            String ifETagHeader, String rangeHeader) {
+            String ifRangeHeader, String rangeHeader) {
         long batchId = NumberUtils.toLong(batchIdParam, -1L);
         if (batchId < 0 || targetNode == null) {
             return null;
@@ -996,7 +995,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         }
         long totalSize = stagedResource.getSize();
         StagedResourceETag etag = new StagedResourceETag(stagedResource.getGenerationTime(), totalSize);
-        StagedResourceETag requestedETag = StagedResourceETag.fromJson(ifETagHeader);
+        StagedResourceETag requestedETag = StagedResourceETag.fromHeaderValue(ifRangeHeader);
         Long requestedSkipCount = parseRangeSkipCount(rangeHeader);
         boolean isPartial = etag.equals(requestedETag) && requestedSkipCount != null && requestedSkipCount >= 0
                 && requestedSkipCount < totalSize;
@@ -1007,6 +1006,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         batches.add(batch);
         List<IStagedResource> stagedResources = new ArrayList<IStagedResource>();
         stagedResources.add(stagedResource);
+        markBatchesTransferring(processInfo, batches);
         log.debug("Prepared {} file sync pull for batch {} to node {} ({} of {} skipped)", isPartial ? "resumed" : "full", batchId,
                 targetNode.getNodeId(), skipCount, totalSize);
         return FileSyncPullResult.builder().batches(batches).stagedResources(stagedResources).partialContent(isPartial)
@@ -1635,7 +1635,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             return Collections.emptyMap();
         }
         Map<String, String> requestProperties = new HashMap<String, String>();
-        requestProperties.put(WebConstants.HEADER_IF_ETAG, pendingResume.getEtag().toJson());
+        requestProperties.put(WebConstants.HEADER_IF_RANGE, pendingResume.getEtag().toHeaderValue());
         requestProperties.put(WebConstants.HEADER_RANGE, "bytes=" + pendingResume.getReceivedCount() + "-");
         return requestProperties;
     }

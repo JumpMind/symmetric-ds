@@ -22,8 +22,6 @@ package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -99,11 +97,11 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         nodeChannels.setChannelQueue(req.getHeader(WebConstants.CHANNEL_QUEUE));
         // pull out headers and pass to pull() method
         String batchIdParam = ServletUtils.getParameter(req, WebConstants.BATCH_ID);
-        String ifETagHeader = req.getHeader(WebConstants.HEADER_IF_ETAG);
+        String ifRangeHeader = req.getHeader(WebConstants.HEADER_IF_RANGE);
         String rangeHeader = req.getHeader(WebConstants.HEADER_RANGE);
         log.debug("Pull request from node {} on queue {}: batchId={}, {}={}, {}={}", nodeId, nodeChannels.getChannelQueue(),
-                batchIdParam, WebConstants.HEADER_IF_ETAG, ifETagHeader, WebConstants.HEADER_RANGE, rangeHeader);
-        ResumeRequest resumeRequest = new ResumeRequest(nodeId, batchIdParam, ifETagHeader, rangeHeader, nodeChannels.getChannelQueue());
+                batchIdParam, WebConstants.HEADER_IF_RANGE, ifRangeHeader, WebConstants.HEADER_RANGE, rangeHeader);
+        ResumeRequest resumeRequest = new ResumeRequest(nodeId, batchIdParam, ifRangeHeader, rangeHeader, nodeChannels.getChannelQueue());
         handlePull(resumeRequest, req.getRemoteHost(), req.getRemoteAddr(), res.getOutputStream(),
                 req.getHeader(WebConstants.HEADER_ACCEPT_CHARSET), res, nodeChannels);
         log.debug("Pull completed for {} at remote address {}", nodeId, req.getRemoteAddr());
@@ -210,12 +208,12 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         stagedResource.refreshLastUpdateTime();
         long totalSize = stagedResource.getSize();
         StagedResourceETag etag = new StagedResourceETag(stagedResource.getGenerationTime(), totalSize);
-        StagedResourceETag requestedETag = StagedResourceETag.fromJson(request.getIfETagHeader());
+        StagedResourceETag requestedETag = StagedResourceETag.fromHeaderValue(request.getIfRangeHeader());
         Long requestedSkipCount = parseRangeSkipCount(request.getRangeHeader());
         boolean isPartial = etag.equals(requestedETag) && requestedSkipCount != null && requestedSkipCount >= 0
                 && requestedSkipCount < totalSize;
         long skipCount = isPartial ? requestedSkipCount : 0;
-        res.setHeader(WebConstants.HEADER_ETAG, quoteEtag(etag));
+        res.setHeader(WebConstants.HEADER_ETAG, etag.toHeaderValue());
         res.setHeader(WebConstants.HEADER_ACCEPT_RANGES, "chars");
         if (isPartial) {
             res.setStatus(WebConstants.SC_PARTIAL_CONTENT);
@@ -236,15 +234,6 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
             return null;
         }
         return Long.parseLong(matcher.group(1));
-    }
-
-    /**
-     * An entity-tag must be an opaque quoted string (RFC 9110 section 8.8.3). Base64-encoding the JSON first guarantees the payload can never contain a quote
-     * or other syntax-breaking character; this header is never parsed back by our own client (which tracks its own {@code If-ETag} from the body-embedded
-     * {@code ETAG} line instead), so the encoding is unidirectional.
-     */
-    private static String quoteEtag(StagedResourceETag etag) {
-        return "\"" + Base64.getEncoder().encodeToString(etag.toJson().getBytes(StandardCharsets.UTF_8)) + "\"";
     }
 
     private void addReadyQueuesHeader(String nodeId, HttpServletResponse res) {
@@ -273,14 +262,14 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
     static class ResumeRequest {
         private final String nodeId;
         private final String batchIdParam;
-        private final String ifETagHeader;
+        private final String ifRangeHeader;
         private final String rangeHeader;
         private final String queue;
 
-        ResumeRequest(String nodeId, String batchIdParam, String ifETagHeader, String rangeHeader, String queue) {
+        ResumeRequest(String nodeId, String batchIdParam, String ifRangeHeader, String rangeHeader, String queue) {
             this.nodeId = nodeId;
             this.batchIdParam = batchIdParam;
-            this.ifETagHeader = ifETagHeader;
+            this.ifRangeHeader = ifRangeHeader;
             this.rangeHeader = rangeHeader;
             this.queue = queue;
         }
@@ -293,8 +282,8 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
             return batchIdParam;
         }
 
-        String getIfETagHeader() {
-            return ifETagHeader;
+        String getIfRangeHeader() {
+            return ifRangeHeader;
         }
 
         String getRangeHeader() {

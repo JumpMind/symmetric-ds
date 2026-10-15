@@ -22,15 +22,22 @@ package org.jumpmind.symmetric.transport.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.stage.StagedResourceETag;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.junit.jupiter.api.Test;
 
 class DefaultHttpResumeCacheTest {
+    private static final long TIME_TO_LIVE_MS = 3_600_000L;
+
     @Test
     void testPutAndGet_returnsStoredEntry() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         ResumeCacheEntry entry = createEntry("node1", 100L);
         cache.put("node1", 100L, entry);
         assertEquals(entry, cache.get("node1", 100L));
@@ -38,27 +45,42 @@ class DefaultHttpResumeCacheTest {
 
     @Test
     void testGet_withWrongBatchId_returnsNull() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         cache.put("node1", 100L, createEntry("node1", 100L));
         assertNull(cache.get("node1", 101L));
     }
 
     @Test
     void testGet_withWrongNodeId_returnsNull() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         cache.put("node1", 100L, createEntry("node1", 100L));
         assertNull(cache.get("node2", 100L));
     }
 
     @Test
     void testGet_whenEmpty_returnsNull() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         assertNull(cache.get("node1", 100L));
     }
 
     @Test
+    void testGet_withEntryOlderThanTimeToLive_returnsNull() {
+        DefaultHttpResumeCache cache = newCache();
+        cache.put("node1", 100L, createExpiredEntry("node1", 100L, false));
+        assertNull(cache.get("node1", 100L));
+    }
+
+    @Test
+    void testGet_withNonPositiveTimeToLive_neverExpires() {
+        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(engineWithTimeToLive(0L));
+        ResumeCacheEntry entry = createExpiredEntry("node1", 100L, false);
+        cache.put("node1", 100L, entry);
+        assertEquals(entry, cache.get("node1", 100L));
+    }
+
+    @Test
     void testGetPendingForNode_returnsEntryForMatchingNode() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         ResumeCacheEntry entry = createEntry("node1", 100L);
         cache.put("node1", 100L, entry);
         assertEquals(entry, cache.getPendingForNode("node1", Constants.QUEUE_DEFAULT));
@@ -66,21 +88,28 @@ class DefaultHttpResumeCacheTest {
 
     @Test
     void testGetPendingForNode_withNoMatch_returnsNull() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         cache.put("node1", 100L, createEntry("node1", 100L));
         assertNull(cache.getPendingForNode("node2", Constants.QUEUE_DEFAULT));
     }
 
     @Test
     void testGetPendingForNode_withMismatchedQueue_returnsNull() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         cache.put("node1", 100L, createEntry("node1", 100L));
         assertNull(cache.getPendingForNode("node1", Constants.QUEUE_SYSTEM));
     }
 
     @Test
+    void testGetPendingForNode_withEntryOlderThanTimeToLive_returnsNull() {
+        DefaultHttpResumeCache cache = newCache();
+        cache.put("node1", 100L, createExpiredEntry("node1", 100L, false));
+        assertNull(cache.getPendingForNode("node1", Constants.QUEUE_DEFAULT));
+    }
+
+    @Test
     void testGetPendingFileSyncEntryForNode_returnsEntryIgnoringQueue() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         ResumeCacheEntry entry = createFileSyncEntry("node1", 100L, Constants.QUEUE_RELOAD);
         cache.put("node1", 100L, entry);
         assertEquals(entry, cache.getPendingFileSyncEntryForNode("node1"));
@@ -88,21 +117,28 @@ class DefaultHttpResumeCacheTest {
 
     @Test
     void testGetPendingFileSyncEntryForNode_withTableSyncEntry_returnsNull() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         cache.put("node1", 100L, createEntry("node1", 100L));
         assertNull(cache.getPendingFileSyncEntryForNode("node1"));
     }
 
     @Test
     void testGetPendingFileSyncEntryForNode_withWrongNodeId_returnsNull() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         cache.put("node1", 100L, createFileSyncEntry("node1", 100L, Constants.QUEUE_DEFAULT));
         assertNull(cache.getPendingFileSyncEntryForNode("node2"));
     }
 
     @Test
+    void testGetPendingFileSyncEntryForNode_withEntryOlderThanTimeToLive_returnsNull() {
+        DefaultHttpResumeCache cache = newCache();
+        cache.put("node1", 100L, createExpiredEntry("node1", 100L, true));
+        assertNull(cache.getPendingFileSyncEntryForNode("node1"));
+    }
+
+    @Test
     void testRemove_withMatchingKey_clearsEntry() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         cache.put("node1", 100L, createEntry("node1", 100L));
         cache.remove("node1", 100L);
         assertNull(cache.get("node1", 100L));
@@ -111,7 +147,7 @@ class DefaultHttpResumeCacheTest {
 
     @Test
     void testRemove_withNonMatchingKey_leavesEntryInPlace() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         ResumeCacheEntry entry = createEntry("node1", 100L);
         cache.put("node1", 100L, entry);
         cache.remove("node1", 999L);
@@ -120,7 +156,7 @@ class DefaultHttpResumeCacheTest {
 
     @Test
     void testPut_differentOwnerWhileSlotBusy_doesNotEvictExistingEntry() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         ResumeCacheEntry first = createEntry("node1", 100L);
         cache.put("node1", 100L, first);
         cache.put("node2", 200L, createEntry("node2", 200L));
@@ -130,7 +166,7 @@ class DefaultHttpResumeCacheTest {
 
     @Test
     void testPut_sameOwnerReRegistering_replacesEntry() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         cache.put("node1", 100L, createEntry("node1", 100L));
         ResumeCacheEntry updated = createEntry("node1", 100L);
         cache.put("node1", 100L, updated);
@@ -139,12 +175,45 @@ class DefaultHttpResumeCacheTest {
 
     @Test
     void testPut_afterRemove_slotAcceptsNewOwner() {
-        DefaultHttpResumeCache cache = new DefaultHttpResumeCache(null);
+        DefaultHttpResumeCache cache = newCache();
         cache.put("node1", 100L, createEntry("node1", 100L));
         cache.remove("node1", 100L);
         ResumeCacheEntry second = createEntry("node2", 200L);
         cache.put("node2", 200L, second);
         assertEquals(second, cache.get("node2", 200L));
+    }
+
+    @Test
+    void testPut_whenSlotHoldsExpiredEntry_storesNewEntry() {
+        DefaultHttpResumeCache cache = newCache();
+        cache.put("node1", 100L, createExpiredEntry("node1", 100L, false));
+        ResumeCacheEntry replacement = createEntry("node2", 200L);
+        cache.put("node2", 200L, replacement);
+        assertEquals(replacement, cache.get("node2", 200L));
+    }
+
+    private DefaultHttpResumeCache newCache() {
+        return new DefaultHttpResumeCache(engineWithTimeToLive(TIME_TO_LIVE_MS));
+    }
+
+    private ISymmetricEngine engineWithTimeToLive(long timeToLiveMs) {
+        ISymmetricEngine engine = mock(ISymmetricEngine.class);
+        IParameterService parameterService = mock(IParameterService.class);
+        when(engine.getParameterService()).thenReturn(parameterService);
+        when(parameterService.getLong(ParameterConstants.STREAM_TO_FILE_TIME_TO_LIVE_MS)).thenReturn(timeToLiveMs);
+        return engine;
+    }
+
+    private ResumeCacheEntry createExpiredEntry(String nodeId, long batchId, boolean isFileSync) {
+        return ResumeCacheEntry.builder()
+                .nodeId(nodeId)
+                .batchId(batchId)
+                .etag(new StagedResourceETag(1L, 2L))
+                .receivedCount(3L)
+                .cachedAtTime(System.currentTimeMillis() - 2 * TIME_TO_LIVE_MS)
+                .queue(Constants.QUEUE_DEFAULT)
+                .fileSync(isFileSync)
+                .build();
     }
 
     private ResumeCacheEntry createEntry(String nodeId, long batchId) {
@@ -155,7 +224,7 @@ class DefaultHttpResumeCacheTest {
                 .receivedCount(3L)
                 .channelId("channel1")
                 .binaryEncoding("NONE")
-                .cachedAtTime(4L)
+                .cachedAtTime(System.currentTimeMillis())
                 .queue(Constants.QUEUE_DEFAULT)
                 .build();
     }
@@ -166,7 +235,7 @@ class DefaultHttpResumeCacheTest {
                 .batchId(batchId)
                 .etag(new StagedResourceETag(1L, 2L))
                 .receivedCount(3L)
-                .cachedAtTime(4L)
+                .cachedAtTime(System.currentTimeMillis())
                 .queue(queue)
                 .fileSync(true)
                 .build();

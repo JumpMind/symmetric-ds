@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,6 +65,17 @@ class StagedResourceTest {
         resource.setState(State.DONE);
         StagedResource reopened = new StagedResource(tempDir, PATH, stagingManager);
         assertEquals(State.DONE, reopened.getState());
+    }
+
+    @Test
+    void testConstructor_pathEscapingStagingDirectory_throws() {
+        assertThrows(IoException.class, () -> new StagedResource(tempDir, "incoming/../../outside/0000000001", stagingManager));
+    }
+
+    @Test
+    void testConstructor_pathWithDotSegmentsStayingInsideStagingDirectory_isAccepted() {
+        StagedResource inside = new StagedResource(tempDir, "incoming/../outgoing/0000000001", stagingManager);
+        assertEquals(new File(tempDir, "outgoing/0000000001.create").toPath().normalize(), inside.getFile().toPath().normalize());
     }
 
     @Test

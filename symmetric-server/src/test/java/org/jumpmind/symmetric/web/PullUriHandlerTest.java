@@ -177,7 +177,7 @@ class PullUriHandlerTest {
         channel.setQueue(Constants.QUEUE_SYSTEM);
         when(configurationService.getChannel("channel1")).thenReturn(channel);
         StagedResourceETag etag = new StagedResourceETag(1000L, 500L);
-        boolean result = handler.handleResume(new PullUriHandler.ResumeRequest("node1", "1", etag.toJson(), "chars=200-", Constants.QUEUE_DEFAULT),
+        boolean result = handler.handleResume(new PullUriHandler.ResumeRequest("node1", "1", etag.toHeaderValue(), "chars=200-", Constants.QUEUE_DEFAULT),
                 outgoingTransport, res, processInfo);
         assertFalse(result);
         verify(dataExtractorService, never()).extractSingleBatchForResume(any(), any(), any(), anyLong(), any());
@@ -191,7 +191,7 @@ class PullUriHandlerTest {
         setUpEligibleResource(batch);
         when(configurationService.getChannel("channel1")).thenReturn(null);
         StagedResourceETag etag = new StagedResourceETag(1000L, 500L);
-        boolean result = handler.handleResume(new PullUriHandler.ResumeRequest("node1", "1", etag.toJson(), "chars=200-", Constants.QUEUE_DEFAULT),
+        boolean result = handler.handleResume(new PullUriHandler.ResumeRequest("node1", "1", etag.toHeaderValue(), "chars=200-", Constants.QUEUE_DEFAULT),
                 outgoingTransport, res, processInfo);
         assertFalse(result);
     }
@@ -217,7 +217,7 @@ class PullUriHandlerTest {
         batch.setChannelId("channel1");
         setUpEligibleResource(batch);
         StagedResourceETag etag = new StagedResourceETag(1000L, 500L);
-        boolean result = handler.handleResume(new PullUriHandler.ResumeRequest("node1", "1", etag.toJson(), "chars=200-", Constants.QUEUE_DEFAULT),
+        boolean result = handler.handleResume(new PullUriHandler.ResumeRequest("node1", "1", etag.toHeaderValue(), "chars=200-", Constants.QUEUE_DEFAULT),
                 outgoingTransport, res, processInfo);
         assertTrue(result);
         verify(res).setStatus(WebConstants.SC_PARTIAL_CONTENT);
@@ -234,7 +234,7 @@ class PullUriHandlerTest {
         batch.setChannelId("channel1");
         setUpEligibleResource(batch);
         StagedResourceETag staleEtag = new StagedResourceETag(999L, 500L);
-        boolean result = handler.handleResume(new PullUriHandler.ResumeRequest("node1", "1", staleEtag.toJson(), "chars=200-", Constants.QUEUE_DEFAULT),
+        boolean result = handler.handleResume(new PullUriHandler.ResumeRequest("node1", "1", staleEtag.toHeaderValue(), "chars=200-", Constants.QUEUE_DEFAULT),
                 outgoingTransport, res, processInfo);
         assertTrue(result);
         verify(res, never()).setStatus(WebConstants.SC_PARTIAL_CONTENT);
@@ -243,7 +243,7 @@ class PullUriHandlerTest {
     }
 
     @Test
-    void handleResume_missingIfETagHeader_fullResend() {
+    void handleResume_missingIfRangeHeader_fullResend() {
         OutgoingBatch batch = new OutgoingBatch();
         batch.setBatchId(1);
         batch.setChannelId("channel1");
@@ -262,7 +262,7 @@ class PullUriHandlerTest {
         batch.setChannelId("channel1");
         setUpEligibleResource(batch);
         StagedResourceETag etag = new StagedResourceETag(1000L, 500L);
-        boolean result = handler.handleResume(new PullUriHandler.ResumeRequest("node1", "1", etag.toJson(), null, Constants.QUEUE_DEFAULT),
+        boolean result = handler.handleResume(new PullUriHandler.ResumeRequest("node1", "1", etag.toHeaderValue(), null, Constants.QUEUE_DEFAULT),
                 outgoingTransport, res, processInfo);
         assertTrue(result);
         verify(res, never()).setStatus(WebConstants.SC_PARTIAL_CONTENT);
@@ -276,7 +276,7 @@ class PullUriHandlerTest {
         batch.setChannelId("channel1");
         setUpEligibleResource(batch);
         StagedResourceETag etag = new StagedResourceETag(1000L, 500L);
-        boolean result = handler.handleResume(new PullUriHandler.ResumeRequest("node1", "1", etag.toJson(), "chars=500-", Constants.QUEUE_DEFAULT),
+        boolean result = handler.handleResume(new PullUriHandler.ResumeRequest("node1", "1", etag.toHeaderValue(), "chars=500-", Constants.QUEUE_DEFAULT),
                 outgoingTransport, res, processInfo);
         assertTrue(result);
         verify(res, never()).setStatus(WebConstants.SC_PARTIAL_CONTENT);

@@ -102,7 +102,7 @@ public interface IFileSyncService {
      * {@link #sendFiles(ProcessInfo, Node, IOutgoingTransport)} remains unchanged for the push path, which has no equivalent resume mechanism.
      */
     public FileSyncPullResult prepareFilesForPull(ProcessInfo processInfo, Node targetNode, String batchIdParam,
-            String ifETagHeader, String rangeHeader);
+            String ifRangeHeader, String rangeHeader);
 
     /**
      * Streams the bytes described by a {@link FileSyncPullResult} previously returned from

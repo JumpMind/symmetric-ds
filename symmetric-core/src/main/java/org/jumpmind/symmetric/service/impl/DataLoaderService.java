@@ -288,7 +288,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     pendingResume = null;
                 }
                 if (pendingResume != null) {
-                    requestProperties.put(WebConstants.HEADER_IF_ETAG, pendingResume.getEtag().toJson());
+                    requestProperties.put(WebConstants.HEADER_IF_RANGE, pendingResume.getEtag().toHeaderValue());
                     requestProperties.put(WebConstants.HEADER_RANGE, "chars=" + pendingResume.getReceivedCount() + "-");
                 }
                 transport = transportManager.getPullTransport(remote, local,

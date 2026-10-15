@@ -21,8 +21,6 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,7 +29,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.file.FileSyncPullResult;
-import org.jumpmind.symmetric.io.stage.StagedResourceETag;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
@@ -56,10 +53,10 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
             return;
         }
         String batchIdParam = ServletUtils.getParameter(req, WebConstants.BATCH_ID);
-        String ifETagHeader = req.getHeader(WebConstants.HEADER_IF_ETAG);
+        String ifRangeHeader = req.getHeader(WebConstants.HEADER_IF_RANGE);
         String rangeHeader = req.getHeader(WebConstants.HEADER_RANGE);
         log.debug("File sync pull request received from {}: batchId={}, {}={}, {}={}", nodeId, batchIdParam,
-                WebConstants.HEADER_IF_ETAG, ifETagHeader, WebConstants.HEADER_RANGE, rangeHeader);
+                WebConstants.HEADER_IF_RANGE, ifRangeHeader, WebConstants.HEADER_RANGE, rangeHeader);
         IOutgoingTransport outgoingTransport = createOutgoingTransport(res.getOutputStream(),
                 req.getHeader(WebConstants.HEADER_ACCEPT_CHARSET),
                 engine.getConfigurationService().getSuspendIgnoreChannelLists(nodeId));
@@ -69,9 +66,9 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
         try {
             Node targetNode = engine.getNodeService().findNode(nodeId, true);
             FileSyncPullResult result = engine.getFileSyncService().prepareFilesForPull(processInfo, targetNode,
-                    batchIdParam, ifETagHeader, rangeHeader);
+                    batchIdParam, ifRangeHeader, rangeHeader);
             if (result.getResumeEtag() != null) {
-                res.setHeader(WebConstants.HEADER_ETAG, quoteEtag(result.getResumeEtag()));
+                res.setHeader(WebConstants.HEADER_ETAG, result.getResumeEtag().toHeaderValue());
                 res.setHeader(WebConstants.HEADER_ACCEPT_RANGES, "bytes");
                 if (result.isPartialContent()) {
                     res.setStatus(WebConstants.SC_PARTIAL_CONTENT);
@@ -99,14 +96,5 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
                 outgoingTransport.close();
             }
         }
-    }
-
-    /**
-     * An entity-tag must be an opaque quoted string (RFC 9110 section 8.8.3). Base64-encoding the JSON first guarantees the payload can never contain a quote
-     * or other syntax-breaking character; this header is never parsed back by our own client (which tracks its own {@code If-ETag} instead), so the encoding is
-     * unidirectional.
-     */
-    private static String quoteEtag(StagedResourceETag etag) {
-        return "\"" + Base64.getEncoder().encodeToString(etag.toJson().getBytes(StandardCharsets.UTF_8)) + "\"";
     }
 }

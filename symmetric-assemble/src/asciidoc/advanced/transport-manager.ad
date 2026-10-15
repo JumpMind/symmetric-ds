@@ -84,7 +84,7 @@ and always re-sent in full.
 * Each staged batch is identified by an ETag made up of the batch's staging version, the time its staged file
 was generated, and its final size. The client caches this ETag along with how much of the batch it has already
 received whenever a pull attempt fails partway through.
-* On the next pull attempt for that node, the client sends the cached ETag in an `If-ETag` header and how much
+* On the next pull attempt for that node, the client sends the cached ETag in an `If-Range` header and how much
 it already has in a `Range` header, along with the ID of the batch to resume. Table (CSV) batches use
 `Range: chars=<count>-`, a count of decoded characters, since the staged content is read and written as text;
 file sync (ZIP) batches use `Range: bytes=<count>-`, a count of raw bytes, since the staged content is copied
@@ -94,16 +94,21 @@ as-is.
 * If the staged batch is missing or its ETag no longer matches (for example, it was purged or re-extracted),
 the server falls back to a normal `200` response with the full batch, and the client discards its partial
 copy and starts over.
+* The client discards a cached ETag once it is older than `stream.to.file.ttl.ms`, since the server no longer
+retains the staged batch beyond that time, and the batch is then downloaded in full.
 
 Older peers (prior to version 3.19) simply do not send the resume request headers, so they always receive
 full-batch behavior; the resume mechanism only activates when both sides support it.
 
-These `Range`/`If-ETag`/`Accept-Ranges` headers are a private convention between SymmetricDS nodes, not a
-standard, cache-aware `If-Range` exchange - a node never validates a range against a shared intermediary
-cache. Because of this, a proxy, load balancer, or CDN that inspects and tries to interpret or satisfy HTTP
-range requests on its own (rather than passing them through unmodified) can corrupt a resumed transfer; make
-sure any such intermediary in the sync path is configured to forward these headers untouched rather than act
-on them.
+The `Range` offset and the `Content-Range` value are measured against the batch's uncompressed, staged content:
+decoded characters for table batches, and the bytes of the staged zip for file sync batches. They are not
+offsets into the bytes sent on the wire, which are typically gzip-compressed (`Content-Encoding: gzip`) and
+therefore a different length. SymmetricDS nodes apply the range themselves, and a node never validates a range
+against a shared intermediary cache. A proxy, load balancer, or CDN that inspects and tries to interpret or
+satisfy HTTP range requests on its own, rather than passing them through unmodified, will interpret the offset
+against the compressed stream and can corrupt a resumed transfer. Make sure any such intermediary in the sync
+path is configured to forward the `Range`, `If-Range`, and `Accept-Ranges` headers untouched rather than act on
+them.
 
 .File sync bundling
 For file sync pulls specifically, each batch is staged as its own independent zip file, the same way table

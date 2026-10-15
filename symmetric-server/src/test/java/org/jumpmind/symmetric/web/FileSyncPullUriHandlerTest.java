@@ -29,9 +29,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -99,21 +97,21 @@ class FileSyncPullUriHandlerTest {
     void handle_passesBatchIdAndResumeHeadersThrough() throws Exception {
         when(req.getParameter(WebConstants.NODE_ID)).thenReturn("node1");
         when(req.getParameter(WebConstants.BATCH_ID)).thenReturn("42");
-        when(req.getHeader(WebConstants.HEADER_IF_ETAG)).thenReturn("{\"etag\":true}");
+        when(req.getHeader(WebConstants.HEADER_IF_RANGE)).thenReturn("\"ifRangeValue\"");
         when(req.getHeader(WebConstants.HEADER_RANGE)).thenReturn("bytes=10-");
         Node targetNode = new Node();
         targetNode.setNodeId("node1");
         when(nodeService.findNode("node1", true)).thenReturn(targetNode);
         ArrayList<OutgoingBatch> batches = new ArrayList<>();
         batches.add(new OutgoingBatch());
-        when(fileSyncService.prepareFilesForPull(any(), eq(targetNode), eq("42"), eq("{\"etag\":true}"), eq("bytes=10-")))
+        when(fileSyncService.prepareFilesForPull(any(), eq(targetNode), eq("42"), eq("\"ifRangeValue\""), eq("bytes=10-")))
                 .thenAnswer(inv -> {
                     ProcessInfo processInfo = (ProcessInfo) inv.getArgument(0);
                     processInfo.incrementBatchCount();
                     return FileSyncPullResult.builder().batches(batches).allRequestedBatches(batches).envelopeFormatUsed(false).build();
                 });
         handler.handle(req, res);
-        verify(fileSyncService).prepareFilesForPull(any(), eq(targetNode), eq("42"), eq("{\"etag\":true}"), eq("bytes=10-"));
+        verify(fileSyncService).prepareFilesForPull(any(), eq(targetNode), eq("42"), eq("\"ifRangeValue\""), eq("bytes=10-"));
     }
 
     @Test
@@ -133,7 +131,7 @@ class FileSyncPullUriHandlerTest {
                             .totalSize(500L).skipCount(200L).build();
                 });
         handler.handle(req, res);
-        verify(res).setHeader(WebConstants.HEADER_ETAG, quotedEtag(etag));
+        verify(res).setHeader(WebConstants.HEADER_ETAG, etag.toHeaderValue());
         verify(res).setHeader(WebConstants.HEADER_ACCEPT_RANGES, "bytes");
         verify(res).setStatus(WebConstants.SC_PARTIAL_CONTENT);
         verify(res).setHeader(WebConstants.HEADER_CONTENT_RANGE, "bytes 200-499/500");
@@ -156,7 +154,7 @@ class FileSyncPullUriHandlerTest {
                             .totalSize(500L).skipCount(0L).build();
                 });
         handler.handle(req, res);
-        verify(res).setHeader(WebConstants.HEADER_ETAG, quotedEtag(etag));
+        verify(res).setHeader(WebConstants.HEADER_ETAG, etag.toHeaderValue());
         verify(res).setHeader(WebConstants.HEADER_ACCEPT_RANGES, "bytes");
         verify(res, never()).setStatus(WebConstants.SC_PARTIAL_CONTENT);
         verify(res, never()).setHeader(eq(WebConstants.HEADER_CONTENT_RANGE), anyString());
@@ -214,9 +212,5 @@ class FileSyncPullUriHandlerTest {
         verify(res).sendError(HttpServletResponse.SC_NO_CONTENT, "No files to pull.");
         verify(res, never()).setContentType("application/zip");
         verify(fileSyncService, never()).writeFilesForPull(any(), any(), any());
-    }
-
-    private static String quotedEtag(StagedResourceETag etag) {
-        return "\"" + Base64.getEncoder().encodeToString(etag.toJson().getBytes(StandardCharsets.UTF_8)) + "\"";
     }
 }

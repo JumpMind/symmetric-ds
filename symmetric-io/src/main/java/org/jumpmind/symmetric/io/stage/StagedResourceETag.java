@@ -20,6 +20,9 @@
  */
 package org.jumpmind.symmetric.io.stage;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,8 +79,38 @@ public class StagedResourceETag {
     }
 
     /**
-     * Never throws. A stale, malformed, or future-incompatible {@code If-ETag} value should be treated as "no match, do a full resend" rather than fail the
-     * request.
+     * An entity-tag must be an opaque quoted string (RFC 9110 section 8.8.3). Base64-encoding the JSON first guarantees the payload can never contain a quote
+     * or other syntax-breaking character, so the same value serves as the {@code ETag} response header and as the {@code If-Range} request header.
+     */
+    public String toHeaderValue() {
+        return "\"" + Base64.getEncoder().encodeToString(toJson().getBytes(StandardCharsets.UTF_8)) + "\"";
+    }
+
+    /**
+     * Never throws. A missing, weak, or otherwise unparseable {@code If-Range} value (including an HTTP-date) means "no match", so the caller does a full
+     * resend rather than failing the request.
+     *
+     * @return the parsed ETag, or {@code null} when {@code headerValue} is not a value produced by {@link #toHeaderValue()}
+     */
+    public static StagedResourceETag fromHeaderValue(String headerValue) {
+        if (headerValue == null) {
+            return null;
+        }
+        String trimmed = headerValue.trim();
+        if (trimmed.length() < 2 || !trimmed.startsWith("\"") || !trimmed.endsWith("\"")) {
+            return null;
+        }
+        try {
+            byte[] json = Base64.getDecoder().decode(trimmed.substring(1, trimmed.length() - 1));
+            return fromJson(new String(json, StandardCharsets.UTF_8));
+        } catch (IllegalArgumentException e) {
+            log.debug("Ignoring staged resource ETag header value that is not valid Base64: " + headerValue, e);
+            return null;
+        }
+    }
+
+    /**
+     * Never throws. A stale, malformed, or future-incompatible value should be treated as "no match, do a full resend" rather than fail the request.
      */
     public static StagedResourceETag fromJson(String json) {
         if (json == null || json.isEmpty()) {

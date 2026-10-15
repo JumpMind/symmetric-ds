@@ -71,6 +71,7 @@ public class SimpleStagingDataWriter {
     protected ResumeCacheEntry resumeEntry;
     protected StagedResourceETag currentBatchEtag;
     protected long stagedCharCount;
+    protected boolean isTransportReadFailure;
 
     private SimpleStagingDataWriter(Builder builder) {
         this.reader = new CsvReader(builder.reader);
@@ -104,7 +105,7 @@ public class SimpleStagingDataWriter {
             if (resumeEntry != null) {
                 resource = beginResumedBatch();
             }
-            while (reader.readRecord()) {
+            while (readNextRecord()) {
                 line = reader.getRawRecord();
                 if (line.startsWith(CsvConstants.CATALOG)) {
                     catalogLine = line;
@@ -312,6 +313,15 @@ public class SimpleStagingDataWriter {
         }
     }
 
+    private boolean readNextRecord() throws IOException {
+        try {
+            return reader.readRecord();
+        } catch (IOException e) {
+            isTransportReadFailure = true;
+            throw e;
+        }
+    }
+
     public Exception getException() {
         return exception;
     }
@@ -429,11 +439,12 @@ public class SimpleStagingDataWriter {
     }
 
     /**
-     * @return whether {@code ex} represents a connection-level failure (not a data/protocol error) for a batch that's genuinely eligible to be preserved for a
-     *         resumed retry: resume is enabled, the batch's staged content is file-backed, and its ETag was captured before the interruption
+     * @return whether {@code ex} represents a connection-level failure (an {@link IOException} raised while reading from the transport, as opposed to a local
+     *         failure writing to staging or a data/protocol error) for a batch that's genuinely eligible to be preserved for a resumed retry: resume is
+     *         enabled, the batch's staged content is file-backed, and its ETag was captured before the interruption
      */
     protected boolean isResumableInterruption(Exception ex, IStagedResource resource) {
-        return ex instanceof IOException && batch != null && currentBatchEtag != null && resource.isFileResource()
+        return ex instanceof IOException && isTransportReadFailure && batch != null && currentBatchEtag != null && resource.isFileResource()
                 && engine.getParameterService().is(ParameterConstants.TRANSPORT_HTTP_RESUME_ENABLED)
                 && getResumeCache() != null;
     }

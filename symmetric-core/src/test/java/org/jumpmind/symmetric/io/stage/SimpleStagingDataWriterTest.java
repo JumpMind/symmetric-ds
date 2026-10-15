@@ -39,6 +39,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -102,7 +103,10 @@ class SimpleStagingDataWriterTest {
     }
 
     private SimpleStagingDataWriter newWriter(String content, ResumeCacheEntry resumeEntry) {
-        BufferedReader reader = new BufferedReader(new StringReader(content));
+        return newWriter(new BufferedReader(new StringReader(content)), resumeEntry);
+    }
+
+    private SimpleStagingDataWriter newWriter(BufferedReader reader, ResumeCacheEntry resumeEntry) {
         return SimpleStagingDataWriter.builder()
                 .processInfo(processInfo)
                 .reader(reader)
@@ -259,6 +263,7 @@ class SimpleStagingDataWriterTest {
     @Test
     void isResumableInterruption_allConditionsMet_returnsTrue() {
         SimpleStagingDataWriter writer = newWriter("", null);
+        writer.isTransportReadFailure = true;
         writer.batch = new Batch(BatchType.LOAD, 1L, "channel1", BinaryEncoding.NONE, "node1", "me", false);
         writer.currentBatchEtag = new StagedResourceETag(1L, 2L);
         IStagedResource resource = mock(IStagedResource.class);
@@ -268,8 +273,20 @@ class SimpleStagingDataWriterTest {
     }
 
     @Test
+    void isResumableInterruption_localStagingFailure_returnsFalse() {
+        SimpleStagingDataWriter writer = newWriter("", null);
+        writer.batch = new Batch(BatchType.LOAD, 1L, "channel1", BinaryEncoding.NONE, "node1", "me", false);
+        writer.currentBatchEtag = new StagedResourceETag(1L, 2L);
+        IStagedResource resource = mock(IStagedResource.class);
+        when(resource.isFileResource()).thenReturn(true);
+        when(parameterService.is(ParameterConstants.TRANSPORT_HTTP_RESUME_ENABLED)).thenReturn(true);
+        assertFalse(writer.isResumableInterruption(new IOException("disk full"), resource));
+    }
+
+    @Test
     void isResumableInterruption_nonIOException_returnsFalse() {
         SimpleStagingDataWriter writer = newWriter("", null);
+        writer.isTransportReadFailure = true;
         writer.batch = new Batch(BatchType.LOAD, 1L, "channel1", BinaryEncoding.NONE, "node1", "me", false);
         writer.currentBatchEtag = new StagedResourceETag(1L, 2L);
         IStagedResource resource = mock(IStagedResource.class);
@@ -281,6 +298,7 @@ class SimpleStagingDataWriterTest {
     @Test
     void isResumableInterruption_batchNull_returnsFalse() {
         SimpleStagingDataWriter writer = newWriter("", null);
+        writer.isTransportReadFailure = true;
         writer.currentBatchEtag = new StagedResourceETag(1L, 2L);
         IStagedResource resource = mock(IStagedResource.class);
         when(resource.isFileResource()).thenReturn(true);
@@ -291,6 +309,7 @@ class SimpleStagingDataWriterTest {
     @Test
     void isResumableInterruption_noCurrentEtag_returnsFalse() {
         SimpleStagingDataWriter writer = newWriter("", null);
+        writer.isTransportReadFailure = true;
         writer.batch = new Batch(BatchType.LOAD, 1L, "channel1", BinaryEncoding.NONE, "node1", "me", false);
         IStagedResource resource = mock(IStagedResource.class);
         when(resource.isFileResource()).thenReturn(true);
@@ -301,6 +320,7 @@ class SimpleStagingDataWriterTest {
     @Test
     void isResumableInterruption_resourceNotFileBacked_returnsFalse() {
         SimpleStagingDataWriter writer = newWriter("", null);
+        writer.isTransportReadFailure = true;
         writer.batch = new Batch(BatchType.LOAD, 1L, "channel1", BinaryEncoding.NONE, "node1", "me", false);
         writer.currentBatchEtag = new StagedResourceETag(1L, 2L);
         IStagedResource resource = mock(IStagedResource.class);
@@ -312,6 +332,7 @@ class SimpleStagingDataWriterTest {
     @Test
     void isResumableInterruption_resumeDisabled_returnsFalse() {
         SimpleStagingDataWriter writer = newWriter("", null);
+        writer.isTransportReadFailure = true;
         writer.batch = new Batch(BatchType.LOAD, 1L, "channel1", BinaryEncoding.NONE, "node1", "me", false);
         writer.currentBatchEtag = new StagedResourceETag(1L, 2L);
         IStagedResource resource = mock(IStagedResource.class);
@@ -323,6 +344,7 @@ class SimpleStagingDataWriterTest {
     @Test
     void isResumableInterruption_noResumeCacheAvailable_returnsFalse() {
         SimpleStagingDataWriter writer = newWriter("", null);
+        writer.isTransportReadFailure = true;
         writer.batch = new Batch(BatchType.LOAD, 1L, "channel1", BinaryEncoding.NONE, "node1", "me", false);
         writer.currentBatchEtag = new StagedResourceETag(1L, 2L);
         IStagedResource resource = mock(IStagedResource.class);
@@ -437,7 +459,18 @@ class SimpleStagingDataWriterTest {
         }
     }
 
-    private SimpleStagingDataWriter newWriterWithPoisonedResource(IStagedResource stagedResource, int failOnWriteCall) {
+    private SimpleStagingDataWriter newWriterWithDroppedConnection(IStagedResource stagedResource) {
+        StagingManager mockStagingManager = mock(StagingManager.class);
+        when(engine.getStagingManager()).thenReturn(mockStagingManager);
+        when(mockStagingManager.create(Constants.STAGING_CATEGORY_INCOMING, "node1", 100L)).thenReturn(stagedResource);
+        when(stagedResource.getWriter(0L)).thenReturn(new BufferedWriter(new StringWriter()));
+        String etagJson = new StagedResourceETag(123L, 456L).toJson();
+        String receivedPart = "nodeid,node1\nbinary,NONE\nchannel,channel1\nbatch,100\netag," + etagJson + "\ninsert,1,foo\n";
+        String content = receivedPart + "insert,2,bar\ncommit,100\n";
+        return newWriter(new BufferedReader(new DropAfterNCharsReader(content, receivedPart.length() + 3)), null);
+    }
+
+    private SimpleStagingDataWriter newWriterWithFailingStagingWrite(IStagedResource stagedResource, int failOnWriteCall) {
         StagingManager mockStagingManager = mock(StagingManager.class);
         when(engine.getStagingManager()).thenReturn(mockStagingManager);
         when(mockStagingManager.create(Constants.STAGING_CATEGORY_INCOMING, "node1", 100L)).thenReturn(stagedResource);
@@ -452,7 +485,7 @@ class SimpleStagingDataWriterTest {
         IStagedResource stagedResource = mock(IStagedResource.class);
         when(stagedResource.isFileResource()).thenReturn(true);
         when(parameterService.is(ParameterConstants.TRANSPORT_HTTP_RESUME_ENABLED)).thenReturn(true);
-        SimpleStagingDataWriter writer = newWriterWithPoisonedResource(stagedResource, 9);
+        SimpleStagingDataWriter writer = newWriterWithDroppedConnection(stagedResource);
         writer.process();
         assertNotNull(writer.getException());
         assertTrue(writer.getException() instanceof IOException);
@@ -466,7 +499,7 @@ class SimpleStagingDataWriterTest {
         IStagedResource stagedResource = mock(IStagedResource.class);
         when(stagedResource.isFileResource()).thenReturn(true);
         when(parameterService.is(ParameterConstants.TRANSPORT_HTTP_RESUME_ENABLED)).thenReturn(false);
-        SimpleStagingDataWriter writer = newWriterWithPoisonedResource(stagedResource, 9);
+        SimpleStagingDataWriter writer = newWriterWithDroppedConnection(stagedResource);
         writer.process();
         assertNotNull(writer.getException());
         verify(stagedResource).delete();
@@ -478,9 +511,22 @@ class SimpleStagingDataWriterTest {
         IStagedResource stagedResource = mock(IStagedResource.class);
         when(stagedResource.isFileResource()).thenReturn(false);
         when(parameterService.is(ParameterConstants.TRANSPORT_HTTP_RESUME_ENABLED)).thenReturn(true);
-        SimpleStagingDataWriter writer = newWriterWithPoisonedResource(stagedResource, 9);
+        SimpleStagingDataWriter writer = newWriterWithDroppedConnection(stagedResource);
         writer.process();
         assertNotNull(writer.getException());
+        verify(stagedResource).delete();
+        verify(resumeCache, never()).put(any(), anyLong(), any());
+    }
+
+    @Test
+    void process_ioExceptionWritingToStaging_deletesResourceAndDoesNotRegisterForResume() throws IOException {
+        IStagedResource stagedResource = mock(IStagedResource.class);
+        when(stagedResource.isFileResource()).thenReturn(true);
+        when(parameterService.is(ParameterConstants.TRANSPORT_HTTP_RESUME_ENABLED)).thenReturn(true);
+        SimpleStagingDataWriter writer = newWriterWithFailingStagingWrite(stagedResource, 9);
+        writer.process();
+        assertNotNull(writer.getException());
+        assertTrue(writer.getException() instanceof IOException);
         verify(stagedResource).delete();
         verify(resumeCache, never()).put(any(), anyLong(), any());
     }
@@ -596,5 +642,35 @@ class SimpleStagingDataWriterTest {
             }
         }
         return text.toString();
+    }
+
+    /**
+     * A {@link Reader} that serves the given content up to a cut-off point and then throws {@link IOException}, simulating a connection that drops partway
+     * through a response.
+     */
+    private static class DropAfterNCharsReader extends Reader {
+        private final StringReader delegate;
+        private final int failAfterChars;
+        private int charsRead = 0;
+
+        DropAfterNCharsReader(String content, int failAfterChars) {
+            this.delegate = new StringReader(content);
+            this.failAfterChars = failAfterChars;
+        }
+
+        @Override
+        public int read(char[] buffer, int offset, int length) throws IOException {
+            if (charsRead >= failAfterChars) {
+                throw new IOException("Simulated connection drop");
+            }
+            int count = delegate.read(buffer, offset, Math.min(length, failAfterChars - charsRead));
+            charsRead += Math.max(count, 0);
+            return count;
+        }
+
+        @Override
+        public void close() {
+            delegate.close();
+        }
     }
 }

@@ -147,14 +147,14 @@ class DataLoaderServiceTest {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Map<String, String>> propsCaptor = ArgumentCaptor.forClass(Map.class);
         verify(transportManager).getPullTransport(eq(remote), eq(local), any(), propsCaptor.capture(), any(), isNull());
-        assertNull(propsCaptor.getValue().get(WebConstants.HEADER_IF_ETAG));
+        assertNull(propsCaptor.getValue().get(WebConstants.HEADER_IF_RANGE));
         assertNull(propsCaptor.getValue().get(WebConstants.HEADER_RANGE));
         verify(dataLoaderService).loadDataFromTransport(any(), eq(remote), eq(transport), isNull(), eq(status), isNull());
         verify(resumeCache, never()).remove(any(), any(Long.class));
     }
 
     @Test
-    void loadDataFromPull_pendingResume_addsIfETagAndRangeHeadersAndRequestsResumeBatchId() throws Exception {
+    void loadDataFromPull_pendingResume_addsIfRangeAndRangeHeadersAndRequestsResumeBatchId() throws Exception {
         StagedResourceETag etag = new StagedResourceETag(111L, 500L);
         ResumeCacheEntry pendingResume = ResumeCacheEntry.builder()
                 .nodeId("remote1")
@@ -174,7 +174,7 @@ class DataLoaderServiceTest {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Map<String, String>> propsCaptor = ArgumentCaptor.forClass(Map.class);
         verify(transportManager).getPullTransport(eq(remote), eq(local), any(), propsCaptor.capture(), any(), eq(77L));
-        assertEquals(etag.toJson(), propsCaptor.getValue().get(WebConstants.HEADER_IF_ETAG));
+        assertEquals(etag.toHeaderValue(), propsCaptor.getValue().get(WebConstants.HEADER_IF_RANGE));
         assertEquals("chars=200-", propsCaptor.getValue().get(WebConstants.HEADER_RANGE));
         verify(dataLoaderService).loadDataFromTransport(any(), eq(remote), eq(transport), isNull(), eq(status), eq(pendingResume));
         verify(resumeCache, never()).remove(any(), any(Long.class));
@@ -246,7 +246,7 @@ class DataLoaderServiceTest {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Map<String, String>> propsCaptor = ArgumentCaptor.forClass(Map.class);
         verify(transportManager).getPullTransport(eq(remote), eq(local), any(), propsCaptor.capture(), any(), isNull());
-        assertNull(propsCaptor.getValue().get(WebConstants.HEADER_IF_ETAG));
+        assertNull(propsCaptor.getValue().get(WebConstants.HEADER_IF_RANGE));
         assertNull(propsCaptor.getValue().get(WebConstants.HEADER_RANGE));
         verify(dataLoaderService).loadDataFromTransport(any(), eq(remote), eq(transport), isNull(), eq(status), isNull());
         verify(resumeCache, never()).remove(any(), any(Long.class));
