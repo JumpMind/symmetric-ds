@@ -29,7 +29,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * Releases a soft push reservation when the connection that carried the HEAD request closes before the push arrives. Implementations are specific to a web
  * server, so callers depend only on this interface.
  */
-public interface IReservationConnectionCloseTracker {
+interface IReservationConnectionCloseTracker {
     /**
      * @return true if the reservation will be released when the request's connection closes, false if the connection cannot be tracked and the reservation will
      *         simply expire
