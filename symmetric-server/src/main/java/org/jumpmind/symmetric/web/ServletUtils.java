@@ -37,6 +37,8 @@ import org.apache.commons.text.StringEscapeUtils;
  * Utility methods for working with {@link Servlet}s
  */
 public class ServletUtils {
+    private static final String[] FORWARDING_HEADERS = { "Forwarded", "X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Proto", "X-Real-IP" };
+
     private ServletUtils() {
     }
 
@@ -50,6 +52,18 @@ public class ServletUtils {
      */
     public static boolean sendError(final HttpServletResponse resp, final int statusCode) throws IOException {
         return sendError(resp, statusCode, null);
+    }
+
+    /**
+     * @return true if the request carries a header that a proxy or load balancer adds when it forwards a request
+     */
+    public static boolean hasForwardingHeader(HttpServletRequest request) {
+        for (String header : FORWARDING_HEADERS) {
+            if (request.getHeader(header) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static String whereAreYou(HttpServletRequest request) {
