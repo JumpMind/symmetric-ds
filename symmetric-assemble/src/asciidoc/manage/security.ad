@@ -70,7 +70,7 @@ Software on the node, such as a device management agent, writes the current toke
 |The token that was read from the file. SymmetricDS sets this value itself, so it cannot be edited. It is kept in memory only, is never saved to the <<PARAMETER>> table or synchronized to other nodes, and is redacted from support snapshots.
 |===
 
-The file must contain a single raw token and nothing else: three Base64URL parts separated by dots. Whitespace around the token is ignored. Anything else, such as a `Bearer` prefix, JSON, or more than one token, is rejected. SymmetricDS handles the file as follows:
+The file must contain a single raw token and nothing else: three Base64URL parts separated by dots. Whitespace around the token is ignored. Anything else, such as a `Bearer` prefix, JSON, or more than one token, is rejected. The file cannot exceed 64KB. SymmetricDS handles the file as follows:
 
 * The file is only read again when its last modified time or size changes.
 * If the file cannot be read or does not hold a valid token, SymmetricDS tries up to five times, half a second apart, in case the other software is still writing it. If all five attempts fail and an earlier token was loaded from the file, SymmetricDS keeps sending the earlier token. If no earlier token was loaded, no token is sent.
