@@ -38,7 +38,8 @@ final public class ParameterConstants {
     public static final String REDACTED = "***REDACTED***";
     public static final String[] REDACTED_PROPERTIES = new String[] { "db.password", "target.db.password", "smtp.password", "redshift.bulk.load.s3.access.key",
             "redshift.bulk.load.s3.secret.key", "opensearch.load.aws.access.key", "opensearch.load.aws.secret.key", "cloud.bulk.load.s3.access.key",
-            "cloud.bulk.load.s3.secret.key", "cloud.bulk.load.azure.sas.token", "registration.secret", "file.sync.s3.secret.key", "rest.api.default.key" };
+            "cloud.bulk.load.s3.secret.key", "cloud.bulk.load.azure.sas.token", "registration.secret", "file.sync.s3.secret.key", "rest.api.default.key",
+            "http.jwt.client.token" };
 
     private ParameterConstants() {
     }
@@ -475,6 +476,7 @@ final public class ParameterConstants {
     public static final String CAPTURE_TYPE_TIME_BASED = "time.based.capture";
     public static final String FILESYNCTRACKER_MAX_ROWS_BEFORE_COMMIT = "filesynctracker.max.rows.before.commit";
     public static final String SYNC_USE_READY_QUEUES = "sync.use.ready.queues";
+    public static final String SYNC_EVENT_ENABLED = "sync.event.enabled";
     public static final String KEEP_BULK_STAGING_FILES = "keep.bulk.staging.files";
     public static final String SHOW_PIPELINES_VIEW = "console.show.pipelines.view";
     public final static String TRIGGER_CAPTURE_DDL_SEND_TABLE = "trigger.capture.ddl.send.table";

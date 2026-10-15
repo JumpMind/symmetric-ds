@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 public class SymmetricPushClient {
     private static final Logger log = LoggerFactory.getLogger(SymmetricPushClient.class);
+    protected HttpTransportManager transportManager;
     protected String nodeId;
     protected String securityToken;
     protected String syncUrl;
@@ -51,8 +52,9 @@ public class SymmetricPushClient {
     protected ProtocolDataWriter writer;
     protected Batch batch;
 
-    public SymmetricPushClient(String nodeId, String securityToken, String syncUrl) {
+    public SymmetricPushClient(HttpTransportManager transportManager, String nodeId, String securityToken, String syncUrl) {
         super();
+        this.transportManager = transportManager;
         this.nodeId = nodeId;
         this.securityToken = securityToken;
         this.syncUrl = syncUrl;
@@ -62,7 +64,7 @@ public class SymmetricPushClient {
 
     public void open() {
         try {
-            transport = new HttpOutgoingTransport(new HttpTransportManager(), URI.create(buildUrl()).toURL(), 30000, 30000, true, 0, -1, null,
+            transport = new HttpOutgoingTransport(transportManager, URI.create(buildUrl()).toURL(), 30000, 30000, true, 0, -1, null,
                     null, false, -1, false);
             writer = new ProtocolDataWriter(nodeId, transport.openWriter(), false, false, false);
             writer.start(batch);
@@ -79,8 +81,7 @@ public class SymmetricPushClient {
             String ackExtendedString = reader.readLine();
             log.debug("Reading ack: {}", ackString);
             log.debug("Reading extend ack: {}", ackExtendedString);
-            List<BatchAck> batchAcks = new HttpTransportManager().readAcknowledgement(ackString,
-                    ackExtendedString);
+            List<BatchAck> batchAcks = transportManager.readAcknowledgement(ackString, ackExtendedString);
             if (batchAcks.size() > 0) {
                 return batchAcks.get(0);
             } else {
