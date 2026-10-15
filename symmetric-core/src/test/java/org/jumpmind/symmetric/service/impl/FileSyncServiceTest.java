@@ -519,6 +519,29 @@ class FileSyncServiceTest {
     }
 
     @Test
+    void pullFilesFromNode_transportWithoutHeaders_pullsNormally() throws IOException {
+        String nodeId = "node1";
+        NodeCommunication nodeCommunication = mock(NodeCommunication.class);
+        Node remoteNode = new Node();
+        remoteNode.setNodeId(nodeId);
+        when(nodeCommunication.getNodeId()).thenReturn(nodeId);
+        when(nodeCommunication.getNode()).thenReturn(remoteNode);
+        RemoteNodeStatus status = new RemoteNodeStatus(nodeId, Constants.CHANNEL_FILESYNC, new HashMap<>());
+        Node identity = new Node();
+        identity.setNodeId("localNode");
+        when(resumeCache.getPendingFileSyncEntryForNode(nodeId)).thenReturn(null);
+        when(engine.getStatisticManager().newProcessInfo(any())).thenReturn(new ProcessInfo());
+        IIncomingTransport transport = mock(IIncomingTransport.class);
+        when(transport.getHeaders()).thenReturn(null);
+        when(transport.openStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+        when(engine.getTransportManager().getFilePullTransport(any(), any(), any(), any(), any(), any())).thenReturn(transport);
+        doReturn(new ArrayList<IncomingBatch>()).when(fileSyncService).processZip(any(), any(), any());
+        fileSyncService.pullFilesFromNode(nodeCommunication, status, identity, new NodeSecurity());
+        verify(fileSyncService).processZip(any(), eq(nodeId), any());
+        verify(fileSyncService, never()).processEnvelopedZip(any(), any(), any());
+    }
+
+    @Test
     void pullFilesFromNode_pendingFileSyncResumeFromDifferentQueue_stillHonoredAndRequestsResumeBatchId() throws IOException {
         String nodeId = "node1";
         NodeCommunication nodeCommunication = mock(NodeCommunication.class);

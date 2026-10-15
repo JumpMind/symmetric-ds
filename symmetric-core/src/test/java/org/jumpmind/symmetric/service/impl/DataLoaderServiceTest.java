@@ -201,6 +201,25 @@ class DataLoaderServiceTest {
     }
 
     @Test
+    void loadDataFromPull_pendingResumeAndTransportWithoutHeaders_treatsResumeAsDeclined() throws Exception {
+        ResumeCacheEntry pendingResume = ResumeCacheEntry.builder()
+                .nodeId("remote1")
+                .batchId(77L)
+                .etag(new StagedResourceETag(111L, 500L))
+                .receivedCount(200L)
+                .channelId("channel1")
+                .binaryEncoding("NONE")
+                .cachedAtTime(123L)
+                .queue(Constants.QUEUE_DEFAULT)
+                .build();
+        when(resumeCache.getPendingForNode("remote1", Constants.QUEUE_DEFAULT)).thenReturn(pendingResume);
+        when(transport.getHeaders()).thenReturn(null);
+        dataLoaderService.loadDataFromPull(remote, status);
+        verify(resumeCache).remove("remote1", 77L);
+        verify(dataLoaderService).loadDataFromTransport(any(), eq(remote), eq(transport), isNull(), eq(status), isNull());
+    }
+
+    @Test
     void loadDataFromPull_noResumeCacheAvailable_pullsNormallyWithoutNpe() throws Exception {
         when(transportManager.getResumeCache()).thenReturn(null);
         when(transport.getHeaders()).thenReturn(new HashMap<>());

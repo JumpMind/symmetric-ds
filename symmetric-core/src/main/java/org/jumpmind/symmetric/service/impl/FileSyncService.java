@@ -1642,7 +1642,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
 
     private List<IncomingBatch> receiveFileSyncBatches(IIncomingTransport transport, NodeCommunication nodeCommunication,
             ProcessInfo processInfo, IHttpResumeCache resumeCache, ResumeCacheEntry pendingResume) throws IOException {
-        if (pendingResume != null && transport.getHeaders().containsKey(WebConstants.HEADER_CONTENT_RANGE)) {
+        if (pendingResume != null && hasResponseHeader(transport, WebConstants.HEADER_CONTENT_RANGE)) {
             return resumePartialBatch(transport.openStream(), nodeCommunication.getNodeId(), processInfo, pendingResume);
         }
         if (pendingResume != null) {
@@ -1650,10 +1650,15 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                     + "or an older peer). Falling back to a full pull.", pendingResume.getBatchId(), nodeCommunication.getNodeId());
             resumeCache.remove(nodeCommunication.getNodeId(), pendingResume.getBatchId());
         }
-        if (transport.getHeaders().containsKey(WebConstants.HEADER_FILESYNC_FORMAT)) {
+        if (hasResponseHeader(transport, WebConstants.HEADER_FILESYNC_FORMAT)) {
             return processEnvelopedZip(transport.openStream(), nodeCommunication.getNodeId(), processInfo);
         }
         return processZip(transport.openStream(), nodeCommunication.getNodeId(), processInfo);
+    }
+
+    private boolean hasResponseHeader(IIncomingTransport transport, String headerName) throws IOException {
+        Map<String, String> headers = transport.getHeaders();
+        return headers != null && headers.containsKey(headerName);
     }
 
     protected RemoteNodeStatuses queueJob(boolean force, long minimumPeriodMs, String clusterLock,

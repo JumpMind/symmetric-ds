@@ -295,7 +295,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         localSecurity.getNodePassword(), requestProperties, registrationUrl,
                         pendingResume != null ? pendingResume.getBatchId() : null);
                 if (pendingResume != null) {
-                    boolean serverResumed = transport.getHeaders().containsKey(WebConstants.HEADER_CONTENT_RANGE);
+                    Map<String, String> responseHeaders = transport.getHeaders();
+                    boolean serverResumed = responseHeaders != null && responseHeaders.containsKey(WebConstants.HEADER_CONTENT_RANGE);
                     if (serverResumed) {
                         confirmedResumeEntry = pendingResume;
                         log.info("Resuming batch {} from node {}: server honored the resumed retry, appending to {} characters already received.",
