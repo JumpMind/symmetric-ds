@@ -34,7 +34,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * Chooses the {@link IReservationConnectionCloseTracker} for the web server this engine runs in. Only Jetty is supported, so any other web server gets a
  * tracker that leaves reservations to expire.
  */
-public class ReservationConnectionCloseTrackerFactory {
+class ReservationConnectionCloseTrackerFactory {
     private static final Logger log = LoggerFactory.getLogger(ReservationConnectionCloseTrackerFactory.class);
     private static final String[] JETTY_CLASS_NAMES = { "org.eclipse.jetty.ee11.servlet.ServletContextRequest", "org.eclipse.jetty.io.Connection" };
 
