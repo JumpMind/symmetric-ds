@@ -35,3 +35,22 @@ As an alternative to creating a key through the console, a default REST API key 
 Set the `rest.api.default.key` parameter (or the `SYM_REST_API_DEFAULT_KEY` environment variable) to a value that is at least 32 characters long. Shorter or blank values are ignored and have no effect, meaning the REST API will behave as if no default key were configured. This parameter only takes effect after the engine is deployed and started.
 
 The default key grants the same full read-write access as a read-write console-managed key. Like any other REST API key, it only works when `rest.api.enable` (or `SYM_REST_API_ENABLE`) is set to `true`.
+
+==== Authenticating REST Calls with a Bearer Token
+
+When bearer token validation is turned on (See <<Bearer Token Authentication>>), a REST API call can be authenticated with a token instead of a REST API key. The token is sent in the `Authorization` header:
+
+[source, cli]
+----
+curl -X GET "https://localhost:31415/api/engine/corp-000/channelstatus" -H "accept: */*" -H "Authorization: Bearer <token>"
+----
+
+A token gives read-only access and is accepted only for `GET` calls. The token is checked against the engine named in the URL. If the URL does not name an engine that exists, the first engine is used.
+
+REST API keys keep working when validation is on. The call is authenticated as follows:
+
+* A valid default key is accepted, and the token is not checked.
+* A key that the node recognizes decides the call on its own, and the token is not checked. A `readwrite` key is accepted for any method. A `readonly` key is accepted for `GET` calls, and is rejected with HTTP status 659 (forbidden) for any other method, even if the call also has a valid token.
+* A key that is not recognized, or no key at all, is accepted only if the call is a `GET` with a valid token.
+
+The REST API must still be enabled with `rest.api.enable`. Unlike sync calls, REST calls are always checked, and `http.jwt.server.enforce.enabled` has no effect on them. A token for the REST API is not tied to a node, so the check of `http.jwt.server.node.id.claim` is not made.
