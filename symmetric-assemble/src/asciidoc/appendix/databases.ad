@@ -412,6 +412,19 @@ by database.
 |
 |
 
+|SQL Database in Microsoft Fabric *
+|Tested on 12.0.2000.8
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
 |SQL Server *
 |2005 and above
 |✔
@@ -702,6 +715,13 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 |✔
 |select user_name()
  
+|SQL Database in Microsoft Fabric
+|
+|✔
+|select db_name()
+|✔
+|select schema_name()
+
 |SQL Server
 |2000
 |✔
@@ -788,6 +808,7 @@ include::{includedir}/appendix/rest.ad[]
 include::{includedir}/appendix/singlestore.ad[]
 include::{includedir}/appendix/snowflake.ad[]
 include::{includedir}/appendix/sqlite.ad[]
+include::{includedir}/appendix/mssqlfabric.ad[]
 include::{includedir}/appendix/mssqlserver.ad[]
 include::{includedir}/appendix/sybase-ase.ad[]
 include::{includedir}/appendix/sybase-sqlanywhere.ad[]

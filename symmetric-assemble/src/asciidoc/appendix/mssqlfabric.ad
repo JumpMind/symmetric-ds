@@ -1,0 +1,60 @@
+
+=== SQL Database in Microsoft Fabric
+
+ifndef::pro[]
+
+SQL Database in Microsoft Fabric is only supported in the professional version of SymmetricDS.
+
+endif::pro[]
+
+ifdef::pro[]
+
+SQL Database in Microsoft Fabric is supported as a write-only target.  See <<Write-Only Node>> for details on setting up a write-only node in SymmetricDS.
+It uses the https://learn.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server[Microsoft JDBC driver].
+
+==== Setup
+
+Set up the node by using the <<Set Up New Replication,Configure Diagram>> or the <<Add Node,Connect Database>> wizard and selecting SQL Database in
+Microsoft Fabric as the type.  Use the full host name of the database for the endpoint and the name of the database, including the generated suffix,
+for the database name. The following is an example of the JDBC URL:
+
+----
+jdbc:sqlserver://<workspace>.database.fabric.microsoft.com:1433;database={<database_name>-<guid>};encrypt=true;trustServerCertificate=false;authentication=ActiveDirectoryServicePrincipal
+----
+
+The SQL Database in Microsoft Fabric accepts only Microsoft Entra ID authentication.  SymmetricDS uses the service principal of an Entra app registration.
+The credentials are entered in the User Id and Password fields:
+
+[horizontal]
+User Id:: The Application (client) ID of the app registration
+Password:: A client secret of the app registration
+
+WARNING: The connection string shown by the Fabric portal uses `Authentication=ActiveDirectoryInteractive`.  This mode needs to open a browser for
+sign-in whenever it opens a connection, which is not compatible with SymmetricDS.  Use `Authentication=ActiveDirectoryServicePrincipal` instead.
+
+The `azurekv` module contains the Microsoft Authentication Library that is required for Entra ID authentication.  The web console downloads it when
+the connection is tested, or you can run `symadmin module install azurekv` to install it.
+
+==== Permissions
+
+The app registration needs to be granted access in each of the following steps:
+
+. Create an app registration in Microsoft Entra ID and a client secret for it.  Depending on the tenant settings, service principals might need to be
+allowed to use Fabric APIs, which is a tenant setting in the Fabric admin portal.
+. Grant the app registration access to the database item in Fabric, using the Share action on the SQL database item (or a workspace role) with at least the Read permission.
+. Create a database user for the app registration and add it to the roles that SymmetricDS needs.  Connect to the database as an administrator and run the following
+script, replacing `<app registration name>` with the display name of the app registration:
+
+[source, Sql]
+----
+CREATE USER [<app registration name>] FROM EXTERNAL PROVIDER;
+ALTER ROLE db_ddladmin ADD MEMBER [<app registration name>];
+ALTER ROLE db_datareader ADD MEMBER [<app registration name>];
+ALTER ROLE db_datawriter ADD MEMBER [<app registration name>];
+----
+
+==== Bulk Loading
+
+Bulk loading is not available for SQL Database in Microsoft Fabric.  Data is loaded using JDBC batch statements.
+
+endif::pro[]
