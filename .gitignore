@@ -23,7 +23,7 @@
 **/.classpath
 **/.project
 **/.settings/
-**/.factorypath
+*.factorypath
 .metadata
 bin/
 tmp/
