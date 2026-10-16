@@ -34,6 +34,53 @@ import org.junit.jupiter.api.Test;
 
 class ServletUtilsTest {
     @Test
+    void testHasForwardingHeader_withForwarded() {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        when(req.getHeader("Forwarded")).thenReturn("for=10.0.0.1");
+        assertTrue(ServletUtils.hasForwardingHeader(req));
+    }
+
+    @Test
+    void testHasForwardingHeader_withXForwardedFor() {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        when(req.getHeader("X-Forwarded-For")).thenReturn("10.0.0.1");
+        assertTrue(ServletUtils.hasForwardingHeader(req));
+    }
+
+    @Test
+    void testHasForwardingHeader_withXForwardedHost() {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        when(req.getHeader("X-Forwarded-Host")).thenReturn("shore.example.com");
+        assertTrue(ServletUtils.hasForwardingHeader(req));
+    }
+
+    @Test
+    void testHasForwardingHeader_withXForwardedProto() {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        when(req.getHeader("X-Forwarded-Proto")).thenReturn("https");
+        assertTrue(ServletUtils.hasForwardingHeader(req));
+    }
+
+    @Test
+    void testHasForwardingHeader_withXRealIp() {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        when(req.getHeader("X-Real-IP")).thenReturn("10.0.0.1");
+        assertTrue(ServletUtils.hasForwardingHeader(req));
+    }
+
+    @Test
+    void testHasForwardingHeader_withoutHeaders() {
+        assertFalse(ServletUtils.hasForwardingHeader(mock(HttpServletRequest.class)));
+    }
+
+    @Test
+    void testHasForwardingHeader_withUnrelatedHeader() {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        when(req.getHeader("User-Agent")).thenReturn("SymmetricDS");
+        assertFalse(ServletUtils.hasForwardingHeader(req));
+    }
+
+    @Test
     void testNormalizeRequestUri_normalizeStripsContextAndServletPath() {
         HttpServletRequest req = mock(HttpServletRequest.class);
         when(req.getRequestURI()).thenReturn("/sync/engine/ack");

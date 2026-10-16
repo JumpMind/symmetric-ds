@@ -62,6 +62,15 @@ public interface IConcurrentConnectionManager {
     };
 
     /**
+     * @param status
+     *            the outcome of the request
+     * @param reservation
+     *            the reservation that was granted by this request, or null if the request was not accepted
+     */
+    record ReservationResult(ReservationStatus status, Reservation reservation) {
+    }
+
+    /**
      * @param nodeId
      * @param reservationRequest
      *            if true then hold onto reservation for the time it typically takes for a node to reconnect after the initial request. Otherwise, we know that
@@ -71,11 +80,26 @@ public interface IConcurrentConnectionManager {
     public ReservationStatus reserveConnection(String nodeId, String channelId, String poolId, ReservationType reservationRequest,
             boolean requiresExistingReservation);
 
+    /**
+     * @param nodeId
+     * @param reservationRequest
+     *            if true then hold onto reservation for the time it typically takes for a node to reconnect after the initial request. Otherwise, we know that
+     *            the node has actually connected for activity.
+     * @return the status of the request, and the reservation it granted when the connection has been reserved and the node is meant to proceed with its current
+     */
+    public ReservationResult reserveConnectionWithResult(String nodeId, String channelId, String poolId, ReservationType reservationRequest,
+            boolean requiresExistingReservation);
+
     public boolean releaseConnection(String nodeId, String poolId);
 
     public boolean releaseConnection(String nodeId, String channelId, String poolId);
 
     public int getReservationCount(String poolId);
+
+    /**
+     * Releases the reservation only if it is still the same soft reservation, so a stale caller never releases one that was renewed or claimed by a push.
+     */
+    public boolean releaseSoftReservation(String nodeId, String channelId, String poolId, Reservation reservation);
 
     public Map<String, Map<String, NodeConnectionStatistics>> getNodeConnectionStatisticsByPoolByNodeId();
 
