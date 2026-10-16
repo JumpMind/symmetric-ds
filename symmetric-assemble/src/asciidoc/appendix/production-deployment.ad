@@ -78,3 +78,26 @@ Every node announces itself to JCS from <<NODE_HOST>> in addition to (not instea
 - Never reuse example/default credentials from a lab or sample environment in Production!
 - Grant the SymmetricDS database user only the privileges it needs against the schemas it synchronizes; avoid handing it broader account privileges than the sync workload requires.
 - Enforce HTTPS end-to-end. If TLS terminates at the load balancer rather than at each node, confirm the load-balancer-to-node hop is also encrypted, or is on a network segment trusted to the same degree as the one required for `cluster.jcs.port`.
+
+ifdef::pro[]
+- Where nodes are reachable from networks that are not fully trusted, consider requiring a bearer token from an identity provider on every sync request, in addition to the node's own security token. See <<Bearer Token Authentication>> and <<Token-Based Authentication in Enterprise Deployments>>.
+
+=== Token-Based Authentication in Enterprise Deployments
+
+Bearer token authentication (see <<Bearer Token Authentication>>) fits deployments where an identity provider already vouches for the devices that run the nodes, such as stores or other remote sites that sync with a hub, and the organization wants the hub to accept sync requests only from devices that hold a current token. The following scenarios cover how to plan for it.
+
+Which nodes send and which validate:: A node that makes outbound sync calls to a parent sends a token (`http.jwt.client.send.enabled`). A node that receives sync calls validates (`http.jwt.server.validation.enabled`). A node in the middle tier does both. Registration requests are validated too, so a node that has no token cannot register. Each node that sends needs software that keeps a current token in the file named by `http.jwt.client.token.location`, and the <<Refresh Cache Job>> enabled so that the new token is picked up.
+
+Rolling out to an existing network:: Do not enable validation on a hub before its nodes can send tokens, or they will be locked out. Roll out in this order. First, deliver tokens to the nodes and enable sending, which can be done for a node group at a time from the Configure -> Details -> Parameters screen. Second, enable validation on the hubs with `http.jwt.server.enforce.enabled=false`, so that failures are only logged. Third, review the hub logs until no node is reported as failing. Finally, set `http.jwt.server.enforce.enabled=true` and restart the hubs.
+
+Hubs behind a load balancer, gateway, or in the cloud:: Terminate TLS so that the token never crosses a network unencrypted. The `ping`, `info`, and health endpoints are not checked for a token, so do not expose them to untrusted networks, or protect them at the gateway. Make sure that the gateway passes the `Authorization` header on to SymmetricDS unchanged.
+
+Remote sites with an unreliable WAN:: Set `http.jwt.server.offline.leniency.minutes` to the longest outage that a site must survive without losing sync. While the identity provider is unreachable, the hub accepts a token that expired within that time. Make sure that every hub can reach the identity provider at least once before it goes into service, because the signing keys are fetched from the identity provider and then kept on disk. See <<Network Outages and Token Expiration>>.
+
+Token lifetime and clocks:: The identity provider decides how long a token lives. Make sure that the software that writes the token file renews it well before it expires, and keep the clocks of nodes synchronized, for example with NTP, because the check of the expiration is made against the clock of the receiving node.
+
+Recovering from an identity provider problem:: If a misconfiguration or an identity provider outage rejects valid requests, set `http.jwt.server.validation.enabled` to `false` in the database of the affected node. It is read on every request, so it takes effect without a restart. Restrict who can change parameters, because this switch turns the check off.
+
+REST API access:: REST calls to a node can use either a REST API key or, for `GET` calls only, a bearer token. Use REST API keys for automation that must change something. See <<Authenticating REST Calls with a Bearer Token>>.
+
+endif::pro[]
