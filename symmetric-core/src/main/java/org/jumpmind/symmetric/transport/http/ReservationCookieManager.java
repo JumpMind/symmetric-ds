@@ -55,7 +55,7 @@ class ReservationCookieManager {
             log.debug("Not tracking reservation for {} because uri could not be built", url);
             return;
         }
-        outstandingReservationsByUri.compute(getAffinityURI(url), (key, count) -> count == null ? 1 : count + 1);
+        outstandingReservationsByUri.compute(uri, (key, count) -> count == null ? 1 : count + 1);
     }
 
     void endReservation(URL url) {
@@ -64,7 +64,7 @@ class ReservationCookieManager {
             log.debug("Not releasing reservation for {} because uri could not be built", url);
             return;
         }
-        outstandingReservationsByUri.computeIfPresent(getAffinityURI(url), (key, count) -> count <= 1 ? null : count - 1);
+        outstandingReservationsByUri.computeIfPresent(uri, (key, count) -> count <= 1 ? null : count - 1);
     }
 
     void handleServiceBusy(HttpConnection conn) {
