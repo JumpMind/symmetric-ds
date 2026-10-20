@@ -298,6 +298,10 @@ include::appendix/sync-event-stream.ad[]
 endif::pro[]
 
 [appendix]
+== Database Connection Pool
+include::appendix/connection-pool.ad[]
+
+[appendix]
 == Production Deployment Infrastructure Guidelines
 include::appendix/production-deployment.ad[]
 
