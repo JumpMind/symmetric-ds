@@ -1177,14 +1177,14 @@ public class DataService extends AbstractService implements IDataService {
                         }
                         extractRequests = insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
                                 triggerRoutersByHistoryId, transactional, transaction, mapReloadRequests, processInfo, null, extractRequests, isFullLoad);
+                        int fileSyncBatches = insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
+                                transaction, mapReloadRequests, isFullLoad, processInfo);
                         finalizeBatchCount += insertSqlEventsAfterReload(targetNode, nodeIdRecord, loadId, createBy,
                                 transactional, transaction, reverse,
                                 triggerHistories, triggerRoutersByHistoryId,
                                 mapReloadRequests, isFullLoad, symNodeSecurityReloadChannel);
                         insertDeferredIndexBatchesForReload(targetNode, loadId, createBy,
                                 triggerHistories, triggerRoutersByHistoryId, transaction, mapReloadRequests);
-                        int fileSyncBatches = insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
-                                transaction, mapReloadRequests, isFullLoad, processInfo);
                         if (reloadRequests != null && reloadRequests.size() > 0) {
                             updateTableReloadStatusTableCount(platform.supportsMultiThreadedTransactions() ? null : transaction, loadId,
                                     sourceNode.getNodeId(), totalTableCount + fileSyncBatches);
