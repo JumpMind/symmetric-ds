@@ -81,7 +81,12 @@ class ReservationCookieManager {
     }
 
     void clearReservationCookieForUri(HttpConnection conn) {
-        Integer outstandingReservations = outstandingReservationsByUri.get(getAffinityURI(conn.getURL()));
+    	URI uri = getAffinityURI(conn.getURL());
+    	if (uri == null) {
+            log.debug("Not clearing load balancer affinity cookies for {} because uri could not be built", conn.getURL());
+            return;
+        }
+        Integer outstandingReservations = outstandingReservationsByUri.get(uri);
         String uriString = getUri(conn);
         if (outstandingReservations != null && outstandingReservations > 0) {
             log.debug(
@@ -93,11 +98,6 @@ class ReservationCookieManager {
         if (!(handler instanceof CookieManager)) {
             log.debug("Not clearing load balancer affinity cookies for {} because no CookieManager is installed (server.http.cookies.enabled may be false)",
                     uriString);
-            return;
-        }
-        URI uri = getAffinityURI(conn.getURL());
-        if (uri == null) {
-            log.debug("Not clearing load balancer affinity cookies for {} because uri could not be built", conn.getURL());
             return;
         }
         CookieStore store = ((CookieManager) handler).getCookieStore();
