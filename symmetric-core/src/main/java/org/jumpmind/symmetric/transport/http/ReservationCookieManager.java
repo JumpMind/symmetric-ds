@@ -81,8 +81,8 @@ class ReservationCookieManager {
     }
 
     void clearReservationCookieForUri(HttpConnection conn) {
-    	URI uri = getAffinityURI(conn.getURL());
-    	if (uri == null) {
+        URI uri = getAffinityURI(conn.getURL());
+        if (uri == null) {
             log.debug("Not clearing load balancer affinity cookies for {} because uri could not be built", conn.getURL());
             return;
         }
