@@ -23,7 +23,7 @@ The pool size is driven by the below parameters:
 
 endif::pro[]
 
-- `db.pool.max.active` and `db.pool.min.idle` size the primary connection pool; for an endpoint with a separate runtime database (log-based, time-based, or write-only capture), `target.db.pool.max.active` and `target.db.pool.min.idle` size the application-side pool instead. See <<Parameter List>> for the full description of each, and <<Database Connection Pool>> for how each setting behaves under HikariCP and DBCP2.
+- `db.pool.max.active` and `db.pool.min.idle` size the primary connection pool; for an endpoint with a separate runtime database (log-based, time-based, or write-only capture), `target.db.pool.max.active` and `target.db.pool.min.idle` size the application-side pool instead. See <<Parameter List>> for the full description of each, including the pool-type-specific (HikariCP vs. DBCP2) semantics covered under <<CPU and Memory Sizing>>.
 
 ifdef::pro[]
 

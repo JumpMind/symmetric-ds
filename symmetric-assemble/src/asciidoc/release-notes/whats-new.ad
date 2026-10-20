@@ -184,23 +184,6 @@ The feature is controlled by three new parameters:
 * `db.health.check.retry.seconds` — wait period between connection tests while unhealthy (default `60`).
 --
 
-=== HikariCP Connection Pool
---
-SymmetricDS 3.18 uses https://github.com/brettwooldridge/HikariCP[HikariCP] as its default database connection pool, replacing Apache DBCP2. HikariCP ships with SymmetricDS and needs no setup. It replaces broken connections on its own after a database restart or network interruption, and opens new connections at a steady rate when many threads need one at once.
-
-The pool is selected with the `db.pool.type` property in the engine properties file, set to `hikari` or `dbcp2`. DBCP2 remains fully supported.
-
-ifdef::pro[]
-*Upgraded installations keep DBCP2.* When upgrading from a version older than 3.18, the setup program adds `db.pool.type=dbcp2` to every engine properties file that does not already set it. To switch an upgraded engine to HikariCP, change the property to `db.pool.type=hikari` and restart.
-endif::pro[]
-
-ifndef::pro[]
-*Upgraded installations switch to HikariCP* unless the engine properties file sets `db.pool.type`. To keep DBCP2, add `db.pool.type=dbcp2` before starting the upgraded installation.
-endif::pro[]
-
-New HikariCP settings control connection lifetime, idle timeout, keepalive, and leak detection, and some DBCP2 settings are ignored under HikariCP. The Database Connection Pool appendix of the SymmetricDS User Guide compares the two pools property by property and covers tuning and TCP keepalive.
---
-
 === Logging Framework Changed to Logback
 --
 SymmetricDS 3.18 replaces Log4j2 with https://logback.qos.ch/[Logback] as the logging implementation. SymmetricDS continues to log through http://www.slf4j.org/[SLF4J], so log output and logger names are unchanged.
