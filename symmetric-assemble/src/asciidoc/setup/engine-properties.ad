@@ -96,4 +96,6 @@ db.user:: The database username, which is used to login, create, and
 		
 db.password:: The password for the database user.
 		
+db.pool.type:: The connection pool implementation, either `hikari` (the default) or `dbcp2`. See <<Database Connection Pool>>.
+		
 See <<Startup Parameters>>, for additional parameters that can be specified in the engine properties file.
