@@ -342,7 +342,7 @@ subprojects { subproject ->
         springDataVersion = '4.0.6'
         springBootVersion = '4.1.1'
         jtdsVersion = '1.3.1'
-        bouncyCastleVersion = '1.84'
+        bouncyCastleVersion = '1.86'
         animalSnifferVersion = '1.23'
         jnaVersion = '5.14.0'
         jettyVersion = '12.1.12'
