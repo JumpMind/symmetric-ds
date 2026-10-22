@@ -148,6 +148,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     rowsPurged += purgeOutgoingByRetentionCutoff(retentionCutoff);
                 } else {
                     OutgoingContext context = buildOutgoingContext(retentionCutoff);
+                    determineFirstPassEligibility(context);
                     rowsPurged += purgeStrandedBatches();
                     rowsPurged += purgeDataRows(context);
                     rowsPurged += purgeOutgoingBatch(context);
@@ -194,6 +195,66 @@ public class PurgeService extends AbstractService implements IPurgeService {
     }
 
     /**
+     * Decides once per run whether the first pass range deletes are safe for sym_data and for sym_data_event/sym_outgoing_batch. An outstanding batch behind
+     * the purge position means data was skipped by an earlier run, and range deletes would remove its events after the data purge has moved past it, leaving
+     * stranded data. Each query must finish within the long operation threshold, otherwise the first pass is skipped.
+     */
+    protected void determineFirstPassEligibility(OutgoingContext context) {
+        if (!parameterService.is(ParameterConstants.PURGE_FIRST_PASS)) {
+            return;
+        }
+        log.info("Getting first batch_id for outstanding batches");
+        long ts = System.currentTimeMillis();
+        long notOkBatchId = sqlTemplateDirty.queryForLong(getSql("minOutgoingBatchNotStatusSql"), OutgoingBatch.Status.OK.name());
+        if (isLongOperation("first batch_id for outstanding batches", ts, System.currentTimeMillis())) {
+            return;
+        }
+        if (notOkBatchId > 0 && notOkBatchId < context.getMinEventBatchId()) {
+            log.warn("Skipping first pass purge because outstanding batch {} is behind the purge position at batch {}. "
+                    + "Batches that stay outstanding longer than the purge retention cause this.", notOkBatchId, context.getMinEventBatchId());
+            return;
+        }
+        log.info("Getting count of outstanding batches");
+        ts = System.currentTimeMillis();
+        long outstandingCount = sqlTemplateDirty.queryForLong(getSql("countOutgoingBatchNotStatusSql"), OutgoingBatch.Status.OK.name());
+        if (isLongOperation("count of outstanding batches", ts, System.currentTimeMillis())) {
+            return;
+        }
+        long maxOutstandingCount = parameterService.getLong(ParameterConstants.PURGE_FIRST_PASS_OUTSTANDING_BATCHES_THRESHOLD);
+        if (outstandingCount > 0) {
+            log.info("Found " + outstandingCount + " outstanding batches, threshold is " + maxOutstandingCount);
+        }
+        boolean isDataEligible = outstandingCount <= maxOutstandingCount;
+        long minDataId = 0;
+        if (isDataEligible && outstandingCount > 0) {
+            log.info("Getting first data_id for outstanding batches");
+            ts = System.currentTimeMillis();
+            minDataId = sqlTemplateDirty.queryForLong(getSql("selectDataEventMinNotStatusSql"), OutgoingBatch.Status.OK.name());
+            if (isLongOperation("first data_id for outstanding batches", ts, System.currentTimeMillis())) {
+                return;
+            }
+        }
+        context.setMinOutstandingBatchId(notOkBatchId);
+        context.setMinOutstandingDataId(minDataId);
+        context.setFirstPassBatchEligible(true);
+        context.setFirstPassDataEligible(isDataEligible);
+    }
+
+    protected boolean isLongOperation(String queryName, long startTime, long endTime) {
+        long elapsedMs = endTime - startTime;
+        long thresholdMs = getLongOperationThresholdMs();
+        if (elapsedMs > thresholdMs) {
+            log.warn("Skipping first pass purge because the query for {} took {} ms, which exceeds {} ms", queryName, elapsedMs, thresholdMs);
+            return true;
+        }
+        return false;
+    }
+
+    protected long getLongOperationThresholdMs() {
+        return Constants.LONG_OPERATION_THRESHOLD;
+    }
+
+    /**
      * Deletes across sym_data_event and sym_outgoing_batch using ranges of batch_ids. The total eligible range of batch_ids is the first batch_id in the table,
      * or the next batch_id from the previous run, up to the batch_id of the newest batch that is old enough to purge. The first half of the range uses a fast
      * delete by PK. It stops just before the first batch_id of any batch with a not-OK status. The second half of the range uses a slower delete. When deleting
@@ -211,9 +272,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         int maxNumOfDataEventsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
         int dataEventsPurgedCount = 0;
         int outgoingbatchPurgedCount = 0;
-        if (parameterService.is(ParameterConstants.PURGE_FIRST_PASS)) {
-            log.info("Getting first batch_id for outstanding batches");
-            long notOkBatchId = sqlTemplateDirty.queryForLong(getSql("minOutgoingBatchNotStatusSql"), OutgoingBatch.Status.OK.name());
+        if (context.isFirstPassBatchEligible()) {
+            long notOkBatchId = context.getMinOutstandingBatchId();
             long batchRangeMinMax[] = getRangeMinMax(batchMinMax, notOkBatchId);
             long eventRangeMinMax[] = getRangeMinMax(eventMinMax, notOkBatchId);
             batchMinMax = getMinMax(batchMinMax, notOkBatchId, batchRangeMinMax);
@@ -391,33 +451,19 @@ public class PurgeService extends AbstractService implements IPurgeService {
         long minGapStartId = context.getMinDataGapStartId();
         int maxNumOfDataIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
         long dataDeletedCount = 0;
-        if (parameterService.is(ParameterConstants.PURGE_FIRST_PASS)) {
-            log.info("Getting count of outstanding batches");
-            long outstandingCount = sqlTemplateDirty.queryForLong(getSql("countOutgoingBatchNotStatusSql"),
-                    OutgoingBatch.Status.OK.name());
-            long maxOutstandingCount = parameterService.getLong(ParameterConstants.PURGE_FIRST_PASS_OUTSTANDING_BATCHES_THRESHOLD);
-            if (outstandingCount > 0) {
-                log.info("Found " + outstandingCount + " outstanding batches, threshold is " + maxOutstandingCount);
+        if (context.isFirstPassDataEligible()) {
+            long minDataId = context.getMinOutstandingDataId();
+            long rangeMinMax[] = new long[] { minMax[0], Math.min(Math.min(minDataId > 0 ? minDataId - 1 : minMax[1],
+                    minMax[1]), minGapStartId - 1) };
+            if (rangeMinMax[1] == minMax[1]) {
+                minMax[1] = -1;
+            } else if (rangeMinMax[1] == minDataId - 1) {
+                minMax[0] = minDataId;
+            } else if (rangeMinMax[1] == minGapStartId - 1) {
+                minMax[0] = minGapStartId;
             }
-            if (outstandingCount <= maxOutstandingCount) {
-                long minDataId = 0;
-                if (outstandingCount > 0) {
-                    log.info("Getting first data_id for outstanding batches");
-                    minDataId = sqlTemplateDirty.queryForLong(getSql("selectDataEventMinNotStatusSql"),
-                            OutgoingBatch.Status.OK.name());
-                }
-                long rangeMinMax[] = new long[] { minMax[0], Math.min(Math.min(minDataId > 0 ? minDataId - 1 : minMax[1],
-                        minMax[1]), minGapStartId - 1) };
-                if (rangeMinMax[1] == minMax[1]) {
-                    minMax[1] = -1;
-                } else if (rangeMinMax[1] == minDataId - 1) {
-                    minMax[0] = minDataId;
-                } else if (rangeMinMax[1] == minGapStartId - 1) {
-                    minMax[0] = minGapStartId;
-                }
-                dataDeletedCount += purgeByMinMax(rangeMinMax, MinMaxDeleteSql.DATA_RANGE, context, maxNumOfDataIdsToPurgeInTx,
-                        count -> statisticManager.incrementPurgedDataRows(count));
-            }
+            dataDeletedCount += purgeByMinMax(rangeMinMax, MinMaxDeleteSql.DATA_RANGE, context, maxNumOfDataIdsToPurgeInTx,
+                    count -> statisticManager.incrementPurgedDataRows(count));
         }
         dataDeletedCount += purgeByMinMax(minMax, MinMaxDeleteSql.DATA, context, maxNumOfDataIdsToPurgeInTx,
                 count -> statisticManager.incrementPurgedDataRows(count));
@@ -1003,6 +1049,10 @@ public class PurgeService extends AbstractService implements IPurgeService {
         private long minBatchId;
         private long maxBatchId;
         private long minEventBatchId;
+        private long minOutstandingBatchId;
+        private long minOutstandingDataId;
+        private boolean isFirstPassBatchEligible;
+        private boolean isFirstPassDataEligible;
         private List<DataGap> dataGapsExpired;
 
         public OutgoingContext(Calendar retentionCutoff) {
@@ -1063,6 +1113,38 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
         public void setMinEventBatchId(long minEventBatchId) {
             this.minEventBatchId = minEventBatchId;
+        }
+
+        public long getMinOutstandingBatchId() {
+            return minOutstandingBatchId;
+        }
+
+        public void setMinOutstandingBatchId(long minOutstandingBatchId) {
+            this.minOutstandingBatchId = minOutstandingBatchId;
+        }
+
+        public long getMinOutstandingDataId() {
+            return minOutstandingDataId;
+        }
+
+        public void setMinOutstandingDataId(long minOutstandingDataId) {
+            this.minOutstandingDataId = minOutstandingDataId;
+        }
+
+        public boolean isFirstPassBatchEligible() {
+            return isFirstPassBatchEligible;
+        }
+
+        public void setFirstPassBatchEligible(boolean isFirstPassBatchEligible) {
+            this.isFirstPassBatchEligible = isFirstPassBatchEligible;
+        }
+
+        public boolean isFirstPassDataEligible() {
+            return isFirstPassDataEligible;
+        }
+
+        public void setFirstPassDataEligible(boolean isFirstPassDataEligible) {
+            this.isFirstPassDataEligible = isFirstPassDataEligible;
         }
 
         public List<DataGap> getDataGapsExpired() {

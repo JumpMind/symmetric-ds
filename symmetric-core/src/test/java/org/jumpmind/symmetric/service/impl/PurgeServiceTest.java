@@ -21,10 +21,13 @@
 package org.jumpmind.symmetric.service.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -254,6 +257,106 @@ public class PurgeServiceTest {
     }
 
     @Test
+    public void testFirstPassEligibleWhenOutstandingBatchAheadOfPurgePosition() {
+        setupFirstPassEligibleData();
+        purgeService.purgeOutgoing(true);
+        verifyPurgeData(11, 12, 13, 13);
+        verifyPurgeDataEvent(104, 105, 106, 106);
+        verifyPurgeOutgoingBatch(104, 105, 106, 106);
+        verifyPurgeContext(13, 106, 106);
+    }
+
+    @Test
+    public void testFirstPassSkippedWhenOutstandingBatchHoldsDataBehindPurgePosition() {
+        List<Data> datas = newDataList(3, 11, 12);
+        List<DataEvent> dataEvents = new ArrayList<DataEvent>();
+        dataEvents.add(new DataEvent(3, 101));
+        dataEvents.add(new DataEvent(11, 104));
+        dataEvents.add(new DataEvent(12, 105));
+        List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>();
+        batches.add(newOutgoingBatch(101, Constants.CHANNEL_DEFAULT, Status.LD, true));
+        batches.add(newOutgoingBatch(104, Constants.CHANNEL_DEFAULT, Status.OK, true));
+        batches.add(newOutgoingBatch(105, Constants.CHANNEL_DEFAULT, Status.OK, true));
+        setupWhen(datas, dataEvents, batches, 13, 10, 103, 103);
+        purgeService.purgeOutgoing(true);
+        verifyNoFirstPass();
+        verifyPurgeDataExists(11, 12);
+        verifyPurgeDataEventExists(104, 105);
+        verifyPurgeOutgoingBatchExists(104, 105);
+        verifyPurgeContext(12, 105, 105);
+    }
+
+    @Test
+    public void testFirstPassSkippedWhenOldOutstandingBatchPinsBatchScan() {
+        List<Data> datas = newDataList(3, 11, 12);
+        List<DataEvent> dataEvents = new ArrayList<DataEvent>();
+        dataEvents.add(new DataEvent(3, 101));
+        dataEvents.add(new DataEvent(11, 104));
+        dataEvents.add(new DataEvent(12, 106));
+        List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>();
+        batches.add(newOutgoingBatch(100, Constants.CHANNEL_HEARTBEAT, Status.LD, true));
+        batches.add(newOutgoingBatch(101, Constants.CHANNEL_DEFAULT, Status.OK, true));
+        batches.add(newOutgoingBatch(104, Constants.CHANNEL_DEFAULT, Status.OK, true));
+        batches.add(newOutgoingBatch(106, Constants.CHANNEL_DEFAULT, Status.LD, true));
+        setupWhen(datas, dataEvents, batches, 13, 10, 103, 103);
+        purgeService.purgeOutgoing(true);
+        verifyNoFirstPass();
+        verifyPurgeDataExists(11, 12);
+        verifyPurgeDataEventExists(104, 106);
+        verifyPurgeOutgoingBatchExists(104, 106);
+        verifyPurgeContext(12, 106, 106);
+    }
+
+    @Test
+    public void testFirstPassSkippedOverThresholdWhenOldOutstandingBatchPinsBatchScan() {
+        when(parameterService.getLong(ParameterConstants.PURGE_FIRST_PASS_OUTSTANDING_BATCHES_THRESHOLD)).thenReturn(1L);
+        List<Data> datas = newDataList(3, 11, 12);
+        List<DataEvent> dataEvents = new ArrayList<DataEvent>();
+        dataEvents.add(new DataEvent(3, 101));
+        dataEvents.add(new DataEvent(11, 104));
+        dataEvents.add(new DataEvent(12, 106));
+        List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>();
+        batches.add(newOutgoingBatch(100, Constants.CHANNEL_HEARTBEAT, Status.LD, true));
+        batches.add(newOutgoingBatch(101, Constants.CHANNEL_DEFAULT, Status.OK, true));
+        batches.add(newOutgoingBatch(104, Constants.CHANNEL_DEFAULT, Status.OK, true));
+        batches.add(newOutgoingBatch(106, Constants.CHANNEL_DEFAULT, Status.LD, true));
+        setupWhen(datas, dataEvents, batches, 13, 10, 103, 103);
+        purgeService.purgeOutgoing(true);
+        verifyNoFirstPass();
+        verifyPurgeDataExists(11, 12);
+        verifyPurgeDataEventExists(104, 106);
+        verifyPurgeOutgoingBatchExists(104, 106);
+        verifyPurgeContext(12, 106, 106);
+    }
+
+    @Test
+    public void testFirstPassSkippedWhenEligibilityQueryExceedsLongOperationThreshold() {
+        setupFirstPassEligibleData();
+        useLongOperationThresholdMs(-1);
+        purgeService.purgeOutgoing(true);
+        verifyNoFirstPass();
+        verifyPurgeDataExists(11, 13);
+        verifyPurgeDataEventExists(104, 106);
+        verifyPurgeOutgoingBatchExists(104, 106);
+        verifyPurgeContext(13, 106, 106);
+    }
+
+    @Test
+    public void testIsLongOperationWithinThreshold() {
+        PurgeService purgeServiceImpl = (PurgeService) purgeService;
+        long startTime = 1000000L;
+        assertFalse(purgeServiceImpl.isLongOperation("test query", startTime, startTime));
+        assertFalse(purgeServiceImpl.isLongOperation("test query", startTime, startTime + Constants.LONG_OPERATION_THRESHOLD));
+    }
+
+    @Test
+    public void testIsLongOperationExceedsThreshold() {
+        PurgeService purgeServiceImpl = (PurgeService) purgeService;
+        long startTime = 1000000L;
+        assertTrue(purgeServiceImpl.isLongOperation("test query", startTime, startTime + Constants.LONG_OPERATION_THRESHOLD + 1));
+    }
+
+    @Test
     public void testPurgeAroundSmallGaps() {
         List<DataGap> gaps = new ArrayList<DataGap>();
         gaps.add(new DataGap(1821, 1824));
@@ -269,6 +372,29 @@ public class PurgeServiceTest {
         assertEquals(1839, minMax[0]);
         assertEquals(1846, minMax[1]);
         assertEquals(gaps.size(), 0);
+    }
+
+    protected void setupFirstPassEligibleData() {
+        List<Data> datas = newDataList(11, 12, 13);
+        List<DataEvent> dataEvents = new ArrayList<DataEvent>();
+        dataEvents.add(new DataEvent(11, 104));
+        dataEvents.add(new DataEvent(12, 105));
+        dataEvents.add(new DataEvent(13, 106));
+        List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>();
+        batches.add(newOutgoingBatch(104, Constants.CHANNEL_DEFAULT, Status.OK, true));
+        batches.add(newOutgoingBatch(105, Constants.CHANNEL_DEFAULT, Status.OK, true));
+        batches.add(newOutgoingBatch(106, Constants.CHANNEL_DEFAULT, Status.LD, true));
+        setupWhen(datas, dataEvents, batches, 14, 10, 103, 103);
+    }
+
+    protected void useLongOperationThresholdMs(long thresholdMs) {
+        purgeService = new PurgeService(parameterService, symmetricDialect, clusterService, dataService, sequenceService, statisticManager,
+                extensionService, contextService) {
+            @Override
+            protected long getLongOperationThresholdMs() {
+                return thresholdMs;
+            }
+        };
     }
 
     protected List<Data> newDataList(int... ids) {
@@ -292,8 +418,20 @@ public class PurgeServiceTest {
         return batch;
     }
 
+    protected void setupWhen(List<Data> datas, List<DataEvent> dataEvents, List<OutgoingBatch> batches, long minGapStartId, long lastDataId,
+            long lastEventBatchId, long lastBatchId) {
+        when(contextService.getLong(ContextConstants.PURGE_LAST_DATA_ID)).thenReturn(lastDataId);
+        when(contextService.getLong(ContextConstants.PURGE_LAST_EVENT_BATCH_ID)).thenReturn(lastEventBatchId);
+        when(contextService.getLong(ContextConstants.PURGE_LAST_BATCH_ID)).thenReturn(lastBatchId);
+        setupWhen(datas, dataEvents, batches, minGapStartId, lastBatchId + 1);
+    }
+
     protected void setupWhen(List<Data> datas, List<DataEvent> dataEvents, List<OutgoingBatch> batches, long minGapStartId) {
-        TestContext c = getTestContext(datas, dataEvents, batches);
+        setupWhen(datas, dataEvents, batches, minGapStartId, 0);
+    }
+
+    protected void setupWhen(List<Data> datas, List<DataEvent> dataEvents, List<OutgoingBatch> batches, long minGapStartId, long startBatchId) {
+        TestContext c = getTestContext(datas, dataEvents, batches, startBatchId);
         when(sqlTemplateDirty.queryForLong(service.getSql("minDataId"))).thenReturn(c.minDataId);
         when(sqlTemplateDirty.queryForLong(service.getSql("minOutgoingBatchId"))).thenReturn(c.minBatchId);
         List<Long> maxBatchIdForOldBatchesList = new ArrayList<Long>();
@@ -312,8 +450,9 @@ public class PurgeServiceTest {
         when(sqlTemplateDirty.queryForLong(service.getSql("minDataGapStartId"))).thenReturn(minGapStartId);
     }
 
-    protected TestContext getTestContext(List<Data> datas, List<DataEvent> dataEvents, List<OutgoingBatch> batches) {
+    protected TestContext getTestContext(List<Data> datas, List<DataEvent> dataEvents, List<OutgoingBatch> batches, long startBatchId) {
         TestContext context = new TestContext();
+        context.startBatchId = startBatchId;
         populateContextData(context, datas);
         populateContextOutgoingBatch(context, batches);
         populateContextDataEvent(context, dataEvents);
@@ -352,7 +491,7 @@ public class PurgeServiceTest {
             if (batch.getStatus() != Status.OK && (dataEvent.getDataId() < context.minDataEventIdNotOk || context.minDataEventIdNotOk == 0)) {
                 context.minDataEventIdNotOk = dataEvent.getDataId();
             }
-            if (dataEvent.getBatchId() <= context.maxBatchIdForOldBatches) {
+            if (dataEvent.getBatchId() >= context.startBatchId && dataEvent.getBatchId() <= context.maxBatchIdForOldBatches) {
                 if (dataEvent.getDataId() < context.minDataIdForBatches || context.minDataIdForBatches == 0) {
                     context.minDataIdForBatches = dataEvent.getDataId();
                 }
@@ -393,6 +532,28 @@ public class PurgeServiceTest {
         }
     }
 
+    protected void verifyNoFirstPass() {
+        verify(sqlTemplate, never()).update(eq(service.getSql("deleteDataByRangeSql")), any(Object[].class), any(int[].class));
+        verify(sqlTemplate, never()).update(eq(service.getSql("deleteDataEventByRangeSql")), any(Object[].class), any(int[].class));
+        verify(sqlTemplate, never()).update(eq(service.getSql("deleteOutgoingBatchByRangeSql")), any(Object[].class), any(int[].class));
+    }
+
+    protected void verifyPurgeDataExists(long startId, long endId) {
+        int[] typesOk = new int[] { symmetricDialect.getSqlTypeForIds(), symmetricDialect.getSqlTypeForIds(), Types.VARCHAR };
+        verify(sqlTemplate).update(service.getSql("deleteDataExistsSql"), new Object[] { startId, endId, OutgoingBatch.Status.OK.name() }, typesOk);
+    }
+
+    protected void verifyPurgeDataEventExists(long startId, long endId) {
+        int[] typesOk = new int[] { symmetricDialect.getSqlTypeForIds(), symmetricDialect.getSqlTypeForIds(), Types.VARCHAR };
+        verify(sqlTemplate).update(service.getSql("deleteDataEventExistsSql"), new Object[] { startId, endId, OutgoingBatch.Status.OK.name() }, typesOk);
+    }
+
+    protected void verifyPurgeOutgoingBatchExists(long startId, long endId) {
+        int[] typesOk = new int[] { Types.VARCHAR, symmetricDialect.getSqlTypeForIds(), symmetricDialect.getSqlTypeForIds() };
+        verify(sqlTemplate).update(service.getSql("deleteOutgoingBatchExistsSql"), new Object[] { OutgoingBatch.Status.OK.name(), startId, endId },
+                typesOk);
+    }
+
     protected void verifyPurgeContext(long lastDataId, long lastEventBatchId, long lastBatchId) {
         verify(contextService).save(ContextConstants.PURGE_LAST_DATA_ID, String.valueOf(lastDataId));
         verify(contextService).save(ContextConstants.PURGE_LAST_EVENT_BATCH_ID, String.valueOf(lastEventBatchId));
@@ -402,6 +563,7 @@ public class PurgeServiceTest {
     class TestContext {
         long minDataId;
         long minBatchId;
+        long startBatchId;
         Map<Long, OutgoingBatch> batchesByBatchId = new HashMap<Long, OutgoingBatch>();
         long maxBatchIdForOldBatches;
         long minDataIdForBatches;
