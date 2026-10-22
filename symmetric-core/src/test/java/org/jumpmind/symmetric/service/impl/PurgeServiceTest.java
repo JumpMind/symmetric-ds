@@ -32,6 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.sql.Types;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -330,30 +331,35 @@ public class PurgeServiceTest {
     }
 
     @Test
-    public void testFirstPassSkippedWhenEligibilityQueryExceedsLongOperationThreshold() {
-        setupFirstPassEligibleData();
-        useLongOperationThresholdMs(-1);
-        purgeService.purgeOutgoing(true);
-        verifyNoFirstPass();
-        verifyPurgeDataExists(11, 13);
-        verifyPurgeDataEventExists(104, 106);
-        verifyPurgeOutgoingBatchExists(104, 106);
-        verifyPurgeContext(13, 106, 106);
+    public void testIsEligibleForFirstPassPurgeWithoutOutstandingBatches() {
+        assertTrue(getPurgeServiceImpl().isEligibleForFirstPassPurge(0, 104, Duration.ZERO));
+    }
+
+    @Test
+    public void testIsEligibleForFirstPassPurgeWhenOutstandingBatchAtOrAheadOfPurgePosition() {
+        assertTrue(getPurgeServiceImpl().isEligibleForFirstPassPurge(104, 104, Duration.ZERO));
+        assertTrue(getPurgeServiceImpl().isEligibleForFirstPassPurge(106, 104, Duration.ZERO));
+    }
+
+    @Test
+    public void testIsEligibleForFirstPassPurgeWhenOutstandingBatchBehindPurgePosition() {
+        assertFalse(getPurgeServiceImpl().isEligibleForFirstPassPurge(103, 104, Duration.ZERO));
+    }
+
+    @Test
+    public void testIsEligibleForFirstPassPurgeWhenQueryIsSlow() {
+        assertFalse(getPurgeServiceImpl().isEligibleForFirstPassPurge(106, 104, Duration.ofMillis(Constants.LONG_OPERATION_THRESHOLD + 1)));
     }
 
     @Test
     public void testIsLongOperationWithinThreshold() {
-        PurgeService purgeServiceImpl = (PurgeService) purgeService;
-        long startTime = 1000000L;
-        assertFalse(purgeServiceImpl.isLongOperation("test query", startTime, startTime));
-        assertFalse(purgeServiceImpl.isLongOperation("test query", startTime, startTime + Constants.LONG_OPERATION_THRESHOLD));
+        assertFalse(getPurgeServiceImpl().isLongOperation("test query", Duration.ZERO));
+        assertFalse(getPurgeServiceImpl().isLongOperation("test query", Duration.ofMillis(Constants.LONG_OPERATION_THRESHOLD)));
     }
 
     @Test
     public void testIsLongOperationExceedsThreshold() {
-        PurgeService purgeServiceImpl = (PurgeService) purgeService;
-        long startTime = 1000000L;
-        assertTrue(purgeServiceImpl.isLongOperation("test query", startTime, startTime + Constants.LONG_OPERATION_THRESHOLD + 1));
+        assertTrue(getPurgeServiceImpl().isLongOperation("test query", Duration.ofMillis(Constants.LONG_OPERATION_THRESHOLD + 1)));
     }
 
     @Test
@@ -387,14 +393,8 @@ public class PurgeServiceTest {
         setupWhen(datas, dataEvents, batches, 14, 10, 103, 103);
     }
 
-    protected void useLongOperationThresholdMs(long thresholdMs) {
-        purgeService = new PurgeService(parameterService, symmetricDialect, clusterService, dataService, sequenceService, statisticManager,
-                extensionService, contextService) {
-            @Override
-            protected long getLongOperationThresholdMs() {
-                return thresholdMs;
-            }
-        };
+    protected PurgeService getPurgeServiceImpl() {
+        return (PurgeService) purgeService;
     }
 
     protected List<Data> newDataList(int... ids) {

@@ -22,12 +22,14 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.function.LongConsumer;
 
 import org.apache.commons.lang3.time.DateUtils;
@@ -73,6 +75,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private IStatisticManager statisticManager;
     private IExtensionService extensionService;
     private IContextService contextService;
+    private static final Duration LONG_QUERY_THRESHOLD = Duration.ofMillis(Constants.LONG_OPERATION_THRESHOLD);
     private FastDateFormat fastFormat = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
     private final int MINS_IN_ONE_WEEK = 10080;
 
@@ -148,10 +151,18 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     rowsPurged += purgeOutgoingByRetentionCutoff(retentionCutoff);
                 } else {
                     OutgoingContext context = buildOutgoingContext(retentionCutoff);
-                    determineFirstPassEligibility(context);
+                    long minOutstandingBatchId = 0;
+                    boolean isFirstPassEligible = false;
+                    if (parameterService.is(ParameterConstants.PURGE_FIRST_PASS)) {
+                        log.info("Getting first batch_id for outstanding batches");
+                        long ts = System.currentTimeMillis();
+                        minOutstandingBatchId = sqlTemplateDirty.queryForLong(getSql("minOutgoingBatchNotStatusSql"), OutgoingBatch.Status.OK.name());
+                        isFirstPassEligible = isEligibleForFirstPassPurge(minOutstandingBatchId, context.getMinEventBatchId(),
+                                Duration.ofMillis(System.currentTimeMillis() - ts));
+                    }
                     rowsPurged += purgeStrandedBatches();
-                    rowsPurged += purgeDataRows(context);
-                    rowsPurged += purgeOutgoingBatch(context);
+                    rowsPurged += purgeDataRows(context, isFirstPassEligible);
+                    rowsPurged += purgeOutgoingBatch(context, isFirstPassEligible, minOutstandingBatchId);
                     rowsPurged += purgeLingeringBatches(context);
                     rowsPurged += purgeDataGapsExpired(context);
                     rowsPurged += purgeStranded(context);
@@ -195,63 +206,29 @@ public class PurgeService extends AbstractService implements IPurgeService {
     }
 
     /**
-     * Decides once per run whether the first pass range deletes are safe for sym_data and for sym_data_event/sym_outgoing_batch. An outstanding batch behind
-     * the purge position means data was skipped by an earlier run, and range deletes would remove its events after the data purge has moved past it, leaving
-     * stranded data. Each query must finish within the long operation threshold, otherwise the first pass is skipped.
+     * The first pass range deletes are safe only when the oldest outstanding batch is at or after the purge position. An outstanding batch behind the purge
+     * position holds data that an earlier run skipped, and the range deletes would remove its events after the data purge has moved past it, leaving stranded
+     * data. A slow query also rejects the first pass.
      */
-    protected void determineFirstPassEligibility(OutgoingContext context) {
-        if (!parameterService.is(ParameterConstants.PURGE_FIRST_PASS)) {
-            return;
+    protected boolean isEligibleForFirstPassPurge(long minOutstandingBatchId, long purgeStartBatchId, Duration queryTime) {
+        if (isLongOperation("first batch_id for outstanding batches", queryTime)) {
+            return false;
         }
-        log.info("Getting first batch_id for outstanding batches");
-        long ts = System.currentTimeMillis();
-        long notOkBatchId = sqlTemplateDirty.queryForLong(getSql("minOutgoingBatchNotStatusSql"), OutgoingBatch.Status.OK.name());
-        if (isLongOperation("first batch_id for outstanding batches", ts, System.currentTimeMillis())) {
-            return;
-        }
-        if (notOkBatchId > 0 && notOkBatchId < context.getMinEventBatchId()) {
+        if (minOutstandingBatchId > 0 && minOutstandingBatchId < purgeStartBatchId) {
             log.warn("Skipping first pass purge because outstanding batch {} is behind the purge position at batch {}. "
-                    + "Batches that stay outstanding longer than the purge retention cause this.", notOkBatchId, context.getMinEventBatchId());
-            return;
+                    + "Batches that stay outstanding longer than the purge retention cause this.", minOutstandingBatchId, purgeStartBatchId);
+            return false;
         }
-        log.info("Getting count of outstanding batches");
-        ts = System.currentTimeMillis();
-        long outstandingCount = sqlTemplateDirty.queryForLong(getSql("countOutgoingBatchNotStatusSql"), OutgoingBatch.Status.OK.name());
-        if (isLongOperation("count of outstanding batches", ts, System.currentTimeMillis())) {
-            return;
-        }
-        long maxOutstandingCount = parameterService.getLong(ParameterConstants.PURGE_FIRST_PASS_OUTSTANDING_BATCHES_THRESHOLD);
-        if (outstandingCount > 0) {
-            log.info("Found " + outstandingCount + " outstanding batches, threshold is " + maxOutstandingCount);
-        }
-        boolean isDataEligible = outstandingCount <= maxOutstandingCount;
-        long minDataId = 0;
-        if (isDataEligible && outstandingCount > 0) {
-            log.info("Getting first data_id for outstanding batches");
-            ts = System.currentTimeMillis();
-            minDataId = sqlTemplateDirty.queryForLong(getSql("selectDataEventMinNotStatusSql"), OutgoingBatch.Status.OK.name());
-            if (isLongOperation("first data_id for outstanding batches", ts, System.currentTimeMillis())) {
-                return;
-            }
-        }
-        context.setMinOutstandingBatchId(notOkBatchId);
-        context.setMinOutstandingDataId(minDataId);
-        context.setFirstPassBatchEligible(true);
-        context.setFirstPassDataEligible(isDataEligible);
+        return true;
     }
 
-    protected boolean isLongOperation(String queryName, long startTime, long endTime) {
-        long elapsedMs = endTime - startTime;
-        long thresholdMs = getLongOperationThresholdMs();
-        if (elapsedMs > thresholdMs) {
-            log.warn("Skipping first pass purge because the query for {} took {} ms, which exceeds {} ms", queryName, elapsedMs, thresholdMs);
+    protected boolean isLongOperation(String queryName, Duration queryTime) {
+        if (queryTime.compareTo(LONG_QUERY_THRESHOLD) > 0) {
+            log.warn("Skipping first pass purge because the query for {} took {} ms, which exceeds {} ms", queryName, queryTime.toMillis(),
+                    LONG_QUERY_THRESHOLD.toMillis());
             return true;
         }
         return false;
-    }
-
-    protected long getLongOperationThresholdMs() {
-        return Constants.LONG_OPERATION_THRESHOLD;
     }
 
     /**
@@ -265,15 +242,15 @@ public class PurgeService extends AbstractService implements IPurgeService {
      *            Calendar date/time of retention cutoff
      * @return number of rows deleted
      */
-    private long purgeOutgoingBatch(OutgoingContext context) {
+    private long purgeOutgoingBatch(OutgoingContext context, boolean isFirstPassEligible, long minOutstandingBatchId) {
         long[] batchMinMax = { context.getMinBatchId(), context.getMaxBatchId() };
         long[] eventMinMax = { context.getMinEventBatchId(), context.getMaxBatchId() };
         int maxNumOfBatchIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
         int maxNumOfDataEventsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
         int dataEventsPurgedCount = 0;
         int outgoingbatchPurgedCount = 0;
-        if (context.isFirstPassBatchEligible()) {
-            long notOkBatchId = context.getMinOutstandingBatchId();
+        if (isFirstPassEligible) {
+            long notOkBatchId = minOutstandingBatchId;
             long batchRangeMinMax[] = getRangeMinMax(batchMinMax, notOkBatchId);
             long eventRangeMinMax[] = getRangeMinMax(eventMinMax, notOkBatchId);
             batchMinMax = getMinMax(batchMinMax, notOkBatchId, batchRangeMinMax);
@@ -446,13 +423,14 @@ public class PurgeService extends AbstractService implements IPurgeService {
      *            Calendar date/time of retention cutoff
      * @return number of rows deleted
      */
-    private long purgeDataRows(OutgoingContext context) {
+    private long purgeDataRows(OutgoingContext context, boolean isFirstPassEligible) {
         long[] minMax = { context.getMinDataId(), context.getMaxDataId() };
         long minGapStartId = context.getMinDataGapStartId();
         int maxNumOfDataIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
         long dataDeletedCount = 0;
-        if (context.isFirstPassDataEligible()) {
-            long minDataId = context.getMinOutstandingDataId();
+        OptionalLong firstPassMinDataId = isFirstPassEligible ? findFirstPassMinOutstandingDataId() : OptionalLong.empty();
+        if (firstPassMinDataId.isPresent()) {
+            long minDataId = firstPassMinDataId.getAsLong();
             long rangeMinMax[] = new long[] { minMax[0], Math.min(Math.min(minDataId > 0 ? minDataId - 1 : minMax[1],
                     minMax[1]), minGapStartId - 1) };
             if (rangeMinMax[1] == minMax[1]) {
@@ -468,6 +446,35 @@ public class PurgeService extends AbstractService implements IPurgeService {
         dataDeletedCount += purgeByMinMax(minMax, MinMaxDeleteSql.DATA, context, maxNumOfDataIdsToPurgeInTx,
                 count -> statisticManager.incrementPurgedDataRows(count));
         return dataDeletedCount;
+    }
+
+    /**
+     * Returns the first data_id held by an outstanding batch, or 0 when no batch is outstanding. Returns empty when the data first pass must be skipped because
+     * too many batches are outstanding or a query is slow.
+     */
+    private OptionalLong findFirstPassMinOutstandingDataId() {
+        log.info("Getting count of outstanding batches");
+        long ts = System.currentTimeMillis();
+        long outstandingCount = sqlTemplateDirty.queryForLong(getSql("countOutgoingBatchNotStatusSql"), OutgoingBatch.Status.OK.name());
+        Duration countQueryTime = Duration.ofMillis(System.currentTimeMillis() - ts);
+        long maxOutstandingCount = parameterService.getLong(ParameterConstants.PURGE_FIRST_PASS_OUTSTANDING_BATCHES_THRESHOLD);
+        if (outstandingCount > 0) {
+            log.info("Found " + outstandingCount + " outstanding batches, threshold is " + maxOutstandingCount);
+        }
+        if (outstandingCount > maxOutstandingCount || isLongOperation("count of outstanding batches", countQueryTime)) {
+            return OptionalLong.empty();
+        }
+        if (outstandingCount == 0) {
+            return OptionalLong.of(0);
+        }
+        log.info("Getting first data_id for outstanding batches");
+        ts = System.currentTimeMillis();
+        long minDataId = sqlTemplateDirty.queryForLong(getSql("selectDataEventMinNotStatusSql"), OutgoingBatch.Status.OK.name());
+        Duration minDataIdQueryTime = Duration.ofMillis(System.currentTimeMillis() - ts);
+        if (isLongOperation("first data_id for outstanding batches", minDataIdQueryTime)) {
+            return OptionalLong.empty();
+        }
+        return OptionalLong.of(minDataId);
     }
 
     /**
@@ -1049,10 +1056,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
         private long minBatchId;
         private long maxBatchId;
         private long minEventBatchId;
-        private long minOutstandingBatchId;
-        private long minOutstandingDataId;
-        private boolean isFirstPassBatchEligible;
-        private boolean isFirstPassDataEligible;
         private List<DataGap> dataGapsExpired;
 
         public OutgoingContext(Calendar retentionCutoff) {
@@ -1113,38 +1116,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
         public void setMinEventBatchId(long minEventBatchId) {
             this.minEventBatchId = minEventBatchId;
-        }
-
-        public long getMinOutstandingBatchId() {
-            return minOutstandingBatchId;
-        }
-
-        public void setMinOutstandingBatchId(long minOutstandingBatchId) {
-            this.minOutstandingBatchId = minOutstandingBatchId;
-        }
-
-        public long getMinOutstandingDataId() {
-            return minOutstandingDataId;
-        }
-
-        public void setMinOutstandingDataId(long minOutstandingDataId) {
-            this.minOutstandingDataId = minOutstandingDataId;
-        }
-
-        public boolean isFirstPassBatchEligible() {
-            return isFirstPassBatchEligible;
-        }
-
-        public void setFirstPassBatchEligible(boolean isFirstPassBatchEligible) {
-            this.isFirstPassBatchEligible = isFirstPassBatchEligible;
-        }
-
-        public boolean isFirstPassDataEligible() {
-            return isFirstPassDataEligible;
-        }
-
-        public void setFirstPassDataEligible(boolean isFirstPassDataEligible) {
-            this.isFirstPassDataEligible = isFirstPassDataEligible;
         }
 
         public List<DataGap> getDataGapsExpired() {
