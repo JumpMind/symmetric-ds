@@ -80,6 +80,10 @@ This job purges the following tables:
 * <<OUTGOING_BATCH>>
 * <<EXTRACT_REQUEST>>
 
+When `job.purge.first.pass` is enabled, a fast range delete runs first. It is skipped for a run when an outstanding batch is
+older than the purge position, such as a batch for an offline node, or when a lookup query is slower than 30 seconds.
+Rows held by those batches are purged after the batches complete.
+
 ==== Purge Incoming Job
 
 The Purge Incoming Job is responsible for purging the <<INCOMING_BATCH>> table.
