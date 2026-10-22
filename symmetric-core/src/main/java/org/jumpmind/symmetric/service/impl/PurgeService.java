@@ -293,8 +293,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 long countNotOkay = sqlTemplateDirty.queryForLong(getSql("countCommonBatchNotStatusForBatchId"),
                         batchId, OutgoingBatch.Status.OK.name());
                 if (countNotOkay == 0) {
-                    dataDeleteCount = sqlTemplate.update(getSql("deleteDataByBatchId"), new Object[] { batchId },
-                            new int[] { idType });
+                    dataDeleteCount = sqlTemplate.update(getSql("deleteDataByBatchId"),
+                            new Object[] { batchId, OutgoingBatch.Status.OK.name(), batchId }, new int[] { idType, Types.VARCHAR, idType });
                     statisticManager.incrementPurgedDataRows(dataDeleteCount);
                     eventDeleteCount = sqlTemplate.update(getSql("deleteDataEventByBatchId"), new Object[] { batchId },
                             new int[] { idType });

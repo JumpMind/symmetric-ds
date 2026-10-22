@@ -331,6 +331,20 @@ public class PurgeServiceTest {
     }
 
     @Test
+    public void testLingeringBatchKeepsDataHeldByOutstandingBatch() {
+        setupFirstPassEligibleData();
+        @SuppressWarnings("unchecked")
+        ISqlReadCursor<Long> lingeringBatchesCursor = mock(ISqlReadCursor.class);
+        when(lingeringBatchesCursor.next()).thenReturn(101L, (Long) null);
+        when(sqlTemplateDirty.queryForCursor(eq(service.getSql("selectLingeringBatches")), any(LongMapper.class), any(Object[].class),
+                any(int[].class))).thenReturn(lingeringBatchesCursor);
+        purgeService.purgeOutgoing(true);
+        int idType = symmetricDialect.getSqlTypeForIds();
+        verify(sqlTemplate).update(service.getSql("deleteDataByBatchId"), new Object[] { 101L, OutgoingBatch.Status.OK.name(), 101L },
+                new int[] { idType, Types.VARCHAR, idType });
+    }
+
+    @Test
     public void testIsEligibleForFirstPassPurgeWithoutOutstandingBatches() {
         assertTrue(getPurgeServiceImpl().isEligibleForFirstPassPurge(0, 104, Duration.ZERO));
     }
