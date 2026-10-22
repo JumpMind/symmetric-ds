@@ -205,11 +205,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return count;
     }
 
-    /**
-     * The first pass range deletes are safe only when the oldest outstanding batch is at or after the purge position. An outstanding batch behind the purge
-     * position holds data that an earlier run skipped, and the range deletes would remove its events after the data purge has moved past it, leaving stranded
-     * data. A slow query also rejects the first pass.
-     */
     protected boolean isEligibleForFirstPassPurge(long minOutstandingBatchId, long purgeStartBatchId, Duration queryTime) {
         if (isLongOperation("first batch_id for outstanding batches", queryTime)) {
             return false;
@@ -448,12 +443,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return dataDeletedCount;
     }
 
-    /**
-     * Returns the first data_id held by an outstanding batch, or 0 when no batch is outstanding. Returns empty when the data first pass must be skipped because
-     * too many batches are outstanding or a query is slow.
-     */
     private OptionalLong findFirstPassMinOutstandingDataId() {
-        log.info("Getting count of outstanding batches");
+        log.debug("Getting count of outstanding batches");
         long ts = System.currentTimeMillis();
         long outstandingCount = sqlTemplateDirty.queryForLong(getSql("countOutgoingBatchNotStatusSql"), OutgoingBatch.Status.OK.name());
         Duration countQueryTime = Duration.ofMillis(System.currentTimeMillis() - ts);
