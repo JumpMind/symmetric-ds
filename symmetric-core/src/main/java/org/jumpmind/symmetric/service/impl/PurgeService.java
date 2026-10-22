@@ -39,6 +39,7 @@ import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.mapper.LongMapper;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.Constants;
@@ -76,6 +77,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private IExtensionService extensionService;
     private IContextService contextService;
     private static final Duration LONG_QUERY_THRESHOLD = Duration.ofMillis(Constants.LONG_OPERATION_THRESHOLD);
+    static final Duration FIRST_PASS_QUERY_TIMEOUT = LONG_QUERY_THRESHOLD.multipliedBy(11).dividedBy(10);
     private FastDateFormat fastFormat = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
     private final int MINS_IN_ONE_WEEK = 10080;
 
@@ -445,27 +447,35 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private OptionalLong findFirstPassMinOutstandingDataId() {
         log.debug("Getting count of outstanding batches");
-        long ts = System.currentTimeMillis();
-        long outstandingCount = sqlTemplateDirty.queryForLong(getSql("countOutgoingBatchNotStatusSql"), OutgoingBatch.Status.OK.name());
-        Duration countQueryTime = Duration.ofMillis(System.currentTimeMillis() - ts);
-        long maxOutstandingCount = parameterService.getLong(ParameterConstants.PURGE_FIRST_PASS_OUTSTANDING_BATCHES_THRESHOLD);
-        if (outstandingCount > 0) {
-            log.info("Found " + outstandingCount + " outstanding batches, threshold is " + maxOutstandingCount);
-        }
-        if (outstandingCount > maxOutstandingCount || isLongOperation("count of outstanding batches", countQueryTime)) {
+        OptionalLong outstandingCount = queryForFirstPassLong("count of outstanding batches", "countOutgoingBatchNotStatusSql");
+        if (outstandingCount.isEmpty()) {
             return OptionalLong.empty();
         }
-        if (outstandingCount == 0) {
+        long maxOutstandingCount = parameterService.getLong(ParameterConstants.PURGE_FIRST_PASS_OUTSTANDING_BATCHES_THRESHOLD);
+        if (outstandingCount.getAsLong() > 0) {
+            log.info("Found " + outstandingCount.getAsLong() + " outstanding batches, threshold is " + maxOutstandingCount);
+        }
+        if (outstandingCount.getAsLong() > maxOutstandingCount) {
+            return OptionalLong.empty();
+        }
+        if (outstandingCount.getAsLong() == 0) {
             return OptionalLong.of(0);
         }
         log.info("Getting first data_id for outstanding batches");
-        ts = System.currentTimeMillis();
-        long minDataId = sqlTemplateDirty.queryForLong(getSql("selectDataEventMinNotStatusSql"), OutgoingBatch.Status.OK.name());
-        Duration minDataIdQueryTime = Duration.ofMillis(System.currentTimeMillis() - ts);
-        if (isLongOperation("first data_id for outstanding batches", minDataIdQueryTime)) {
-            return OptionalLong.empty();
+        return queryForFirstPassLong("first data_id for outstanding batches", "selectDataEventMinNotStatusSql");
+    }
+
+    private OptionalLong queryForFirstPassLong(String queryName, String sqlName) {
+        long ts = System.currentTimeMillis();
+        try {
+            long value = sqlTemplateDirty.queryForLong(getSql(sqlName), FIRST_PASS_QUERY_TIMEOUT, OutgoingBatch.Status.OK.name());
+            return isLongOperation(queryName, Duration.ofMillis(System.currentTimeMillis() - ts)) ? OptionalLong.empty() : OptionalLong.of(value);
+        } catch (SqlException e) {
+            if (isLongOperation(queryName, Duration.ofMillis(System.currentTimeMillis() - ts))) {
+                return OptionalLong.empty();
+            }
+            throw e;
         }
-        return OptionalLong.of(minDataId);
     }
 
     /**

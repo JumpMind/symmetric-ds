@@ -45,6 +45,7 @@ import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.mapper.LongMapper;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -373,6 +374,21 @@ public class PurgeServiceTest {
     }
 
     @Test
+    public void testFirstPassQueryTimeoutTripsLongOperation() {
+        assertEquals(Duration.ofSeconds(33), PurgeService.FIRST_PASS_QUERY_TIMEOUT);
+        assertTrue(getPurgeServiceImpl().isLongOperation("test query", PurgeService.FIRST_PASS_QUERY_TIMEOUT));
+    }
+
+    @Test
+    public void testFirstPassDataQueryFailureWithinThresholdStopsPurge() {
+        setupFirstPassEligibleData();
+        when(sqlTemplateDirty.queryForLong(service.getSql("countOutgoingBatchNotStatusSql"), PurgeService.FIRST_PASS_QUERY_TIMEOUT,
+                OutgoingBatch.Status.OK.name())).thenThrow(new SqlException("connection reset"));
+        purgeService.purgeOutgoing(true);
+        verify(sqlTemplate, never()).update(eq(service.getSql("deleteDataExistsSql")), any(Object[].class), any(int[].class));
+    }
+
+    @Test
     public void testIsLongOperationWithinThreshold() {
         assertFalse(getPurgeServiceImpl().isLongOperation("test query", Duration.ZERO));
         assertFalse(getPurgeServiceImpl().isLongOperation("test query", Duration.ofMillis(Constants.LONG_OPERATION_THRESHOLD)));
@@ -465,9 +481,11 @@ public class PurgeServiceTest {
         row.put("max_data_id", c.maxDataIdForBatches);
         rows.add(row);
         when(sqlTemplateDirty.query(eq(service.getSql("minMaxDataIdForOldBatches")), any(Object[].class), any(int[].class))).thenReturn(rows);
-        when(sqlTemplateDirty.queryForLong(service.getSql("countOutgoingBatchNotStatusSql"), OutgoingBatch.Status.OK.name())).thenReturn(c.countBatchNotOk);
+        when(sqlTemplateDirty.queryForLong(service.getSql("countOutgoingBatchNotStatusSql"), PurgeService.FIRST_PASS_QUERY_TIMEOUT,
+                OutgoingBatch.Status.OK.name())).thenReturn(c.countBatchNotOk);
         when(sqlTemplateDirty.queryForLong(service.getSql("minOutgoingBatchNotStatusSql"), OutgoingBatch.Status.OK.name())).thenReturn(c.minBatchIdNotOk);
-        when(sqlTemplateDirty.queryForLong(service.getSql("selectDataEventMinNotStatusSql"), OutgoingBatch.Status.OK.name())).thenReturn(c.minDataEventIdNotOk);
+        when(sqlTemplateDirty.queryForLong(service.getSql("selectDataEventMinNotStatusSql"), PurgeService.FIRST_PASS_QUERY_TIMEOUT,
+                OutgoingBatch.Status.OK.name())).thenReturn(c.minDataEventIdNotOk);
         when(sqlTemplateDirty.queryForLong(service.getSql("minDataGapStartId"))).thenReturn(minGapStartId);
     }
 
