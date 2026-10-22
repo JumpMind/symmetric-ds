@@ -46,11 +46,8 @@ jobs:
       - name: Style check with Gradle
         if: ${{ inputs.skip-style-check != 'true' }}
         run: |
-<<<<<<< HEAD
-          ./gradlew spotlessJavaCheck
-=======
           set -o pipefail
-          if ./gradlew spotlessJavaCheck -PjavaVersion=${{ matrix.java }} 2>&1 | tee spotless.log; then
+          if ./gradlew spotlessJavaCheck 2>&1 | tee spotless.log; then
             exit 0
           fi
           if grep -q "Failed to load eclipse jdt formatter" spotless.log; then
@@ -58,7 +55,6 @@ jobs:
             exit 0
           fi
           exit 1
->>>>>>> 7fb306f5d6 (SYM-8218: external style plugin API outage no longer breaks the build. (#1209))
         working-directory: symmetric-assemble
 
       - name: Upload JaCoCo unit test coverage report
