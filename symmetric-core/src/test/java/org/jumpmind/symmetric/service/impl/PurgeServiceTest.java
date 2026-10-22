@@ -340,8 +340,15 @@ public class PurgeServiceTest {
                 any(int[].class))).thenReturn(lingeringBatchesCursor);
         purgeService.purgeOutgoing(true);
         int idType = symmetricDialect.getSqlTypeForIds();
-        verify(sqlTemplate).update(service.getSql("deleteDataByBatchId"), new Object[] { 101L, OutgoingBatch.Status.OK.name(), 101L },
-                new int[] { idType, Types.VARCHAR, idType });
+        verify(sqlTemplate).update(service.getSql("deleteDataByBatchId"), new Object[] { 101L, OutgoingBatch.Status.OK.name() },
+                new int[] { idType, Types.VARCHAR });
+    }
+
+    @Test
+    public void testDeleteDataByBatchIdUsesAntiJoinForOutstandingBatches() {
+        String sql = service.getSql("deleteDataByBatchId").toLowerCase();
+        assertTrue(sql.contains("not exists"));
+        assertFalse(sql.contains("not in"));
     }
 
     @Test
