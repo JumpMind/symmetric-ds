@@ -720,7 +720,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     args = new Object[] { minId = minMaxAvoidGaps[0], maxId = minMaxAvoidGaps[1], cutoffTime };
                     argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP };
                     if (parameterService.is(ParameterConstants.PURGE_STRANDED_DATA_RECAPTURE_ENABLED)) {
-                        int recapturedRowCount = dataService.reCaptureData(minId, maxId);
+                        // Recapture with the same create_time cutoff that deleteStrandedData applies
+                        int recapturedRowCount = dataService.reCaptureData(minId, maxId, cutoffTime);
                         log.debug("Recaptured {} stranded data rows for range {} - {}", recapturedRowCount, minId, maxId);
                     } else if (log.isDebugEnabled()) {
                         log.debug("Skipped recapture of stranded data for range {} - {}", minId, maxId);

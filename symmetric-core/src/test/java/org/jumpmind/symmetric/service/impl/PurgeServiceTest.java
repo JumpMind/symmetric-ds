@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -73,6 +74,7 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -397,6 +399,21 @@ public class PurgeServiceTest {
     @Test
     public void testIsLongOperationExceedsThreshold() {
         assertTrue(getPurgeServiceImpl().isLongOperation("test query", Duration.ofMillis(Constants.LONG_OPERATION_THRESHOLD + 1)));
+    }
+
+    @Test
+    public void testStrandedDataRecapturedWithDeleteCutoff() {
+        when(parameterService.is(ParameterConstants.PURGE_STRANDED_DATA_RECAPTURE_ENABLED)).thenReturn(true);
+        setupFirstPassEligibleData();
+        when(sqlTemplateDirty.queryForLong(service.getSql("minDataEventId"))).thenReturn(20L);
+        when(sqlTemplateDirty.queryForLong(service.getSql("minDataGapStartId"))).thenReturn(21L);
+        purgeService.purgeOutgoing(true);
+        ArgumentCaptor<Object[]> deleteArgs = ArgumentCaptor.forClass(Object[].class);
+        verify(sqlTemplate).update(eq(service.getSql("deleteStrandedData")), deleteArgs.capture(), any(int[].class));
+        assertEquals(11L, deleteArgs.getValue()[0]);
+        assertEquals(19L, deleteArgs.getValue()[1]);
+        verify(dataService).reCaptureData(11, 19, (Date) deleteArgs.getValue()[2]);
+        verify(dataService, never()).reCaptureData(anyLong(), anyLong());
     }
 
     @Test
