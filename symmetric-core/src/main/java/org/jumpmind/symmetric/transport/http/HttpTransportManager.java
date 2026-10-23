@@ -68,13 +68,21 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     protected ISecurityAuthenticationProvider securityAuthenticationProvider;
     protected int backOffPostCount;
     protected IHttpResumeCache resumeCache;
+    protected ReservationCookieManager reservationCookieManager;
 
     public HttpTransportManager(ISymmetricEngine engine) {
-        super(engine.getExtensionService());
+        super(engine == null ? null : engine.getExtensionService());
         this.engine = engine;
-        this.securityAuthenticationProvider = createSecurityAuthenticationProvider(engine);
+        if (engine != null) {
+            this.securityAuthenticationProvider = createSecurityAuthenticationProvider(engine);
+            reservationCookieManager = new ReservationCookieManager(engine);
+        }
         resumeCache = AppUtils.newInstance(IHttpResumeCache.class, DefaultHttpResumeCache.class,
                 new Object[] { engine }, new Class<?>[] { ISymmetricEngine.class });
+    }
+
+    public ReservationCookieManager getReservationCookieManager() {
+        return reservationCookieManager;
     }
 
     protected ISecurityAuthenticationProvider createSecurityAuthenticationProvider(ISymmetricEngine engine) {

@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -113,6 +114,21 @@ class HttpTransportManagerTest {
         connMock = mock(HttpConnection.class);
         doReturn(connMock).when(manager).createGetConnectionFor(any(URL.class), anyString(), anyString());
         doReturn(connMock).when(manager).createGetConnectionFor(any(URL.class));
+    }
+
+    @Test
+    void testConstructor_withNullEngine() {
+        HttpTransportManager nullEngineManager = assertDoesNotThrow(() -> new HttpTransportManager((ISymmetricEngine) null));
+        assertNull(nullEngineManager.engine);
+        assertNull(nullEngineManager.securityAuthenticationProvider);
+        assertNull(nullEngineManager.getReservationCookieManager());
+    }
+
+    @Test
+    void testConstructor_withEngine() {
+        assertSame(engine, manager.engine);
+        assertNotNull(manager.securityAuthenticationProvider);
+        assertNotNull(manager.getReservationCookieManager());
     }
 
     @Test
@@ -418,6 +434,11 @@ class HttpTransportManagerTest {
         HttpConnection conn = mock(HttpConnection.class);
         manager.clearSession(conn);
         verify(providerMock).clearSession(conn);
+    }
+
+    @Test
+    void testGetReservationCookieManager_returnsNonNullInstance() {
+        assertNotNull(manager.getReservationCookieManager());
     }
 
     @Test
