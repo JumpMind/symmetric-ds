@@ -199,14 +199,14 @@ class DuckDbDdlBuilderTest {
     void testDropTable_withAutoIncrementColumn_dropsTableThenSequence() {
         StringBuilder ddl = new StringBuilder();
         ddlBuilder.dropTable(tableWithAutoIncrementId(), ddl, false, false);
-        assertEquals("DROP TABLE IF EXISTS\"item\";\nDROP SEQUENCE \"item_id_seq\";\n", ddl.toString());
+        assertEquals("DROP TABLE IF EXISTS \"item\";\nDROP SEQUENCE \"item_id_seq\";\n", ddl.toString());
     }
 
     @Test
     void testDropTable_recreate_dropsTableOnly() {
         StringBuilder ddl = new StringBuilder();
         ddlBuilder.dropTable(tableWithAutoIncrementId(), ddl, false, true);
-        assertEquals("DROP TABLE IF EXISTS\"item\";\n", ddl.toString());
+        assertEquals("DROP TABLE IF EXISTS \"item\";\n", ddl.toString());
     }
 
     private Table tableWithAutoIncrementId() {

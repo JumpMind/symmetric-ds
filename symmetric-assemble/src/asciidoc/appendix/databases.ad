@@ -585,7 +585,7 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 |
 |
 |✔
-|values current schema
+|values current schema   
 
 |DuckDB
 |
