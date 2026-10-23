@@ -8,7 +8,7 @@ apply from: symAssembleDir + '/common.gradle'
         api 'io.opentelemetry:opentelemetry-api'
         implementation 'io.opentelemetry:opentelemetry-sdk'
         implementation 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure'
-        api 'org.apache.commons:commons-lang3'
+        api "org.apache.commons:commons-lang3:$commonsLangVersion"
         testImplementation 'io.opentelemetry:opentelemetry-sdk-testing'
         testImplementation project(path: ':symmetric-core', configuration: 'testArtifacts')
     }
